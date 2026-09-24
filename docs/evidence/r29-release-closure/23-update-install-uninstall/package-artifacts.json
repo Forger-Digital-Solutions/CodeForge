@@ -3,9 +3,11 @@
   "channel": "production",
   "version": "0.4.0",
   "buildIdentity": {
-    "commit": "397263782a764e9378167addbc5f9e4ad097868a",
+    "commit": "0dbca660ba721b7cde5bcd6bd6d7cbbb01e600f7",
     "dirty": true,
-    "builtAt": "2026-09-24T00:47:14.731Z"
+    "builtAt": "2026-09-24T01:02:34.155Z",
+    "sourceCleanBeforePackaging": true,
+    "dirtyReason": "Release wrapper temporarily changed tracked cloud-endpoints.json to stamp the production endpoint"
   },
   "audits": {
     "internalDependencies": "pass",
@@ -13,35 +15,39 @@
     "runtimeModulesScanned": 353,
     "externalImportsScanned": 18,
     "buildIdentity": "pass",
-    "productionEndpoint": "pass"
+    "strictCleanBuildIdentity": "fail",
+    "productionEndpoint": "pass",
+    "packagedSmokeFull": "pass outside command sandbox",
+    "packagedSmokeInterrupt": "pass outside command sandbox",
+    "packagedSmokeRecover": "pass outside command sandbox"
   },
   "artifacts": [
     {
       "path": "apps/desktop/release/win-unpacked/resources/app.asar",
-      "bytes": 45564482,
-      "sha256": "8891adea66c2aa58aec263f69f726d9d38678f941c7869a1034be5e6d5caac28"
+      "bytes": 45564483,
+      "sha256": "d47c56897e707922c0e45d7e011291376364438ec1e4a5b5464aebdcc89604a1"
     },
     {
       "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
       "bytes": 246415872,
-      "sha256": "a368a2e0599681cc81f258230baf214c9b15c21ebe013587c1e8c9128338a1f6",
+      "sha256": "ae705ab24d0056289975b19261bcc3e5bfbeb2accd50e5ddf26f19905cae26ad",
       "authenticode": "NotSigned"
     },
     {
       "path": "apps/desktop/release/CodeForge-Setup-0.4.0.exe",
-      "bytes": 120823691,
-      "sha256": "4d677f2ea5f6de94288825f1aef4ba5d98eb1243a3dc2cc7231b918335fe70c7",
+      "bytes": 120823831,
+      "sha256": "cd6ebbc23c6594d9d675a500efe154e4a9368724fd9a2ead3cc155ae196069ef",
       "authenticode": "NotSigned"
     },
     {
       "path": "apps/desktop/release/CodeForge-Portable.exe",
-      "bytes": 120488294,
-      "sha256": "9f634f4caf38cb52e36d94f4ae20dc344c6209cdbcb84679e115f47aef81b3f4",
+      "bytes": 120488379,
+      "sha256": "3f9af5d5a448263ca3192a79352ff72d984d5aeea4ed4c73c4d9751ec6b79aee",
       "authenticode": "NotSigned"
     }
   ],
   "limitations": [
-    "Build was created before the R29 source commits and its identity therefore names the clean R28 base plus dirty working-tree state.",
+    "Strict --require-clean audit rejects the archive because the stamped build identity reports dirty=true.",
     "Install, update, uninstall, and recovery lifecycle were not exercised on these artifacts.",
     "Artifacts are ignored local outputs and are not part of the evidence freeze."
   ]

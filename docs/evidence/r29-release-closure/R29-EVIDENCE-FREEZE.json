@@ -1,0 +1,200 @@
+{
+  "schema": "r29-evidence-freeze-1",
+  "frozenAt": "2026-09-24T01:48:52.977Z",
+  "verdict": "CODEFORGE_R29_RELEASE_BLOCKED",
+  "certification": "docs/certification/codeforge-r29-release-closure-2026-09-23.md",
+  "packageSourceCommit": "0dbca660ba721b7cde5bcd6bd6d7cbbb01e600f7",
+  "fileCount": 38,
+  "files": [
+    {
+      "path": "benchmarks/r29/collect-packaged-dogfood.mjs",
+      "sha256": "ef823d7bdda13f745cea50beaf999fecbcec3508964fb92a69dc9153742aa5b2",
+      "bytes": 4248
+    },
+    {
+      "path": "benchmarks/r29/collect-packaged-smoke.mjs",
+      "sha256": "e2a31dad09fee3bd8c7fbe2f533961d30e541353dd64a67144fbd5273877f81a",
+      "bytes": 2794
+    },
+    {
+      "path": "benchmarks/r29/freeze-evidence.mjs",
+      "sha256": "af05b415fe7c4c746f96d80b95990c8c06291488691926bf00bf16d91b390eb1",
+      "bytes": 2013
+    },
+    {
+      "path": "benchmarks/r29/live-workflow-completion.mjs",
+      "sha256": "b52af1779c2e4d068f081623bef7810ed9c441f32e379262d8e967948ad727d8",
+      "bytes": 16219
+    },
+    {
+      "path": "benchmarks/r29/verify-r28-freeze.mjs",
+      "sha256": "eba07b0efe8e0024a02c433ba0c611fbc169367ee8f55371b550870010655a79",
+      "bytes": 1850
+    },
+    {
+      "path": "docs/certification/codeforge-r29-release-closure-2026-09-23.md",
+      "sha256": "7f996bd7e0946b8dff35ab6eeb87429928c259ae9b9c669ceb62624f0e8a4c34",
+      "bytes": 10135
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/01-checkpoint/checkpoint.md",
+      "sha256": "69fd27e39b6e817f3feaec55e232de5bf26b19ea0315892ca02d8d2d991ec341",
+      "bytes": 1762
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/02-r28-freeze-verification/hash-check.json",
+      "sha256": "b8f724fe0fce6614572937bc9c347d5246206c7cb06b04c77dd8a7fcd00b1182",
+      "bytes": 284
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/02-r28-freeze-verification/verification.md",
+      "sha256": "7eab25ffb68d72b76ece4389c7666b4ae1ded04be3e66171f24e64363aebf11f",
+      "bytes": 497
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/03-large-task-analysis/analysis.md",
+      "sha256": "bb0c89f034d2964a0a65e8f9ea4e8898b5c5da5e9a63f7fc29298adceb26a655",
+      "bytes": 2903
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/04-large-task-runtime-fixes/changes.md",
+      "sha256": "9dc03b96ad449ed5eef8896b4c147f1a562c7d4282f77cd2920215efc2f7fc46",
+      "bytes": 1232
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/05-large-task-benchmarks/r29-live-3186b00c-4fba-49f8-96d4-3072efdd147c.json",
+      "sha256": "62c02f6ea40f2d5a598dc4e25bd51a1b2899c32e7cdc4db2737c8a142a871160",
+      "bytes": 17525
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/05-large-task-benchmarks/r29-live-d6e1dd92-bf86-431d-aff4-f95941781b4f.json",
+      "sha256": "d1cb1a96eb3dbb9bf1a6d24af1eb8b72f9c5f8200dd73e1e75a5b3ccb8939be7",
+      "bytes": 5544
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/06-packaged-auth/auth.md",
+      "sha256": "2dadf66573c9b99cb740c8fa7c756869b47b4550b9bcb1c567cd2c2323deabe2",
+      "bytes": 1361
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/07-packaged-dogfood/hidden-verify.mjs",
+      "sha256": "e36a269d1f01b7a200e98749d4addd3c1f04527be5a2361feb132685c0f73e06",
+      "bytes": 362
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/07-packaged-dogfood/packaged-run-receipt.json",
+      "sha256": "54e18ce16b12158a4a0d7bf3555be1cd314d0fb748caee4092c087f16f578261",
+      "bytes": 3170
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/07-packaged-dogfood/report.md",
+      "sha256": "595022f5c6351a52f23906ca0be459cc1e657887dd9f6562da477920f923c807",
+      "bytes": 2353
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/07-packaged-dogfood/workspace/package.json",
+      "sha256": "c5d0e4a78f502167c7f4bfd0b102b457bc6eb617df1b7ee5c53512060952eea3",
+      "bytes": 141
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/07-packaged-dogfood/workspace/src/add.mjs",
+      "sha256": "5b63136552577a64d788dc3cd4552739d0d60f9e1adb63ec4dfb6932d56fc75d",
+      "bytes": 46
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/07-packaged-dogfood/workspace/test/add.test.mjs",
+      "sha256": "d2d0e2a70bd3928cb8cd6d9dd4be3ae116c0f6b991f8100e9811f943577b4fab",
+      "bytes": 147
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/08-ipc-security/packaged-smoke-receipt.json",
+      "sha256": "7706d6f82e00b3ef9d80b8afabcea432ed3128992391666a91ed103c03db0f13",
+      "bytes": 1473
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/08-ipc-security/report.md",
+      "sha256": "534f0868eae5a26a83868d8bfee372b9c352a1827383cad35b47cde58cc355bd",
+      "bytes": 1764
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/08-ipc-security/secret-scan.json",
+      "sha256": "9e86a2f5a90f7ab3df1f8b3999d378ebe35ea389cbdc6ee80d1e221e0b0333ee",
+      "bytes": 1908
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/10-mcp-security/report.md",
+      "sha256": "6f1c521845382abc7059bd7d3a279c3e8677b96acf462c5472769d7fc37ad34b",
+      "bytes": 451
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/11-extension-security/report.md",
+      "sha256": "1db29ed6d967199eb0f76f78799e7e17da484256f931c306a729163e1cf86eb9",
+      "bytes": 930
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/12-diagnostics-export/receipt.json",
+      "sha256": "6d413356e27958e3f31c1271ae4d1ef5cfe686d7aa5c4d7e4a8305f8062d63ce",
+      "bytes": 1278
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/12-diagnostics-export/report.md",
+      "sha256": "117c4967b0207d011ab8093dcf83eefd002082bf3da9ca0d4a2d7da229d96f81",
+      "bytes": 840
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/13-endurance/report.md",
+      "sha256": "f88d47bb1631e36a924390190c60fd12d3027e9925186aa159b686edd1891330",
+      "bytes": 311
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/15-second-hardware/report.md",
+      "sha256": "29b788192dcd596f26129bf2e2c944f2c2dfd1b4fb4aa343ea4886ad1acb7ddf",
+      "bytes": 252
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/16-multi-provider-failover/report.md",
+      "sha256": "aa1c0bf57012ea4aaa575b3b03b7f147eeb2b66458f744fa6baffd1f970487e7",
+      "bytes": 668
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/17-8bit/report.md",
+      "sha256": "6672b334eca2a2b138e26ed7bdee4f944d97748870d32faf3c46c4224ba3a308",
+      "bytes": 729
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/23-update-install-uninstall/package-artifacts.json",
+      "sha256": "325f3090d422cd82b7d453144b144e8842d422c58834afbfbf850d332358d7b0",
+      "bytes": 2006
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/23-update-install-uninstall/report.md",
+      "sha256": "38598df7e36f202d66be5f8e109a6b330696a4b3f541e60b619f0824067e7166",
+      "bytes": 1798
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/24-signing/report.md",
+      "sha256": "04ba402e53319eadf1b75917735d078d6d9a45abe6f1b186a1a8fc0d63d14253",
+      "bytes": 669
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/28-canonical-regression/golden-r29.json",
+      "sha256": "d258fe5f5dbc75e21ada2a599cc16f9b278a71f41aef2d3cd35e8aa8e0582f12",
+      "bytes": 9716
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/28-canonical-regression/report.md",
+      "sha256": "cc0d3131ae8d75a9e0ba4f2526e1283bff34e99f4842b92777d5cbbaf3578e56",
+      "bytes": 3498
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/29-technical-demo/replay.md",
+      "sha256": "89a75e87b6e5acd2f2d681297e10e30d2726e138b4d55b012b30b6913dc6e1f7",
+      "bytes": 1893
+    },
+    {
+      "path": "docs/evidence/r29-release-closure/29-technical-demo/transcript.json",
+      "sha256": "63c1e4745a01566a967667edbd016ff84ba060e9c8d5524011e7ab01dcbbe159",
+      "bytes": 2769
+    }
+  ]
+}

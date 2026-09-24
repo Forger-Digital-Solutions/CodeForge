@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "status": "PARTIAL_REAL_OBSERVATION",
+  "packageVersion": "0.4.0",
+  "finalPackageSourceCommit": "0dbca660ba721b7cde5bcd6bd6d7cbbb01e600f7",
+  "scenes": [
+    {
+      "id": "baseline",
+      "observed": "R28 frozen evidence matched 52 of 52 hashes and byte counts",
+      "evidence": "docs/evidence/r29-release-closure/02-r28-freeze-verification/hash-check.json"
+    },
+    {
+      "id": "first-run-auth",
+      "observed": "Packaged signed-out screen, user-completed GitHub sign-in, authenticated CodeForge Free workspace",
+      "evidence": "docs/evidence/r29-release-closure/06-packaged-auth/auth.md",
+      "humanBoundary": true
+    },
+    {
+      "id": "free-route-refusal",
+      "observed": "ForgeAuto with zero qualified healthy routes refused the first task and made no edits",
+      "evidence": "docs/evidence/r29-release-closure/07-packaged-dogfood/report.md"
+    },
+    {
+      "id": "packaged-coding-task",
+      "observed": "UI task selected a verified-free Groq GPT-OSS route, read two files, edited src/add.mjs, ran npm test, and passed completion gate and six independent hidden cases",
+      "sessionId": "0a02cfee-0452-407b-a8f2-9ee00743c0f2",
+      "runId": "21826312-a175-45f8-8e32-220fe183b229",
+      "route": "codeforge-cloud/groq::openai/gpt-oss-120b",
+      "evidence": "docs/evidence/r29-release-closure/07-packaged-dogfood/packaged-run-receipt.json"
+    },
+    {
+      "id": "final-package-relaunch",
+      "observed": "Final package restored authenticated account, prior completed task, and saved GPT-OSS 120B composer choice",
+      "evidence": "docs/evidence/r29-release-closure/07-packaged-dogfood/report.md"
+    },
+    {
+      "id": "packaged-boundary-smoke",
+      "observed": "Final package passed full, interrupt, and recover smoke modes outside the command sandbox",
+      "evidence": "docs/evidence/r29-release-closure/08-ipc-security/packaged-smoke-receipt.json"
+    },
+    {
+      "id": "diagnostic-export",
+      "observed": "Final packaged Settings exported a 20,528-byte diagnostic bundle with 52 log entries; no raw credential patterns were found",
+      "evidence": "docs/evidence/r29-release-closure/12-diagnostics-export/receipt.json"
+    },
+    {
+      "id": "release-gate",
+      "observed": "Unsigned artifacts, strict clean-identity failure, and unfinished release lifecycle kept the verdict blocked",
+      "evidence": "docs/evidence/r29-release-closure/23-update-install-uninstall/package-artifacts.json"
+    }
+  ],
+  "notDemonstrated": [
+    "hard large-task hidden-verifier pass",
+    "integrated browser and Computer Use task",
+    "real-task crash recovery",
+    "second hardware",
+    "cross-provider free failover",
+    "install/update/uninstall sequence",
+    "GitHub PR loop"
+  ]
+}

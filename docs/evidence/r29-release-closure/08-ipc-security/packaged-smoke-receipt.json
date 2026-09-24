@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "packageBuildCommit": "0dbca660ba721b7cde5bcd6bd6d7cbbb01e600f7",
+  "execution": "outside command sandbox; Electron renderer launch blocked inside command sandbox",
+  "modes": [
+    {
+      "mode": "full",
+      "runId": "14f558e5-560e-489a-8876-57a1e5e3abc4",
+      "requiredMarkers": [
+        "PACKAGED_FULL_SMOKE_OK",
+        "control_plane_trust_boundary=PASS",
+        "packaged_renderer_lifecycle_chain=PASS",
+        "packaged_zero_prompt_workflow=PASS",
+        "packaged_settings_roundtrip=PASS",
+        "packaged_extensions_loaded=PASS",
+        "packaged_extension_lifecycle=PASS",
+        "packaged_updater_check=PASS"
+      ],
+      "markerCount": 52
+    },
+    {
+      "mode": "interrupt",
+      "runId": "fe3f9e16-fe1a-45f0-ad81-bdc01491261a",
+      "requiredMarkers": [
+        "PACKAGED_INTERRUPT_EXPECTED_EXIT",
+        "electron_restart_interruption_ready=PASS"
+      ],
+      "markerCount": 6
+    },
+    {
+      "mode": "recover",
+      "runId": "9daa1ac8-736a-4ecd-9d42-0f5ede063ed4",
+      "requiredMarkers": [
+        "PACKAGED_RECOVERY_SMOKE_OK",
+        "electron_restart_failed_safely=PASS",
+        "electron_restart_no_approval_replay=PASS",
+        "corrupt_credential_fails_closed=PASS",
+        "credential_restart_decrypt=PASS"
+      ],
+      "markerCount": 10
+    }
+  ],
+  "result": "PASS",
+  "scope": "Packaged smoke markers; no claim of hostile IPC fuzzing, installer lifecycle, or signed update round trip"
+}

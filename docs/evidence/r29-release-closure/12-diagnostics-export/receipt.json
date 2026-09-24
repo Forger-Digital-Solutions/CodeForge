@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "surface": "packaged CodeForge 0.4.0 / Settings / Data & Privacy / Support bundle",
+  "uiResult": "Exported — open folder",
+  "artifact": {
+    "location": "CodeForge user-data diagnostics folder",
+    "name": "codeforge-diagnostic-2026-09-24T01-39-21-777Z.json",
+    "bytes": 20528,
+    "sha256": "d494f0d61237913cdf8dbd0dfe07a6b4b777cf70ae5c47bc3019b056c9474443",
+    "kind": "codeforge-diagnostic-bundle",
+    "version": "0.4.0",
+    "topLevelKeys": ["generatedAt", "kind", "version", "platform", "state", "logTail"],
+    "stateKeys": ["runtimeStatus", "freeCloudSummary", "connections", "cloudSignedIn", "packagedSmoke"],
+    "logTailEntries": 52
+  },
+  "rawPatternCounts": {
+    "openaiStyleKey": 0,
+    "githubToken": 0,
+    "awsAccessKey": 0,
+    "encryptedCredentialPayload": 0,
+    "bearerHeader": 0
+  },
+  "limitations": [
+    "The live profile had no synthetic planted credential; zero pattern matches are absence evidence, not a new sanitizer challenge.",
+    "The app exports directly to its diagnostics folder, with no save-dialog cancellation path.",
+    "Export failure and temporary-file cleanup under failure were not exercised.",
+    "The raw bundle remains in the user's local profile and is not committed to R29 evidence."
+  ]
+}
