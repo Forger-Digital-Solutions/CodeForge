@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "3c5e635f4981a8e8955bef25e22c851ef13c9a32e9c0507b1569100f69f92e1e",
-  "surfaceVersion": "r27-single-user-runtime-v1",
+  "sourceStateId": "162cdd36424201706f972d52aaa966484237ea13c0ddebf1496d4a2a2c0d5368",
+  "surfaceVersion": "r30-large-task-rename-v2",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -42,7 +42,7 @@
     "packages/workflow/src/verification-service.ts"
   ],
   "materialFileHashes": {
-    "packages/agent/src/index.ts": "1dc267c8afd35b2ded86efa18a58b917a6bef2d7",
+    "packages/agent/src/index.ts": "7145866b9e9e9df9c33c69f8c607f17e70247dcc",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
     "packages/benchmark/src/index.ts": "615c02c9d77491a17e8b6a80a82cb619efd6be02",
@@ -58,16 +58,16 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "0d21cfb6f9fd957d2325847df438e18a3df32133",
+    "packages/server/src/agent-runtime.ts": "e0e71d7d6be08d26b40bd3c6764e85d5fefb9db9",
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
-    "packages/server/src/duplicate-suppression.ts": "855e2763fe7390d9dc97c22a5f1209f7f7b60b49",
+    "packages/server/src/duplicate-suppression.ts": "5609d0e3817b1214cf1540810f355bef3ce842c3",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "2e23e947ddd407be62f360828376343b2ece05d9",
+    "packages/server/src/workflow-service.ts": "3561bb641da1ee960574665413f4263a6675b562",
     "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "41042502fd939c990ea737745e3334d07c1aa7d5",
-    "packages/tools/src/index.ts": "b9ac8cf1e2fee28c68c324c29ac090025722bd86",
-    "packages/workflow/src/diff-review.ts": "fc5d57768fe8de30f0d288f0da6c08640b1fc409",
+    "packages/tools/src/index.ts": "ad3007606e0674f65a396786c8264ddd32732cdc",
+    "packages/workflow/src/diff-review.ts": "d4fd554d0e5ccaada229391948ae8688b641096b",
     "packages/workflow/src/forge-verify.ts": "d134438dfde57de85c756cdd8aaab192f1d801e8",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
     "packages/workflow/src/semantic-diff-review.ts": "7a854b990eb27c1f0aeed04c4d7ba73e06fc2b75",
@@ -1164,21 +1164,79 @@
       "regressionEvidence": "R27 bounded live runtime receipts and focused 25/25 runtime/release/catalog tests passed. The pre-recertification canonical suite had 3533 passed, 48 skipped, and five failures: two expected source-state canaries and three scripted parallel-provider classifiers corrected without timeout or assertion relaxation; affected files passed alone. Final post-recertification regression is recorded in R27-FINAL-INTELLIGENCE-CERTIFICATION.md.",
       "recertifiedAt": "2026-09-23",
       "sourceStateConstant": "CODEFORGE_R27_SINGLE_USER_RUNTIME_SOURCE_STATE"
+    },
+    {
+      "label": "R30 reviewed R29 source reconciliation",
+      "reason": "Recertify six reviewed R29 material changes after reproducing the source-state drift. The prior identity and every historical campaign receipt remain intact. No completion or ForgeZero policy is relaxed.",
+      "priorSourceStateId": "3c5e635f4981a8e8955bef25e22c851ef13c9a32e9c0507b1569100f69f92e1e",
+      "priorSurfaceVersion": "r27-single-user-runtime-v1",
+      "resultingSourceStateId": "57da084fd15cb01e887629b470a780c2fc67c7993e7195deba4d478d1048f358",
+      "resultingSurfaceVersion": "r30-release-unblocking-v1",
+      "changes": [
+        {
+          "file": "packages/agent/src/index.ts",
+          "change": "Defines TOOL_NO_EFFECT as a distinct tool error code.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Rejects byte-identical writes and ends repeated no-effect mutation loops as blocked; the completion gate remains unchanged.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/duplicate-suppression.ts",
+          "change": "Tracks consecutive no-effect writes and clears the streak on a successful mutation.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "Adds bounded search and final-response guidance to the implementation prompt.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/tools/src/index.ts",
+          "change": "Rejects byte-identical file writes and replacements with a distinct TOOL_NO_EFFECT error.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/diff-review.ts",
+          "change": "Counts replacement lines as additions and deletions in diff receipts; review and completion authority remain unchanged.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r30-release-unblocking/02-regression/ and focused source-state tests",
+      "recertifiedAt": "2026-09-24",
+      "sourceStateConstant": "CODEFORGE_R30_REVIEWED_R29_SOURCE_STATE"
+    },
+    {
+      "label": "R30 large-task rename safeguard",
+      "reason": "A bounded R30 live run changed the external --max-retries CLI flag while renaming an internal configuration property. The implementation prompt now tells the coder to preserve external interfaces unless requested. A subsequent locked large-task run kept that flag and passed all nine independent semantic checks. ForgeZero and completion authority are unchanged.",
+      "priorSourceStateId": "57da084fd15cb01e887629b470a780c2fc67c7993e7195deba4d478d1048f358",
+      "priorSurfaceVersion": "r30-release-unblocking-v1",
+      "resultingSourceStateId": "162cdd36424201706f972d52aaa966484237ea13c0ddebf1496d4a2a2c0d5368",
+      "resultingSurfaceVersion": "r30-large-task-rename-v2",
+      "changes": [
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "General rename guidance added to the implementation prompt; no gate or routing policy change.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r30-release-unblocking/04-large-task-benchmarks/r30-live-20cf0e22-5ade-47bf-a94b-a45f3d6f3ccd.json",
+      "recertifiedAt": "2026-09-24",
+      "sourceStateConstant": "CODEFORGE_R30_LARGE_TASK_RENAME_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the reviewed FG-8 through R27 material implementation surface by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm. Historical campaign evidence remains bound to its recorded source-state identity.",
-  "recertifiedAt": "2026-09-23T13:31:17.336Z",
+  "generationNote": "The current source-state ID covers the reviewed material implementation through R30. Historical campaign evidence remains bound to its recorded source-state identity.",
+  "recertifiedAt": "2026-09-24T06:03:18.390Z",
   "recertification": {
-    "phase": "R27 single-user runtime and live-proof repairs",
-    "reason": "Re-issue the frozen ForgeGreen source-state over four reviewed R27 material files. Earlier ForgeGreen observations retain their historical source identities; this new identity covers current Planner, runtime/context/tool, and duplicate-suppression behavior without relaxing ForgeZero or the completion gate.",
+    "phase": "R30 large-task rename safeguard",
+    "reason": "A bounded R30 live run changed the external --max-retries CLI flag while renaming an internal configuration property. The implementation prompt now tells the coder to preserve external interfaces unless requested. A subsequent locked large-task run kept that flag and passed all nine independent semantic checks. ForgeZero and completion authority are unchanged.",
     "changedFiles": [
-      "packages/agent/src/index.ts",
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/src/duplicate-suppression.ts",
-      "packages/tools/src/index.ts"
+      "packages/server/src/workflow-service.ts"
     ],
-    "priorSourceStateId": "58625fae351122f3306af0dfe13ede522f419766de1621597464106546574964",
+    "priorSourceStateId": "57da084fd15cb01e887629b470a780c2fc67c7993e7195deba4d478d1048f358",
     "guarded": true
   },
-  "recertificationReason": "Re-issue the frozen ForgeGreen source-state over four reviewed R27 material files. Earlier ForgeGreen observations retain their historical source identities; this new identity covers current Planner, runtime/context/tool, and duplicate-suppression behavior without relaxing ForgeZero or the completion gate."
+  "recertificationReason": "A bounded R30 live run changed the external --max-retries CLI flag while renaming an internal configuration property. The implementation prompt now tells the coder to preserve external interfaces unless requested. A subsequent locked large-task run kept that flag and passed all nine independent semantic checks. ForgeZero and completion authority are unchanged."
 }

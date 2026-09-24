@@ -510,6 +510,7 @@ export class WorkflowService {
       lines.push(`- Use run_command only if needed and approved.`);
       lines.push(`- After edits, the workflow will run verification automatically; do not run verification yourself unless needed.`);
       lines.push(`- Search once for all task-relevant references, then edit the affected files and do one consistency search.`);
+      lines.push(`- For renames, separate internal identifiers from public CLI flags, wire formats, and persisted keys; preserve external behavior unless the task explicitly requests its change.`);
       lines.push(`- Do not repeat a read or search without a new failure or a specific unanswered question.`);
       lines.push(`- When the requested changes are in place, give a concise final response and stop using tools; the workflow will verify and review next.`);
       lines.push(`- Be precise, minimal, and preserve existing behavior.`);
