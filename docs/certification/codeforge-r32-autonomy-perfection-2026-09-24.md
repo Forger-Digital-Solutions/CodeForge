@@ -131,7 +131,7 @@ per-process source hashes. Full taxonomy:
 | --- | ---: | --- |
 | Autonomous pass (completed + hidden + key) | 2 | `ts-bug-fix-queue-order`, `r25-testfix-js-stale-expected` |
 | Blocked/cancelled but work correct | 4 | `js-build-config-test-script`, `js-investigation-webhook-retries`, `ts-feature-cli-stats` (no-progress detector fired on a model loop after the verifier passed), `qual-js-missing-export` (injected 429 recovered live, then deadline) |
-| Correct block (unproven/non-conforming work refused) | 6 | `ts-refactor-extract-validator` ×3 (incl. the two diagnostic/proof reruns below), `ts-large-context-rename-config-key`, `r25-review-ts-config-swallow`, `fb8c2323` standalone |
+| Correct block (unproven/non-conforming work refused) | 6 | `ts-refactor-extract-validator` ×4 (`68a156ad` batch, `fb8c2323`, `dc318ae3`, `dab771b4` standalone reruns), `ts-large-context-rename-config-key`, `r25-review-ts-config-swallow` |
 | Provider-capacity terminal failure | 1 | `js-bug-fix-cart-total` (route exhausted mid-repair; gate never evaluated — honest `failed`) |
 | Environmental | 1 | `py-bug-fix-config-merge` (no `python`/`py` on host PATH; verifier correctly refused ForgeVerify entry; hidden verifier via absolute path passed — correct work stranded) |
 | False success | 2 | `js-feature-rate-limiter` on final code (visible-verification coverage gap — see residual); `7d656d4c` standalone on pre-contract-check code (the pinned baseline the deterministic check closed) |
