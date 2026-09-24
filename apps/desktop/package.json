@@ -92,10 +92,6 @@
     },
     "files": [
       "apps/desktop/dist/**/*",
-      {
-        "from": "apps/desktop/dist/cloud-endpoints.json",
-        "to": "apps/desktop/cloud-endpoints.json"
-      },
       "!apps/desktop/dist/**/*.map",
       "!apps/desktop/dist/**/*.d.ts",
       "!apps/desktop/dist/preload.js",

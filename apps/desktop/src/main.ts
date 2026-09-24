@@ -157,8 +157,10 @@ const CLOSE_BEHAVIOR_KEY = "codeforge:close-behavior";
  * redirected by anything the user or a page can reach.
  */
 function loadCloudEndpointManifest(): CloudEndpointManifest {
-  // Packaged builds read the manifest from the app resources; from source it sits next to package.json.
+  // The build stages the selected channel next to main.js; source checkouts retain the
+  // development manifest next to package.json.
   const candidates = [
+    path.join(__dirname, "cloud-endpoints.json"),
     path.join(app.getAppPath(), "cloud-endpoints.json"),
     path.join(__dirname, "..", "cloud-endpoints.json"),
     path.join(__dirname, "..", "..", "cloud-endpoints.json"),

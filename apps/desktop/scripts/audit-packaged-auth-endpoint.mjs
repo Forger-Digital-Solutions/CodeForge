@@ -66,7 +66,7 @@ function resolveArchive(input) {
 }
 
 function readEmbeddedManifest(archive) {
-  const candidates = ["apps/desktop/cloud-endpoints.json", "apps\\desktop\\cloud-endpoints.json", "cloud-endpoints.json"];
+  const candidates = ["apps/desktop/dist/cloud-endpoints.json", "apps\\desktop\\dist\\cloud-endpoints.json", "dist/cloud-endpoints.json"];
   for (const filename of candidates) {
     try {
       return JSON.parse(extractFile(archive, filename).toString("utf8"));
