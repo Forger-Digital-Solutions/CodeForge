@@ -24,10 +24,11 @@
       "5acda7aa": "post-8423412 (reviewers cite captured diffs), pre-contract-check — batch task 1",
       "81da2def": "post-8423412, pre-c30b5bb — standalone validator attempt",
       "cc9b473b": "c30b5bb contract-check content staged pre-commit — batch task 2",
-      "51477067": "b4bea58 final hardened check (comment/string-spoof hardened) — batch tasks 3-12"
+      "51477067": "b4bea58 final hardened check (comment/string-spoof hardened) — batch tasks 3-12",
+      "99a2a00f": "c29ee75 post-extractGoals-fix (raw-message contract binding) — standalone validator rerun; first live contract-check fire"
     }
   },
-  "attemptCount": 14,
+  "attemptCount": 16,
   "definitions": {
     "autonomousPass": "workflow completed AND hidden verifier passed AND answer key passed",
     "blockedWorkCorrect": "non-completed terminal state AND hidden verifier passed — capacity or wall clock cut a good run",
@@ -50,15 +51,25 @@
     { "taskId": "ts-large-context-rename-config-key", "receipt": "030bb6bb", "recordedAt": "19:25", "workflowStatus": "blocked", "hiddenVerifier": false, "answerKey": true, "wsSha": "51477067", "categories": ["INFERENCE_BUDGET_EXHAUSTED", "IMPLEMENTATION_UNFINISHED"], "classification": "correctBlock", "note": "partial rename at primary-lane exhaustion; hidden verifier correctly reports the rename incomplete — refused honestly" },
     { "taskId": "r25-testfix-js-stale-expected", "receipt": "e7f83d4b", "recordedAt": "19:26", "workflowStatus": "completed", "hiddenVerifier": true, "answerKey": true, "wsSha": "51477067", "classification": "autonomousPass" },
     { "taskId": "r25-review-ts-config-swallow", "receipt": "d06baf18", "recordedAt": "19:33", "workflowStatus": "blocked", "hiddenVerifier": false, "answerKey": true, "wsSha": "51477067", "categories": ["REVIEW_RESERVE_EXHAUSTED", "VERIFICATION_NOT_RUN"], "classification": "correctBlock", "note": "review task: the reserved review lane held, the reviewer consumed all 10 reserve requests and still reported blocking issues without finishing verification — refused honestly" },
-    { "taskId": "qual-js-missing-export", "receipt": "8a92240d", "recordedAt": "19:52", "workflowStatus": "cancelled", "hiddenVerifier": true, "answerKey": true, "wsSha": "51477067", "categories": ["INJECTED_429_RECOVERED", "WALL_CLOCK_EXHAUSTED"], "classification": "blockedWorkCorrect", "note": "R32_LIVE_INJECT_429_ONCE exercised live: injected ProviderError on request 1, route recovered and served real tokens on request 2 — the R31 thrown-429 cooldown path proven again on final code. The model then looped to the 20-minute deadline with the deliverable already correct" }
+    { "taskId": "qual-js-missing-export", "receipt": "8a92240d", "recordedAt": "19:52", "workflowStatus": "cancelled", "hiddenVerifier": true, "answerKey": true, "wsSha": "51477067", "categories": ["INJECTED_429_RECOVERED", "WALL_CLOCK_EXHAUSTED"], "classification": "blockedWorkCorrect", "note": "R32_LIVE_INJECT_429_ONCE exercised live: injected ProviderError on request 1, route recovered and served real tokens on request 2 — the R31 thrown-429 cooldown path proven again on final code. The model then looped to the 20-minute deadline with the deliverable already correct" },
+    { "taskId": "ts-refactor-extract-validator", "receipt": "dc318ae3", "recordedAt": "20:07", "workflowStatus": "blocked", "hiddenVerifier": false, "answerKey": true, "wsSha": "51477067", "categories": ["AGENT_NO_PROGRESS", "REVIEW_RESERVE_EXHAUSTED", "CONTRACT_CHECK_BLIND"], "classification": "correctBlock", "note": "STANDALONE rerun on hardened code — the diagnostic receipt that exposed the extractGoals defect: the diff contained '+export function validateOrder(input: OrderInput): string[] {' yet NO stated-contract finding fired, because extractGoals shredded the message on '.ts' extensions and the contract sentence fell past the 5-goal slice. The run still blocked honestly (no-progress + reserve exhaustion + a confused model verdict), but the deterministic net was blind. Root-caused and fixed in c29ee75; receipt preserved as evidence of the defect" },
+    { "taskId": "ts-refactor-extract-validator", "receipt": "dab771b4", "recordedAt": "20:21", "workflowStatus": "blocked", "hiddenVerifier": true, "answerKey": true, "wsSha": "99a2a00f", "categories": ["DETERMINISTIC_CONTRACT_FIRE", "INFERENCE_BUDGET_EXHAUSTED", "IMPLEMENTATION_UNFINISHED"], "classification": "correctBlock", "note": "STANDALONE rerun on post-extractGoals-fix build — the deterministic stated-contract check's first live fire. The model declared 'export function validateOrder(input: OrderInput): ValidationResultType' — a wrong public type name against the stated 'ValidationResult' contract. Blocking finding fired verbatim: 'Stated contract unmet — the goal requires validateOrder(…): ValidationResult but the diff declares ValidationResultType'. Hidden verifier passed 12/12 (the alias was behaviorally equivalent), but the exported API name violated the literal stated contract — a consumer importing ValidationResult would get a missing export. The block is correct on two grounds: contract mismatch AND 8 unfinished plan steps at budget exhaustion. This is the receipt that closes the R31 false-success class live: the same task that completed-as-false-success at a66ed9c9 is now deterministically refused" }
   ],
   "totals": {
     "autonomousPass": 2,
     "blockedWorkCorrect": 4,
-    "correctBlock": 4,
+    "correctBlock": 6,
     "falseSuccess": 2,
     "providerCapacity": 1,
     "environmental": 1
+  },
+  "deterministicContractLiveFire": {
+    "receipt": "dab771b4",
+    "wsSha": "99a2a00f",
+    "statedContract": "validateOrder(input): ValidationResult",
+    "observedDeclaration": "export function validateOrder(input: OrderInput): ValidationResultType",
+    "finding": "Stated contract unmet — the goal requires validateOrder(…): ValidationResult but the diff declares ValidationResultType. Observed: src/validation/order.ts",
+    "outcome": "blocked via review_rejected — the R31 false-success class (weak 'met' verdict on a wrong signature) is now deterministically impossible for stated signature contracts"
   },
   "falseSuccessDetail": {
     "a66ed9c9_standalone": "pre-contract-check code — the deterministic check did not yet exist; recorded as the baseline the fix closed",
