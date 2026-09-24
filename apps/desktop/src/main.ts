@@ -1675,8 +1675,8 @@ async function waitForCondition(check: () => Promise<boolean>, timeoutMs = 10_00
   throw new Error(`Timed out waiting for packaged smoke ${label}`);
 }
 
-async function waitForTask(taskId: string, sessionId: string, resolveApprovals: boolean): Promise<{ phase: string; status: string; error?: string; approvalsResolved: number }> {
-  const deadline = Date.now() + 30_000;
+async function waitForTask(taskId: string, sessionId: string, resolveApprovals: boolean, timeoutMs = 30_000): Promise<{ phase: string; status: string; error?: string; approvalsResolved: number }> {
+  const deadline = Date.now() + timeoutMs;
   let approvalsResolved = 0;
   while (Date.now() < deadline) {
     if (resolveApprovals) {
@@ -2216,6 +2216,7 @@ async function runPackagedSmoke(): Promise<void> {
     await runPackagedInterruptionSmoke();
     return;
   } else if (mode === "recover") await runPackagedRecoverySmoke(testSecret);
+  else if (mode === "live-task") await runPackagedLiveTaskSmoke(workspacePath);
   else throw new Error(`Unknown packaged smoke mode: ${mode}`);
 
   if (server) {
@@ -2223,6 +2224,51 @@ async function runPackagedSmoke(): Promise<void> {
     server = null;
   }
   app.exit(0);
+}
+
+/**
+ * R32 packaged live proof: a real coding task inside the exact shipping binary, routed to
+ * a live verified-free cloud provider — closing the R31 gap where "packaged" and "live
+ * provider" were only ever proven independently. The credential is seeded into the
+ * isolated smoke profile's settings only; the workflow engine, tools, verification,
+ * completion gate and control plane are all the real packaged code path. The outcome is
+ * recorded honestly — a capacity-blocked live run is evidence, not a faked pass.
+ */
+async function runPackagedLiveTaskSmoke(workspacePath: string): Promise<void> {
+  const apiKey = process.env.OPENROUTER_API_KEY ?? "";
+  if (!isValidApiKey(apiKey)) throw new Error("live-task requires OPENROUTER_API_KEY in the environment");
+  const modelId = process.env.CODEFORGE_LIVE_TASK_MODEL ?? "nvidia/nemotron-3-super-120b-a12b:free";
+
+  setProviderCredential("openrouter", apiKey);
+  desktopCredentialStore?.reload();
+  const adapter = registerProviderAdapter("openrouter");
+  if (!adapter) throw new Error("openrouter adapter did not register in the packaged catalog");
+  const verified = await discoverProviderFree("openrouter");
+  smokeRecord(`packaged_live_free_models=${verified}`);
+  if (verified <= 0) throw new Error("no verified-free models discovered from the live openrouter catalog");
+
+  const selection = await controlPlaneFetch("/api/model-selection", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId: "default", providerId: "openrouter", modelId, lock: "route" }),
+  });
+  smokeRecord(`packaged_live_model_select=${selection.status}`);
+  if (!selection.ok) smokeRecord(`packaged_live_model_select_body=${(await selection.text()).slice(0, 200)}`);
+
+  const workflow = await rendererWorkflowRequest({
+    sessionId: "default",
+    workspacePath,
+    message: "In the workspace, fix src/calc.ts so the add function returns a + b, then make the verification command pass.",
+    verificationCommands: [
+      "node -e \"const c=require('fs').readFileSync('src/calc.ts','utf8');if(c.includes('a + b')){console.log('1 passed')}else{console.log('1 failed');console.log('FAIL src/calc.ts');process.exit(1)}\"",
+    ],
+  });
+  if (workflow.status !== 200) throw new Error(`Live packaged workflow start returned ${workflow.status}: ${JSON.stringify(workflow.body)}`);
+  const terminal = await waitForTask(workflow.body.taskId, "default", true, 15 * 60_000);
+  smokeRecord(`packaged_live_task_phase=${terminal.phase}`);
+  const fixed = fs.existsSync(path.join(workspacePath, "src", "calc.ts")) ? fs.readFileSync(path.join(workspacePath, "src", "calc.ts"), "utf8") : "";
+  smokeRecord(`packaged_live_task_file_correct=${fixed.includes("a + b")}`);
+  smokeRecord(`packaged_live_task=${terminal.phase === "completed" && fixed.includes("a + b") ? "PASS" : terminal.phase.toUpperCase()}`);
 }
 
 async function startPrimaryInstance(): Promise<void> {
@@ -2250,7 +2296,9 @@ async function startPrimaryInstance(): Promise<void> {
   smokeRecord("WHEN_READY_FIREWALL_DONE");
   providerCatalog = new InMemoryProviderCatalog();
   smokeRecord("WHEN_READY_CATALOG_DONE");
-  registerPackagedSmokeProvider(providerCatalog);
+  // live-task mode proves a real provider inside the packaged binary — the scripted
+  // smoke provider must not register, or routing could select it over the live route.
+  if (process.env.CODEFORGE_PACKAGED_SMOKE_MODE !== "live-task") registerPackagedSmokeProvider(providerCatalog);
   smokeRecord("WHEN_READY_SMOKE_PROV_DONE");
   // Normalized model registry: bundled snapshot immediately (offline-safe); live refresh below.
   modelRegistry = new NormalizedModelRegistry();

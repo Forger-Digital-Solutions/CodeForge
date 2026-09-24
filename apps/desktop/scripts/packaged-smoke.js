@@ -30,7 +30,7 @@ function removeSmokeDirectory(target) {
   rmSync(candidate, { recursive: true, force: true });
 }
 mkdirSync(smokeRoot, { recursive: true });
-if (mode === 'full') writeFileSync(smokeSuiteState, randomUUID(), 'utf8');
+if (mode === 'full' || mode === 'live-task') writeFileSync(smokeSuiteState, randomUUID(), 'utf8');
 if (!existsSync(smokeSuiteState)) {
   console.error('[PACKAGED SMOKE] Run full mode before interrupt/recover.');
   process.exit(1);
@@ -59,6 +59,9 @@ const requiredMarkers = {
   ],
   interrupt: ['PACKAGED_INTERRUPT_EXPECTED_EXIT', 'electron_restart_interruption_ready=PASS'],
   recover: ['PACKAGED_RECOVERY_SMOKE_OK', 'electron_restart_failed_safely=PASS', 'electron_restart_no_approval_replay=PASS'],
+  // R32: the packaged binary must run a real coding task against a live free provider —
+  // discovery proves the route existed; PASS means the workflow completed and the file is right.
+  'live-task': ['PACKAGED_STARTUP=PASS', 'packaged_live_free_models=', 'packaged_live_task=PASS'],
 };
 
 if (!existsSync(exePath)) {
@@ -67,20 +70,24 @@ if (!existsSync(exePath)) {
   process.exit(1);
 }
 
-if (mode === 'full') {
+if (mode === 'full' || mode === 'live-task') {
   removeSmokeDirectory(smokeProfile);
   removeSmokeDirectory(smokeWorkspace);
   removeSmokeDirectory(smokeRepositoryIndexes);
   mkdirSync(join(smokeWorkspace, 'src'), { recursive: true });
   writeFileSync(join(smokeWorkspace, 'src', 'calc.ts'), 'export function add(a: number, b: number): number {\n  return a - b;\n}\n');
   writeFileSync(join(smokeWorkspace, 'package.json'), JSON.stringify({ name: 'smoke-test', type: 'module' }, null, 2));
+  // Clear the evidence file: stale markers from a previous mode must never satisfy this run.
+  try { rmSync(smokeOut, { force: true }); } catch {}
+}
+
+if (mode === 'full') {
   const noiseRoot = join(smokeWorkspace, 'packages', 'noise', 'src');
   mkdirSync(noiseRoot, { recursive: true });
   const noiseLines = Array.from({ length: 199 }, (_, index) => `// deterministic distraction line ${index}`).join('\n');
   for (let index = 0; index < 256; index++) {
     writeFileSync(join(noiseRoot, `module-${String(index).padStart(4, '0')}.ts`), `${noiseLines}\nexport const distraction${index} = ${index};\n`);
   }
-  try { rmSync(smokeOut, { force: true }); } catch {}
 
   // Seed extension fixtures into the fresh userData profile before launch: one valid extension
   // (must be discovered + activated by the packaged host) and one corrupt manifest (must be
@@ -144,7 +151,7 @@ const child = spawn(exePath, [`--user-data-dir=${smokeProfile}`], {
 const watchdog = setTimeout(() => {
   console.error(`[PACKAGED SMOKE] Mode ${mode} timed out`);
   child.kill();
-}, 90_000);
+}, mode === 'live-task' ? 20 * 60_000 : 90_000);
 
 child.stdout.on('data', (data) => {
   process.stdout.write(`[ELECTRON STDOUT] ${data}`);
