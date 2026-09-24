@@ -16,10 +16,12 @@ import {
 } from "./completion-gate.js";
 import type {
   ContextBundle,
+  DiffEntry,
   FailureAnalysis,
   PlanStep,
   RepoMap,
   ReviewDecision,
+  ReviewFinding,
   TaskIntent,
   VerificationResult,
   WorkflowPlan,
@@ -143,6 +145,19 @@ export interface WorkflowEngineOptions {
       intent: TaskIntent,
       signal?: AbortSignal,
     ) => Promise<AgentExecutionResult>;
+    /**
+     * Independent goal-conformance review: a fresh turn inspects the actual workspace and judges
+     * each stated task goal against the produced diff and verification output. Its findings join
+     * the deterministic review; `goal_not_satisfied` blockers feed the conformance repair cycle
+     * and then the completion gate — a green-but-wrong run can no longer reach `completed`.
+     */
+    executeGoalReview?: (
+      intent: TaskIntent,
+      plan: WorkflowPlan,
+      diffs: DiffEntry[],
+      verification: VerificationResult,
+      signal?: AbortSignal,
+    ) => Promise<{ findings: ReviewFinding[]; turnId?: string }>;
   };
 }
 
@@ -490,17 +505,83 @@ export class WorkflowEngine {
         analysis = analyzeFailures(verification);
       }
 
-      // 10b. Review Diff
+      // 10b. Review Diff — deterministic checks only prove the diff is clean; they cannot prove
+      // the diff satisfies the task. The goal-conformance cycle below supplies that judgement.
       this.setPhase("reviewing", "reviewing");
       this.ensureNotAborted();
-      const review = await reviewDiff(this.workspacePath, { beforeSnapshots: this.beforeSnapshots, sinceMs: this.snapshotTakenAtMs || undefined, signal: this.signal });
-      const diffSummary = formatDiffSummary(review.diffs);
+      let review = await reviewDiff(this.workspacePath, { beforeSnapshots: this.beforeSnapshots, sinceMs: this.snapshotTakenAtMs || undefined, signal: this.signal });
 
-      this.onEvent?.({
-        type: "workflow.review_finished",
-        phase: this.phase,
-        payload: { approved: review.approved, findings: review.findings, diffCount: review.diffs.length },
-      });
+      // 10c. Independent goal-conformance review. A fresh turn reads the workspace itself and
+      // judges each stated goal against the real diff and the verification output — not the
+      // implementer's claims. `goal_not_satisfied` findings are blocking; while repair attempts
+      // remain they drive a repair turn, re-verification, and a fresh review of the new state.
+      // The cycle shares `attempts` with the verification repair loop, so total repair spend
+      // stays bounded by maxRepairAttempts.
+      let goalReviewRan = false;
+      while (this.agentExecutor?.executeGoalReview && !this.terminalStop) {
+        this.ensureNotAborted();
+        goalReviewRan = true;
+        let goalFindings: ReviewFinding[];
+        let goalReviewTurnId: string | undefined;
+        try {
+          const goalReview = await this.agentExecutor.executeGoalReview(intent, plan, review.diffs, verification, this.signal);
+          goalFindings = goalReview.findings;
+          goalReviewTurnId = goalReview.turnId;
+        } catch (error) {
+          goalFindings = [{
+            code: "goal_review_inconclusive",
+            severity: "advisory",
+            path: "",
+            message: `Independent goal review could not finish: ${error instanceof Error ? error.message : String(error)}. Deterministic checks only.`,
+          }];
+        }
+        review = {
+          ...review,
+          approved: !review.findings.some((f) => f.severity === "blocking") && !goalFindings.some((f) => f.severity === "blocking"),
+          issues: [...review.issues, ...goalFindings.map((f) => f.message)],
+          findings: [...review.findings, ...goalFindings],
+        };
+        this.onEvent?.({
+          type: "workflow.review_finished",
+          phase: this.phase,
+          payload: { approved: review.approved, findings: review.findings, diffCount: review.diffs.length, goalReviewTurnId },
+        });
+
+        const unmet = goalFindings.filter((f) => f.code === "goal_not_satisfied" && f.severity === "blocking");
+        if (unmet.length === 0 || !this.agentExecutor.executeRepair || attempts >= this.maxRepairAttempts) break;
+        attempts++;
+        this.setPhase("repairing", "repairing");
+        const conformanceAnalysis: FailureAnalysis = {
+          hasFailures: true,
+          summary: `Independent goal review found ${unmet.length} unmet goal(s).`,
+          diagnostics: unmet.map((f) => f.message),
+          suggestedRepairs: [],
+          isRepairable: true,
+        };
+        this.onEvent?.({ type: "workflow.repair_attempted", phase: this.phase, payload: { attempt: attempts, analysis: conformanceAnalysis } });
+        const repaired = await this.attemptRepair(plan, context, repoMap, intent, verification, conformanceAnalysis);
+        if (this.terminalStop) return this.stopTerminally(plan, { verification, verificationAttempts });
+        if (!repaired.success) break;
+        this.setPhase("verifying", "testing");
+        verificationAttempt++;
+        this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { attempt: verificationAttempt, recommendation: verificationRecommendation } });
+        await this.beforeVerificationDispatch?.();
+        verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver, executionRevision: plan.revision, changedPaths });
+        verificationAttempts.push(verification);
+        this.onEvent?.({ type: "workflow.verification_completed", phase: this.phase, payload: { attempt: verificationAttempt, verification } });
+        analysis = analyzeFailures(verification);
+        this.setPhase("reviewing", "reviewing");
+        review = await reviewDiff(this.workspacePath, { beforeSnapshots: this.beforeSnapshots, sinceMs: this.snapshotTakenAtMs || undefined, signal: this.signal });
+      }
+
+      if (!goalReviewRan) {
+        this.onEvent?.({
+          type: "workflow.review_finished",
+          phase: this.phase,
+          payload: { approved: review.approved, findings: review.findings, diffCount: review.diffs.length },
+        });
+      }
+      const diffSummary = formatDiffSummary(review.diffs);
 
       // The completion gate requires every non-skipped plan step to be terminal. Record the
       // actual verification and review outcomes before asking it for a verdict; leaving these

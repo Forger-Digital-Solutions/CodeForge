@@ -10,7 +10,7 @@ import {
   type WorkflowTask,
   type WorkflowResult,
 } from "@codeforge/workflow";
-import type { WorkflowPlan, ContextBundle, RepoMap, FailureAnalysis, VerificationResult, TaskIntent } from "@codeforge/workflow";
+import type { WorkflowPlan, ContextBundle, RepoMap, FailureAnalysis, VerificationResult, TaskIntent, DiffEntry, ReviewFinding } from "@codeforge/workflow";
 import type { BeforeSnapshot } from "@codeforge/workflow";
 import type { ForgeVerifyObserver, VerificationAttempt, VerificationEvidence, VerificationPlan, VerificationReuseCostGateReceipt } from "@codeforge/workflow";
 import { loadForgeVerifyEvidence } from "./forge-verify-persistence.js";
@@ -207,6 +207,68 @@ function describeExecutorFailure(turn: TurnState | undefined): { failure?: { cod
   const failure = turn?.failure;
   if (!failure) return {};
   return { failure: { code: failure.code, message: failure.message, terminal: failure.code === "route_exhausted" } };
+}
+
+/**
+ * The goal-review turn's final response is a JSON verdict list. Extraction is deliberately
+ * tolerant (fence, trailing prose, or raw JSON) but the failure mode is never silent success:
+ * an unparseable or empty verdict yields one advisory inconclusive finding, and only an
+ * explicit "unmet" verdict — evidence attached — becomes a blocking finding.
+ */
+function parseGoalReviewFindings(response: string, intent: TaskIntent): ReviewFinding[] {
+  const inconclusive = (detail: string): ReviewFinding[] => [{
+    code: "goal_review_inconclusive",
+    severity: "advisory",
+    path: "",
+    message: `Independent goal review produced no usable verdict (${detail}).`,
+  }];
+  const trimmed = response.trim();
+  if (!trimmed) return inconclusive("empty response");
+  const fenced = /```(?:json)?\s*(\{[\s\S]*?\})\s*```/.exec(trimmed);
+  let parsed: unknown;
+  const candidates = [fenced?.[1], trimmed.startsWith("{") ? trimmed.slice(0, trimmed.lastIndexOf("}") + 1) : undefined].filter((c): c is string => Boolean(c));
+  if (candidates.length === 0) {
+    const start = trimmed.indexOf("{");
+    const end = trimmed.lastIndexOf("}");
+    if (start !== -1 && end > start) candidates.push(trimmed.slice(start, end + 1));
+  }
+  for (const candidate of candidates) {
+    try {
+      parsed = JSON.parse(candidate);
+      break;
+    } catch {
+      continue;
+    }
+  }
+  const verdicts = (parsed as { verdicts?: unknown } | undefined)?.verdicts;
+  if (!parsed || !Array.isArray(verdicts)) return inconclusive("no verdicts array");
+  const findings: ReviewFinding[] = [];
+  for (const verdict of verdicts.slice(0, 12)) {
+    if (!verdict || typeof verdict !== "object") continue;
+    const { goal, status, evidence, path: verdictPath } = verdict as { goal?: unknown; status?: unknown; evidence?: unknown; path?: unknown };
+    if (typeof goal !== "string" || typeof status !== "string") continue;
+    const detail = typeof evidence === "string" && evidence.trim() ? ` Evidence: ${evidence.trim().slice(0, 300)}` : "";
+    const path = typeof verdictPath === "string" ? verdictPath.slice(0, 300) : "";
+    if (status === "unmet") {
+      findings.push({
+        code: "goal_not_satisfied",
+        severity: "blocking",
+        path,
+        message: `Independent goal review: goal not satisfied — ${redactSecrets(goal).slice(0, 300)}.${detail}`,
+      });
+    } else if (status === "indeterminate") {
+      findings.push({
+        code: "goal_review_inconclusive",
+        severity: "advisory",
+        path,
+        message: `Independent goal review could not establish goal — ${redactSecrets(goal).slice(0, 300)}.${detail}`,
+      });
+    }
+  }
+  if (findings.length === 0 && verdicts.length === 0 && intent.goals.length > 0) {
+    return inconclusive("verdicts list was empty");
+  }
+  return findings;
 }
 
 type RunOutcomePayload = Omit<RunOutcome["payload"], "runId"> & { runId?: string };
@@ -430,7 +492,7 @@ export class WorkflowService {
     hostedWorker?: HostedWorkerOptions,
   ): NonNullable<import("@codeforge/workflow").WorkflowEngineOptions["agentExecutor"]> {
     const getRuntime = this.getOrCreateRuntime!;
-    const waitForTurn = async (runtime: AgentRuntime, turnId: string): Promise<{ status: string; turn?: ReturnType<AgentRuntime["getTurn"]>; reason?: string; continuationId?: string }> => {
+    const waitForTurn = async (runtime: AgentRuntime, turnId: string, workingBudgetMs = this.agentWorkingBudgetMs): Promise<{ status: string; turn?: ReturnType<AgentRuntime["getTurn"]>; reason?: string; continuationId?: string; workingMs: number }> => {
       // This budget bounds how long the AGENT may work. Time the turn spends parked on a human
       // decision is not the agent working, so it is excluded: otherwise a user who takes longer than
       // the budget to read an approval has their workflow declared failed for having thought about
@@ -439,13 +501,13 @@ export class WorkflowService {
       // The wait is still bounded — ApprovalService owns that bound and expires the approval on its
       // own timeout, which resolves the promise and lets the turn finish. Nothing here is unbounded
       // and no timeout protection is removed.
-      const timeoutMs = this.agentWorkingBudgetMs;
+      const timeoutMs = workingBudgetMs;
       let workingMs = 0;
       let lastTick = Date.now();
       while (workingMs < timeoutMs) {
         if (signal.aborted) {
           try { await runtime.cancelTurn(turnId, "Workflow cancelled"); } catch {}
-          return { status: "cancelled" };
+          return { status: "cancelled", workingMs };
         }
         const turn = runtime.getTurn(turnId);
         const now = Date.now();
@@ -457,8 +519,8 @@ export class WorkflowService {
           await new Promise((r) => setTimeout(r, 100));
           continue;
         }
-        if (turn.status === "completed" || turn.status === "failed" || turn.status === "cancelled") {
-          return { status: turn.status, turn };
+        if (turn.status === "completed" || turn.status === "failed" || turn.status === "cancelled" || turn.status === "blocked") {
+          return { status: turn.status, turn, workingMs };
         }
         if (turn.status === "waiting_for_worker" && hostedWorker) {
           const continuations = (await this.persistence.getWorkItemsByKind("agent_continuation"))
@@ -469,7 +531,7 @@ export class WorkflowService {
               return rightUpdatedAt.localeCompare(leftUpdatedAt);
             });
           const continuationId = continuations[0]?.id;
-          if (continuationId) return { status: "suspended", turn, continuationId };
+          if (continuationId) return { status: "suspended", turn, continuationId, workingMs };
         }
         if (turn.status === "waiting_for_approval") {
           // Paused on the user, not stalled: do not charge this to the working budget. The runtime
@@ -486,7 +548,7 @@ export class WorkflowService {
       // declared failed — and blocked the repair turn, since a session runs one turn at a time.
       const reason = `Agent working budget of ${Math.round(timeoutMs / 60_000)} minutes exhausted`;
       try { await runtime.cancelTurn(turnId, reason); } catch {}
-      return { status: "budget_exhausted", turn: runtime.getTurn(turnId), reason };
+      return { status: "budget_exhausted", turn: runtime.getTurn(turnId), reason, workingMs };
     };
 
     const buildImplementPrompt = (plan: WorkflowPlan, context: ContextBundle, repoMap: RepoMap, intent: TaskIntent): string => {
@@ -530,6 +592,35 @@ export class WorkflowService {
       return lines.join("\n");
     };
 
+    const buildGoalReviewPrompt = (intent: TaskIntent, plan: WorkflowPlan, diffs: DiffEntry[], verification: VerificationResult): string => {
+      const diffDigest = diffs
+        .map((diff) => `--- ${diff.path} (${diff.changeType}, +${diff.additions}/-${diff.deletions})\n${diff.truncated ? `${diff.diff}\n[diff truncated]` : diff.diff}`.slice(0, 12_000))
+        .join("\n\n")
+        .slice(0, 24_000);
+      const goals = intent.goals.length > 0 ? intent.goals : [intent.title];
+      const lines: string[] = [];
+      lines.push(`You are CodeForge's independent completion reviewer. Another agent claims the task below is done.`);
+      lines.push(`Your job is to prove or refute that claim against the ACTUAL workspace — not the agent's claims.`);
+      lines.push(`\nTask: ${redactSecrets(intent.title)}`);
+      lines.push(`Stated goals: ${goals.map((goal) => redactSecrets(goal)).join(" | ")}`);
+      lines.push(`\nApproved plan steps:`);
+      for (const step of plan.steps) {
+        lines.push(`- [${step.kind}] ${redactSecrets(step.description)}${step.targetPath ? ` → ${step.targetPath}` : ""} (${step.status})`);
+      }
+      lines.push(`\nObserved diff (${diffs.length} file(s)):`);
+      lines.push(diffDigest || "(no file changes)");
+      lines.push(`\nVerification command output (tail):`);
+      lines.push(redactSecrets(verification.output.slice(-2_000)) || "(no verification output)");
+      lines.push(`\nInstructions:`);
+      lines.push(`- Inspect the workspace yourself: read_file, search_files, list_files are available.`);
+      lines.push(`- You may run_command ONLY for read-only checks the task implies (e.g. running a CLI, a quick node -e probe). Never install packages, never modify files, never use edit_file or write_file — a reviewer changes nothing.`);
+      lines.push(`- Judge every stated goal: "met" only when the workspace itself demonstrates it, "unmet" when evidence shows it missing or wrong, "indeterminate" when you cannot tell.`);
+      lines.push(`- Check behavior, not just syntax: if the task asks for a feature, verify it is wired and produces the requested output; if a rename, verify external names (CLI flags, wire keys, public API) are unchanged unless the task asked otherwise.`);
+      lines.push(`- Your final response must be ONLY a JSON object, no prose before or after:`);
+      lines.push(`  {"verdicts":[{"goal":"<stated goal>","status":"met|unmet|indeterminate","evidence":"<what you observed, with path or command>","path":"<relevant file or empty>"}]}`);
+      return lines.join("\n");
+    };
+
     return {
       executePlan: async (
         plan: WorkflowPlan,
@@ -542,14 +633,43 @@ export class WorkflowService {
         adapter.emitAgentStarted(`agent-${plan.id.slice(0, 8)}`, "Builder", plan.id);
         const runtime = getRuntime(sessionId, userId, hostedWorker);
         const seqBefore = this.eventStore.getLastSeq();
-        const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Implementing the approved plan" });
-        const result = await waitForTurn(runtime, turnId);
-        const filesChanged = [...new Set(
+        let turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Implementing the approved plan" });
+        let result = await waitForTurn(runtime, turnId);
+        const changedFilesSinceStart = (): string[] => [...new Set(
           this.eventStore
             .getAll({ sessionId, types: ["file.written", "file.change_applied"], afterSeq: seqBefore })
             .map((event) => (event.payload as { path?: string }).path)
             .filter((path): path is string => typeof path === "string" && path.length > 0),
         )];
+        const stoppedForLoop = (turn: ReturnType<AgentRuntime["getTurn"]>): boolean =>
+          /\bAGENT_(?:NO_PROGRESS|TOOL_LOOP)_DETECTED\b/.test(`${turn?.error ?? ""} ${turn?.failure?.detail ?? ""}`);
+        // A loop guard can fire after a valid edit, before the model gives its final response.
+        // Allow one fresh turn to reconcile the remaining plan against the actual workspace.
+        // The original failure never authorizes completion: the resumed turn must finish, and
+        // verification plus the completion gate still judge the combined edits.
+        if (
+          (result.status === "failed" || result.status === "blocked") &&
+          stoppedForLoop(result.turn) &&
+          changedFilesSinceStart().length > 0 &&
+          !sig?.aborted && !signal.aborted
+        ) {
+          const remainingWorkingMs = this.agentWorkingBudgetMs - result.workingMs;
+          if (remainingWorkingMs > 0) {
+            const changed = changedFilesSinceStart();
+            const recoveryPrompt = [
+              `Continue the approved implementation for: ${redactSecrets(intent.title)}`,
+              `Task goals: ${intent.goals.map((goal) => redactSecrets(goal)).join(" | ")}`,
+              `Approved plan: ${plan.steps.filter((step) => step.kind !== "verify" && step.kind !== "review").map((step) => `${step.kind}: ${redactSecrets(step.description)}${step.targetPath ? ` → ${step.targetPath}` : ""}`).join(" | ")}`,
+              `The previous turn changed: ${changed.join(", ")}. It then stopped because it repeated actions without making progress.`,
+              `Check the current workspace against the original task and plan. Preserve completed edits. Make only changes still needed.`,
+              `Do not repeat a read or search without a specific unanswered question. When implementation is complete, give a concise final response and stop using tools.`,
+              `The workflow will run verification and review after this turn.`,
+            ].join("\n");
+            turnId = await runtime.startTurn(recoveryPrompt, adapter, { origin: "workflow", label: "Recovering a stalled implementation" });
+            result = await waitForTurn(runtime, turnId, remainingWorkingMs);
+          }
+        }
+        const filesChanged = changedFilesSinceStart();
         if (result.status === "completed") {
           adapter.emitAgentCompleted(`agent-${plan.id.slice(0, 8)}`, plan.id);
           return { success: true, output: `Turn ${turnId} completed`, turnId, filesChanged };
@@ -579,6 +699,32 @@ export class WorkflowService {
         const result = await waitForTurn(runtime, turnId);
         if (result.status === "completed") return { success: true, output: `Repair turn ${turnId} completed`, turnId };
         return { success: false, output: `Repair turn ${turnId} ${result.status}${result.reason ? `: ${result.reason}` : ""}`, ...describeExecutorFailure(result.turn) };
+      },
+      executeGoalReview: async (
+        intent: TaskIntent,
+        plan: WorkflowPlan,
+        diffs: DiffEntry[],
+        verification: VerificationResult,
+        _sig?: AbortSignal,
+      ): Promise<{ findings: ReviewFinding[]; turnId?: string }> => {
+        const prompt = buildGoalReviewPrompt(intent, plan, diffs, verification);
+        const runtime = getRuntime(sessionId, userId, hostedWorker);
+        const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Reviewing goal conformance" });
+        const result = await waitForTurn(runtime, turnId);
+        if (result.status !== "completed") {
+          return {
+            turnId,
+            findings: [{
+              code: "goal_review_inconclusive",
+              severity: "advisory",
+              path: "",
+              message: `Independent goal review turn did not finish (${result.status}${result.reason ? `: ${result.reason}` : ""}); deterministic checks only.`,
+            }],
+          };
+        }
+        const item = await this.persistence.getWorkItem(`agent-final-response-${turnId}`).catch(() => undefined);
+        const response = item && "response" in item ? String(item.response) : "";
+        return { turnId, findings: parseGoalReviewFindings(response, intent) };
       },
     };
   }
@@ -1042,6 +1188,7 @@ export class WorkflowService {
               code: blocker.code,
               severity: blocker.severity,
               message: sanitizeInspectionText(blocker.message, 500),
+              ...(blocker.evidence ? { evidence: sanitizeInspectionText(blocker.evidence, 500) } : {}),
             })),
           );
         }
@@ -1115,6 +1262,7 @@ export class WorkflowService {
                   code: blocker.code,
                   severity: blocker.severity,
                   message: sanitizeInspectionText(blocker.message, 500),
+                  ...(blocker.evidence ? { evidence: sanitizeInspectionText(blocker.evidence, 500) } : {}),
                 })),
               },
             } : {}),

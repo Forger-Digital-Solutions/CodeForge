@@ -546,7 +546,7 @@ export class WorkspaceEventAdapter {
     taskId: string,
     outcome: "completed" | "blocked" | "failed",
     rationale: string,
-    blockers: Array<{ code: string; severity: string; message: string }>,
+    blockers: Array<{ code: string; severity: string; message: string; evidence?: string }>,
   ): Promise<void> {
     return this.emit({
       type: "workflow.completion_decided",

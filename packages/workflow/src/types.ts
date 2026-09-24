@@ -217,7 +217,9 @@ export interface ReviewFinding {
     | "dead_branch_added"
     | "test_input_special_case"
     | "unreferenced_new_symbol"
-    | "non_functional_change";
+    | "non_functional_change"
+    | "goal_not_satisfied"
+    | "goal_review_inconclusive";
   severity: ReviewFindingSeverity;
   path: string;
   message: string;
