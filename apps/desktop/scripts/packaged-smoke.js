@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { resolve, join, dirname } from 'node:path';
+import { resolve, join, dirname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 
@@ -23,6 +23,12 @@ const smokeSuiteState = resolve(smokeRoot, 'smoke-suite-id');
 const screenshotDirectory = process.env.CODEFORGE_SMOKE_SCREENSHOT_DIR
   ? resolve(process.env.CODEFORGE_SMOKE_SCREENSHOT_DIR)
   : undefined;
+function removeSmokeDirectory(target) {
+  const root = resolve(smokeRoot);
+  const candidate = resolve(target);
+  if (!candidate.startsWith(`${root}${sep}`)) throw new Error(`Refusing to remove a path outside the smoke root: ${candidate}`);
+  rmSync(candidate, { recursive: true, force: true });
+}
 mkdirSync(smokeRoot, { recursive: true });
 if (mode === 'full') writeFileSync(smokeSuiteState, randomUUID(), 'utf8');
 if (!existsSync(smokeSuiteState)) {
@@ -62,9 +68,9 @@ if (!existsSync(exePath)) {
 }
 
 if (mode === 'full') {
-  try { rmSync(smokeProfile, { recursive: true, force: true }); } catch {}
-  try { rmSync(smokeWorkspace, { recursive: true, force: true }); } catch {}
-  try { rmSync(smokeRepositoryIndexes, { recursive: true, force: true }); } catch {}
+  removeSmokeDirectory(smokeProfile);
+  removeSmokeDirectory(smokeWorkspace);
+  removeSmokeDirectory(smokeRepositoryIndexes);
   mkdirSync(join(smokeWorkspace, 'src'), { recursive: true });
   writeFileSync(join(smokeWorkspace, 'src', 'calc.ts'), 'export function add(a: number, b: number): number {\n  return a - b;\n}\n');
   writeFileSync(join(smokeWorkspace, 'package.json'), JSON.stringify({ name: 'smoke-test', type: 'module' }, null, 2));

@@ -18,7 +18,6 @@ import { promisify } from 'node:util';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { randomUUID } from 'node:crypto';
 
 const execFile = promisify(execFileCallback);
 const here = dirname(fileURLToPath(import.meta.url));

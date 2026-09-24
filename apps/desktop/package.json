@@ -17,9 +17,9 @@
     "build:main": "tsc -p tsconfig.main.json && node -e \"require('fs').copyFileSync('src/preload.cjs', 'dist/preload.cjs')\" && node scripts/build-identity.mjs",
     "build:renderer": "node scripts/check-renderer-sources.mjs && vite build",
     "build:prod": "npm run dist",
-    "pack": "npm run build && npm run build:native && electron-builder --dir && npm run audit:internal-deps",
+    "pack": "npm run build && npm run build:native && electron-builder --dir && npm run audit:internal-deps && npm run audit:runtime-deps",
     "dist": "node scripts/package-release.mjs",
-    "dist:builder": "npm run build && npm run build:native && electron-builder && npm run audit:internal-deps && npm run audit:build-identity",
+    "dist:builder": "npm run build && npm run build:native && electron-builder && npm run audit:internal-deps && npm run audit:runtime-deps && npm run audit:build-identity",
     "rebuild:native": "node scripts/rebuild-native.mjs",
     "smoke": "node scripts/packaged-smoke.js full",
     "smoke:interrupt": "node scripts/packaged-smoke.js interrupt",
@@ -182,6 +182,81 @@
           "**/*.cjs",
           "**/*.mjs"
         ]
+      },
+      {
+        "from": "node_modules/electron-updater",
+        "to": "node_modules/electron-updater",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/fs-extra",
+        "to": "node_modules/fs-extra",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/graceful-fs",
+        "to": "node_modules/graceful-fs",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/jsonfile",
+        "to": "node_modules/jsonfile",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/universalify",
+        "to": "node_modules/universalify",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/js-yaml",
+        "to": "node_modules/js-yaml",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/argparse",
+        "to": "node_modules/argparse",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/lazy-val",
+        "to": "node_modules/lazy-val",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/lodash.escaperegexp",
+        "to": "node_modules/lodash.escaperegexp",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/lodash.isequal",
+        "to": "node_modules/lodash.isequal",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/tiny-typed-emitter",
+        "to": "node_modules/tiny-typed-emitter",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/builder-util-runtime",
+        "to": "node_modules/builder-util-runtime",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/debug",
+        "to": "node_modules/debug",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/ms",
+        "to": "node_modules/ms",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/sax",
+        "to": "node_modules/sax",
+        "filter": ["**/*"]
       },
       {
         "from": "node_modules/pg",

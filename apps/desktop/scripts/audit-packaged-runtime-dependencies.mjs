@@ -76,6 +76,23 @@ const missing = [...imports.entries()]
   .map(([name, locations]) => ({ name, locations: [...new Set(locations)].sort() }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
+const updaterClosureMissing = new Set();
+const updaterClosureVisited = new Set();
+function checkUpdaterDependency(name) {
+  if (updaterClosureVisited.has(name)) return;
+  updaterClosureVisited.add(name);
+  const packagePath = `node_modules/${name}/package.json`;
+  const manifestEntry = entries.find((entry) => normalizedPath(entry) === packagePath);
+  if (!manifestEntry) {
+    updaterClosureMissing.add(name);
+    return;
+  }
+  const manifest = JSON.parse(extractFile(asarPath, archivePath(manifestEntry)).toString("utf8"));
+  for (const dependency of Object.keys(manifest.dependencies ?? {})) checkUpdaterDependency(dependency);
+}
+checkUpdaterDependency("electron-updater");
+for (const name of updaterClosureMissing) missing.push({ name, locations: ["electron-updater dependency closure"] });
+
 if (missing.length > 0) {
   console.error("PACKAGED_RUNTIME_DEPENDENCY_GRAPH_FAIL");
   for (const dependency of missing) console.error(`Missing ${dependency.name}; imported by ${dependency.locations.join(", ")}`);

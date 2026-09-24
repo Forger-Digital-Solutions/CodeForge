@@ -56,7 +56,7 @@ import {
 import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
 import { describeCloudAuthFailure, CloudAuthError, runCodeForgeCloudAuth } from "./cloud-auth-flow.js";
 import { initDiagnostics, closeDiagnostics, logDiagnostic, writeDiagnosticBundle } from "./diagnostics.js";
-import { checkForUpdates, downloadUpdate, getUpdaterStatus, installDownloadedUpdate, onUpdaterStatus } from "./updater.js";
+import { checkForUpdates, downloadUpdate, getUpdaterStatus, installDownloadedUpdate } from "./updater.js";
 import {
   installSingleInstanceGuard,
   activateWindow,
