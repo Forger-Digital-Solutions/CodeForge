@@ -1,0 +1,17 @@
+{
+  "schema": "r30-packaged-smoke-1",
+  "sourceCommit": "999d41683da9b6eb5fa2059e28f46f8b1d3dc576",
+  "executable": "apps/desktop/release/win-unpacked/CodeForge.exe",
+  "executableSha256": "404225edd63ca1cc0372272d1ecf5086def9e22183c5c44d02c38831718194cc",
+  "archiveSha256": "768b6557819dd527f50dcb3e3e12c09adfcd0f586cd2db19a04e3279986777bd",
+  "command": "npm.cmd run smoke:all --workspace=codeforge-desktop",
+  "exitCode": 0,
+  "suiteId": "15650045-b190-465c-9745-b5b422f3800f",
+  "modes": {
+    "PACKAGED_FULL_SMOKE_OK": true,
+    "PACKAGED_INTERRUPT_EXPECTED_EXIT": true,
+    "PACKAGED_RECOVERY_SMOKE_OK": true
+  },
+  "logSha256": "5c891d369421bfb5a38f3cfbdda00bd40bc6f0cc8c44bbfc5a79ef3db3f3b561",
+  "authenticatedRealProviderTask": false
+}

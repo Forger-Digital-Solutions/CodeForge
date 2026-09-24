@@ -1,0 +1,485 @@
+{
+  "schema": "r30-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-24T05:44:15.009Z",
+  "sourceCommit": "96b7f21ef87e4f8ca886b0e886d25295c2b88526",
+  "runId": "r30-live-778deb22-0c49-44b8-b0d9-bb4dc75ca300",
+  "task": {
+    "r27TaskId": "r27-medium-extract-validator",
+    "sourceTaskId": "ts-refactor-extract-validator",
+    "taskClass": "refactor",
+    "corpusDigest": "cd840ea10bd0995a943adf5e8b2204c20e3e061121cd1acde639646fb788afbd"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "routeLock": "route",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 32,
+    "maxOutputTokens": 4096,
+    "timeoutMs": 600000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine"
+  },
+  "provider": {
+    "inferenceRequestCount": 13,
+    "measuredInputTokens": 53445,
+    "measuredOutputTokens": 3025,
+    "requestsWithoutTokenUsage": 0,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 1848,
+        "firstUsefulEventMs": 1387,
+        "inputTokens": 2776,
+        "outputTokens": 150,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 958,
+        "firstUsefulEventMs": 805,
+        "inputTokens": 3083,
+        "outputTokens": 22,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 758,
+        "firstUsefulEventMs": 685,
+        "inputTokens": 3377,
+        "outputTokens": 22,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 3454,
+        "firstUsefulEventMs": 2726,
+        "inputTokens": 3693,
+        "outputTokens": 20,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 5,
+        "kind": "stream",
+        "elapsedMs": 737,
+        "firstUsefulEventMs": 704,
+        "inputTokens": 3765,
+        "outputTokens": 20,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 6,
+        "kind": "stream",
+        "elapsedMs": 761,
+        "firstUsefulEventMs": 742,
+        "inputTokens": 3818,
+        "outputTokens": 38,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 7,
+        "kind": "stream",
+        "elapsedMs": 7701,
+        "firstUsefulEventMs": 1381,
+        "inputTokens": 3916,
+        "outputTokens": 308,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 8,
+        "kind": "stream",
+        "elapsedMs": 5947,
+        "firstUsefulEventMs": 622,
+        "inputTokens": 3928,
+        "outputTokens": 510,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 9,
+        "kind": "stream",
+        "elapsedMs": 3063,
+        "firstUsefulEventMs": 550,
+        "inputTokens": 4337,
+        "outputTokens": 468,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 10,
+        "kind": "stream",
+        "elapsedMs": 7883,
+        "firstUsefulEventMs": 2188,
+        "inputTokens": 4723,
+        "outputTokens": 622,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 11,
+        "kind": "stream",
+        "elapsedMs": 2152,
+        "firstUsefulEventMs": 2136,
+        "inputTokens": 5153,
+        "outputTokens": 206,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 12,
+        "kind": "stream",
+        "elapsedMs": 12179,
+        "firstUsefulEventMs": 11621,
+        "inputTokens": 5402,
+        "outputTokens": 502,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 13,
+        "kind": "stream",
+        "elapsedMs": 3311,
+        "firstUsefulEventMs": 2220,
+        "inputTokens": 5474,
+        "outputTokens": 137,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228590589
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228595682
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228597290
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228598292
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228599374
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228602645
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228603291
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228604076
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228611933
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228617942
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228620995
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228628947
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228631125
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228643502
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "3d4307e4-63d9-491f-83a2-c4022f1bed5d",
+    "status": "completed",
+    "phase": "completed",
+    "completion": {
+      "outcome": "completed",
+      "rationale": "All required completion checks passed.",
+      "blockers": []
+    },
+    "diffs": [
+      {
+        "path": "src/handlers/create-order.ts",
+        "changeType": "modified",
+        "additions": 8,
+        "deletions": 19,
+        "diff": "--- a/src/handlers/create-order.ts\n+++ b/src/handlers/create-order.ts\n-\n+import { validateCreate } from \"../validation/order.ts\";\n-function validateCreate(input: OrderInput): string[] {\n+\n-  const errors: string[] = [];\n+export function createOrder(input: OrderInput): HandlerResult {\n-  if (!input.customerId || input.customerId.trim() === \"\") errors.push(\"customerId is required\");\n+  const errors = validateCreate(input);\n-  if (!Array.isArray(input.lines) || input.lines.length === 0) errors.push(\"at least one line is required\");\n+  if (errors.length > 0) return { status: 400, body: { errors } };\n-  for (const [index, line] of (input.lines ?? []).entries()) {\n+  return { status: 201, body: { id: `ord-${input.customerId}-${input.lines.length}`, currency: input.currency ?? \"USD\" } };\n-    if (!line.sku) errors.push(`lines[${index}].sku is required`);\n+}\n-    if (!Number.isInteger(line.quantity) || line.quantity <= 0) errors.push(`lines[${index}].quantity must be a positive integer`);\n+\n-  }\n-  if (input.currency !== undefined && !/^[A-Z]{3}$/.test(input.currency)) errors.push(\"currency must be a 3-letter code\");\n-  return errors;\n-}\n-\n-export function createOrder(input: OrderInput): HandlerResult {\n-  const errors = validateCreate(input);\n-  if (errors.length > 0) return { status: 400, body: { errors } };\n-  return { status: 201, body: { id: `ord-${input.customerId}-${input.lines.length}`, currency: input.currency ?? \"USD\" } };\n-}\n-"
+      },
+      {
+        "path": "src/handlers/quote-order.ts",
+        "changeType": "modified",
+        "additions": 9,
+        "deletions": 20,
+        "diff": "--- a/src/handlers/quote-order.ts\n+++ b/src/handlers/quote-order.ts\n-\n+import { validateQuote } from \"../validation/order.ts\";\n-function validateQuote(input: OrderInput): string[] {\n+\n-  const errors: string[] = [];\n+export function quoteOrder(input: OrderInput): HandlerResult {\n-  if (!input.customerId || input.customerId.trim() === \"\") errors.push(\"customerId is required\");\n+  const errors = validateQuote(input);\n-  if (!Array.isArray(input.lines) || input.lines.length === 0) errors.push(\"at least one line is required\");\n+  if (errors.length > 0) return { status: 400, body: { errors } };\n-  for (const [index, line] of (input.lines ?? []).entries()) {\n+  const units = input.lines.reduce((sum, line) => sum + line.quantity, 0);\n-    if (!line.sku) errors.push(`lines[${index}].sku is required`);\n+  return { status: 200, body: { units, currency: input.currency ?? \"USD\" } };\n-    if (!Number.isInteger(line.quantity) || line.quantity <= 0) errors.push(`lines[${index}].quantity must be a positive integer`);\n+}\n-  }\n+\n-  if (input.currency !== undefined && !/^[A-Z]{3}$/.test(input.currency)) errors.push(\"currency must be a 3-letter code\");\n-  return errors;\n-}\n-\n-export function quoteOrder(input: OrderInput): HandlerResult {\n-  const errors = validateQuote(input);\n-  if (errors.length > 0) return { status: 400, body: { errors } };\n-  const units = input.lines.reduce((sum, line) => sum + line.quantity, 0);\n-  return { status: 200, body: { units, currency: input.currency ?? \"USD\" } };\n-}\n-"
+      },
+      {
+        "path": "src/handlers/update-order.ts",
+        "changeType": "modified",
+        "additions": 8,
+        "deletions": 19,
+        "diff": "--- a/src/handlers/update-order.ts\n+++ b/src/handlers/update-order.ts\n-\n+import { validateUpdate } from \"../validation/order.ts\";\n-function validateUpdate(input: OrderInput): string[] {\n+\n-  const errors: string[] = [];\n+export function updateOrder(id: string, input: OrderInput): HandlerResult {\n-  if (!input.customerId || input.customerId.trim() === \"\") errors.push(\"customerId is required\");\n+  const errors = validateUpdate(input);\n-  if (!Array.isArray(input.lines) || input.lines.length === 0) errors.push(\"at least one line is required\");\n+  if (errors.length > 0) return { status: 400, body: { errors } };\n-  for (const [index, line] of (input.lines ?? []).entries()) {\n+  return { status: 200, body: { id, lines: input.lines.length } };\n-    if (!line.sku) errors.push(`lines[${index}].sku is required`);\n+}\n-    if (!Number.isInteger(line.quantity) || line.quantity <= 0) errors.push(`lines[${index}].quantity must be a positive integer`);\n+\n-  }\n-  if (input.currency !== undefined && !/^[A-Z]{3}$/.test(input.currency)) errors.push(\"currency must be a 3-letter code\");\n-  return errors;\n-}\n-\n-export function updateOrder(id: string, input: OrderInput): HandlerResult {\n-  const errors = validateUpdate(input);\n-  if (errors.length > 0) return { status: 400, body: { errors } };\n-  return { status: 200, body: { id, lines: input.lines.length } };\n-}\n-"
+      }
+    ],
+    "changedFileSnapshots": [
+      {
+        "path": "src/handlers/create-order.ts",
+        "beforeSha256": "dd4aafd31d9cb16d5c1286e77eee70fd91833431af124508f5daa6db3513239b",
+        "afterSha256": "09e23e4be7bd787a9d77cd3eb343488ad7d3d78dfd6d54b2a66bcd6cf0dbd092",
+        "beforeBytes": 1062,
+        "afterBytes": 417,
+        "afterContent": "import type { HandlerResult, OrderInput } from \"../types.ts\";\nimport { validateCreate } from \"../validation/order.ts\";\n\nexport function createOrder(input: OrderInput): HandlerResult {\n  const errors = validateCreate(input);\n  if (errors.length > 0) return { status: 400, body: { errors } };\n  return { status: 201, body: { id: `ord-${input.customerId}-${input.lines.length}`, currency: input.currency ?? \"USD\" } };\n}\n"
+      },
+      {
+        "path": "src/handlers/quote-order.ts",
+        "beforeSha256": "c9489ef02778f194be52547dbb399a44f44938e280c7d45d87bc3740888cf9b6",
+        "afterSha256": "98085c489db87f9bb912b73ab9f7ac632ce735611175902551af748cbd849d6e",
+        "beforeBytes": 1088,
+        "afterBytes": 443,
+        "afterContent": "import type { HandlerResult, OrderInput } from \"../types.ts\";\nimport { validateQuote } from \"../validation/order.ts\";\n\nexport function quoteOrder(input: OrderInput): HandlerResult {\n  const errors = validateQuote(input);\n  if (errors.length > 0) return { status: 400, body: { errors } };\n  const units = input.lines.reduce((sum, line) => sum + line.quantity, 0);\n  return { status: 200, body: { units, currency: input.currency ?? \"USD\" } };\n}\n"
+      },
+      {
+        "path": "src/handlers/update-order.ts",
+        "beforeSha256": "09bab8922117a612feac470089d0d04fe99a7434859516d25faffd397eb724bc",
+        "afterSha256": "4a70af35aec53f1f7f5ab18691a7771cf4f28c730df36f179a9fd860277f9fd6",
+        "beforeBytes": 1017,
+        "afterBytes": 372,
+        "afterContent": "import type { HandlerResult, OrderInput } from \"../types.ts\";\nimport { validateUpdate } from \"../validation/order.ts\";\n\nexport function updateOrder(id: string, input: OrderInput): HandlerResult {\n  const errors = validateUpdate(input);\n  if (errors.length > 0) return { status: 400, body: { errors } };\n  return { status: 200, body: { id, lines: input.lines.length } };\n}\n"
+      }
+    ],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "verifier-1-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          },
+          {
+            "id": "verifier-2-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          },
+          {
+            "id": "verifier-3-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": true,
+      "findings": []
+    },
+    "forgeVerifySummary": {
+      "planId": "6aede7a3-8ec7-4b03-beb0-8f7342929cff",
+      "policyVersion": "legacy-workflow-policy-v1",
+      "requiredCount": 3,
+      "satisfiedCount": 3,
+      "missingCount": 0,
+      "staleCount": 0,
+      "verificationComplete": true,
+      "missingRequiredVerifiers": [],
+      "evidence": [
+        {
+          "evidenceId": "ed48036f-8bfe-45a3-9840-2ea87e62b318",
+          "verifierId": "legacy.custom.36d5a55802cabc7f",
+          "status": "passed",
+          "durationMs": 1357,
+          "outputTruncated": false
+        },
+        {
+          "evidenceId": "80cfad66-81f6-47e7-9d70-488adb3a0f2b",
+          "verifierId": "legacy.custom.85edff05c8a48f8d",
+          "status": "passed",
+          "durationMs": 1341,
+          "outputTruncated": false
+        },
+        {
+          "evidenceId": "39c0033f-30c2-49d2-93f4-7fd956387a38",
+          "verifierId": "legacy.custom.305189140f660c50",
+          "status": "passed",
+          "durationMs": 1385,
+          "outputTruncated": false
+        }
+      ]
+    },
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 12,
+    "decisions": {
+      "allow:0": 8,
+      "allow:1": 4
+    },
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.ts",
+      "passed": false,
+      "elapsedMs": 439,
+      "exitCode": 1,
+      "outputHash": "c527cbe221bb6de0fdec173762195a224c188696e21599c433b04289b30b3b39",
+      "output": "{\"passed\":10,\"failed\":2}\n\nFAIL validator-shape-ok\nFAIL validator-shape-bad\n"
+    },
+    "workflowAllPassed": true
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 2,
+    "task.state_changed": 12,
+    "status.changed": 15,
+    "plan.started": 1,
+    "agent.started": 2,
+    "router.selection": 1,
+    "tool.call_started": 12,
+    "tool.call_completed": 12,
+    "token.usage": 13,
+    "tool.execution_started": 12,
+    "file.read": 7,
+    "tool.execution_completed": 12,
+    "file.written": 4,
+    "file.change_proposed": 4,
+    "file.change_applied": 4,
+    "assistant.message.started": 1,
+    "text.delta": 67,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 3,
+    "forgeverify.evidence_created": 3,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1,
+    "run.outcome": 1
+  },
+  "failures": [],
+  "toolSequence": [
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "write_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    }
+  ],
+  "timing": {
+    "wallClockMs": 63475,
+    "deadlineHit": false
+  },
+  "memory": {
+    "rssBefore": 217354240,
+    "rssAfter": 197926912,
+    "heapUsedBefore": 80449608,
+    "heapUsedAfter": 87353240
+  }
+}

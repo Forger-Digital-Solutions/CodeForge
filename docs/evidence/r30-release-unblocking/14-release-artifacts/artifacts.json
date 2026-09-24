@@ -1,0 +1,40 @@
+{
+  "Schema": "r30-package-artifacts-1",
+  "RecordedAt": "2026-09-24T11:07:30.7453122Z",
+  "SourceCommit": "999d41683da9b6eb5fa2059e28f46f8b1d3dc576",
+  "Version": "0.4.0",
+  "BuildIdentity": {
+    "version": "0.4.0",
+    "commit": "999d41683da9b6eb5fa2059e28f46f8b1d3dc576",
+    "shortCommit": "999d41683da9",
+    "branch": "codex/r29-release-closure",
+    "dirty": false,
+    "builtAt": "2026-09-24T11:05:12.182Z"
+  },
+  "Artifacts": [
+    {
+      "Path": "apps/desktop/release/win-unpacked/resources/app.asar",
+      "Bytes": 45564776,
+      "Sha256": "768b6557819dd527f50dcb3e3e12c09adfcd0f586cd2db19a04e3279986777bd",
+      "Authenticode": null
+    },
+    {
+      "Path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+      "Bytes": 246415872,
+      "Sha256": "404225edd63ca1cc0372272d1ecf5086def9e22183c5c44d02c38831718194cc",
+      "Authenticode": "NotSigned"
+    },
+    {
+      "Path": "apps/desktop/release/CodeForge-Setup-0.4.0.exe",
+      "Bytes": 120823725,
+      "Sha256": "6ae47b2e42dc165940ac6127f1ef238b56aee5de095dedf0fa7c9d529a88223b",
+      "Authenticode": "NotSigned"
+    },
+    {
+      "Path": "apps/desktop/release/CodeForge-Portable.exe",
+      "Bytes": 120488313,
+      "Sha256": "3c0931c6211193c4bd87edb6396b0c42b70a02808cd4ac0ab9cf9604af6e664f",
+      "Authenticode": "NotSigned"
+    }
+  ]
+}

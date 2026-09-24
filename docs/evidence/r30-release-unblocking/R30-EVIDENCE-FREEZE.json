@@ -1,0 +1,272 @@
+{
+  "schema": "r30-evidence-freeze-1",
+  "frozenAt": "2026-09-24T11:26:10.777Z",
+  "verdict": "CODEFORGE_R30_RELEASE_BLOCKED",
+  "sourceCommit": "999d41683da9b6eb5fa2059e28f46f8b1d3dc576",
+  "certification": "docs/certification/codeforge-r30-release-unblocking-2026-09-24.md",
+  "fileCount": 48,
+  "files": [
+    {
+      "path": "benchmarks/r30/freeze-evidence.mjs",
+      "bytes": 3792,
+      "sha256": "2c44a291a821c2a7fc81d771733f46ca094ecd06a0c31c0d69ef3711ff991fb2"
+    },
+    {
+      "path": "benchmarks/r30/install-lifecycle.ps1",
+      "bytes": 6776,
+      "sha256": "e6576cd2d9685c493885aa6be1c18e7429f4af2f8c6b28c2c55e9f6b8ac37ecc"
+    },
+    {
+      "path": "benchmarks/r30/live-workflow-completion.mjs",
+      "bytes": 20358,
+      "sha256": "11012e78073cf530e97f794b34f0fc1550c0b76f3280aa661c9a8709d23e8356"
+    },
+    {
+      "path": "benchmarks/r30/recertify-rename-safeguard.mjs",
+      "bytes": 3414,
+      "sha256": "75b163976bb53f1f2a1d828228049253f661ca77b58577f64c297fe519f33f38"
+    },
+    {
+      "path": "benchmarks/r30/recertify-source-state.mjs",
+      "bytes": 4460,
+      "sha256": "9065d6744b1b7ee2f3219ac858bb36014e86f10d876141b35ac5490137e3fc30"
+    },
+    {
+      "path": "benchmarks/r30/summarize-live.mjs",
+      "bytes": 2251,
+      "sha256": "85169e42cbc61793f2a332e8c5f4dfa0e58de5e9c795a66ae63725805d229a28"
+    },
+    {
+      "path": "benchmarks/r30/verify-inherited-evidence.mjs",
+      "bytes": 2283,
+      "sha256": "9e4ea9c892851f7b94ba5a9196bb7cf208ab16abd7ae191356ff21c28fa7d070"
+    },
+    {
+      "path": "docs/certification/codeforge-r30-release-unblocking-2026-09-24.md",
+      "bytes": 8972,
+      "sha256": "1ce7fe1d9bb606d43cb03e998da3e50c4da4f9ff2e63e73bab63392dab67bd89"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/00-recovery/inherited-evidence.json",
+      "bytes": 544,
+      "sha256": "64b7853452bf6c525d623f626e907a1f1ad4971997304467461d5eb6bd0f6af2"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/02-regression/endpoint-staging-focused.json",
+      "bytes": 13039,
+      "sha256": "3ea339de4482ffd76650956d6a91b760478d567a6e2501a673b7ab740dd77242"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/02-regression/final-full-vitest.json",
+      "bytes": 1438695,
+      "sha256": "fbe9e30777b50bc8cfbced8964bc97737330f1922a3be16f18e2afb06aeda92a"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/02-regression/final-summary.json",
+      "bytes": 350,
+      "sha256": "5f382a6ba34a4e5a364c0fc06c7c7fbe13d34519843f8a0830726c798644e525"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/02-regression/initial-full-vitest.json",
+      "bytes": 1440086,
+      "sha256": "faec15034a220514a4ddf6e8b23a56c904255aba7c63139624de051d249337fe"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/02-regression/initial-summary.json",
+      "bytes": 2487,
+      "sha256": "bc2b0efbf3512ccb4613c57f52cc19764a1411965faa1d9b72ae6cc5adbbd25a"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/02-regression/post-fix-full-vitest.json",
+      "bytes": 1438842,
+      "sha256": "f7487393c1b74fcb1202d79f76d33683f25d7b369c9608e7a7b6ae4a5a0f27ec"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/02-regression/release-manifest-focused.json",
+      "bytes": 11803,
+      "sha256": "d18d3eecf00c6ad0322ee9b3875a37d1cbf608c2b53bcc57e6f759099294fc59"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/02-regression/report.md",
+      "bytes": 1619,
+      "sha256": "f2d699233c22b13e67c1a7673b203090f5a9ee5a4ff2cfa2a13b56be69009588"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/02-regression/source-state-after-prompt.json",
+      "bytes": 3876,
+      "sha256": "966a2950ac63ef6285e3ff342dfaa6ac3eaaf290597c27d3d0d9580b96568fc8"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/02-regression/source-state-rerun.json",
+      "bytes": 3877,
+      "sha256": "3a64522eecfb822e09fd268dba9cdfbc4fb7b7c153201f40571cc67a1daf79d5"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/03-large-task-analysis/report.md",
+      "bytes": 5731,
+      "sha256": "4ed80010e7813e1fed985711e4a1facefe834bf133c8dd6a775ce5ff05292e72"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/04-large-task-benchmarks/r30-live-20cf0e22-5ade-47bf-a94b-a45f3d6f3ccd.json",
+      "bytes": 26243,
+      "sha256": "6a548379e27c816965beb55981240cb826e70a592038ef519efa2902779a067e"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/04-large-task-benchmarks/r30-live-2d06943c-cf3e-47cf-b388-b6ed686b8258.json",
+      "bytes": 11853,
+      "sha256": "a98e01a21ff3b7c4cadbd597d8477469f0a50865e4c09b19e49ae3968063fd47"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/04-large-task-benchmarks/r30-live-5d2085fe-4910-4bf7-8624-79372af8b722.json",
+      "bytes": 8628,
+      "sha256": "0628eb62571877a493afe743c255d83d88c0bd666307b452422cd0b6741bc509"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/04-large-task-benchmarks/r30-live-778deb22-0c49-44b8-b0d9-bb4dc75ca300.json",
+      "bytes": 18414,
+      "sha256": "f40f76164c838266ee2e70abc5c7cfff0cadc053a4b2791ae90f9cf671e31386"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/04-large-task-benchmarks/r30-live-7c1edda5-6cc4-43a9-928c-3b451044882d.json",
+      "bytes": 12857,
+      "sha256": "c15b28ae3d6475f98ecda09ef85c7eb481119a6f9d474fb5fa35c61fcba98712"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/04-large-task-benchmarks/r30-live-8dcecbae-419b-457f-b4eb-4a660115f4e9.json",
+      "bytes": 11134,
+      "sha256": "fb9abba3be8ed66800ce5c0a3117cc77cccee2386069d10e9768a8814c8a3fab"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/04-large-task-benchmarks/r30-live-8f59c861-16b0-4066-81af-a120f7a2d577.json",
+      "bytes": 9719,
+      "sha256": "0feef0fa740ab46910040ddc9a6d43d7614cc1f193ccc87926b594b29d3e853a"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/04-large-task-benchmarks/r30-live-d0abc770-d56b-40c7-b29a-0fb51c219687.json",
+      "bytes": 23665,
+      "sha256": "4aaec447ba7b93e0a625d9fcb660d1ebca420658c86963dff8568bab5ed2544c"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/04-large-task-benchmarks/summary.json",
+      "bytes": 6940,
+      "sha256": "dc81abd9eb586e893a488fee944824ad0d32de68f504d4d55783314b8d79adb9"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/07-security/dependency-audit.json",
+      "bytes": 319,
+      "sha256": "aa9e48adb681674db712a200348261755965ca980271a743cc35af36a1849609"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/07-security/doc-links.json",
+      "bytes": 160,
+      "sha256": "afae3908eb9d5825ce7f256c06a6416faddbaeea89581836e24487c055f621ca"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/07-security/public-claims-scan.json",
+      "bytes": 151,
+      "sha256": "c5cadd6a4e96ada63e5017b905b7363fecd057dd18b6058ac1ede2ff84e84f1c"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/07-security/report.md",
+      "bytes": 1747,
+      "sha256": "c261a5e8733307445f04da1a9194f6bfe8a319b6f9c4ad1e88bc2cd0eee8dc10"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/07-security/sbom.json",
+      "bytes": 184409,
+      "sha256": "c1c54df7a41d66fb443c84b7f7c44f974e656ae0bccb95bc000b83a1931f9dae"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/07-security/secret-scan.json",
+      "bytes": 1908,
+      "sha256": "e3c98b14d77fba95828e4c2eb168f7d221ebcdb27f2dfa88434fe6b17c8d074b"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/08-install-lifecycle/preflight.json",
+      "bytes": 427,
+      "sha256": "13d74b252fcb4ba54ac651318f411c547bff49132c458d8fade93a4f73b919dd"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/08-install-lifecycle/report.md",
+      "bytes": 1136,
+      "sha256": "1468cd2beb8d98956d77414e8b6c01a54506b15e6ed7f76cd3ef46e658d75409"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/09-second-hardware/current-host.json",
+      "bytes": 330,
+      "sha256": "97f089bc2fd7bb37cac2e5bb51e898ac17cfa3d5d849fa10e1cd4cccb90f4f99"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/09-second-hardware/report.md",
+      "bytes": 1280,
+      "sha256": "56488479f8b5601ece93ac57231e62be03c033ccf4f3e6dc0565951b8661915c"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/10-signing/baseline.json",
+      "bytes": 510,
+      "sha256": "9bcfa68ca1b213441cbd8f09da9169eedcb61e6a474c80d8545fa08946c3317c"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/10-signing/gate-negative.json",
+      "bytes": 225,
+      "sha256": "8bd2b8a5cef42fe89d7a81a86f4d6d3ac409afd3ec2713b12955e131022cb3e3"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/10-signing/report.md",
+      "bytes": 1642,
+      "sha256": "caeca067ba64792c22bdec55ab3601bf4e378e56caa8e3dfd2ec577fac339763"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/12-packaged-runtime/package-audits.json",
+      "bytes": 834,
+      "sha256": "c625e09bc0e4d3e2ca5a8b25cf208a043ea0e918275e21048054f0e639452ad0"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/12-packaged-runtime/report.md",
+      "bytes": 1638,
+      "sha256": "fd53d07c0aa9b756555aff2dabaebb21c81d0c625ba6396e5f74259ae0b34f5b"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/12-packaged-runtime/smoke-receipt.json",
+      "bytes": 747,
+      "sha256": "7beaf660aa38e557b5da1d5520d26d4dcf079b65642d0589b3edd250a1480012"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/12-packaged-runtime/smoke/smoke-result.txt",
+      "bytes": 13992,
+      "sha256": "5c891d369421bfb5a38f3cfbdda00bd40bc6f0cc8c44bbfc5a79ef3db3f3b561"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/12-packaged-runtime/smoke/smoke-suite-id",
+      "bytes": 36,
+      "sha256": "fb21712f5d46efc77982acff79404e2acfb3f148d3fa695e504139da0b820815"
+    },
+    {
+      "path": "docs/evidence/r30-release-unblocking/14-release-artifacts/artifacts.json",
+      "bytes": 1363,
+      "sha256": "c5a0d9f07276d697d5b2b8018659bbf7653dd29a5f82337f51a3e5bb9fa273f7"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "apps/desktop/release/win-unpacked/resources/app.asar",
+      "bytes": 45564776,
+      "sha256": "768b6557819dd527f50dcb3e3e12c09adfcd0f586cd2db19a04e3279986777bd"
+    },
+    {
+      "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+      "bytes": 246415872,
+      "sha256": "404225edd63ca1cc0372272d1ecf5086def9e22183c5c44d02c38831718194cc"
+    },
+    {
+      "path": "apps/desktop/release/CodeForge-Setup-0.4.0.exe",
+      "bytes": 120823725,
+      "sha256": "6ae47b2e42dc165940ac6127f1ef238b56aee5de095dedf0fa7c9d529a88223b"
+    },
+    {
+      "path": "apps/desktop/release/CodeForge-Portable.exe",
+      "bytes": 120488313,
+      "sha256": "3c0931c6211193c4bd87edb6396b0c42b70a02808cd4ac0ab9cf9604af6e664f"
+    }
+  ]
+}

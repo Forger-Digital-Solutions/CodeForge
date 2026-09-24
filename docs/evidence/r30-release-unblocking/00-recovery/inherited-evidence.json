@@ -1,0 +1,21 @@
+{
+  "schema": "r30-inherited-evidence-check-1",
+  "checkedAt": "2026-09-24T11:24:48.768Z",
+  "sourceCommit": "999d41683da9b6eb5fa2059e28f46f8b1d3dc576",
+  "r29": {
+    "manifest": "docs/evidence/r29-release-closure/R29-EVIDENCE-FREEZE.json",
+    "declared": 38,
+    "listed": 38,
+    "matched": 38,
+    "mismatches": [],
+    "passed": true
+  },
+  "r28": {
+    "manifest": "docs/evidence/r28-capability-completion/R28-EVIDENCE-FREEZE.json",
+    "declared": 52,
+    "listed": 52,
+    "matched": 52,
+    "mismatches": [],
+    "passed": true
+  }
+}

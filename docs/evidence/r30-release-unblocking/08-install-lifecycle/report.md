@@ -1,0 +1,5 @@
+# R30 install lifecycle
+
+The [lifecycle harness](../../../../benchmarks/r30/install-lifecycle.ps1) was prepared to install the fresh NSIS package into an isolated directory, compare installed executable and archive hashes with the built payload, run all three installed smoke modes, and silently uninstall. Before running setup, its preflight found an existing per-user CodeForge 0.4.0 installation in the Windows uninstall registry. The [preflight receipt](preflight.json) records `InstallerRun: false` and `UninstallerRun: false`. The existing installation and its user data were preserved.
+
+No R30 clean install, upgrade, same-version repair, uninstall, failed update, rollback, or migration transition has been proven. The installer-to-archive comparison is implemented in the harness but unexecuted. Reproduce on a clean Windows account or second host with no CodeForge uninstall entry and no running CodeForge process. Preserve the resulting `local-install-lifecycle.json`, installed smoke logs, and user-data checks. An upgrade needs an earlier known version and seeded user data; the current harness does not claim to cover it.

@@ -1,0 +1,454 @@
+{
+  "schema": "r30-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-24T05:39:33.985Z",
+  "sourceCommit": "96b7f21ef87e4f8ca886b0e886d25295c2b88526",
+  "runId": "r30-live-7c1edda5-6cc4-43a9-928c-3b451044882d",
+  "task": {
+    "r27TaskId": "r27-small-queue-order",
+    "sourceTaskId": "ts-bug-fix-queue-order",
+    "taskClass": "bug_fix",
+    "corpusDigest": "85f30992ce6db1fce556cf7b8d0cb216235f1fc6926c5ed6afc2a6c596996c02"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "routeLock": "route",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 30,
+    "maxOutputTokens": 4096,
+    "timeoutMs": 600000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine"
+  },
+  "provider": {
+    "inferenceRequestCount": 17,
+    "measuredInputTokens": 136290,
+    "measuredOutputTokens": 4218,
+    "requestsWithoutTokenUsage": 0,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 3225,
+        "firstUsefulEventMs": 2829,
+        "inputTokens": 2720,
+        "outputTokens": 227,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 4077,
+        "firstUsefulEventMs": 3541,
+        "inputTokens": 2907,
+        "outputTokens": 210,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 1785,
+        "firstUsefulEventMs": 1253,
+        "inputTokens": 4401,
+        "outputTokens": 74,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 1220,
+        "firstUsefulEventMs": 955,
+        "inputTokens": 5894,
+        "outputTokens": 118,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 5,
+        "kind": "stream",
+        "elapsedMs": 1057,
+        "firstUsefulEventMs": 917,
+        "inputTokens": 7385,
+        "outputTokens": 80,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 6,
+        "kind": "stream",
+        "elapsedMs": 5865,
+        "firstUsefulEventMs": 5592,
+        "inputTokens": 8885,
+        "outputTokens": 357,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 7,
+        "kind": "stream",
+        "elapsedMs": 1670,
+        "firstUsefulEventMs": 1563,
+        "inputTokens": 8933,
+        "outputTokens": 120,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 8,
+        "kind": "stream",
+        "elapsedMs": 3531,
+        "firstUsefulEventMs": 3105,
+        "inputTokens": 8984,
+        "outputTokens": 175,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 9,
+        "kind": "stream",
+        "elapsedMs": 6515,
+        "firstUsefulEventMs": 6334,
+        "inputTokens": 9050,
+        "outputTokens": 332,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 10,
+        "kind": "stream",
+        "elapsedMs": 5321,
+        "firstUsefulEventMs": 5249,
+        "inputTokens": 9347,
+        "outputTokens": 335,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 11,
+        "kind": "stream",
+        "elapsedMs": 10532,
+        "firstUsefulEventMs": 8572,
+        "inputTokens": 9395,
+        "outputTokens": 650,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 12,
+        "kind": "stream",
+        "elapsedMs": 1600,
+        "firstUsefulEventMs": 1138,
+        "inputTokens": 9570,
+        "outputTokens": 99,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 13,
+        "kind": "stream",
+        "elapsedMs": 841,
+        "firstUsefulEventMs": 726,
+        "inputTokens": 9578,
+        "outputTokens": 39,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 14,
+        "kind": "stream",
+        "elapsedMs": 4852,
+        "firstUsefulEventMs": 4530,
+        "inputTokens": 9629,
+        "outputTokens": 449,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 15,
+        "kind": "stream",
+        "elapsedMs": 2628,
+        "firstUsefulEventMs": 2479,
+        "inputTokens": 9812,
+        "outputTokens": 199,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 16,
+        "kind": "stream",
+        "elapsedMs": 4718,
+        "firstUsefulEventMs": 4537,
+        "inputTokens": 9860,
+        "outputTokens": 199,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 17,
+        "kind": "stream",
+        "elapsedMs": 8208,
+        "firstUsefulEventMs": 8049,
+        "inputTokens": 9940,
+        "outputTokens": 555,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228196794
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228202978
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228206045
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228210347
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228211963
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228213264
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228214443
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228220592
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228222571
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228270255
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228278947
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228284484
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228295138
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228299002
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228336681
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228344292
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228355144
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790228359911
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "b5e50652-28f7-4691-802d-93133293ef2c",
+    "status": "blocked",
+    "phase": "blocked",
+    "completion": {
+      "outcome": "blocked",
+      "rationale": "7 plan step(s) did not finish successfully.",
+      "blockers": [
+        {
+          "code": "plan_steps_unfinished",
+          "severity": "blocking",
+          "message": "7 plan step(s) did not finish successfully."
+        }
+      ]
+    },
+    "diffs": [
+      {
+        "path": "src/queue/task-queue.ts",
+        "changeType": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "diff": "--- a/src/queue/task-queue.ts\n+++ b/src/queue/task-queue.ts\n-    await Promise.all(pending.map(async (task) => {\n+    for (const task of pending) {\n-    }));\n+    }"
+      }
+    ],
+    "changedFileSnapshots": [
+      {
+        "path": "src/queue/task-queue.ts",
+        "beforeSha256": "8520726b1dd2c5aae17f3ad13a03c3d2d7aebc0dfe247aae658045416c02a8b5",
+        "afterSha256": "5b2035fc695f04a1472b8ff1fbf5cfdd09b99674e6409ed3158f3c8130804e84",
+        "beforeBytes": 586,
+        "afterBytes": 565,
+        "afterContent": "export type Task<T> = () => Promise<T>;\n\n/**\n * FIFO task queue. Tasks are executed one at a time in the order they were enqueued; `results`\n * holds each task's value in that same order once `run()` resolves.\n */\nexport class TaskQueue<T> {\n  private readonly tasks: Task<T>[] = [];\n  readonly results: T[] = [];\n\n  enqueue(task: Task<T>): void {\n    this.tasks.push(task);\n  }\n\n  async run(): Promise<void> {\n    const pending = this.tasks.splice(0);\n    for (const task of pending) {\n      const value = await task();\n      this.results.push(value);\n    }\n  }\n}\n"
+      }
+    ],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "verifier-1-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": true,
+      "findings": []
+    },
+    "forgeVerifySummary": {
+      "planId": "ba384d47-8379-4fc1-aedc-4d046cd93015",
+      "policyVersion": "legacy-workflow-policy-v1",
+      "requiredCount": 1,
+      "satisfiedCount": 1,
+      "missingCount": 0,
+      "staleCount": 0,
+      "verificationComplete": true,
+      "missingRequiredVerifiers": [],
+      "evidence": [
+        {
+          "evidenceId": "82eddc87-0192-448d-98dd-28ae958c9871",
+          "verifierId": "legacy.custom.9dab18fce7233503",
+          "status": "passed",
+          "durationMs": 1391,
+          "outputTruncated": false
+        }
+      ]
+    },
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 15,
+    "decisions": {
+      "allow:0": 14,
+      "allow:1": 1
+    },
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.ts",
+      "passed": true,
+      "elapsedMs": 617,
+      "outputHash": "974b874dbbe29e979084c54901b723e3b1308c1ba46c6ebd396417a11667ed70",
+      "output": "{\"passed\":4,\"failed\":0}\n\n"
+    },
+    "workflowAllPassed": true
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 2,
+    "task.state_changed": 13,
+    "status.changed": 15,
+    "plan.started": 1,
+    "agent.started": 2,
+    "router.selection": 1,
+    "tool.call_started": 17,
+    "tool.call_completed": 17,
+    "token.usage": 17,
+    "tool.execution_started": 15,
+    "file.read": 7,
+    "tool.execution_completed": 15,
+    "file.written": 1,
+    "file.change_proposed": 1,
+    "file.change_applied": 1,
+    "tool.execution_blocked": 2,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "run.outcome": 1
+  },
+  "failures": [
+    {
+      "type": "turn.failed",
+      "error": "The agent kept repeating actions without making progress, so CodeForge stopped the run (AGENT_NO_PROGRESS_DETECTED)"
+    },
+    {
+      "type": "turn.failed",
+      "error": "The implementation did not finish every planned step — The agent kept repeating actions without making progress, so CodeForge stopped the run (AGENT_NO_PROGRESS_DETECTED), so CodeForge did not mark this task complete. Review found no issues; verification passed. 1 file changed."
+    }
+  ],
+  "timing": {
+    "wallClockMs": 176039,
+    "deadlineHit": false
+  },
+  "memory": {
+    "rssBefore": 218587136,
+    "rssAfter": 196747264,
+    "heapUsedBefore": 80385624,
+    "heapUsedAfter": 89218312
+  }
+}

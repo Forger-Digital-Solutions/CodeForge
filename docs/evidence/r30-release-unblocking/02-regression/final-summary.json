@@ -1,0 +1,13 @@
+{
+  "schema": "r30-final-regression-summary-1",
+  "sourceCommit": "999d41683da9b6eb5fa2059e28f46f8b1d3dc576",
+  "fileCount": 459,
+  "testCaseGroups": 1232,
+  "totalTests": 3625,
+  "passedTests": 3577,
+  "failedTests": 0,
+  "skippedTests": 48,
+  "success": true,
+  "startedAt": "2026-09-24T11:13:52.891Z",
+  "lastTestAt": "2026-09-24T11:23:07.865Z"
+}

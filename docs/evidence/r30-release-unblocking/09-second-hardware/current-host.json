@@ -1,0 +1,11 @@
+{
+  "CheckedAt": "2026-09-24T10:49:12.5111530Z",
+  "OS": "Microsoft Windows NT 10.0.26200.0",
+  "Architecture": "X64",
+  "Cpu": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+  "LogicalProcessors": 12,
+  "TotalMemoryBytes": 34060460032,
+  "Gpu": [],
+  "NodeVersion": "v24.19.0",
+  "GpuStatus": "unavailable in command environment"
+}

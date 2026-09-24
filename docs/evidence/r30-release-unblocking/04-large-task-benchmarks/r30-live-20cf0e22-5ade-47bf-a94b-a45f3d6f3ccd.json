@@ -1,0 +1,847 @@
+{
+  "schema": "r30-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-24T06:00:11.893Z",
+  "sourceCommit": "96b7f21ef87e4f8ca886b0e886d25295c2b88526",
+  "workflowServiceSourceSha256": "ee643318e1590a6bf9b0762954b5591fc3447d25146c81d52d416eed60c86a91",
+  "workflowServiceDistSha256": "3c2d4a16eeee39e3b47dc685540ec8e22a9e5698c9651395e6823468f4e975c7",
+  "runId": "r30-live-20cf0e22-5ade-47bf-a94b-a45f3d6f3ccd",
+  "task": {
+    "r27TaskId": "r27-large-config-rename",
+    "sourceTaskId": "ts-large-context-rename-config-key",
+    "taskClass": "large_context",
+    "corpusDigest": "11ae2ea3649772e92fcf55610383e10ea4e63436c720c20ad157d04e09c08660"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "routeLock": "route",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 45,
+    "maxOutputTokens": 4096,
+    "timeoutMs": 900000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine",
+    "failureInjection": null
+  },
+  "provider": {
+    "inferenceRequestCount": 28,
+    "measuredInputTokens": 154580,
+    "measuredOutputTokens": 15641,
+    "requestsWithoutTokenUsage": 4,
+    "injected429Count": 0,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 24728,
+        "firstUsefulEventMs": 24705,
+        "inputTokens": 3524,
+        "outputTokens": 2454,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 12345,
+        "firstUsefulEventMs": 12326,
+        "inputTokens": 3685,
+        "outputTokens": 421,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 5014,
+        "firstUsefulEventMs": 4993,
+        "inputTokens": 3816,
+        "outputTokens": 328,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 5,
+        "kind": "stream",
+        "elapsedMs": 22398,
+        "firstUsefulEventMs": 22381,
+        "inputTokens": 4179,
+        "outputTokens": 2309,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 6,
+        "kind": "stream",
+        "elapsedMs": 3116,
+        "firstUsefulEventMs": 3102,
+        "inputTokens": 4421,
+        "outputTokens": 302,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 7,
+        "kind": "stream",
+        "elapsedMs": 12653,
+        "firstUsefulEventMs": 12635,
+        "inputTokens": 4634,
+        "outputTokens": 1259,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 8,
+        "kind": "stream",
+        "elapsedMs": 19989,
+        "firstUsefulEventMs": 19975,
+        "inputTokens": 4856,
+        "outputTokens": 1325,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 9,
+        "kind": "stream",
+        "elapsedMs": 26599,
+        "firstUsefulEventMs": 26582,
+        "inputTokens": 5136,
+        "outputTokens": 2473,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 10,
+        "kind": "stream",
+        "elapsedMs": 1508,
+        "firstUsefulEventMs": 1489,
+        "inputTokens": 5444,
+        "outputTokens": 103,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 11,
+        "kind": "stream",
+        "elapsedMs": 5800,
+        "firstUsefulEventMs": 5781,
+        "inputTokens": 5666,
+        "outputTokens": 812,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 12,
+        "kind": "stream",
+        "elapsedMs": 3197,
+        "firstUsefulEventMs": 3182,
+        "inputTokens": 6154,
+        "outputTokens": 369,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 13,
+        "kind": "stream",
+        "elapsedMs": 1890,
+        "firstUsefulEventMs": 1870,
+        "inputTokens": 6608,
+        "outputTokens": 112,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 14,
+        "kind": "stream",
+        "elapsedMs": 9279,
+        "firstUsefulEventMs": 9266,
+        "inputTokens": 6766,
+        "outputTokens": 614,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 15,
+        "kind": "stream",
+        "elapsedMs": 3063,
+        "firstUsefulEventMs": 3049,
+        "inputTokens": 6983,
+        "outputTokens": 234,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 16,
+        "kind": "stream",
+        "elapsedMs": 1531,
+        "firstUsefulEventMs": 1518,
+        "inputTokens": 7296,
+        "outputTokens": 59,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 17,
+        "kind": "stream",
+        "elapsedMs": 3638,
+        "firstUsefulEventMs": 3618,
+        "inputTokens": 7495,
+        "outputTokens": 325,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 18,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 19,
+        "kind": "stream",
+        "elapsedMs": 1837,
+        "firstUsefulEventMs": 1823,
+        "inputTokens": 7895,
+        "outputTokens": 157,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 20,
+        "kind": "stream",
+        "elapsedMs": 3222,
+        "firstUsefulEventMs": 2999,
+        "inputTokens": 8059,
+        "outputTokens": 269,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 21,
+        "kind": "stream",
+        "elapsedMs": 3045,
+        "firstUsefulEventMs": 3030,
+        "inputTokens": 8419,
+        "outputTokens": 344,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 22,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 23,
+        "kind": "stream",
+        "elapsedMs": 2692,
+        "firstUsefulEventMs": 2676,
+        "inputTokens": 8509,
+        "outputTokens": 188,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 24,
+        "kind": "stream",
+        "elapsedMs": 3821,
+        "firstUsefulEventMs": 3783,
+        "inputTokens": 8605,
+        "outputTokens": 414,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 25,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 26,
+        "kind": "stream",
+        "elapsedMs": 1756,
+        "firstUsefulEventMs": 1709,
+        "inputTokens": 8687,
+        "outputTokens": 99,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 27,
+        "kind": "stream",
+        "elapsedMs": 3345,
+        "firstUsefulEventMs": 3327,
+        "inputTokens": 8819,
+        "outputTokens": 287,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 28,
+        "kind": "stream",
+        "elapsedMs": 8180,
+        "firstUsefulEventMs": 3454,
+        "inputTokens": 8924,
+        "outputTokens": 384,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229191279
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229257494
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229265993
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229290773
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229303062
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229311047
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229333473
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229336460
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229349347
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229369313
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229395939
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229397474
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229403354
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229406502
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229408399
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229417852
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229429247
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229455842
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229459631
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229468027
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229470075
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229473147
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229480828
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229490863
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229519535
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229533256
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229571656
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229573499
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229576777
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "4439b1bb-7314-4650-93bc-95945d4ba232",
+    "status": "completed",
+    "phase": "completed",
+    "completion": {
+      "outcome": "completed",
+      "rationale": "All required completion checks passed.",
+      "blockers": []
+    },
+    "diffs": [
+      {
+        "path": "README.md",
+        "changeType": "modified",
+        "additions": 0,
+        "deletions": 1,
+        "diff": "--- a/README.md\n+++ b/README.md\n-"
+      },
+      {
+        "path": "src/config/defaults.ts",
+        "changeType": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "diff": "--- a/src/config/defaults.ts\n+++ b/src/config/defaults.ts\n-  maxRetries: 3,\n+  retryLimit: 3,"
+      },
+      {
+        "path": "src/config/load-config.ts",
+        "changeType": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "diff": "--- a/src/config/load-config.ts\n+++ b/src/config/load-config.ts\n-  if (!Number.isInteger(merged.maxRetries) || merged.maxRetries < 0) throw new Error(\"maxRetries must be a non-negative integer\");\n+  if (!Number.isInteger(merged.retryLimit) || merged.retryLimit < 0) throw new Error(\"retryLimit must be a non-negative integer\");"
+      },
+      {
+        "path": "src/config/types.ts",
+        "changeType": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "diff": "--- a/src/config/types.ts\n+++ b/src/config/types.ts\n-  maxRetries: number;\n+  retryLimit: number;"
+      },
+      {
+        "path": "src/net/attempt-budget.ts",
+        "changeType": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "diff": "--- a/src/net/attempt-budget.ts\n+++ b/src/net/attempt-budget.ts\n-  return 1 + config.maxRetries;\n+  return 1 + config.retryLimit;"
+      },
+      {
+        "path": "src/net/retry-executor.ts",
+        "changeType": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "diff": "--- a/src/net/retry-executor.ts\n+++ b/src/net/retry-executor.ts\n-      if (attempt > config.maxRetries) throw error;\n+      if (attempt > config.retryLimit) throw error;"
+      },
+      {
+        "path": "src/ops/cli-flags.ts",
+        "changeType": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "diff": "--- a/src/ops/cli-flags.ts\n+++ b/src/ops/cli-flags.ts\n-    if (arg.startsWith(\"--max-retries=\")) out.maxRetries = Number(arg.slice(\"--max-retries=\".length));\n+    if (arg.startsWith(\"--max-retries=\")) out.retryLimit = Number(arg.slice(\"--max-retries=\".length));"
+      },
+      {
+        "path": "src/ops/health-report.ts",
+        "changeType": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "diff": "--- a/src/ops/health-report.ts\n+++ b/src/ops/health-report.ts\n-  return `${config.name} region=${config.region} retries=${config.maxRetries} timeout=${config.timeoutMs}ms`;\n+  return `${config.name} region=${config.region} retries=${config.retryLimit} timeout=${config.timeoutMs}ms`;"
+      }
+    ],
+    "changedFileSnapshots": [
+      {
+        "path": "README.md",
+        "beforeSha256": "b39fb63e0d58f2acafad0787e07f4af547388757e743c0a20c0a9ed1d077a383",
+        "afterSha256": "300d08d3b00da55b6c4b6092726acaa08210e3611cdfd0b94d250e6293490447",
+        "beforeBytes": 105,
+        "afterBytes": 104,
+        "afterContent": "# fleet-control\n\nService configuration is defined in src/config and consumed across src/net and src/ops."
+      },
+      {
+        "path": "src/config/defaults.ts",
+        "beforeSha256": "cda8de01203f25ef0ba5142c24a9a4f76733878ae34fef59b5fe76b75d96cc62",
+        "afterSha256": "8547f06279c0754f933b9871757bfe8b734623885f78d3187fc02f1343fba7d3",
+        "beforeBytes": 184,
+        "afterBytes": 184,
+        "afterContent": "import type { ServiceConfig } from \"./types.ts\";\n\nexport const DEFAULT_CONFIG: ServiceConfig = {\n  name: \"fleet-control\",\n  retryLimit: 3,\n  timeoutMs: 5000,\n  region: \"us-east-1\",\n};\n"
+      },
+      {
+        "path": "src/config/load-config.ts",
+        "beforeSha256": "17005a088585d431c31e1fb12bbb49a508a6192140e9984ab5581ca346cda8da",
+        "afterSha256": "29e27195af99bcb10b7ad30e6792b2013cc812b1ab6851f107fa52c2d3ac7b76",
+        "beforeBytes": 462,
+        "afterBytes": 462,
+        "afterContent": "import { DEFAULT_CONFIG } from \"./defaults.ts\";\nimport type { ServiceConfig } from \"./types.ts\";\n\nexport function loadConfig(overrides: Partial<ServiceConfig> = {}): ServiceConfig {\n  const merged = { ...DEFAULT_CONFIG, ...overrides };\n  if (!Number.isInteger(merged.retryLimit) || merged.retryLimit < 0) throw new Error(\"retryLimit must be a non-negative integer\");\n  if (merged.timeoutMs <= 0) throw new Error(\"timeoutMs must be positive\");\n  return merged;\n}\n"
+      },
+      {
+        "path": "src/config/types.ts",
+        "beforeSha256": "fa67c263efc5f8376c1479d64adb2babc0bbf31b252282bed9a410bc700919f6",
+        "afterSha256": "ac43725dfab212c2c922ee8dbb9c97a5afd698b4d6bd10737e6d6a21ea5b666c",
+        "beforeBytes": 112,
+        "afterBytes": 112,
+        "afterContent": "export interface ServiceConfig {\n  name: string;\n  retryLimit: number;\n  timeoutMs: number;\n  region: string;\n}\n"
+      },
+      {
+        "path": "src/net/attempt-budget.ts",
+        "beforeSha256": "4b475293d722cec5c6123cc6c5e668f069e1f54c5c03090f39cf5b8179de7f61",
+        "afterSha256": "812720f90f543a6bd49c4125c7ad72926244a73a467ac45085f79466cf6bd604",
+        "beforeBytes": 202,
+        "afterBytes": 202,
+        "afterContent": "import type { ServiceConfig } from \"../config/types.ts\";\n\n/** Total attempts = initial try + retries. */\nexport function attemptBudget(config: ServiceConfig): number {\n  return 1 + config.retryLimit;\n}\n"
+      },
+      {
+        "path": "src/net/retry-executor.ts",
+        "beforeSha256": "65a7223db3796684d769787bede8558e1684cdedff4094c172761f50828e55e7",
+        "afterSha256": "747db5a5ba0f658fa094aaaceb3ac9b4a0e78c0db05db4e8857a7c01cb8703c8",
+        "beforeBytes": 341,
+        "afterBytes": 341,
+        "afterContent": "import type { ServiceConfig } from \"../config/types.ts\";\n\nexport async function withRetries<T>(config: ServiceConfig, operation: () => Promise<T>): Promise<T> {\n  let attempt = 0;\n  for (;;) {\n    try {\n      return await operation();\n    } catch (error) {\n      attempt += 1;\n      if (attempt > config.retryLimit) throw error;\n    }\n  }\n}\n"
+      },
+      {
+        "path": "src/ops/cli-flags.ts",
+        "beforeSha256": "e019358cfb6e5f739b90b36236fb12bb89e05adeb22461d6f133263e48d75084",
+        "afterSha256": "1c74df2055da0c01cd0a3f8248b5f45cda1640e717adac11cd3dedf4fcdb61aa",
+        "beforeBytes": 414,
+        "afterBytes": 414,
+        "afterContent": "import type { ServiceConfig } from \"../config/types.ts\";\n\nexport function parseFlags(argv: string[]): Partial<ServiceConfig> {\n  const out: Partial<ServiceConfig> = {};\n  for (const arg of argv) {\n    if (arg.startsWith(\"--max-retries=\")) out.retryLimit = Number(arg.slice(\"--max-retries=\".length));\n    if (arg.startsWith(\"--timeout=\")) out.timeoutMs = Number(arg.slice(\"--timeout=\".length));\n  }\n  return out;\n}\n"
+      },
+      {
+        "path": "src/ops/health-report.ts",
+        "beforeSha256": "d846a0a65a55e0104d5d4b2f8ac38d51c794517ac9506aa378cb0a606a2f06d2",
+        "afterSha256": "8b3e8f3a4d9feff370dbe4c19f7396fd6107f451e1f69a8904e9113e623c75ef",
+        "beforeBytes": 234,
+        "afterBytes": 234,
+        "afterContent": "import type { ServiceConfig } from \"../config/types.ts\";\n\nexport function describeConfig(config: ServiceConfig): string {\n  return `${config.name} region=${config.region} retries=${config.retryLimit} timeout=${config.timeoutMs}ms`;\n}\n"
+      }
+    ],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "verifier-1-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": false,
+      "findings": [
+        {
+          "code": "non_functional_change",
+          "severity": "advisory",
+          "path": "README.md",
+          "message": "Change in README.md touches only comments or whitespace; it cannot make a failing verification pass."
+        }
+      ]
+    },
+    "forgeVerifySummary": {
+      "planId": "47efcb6f-f8f6-433a-b7a5-59527cd42373",
+      "policyVersion": "legacy-workflow-policy-v1",
+      "requiredCount": 1,
+      "satisfiedCount": 1,
+      "missingCount": 0,
+      "staleCount": 0,
+      "verificationComplete": true,
+      "missingRequiredVerifiers": [],
+      "evidence": [
+        {
+          "evidenceId": "edb2c483-69a2-4548-89f6-914e71e8c7e2",
+          "verifierId": "legacy.custom.d382ccf0543a8a6b",
+          "status": "passed",
+          "durationMs": 1430,
+          "outputTruncated": false
+        }
+      ]
+    },
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 21,
+    "decisions": {
+      "allow:0": 12,
+      "allow:1": 9
+    },
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.ts",
+      "passed": true,
+      "elapsedMs": 3714,
+      "outputHash": "883c90b24bf1ff82fea50114fe4142ea462b25c2af44a5c3a07bf1f6036ba491",
+      "output": "{\"passed\":9,\"failed\":0}\n\n"
+    },
+    "workflowAllPassed": true
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 2,
+    "task.state_changed": 11,
+    "status.changed": 14,
+    "plan.started": 1,
+    "agent.started": 2,
+    "router.selection": 1,
+    "eightbit.status": 4,
+    "tool.call_started": 23,
+    "tool.call_completed": 23,
+    "token.usage": 24,
+    "tool.execution_started": 21,
+    "file.read": 9,
+    "tool.execution_completed": 20,
+    "file.written": 8,
+    "file.change_proposed": 8,
+    "file.change_applied": 8,
+    "tool.execution_blocked": 2,
+    "tool.execution_failed": 1,
+    "assistant.message.started": 1,
+    "text.delta": 77,
+    "assistant.message.completed": 1,
+    "turn.completed": 2,
+    "agent.completed": 2,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "task.completed": 1,
+    "run.outcome": 1
+  },
+  "failures": [
+    {
+      "type": "tool.execution_failed",
+      "error": "[TOOL_NO_EFFECT] README.md already has exactly these bytes. Re-read the target and choose a different edit; this call made no progress.",
+      "toolName": "write_file"
+    }
+  ],
+  "toolSequence": [
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.execution_blocked",
+      "toolName": "read_file",
+      "reason": "forgegreen_duplicate_suppressed"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.execution_blocked",
+      "toolName": "read_file",
+      "reason": "forgegreen_duplicate_suppressed"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "edit_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "create_checkpoint"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "write_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "write_file"
+    }
+  ],
+  "timing": {
+    "wallClockMs": 405402,
+    "deadlineHit": false
+  },
+  "memory": {
+    "rssBefore": 226037760,
+    "rssAfter": 241524736,
+    "heapUsedBefore": 111232200,
+    "heapUsedAfter": 129391800
+  }
+}

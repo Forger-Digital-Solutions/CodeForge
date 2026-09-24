@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-09-24T11:13:21.475Z",
+  "npmAuditExitCode": 0,
+  "summary": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "dependenciesAudited": 674,
+  "auditError": null,
+  "blocking": [],
+  "accepted": [],
+  "nonBlocking": [],
+  "status": "PASS"
+}

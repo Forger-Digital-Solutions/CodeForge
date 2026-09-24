@@ -1,0 +1,358 @@
+{
+  "schema": "r30-live-workflow-completion-receipt-1",
+  "recordedAt": "2026-09-24T06:03:24.757Z",
+  "sourceCommit": "96b7f21ef87e4f8ca886b0e886d25295c2b88526",
+  "workflowServiceSourceSha256": "ee643318e1590a6bf9b0762954b5591fc3447d25146c81d52d416eed60c86a91",
+  "workflowServiceDistSha256": "3c2d4a16eeee39e3b47dc685540ec8e22a9e5698c9651395e6823468f4e975c7",
+  "runId": "r30-live-8f59c861-16b0-4066-81af-a120f7a2d577",
+  "task": {
+    "r27TaskId": "r27-small-queue-order",
+    "sourceTaskId": "ts-bug-fix-queue-order",
+    "taskClass": "bug_fix",
+    "corpusDigest": "85f30992ce6db1fce556cf7b8d0cb216235f1fc6926c5ed6afc2a6c596996c02"
+  },
+  "configuration": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "routeLock": "route",
+    "topology": "workflow_service_agent_runtime",
+    "permissionMode": "full_autonomy",
+    "planMode": "auto",
+    "maxRequests": 35,
+    "maxOutputTokens": 4096,
+    "timeoutMs": 600000,
+    "completionAuthority": "evaluateCompletion via WorkflowEngine",
+    "failureInjection": "one controlled provider 429 before first inference dispatch"
+  },
+  "provider": {
+    "inferenceRequestCount": 11,
+    "measuredInputTokens": 26018,
+    "measuredOutputTokens": 6337,
+    "requestsWithoutTokenUsage": 6,
+    "injected429Count": 1,
+    "requests": [
+      {
+        "requestNumber": 1,
+        "kind": "stream",
+        "elapsedMs": 3,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "ProviderError"
+      },
+      {
+        "requestNumber": 2,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 3,
+        "kind": "stream",
+        "elapsedMs": 6747,
+        "firstUsefulEventMs": 6729,
+        "inputTokens": 4226,
+        "outputTokens": 765,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 4,
+        "kind": "stream",
+        "elapsedMs": 6743,
+        "firstUsefulEventMs": 6724,
+        "inputTokens": 4484,
+        "outputTokens": 450,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 5,
+        "kind": "stream",
+        "elapsedMs": 29074,
+        "firstUsefulEventMs": 29055,
+        "inputTokens": 4579,
+        "outputTokens": 2629,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 6,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 7,
+        "kind": "stream",
+        "elapsedMs": 24530,
+        "firstUsefulEventMs": 24516,
+        "inputTokens": 6312,
+        "outputTokens": 1822,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 8,
+        "kind": "stream",
+        "elapsedMs": 9026,
+        "firstUsefulEventMs": 9010,
+        "inputTokens": 6417,
+        "outputTokens": 671,
+        "outputCapExceeded": false,
+        "outcome": "completed"
+      },
+      {
+        "requestNumber": 9,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 10,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      },
+      {
+        "requestNumber": 11,
+        "kind": "stream",
+        "elapsedMs": 0,
+        "firstUsefulEventMs": null,
+        "inputTokens": null,
+        "outputTokens": null,
+        "outputCapExceeded": false,
+        "outcome": "started"
+      }
+    ],
+    "observedResponses": [
+      {
+        "modelId": null,
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229681738
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229687720
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229696168
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229703028
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229709842
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229738971
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229747419
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229772157
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229781168
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229789667
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "status": 200,
+        "headers": [],
+        "observedAt": 1790229798062
+      }
+    ]
+  },
+  "workflow": {
+    "taskId": "4ee2dc6b-13e5-44ca-a5d4-161a7bf4f122",
+    "status": "blocked",
+    "phase": "blocked",
+    "completion": {
+      "outcome": "blocked",
+      "rationale": "7 plan step(s) did not finish successfully.",
+      "blockers": [
+        {
+          "code": "plan_steps_unfinished",
+          "severity": "blocking",
+          "message": "7 plan step(s) did not finish successfully."
+        }
+      ]
+    },
+    "diffs": [],
+    "changedFileSnapshots": [],
+    "verificationAttempts": [
+      {
+        "attempt": 1,
+        "verifiers": [
+          {
+            "id": "verifier-1-custom",
+            "kind": "custom",
+            "status": "passed",
+            "exitCode": 0
+          }
+        ]
+      }
+    ],
+    "review": {
+      "approved": true,
+      "findings": []
+    },
+    "forgeVerifySummary": {
+      "planId": "504c72bc-67d9-42b7-9e5d-1fd67044a1fd",
+      "policyVersion": "legacy-workflow-policy-v1",
+      "requiredCount": 1,
+      "satisfiedCount": 1,
+      "missingCount": 0,
+      "staleCount": 0,
+      "verificationComplete": true,
+      "missingRequiredVerifiers": [],
+      "evidence": [
+        {
+          "evidenceId": "fdce760f-ccfa-4bc9-aee8-99148b56e6a4",
+          "verifierId": "legacy.custom.9dab18fce7233503",
+          "status": "passed",
+          "durationMs": 1409,
+          "outputTruncated": false
+        }
+      ]
+    },
+    "repairs": []
+  },
+  "authority": {
+    "receiptCount": 5,
+    "decisions": {
+      "allow:0": 5
+    },
+    "asksUnanswered": 0
+  },
+  "verification": {
+    "hidden": {
+      "command": "node hidden/verify.ts",
+      "passed": false,
+      "elapsedMs": 608,
+      "exitCode": 1,
+      "outputHash": "6e3a8abcffe15e8600b5eb7e9109f18440b31791be88d459fd6694b133f2b080",
+      "output": "{\"passed\":1,\"failed\":3}\n\nFAIL completion-order\nFAIL results-order\nFAIL sequential\n"
+    },
+    "workflowAllPassed": true
+  },
+  "eventTypes": {
+    "task.created": 1,
+    "task.started": 1,
+    "turn.started": 2,
+    "task.state_changed": 13,
+    "status.changed": 15,
+    "plan.started": 1,
+    "agent.started": 2,
+    "router.selection": 1,
+    "eightbit.status": 5,
+    "tool.call_started": 5,
+    "tool.call_completed": 5,
+    "token.usage": 5,
+    "tool.execution_started": 5,
+    "file.read": 3,
+    "tool.execution_completed": 5,
+    "turn.failed": 2,
+    "agent.completed": 1,
+    "workflow.verification_started": 1,
+    "forgeverify.plan_created": 1,
+    "forgeverify.attempt_started": 1,
+    "forgeverify.evidence_created": 1,
+    "workflow.verification_completed": 1,
+    "workflow.review_completed": 1,
+    "workflow.completion_decided": 1,
+    "evidence.created": 1,
+    "checkpoint.created": 1,
+    "run.outcome": 1
+  },
+  "failures": [
+    {
+      "type": "turn.failed",
+      "error": "The nvidia/nemotron-3-super-120b-a12b:free route is at capacity right now."
+    },
+    {
+      "type": "turn.failed",
+      "error": "The implementation did not finish every planned step — The nvidia/nemotron-3-super-120b-a12b:free route is at capacity right now., so CodeForge did not mark this task complete. Review found no issues; verification passed."
+    }
+  ],
+  "toolSequence": [
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "search_files"
+    },
+    {
+      "type": "tool.call_started",
+      "toolName": "read_file"
+    }
+  ],
+  "timing": {
+    "wallClockMs": 121616,
+    "deadlineHit": false
+  },
+  "memory": {
+    "rssBefore": 218775552,
+    "rssAfter": 192532480,
+    "heapUsedBefore": 80286632,
+    "heapUsedAfter": 87621832
+  }
+}

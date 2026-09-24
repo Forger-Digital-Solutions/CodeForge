@@ -1,0 +1,33 @@
+{
+  "schema": "r30-packaged-audits-1",
+  "sourceCommit": "999d41683da9b6eb5fa2059e28f46f8b1d3dc576",
+  "archiveSha256": "768b6557819dd527f50dcb3e3e12c09adfcd0f586cd2db19a04e3279986777bd",
+  "internalDependencyGraph": {
+    "status": "PASS",
+    "shippedInternalPackages": 28
+  },
+  "runtimeDependencyGraph": {
+    "status": "PASS",
+    "modules": 353,
+    "externalPackages": 18
+  },
+  "buildIdentity": {
+    "status": "PASS",
+    "requireClean": true,
+    "dirty": false
+  },
+  "authEndpoint": {
+    "status": "PASS",
+    "channel": "production",
+    "url": "https://codeforge-cloud-va.onrender.com"
+  },
+  "browserSecurity": {
+    "status": "PASS",
+    "sandbox": true,
+    "nodeIntegration": false,
+    "contextIsolation": true,
+    "webSecurity": true,
+    "controlPlaneBearerInjection": true,
+    "preloadBearerFree": true
+  }
+}

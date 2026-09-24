@@ -1,0 +1,11 @@
+{
+  "Schema": "r30-install-preflight-1",
+  "CheckedAt": "2026-09-24T11:11:15.0752603Z",
+  "ExistingInstall": true,
+  "DisplayName": "CodeForge 0.4.0",
+  "DisplayVersion": "0.4.0",
+  "UninstallString": "\"C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\codeforge-desktop\\Uninstall CodeForge.exe\" /currentuser",
+  "Action": "refused_to_replace_existing_install",
+  "InstallerRun": false,
+  "UninstallerRun": false
+}

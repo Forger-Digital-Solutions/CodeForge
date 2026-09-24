@@ -1,0 +1,21 @@
+{
+  "CheckedAt": "2026-09-24T05:26:20.9187347Z",
+  "Artifacts": [
+    {
+      "Path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+      "Status": "NotSigned",
+      "Signer": null
+    },
+    {
+      "Path": "apps/desktop/release/CodeForge-Setup-0.4.0.exe",
+      "Status": "NotSigned",
+      "Signer": null
+    },
+    {
+      "Path": "apps/desktop/release/CodeForge-Portable.exe",
+      "Status": "NotSigned",
+      "Signer": null
+    }
+  ],
+  "AvailableCodeSigningIdentities": 0
+}

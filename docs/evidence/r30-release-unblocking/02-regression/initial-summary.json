@@ -1,0 +1,21 @@
+{
+  "schema": "r30-initial-regression-summary-1",
+  "sourceCommit": "96b7f21ef87e4f8ca886b0e886d25295c2b88526",
+  "totalSuites": 459,
+  "totalTests": 3625,
+  "passedTests": 3575,
+  "failedTests": 2,
+  "skippedTests": 48,
+  "failures": [
+    {
+      "file": "G:/CodeForge/packages/forgegreen-campaign/test/fg11-source-state.test.ts",
+      "title": "FG-11 source-state / campaign-harness identity the live repository currently matches the certified source-state document",
+      "failure": "AssertionError: expected false to be true // Object.is equality\n    at G:/CodeForge/packages/forgegreen-campaign/test/fg11-source-state.test.ts:55:27\n    at file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:1628:35\n    at file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:26\n    at file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3319:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3314:10)\n    at file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3299:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3257:10)\n    at file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3876:64"
+    },
+    {
+      "file": "G:/CodeForge/packages/forgegreen-campaign/test/fg12e-harness-provenance.test.ts",
+      "title": "FG-12E harness provenance freezing the FG-12E identity re-verifies the certified Candidate D source-state and does not change it",
+      "failure": "SourceStateDriftError: FG12E_SOURCE_STATE_DRIFT\n    at freezeFg12eIdentity (G:/CodeForge/packages/forgegreen-campaign/src/fg12e/harness-identity.ts:37:28)\n    at G:/CodeForge/packages/forgegreen-campaign/test/fg12e-harness-provenance.test.ts:32:22\n    at file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:1628:35\n    at file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:26\n    at file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3319:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3314:10)\n    at file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3299:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3257:10)"
+    }
+  ]
+}
