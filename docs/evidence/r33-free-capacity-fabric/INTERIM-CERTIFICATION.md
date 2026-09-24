@@ -9,6 +9,14 @@
 - Normal workflow runs no longer construct a fixed per-run request envelope. An explicitly supplied envelope remains for controlled tests and diagnostics. No-progress, tool, working-time and completion controls remain active.
 - Hosted discovery checks the existing provider-policy authority before registering a route. An OpenRouter standard-terms account with no enterprise override is `policy_blocked`, not reported as healthy managed capacity.
 - A deterministic workflow test performed 34 changing edit calls, then completed only after verification and a decisive goal review. A focused hosted-policy test proves the blocked discovery behavior.
+- The guarded `scripts/r33-recertify-source-state.mjs` recorded material-source ID `bd2f90f6ea49cb420c9e0f3021ae34bb2db055b453ef169f8e2e27f6eb864441`, changing only the reviewed workflow-service material file. R32's historical identity remains in the recertification ledger.
+
+## Verification at this checkpoint
+
+- Full TypeScript project build: PASS (`node node_modules/typescript/bin/tsc -b --force`).
+- Focused goal-review suite before the new long-edit case: 15/15 PASS; the new 34-edit case: 1/1 PASS. Focused hosted registry suite: 13/13 PASS.
+- Initial canonical `vitest run`: 3,624 passed, 48 skipped, two source-state provenance failures from the changed R32 fingerprint. The R33 guarded recertification was then applied; both provenance files passed 8/8. A fresh canonical run against the updated identity is in progress.
+- Capacity model validation and all R33 JSON parsing: PASS. Secret-scan self-test and scan: PASS, zero owner-review-required findings; the generated legacy scan report was restored to avoid unrelated evidence churn.
 
 ## Actual supply observed
 

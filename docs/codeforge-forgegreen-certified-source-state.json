@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "acec20dffe5b0f856ca6b8165474ba3424be27a266e2451b85e32eaedacb6274",
-  "surfaceVersion": "r32-autonomy-perfection-v2",
+  "sourceStateId": "bd2f90f6ea49cb420c9e0f3021ae34bb2db055b453ef169f8e2e27f6eb864441",
+  "surfaceVersion": "r33-free-capacity-fabric-interim-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -62,7 +62,7 @@
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
     "packages/server/src/duplicate-suppression.ts": "5609d0e3817b1214cf1540810f355bef3ce842c3",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "91afb3c2bd806d4f91ea4f23a4f8ef83e2d63542",
+    "packages/server/src/workflow-service.ts": "d982aa02762cb5786ae864f1e2325f2677445b68",
     "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "41042502fd939c990ea737745e3334d07c1aa7d5",
@@ -1294,18 +1294,36 @@
       "regressionEvidence": "R32 live acceptance batch receipts under docs/evidence/r32-autonomy-perfection/10-live-acceptance; deterministic starvation/contract matrix green in workflow-goal-review.test.ts; packaged live-provider proof in 30-packaged-live-proof. Final post-recertification regression is recorded in the R32 certification document.",
       "recertifiedAt": "2026-09-24",
       "sourceStateConstant": "CODEFORGE_R32_AUTONOMY_PERFECTION_V2_SOURCE_STATE"
+    },
+    {
+      "label": "R33 interim free-capacity workflow change",
+      "reason": "Record the reviewed R33 removal of the default fixed workflow inference-request envelope. Explicit diagnostic envelopes remain, and fail-closed goal review, ForgeVerify, and evaluateCompletion authority are unchanged. This is an interim source identity, not final R33 release certification.",
+      "priorSourceStateId": "acec20dffe5b0f856ca6b8165474ba3424be27a266e2451b85e32eaedacb6274",
+      "priorSurfaceVersion": "r32-autonomy-perfection-v2",
+      "resultingSourceStateId": "bd2f90f6ea49cb420c9e0f3021ae34bb2db055b453ef169f8e2e27f6eb864441",
+      "resultingSurfaceVersion": "r33-free-capacity-fabric-interim-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "Normal runs no longer construct a fixed total/reserve inference-request envelope; an envelope is created only when explicitly configured for a controlled test or operator diagnostic. Review remains fail-closed on an inconclusive verdict.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r33-free-capacity-fabric/INTERIM-CERTIFICATION.md; focused workflow goal-review suite, full TypeScript build, and current canonical regression status recorded there.",
+      "recertifiedAt": "2026-09-24",
+      "sourceStateConstant": "CODEFORGE_R33_INTERIM_FREE_CAPACITY_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the reviewed FG-8 through R32 material implementation surface by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm. Historical campaign evidence remains bound to its recorded source-state identity.",
-  "recertifiedAt": "2026-09-24T20:13:34.710Z",
+  "generationNote": "This interim source-state ID is derived from the reviewed FG-8 through R33 material implementation surface by packages/forgegreen-campaign/src/source-state.ts. Historical R32 evidence remains bound to its prior identity; this is not final R33 release certification.",
+  "recertifiedAt": "2026-09-24T21:09:22.234Z",
   "recertification": {
-    "phase": "R32 follow-on — stated-contract source widened to raw task text",
-    "reason": "Re-issue the R32 source-state after a live-evidence-driven amendment: checkStatedContracts now scans intent.rawMessage so stated contracts bind regardless of goal-slicing. Companion fix in packages/workflow/src/task-intelligence.ts (non-material) stops sentence-splitting on file-extension dots. No gate relaxed.",
+    "phase": "R33 interim free-capacity workflow change",
+    "reason": "Record the reviewed R33 removal of the default fixed workflow inference-request envelope. Explicit diagnostic envelopes remain, and fail-closed goal review, ForgeVerify, and evaluateCompletion authority are unchanged. This is an interim source identity, not final R33 release certification.",
     "changedFiles": [
       "packages/server/src/workflow-service.ts"
     ],
-    "priorSourceStateId": "5314df384678807aed7ca06d63c921cc35c2996e6ec2592fee479c2b97be0056",
+    "priorSourceStateId": "acec20dffe5b0f856ca6b8165474ba3424be27a266e2451b85e32eaedacb6274",
     "guarded": true
   },
-  "recertificationReason": "Re-issue the R32 source-state after a live-evidence-driven amendment: checkStatedContracts now scans intent.rawMessage so stated contracts bind regardless of goal-slicing. Companion fix in packages/workflow/src/task-intelligence.ts (non-material) stops sentence-splitting on file-extension dots. No gate relaxed."
+  "recertificationReason": "Record the reviewed R33 removal of the default fixed workflow inference-request envelope. Explicit diagnostic envelopes remain, and fail-closed goal review, ForgeVerify, and evaluateCompletion authority are unchanged. This is an interim source identity, not final R33 release certification."
 }
