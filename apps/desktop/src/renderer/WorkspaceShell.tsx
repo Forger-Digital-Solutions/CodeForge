@@ -169,7 +169,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
     return () => {
       active = false;
     };
-  }, []);
+  }, [runtimeEndpoint]);
 
   useEffect(() => {
     if (window.electronAPI?.getSystemInfo) {
