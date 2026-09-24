@@ -8,22 +8,12 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const docPath = path.join(repoRoot, "docs", "codeforge-forgegreen-certified-source-state.json");
 const doc = JSON.parse(fs.readFileSync(docPath, "utf8"));
-const priorSourceStateId = "c92386e90cbd1bf8dffb5a40f81083db0d53d12fab735ae319f1a221d67595a7";
-const priorSurfaceVersion = "r31-release-closure-v1";
+const priorSourceStateId = "5314df384678807aed7ca06d63c921cc35c2996e6ec2592fee479c2b97be0056";
+const priorSurfaceVersion = "r32-autonomy-perfection-v1";
 const changes = [
   {
-    file: "packages/server/src/agent-runtime.ts",
-    change: "R32 repair turns and goal-review turns route through the inference budget's reserved partition so semantic review is guaranteed a lane after implementation exhausts its primary partition; review-phase routing is scoped per run.",
-    addedToMaterialFiles: false,
-  },
-  {
     file: "packages/server/src/workflow-service.ts",
-    change: "R32 fail-closed semantic review: inconclusive or budget-starved review turns can never produce a met verdict; deterministic stated-contract check compares declared diff signatures against explicitly stated goal contracts and emits blocking goal_not_satisfied findings independent of model verdict, hardened against comment/string-literal spoofing; goal reviewers are told the diff digest is system-captured evidence they may cite directly.",
-    addedToMaterialFiles: false,
-  },
-  {
-    file: "packages/workflow/src/diff-review.ts",
-    change: "R32 non-git workspace coverage: when the workspace is not a git repository, reviewDiff walks the filesystem with the same snapshot exclusions and timestamp filters so newly created files reach review and deterministic contract checks instead of being invisible.",
+    change: "R32 follow-on: checkStatedContracts scans the raw task message in addition to extracted goals — a contract stated anywhere in the task binds even when goal extraction slices the message (live evidence showed .ts extensions shredding goals and hiding the stated ValidationResult contract).",
     addedToMaterialFiles: false,
   },
 ];
@@ -53,11 +43,11 @@ if (uncommittedMaterial) {
 }
 
 const sourceStateId = createHash("sha256").update(JSON.stringify(entries.map((entry) => [entry.path, entry.blobHash]))).digest("hex");
-const surfaceVersion = "r32-autonomy-perfection-v1";
+const surfaceVersion = "r32-autonomy-perfection-v2";
 const recertifiedAt = new Date().toISOString();
 const recertification = {
-  label: "R32 autonomy perfection and false-success closure",
-  reason: "Re-issue the frozen ForgeGreen source-state over three reviewed R32 material files. The changes strengthen the semantic-review tail (reserved inference lane, fail-closed inconclusive verdicts, deterministic stated-contract enforcement, non-git created-file coverage). Completion authority remains solely in evaluateCompletion; no gate was relaxed.",
+  label: "R32 follow-on — stated-contract source widened to raw task text",
+  reason: "Re-issue the R32 source-state after a live-evidence-driven amendment: checkStatedContracts now scans intent.rawMessage so stated contracts bind regardless of goal-slicing. Companion fix in packages/workflow/src/task-intelligence.ts (non-material) stops sentence-splitting on file-extension dots. No gate relaxed.",
   priorSourceStateId,
   priorSurfaceVersion,
   resultingSourceStateId: sourceStateId,
@@ -65,7 +55,7 @@ const recertification = {
   changes,
   regressionEvidence: "R32 live acceptance batch receipts under docs/evidence/r32-autonomy-perfection/10-live-acceptance; deterministic starvation/contract matrix green in workflow-goal-review.test.ts; packaged live-provider proof in 30-packaged-live-proof. Final post-recertification regression is recorded in the R32 certification document.",
   recertifiedAt: recertifiedAt.slice(0, 10),
-  sourceStateConstant: "CODEFORGE_R32_AUTONOMY_PERFECTION_SOURCE_STATE",
+  sourceStateConstant: "CODEFORGE_R32_AUTONOMY_PERFECTION_V2_SOURCE_STATE",
 };
 
 doc.sourceStateId = sourceStateId;

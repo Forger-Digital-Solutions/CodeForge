@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "5314df384678807aed7ca06d63c921cc35c2996e6ec2592fee479c2b97be0056",
-  "surfaceVersion": "r32-autonomy-perfection-v1",
+  "sourceStateId": "acec20dffe5b0f856ca6b8165474ba3424be27a266e2451b85e32eaedacb6274",
+  "surfaceVersion": "r32-autonomy-perfection-v2",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -62,7 +62,7 @@
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
     "packages/server/src/duplicate-suppression.ts": "5609d0e3817b1214cf1540810f355bef3ce842c3",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "98e9c62e239b8fdff39c2359eda877266f6872d2",
+    "packages/server/src/workflow-service.ts": "91afb3c2bd806d4f91ea4f23a4f8ef83e2d63542",
     "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "41042502fd939c990ea737745e3334d07c1aa7d5",
@@ -1276,20 +1276,36 @@
       "regressionEvidence": "R32 live acceptance batch receipts under docs/evidence/r32-autonomy-perfection/10-live-acceptance; deterministic starvation/contract matrix green in workflow-goal-review.test.ts; packaged live-provider proof in 30-packaged-live-proof. Final post-recertification regression is recorded in the R32 certification document.",
       "recertifiedAt": "2026-09-24",
       "sourceStateConstant": "CODEFORGE_R32_AUTONOMY_PERFECTION_SOURCE_STATE"
+    },
+    {
+      "label": "R32 follow-on — stated-contract source widened to raw task text",
+      "reason": "Re-issue the R32 source-state after a live-evidence-driven amendment: checkStatedContracts now scans intent.rawMessage so stated contracts bind regardless of goal-slicing. Companion fix in packages/workflow/src/task-intelligence.ts (non-material) stops sentence-splitting on file-extension dots. No gate relaxed.",
+      "priorSourceStateId": "5314df384678807aed7ca06d63c921cc35c2996e6ec2592fee479c2b97be0056",
+      "priorSurfaceVersion": "r32-autonomy-perfection-v1",
+      "resultingSourceStateId": "acec20dffe5b0f856ca6b8165474ba3424be27a266e2451b85e32eaedacb6274",
+      "resultingSurfaceVersion": "r32-autonomy-perfection-v2",
+      "changes": [
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "R32 follow-on: checkStatedContracts scans the raw task message in addition to extracted goals — a contract stated anywhere in the task binds even when goal extraction slices the message (live evidence showed .ts extensions shredding goals and hiding the stated ValidationResult contract).",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "R32 live acceptance batch receipts under docs/evidence/r32-autonomy-perfection/10-live-acceptance; deterministic starvation/contract matrix green in workflow-goal-review.test.ts; packaged live-provider proof in 30-packaged-live-proof. Final post-recertification regression is recorded in the R32 certification document.",
+      "recertifiedAt": "2026-09-24",
+      "sourceStateConstant": "CODEFORGE_R32_AUTONOMY_PERFECTION_V2_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the reviewed FG-8 through R32 material implementation surface by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm. Historical campaign evidence remains bound to its recorded source-state identity.",
-  "recertifiedAt": "2026-09-24T19:14:18.897Z",
+  "recertifiedAt": "2026-09-24T20:13:34.710Z",
   "recertification": {
-    "phase": "R32 autonomy perfection and false-success closure",
-    "reason": "Re-issue the frozen ForgeGreen source-state over three reviewed R32 material files. The changes strengthen the semantic-review tail (reserved inference lane, fail-closed inconclusive verdicts, deterministic stated-contract enforcement, non-git created-file coverage). Completion authority remains solely in evaluateCompletion; no gate was relaxed.",
+    "phase": "R32 follow-on — stated-contract source widened to raw task text",
+    "reason": "Re-issue the R32 source-state after a live-evidence-driven amendment: checkStatedContracts now scans intent.rawMessage so stated contracts bind regardless of goal-slicing. Companion fix in packages/workflow/src/task-intelligence.ts (non-material) stops sentence-splitting on file-extension dots. No gate relaxed.",
     "changedFiles": [
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/src/workflow-service.ts",
-      "packages/workflow/src/diff-review.ts"
+      "packages/server/src/workflow-service.ts"
     ],
-    "priorSourceStateId": "c92386e90cbd1bf8dffb5a40f81083db0d53d12fab735ae319f1a221d67595a7",
+    "priorSourceStateId": "5314df384678807aed7ca06d63c921cc35c2996e6ec2592fee479c2b97be0056",
     "guarded": true
   },
-  "recertificationReason": "Re-issue the frozen ForgeGreen source-state over three reviewed R32 material files. The changes strengthen the semantic-review tail (reserved inference lane, fail-closed inconclusive verdicts, deterministic stated-contract enforcement, non-git created-file coverage). Completion authority remains solely in evaluateCompletion; no gate was relaxed."
+  "recertificationReason": "Re-issue the R32 source-state after a live-evidence-driven amendment: checkStatedContracts now scans intent.rawMessage so stated contracts bind regardless of goal-slicing. Companion fix in packages/workflow/src/task-intelligence.ts (non-material) stops sentence-splitting on file-extension dots. No gate relaxed."
 }
