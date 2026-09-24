@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "bd2f90f6ea49cb420c9e0f3021ae34bb2db055b453ef169f8e2e27f6eb864441",
-  "surfaceVersion": "r33-free-capacity-fabric-interim-v1",
+  "sourceStateId": "7f059ffee8ef5e27829ee92fede825f8ebc3452112befb1f3365c6775a9e5d11",
+  "surfaceVersion": "r33-free-capacity-fabric-interim-v2",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -58,14 +58,14 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "7f0b6e84e868e48852abad090cc7bce5dfadc116",
+    "packages/server/src/agent-runtime.ts": "a7d6af2815e7feb0399584af718cde9bd59614c6",
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
     "packages/server/src/duplicate-suppression.ts": "5609d0e3817b1214cf1540810f355bef3ce842c3",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/workflow-service.ts": "d982aa02762cb5786ae864f1e2325f2677445b68",
+    "packages/server/src/workflow-service.ts": "aeb7bd074c3925c280ed8d1ddb68dcfac86950f7",
     "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
-    "packages/sessions/src/session-state.ts": "41042502fd939c990ea737745e3334d07c1aa7d5",
+    "packages/sessions/src/session-state.ts": "f330cf400ee11a3fa6edc6833b14af63ccd06210",
     "packages/tools/src/index.ts": "ad3007606e0674f65a396786c8264ddd32732cdc",
     "packages/workflow/src/diff-review.ts": "3cb34d3f7e6496781088b2ac7f0e5923fc1d3120",
     "packages/workflow/src/forge-verify.ts": "d134438dfde57de85c756cdd8aaab192f1d801e8",
@@ -1312,18 +1312,48 @@
       "regressionEvidence": "docs/evidence/r33-free-capacity-fabric/INTERIM-CERTIFICATION.md; focused workflow goal-review suite, full TypeScript build, and current canonical regression status recorded there.",
       "recertifiedAt": "2026-09-24",
       "sourceStateConstant": "CODEFORGE_R33_INTERIM_FREE_CAPACITY_SOURCE_STATE"
+    },
+    {
+      "label": "R33 durable capacity waiting and reviewer pool independence",
+      "reason": "Record the reviewed R33 durable capacity-wait changes: turns park on waiting_for_free_capacity (persisted via free_capacity_wait work items including a midTurn flag in session-state), resume only on fresh fabric admission, defer workflow timeout and working budget while parked, and route reviewer admission to an independent physical pool. Completion-gate, ForgeVerify, and ForgeZero zero-billing authority are unchanged. This is an interim source identity, not final R33 release certification.",
+      "priorSourceStateId": "bd2f90f6ea49cb420c9e0f3021ae34bb2db055b453ef169f8e2e27f6eb864441",
+      "priorSurfaceVersion": "r33-free-capacity-fabric-interim-v1",
+      "resultingSourceStateId": "7f059ffee8ef5e27829ee92fede825f8ebc3452112befb1f3365c6775a9e5d11",
+      "resultingSurfaceVersion": "r33-free-capacity-fabric-interim-v2",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Capacity exhaustion now parks turns in durable waiting_for_free_capacity (admission-time and mid-turn), with sweeper/probe resumption, stable reservation identity, restart recovery, and reviewer pool-independence hints. No path to completed bypasses the completion gate.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "waitForTurn observes the parked state, polls with fresh admission decisions, defers the workflow timeout while an owned turn waits on capacity, and forwards the implement turn's capacityPoolId as preferIndependentFromPoolId to goal review.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/sessions/src/session-state.ts",
+          "change": "free_capacity_wait work items persist a midTurn flag so restart recovery re-arms the sweeper and marks mid-flight waits for the no-replay resume directive.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r33-free-capacity-fabric/INTERIM-CERTIFICATION.md and load-simulation/README.md; focused server/eight-bit/forge-zero/benchmark/UI suites and the 1M production-ledger control-plane run recorded there.",
+      "recertifiedAt": "2026-09-24",
+      "sourceStateConstant": "CODEFORGE_R33_INTERIM_FREE_CAPACITY_SOURCE_STATE_V2"
     }
   ],
-  "generationNote": "This interim source-state ID is derived from the reviewed FG-8 through R33 material implementation surface by packages/forgegreen-campaign/src/source-state.ts. Historical R32 evidence remains bound to its prior identity; this is not final R33 release certification.",
-  "recertifiedAt": "2026-09-24T21:09:22.234Z",
+  "generationNote": "This interim source-state ID is derived from the reviewed FG-8 through R33 material implementation surface by packages/forgegreen-campaign/src/source-state.ts. Historical R32 and interim-v1 evidence remains bound to its prior identity; this is not final R33 release certification.",
+  "recertifiedAt": "2026-09-24T23:04:56.993Z",
   "recertification": {
-    "phase": "R33 interim free-capacity workflow change",
-    "reason": "Record the reviewed R33 removal of the default fixed workflow inference-request envelope. Explicit diagnostic envelopes remain, and fail-closed goal review, ForgeVerify, and evaluateCompletion authority are unchanged. This is an interim source identity, not final R33 release certification.",
+    "phase": "R33 durable capacity waiting and reviewer pool independence",
+    "reason": "Record the reviewed R33 durable capacity-wait changes: turns park on waiting_for_free_capacity (persisted via free_capacity_wait work items including a midTurn flag in session-state), resume only on fresh fabric admission, defer workflow timeout and working budget while parked, and route reviewer admission to an independent physical pool. Completion-gate, ForgeVerify, and ForgeZero zero-billing authority are unchanged. This is an interim source identity, not final R33 release certification.",
     "changedFiles": [
-      "packages/server/src/workflow-service.ts"
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/workflow-service.ts",
+      "packages/sessions/src/session-state.ts"
     ],
-    "priorSourceStateId": "acec20dffe5b0f856ca6b8165474ba3424be27a266e2451b85e32eaedacb6274",
+    "priorSourceStateId": "bd2f90f6ea49cb420c9e0f3021ae34bb2db055b453ef169f8e2e27f6eb864441",
     "guarded": true
   },
-  "recertificationReason": "Record the reviewed R33 removal of the default fixed workflow inference-request envelope. Explicit diagnostic envelopes remain, and fail-closed goal review, ForgeVerify, and evaluateCompletion authority are unchanged. This is an interim source identity, not final R33 release certification."
+  "recertificationReason": "Record the reviewed R33 durable capacity-wait changes: turns park on waiting_for_free_capacity (persisted via free_capacity_wait work items including a midTurn flag in session-state), resume only on fresh fabric admission, defer workflow timeout and working budget while parked, and route reviewer admission to an independent physical pool. Completion-gate, ForgeVerify, and ForgeZero zero-billing authority are unchanged. This is an interim source identity, not final R33 release certification."
 }
