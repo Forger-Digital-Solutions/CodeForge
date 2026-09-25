@@ -55,6 +55,49 @@ describe("Agent Turn Recovery & State Persistence (CF-07)", () => {
     expect(updatedTurn?.status).toBe("cancelled");
   });
 
+  it("emits the real prior→cancelled transition, never a cancelled→cancelled self-loop", async () => {
+    const runtime = createAgentRuntime({
+      sessionId: "session-recovery-1",
+      eventStore,
+      persistence,
+      firewall,
+      providerCatalog: new InMemoryProviderCatalog(),
+      workspacePath: tmpDir,
+      demoMode: true,
+    });
+    const turnId = await runtime.startTurn("cancel me");
+    await runtime.cancelTurn(turnId, "user requested");
+
+    const transitions = eventStore
+      .getAll()
+      .filter((e) => e.type === "status.changed")
+      .map((e) => e.payload as { from: string; to: string });
+    expect(transitions.some((t) => t.from === "running" && t.to === "cancelled")).toBe(true);
+    expect(transitions.some((t) => t.from === "cancelled" && t.to === "cancelled")).toBe(false);
+  });
+
+  it("a late cancel on a terminal turn never rewrites the terminal state", async () => {
+    const now = new Date().toISOString();
+    await persistence.upsertSession({ id: "session-recovery-1", title: "t", status: "completed", createdAt: now, updatedAt: now });
+    await persistence.upsertTurn({ id: "done-turn", sessionId: "session-recovery-1", seq: 1, userMessage: "done", status: "completed", startedAt: now, completedAt: now });
+    const runtime = createAgentRuntime({
+      sessionId: "session-recovery-1",
+      eventStore,
+      persistence,
+      firewall,
+      providerCatalog: new InMemoryProviderCatalog(),
+      workspacePath: tmpDir,
+      demoMode: true,
+    });
+    await runtime.init();
+    await runtime.cancelTurn("done-turn", "late stop click");
+    expect((await persistence.getTurn("done-turn"))?.status).toBe("completed");
+    const transitions = eventStore
+      .getAll()
+      .filter((e) => e.type === "status.changed" && (e.payload as { to?: string }).to === "cancelled");
+    expect(transitions).toEqual([]);
+  });
+
   it("classifies interrupted tool side effects conservatively without replaying them", async () => {
     const now = new Date().toISOString();
     persistence.upsertSession({ id: "session-recovery-1", title: "Recovery", status: "running", createdAt: now, updatedAt: now });

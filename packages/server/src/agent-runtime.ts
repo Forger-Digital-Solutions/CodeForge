@@ -76,6 +76,7 @@ import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, type
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
+import { TERMINAL_TURN_STATUSES, type CanonicalTurnStatus } from "./turn-state-machine.js";
 import { BROWSER_READ_ONLY_TOOLS, BROWSER_STATE_CHANGING_TOOLS } from "./external-tools.js";
 import {
   ERROR_CODES,
@@ -2995,6 +2996,11 @@ export class AgentRuntime {
   async cancelTurn(turnId: string, reason?: string): Promise<void> {
     const state = this.activeTurns.get(turnId);
     if (!state) {
+      // Cancel is idempotent on the persisted record: a Stop click racing an already-finished
+      // turn is a no-op, not an error. A turn absent from both memory and disk is the only
+      // "not found" worth reporting.
+      const persisted = await this.persistence.getTurn(turnId);
+      if (persisted && TERMINAL_TURN_STATUSES.has(persisted.status as CanonicalTurnStatus)) return;
       throw new Error(`Turn ${turnId} not found`);
     }
     const abortController = this.abortControllers.get(turnId);
@@ -3019,6 +3025,11 @@ export class AgentRuntime {
     } catch {
       // Best-effort cancellation of durable continuations
     }
+    const previousStatus = state.status;
+    if (previousStatus === "completed" || previousStatus === "failed" || previousStatus === "cancelled") {
+      // Terminal is terminal: a late cancel must not rewrite history or emit a fake transition.
+      return;
+    }
     state.status = "cancelled";
     state.completedAt = new Date();
     this.activeTurns.set(turnId, state);
@@ -3028,7 +3039,7 @@ export class AgentRuntime {
     const adapter = this.createAdapter();
     await adapter.emitTurnCancelled(turnId, reason);
     await this.emitStandaloneTurnOutcome(state, adapter, "cancelled");
-    adapter.emitStatusChanged(state.status, "cancelled");
+    adapter.emitStatusChanged(previousStatus, "cancelled");
   }
 
   async resolveApproval(approvalId: string, decision: "allow_once" | "allow_session" | "deny"): Promise<void> {

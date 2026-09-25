@@ -18,11 +18,12 @@ import type { AgentRuntime, HostedWorkerOptions } from "./agent-runtime.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import { redactSecrets } from "@codeforge/secrets";
 import { describeRunFailure } from "./run-failure.js";
-import type { RunFailure, RunOutcome } from "@codeforge/protocol";
+import type { RunFailure, RunOutcome, SessionStatus, TaskStatus } from "@codeforge/protocol";
 import type { TurnState } from "./agent-runtime.js";
 import type { PolicyReceipt, TaskAuthority } from "@codeforge/permissions";
 import { WorkspaceService, createWorkspaceService } from "./workspace-service.js";
 import { createWorkflowInferenceBudget, type InferenceLane } from "./inference-budget.js";
+import { sessionStatusForPhase, taskStatusForPhase } from "./turn-state-machine.js";
 
 export interface WorkflowServiceOptions {
   eventStore: EventStore;
@@ -1105,7 +1106,7 @@ export class WorkflowService {
         workspacePath: existing?.workspacePath ?? workspacePath,
       };
     };
-    const persistPhaseStatus = (task: WorkflowTask, status: string): void => {
+    const persistPhaseStatus = (task: WorkflowTask, status: SessionStatus): void => {
       phaseStatusWrites = phaseStatusWrites
         .catch(() => {})
         .then(async () => {
@@ -1113,7 +1114,7 @@ export class WorkflowService {
           await this.persistence.upsertSession({
             ...identity,
             updatedAt: new Date().toISOString(),
-            status: status as unknown as "running",
+            status,
           });
         })
         .catch(() => {});
@@ -1158,7 +1159,11 @@ export class WorkflowService {
         await persistForgeVerify("cost_gate_receipt", `${receipt.planId}-cost-gate`, receipt.planId, receipt);
       },
     };
-    // Snapshot adapter for phase transitions
+    // The engine reports only the new phase; the true `from` for every transition
+    // event is whatever this callback last emitted, starting from the task's
+    // initial `received` state and an already-running session.
+    let previousTaskStatus: TaskStatus = "received";
+    let previousSessionStatus: SessionStatus = "running";
     const engine = createWorkflowEngine({
       workspacePath,
       sessionId,
@@ -1173,29 +1178,22 @@ export class WorkflowService {
         ? () => this.userIntentHold!.waitForDispatch(sessionId, "verifier")
         : undefined,
       onPhaseChange: (phase: string, task: WorkflowTask) => {
-        // Map workflow phases to TaskStatus for task.state_changed
-        const statusMap: Record<string, string> = {
-          understanding: "reconnaissance",
-          inspecting: "reconnaissance",
-          building_context: "reconnaissance",
-          planning: "planning",
-          awaiting_approval: "user_input_required",
-          implementing: "implementing",
-          verifying: "testing",
-          diagnosing: "diagnosing",
-          repairing: "repairing",
-          reviewing: "reviewing",
-          summarizing: "validating",
-          completed: "complete",
-          blocked: "blocked",
-          failed: "failed_safely",
-          cancelled: "cancelled",
-        };
-        const to = statusMap[phase] ?? phase;
-        adapter.emitTaskStateChanged(taskId, task.phase, to);
-        adapter.emitStatusChanged(task.phase, phase);
+        // The engine mutates task.phase before this callback, so task.phase is the
+        // NEW phase, never the previous one — the true `from` lives in the tracked
+        // prior emit. Each channel carries its own vocabulary: task.state_changed
+        // speaks TaskStatus, status.changed and the session row speak SessionStatus.
+        const to = taskStatusForPhase(phase);
+        const sessionStatus = sessionStatusForPhase(phase);
+        if (previousTaskStatus !== to) {
+          adapter.emitTaskStateChanged(taskId, previousTaskStatus, to);
+        }
+        if (previousSessionStatus !== sessionStatus) {
+          adapter.emitStatusChanged(previousSessionStatus, sessionStatus);
+        }
+        previousTaskStatus = to;
+        previousSessionStatus = sessionStatus;
         // Persist ordered phase telemetry; terminal persistence below waits for this queue.
-        persistPhaseStatus(task, to);
+        persistPhaseStatus(task, sessionStatus);
       },
       onEvent: (evt: { type: string; payload: unknown }) => {
         if (evt.type === "workflow.plan_created") {
@@ -1546,11 +1544,11 @@ export class WorkflowService {
           // Final turn-like completion for compatibility
           await adapter.emitTurnCompleted(turnId, safeResult.summary);
         } else if (safeResult.status === "blocked") {
-          adapter.emitTaskStateChanged(taskId, "implementing", "blocked");
+          adapter.emitTaskStateChanged(taskId, previousTaskStatus, "blocked");
           await adapter.emitTurnFailed(turnId, runOutcome.summary, runOutcome.failure);
           adapter.emitStatusChanged("running", "failed");
         } else if (safeResult.status === "failed") {
-          adapter.emitTaskStateChanged(taskId, "implementing", "failed_safely");
+          adapter.emitTaskStateChanged(taskId, previousTaskStatus, "failed_safely");
           await adapter.emitTurnFailed(turnId, runOutcome.summary, runOutcome.failure);
           adapter.emitStatusChanged("running", "failed");
         } else if (safeResult.status === "cancelled") {
