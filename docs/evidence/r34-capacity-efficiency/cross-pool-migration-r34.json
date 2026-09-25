@@ -1,0 +1,207 @@
+{
+  "generatedAt": "2026-09-25T10:23:07.510Z",
+  "mode": "LIVE_INFERENCE_WITH_ONE_INJECTED_RATE_LIMIT",
+  "note": "All successful model calls are real provider inference. Exactly one RATE_LIMITED is injected on pool A after useful progress — the same signal a real 429 produces. No quota was burned to force exhaustion.",
+  "providers": {},
+  "turns": [
+    {
+      "turnId": "ebeb9997-49bb-4648-a1f9-a6786dc38d5e",
+      "status": "completed",
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "turnId": "3e62641d-c1a5-4bcf-838c-4c0ec472a23c",
+      "status": "completed",
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "capacityPoolId": "shared:mistral"
+    }
+  ],
+  "migration": {
+    "poolA": "groq",
+    "injectedAfterServedStreams": 1,
+    "injection": "RATE_LIMITED once on groq",
+    "admissiblePools": [
+      "shared:groq",
+      "shared:mistral"
+    ],
+    "supplyClassification": "MULTI_POOL_ADMISSIBLE"
+  },
+  "review": {
+    "providerId": "mistral",
+    "capacityPoolId": "shared:mistral",
+    "independentOfImplementation": false
+  },
+  "completion": {
+    "phase": "completed",
+    "status": "completed",
+    "fileFixed": true,
+    "poolA": "groq",
+    "poolB": "shared:mistral",
+    "poolBServedStreams": 3,
+    "poolAStreamsAtInjection": 1,
+    "admissiblePools": [
+      "shared:groq",
+      "shared:mistral"
+    ],
+    "supplyClassification": "MULTI_POOL_ADMISSIBLE",
+    "migrationProven": true,
+    "migrationVerdict": "MIGRATION_PROVEN"
+  },
+  "errors": [],
+  "supplyProbe": {
+    "demand": {
+      "requests": 1,
+      "inputTokens": 4096,
+      "outputTokens": 2048
+    },
+    "pools": [
+      {
+        "poolId": "shared:groq",
+        "providerId": "groq",
+        "admissible": true,
+        "reason": "ADMITTED"
+      },
+      {
+        "poolId": "shared:mistral",
+        "providerId": "mistral",
+        "admissible": true,
+        "reason": "ADMITTED"
+      },
+      {
+        "poolId": "shared:github-models",
+        "providerId": "github-models",
+        "admissible": false,
+        "reason": "CAPACITY_EXHAUSTED"
+      }
+    ],
+    "admissiblePools": [
+      "shared:groq",
+      "shared:mistral"
+    ],
+    "classification": "MULTI_POOL_ADMISSIBLE"
+  },
+  "waitTrace": [
+    {
+      "t": 514,
+      "turnId": "ebeb9997-49bb-4648-a1f9-a6786dc38d5e",
+      "status": "running",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 3030,
+      "turnId": "ebeb9997-49bb-4648-a1f9-a6786dc38d5e",
+      "status": "completed",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 4329,
+      "turnId": "3e62641d-c1a5-4bcf-838c-4c0ec472a23c",
+      "status": "running",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 4834,
+      "turnId": "ebeb9997-49bb-4648-a1f9-a6786dc38d5e",
+      "status": "completed",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 4834,
+      "turnId": "3e62641d-c1a5-4bcf-838c-4c0ec472a23c",
+      "status": "running",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 5338,
+      "turnId": "ebeb9997-49bb-4648-a1f9-a6786dc38d5e",
+      "status": "completed",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 5338,
+      "turnId": "3e62641d-c1a5-4bcf-838c-4c0ec472a23c",
+      "status": "running",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 5837,
+      "turnId": "ebeb9997-49bb-4648-a1f9-a6786dc38d5e",
+      "status": "completed",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 5838,
+      "turnId": "3e62641d-c1a5-4bcf-838c-4c0ec472a23c",
+      "status": "running",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 6338,
+      "turnId": "ebeb9997-49bb-4648-a1f9-a6786dc38d5e",
+      "status": "completed",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 6338,
+      "turnId": "3e62641d-c1a5-4bcf-838c-4c0ec472a23c",
+      "status": "running",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    }
+  ],
+  "served": {
+    "groq": {
+      "streams": 1,
+      "injections": 1,
+      "usage": [
+        {
+          "promptChars": 2598,
+          "inputTokens": 1654,
+          "outputTokens": 72
+        }
+      ]
+    },
+    "mistral": {
+      "streams": 3,
+      "injections": 0,
+      "usage": [
+        {
+          "promptChars": 3401,
+          "inputTokens": 2848,
+          "outputTokens": 102
+        },
+        {
+          "promptChars": 3609,
+          "inputTokens": 3023,
+          "outputTokens": 37
+        },
+        {
+          "promptChars": 4173,
+          "inputTokens": 2969,
+          "outputTokens": 171
+        }
+      ]
+    },
+    "github-models": {
+      "streams": 0,
+      "injections": 0,
+      "usage": []
+    }
+  },
+  "waitRecovery": {
+    "parked": false
+  }
+}
