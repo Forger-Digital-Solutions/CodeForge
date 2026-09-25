@@ -66,3 +66,18 @@ as `r34-capacity-efficiency-interim-v1` (`62e9d8fc…`) via
 `scripts/r34-recertify-source-state.mjs` following the established guarded
 recertification pattern. R33 baseline: 3,670 passed / 0 failed / 48 skipped across
 458 files.
+
+## Packaged build (Mission W)
+
+`release/win-unpacked` rebuilt from the sealed R34 tree at `04d98f5`, `dirty=false`:
+
+- `PACKAGED_BUILD_IDENTITY_VALID=PASS` — archive stamps HEAD `04d98f5`
+- `PACKAGED_INTERNAL_DEPENDENCY_GRAPH_PASS` — every shipped `@codeforge/*` dist file
+  byte-identical to the repo build (28 internal packages incl. server/eight-bit/
+  model-registry/providers/forge-zero with all R34 changes)
+- `PACKAGED_RUNTIME_DEPENDENCY_GRAPH_PASS` — 356 packaged modules, 18 external
+  packages, no unresolved imports
+- `PACKAGED_BROWSER_SECURITY_VALID=PASS` — sandbox=true, nodeIntegration=false,
+  contextIsolation=true, webSecurity=true, bearer injection confined to control plane
+- `PACKAGED_AUTH_ENDPOINT_VALID=PASS` — development channel, loopback endpoint
+  permitted under `--mode development`
