@@ -2487,7 +2487,7 @@ export class AgentRuntime {
       forgeGreenR0RunStatus = status;
       const hadModelFinalResponse = finalSummary.trim().length > 0;
       const completedResponse = status === "completed"
-        ? (hadModelFinalResponse ? finalSummary : "Completed the requested work and verification.")
+        ? (hadModelFinalResponse ? finalSummary : "Completed the requested work.")
         : exhaustedModelTurns
           ? `[${ERROR_CODES.AGENT_MODEL_TURN_LIMIT}] The ${req.role} agent used all ${budget.maxModelTurns} model turns without finishing; the work is unfinished, not complete.`
           : stopReason === "budget_exhausted"
@@ -3536,7 +3536,7 @@ export class AgentRuntime {
       this.activeTurns.set(turnId, state);
 
       const modelFinalResponse = this.lastAssistantResponseByTurn.get(turnId);
-      const finalResponseText = modelFinalResponse ?? "Completed the requested work and verification.";
+      const finalResponseText = modelFinalResponse ?? "Completed the requested work.";
       if (typeof (this.persistence as any).upsertWorkItem === "function") {
         try {
           await this.persistence.upsertWorkItem({
@@ -4545,7 +4545,7 @@ export class AgentRuntime {
       await this.persistTurn(turnState);
 
       const modelFinalResponse = this.lastAssistantResponseByTurn.get(turnId);
-      const finalResponseText = modelFinalResponse ?? "Completed the requested work and verification.";
+      const finalResponseText = modelFinalResponse ?? "Completed the requested work.";
       if (typeof (this.persistence as any).upsertWorkItem === "function") {
         try {
           await this.persistence.upsertWorkItem({

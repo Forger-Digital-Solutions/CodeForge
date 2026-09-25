@@ -915,6 +915,11 @@ export class CodeForgeServer {
       return;
     }
 
+    if (url.pathname === "/api/free-cloud/release-status" && req.method === "GET") {
+      this.handleFreeCloudReleaseStatus(res);
+      return;
+    }
+
     if (url.pathname === "/api/free-cloud/capacity" && req.method === "GET") {
       this.handleFreeCloudCapacity(res);
       return;
@@ -1567,9 +1572,17 @@ export class CodeForgeServer {
         for (const runtime of this.runtimes.values()) {
           const approval = runtime.getPendingApproval(approvalId ?? "");
           if (approval) {
-            runtime.resolveApproval(approvalId ?? "", data.decision ?? "deny");
-            res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-            res.end(JSON.stringify({ ok: true }));
+            // Resolve is durable-and-mutating — await it before reporting success, or a
+            // rejected write would report ok while becoming an unhandled rejection.
+            runtime.resolveApproval(approvalId ?? "", data.decision ?? "deny")
+              .then(() => {
+                res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+                res.end(JSON.stringify({ ok: true }));
+              })
+              .catch((error) => {
+                res.writeHead(500, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+                res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+              });
             return;
           }
         }
@@ -1616,9 +1629,15 @@ export class CodeForgeServer {
         for (const runtime of this.runtimes.values()) {
           const question = runtime.getPendingQuestion(questionId ?? "");
           if (question) {
-            runtime.resolveQuestion(questionId ?? "", data.answer ?? "");
-            res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-            res.end(JSON.stringify({ ok: true }));
+            runtime.resolveQuestion(questionId ?? "", data.answer ?? "")
+              .then(() => {
+                res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+                res.end(JSON.stringify({ ok: true }));
+              })
+              .catch((error) => {
+                res.writeHead(500, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+                res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+              });
             return;
           }
         }
@@ -2714,6 +2733,68 @@ export class CodeForgeServer {
       routes,
       reservations: snapshot ?? { activeReservations: 0 },
       dispatchTelemetry,
+    }));
+  }
+
+  /**
+   * Authenticated readiness summary: is this control plane capable of running free work right
+   * now, and if not, which class of blocker is responsible. `ready` never claims paid or
+   * local fallback — it means the Free Fabric has at least one admitted, healthy, unquarantined
+   * route. Blockers are classified so the UI can distinguish "no free supply yet" (external,
+   * retryable) from a software defect.
+   */
+  private handleFreeCloudReleaseStatus(res: http.ServerResponse): void {
+    if (!this.freeCloud || !this.freeFabric) {
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({
+        generatedAt: new Date().toISOString(),
+        ready: false,
+        supplyReady: false,
+        blockers: [{ code: "FREE_CLOUD_UNAVAILABLE", class: "internal", message: "Free Cloud service is not configured in this process", action: "Enable ForgeAuto/Free provider discovery" }],
+      }));
+      return;
+    }
+    const routes = this.freeCloud.capacityRoutes();
+    const pools = this.freeCloud.capacityPools();
+    const admitted = routes.filter((r) => r.lifecycle === "APPROVED" && r.enabled);
+    const healthy = admitted.filter((r) => r.healthy);
+    const quarantined = pools.filter((p) => this.freeCloud!.poolQuarantineOf(p.poolId) !== undefined);
+    const pendingQualification = this.freeCloud.pendingQualification().length;
+
+    const blockers: Array<{ code: string; class: "external_supply" | "internal" | "operator"; message: string; action: string }> = [];
+    if (healthy.length === 0) {
+      blockers.push({
+        code: admitted.length === 0 ? "NO_ADMITTED_FREE_ROUTE" : "NO_HEALTHY_FREE_ROUTE",
+        class: "external_supply",
+        message: admitted.length === 0
+          ? "No free route currently admitted by ForgeZero"
+          : `${admitted.length} admitted route(s), none currently healthy`,
+        action: pendingQualification > 0 ? "Wait for qualification; supply is being probed" : "Connect or qualify a free provider route",
+      });
+    }
+    if (pools.length > 0 && quarantined.length === pools.length) {
+      blockers.push({
+        code: "ALL_POOLS_QUARANTINED",
+        class: "operator",
+        message: "Every capacity pool is quarantined",
+        action: "Release quarantine via /api/free-cloud/pools/quarantine after investigation",
+      });
+    }
+
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify({
+      generatedAt: new Date().toISOString(),
+      ready: healthy.length > 0 && quarantined.length < pools.length,
+      supplyReady: healthy.length > 0,
+      supply: {
+        admittedRoutes: admitted.length,
+        healthyRoutes: healthy.length,
+        pools: pools.length,
+        quarantinedPools: quarantined.length,
+        pendingQualification,
+        qualifying: this.freeCloud.isQualifying(),
+      },
+      blockers,
     }));
   }
 
