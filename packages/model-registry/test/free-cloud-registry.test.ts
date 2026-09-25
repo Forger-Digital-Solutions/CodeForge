@@ -1105,3 +1105,117 @@ describe("FreeCloudService — managed pools & quarantine (R34 Mission B)", () =
     expect(managedRoute?.freeOnlyAdmissionProven).toBeUndefined();
   });
 });
+
+describe("FreeCloudService — billing-safety red team (R34 Mission P)", () => {
+  function redService() {
+    const fw = new ForgeZero();
+    fw.register(freeRecord("groq", "openai/gpt-oss-120b", { accessClass: "FREE_ALLOWANCE" }));
+    fw.register(freeRecord("openrouter", "openai/gpt-oss-120b:free"));
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(createMockProvider({ providerId: "groq" }));
+    catalog.register(createMockProvider({ providerId: "openrouter" }));
+    const svc = new FreeCloudService({
+      firewall: fw,
+      providerCatalog: catalog,
+      registry: new NormalizedModelRegistry(),
+      now: () => NOW,
+      qualificationRunner: async (model) => receipt(model.providerId, model.modelId),
+    });
+    return { svc, fw };
+  }
+
+  it("BYOK leak: a user-connected key never lands on the managed/shared surface", () => {
+    const { svc } = redService();
+    svc.setConnection(connected("groq", { planAttested: true, ownerUserId: "alice" }));
+    svc.setConnection(connected("openrouter", { credentialSource: "OAUTH", ownerUserId: "alice" }));
+
+    // The server's managed surface (index.ts: capacityPoolScope !== PER_USER_POOL).
+    const managed = svc.capacityRoutes().filter((r) => r.capacityPoolScope !== "PER_USER_POOL");
+    expect(managed.every((r) => r.providerId !== "groq" && r.providerId !== "openrouter")).toBe(true);
+    // And no managed pool row claims the user's credentials.
+    expect(svc.capacityPools().filter((p) => p.scope !== "PER_USER_POOL")).toEqual([]);
+    // Bob cannot see Alice's supply through any projection.
+    expect(svc.routesForUser("bob")).toEqual([]);
+    expect(svc.capacityIdentitiesFor("bob")).toEqual([]);
+  });
+
+  it("dev-key leak: an ENVIRONMENT credential classifies OWNER_DEV_FREE and is product-denied", () => {
+    const { svc } = redService();
+    svc.setConnection(connected("groq", { credentialSource: "ENVIRONMENT", planAttested: true }));
+    const routes = svc.capacityRoutes().filter((r) => r.providerId === "groq");
+    expect(routes.every((r) => r.supplyClass === "OWNER_DEV_FREE")).toBe(true);
+    expect(routes.every((r) => r.capacityPoolId.startsWith("owner:"))).toBe(true);
+    // The owner/dev pool may appear on the managed surface for observability but the policy
+    // gate refuses it — developer credentials never serve product traffic. (UNHEALTHY gates
+    // first while unqualified; once eligible the class gate still denies — assert both.)
+    for (const r of routes) {
+      expect(freeRouteExclusionReason(r)).toBe("UNHEALTHY");
+      expect(freeRouteExclusionReason({ ...r, healthy: true })).toBe("OWNER_DEV_FREE_NOT_PRODUCT_FREE");
+    }
+  });
+
+  it("a provider 402 (paid plan required) marks the route UNAVAILABLE and un-healthy", () => {
+    const { svc } = redService();
+    svc.setConnection(connected("groq", { planAttested: true }));
+    svc.onProviderResponse({ providerId: "groq", modelId: "openai/gpt-oss-120b", status: 402, headers: [], observedAt: NOW.getTime() });
+    const route = svc.capacityRoutes().find((r) => r.providerId === "groq");
+    expect(route?.healthy).toBe(false);
+    expect(freeRouteExclusionReason(route!)).toBe("UNHEALTHY");
+  });
+
+  it(":free-suffix loss — a route re-verified as non-free loses explicitZeroPrice and is denied", () => {
+    const { svc, fw } = redService();
+    // An ACCOUNT_DEPENDENT provider WITHOUT a free-plan attestation is where the price gate
+    // matters: freeOnlyAdmissionProven stays false, so verifiedFree is the only thing keeping
+    // the route inside zero-cash.
+    svc.setConnection(connected("groq", { planAttested: false }));
+    const before = svc.capacityRoutes().find((r) => r.providerId === "groq");
+    expect(before?.explicitZeroPrice).toBe(true);
+    expect(before?.freeOnlyAdmissionProven).toBe(false);
+    expect(freeRouteExclusionReason({ ...before!, healthy: true })).toBe("USER_CONNECTED_FREE_ONLY_GUARD_NOT_PROVEN");
+
+    // Catalog refresh observed the model renamed off the free surface — re-register without
+    // verification. explicitZeroPrice flips false and the price gate denies outright.
+    fw.register(freeRecord("groq", "openai/gpt-oss-120b", { accessClass: "FREE_ALLOWANCE", freeStatus: "unknown" as FreeModelRecord["freeStatus"] }));
+    const after = svc.capacityRoutes().find((r) => r.providerId === "groq");
+    expect(after?.explicitZeroPrice).toBe(false);
+    expect(freeRouteExclusionReason(after!)).toBe("UNHEALTHY");
+    expect(freeRouteExclusionReason({ ...after!, healthy: true })).toBe("PRICE_NOT_EXPLICITLY_ZERO");
+  });
+
+  it("a PAID_API provider's user key is PER_USER_POOL only — never on the managed surface", () => {
+    const { svc, fw } = redService();
+    fw.register(freeRecord("anthropic", "claude-sonnet-4", { freeStatus: "verified_free" }));
+    svc.setConnection(connected("anthropic", { credentialSource: "SECURE_STORAGE", planAttested: true, ownerUserId: "alice" }));
+    // A user's own paid-capable key is USER_CONNECTED_FREE — the BYOK path is per-user by
+    // construction. What must be proven: it can never masquerade as managed supply.
+    const routes = svc.capacityRoutes().filter((r) => r.providerId === "anthropic");
+    expect(routes.every((r) => r.supplyClass === "USER_CONNECTED_FREE")).toBe(true);
+    expect(routes.every((r) => r.capacityPoolScope === "PER_USER_POOL")).toBe(true);
+    expect(svc.capacityRoutes().filter((r) => r.capacityPoolScope !== "PER_USER_POOL").some((r) => r.providerId === "anthropic")).toBe(false);
+    expect(svc.routesForUser("bob").some((r) => r.providerId === "anthropic")).toBe(false);
+  });
+
+  it("oversubscribe: concurrent demands past a model-domain window deny honestly", () => {
+    const { svc } = redService();
+    svc.setConnection(connected("groq", { credentialSource: "FDS_GATEWAY" }));
+    svc.quota.record("groq", "openai/gpt-oss-120b", { remainingRequests: 1000, limitRequests: 1000, remainingTokens: 8000, limitTokens: 8000, observedAt: NOW.toISOString() });
+    const routes = svc.capacityRoutes().filter((r) => r.providerId === "groq");
+    const pools = svc.capacityPools();
+    const ledger = new CapacityReservationLedger({
+      routes: routes.map((r) => ({ ...r, roles: ["CODER"], enabled: true, healthy: true, lifecycle: "APPROVED" as const })),
+      pools,
+      firstRunReserveRequests: 0,
+      firstRunReserveTokens: 0,
+      maxActiveReservationsPerUser: 10,
+      now: () => NOW.getTime(),
+    });
+    const base = { userId: "u1", role: "CODER", taskKind: "interactive_turn", requests: 1, outputTokens: 0, isNewUser: false, priority: "normal" as const, createdAt: NOW.toISOString(), leaseUntil: new Date(NOW.getTime() + 60_000).toISOString() };
+    const first = ledger.reserve({ ...base, reservationId: "r1", routeIds: routes.map((r) => r.routeId), inputTokens: 5000 });
+    const second = ledger.reserve({ ...base, reservationId: "r2", routeIds: routes.map((r) => r.routeId), inputTokens: 5000 });
+    expect(first.admitted).toBe(true);
+    // 8k TPM − 5k active = 3k remaining < 5k demanded → honest denial, never oversubscribed.
+    expect(second.admitted).toBe(false);
+    expect(second.reason).toBe("CAPACITY_EXHAUSTED");
+  });
+});
