@@ -40,11 +40,16 @@ describe("local control-plane network exposure", () => {
     }
   });
 
-  it("binds a routable interface only when explicitly asked", async () => {
+  it("refuses a routable bind without a control-plane token, binds it only with one", async () => {
     const lan = routableAddress();
     if (!lan) return;
 
+    // An unauthenticated listener on a routable interface would expose approvals and workspace
+    // control to the LAN, so the bind is refused before the socket is even opened.
     server = createServer({ port: 0, dbPath: ":memory:", host: "0.0.0.0" });
+    await expect(server.start()).rejects.toThrow(/without a controlPlaneToken/);
+
+    server = createServer({ port: 0, dbPath: ":memory:", host: "0.0.0.0", controlPlaneToken: "test-control-token" });
     await server.start();
     const port = server.httpPort;
 

@@ -146,7 +146,7 @@ describe("AgentRuntime durable turn boundaries", () => {
       kind: "agent_final_response",
       turnId,
       status: "completed",
-      response: "Completed the requested work and verification.",
+      response: "Completed the requested work.",
       source: "runtime_completion_summary",
     });
   });
@@ -179,14 +179,14 @@ describe("AgentRuntime durable turn boundaries", () => {
 
     expect(result).toMatchObject({
       status: "completed",
-      summary: "Completed the requested work and verification.",
+      summary: "Completed the requested work.",
     });
     expect(await persistence.getWorkItem(`agent-final-response-${runId}`)).toMatchObject({
       kind: "agent_final_response",
       runId,
       turnId: runId,
       status: "completed",
-      response: "Completed the requested work and verification.",
+      response: "Completed the requested work.",
       source: "runtime_completion_summary",
     });
   });
