@@ -11,6 +11,44 @@
 - `CapacityReservationLedger` was rewritten to indexed bookkeeping after a direct probe measured O(active) scans per `reserve()` (~0.79 ms at 1.2k actives, ~5.9 ms at 10.2k — a quadratic wall at scale). The indexed ledger measures ~0.006 ms per admission at 1,000,003 live reservations. The R33 control-plane harness now routes **every** admission through this production ledger, cross-validated per tick against the independent synthetic model: 2,002,048 `reserve()` calls, 0 divergences, 0 duplicate admissions, 0 leaked leases, 0 starved users at 1M virtual users / 2M tasks (19.1 s wall, 908 MiB RSS). See `load-simulation/README.md`.
 - This remains **synthetic control-plane evidence**: virtual users, invented route capacities, no network, no database, no live inference. It proves the production admission primitive is correct and flat at 1M concurrent-lease scale; it does not prove CodeForge owns or can serve a million concurrent coding sessions.
 
+## Addendum — live supply audit, telemetry repair, wait→recovery proof (2026-09-25)
+
+- **Live supply audited** against real credentials (`live-supply/INVENTORY-2026-09-24.md`):
+  Groq per-model 1,000 req + 8k TPM pools; Mistral codestral 125 RPM / 625k TPM; Cloudflare
+  10k neurons/day (0.35–1.48 n/call measured); GitHub Models serving but unquantified;
+  OpenRouter 282/1,000 remaining but `POLICY_BLOCKED`; Cerebras trial dead (402); Gemini
+  project suspended; Mistral non-codestral models at `limit: 0`.
+- **Quota telemetry repaired**: Mistral's `-minute` header aliases now parse in both quota
+  layers; `effectiveQuota` refills elapsed provider-declared resets instead of stranding a
+  pool at a stale `remaining: 0` forever; `GraphqlCloudflareUsageSource` +
+  `FileCloudflareNeuronBudgetStore` are wired in the desktop — the shipping Cloudflare
+  adapter was previously dead code (no `usageSource` injected → fail-closed on every call).
+  The neuron oracle still needs an analytics-scoped token (owner action).
+- **Capacity-transition chaos suite** (`capacity-transition-chaos.test.ts`): absent windows
+  deny (GitHub-Models semantics), `limit:0` windows deny, negative remaining denies,
+  unparseable `resetAt` never poisons `nextAvailableAt`, demand-boundary admits/denies,
+  pool-window precedence, foreign-pool identity mismatch. Fixed a real gap:
+  `provider_units` windows now count as an authoritative accounting dimension — a
+  neuron-metered route was previously undenied-able on request/token dimensions it does
+  not meter.
+- **Live wait→recovery proven twice** (`cross-pool-migration-2026-09-25.json`,
+  `token-efficiency-2026-09-25.json`): real Mistral inference → injected 429 → durable
+  `waiting_for_free_capacity` → sweeper re-admission at ~60 s (`rateLimitDefaultTtlMs`) →
+  resume → review → verification → `completed`. First run also proved a 20-minute
+  no-supply park never falsely terminalizes.
+- **Single-admissible-pool finding**: `shared:mistral` is the only measured pool that fits
+  the honest 16k-token turn demand (Groq 8k TPM, GitHub 8k/request cap, Cloudflare gated,
+  OpenRouter blocked). Live distinct-pool migration is therefore **supply-blocked**, not a
+  runtime defect — documented with unblocking actions in `SUPPLY-CAPACITY-2026-09-25.md`.
+- **Supply-class correction**: measured env-key supply is `OWNER_DEV_FREE`
+  (`OWNER_DEV_FREE_NOT_PRODUCT_FREE`) — dogfood evidence describing what the same accounts
+  would offer as server-owned managed upstreams or user-connected pools; it is not current
+  product-facing managed supply.
+- **Observability**: `GET /api/free-cloud/capacity` now exposes pools, routes, and the live
+  reservation ledger — the operator surface for capacity waits.
+- **Measured turn economics**: a real trivial-fix workflow cost 8 calls / ~22.5k input +
+  ~330 output tokens (~98% input-dominated; +21% context growth inside one turn).
+
 ## Source and change evidence
 
 ## Source and change evidence
@@ -58,16 +96,16 @@ The executable [capacity model](capacity-model/REPORT.md) uses seven R32 receipt
 | --- | --- |
 | Product architecture | PARTIAL — existing Free Fabric and completion gate retained; fixed workflow envelope removed |
 | Free capacity fabric | PARTIAL — turn-level admission, durable capacity parking, probe/sweeper resumption, and restart recovery exist; live per-dispatch replenishment unproven |
-| Provider migration | PARK→MIGRATE→RESUME PROVEN IN TESTS (incl. restart + cross-pool); R33 LIVE PROVIDER PROOF OPEN |
-| 8-Bit supply intelligence | PARTIAL — health and quota headers exist; current account/domain registry incomplete |
+| Provider migration | PARK→RESUME PROVEN LIVE twice on real Mistral (injected 429 → 60s durable park → resume → complete); distinct-pool migration PROVEN IN TESTS, live proof SUPPLY-BLOCKED (single admissible pool) |
+| 8-Bit supply intelligence | IMPROVED — Mistral `-minute` headers parse; elapsed-reset refill (`effectiveQuota`); GraphQL neuron oracle wired (scoped token pending); account/domain registry still incomplete |
 | Review capacity | FAIL-CLOSED; independent-pool routing proven in workflow tests; independent quota DOMAIN at production scale open |
 | Fairness | EXISTING RESERVATIONS; O(1) indexed admission proven to 1M live holds synthetically; distributed scale proof open |
 | Control-plane scale | SYNTHETIC PASS at 1K/10K/100K/1M virtual users with production `CapacityReservationLedger` adjudicating every admission (0 divergences); production distributed scale NOT CERTIFIED |
-| Current inference supply | NOT CERTIFIED for managed commercial use |
+| Current inference supply | MEASURED — 8 quota domains audited live; ≈20 concurrent agent users theoretical on `shared:mistral` alone; still NOT CERTIFIED for managed commercial use (measured keys are `OWNER_DEV_FREE`) |
 | Credit runway | OPPORTUNITY MODEL ONLY; no award or balance certified |
 | Mass-scale economics | SENSITIVITY MODEL, not contracted pricing |
 | Security | HOSTED LEGAL GATE IMPROVED; full R33 chaos/security suite open |
-| Billing safety | UNCHANGED ZERO-BILLING POLICY; credit overage controls unverified |
+| Billing safety | ZERO-BILLING BOUNDARY AUDITED — ForgeZero verify, zero-cash-only fabric route tables, `freeRouteExclusionReason` final gate; `paid-auto` reachable only by explicit user selection + env flag; credit overage controls unverified |
 | Desktop and packaging | R32 evidence inherited; R33 packaging rerun open |
 
 ## Remaining release gates
