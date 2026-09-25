@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "98387a8b3a505c8bf1052c5b192bfeae596fbd8f022329f6c96c362c6e67a3a7",
-  "surfaceVersion": "r33-free-capacity-fabric-interim-v3",
+  "sourceStateId": "62e9d8fc9ab6788ca1183a4e66080344c75abdf47581e65ab864e4255d915209",
+  "surfaceVersion": "r34-capacity-efficiency-interim-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -27,6 +27,7 @@
     "packages/server/src/autonomous-orchestrator.ts",
     "packages/server/src/duplicate-suppression.ts",
     "packages/server/src/forge-verify-persistence.ts",
+    "packages/server/src/history-compaction.ts",
     "packages/server/src/workflow-service.ts",
     "packages/sessions/src/persistence.ts",
     "packages/sessions/src/postgres-persistence.ts",
@@ -58,10 +59,11 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "01a321a251e26e850b13cb3caa9a0e78c8f5bc1b",
+    "packages/server/src/agent-runtime.ts": "77c58969eea1395589070edb11b1d1e3869f8233",
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
     "packages/server/src/duplicate-suppression.ts": "5609d0e3817b1214cf1540810f355bef3ce842c3",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
+    "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
     "packages/server/src/workflow-service.ts": "aeb7bd074c3925c280ed8d1ddb68dcfac86950f7",
     "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
@@ -1358,18 +1360,41 @@
       "regressionEvidence": "docs/evidence/r33-free-capacity-fabric/INTERIM-CERTIFICATION.md; canonical vitest run recorded there.",
       "recertifiedAt": "2026-09-24",
       "sourceStateConstant": "CODEFORGE_R33_INTERIM_FREE_CAPACITY_SOURCE_STATE_V3"
+    },
+    {
+      "label": "R34 capacity-efficiency surface",
+      "reason": "Record the R34 capacity-efficiency surface: AgentRuntime admission now demands measured serialized-request tokens (estimatePromptOnlyTokens) plus role-scoped outputTokenDemand scaled by the governor's learned tokenizerRatio, the repo_* tool surface is withheld when no workspace exists so impossible tools cannot consume free-tier context, and dispatch copies compact superseded or mutation-stale tool outputs via the new history-compaction module. Durable history, capacity-wait semantics, completion-gate, ForgeVerify, and ForgeZero authority are unchanged. This is an interim source identity, not final R34 release certification.",
+      "priorSourceStateId": "98387a8b3a505c8bf1052c5b192bfeae596fbd8f022329f6c96c362c6e67a3a7",
+      "priorSurfaceVersion": "r33-free-capacity-fabric-interim-v3",
+      "resultingSourceStateId": "62e9d8fc9ab6788ca1183a4e66080344c75abdf47581e65ab864e4255d915209",
+      "resultingSurfaceVersion": "r34-capacity-efficiency-interim-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Admission demand is measured from the serialized request per candidate route (learned tokenizerRatio margin, role-scoped outputTokenDemand); getAvailableTools withholds repo_* tools absent a workspace; provider dispatch copies route through compaction of superseded/mutation-stale tool outputs.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/history-compaction.ts",
+          "change": "New module: builds the dispatch-time message copy that replaces stale tool outputs with markers without mutating durable history.",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r34-capacity-efficiency/R34-CERTIFICATION-ADDENDUM.md; canonical vitest run recorded there.",
+      "recertifiedAt": "2026-09-25",
+      "sourceStateConstant": "CODEFORGE_R34_INTERIM_CAPACITY_EFFICIENCY_SOURCE_STATE_V1"
     }
   ],
-  "generationNote": "This interim source-state ID is derived from the reviewed FG-8 through R33 material implementation surface by packages/forgegreen-campaign/src/source-state.ts. Historical R32, interim-v1, and interim-v2 identities remain bound to their prior states; this is not final R33 release certification.",
-  "recertifiedAt": "2026-09-24T23:15:49.486Z",
+  "generationNote": "This interim source-state ID is derived from the reviewed FG-8 through R34 material implementation surface by packages/forgegreen-campaign/src/source-state.ts. Historical R32, R33 interim identities remain bound to their prior states; this is not final R34 release certification.",
+  "recertifiedAt": "2026-09-25T10:34:54.052Z",
   "recertification": {
-    "phase": "R33 capacity-wait cancel-path guard",
-    "reason": "Record the reviewed guard on AgentRuntime.updateCapacityWait so cancellation of a parked turn cannot crash when a persistence surface lacks work-item support. Capacity-wait semantics, completion-gate, ForgeVerify, and ForgeZero authority are unchanged. This is an interim source identity, not final R33 release certification.",
+    "phase": "R34 capacity-efficiency surface",
+    "reason": "Record the R34 capacity-efficiency surface: AgentRuntime admission now demands measured serialized-request tokens (estimatePromptOnlyTokens) plus role-scoped outputTokenDemand scaled by the governor's learned tokenizerRatio, the repo_* tool surface is withheld when no workspace exists so impossible tools cannot consume free-tier context, and dispatch copies compact superseded or mutation-stale tool outputs via the new history-compaction module. Durable history, capacity-wait semantics, completion-gate, ForgeVerify, and ForgeZero authority are unchanged. This is an interim source identity, not final R34 release certification.",
     "changedFiles": [
       "packages/server/src/agent-runtime.ts"
     ],
-    "priorSourceStateId": "7f059ffee8ef5e27829ee92fede825f8ebc3452112befb1f3365c6775a9e5d11",
+    "priorSourceStateId": "98387a8b3a505c8bf1052c5b192bfeae596fbd8f022329f6c96c362c6e67a3a7",
     "guarded": true
   },
-  "recertificationReason": "Record the reviewed guard on AgentRuntime.updateCapacityWait so cancellation of a parked turn cannot crash when a persistence surface lacks work-item support. Capacity-wait semantics, completion-gate, ForgeVerify, and ForgeZero authority are unchanged. This is an interim source identity, not final R33 release certification."
+  "recertificationReason": "Record the R34 capacity-efficiency surface: AgentRuntime admission now demands measured serialized-request tokens (estimatePromptOnlyTokens) plus role-scoped outputTokenDemand scaled by the governor's learned tokenizerRatio, the repo_* tool surface is withheld when no workspace exists so impossible tools cannot consume free-tier context, and dispatch copies compact superseded or mutation-stale tool outputs via the new history-compaction module. Durable history, capacity-wait semantics, completion-gate, ForgeVerify, and ForgeZero authority are unchanged. This is an interim source identity, not final R34 release certification."
 }
