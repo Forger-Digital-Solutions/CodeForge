@@ -207,4 +207,41 @@ describe("GraphqlCloudflareUsageSource", () => {
     expect(await counting.read("2026-09-25")).toBeDefined();
     expect(calls).toBe(2);
   });
+
+  it("R34 Mission I: classifies failures — a scope-less token is SCOPE_REQUIRED, never generic UNKNOWN", async () => {
+    // HTTP 403: the token exists but cannot read account analytics — permanent until re-minted.
+    const forbidden = source(async () => new Response("denied", { status: 403 }));
+    expect(await forbidden.read("2026-09-24")).toBeUndefined();
+    expect(forbidden.lastFailure()?.code).toBe("CLOUDFLARE_USAGE_SCOPE_REQUIRED");
+    expect(forbidden.lastFailure()?.detail).toMatch(/analytics/i);
+
+    // HTTP 200 + GraphQL errors[] is the same failure wearing a success status.
+    const gqlDenied = source(async () => new Response(JSON.stringify({ data: null, errors: [{ message: "not authorized for that account" }] }), { status: 200 }));
+    expect(await gqlDenied.read("2026-09-24")).toBeUndefined();
+    expect(gqlDenied.lastFailure()?.code).toBe("CLOUDFLARE_USAGE_SCOPE_REQUIRED");
+
+    // Missing credentials, unreachable API, and malformed payloads are distinct diagnoses.
+    const noToken = new GraphqlCloudflareUsageSource({ resolveToken: () => undefined, resolveAccountId: () => undefined, fetchFn: async () => new Response("x") });
+    expect(await noToken.read("2026-09-24")).toBeUndefined();
+    expect(noToken.lastFailure()?.code).toBe("CLOUDFLARE_USAGE_CREDENTIAL_MISSING");
+
+    const offline = source((async () => { throw new Error("socket hangup"); }) as typeof fetch);
+    expect(await offline.read("2026-09-24")).toBeUndefined();
+    expect(offline.lastFailure()?.code).toBe("CLOUDFLARE_USAGE_API_UNREACHABLE");
+
+    const malformed = source(async () => new Response(JSON.stringify({ data: { viewer: { accounts: [] } } }), { status: 200 }));
+    expect(await malformed.read("2026-09-24")).toBeUndefined();
+    expect(malformed.lastFailure()?.code).toBe("CLOUDFLARE_USAGE_PAYLOAD_MALFORMED");
+
+    // A healthy read clears the failure record.
+    const healthy = source(async () => new Response(JSON.stringify({ data: { viewer: { accounts: [{ aiInferenceAdaptiveGroups: [{ sum: { totalNeurons: 3 } }] }] } } }), { status: 200 }));
+    expect((await healthy.read("2026-09-24"))?.usedNeurons).toBe(3);
+    expect(healthy.lastFailure()).toBeUndefined();
+  });
+
+  it("R34 Mission I: the guard surfaces SCOPE_REQUIRED so operators see a re-mint instruction", async () => {
+    const scopeless = source(async () => new Response("denied", { status: 403 }));
+    const guard = new CloudflareNeuronBudgetGuard({ store: new InMemoryCloudflareNeuronBudgetStore(), usageSource: scopeless });
+    await expect(guard.reserve({ model: "@cf/openai/gpt-oss-20b", messages: [{ role: "user", content: "hi" }], maxTokens: 16 } as never)).rejects.toMatchObject({ code: "CLOUDFLARE_USAGE_SCOPE_REQUIRED" });
+  });
 });

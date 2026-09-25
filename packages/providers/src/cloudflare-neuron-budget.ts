@@ -17,6 +17,24 @@ export type CloudflareUsageObservation = {
 
 export interface CloudflareUsageSource {
   read(utcDay: string): Promise<CloudflareUsageObservation | undefined>;
+  /** Why the last read produced no observation. Undefined means never queried or healthy. */
+  lastFailure?(): CloudflareUsageFailure | undefined;
+}
+
+/**
+ * Why account usage was unreadable. `CLOUDFLARE_USAGE_SCOPE_REQUIRED` is deliberately distinct:
+ * a token without analytics-read scope will NEVER self-heal on retry — the operator must mint a
+ * new token, and a generic "unknown" hides that the route is permanently dead until then.
+ */
+export type CloudflareUsageFailureCode =
+  | "CLOUDFLARE_USAGE_CREDENTIAL_MISSING"
+  | "CLOUDFLARE_USAGE_SCOPE_REQUIRED"
+  | "CLOUDFLARE_USAGE_API_UNREACHABLE"
+  | "CLOUDFLARE_USAGE_PAYLOAD_MALFORMED";
+
+export interface CloudflareUsageFailure {
+  code: CloudflareUsageFailureCode;
+  detail: string;
 }
 
 export interface CloudflareNeuronRate {
@@ -42,6 +60,8 @@ export const CLOUDFLARE_LLM_NEURON_RATES: Readonly<Record<string, CloudflareNeur
 
 export type CloudflareNeuronBudgetErrorCode =
   | "CLOUDFLARE_USAGE_UNKNOWN"
+  | "CLOUDFLARE_USAGE_SCOPE_REQUIRED"
+  | "CLOUDFLARE_USAGE_CREDENTIAL_MISSING"
   | "CLOUDFLARE_DAILY_SAFE_BUDGET_EXHAUSTED"
   | "CLOUDFLARE_NEURON_ESTIMATE_UNKNOWN"
   | "CLOUDFLARE_OUTPUT_BOUND_UNKNOWN"
@@ -131,9 +151,14 @@ export class CloudflareNeuronBudgetGuard {
     const utcDay = utcDayOf(this.now());
     const observation = await this.usageSource.read(utcDay);
     if (!observation || observation.utcDay !== utcDay || !validUsageSource(observation.source) || !validNeuronCount(observation.usedNeurons)) {
+      const failure = this.usageSource.lastFailure?.();
       throw new CloudflareNeuronBudgetError(
-        "CLOUDFLARE_USAGE_UNKNOWN",
-        `Trustworthy Workers AI usage for UTC day ${utcDay} is unavailable; withholding inference`,
+        failure?.code === "CLOUDFLARE_USAGE_SCOPE_REQUIRED" ? "CLOUDFLARE_USAGE_SCOPE_REQUIRED"
+          : failure?.code === "CLOUDFLARE_USAGE_CREDENTIAL_MISSING" ? "CLOUDFLARE_USAGE_CREDENTIAL_MISSING"
+          : "CLOUDFLARE_USAGE_UNKNOWN",
+        failure
+          ? `${failure.detail} — trustworthy Workers AI usage for UTC day ${utcDay} is unavailable; withholding inference`
+          : `Trustworthy Workers AI usage for UTC day ${utcDay} is unavailable; withholding inference`,
       );
     }
     const estimatedNeurons = estimateCloudflareRequestNeurons(req, this.rates);
@@ -242,6 +267,7 @@ export class GraphqlCloudflareUsageSource implements CloudflareUsageSource {
   private readonly fetchFn: typeof fetch;
   private readonly cacheTtlMs: number;
   private cached: { utcDay: string; observation?: CloudflareUsageObservation; at: number } | undefined;
+  private failure: CloudflareUsageFailure | undefined;
 
   constructor(options: {
     resolveToken: () => string | undefined;
@@ -265,10 +291,17 @@ export class GraphqlCloudflareUsageSource implements CloudflareUsageSource {
     return observation;
   }
 
+  lastFailure(): CloudflareUsageFailure | undefined {
+    return this.failure;
+  }
+
   private async query(utcDay: string): Promise<CloudflareUsageObservation | undefined> {
     const token = this.resolveToken();
     const accountId = this.resolveAccountId();
-    if (!token || !accountId) return undefined;
+    if (!token || !accountId) {
+      this.failure = { code: "CLOUDFLARE_USAGE_CREDENTIAL_MISSING", detail: `Workers AI usage needs ${[!token && "API token", !accountId && "account id"].filter(Boolean).join(" and ")}` };
+      return undefined;
+    }
     try {
       const res = await this.fetchFn("https://api.cloudflare.com/client/v4/graphql", {
         method: "POST",
@@ -281,17 +314,39 @@ export class GraphqlCloudflareUsageSource implements CloudflareUsageSource {
           variables: { accountTag: accountId, day: utcDay },
         }),
       });
-      if (!res.ok) return undefined;
+      if (res.status === 401 || res.status === 403) {
+        this.failure = { code: "CLOUDFLARE_USAGE_SCOPE_REQUIRED", detail: `HTTP ${res.status}: the API token cannot read account analytics — mint a token with account-level Workers AI/analytics read` };
+        return undefined;
+      }
+      if (!res.ok) {
+        this.failure = { code: "CLOUDFLARE_USAGE_API_UNREACHABLE", detail: `HTTP ${res.status} from the Cloudflare GraphQL analytics endpoint` };
+        return undefined;
+      }
       const body = (await res.json()) as {
         data?: { viewer?: { accounts?: Array<{ aiInferenceAdaptiveGroups?: Array<{ sum?: { totalNeurons?: number } }> }> } };
-        errors?: unknown;
+        errors?: Array<{ message?: string }>;
       };
+      // Cloudflare GraphQL answers authorization failures with HTTP 200 + errors[] — a scope-less
+      // token is not an API outage, and must not be reported as one.
+      const authError = body.errors?.find((e) => /auth|forbidden|denied|permission|scope/i.test(e?.message ?? ""));
+      if (authError) {
+        this.failure = { code: "CLOUDFLARE_USAGE_SCOPE_REQUIRED", detail: `GraphQL authorization error: ${authError.message ?? "access denied"} — the token needs account-level analytics read` };
+        return undefined;
+      }
       const groups = body.data?.viewer?.accounts?.[0]?.aiInferenceAdaptiveGroups;
-      if (!Array.isArray(groups)) return undefined;
+      if (!Array.isArray(groups)) {
+        this.failure = { code: "CLOUDFLARE_USAGE_PAYLOAD_MALFORMED", detail: "analytics response carried no aiInferenceAdaptiveGroups payload" };
+        return undefined;
+      }
       const totalNeurons = groups.reduce((sum, group) => sum + (group.sum?.totalNeurons ?? 0), 0);
-      if (!validNeuronCount(totalNeurons)) return undefined;
+      if (!validNeuronCount(totalNeurons)) {
+        this.failure = { code: "CLOUDFLARE_USAGE_PAYLOAD_MALFORMED", detail: `analytics response totalNeurons=${totalNeurons} is not a finite non-negative number` };
+        return undefined;
+      }
+      this.failure = undefined;
       return { utcDay, usedNeurons: totalNeurons, source: "provider-api", observedAt: new Date().toISOString() };
-    } catch {
+    } catch (err) {
+      this.failure = { code: "CLOUDFLARE_USAGE_API_UNREACHABLE", detail: err instanceof Error ? err.message : String(err) };
       return undefined;
     }
   }

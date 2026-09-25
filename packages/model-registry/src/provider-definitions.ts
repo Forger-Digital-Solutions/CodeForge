@@ -850,6 +850,36 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
     implemented: false,
     docsUrl: "https://docs.github.com/en/copilot/how-tos/copilot-sdk",
   },
+  "github-models": {
+    id: "github-models",
+    displayName: "GitHub Models",
+    kind: "direct",
+    apiStyle: "openai-compatible",
+    baseUrl: "https://models.github.ai/inference",
+    modelsPath: "/catalog/models",
+    authClasses: ["ENVIRONMENT_CREDENTIAL", "ASSISTED_KEY"],
+    connection: { fields: [apiKeyField(["GITHUB_MODELS_TOKEN", "GITHUB_TOKEN"])] },
+    discoverySources: ["live-catalog"],
+    freeAccess: {
+      class: "FREE_DAILY_ALLOCATION",
+      quota: "Per-model rate limits by catalog tier (low/medium/high) — e.g. ~50–150 requests/day per model; the API reports NO quota headers, so remaining capacity is unmeasurable at runtime and routes stay inadmissible until observed",
+      spillover: "NONE",
+      // R34 Mission C/H: GitHub publishes per-model-per-tier limits; no shared account window
+      // exists to observe, but a per-model domain is the documented shape either way.
+      quotaDomain: "model",
+      planDetection: "not_required",
+      allowanceScope: "all_chat_models",
+      evidence: { source: "https://docs.github.com/en/github-models/use-github-models/prototyping-with-ai-models#rate-limits", checkedAt: "2026-09-25", note: "R33 live proof used this endpoint with a PAT. No x-ratelimit-* headers are returned — capacity truth is documentation-only until upstream starts reporting." },
+    },
+    privacy: { class: "standard" },
+    // GitHub Models terms scope the free endpoint to prototyping/evaluation — managed
+    // multi-user routing stays gated until that surface is reviewed for production use.
+    terms: { status: "LEGAL_REVIEW_REQUIRED", note: "Free inference endpoint documented for prototyping; production/multi-user terms unreviewed", source: "https://docs.github.com/en/github-models" },
+    recommendedForFreeDefault: false,
+    implemented: true,
+    keyUrl: "https://github.com/settings/tokens",
+    docsUrl: "https://docs.github.com/en/github-models",
+  },
   anthropic: {
     id: "anthropic",
     displayName: "Anthropic",
