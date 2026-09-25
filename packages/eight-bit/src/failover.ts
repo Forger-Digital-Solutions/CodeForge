@@ -45,6 +45,8 @@ export interface FailoverRequest {
    *  tools). The failover re-decide reserves this size per candidate's tokenizer ratio —
    *  honest demand for the continuation the replacement route would actually serve. */
   estimatedPromptTokens?: number;
+  /** R34 Mission K: bounded output allowance; defaults to the writer-sized 2048. */
+  outputTokenDemand?: number;
   hasAdapter: (providerId: string) => boolean;
   routeFilter?: (providerId: string, modelId: string) => boolean;
   /** Capacity advice is ranking-only; ForgeZero and routeFilter retain admission authority. */
@@ -168,6 +170,7 @@ export class EightBitFailoverCoordinator {
       policyMode: req.policyMode,
       estimatedContextTokens: req.estimatedContextTokens,
       estimatedPromptTokens: req.estimatedPromptTokens,
+      outputTokenDemand: req.outputTokenDemand,
       hasAdapter: req.hasAdapter,
       routeFilter: req.routeFilter,
       capacityScoreAdjustment: req.capacityScoreAdjustment,

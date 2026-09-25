@@ -298,7 +298,7 @@ export class EightBitRuntime {
       // R34: when the caller measured the serialized request, reserve that size scaled by
       // each candidate's learned tokenizer ratio instead of the flat worst-case ceiling.
       demand: options.estimatedPromptTokens !== undefined
-        ? { requests: 1, estimatedPromptTokens: options.estimatedPromptTokens, outputTokens: 2_048 }
+        ? { requests: 1, estimatedPromptTokens: options.estimatedPromptTokens, outputTokens: options.outputTokenDemand ?? 2_048 }
         : { requests: 1, inputTokens: Math.min(options.estimatedContextTokens ?? 16_000, 16_000) },
     });
     if (!decision) return this.router.selectRoute({ ...options, scope });
@@ -375,7 +375,7 @@ export class EightBitRuntime {
             userId: req.userId,
             taskKind: "failover",
             demand: req.estimatedPromptTokens !== undefined
-              ? { requests: 1, estimatedPromptTokens: req.estimatedPromptTokens, outputTokens: 2_048 }
+              ? { requests: 1, estimatedPromptTokens: req.estimatedPromptTokens, outputTokens: req.outputTokenDemand ?? 2_048 }
               : { requests: 1, inputTokens: Math.min(req.estimatedContextTokens ?? 16_000, 16_000) },
           });
           lastFabricDecision = decision;

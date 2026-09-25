@@ -35,6 +35,9 @@ export interface SelectRouteOptions {
    *  e.g. `estimatePromptOnlyTokens`). When present the fabric reserves the measured size
    *  scaled per candidate's learned tokenizer ratio, rather than a flat context ceiling. */
   estimatedPromptTokens?: number;
+  /** R34 Mission K: bounded output allowance for this dispatch (tokens). Defaults to the
+   *  writer-sized 2048 reservation; lighter roles pass a smaller honest bound. */
+  outputTokenDemand?: number;
   requiredCapabilities?: string[];
   taskType?: string;
   /** FG-4 advisory capability requirement. Hard eligibility remains owned by 8-Bit. */

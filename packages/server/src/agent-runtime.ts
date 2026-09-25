@@ -21,6 +21,7 @@ import os from "node:os";
 import crypto from "node:crypto";
 import { redactSecrets } from "@codeforge/secrets";
 import { describeRunFailure } from "./run-failure.js";
+import { compactSupersededToolOutputs } from "./history-compaction.js";
 import { prepareShellCommand } from "@codeforge/workflow";
 import { executePrepared } from "@codeforge/terminal";
 import { classifyCommand } from "./command-classifier.js";
@@ -415,7 +416,7 @@ export interface AgentRuntimeOptions {
    * controlled A/B needs a genuine OFF arm to attribute savings. Never exposed to users or
    * settings — only the ForgeGreen A/B harness passes it.
    */
-  efficiencyControls?: { duplicateSuppression?: boolean; toolOutputCompression?: boolean };
+  efficiencyControls?: { duplicateSuppression?: boolean; toolOutputCompression?: boolean; supersededCompaction?: boolean };
   /** Test-only synchronization point at the real post-approval execution boundary. */
   afterApprovalResolvedBoundary?: () => Promise<void>;
   /** 8-Bit routing/failover/health/reliability core. Optional so existing callers/tests stay
@@ -515,6 +516,25 @@ export function eightBitRoleForAgentRole(role: AgentRoleType | string): EightBit
       return "REVIEWER";
     default:
       return "CODER";
+  }
+}
+
+/**
+ * R34 Mission K: bounded output allowance reserved per dispatch by role. A writer must be
+ * able to emit a large edit; structured reasoning roles (verdicts, findings, plans) measurably
+ * produce far less. Reserving writer-sized output on a reviewer turn is what kept Groq's
+ * 8k-TPM pools unreachable for the light roles the fabric could otherwise serve.
+ */
+export function outputDemandForRole(role: AgentRoleType | string): number {
+  switch (role) {
+    case "coder":
+      return 2_048;
+    case "planner":
+    case "mission-planner":
+    case "replanner":
+      return 1_536;
+    default:
+      return 1_024;
   }
 }
 
@@ -778,7 +798,7 @@ export class AgentRuntime {
   private readonly recoveryRequiredTurns = new Set<string>();
   private readonly recoveryOriginalStatusByTurn = new Map<string, Exclude<TurnStatus, "idle" | "completed" | "failed" | "cancelled">>();
   private readonly forgeGreenCacheStore?: ForgeGreenCacheStore;
-  private readonly efficiencyControls: { duplicateSuppression: boolean; toolOutputCompression: boolean };
+  private readonly efficiencyControls: { duplicateSuppression: boolean; toolOutputCompression: boolean; supersededCompaction: boolean };
   private readonly eightBit: EightBitRuntime;
   private readonly freeCloud?: FreeCloudRoutingHooks;
   private readonly paidAuto?: PaidAutoService;
@@ -804,7 +824,7 @@ export class AgentRuntime {
     this.forgeGreen = options.forgeGreen ?? createForgeGreenAdvisor({ enabled: process.env.CODEFORGE_FORGREEN !== "0" });
     this.userIntentHold = options.userIntentHold;
     this.forgeGreenCacheStore = options.forgeGreenCacheStore;
-    this.efficiencyControls = { duplicateSuppression: options.efficiencyControls?.duplicateSuppression ?? true, toolOutputCompression: options.efficiencyControls?.toolOutputCompression ?? true };
+    this.efficiencyControls = { duplicateSuppression: options.efficiencyControls?.duplicateSuppression ?? true, toolOutputCompression: options.efficiencyControls?.toolOutputCompression ?? true, supersededCompaction: options.efficiencyControls?.supersededCompaction ?? true };
     this.afterApprovalResolvedBoundary = options.afterApprovalResolvedBoundary;
     this.demoMode = options.demoMode ?? false;
     this.repositoryIntelligenceFactory = options.repositoryIntelligenceFactory ?? (() => createRepositoryIntelligence({
@@ -1527,6 +1547,7 @@ export class AgentRuntime {
               tools: convertToProviderTools(toolBroker.getRegistry().getForRole(req.role, req.permissions)),
               maxTokens: 4_096,
             }),
+            outputTokenDemand: outputDemandForRole(req.role),
             requiredCapabilities: req.role === "coder" ? ["coding", "toolCalling"] : req.role === "explorer" ? ["toolCalling"] : [],
             taskType: req.role,
             hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
@@ -1561,9 +1582,15 @@ export class AgentRuntime {
           });
           try {
             const modelCallStartedAt = Date.now();
+            // R34 Mission F: same superseded-output compaction as the interactive loop —
+            // role transcripts accumulate stale identical reads too. `messages` itself is
+            // the durable transcript and is left untouched.
+            const dispatchMessages = this.efficiencyControls.supersededCompaction
+              ? compactSupersededToolOutputs(messages)
+              : messages;
             const response = await modelAdapter.execute({
               modelSelection: activeSelection,
-              messages,
+              messages: dispatchMessages,
               tools: availableTools,
               signal: req.signal,
               userId: req.userId ?? this.userId,
@@ -1642,6 +1669,7 @@ export class AgentRuntime {
                 tools: convertToProviderTools(availableTools),
                 maxTokens: 4_096,
               }),
+              outputTokenDemand: outputDemandForRole(req.role),
               hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
               routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
               capacityScoreAdjustment: this.freeCloud
@@ -4008,9 +4036,15 @@ export class AgentRuntime {
 
     const modelCallStartedAt = Date.now();
     try {
+      // R34 Mission F: compact stale tool outputs superseded by a newer identical-argument
+      // call. Durable messageHistory is untouched — only the dispatch copy shrinks, so a
+      // superseded read stops costing input tokens and can no longer mislead edits.
+      const dispatchRequest: ChatRequest = this.efficiencyControls.supersededCompaction
+        ? { ...request, messages: compactSupersededToolOutputs(request.messages) }
+        : request;
       const stream = typeof (provider as any).streamChatWithContext === "function"
         ? (provider as any).streamChatWithContext(
-            request,
+            dispatchRequest,
             {
               sessionId: this.sessionId,
               userId: this.userId,
@@ -4019,7 +4053,7 @@ export class AgentRuntime {
             },
             signal,
           )
-        : provider.streamChat(request, signal);
+        : provider.streamChat(dispatchRequest, signal);
 
       for await (const event of stream) {
         if (signal.aborted) {
@@ -4780,7 +4814,13 @@ export class AgentRuntime {
   }
 
   private getAvailableTools(): ToolDefinition[] {
-    return agentToolDefinitions();
+    const tools = agentToolDefinitions();
+    // R34 Mission F: with no workspace every repo_* tool can only throw
+    // "No workspace path configured" — shipping their schemas costs ~1.1k input tokens per
+    // call for capability that does not exist. The workspace-scoped run paths (role tools,
+    // workflow turns) advertise through their own registries and are unaffected.
+    if (this.workspacePath) return tools;
+    return tools.filter((t) => !t.function.name.startsWith("repo_"));
   }
 
   private getRepositoryTools(): ToolDefinition[] {
