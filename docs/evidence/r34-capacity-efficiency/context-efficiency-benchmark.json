@@ -1,6 +1,6 @@
 {
   "benchmark": "r34-context-efficiency-medium-task",
-  "generatedAt": "2026-09-25T10:32:36.617Z",
+  "generatedAt": "2026-09-25T12:34:44.850Z",
   "roleRun": {
     "note": "role transcripts already invalidate stale reads durably; compaction must not regress",
     "before": {
