@@ -107,6 +107,7 @@ CREATE TABLE IF NOT EXISTS work_items (
 );
 
 CREATE INDEX IF NOT EXISTS idx_work_items_sessionId ON work_items(sessionId);
+CREATE INDEX IF NOT EXISTS idx_work_items_kind ON work_items(kind);
 
 -- R21: terminal ForgeVerify records (plans, evidence, receipts) are append-only at the storage
 -- layer, not merely at the API layer. No statement — including the generic upsert — may change

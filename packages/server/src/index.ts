@@ -593,6 +593,18 @@ export class CodeForgeServer {
       this.freeCloud.attachQualificationStore(new SqliteQualificationPersistence(this.persistence));
       await this.freeCloud.loadQualification().catch(() => 0);
     }
+    // Fail closed on a dangerous bind: the routable control plane (approvals, workspace,
+    // command execution) must never listen on a non-loopback interface without the bearer.
+    // Hosted deployments go through apps/cloud-api, which has its own auth stack — this
+    // server is the local runtime and stays local unless the operator deliberately
+    // configures authentication for it.
+    const boundToLoopback = this.host === "127.0.0.1" || this.host === "localhost" || this.host === "::1" || this.host === "[::1]";
+    if (!boundToLoopback && !this.controlPlaneToken) {
+      throw new Error(
+        `Refusing to bind the control plane to ${this.host} without a controlPlaneToken — ` +
+        `a routable unauthenticated listener would expose approvals and workspace control to the network.`,
+      );
+    }
     this.server = http.createServer((req, res) => this.handleRequest(req, res));
     const server = this.server;
     // A bind failure (EADDRINUSE when another CodeForge already owns the port, EACCES on a

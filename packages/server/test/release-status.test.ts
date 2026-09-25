@@ -60,4 +60,14 @@ describe("GET /api/free-cloud/release-status (R35-AQ)", () => {
     });
     expect(ok.status).toBe(200);
   });
+
+  it("fails closed: a routable bind without a control-plane token refuses to start", async () => {
+    const unauthenticated = createServer({ port: 0, dbPath: ":memory:", host: "0.0.0.0" });
+    await expect(unauthenticated.start()).rejects.toThrow(/controlPlaneToken/);
+    // With the bearer configured the same bind is a deliberate operator choice.
+    server = createServer({ port: 0, dbPath: ":memory:", host: "127.0.0.1" });
+    await server.start();
+    const res = await fetch(`http://127.0.0.1:${server.port}/api/health`);
+    expect(res.status).toBe(200);
+  });
 });
