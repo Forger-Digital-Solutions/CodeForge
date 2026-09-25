@@ -25,7 +25,7 @@ import { SqliteQualificationPersistence, EightBitRouteHealthLedger, createEightB
 import type { ProviderTopologyCapacity } from "@codeforge/forge-green";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog } from "@codeforge/providers";
-import { InMemoryProviderCatalog, EnvironmentCredentialStore } from "@codeforge/providers";
+import { InMemoryProviderCatalog, EnvironmentCredentialStore, defaultCapacityGovernor } from "@codeforge/providers";
 import { createPaidAutoService, PAID_AUTO_PROVIDER_ID, type PaidAutoService } from "@codeforge/paid-auto";
 import {
   createTaskAuthority,
@@ -323,6 +323,11 @@ export class CodeForgeServer {
         // alongside an interactive turn, while still bounding one user's hold on shared pools.
         // Real contention is enforced per-pool by the physical concurrency/quota windows.
         reservations: new CapacityReservationLedger({ routes: [], pools: [], maxActiveReservationsPerUser: 8 }),
+        // R34 Mission E: per-candidate demand scaling. A provider with a learned tokenizer
+        // ratio gets an honest reservation; an unmeasured one borrows the fleet's densest
+        // observed ratio — a new provider is treated as conservatively as the worst evidence.
+        tokenizerRatioFor: (providerId) =>
+          defaultCapacityGovernor.tokenizerRatio(providerId) ?? defaultCapacityGovernor.maxObservedTokenizerRatio(),
       });
       this.fabricContext = ({ userId }) => {
         const uid = userId ?? this.localUserId ?? "anonymous";

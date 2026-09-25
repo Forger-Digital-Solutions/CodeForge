@@ -61,6 +61,14 @@ export interface FabricRequest {
     requests?: number;
     inputTokens?: number;
     outputTokens?: number;
+    /**
+     * R34 Mission E: caller-measured serialized-request estimate (system + messages +
+     * tool schemas, e.g. `estimatePromptOnlyTokens`). When set, the fabric scales it by each
+     * candidate provider's learned tokenizer ratio instead of holding a flat worst-case
+     * ceiling — a small real turn can then admit an 8k TPM pool it could never reach under
+     * a fixed 16k demand, while a genuinely large turn still fails closed against it.
+     */
+    estimatedPromptTokens?: number;
     credits?: number;
     providerUnits?: number;
   };
@@ -151,11 +159,30 @@ export interface FreeFabricOptions {
   /** Health penalty at/below which a route is demoted behind the next supply domain
    *  (a saturated shared route yields to the user's own healthy supply). */
   domainDemotionScore?: number;
+  /**
+   * R34 Mission E: learned per-provider tokenizer ratio (provider-reported prompt tokens /
+   * serialized estimate). The fabric calls it per candidate so a dense tokenizer (e.g. a
+   * Qwen-family model at ~1.8×) reserves more than a sparse one for the same request. Return
+   * undefined when unlearned — the conservative unlearned floor applies.
+   */
+  tokenizerRatioFor?: (providerId: string, modelId: string) => number | undefined;
   now?: () => number;
 }
 
 const DEFAULT_LEASE_MS = 10 * 60_000;
 const DEFAULT_DOMAIN_DEMOTION_SCORE = -50;
+
+/** Ratio floor for a provider whose tokenizer is unmeasured: above the ~1.0 sparse tokenizers
+ *  observed on agent traffic, short of the ~1.8 measured on a dense one — the first real
+ *  response teaches the governor the truth and the next decision uses it. */
+const UNLEARNED_TOKENIZER_RATIO = 1.5;
+/** The serialized estimate is chars/4; a learned ratio below 1 would mean the provider
+ *  tokenizes sparser than that heuristic — accepted only as measured evidence, never below. */
+const MIN_TOKENIZER_RATIO = 1;
+/** Sanity ceiling: a corrupted EMA must never inflate demand into permanent self-denial. */
+const MAX_TOKENIZER_RATIO = 3;
+/** Margin over the ratio-scaled estimate (the same floor the pacing governor applies). */
+const TOKENIZER_RESERVE_MARGIN = 1.15;
 
 /** Product/agent role names → the health authority's role vocabulary. Unmapped roles assess
  *  role-agnostically (undefined), which is the correct conservative default. */
@@ -260,6 +287,20 @@ export class FreeFabric {
       credits: request.demand?.credits,
       providerUnits: request.demand?.providerUnits,
     };
+    // R34 Mission E: when the caller measured the actual serialized request, reserve that
+    // size per candidate scaled by the provider's learned tokenizer ratio — the same request
+    // honestly costs a dense tokenizer more than a sparse one. Without a measurement the
+    // caller-supplied (or default) flat demand applies to every candidate as before.
+    const measuredPromptTokens = request.demand?.estimatedPromptTokens;
+    const inputDemandFor = (entry: RouteLedgerEntry): number => {
+      if (measuredPromptTokens === undefined) return demand.inputTokens;
+      const ratio = Math.min(
+        MAX_TOKENIZER_RATIO,
+        Math.max(MIN_TOKENIZER_RATIO,
+          this.opts.tokenizerRatioFor?.(entry.providerId, entry.modelId) ?? UNLEARNED_TOKENIZER_RATIO),
+      );
+      return Math.ceil(measuredPromptTokens * ratio * TOKENIZER_RESERVE_MARGIN);
+    };
 
     let selected: FabricRouteDecision["selected"];
     let queued: { nextAvailableAt?: string; reasonCodes: string[] } | undefined;
@@ -285,7 +326,7 @@ export class FreeFabric {
         role: request.role,
         taskKind: request.taskKind ?? "task",
         requests: demand.requests,
-        inputTokens: demand.inputTokens,
+        inputTokens: inputDemandFor(entry),
         outputTokens: demand.outputTokens,
         credits: demand.credits,
         providerUnits: demand.providerUnits,

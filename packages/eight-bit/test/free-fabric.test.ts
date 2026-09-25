@@ -349,3 +349,135 @@ describe("FreeFabric — supply composition + fair admission", () => {
     expect(decision.suggestions.every((s) => !/\bpay\b|\bpaid\b|purchase|billing/i.test(s) || /never|stays free|not.*paid/i.test(s))).toBe(true);
   });
 });
+
+describe("FreeFabric — R34 measured demand (Mission E)", () => {
+  /** Groq's measured per-model pool shape: 1k req + 8k TPM — the pool a flat 16k demand
+   *  could never use. */
+  function narrowPoolRoute(id: string): CapacityRoute {
+    return managedRoute(id, {
+      windows: [quotaWindow(), quotaWindow({ unit: "input_tokens", limit: 8_000, remaining: 8_000 })],
+    });
+  }
+
+  it("a small measured turn admits an 8k-TPM pool a flat 16k demand would deny", () => {
+    const c = clock();
+    const groqLike = narrowPoolRoute("groq-small");
+    const fabric = createFreeFabric({
+      managedRoutes: () => [groqLike],
+      managedPools: () => [poolFor(groqLike)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const flat = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER", demand: { requests: 1, inputTokens: 16_000 } });
+    expect(flat.outcome).toBe("QUEUED_FOR_CAPACITY");
+    // The measured trivial-turn request (~3k serialized) at the unlearned 1.5 floor × 1.15
+    // reserves ~5.2k — inside the 8k pool the flat ceiling could never touch.
+    const measured = fabric.decide({ requestId: "r2", userId: "alice", role: "CODER", demand: { requests: 1, estimatedPromptTokens: 3_000, outputTokens: 2_048 } });
+    expect(measured.outcome).toBe("ADMITTED");
+    expect(measured.selected?.routeId).toBe("groq-small");
+  });
+
+  it("scales demand per candidate by learned tokenizer ratio — a dense tokenizer reserves more", () => {
+    const c = clock();
+    const dense = narrowPoolRoute("dense");
+    const ratios = new Map([[dense.providerId, 1.8]]);
+    const fabric = createFreeFabric({
+      managedRoutes: () => [dense],
+      managedPools: () => [poolFor(dense)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      tokenizerRatioFor: (p) => ratios.get(p),
+      now: c.now,
+    });
+    // 5k measured × 1.8 learned × 1.15 = 10 350 > 8 000: the same prompt that fits a sparse
+    // provider is honestly too big for this pool once its dense tokenizer is known.
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER", demand: { requests: 1, estimatedPromptTokens: 5_000 } });
+    expect(decision.outcome).toBe("QUEUED_FOR_CAPACITY");
+  });
+
+  it("reserves exactly estimate × ratio × margin — boundary admits at the computed value, denies one under", () => {
+    const c = clock();
+    // 3000 × 1.5 (unlearned) × 1.15 = 5175 — the demand is a deterministic function of the
+    // measurement, never loose and never tight.
+    const exact = managedRoute("exact", {
+      windows: [quotaWindow(), quotaWindow({ unit: "input_tokens", limit: 5_175, remaining: 5_175 })],
+    });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [exact],
+      managedPools: () => [poolFor(exact)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    expect(fabric.decide({ requestId: "r1", userId: "alice", role: "CODER", demand: { requests: 1, estimatedPromptTokens: 3_000 } }).outcome).toBe("ADMITTED");
+    const short = managedRoute("short", {
+      windows: [quotaWindow(), quotaWindow({ unit: "input_tokens", limit: 5_174, remaining: 5_174 })],
+    });
+    const fabric2 = createFreeFabric({
+      managedRoutes: () => [short],
+      managedPools: () => [poolFor(short)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    expect(fabric2.decide({ requestId: "r1", userId: "alice", role: "CODER", demand: { requests: 1, estimatedPromptTokens: 3_000 } }).outcome).toBe("QUEUED_FOR_CAPACITY");
+  });
+
+  it("never under-reserves when the learned ratio is known — demand ≥ estimate × ratio", () => {
+    const c = clock();
+    // Learned ratio 1.0 (a sparse tokenizer like Groq gpt-oss): demand = est × 1.0 × 1.15,
+    // strictly above the provider-observed true cost — systematic under-reservation is
+    // impossible while the margin holds.
+    const window = 3_449; // just under 3000 × 1.15 = 3450
+    const tight = managedRoute("tight", {
+      windows: [quotaWindow(), quotaWindow({ unit: "input_tokens", limit: window, remaining: window })],
+    });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [tight],
+      managedPools: () => [poolFor(tight)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      tokenizerRatioFor: () => 1.0,
+      now: c.now,
+    });
+    expect(fabric.decide({ requestId: "r1", userId: "alice", role: "CODER", demand: { requests: 1, estimatedPromptTokens: 3_000 } }).outcome).toBe("QUEUED_FOR_CAPACITY");
+    const fits = managedRoute("fits", {
+      windows: [quotaWindow(), quotaWindow({ unit: "input_tokens", limit: 3_450, remaining: 3_450 })],
+    });
+    const fabric2 = createFreeFabric({
+      managedRoutes: () => [fits],
+      managedPools: () => [poolFor(fits)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      tokenizerRatioFor: () => 1.0,
+      now: c.now,
+    });
+    expect(fabric2.decide({ requestId: "r1", userId: "alice", role: "CODER", demand: { requests: 1, estimatedPromptTokens: 3_000 } }).outcome).toBe("ADMITTED");
+  });
+
+  it("a genuinely large grown-context turn still fails closed against a small pool", () => {
+    const c = clock();
+    const groqLike = narrowPoolRoute("groq-small");
+    const fabric = createFreeFabric({
+      managedRoutes: () => [groqLike],
+      managedPools: () => [poolFor(groqLike)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    // A mid-turn continuation measuring 20k serialized tokens honestly cannot fit an 8k
+    // TPM pool — measurement must tighten admission, not loosen it.
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER", demand: { requests: 1, estimatedPromptTokens: 20_000 } });
+    expect(decision.outcome).toBe("QUEUED_FOR_CAPACITY");
+  });
+
+  it("a corrupted learned ratio is capped — wild EMA cannot self-deny every route", () => {
+    const c = clock();
+    const groqLike = narrowPoolRoute("groq-small");
+    const fabric = createFreeFabric({
+      managedRoutes: () => [groqLike],
+      managedPools: () => [poolFor(groqLike)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      tokenizerRatioFor: () => 999,
+      now: c.now,
+    });
+    // est 500 × min(999→3) × 1.15 = 1725 < 8000 — the cap keeps a broken observation from
+    // manufacturing infinite demand.
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER", demand: { requests: 1, estimatedPromptTokens: 500 } });
+    expect(decision.outcome).toBe("ADMITTED");
+  });
+});

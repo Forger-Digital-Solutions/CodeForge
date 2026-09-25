@@ -295,7 +295,11 @@ export class EightBitRuntime {
       taskKind: options.taskType,
       // The reservation holds near-term per-call demand, not the run's whole context budget —
       // provider quota headers post-call are the real accounting, and a failover re-decides.
-      demand: { requests: 1, inputTokens: Math.min(options.estimatedContextTokens ?? 16_000, 16_000) },
+      // R34: when the caller measured the serialized request, reserve that size scaled by
+      // each candidate's learned tokenizer ratio instead of the flat worst-case ceiling.
+      demand: options.estimatedPromptTokens !== undefined
+        ? { requests: 1, estimatedPromptTokens: options.estimatedPromptTokens, outputTokens: 2_048 }
+        : { requests: 1, inputTokens: Math.min(options.estimatedContextTokens ?? 16_000, 16_000) },
     });
     if (!decision) return this.router.selectRoute({ ...options, scope });
 
@@ -370,7 +374,9 @@ export class EightBitRuntime {
             role: req.role,
             userId: req.userId,
             taskKind: "failover",
-            demand: { requests: 1, inputTokens: Math.min(req.estimatedContextTokens ?? 16_000, 16_000) },
+            demand: req.estimatedPromptTokens !== undefined
+              ? { requests: 1, estimatedPromptTokens: req.estimatedPromptTokens, outputTokens: 2_048 }
+              : { requests: 1, inputTokens: Math.min(req.estimatedContextTokens ?? 16_000, 16_000) },
           });
           lastFabricDecision = decision;
           if (decision?.outcome !== "ADMITTED" || !decision.selected) return undefined;

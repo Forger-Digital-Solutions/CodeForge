@@ -1,7 +1,7 @@
 import type { ForgeZero, FreeModelRecord } from "@codeforge/forge-zero";
 import { planFailureHealthMarking } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
-import { defaultCapacityGovernor, type ProviderCapacityGovernor } from "@codeforge/providers";
+import { defaultCapacityGovernor, estimatePromptOnlyTokens, type ProviderCapacityGovernor } from "@codeforge/providers";
 import type { ProviderAdapter, ProviderCatalog, ChatRequest, ChatMessage, ToolDefinition, ProviderToolExecutionRequest, ProviderToolExecutionResult } from "@codeforge/providers";
 import { DesktopWorkerActionTypeSchema, type AgentRunJournal, type AgentRunJournalMessage, type DesktopWorkerActionType, type RunFailure } from "@codeforge/protocol";
 import {
@@ -94,7 +94,7 @@ import {
   formatUntrustedData,
 } from "@codeforge/agent";
 import { createToolBroker, type ToolDefinition as RegistryToolDefinition, type ToolExecutionRecord } from "@codeforge/tools";
-import { createModelExecutionAdapter, normalizeProviderError, type ModelExecutionResponse } from "./model-execution-adapter.js";
+import { createModelExecutionAdapter, convertToProviderTools, normalizeProviderError, type ModelExecutionResponse } from "./model-execution-adapter.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import type { PaidAutoService } from "@codeforge/paid-auto";
 import { tryConsumeInferenceRequest, type InferenceLane, type WorkflowInferenceBudget } from "./inference-budget.js";
@@ -266,6 +266,10 @@ const MAX_FILE_READ_LINES = 400;
 const MAX_LIST_FILES_ENTRIES = 500;
 const MAX_COMMAND_OUTPUT_BYTES = 64 * 1024;
 const DEFAULT_APPROVAL_TIMEOUT_MS = 5 * 60 * 1000;
+// Shared between simulateAgentWork (what it sends) and turnDemand (what it reserves) — the
+// estimate must cover the same directive text the dispatch will carry.
+const RECOVERY_DIRECTIVE = "[Recovery directive] A prior process stopped during this turn. Treat all unfinished pre-restart execution as stale. Inspect the current workspace and durable evidence, then create a new plan. Do not replay a prior command, tool call, or model continuation.";
+const CAPACITY_RESUME_DIRECTIVE = "[Capacity directive] This turn paused mid-execution waiting for verified free capacity, and is resuming on a fresh admission decision — possibly a different route and quota pool. Inspect the current workspace and durable evidence; continue the remaining work without replaying tool calls or edits that already succeeded.";
 
 function truncateOutput(text: string, maxBytes: number, label: string): string {
   if (Buffer.byteLength(text, "utf-8") <= maxBytes) return text;
@@ -1514,6 +1518,15 @@ export class AgentRuntime {
             policyMode: "adaptive",
             userId: req.userId ?? this.userId,
             estimatedContextTokens: budget.maxContextTokens,
+            // R34 Mission E: the role-route admission reserves the assembled transcript's
+            // measured size (context assembler output is already in `messages`), scaled per
+            // candidate by the fabric — not the role's whole context budget.
+            estimatedPromptTokens: estimatePromptOnlyTokens({
+              model: "",
+              messages,
+              tools: convertToProviderTools(toolBroker.getRegistry().getForRole(req.role, req.permissions)),
+              maxTokens: 4_096,
+            }),
             requiredCapabilities: req.role === "coder" ? ["coding", "toolCalling"] : req.role === "explorer" ? ["toolCalling"] : [],
             taskType: req.role,
             hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
@@ -1620,6 +1633,15 @@ export class AgentRuntime {
               policyMode: "adaptive",
               error: err,
               estimatedContextTokens: failingModel?.contextWindow ?? budget.maxContextTokens,
+              // R34 Mission E: the rotation re-decide reserves the subagent's live transcript
+              // size — the same messages the replacement route would continue from — scaled
+              // per candidate, not the model context ceiling.
+              estimatedPromptTokens: estimatePromptOnlyTokens({
+                model: failing.modelId,
+                messages,
+                tools: convertToProviderTools(availableTools),
+                maxTokens: 4_096,
+              }),
               hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
               routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
               capacityScoreAdjustment: this.freeCloud
@@ -3646,13 +3668,44 @@ export class AgentRuntime {
       ...(hint?.preferIndependentFromPoolId ? { preferIndependentFromPoolId: hint.preferIndependentFromPoolId } : {}),
       userId: this.userId,
       taskKind: "interactive_turn",
-      demand: { requests: 1, inputTokens: 16_000 },
+      demand: this.turnDemand(turnId),
     });
     let decision = decide(hint?.role ?? "CODER");
     if (decision && decision.outcome !== "ADMITTED" && hint?.role && hint.fallbackRole && hint.role !== hint.fallbackRole) {
       decision = decide(hint.fallbackRole);
     }
     return decision;
+  }
+
+  /**
+   * R34 Mission E: reserve the size of the request this turn will actually serialize, not a
+   * fixed 16k worst case. A fresh or parked/resumed turn always restarts from the initial
+   * assembly (`simulateAgentWork` resets `messageHistory`), so that assembly — system prompt,
+   * any recovery/capacity directive, the user message, and the tool schemas — is the honest
+   * per-dispatch demand. Mid-turn failovers carry their own live-history estimate through
+   * `handleTurnFailure`; the fabric scales this by each candidate's learned tokenizer ratio.
+   */
+  private turnDemand(turnId: string | undefined): { requests: number; estimatedPromptTokens: number; outputTokens: number } {
+    const state = turnId ? this.activeTurns.get(turnId) : undefined;
+    const messages: ChatMessage[] = [];
+    const systemPrompt = this.buildSystemPrompt();
+    if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
+    if (turnId !== undefined && this.recoveryRequiredTurns.has(turnId)) {
+      messages.push({ role: "system", content: RECOVERY_DIRECTIVE });
+    } else if (turnId !== undefined && this.capacityResumeTurns.has(turnId)) {
+      messages.push({ role: "system", content: CAPACITY_RESUME_DIRECTIVE });
+    }
+    if (state?.userMessage) messages.push({ role: "user", content: state.userMessage });
+    const estimatedPromptTokens = estimatePromptOnlyTokens({
+      model: "",
+      messages,
+      tools: this.getAvailableTools(),
+      maxTokens: 4_096,
+    });
+    // Bounded output allowance: measured agent completions run ~12–1.5k tokens; 2k covers the
+    // observed tail without holding the full 4k generation cap against pools whose single
+    // token window debits input and output together. Post-call quota headers reconcile.
+    return { requests: 1, estimatedPromptTokens, outputTokens: 2_048 };
   }
 
   private selectModel(turnId?: string): FreeModelRecord | null {
@@ -3836,9 +3889,9 @@ export class AgentRuntime {
 
     const systemPrompt = this.buildSystemPrompt();
     const recoveryDirective = this.recoveryRequiredTurns.has(turnId)
-      ? "[Recovery directive] A prior process stopped during this turn. Treat all unfinished pre-restart execution as stale. Inspect the current workspace and durable evidence, then create a new plan. Do not replay a prior command, tool call, or model continuation."
+      ? RECOVERY_DIRECTIVE
       : this.capacityResumeTurns.has(turnId)
-      ? "[Capacity directive] This turn paused mid-execution waiting for verified free capacity, and is resuming on a fresh admission decision — possibly a different route and quota pool. Inspect the current workspace and durable evidence; continue the remaining work without replaying tool calls or edits that already succeeded."
+      ? CAPACITY_RESUME_DIRECTIVE
       : undefined;
     const userMessage: ChatMessage = { role: "user", content: state.userMessage };
     this.messageHistory.length = 0;
@@ -4529,6 +4582,16 @@ export class AgentRuntime {
     // when the catalog does not declare one (falls back to the pre-FG-3 constant).
     const failingModel = this.firewall.getModel(state.providerId, state.modelId);
     const estimatedContextTokens = failingModel?.contextWindow ?? 16000;
+    // R34 Mission E: the failover re-decide must reserve what the continuation will actually
+    // serialize — the live in-memory history the replacement route is about to receive (the
+    // same messages replayed into runAgentLoop), plus the tool surface — not the model's
+    // context-window ceiling. A grown turn's real demand follows it across pools.
+    const estimatedPromptTokens = estimatePromptOnlyTokens({
+      model: state.modelId,
+      messages: this.messageHistory,
+      tools: this.getAvailableTools(),
+      maxTokens: 4_096,
+    });
 
     const outcome = await this.eightBit.handleTurnFailure({
       sessionId: this.sessionId,
@@ -4547,6 +4610,7 @@ export class AgentRuntime {
       policyMode: "adaptive",
       error,
       estimatedContextTokens,
+      estimatedPromptTokens,
       hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
       routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
       capacityScoreAdjustment: this.freeCloud

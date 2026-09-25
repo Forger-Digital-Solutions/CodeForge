@@ -196,6 +196,30 @@ export class ProviderCapacityGovernor {
     }
   }
 
+  /**
+   * Learned ratio of provider-reported prompt tokens to the byte-based serialized-request
+   * estimate (`estimatePromptOnlyTokens`), per provider. Undefined until a usage observation
+   * teaches it — callers must apply their own floor rather than treating undefined as 1.
+   */
+  tokenizerRatio(providerId: string): number | undefined {
+    return this.states.get(providerId)?.tokenizerRatio;
+  }
+
+  /**
+   * Largest tokenizer ratio learned across the fleet. The honest floor for a provider with no
+   * observation yet: one fleet member's dense tokenizer (e.g. Qwen ≈1.8×) is evidence the
+   * next unmeasured provider may be just as dense.
+   */
+  maxObservedTokenizerRatio(): number | undefined {
+    let max: number | undefined;
+    for (const state of this.states.values()) {
+      if (state.tokenizerRatio !== undefined) {
+        max = max === undefined ? state.tokenizerRatio : Math.max(max, state.tokenizerRatio);
+      }
+    }
+    return max;
+  }
+
   getEffectiveLimits(providerId: string): ProviderCapacityLimit {
     const state = this.getState(providerId);
     const fallback = DEFAULT_FALLBACK_LIMITS[providerId] ?? DEFAULT_FALLBACK_LIMITS.default!;

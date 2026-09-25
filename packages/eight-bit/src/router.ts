@@ -31,6 +31,10 @@ export interface SelectRouteOptions {
    *  when a fabric governs this selection. Never a credential or account id. */
   userId?: string;
   estimatedContextTokens?: number;
+  /** R34 Mission E: caller-measured serialized-request estimate (system + messages + tools,
+   *  e.g. `estimatePromptOnlyTokens`). When present the fabric reserves the measured size
+   *  scaled per candidate's learned tokenizer ratio, rather than a flat context ceiling. */
+  estimatedPromptTokens?: number;
   requiredCapabilities?: string[];
   taskType?: string;
   /** FG-4 advisory capability requirement. Hard eligibility remains owned by 8-Bit. */
