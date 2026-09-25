@@ -66,6 +66,9 @@
 - Focused goal-review suite before the new long-edit case: 15/15 PASS; the new 34-edit case: 1/1 PASS. Focused hosted registry suite: 13/13 PASS.
 - Initial canonical `vitest run`: 3,624 passed, 48 skipped, two source-state provenance failures from the changed R32 fingerprint. The R33 guarded recertification was then applied; both provenance files passed 8/8. The post-recertification canonical run passed **3,626 tests / 0 failed / 48 skipped** across 454 passing and eight skipped files (2026-09-24 17:09:43 local start; 557.54 seconds). This is the baseline before the subsequent independent-review quota preference change.
 - Capacity model validation and all R33 JSON parsing: PASS. Secret-scan self-test and scan: PASS, zero owner-review-required findings; the generated legacy scan report was restored to avoid unrelated evidence churn.
+- Canonical `vitest run` after the 2026-09-25 work (telemetry fixes, provider-units accounting, capacity endpoint, chaos suite): **3,670 passed / 0 failed / 48 skipped** across 458 passing and eight skipped files (2026-09-25; 706.14 seconds). Focused suites: route-health-authority 26/26, free-cloud-registry 39/39, free-cloud-chaos 14/14, capacity-transition-chaos 13/13, free-fabric 14/14, free-fabric-wiring 16/16, workflow-capacity-wait 2/2, forge-zero 135/135, eight-bit 254/254.
+- Live provider proofs (real credentials, real inference): two wait→recovery→complete workflows on `shared:mistral` (waits of 59.8 s / 60.2 s matching `rateLimitDefaultTtlMs`), one 20-minute no-supply park with no false terminalization, and a measured turn-economics capture (8 calls / ~22.5k in + ~330 out per trivial task).
+- Source-state recertification: not required — today's changed files lie outside the 33-file FG-8→R33 material set; `git hash-object` drift check against `materialFileHashes` reports zero drift.
 
 ## Actual supply observed
 
