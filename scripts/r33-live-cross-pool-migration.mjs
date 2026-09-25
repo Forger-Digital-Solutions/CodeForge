@@ -185,6 +185,44 @@ async function main() {
     routeFor("github-models", MODELS["github-models"], 60, []),
   ];
   const pools = routes.map(poolFor);
+
+  // R34 Mission D: auto-detect which pools can actually admit this task BEFORE driving it.
+  // A real CapacityReservationLedger over the same topology is the production admission
+  // code — a probe reservation per pool answers "is there a second pool?" without inventing
+  // capacity math. The demand bound covers the measured interactive-turn demand post-Mission E
+  // (~3-4k input + 2048 output); a windowless pool (GitHub Models) is inadmissible by
+  // construction — the ledger reads absent input windows as zero, never invented supply.
+  const probeLedger = new CapacityReservationLedger({
+    routes,
+    pools,
+    firstRunReserveRequests: 0,
+    firstRunReserveTokens: 0,
+    maxActiveReservationsPerUser: 10,
+  });
+  const probeDemand = { requests: 1, inputTokens: 4096, outputTokens: 2048 };
+  evidence.supplyProbe = {
+    demand: probeDemand,
+    pools: routes.map((route) => {
+      const res = probeLedger.reserve({
+        reservationId: `probe-${route.routeId}`,
+        routeIds: [route.routeId],
+        userId: "supply-probe",
+        role: "PRIMARY_CODING_AGENT",
+        taskKind: "interactive_turn",
+        ...probeDemand,
+        isNewUser: false,
+        priority: "normal",
+        createdAt: OBSERVED_AT,
+        leaseUntil: new Date(Date.now() + 60_000).toISOString(),
+      });
+      if (res.admitted) probeLedger.release(res.reservationId);
+      return { poolId: route.capacityPoolId, providerId: route.providerId, admissible: res.admitted, reason: res.reason ?? null };
+    }),
+  };
+  const admissiblePools = evidence.supplyProbe.pools.filter((p) => p.admissible).map((p) => p.poolId);
+  evidence.supplyProbe.admissiblePools = admissiblePools;
+  evidence.supplyProbe.classification = admissiblePools.length >= 2 ? "MULTI_POOL_ADMISSIBLE" : "BLOCKED_BY_AVAILABLE_SUPPLY";
+  log(`supply probe: ${admissiblePools.length} admissible pool(s) → ${evidence.supplyProbe.classification} (${admissiblePools.join(", ") || "none"})`);
   const fabric = createFreeFabric({
     managedRoutes: () => routes,
     managedPools: () => pools,
@@ -271,7 +309,7 @@ async function main() {
       poolA = name;
       adapter.failNextCall();
       armed = true;
-      evidence.migration = { poolA, injectedAfterServedStreams: adapter.servedStreams, injection: `RATE_LIMITED once on ${name}` };
+      evidence.migration = { poolA, injectedAfterServedStreams: adapter.servedStreams, injection: `RATE_LIMITED once on ${name}`, admissiblePools, supplyClassification: evidence.supplyProbe.classification };
       log(`injected RATE_LIMITED on ${name} after ${adapter.servedStreams} served stream(s)`);
       await emit();
       break;
@@ -310,6 +348,10 @@ async function main() {
   };
   const implTurn = evidence.turns.find((t) => t.capacityPoolId && t.capacityPoolId !== `shared:${poolA}`) ?? evidence.turns[0];
   const reviewTurn = evidence.turns.find((t) => implTurn && t.turnId !== implTurn.turnId);
+  // Pool B auto-detection: any adapter other than pool A that served a stream AFTER the
+  // injection armed is physical proof the broker re-decided onto different quota.
+  const injectedAtStreams = poolA ? adapters[poolA].servedStreams : 0;
+  const poolBServed = Object.entries(adapters).find(([name, a]) => name !== poolA && a.servedStreams > 0);
   evidence.review = reviewTurn
     ? { providerId: reviewTurn.providerId, capacityPoolId: reviewTurn.capacityPoolId, independentOfImplementation: reviewTurn.capacityPoolId !== (implTurn?.capacityPoolId ?? null) }
     : { independentOfImplementation: false, note: "no distinct review turn observed" };
@@ -332,15 +374,28 @@ async function main() {
       }
     : { parked: false };
 
+  // Migration can only be certified when the supply probe found a second admissible pool —
+  // otherwise "not migrated" is a supply statement, not a failover failure. The evidence
+  // distinguishes BLOCKED_BY_AVAILABLE_SUPPLY (topology couldn't offer a second pool) from
+  // FAILOVER_FAILED (a second pool existed and the broker still stranded the turn).
+  const multiPool = admissiblePools.length >= 2;
+  const migrationProven = Boolean(poolA && poolB && poolB !== `shared:${poolA}` && adapters[poolB?.replace("shared:", "")]?.servedStreams > 0);
   evidence.completion = {
     phase: result.phase ?? "unknown",
     status: result.status ?? "unknown",
     fileFixed: /a\s*\+\s*b/.test(finalCalc),
-    // Pool migration proof: the implementation turn ended on a different physical pool than
-    // the one that began it, and pool B served real streams.
     poolA,
     poolB,
-    migrationProven: Boolean(poolA && poolB && poolB !== `shared:${poolA}` && adapters[poolB?.replace("shared:", "")]?.servedStreams > 0),
+    poolBServedStreams: poolBServed ? poolBServed[1].servedStreams : 0,
+    poolAStreamsAtInjection: injectedAtStreams,
+    admissiblePools,
+    supplyClassification: evidence.supplyProbe.classification,
+    migrationProven,
+    migrationVerdict: migrationProven
+      ? "MIGRATION_PROVEN"
+      : multiPool
+        ? "FAILOVER_FAILED"
+        : "BLOCKED_BY_AVAILABLE_SUPPLY",
   };
 
   await runtime.shutdown().catch(() => {});
