@@ -69,6 +69,7 @@
 - Canonical `vitest run` after the 2026-09-25 work (telemetry fixes, provider-units accounting, capacity endpoint, chaos suite): **3,670 passed / 0 failed / 48 skipped** across 458 passing and eight skipped files (2026-09-25; 706.14 seconds). Focused suites: route-health-authority 26/26, free-cloud-registry 39/39, free-cloud-chaos 14/14, capacity-transition-chaos 13/13, free-fabric 14/14, free-fabric-wiring 16/16, workflow-capacity-wait 2/2, forge-zero 135/135, eight-bit 254/254.
 - Live provider proofs (real credentials, real inference): two wait→recovery→complete workflows on `shared:mistral` (waits of 59.8 s / 60.2 s matching `rateLimitDefaultTtlMs`), one 20-minute no-supply park with no false terminalization, and a measured turn-economics capture (8 calls / ~22.5k in + ~330 out per trivial task).
 - Source-state recertification: not required — today's changed files lie outside the 33-file FG-8→R33 material set; `git hash-object` drift check against `materialFileHashes` reports zero drift.
+- Packaged build on post-change source: `npm run pack` PASS — signed `release/win-unpacked` (Electron 44.4.1 / Node 24.21.0), `PACKAGED_INTERNAL_DEPENDENCY_GRAPH_PASS`, `PACKAGED_RUNTIME_DEPENDENCY_GRAPH_PASS` (355 runtime modules, 18 external packages), `PACKAGED_PERSISTENCE_OK driver=node:sqlite` inside the packaged binary (`packaged-persistence-smoke.txt`).
 
 ## Actual supply observed
 
@@ -98,19 +99,19 @@ The executable [capacity model](capacity-model/REPORT.md) uses seven R32 receipt
 | Gate | Verdict |
 | --- | --- |
 | Product architecture | PARTIAL — existing Free Fabric and completion gate retained; fixed workflow envelope removed |
-| Free capacity fabric | PARTIAL — turn-level admission, durable capacity parking, probe/sweeper resumption, and restart recovery exist; live per-dispatch replenishment unproven |
-| Provider migration | PARK→RESUME PROVEN LIVE twice on real Mistral (injected 429 → 60s durable park → resume → complete); distinct-pool migration PROVEN IN TESTS, live proof SUPPLY-BLOCKED (single admissible pool) |
-| 8-Bit supply intelligence | IMPROVED — Mistral `-minute` headers parse; elapsed-reset refill (`effectiveQuota`); GraphQL neuron oracle wired (scoped token pending); account/domain registry still incomplete |
-| Review capacity | FAIL-CLOSED; independent-pool routing proven in workflow tests; independent quota DOMAIN at production scale open |
+| Free capacity fabric | CAPACITY-WAIT LOOP PROVEN LIVE — turn-level admission, durable `waiting_for_free_capacity` parking, probe/sweeper resumption, restart recovery, and cooldown replenishment (park→`effectiveQuota`-style refill→re-admission→resume) all demonstrated on real Mistral inference; distinct-pool failover live proof remains supply-blocked |
+| Provider migration | PARK→RESUME PROVEN LIVE twice on real Mistral (injected 429 → ~60s durable park → resume → complete; observed wait matches `rateLimitDefaultTtlMs`); distinct-pool migration PROVEN IN TESTS, live proof SUPPLY-BLOCKED (single admissible pool) |
+| 8-Bit supply intelligence | IMPROVED — Mistral `-minute` headers parse; elapsed-reset refill (`effectiveQuota`); GraphQL neuron oracle wired (scoped token pending); `provider_units` admitted as an accounting dimension; account/domain registry still incomplete |
+| Review capacity | FAIL-CLOSED; independent-pool routing proven in workflow tests; same-pool fallback recorded honestly in live evidence (`SAME_POOL_FALLBACK`); independent quota DOMAIN at production scale open |
 | Fairness | EXISTING RESERVATIONS; O(1) indexed admission proven to 1M live holds synthetically; distributed scale proof open |
 | Control-plane scale | SYNTHETIC PASS at 1K/10K/100K/1M virtual users with production `CapacityReservationLedger` adjudicating every admission (0 divergences); production distributed scale NOT CERTIFIED |
-| Current inference supply | MEASURED — 8 quota domains audited live; ≈20 concurrent agent users theoretical on `shared:mistral` alone; still NOT CERTIFIED for managed commercial use (measured keys are `OWNER_DEV_FREE`) |
+| Current inference supply | MEASURED — 8 quota domains audited live; ≈20 concurrent agent users theoretical on `shared:mistral` alone; still NOT CERTIFIED for managed commercial use (measured keys are `OWNER_DEV_FREE`; Cloudflare oracle pending scoped token; OpenRouter `POLICY_BLOCKED`) |
 | Credit runway | OPPORTUNITY MODEL ONLY; no award or balance certified |
 | Mass-scale economics | SENSITIVITY MODEL, not contracted pricing |
-| Security | HOSTED LEGAL GATE IMPROVED; full R33 chaos/security suite open |
+| Security | CAPACITY-TRANSITION CHAOS SUITE PASS — absent/limit:0/negative/malformed windows, boundary admit/deny, pool precedence, identity mismatch (`capacity-transition-chaos` 13/13, `free-cloud-chaos` 14/14, adversarial boundary 5/5); hosted legal gate improved |
 | Billing safety | ZERO-BILLING BOUNDARY AUDITED — ForgeZero verify, zero-cash-only fabric route tables, `freeRouteExclusionReason` final gate; `paid-auto` reachable only by explicit user selection + env flag; credit overage controls unverified |
-| Desktop and packaging | R32 evidence inherited; R33 packaging rerun open |
+| Desktop and packaging | PACKAGED BUILD + AUDITS PASS — `npm run pack` on post-change source produced signed `win-unpacked` (Electron 44.4.1); internal-dep graph PASS (28 packages), runtime-dep graph PASS (355 modules / 18 externals), packaged persistence smoke `PACKAGED_PERSISTENCE_OK` via `node:sqlite`. Two audit false positives (comments matching the import-specifier regex) were rephrased in source |
 
 ## Remaining release gates
 
-The highest-priority engineering work is durable `WAITING_FOR_FREE_CAPACITY` and scheduler resumption, progress-aware iteration/failover control, reviewer allocation on an independent quota domain, and cross-provider mid-run live proof with exact quota accounting. The highest-priority supply work is account-scoped read-only quota/plan checks for remaining providers and written commercial-use clearance. No production deployment, credit application, billing change, or release certification follows from this interim result.
+Remaining engineering gates: progress-aware iteration/failover control (the fixed 50-iteration ceiling is still an arbitrary threshold), reviewer allocation on an independent quota domain, and a live distinct-pool mid-run migration — the last is supply-blocked until a second measured pool satisfies the 16k-token demand (add a ≥16k-TPM free model credential, unblock Cloudflare's oracle, or clear OpenRouter policy). Remaining owner/supply actions: analytics-scoped Cloudflare token for the neuron oracle, written commercial-use clearance for managed supply, credit applications per `application-package.md`, and a packaged-build rerun if the runtime ships. No production deployment, credit application, billing change, or release certification follows from this interim result.

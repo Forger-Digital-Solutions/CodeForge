@@ -1,0 +1,8 @@
+electron_version=44.4.1
+electron_node_version=24.21.0
+better_sqlite3_abi=149
+available_drivers=node:sqlite,better-sqlite3
+active_driver=node:sqlite
+sqlite_driver=node:sqlite
+persistence_round_trip=PASS
+PACKAGED_PERSISTENCE_OK driver=node:sqlite

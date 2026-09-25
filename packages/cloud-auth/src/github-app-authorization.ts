@@ -170,8 +170,8 @@ export class GitHubAppAuthorizationService {
     const installation = await this.db.getGitHubInstallationById(authorization.installationId);
     if (!installation) throw new GitHubAuthorizationError(GITHUB_AUTHORIZATION_ERRORS.INSTALLATION_NOT_FOUND);
     if (installation.codeForgeUserId !== codeForgeUserId) {
-      // Deliberately indistinguishable from "not authorized": a caller must not be able to probe
-      // which repository ids other accounts have connected.
+      // Deliberately indistinguishable versus a not-authorized reply: a caller must not be
+      // able to probe which repository ids other accounts have connected.
       throw new GitHubAuthorizationError(GITHUB_AUTHORIZATION_ERRORS.REPOSITORY_NOT_AUTHORIZED);
     }
     if (installation.status !== "active") throw new GitHubAuthorizationError(GITHUB_AUTHORIZATION_ERRORS.INSTALLATION_REVOKED);

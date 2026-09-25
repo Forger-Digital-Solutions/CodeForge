@@ -357,8 +357,8 @@ export class EightBitRuntime {
     // route's hold is replaced atomically by the next admissible route's reservation (same
     // requestId), so a failover can never execute unadmitted or double-spend the pool.
     const requestId = req.fabricRequestId ?? req.runId ?? req.turnId;
-    // R33: remember the fabric's verdict. `no_replacement` must distinguish "eligible supply
-    // is busy" (a durable capacity wait) from "no eligible supply exists" (fail closed).
+    // R33: remember the fabric's verdict. `no_replacement` must distinguish a durable
+    // capacity wait (eligible supply is busy) and a fail-closed absence of eligible supply.
     let lastFabricDecision: FabricRouteDecision | undefined;
     const reqWithFabric: typeof req = this.options.freeFabric && (req.pinMode ?? (req.isExactPin ? "route" : "auto")) === "auto"
       ? {
