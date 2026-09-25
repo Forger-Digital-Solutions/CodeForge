@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ForgeZero, type FreeModelRecord } from "@codeforge/forge-zero";
+import { ForgeZero, CapacityReservationLedger, type FreeModelRecord } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider } from "@codeforge/providers";
 import type { ModelQualificationReceipt } from "@codeforge/eight-bit";
 import {
@@ -873,5 +873,67 @@ describe("FreeCloudService — Free Fabric capacity projection", () => {
     expect(routes.some((r) => r.providerId === "groq" && r.capacityIdentity === "acct-42" && r.capacityPoolId === "groq:user:acct-42")).toBe(true);
     expect(svc.poolsForUser("alice").some((p) => p.capacityIdentity === "acct-42")).toBe(true);
     expect(svc.routesForUser("mallory").every((r) => r.providerId !== "groq")).toBe(true);
+  });
+
+  it("R34 Mission C: model-domain providers shard into independent physical pools — reservations on one model do not deny another", () => {
+    const fw = new ForgeZero();
+    fw.register(freeRecord("groq", "openai/gpt-oss-120b", { accessClass: "FREE_ALLOWANCE" }));
+    fw.register(freeRecord("groq", "qwen/qwen3-32b", { accessClass: "FREE_ALLOWANCE" }));
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(createMockProvider({ providerId: "groq" }));
+    // Managed-supply variant of the Groq definition: FREE_PRODUCT_ONLY yields
+    // PURE_MANAGED_FREE — the product-eligible class the sharding actually serves.
+    const managedGroq = {
+      ...PROVIDER_DEFINITIONS.groq,
+      freeAccess: { ...PROVIDER_DEFINITIONS.groq.freeAccess, class: "FREE_PRODUCT_ONLY" as const, quotaDomain: "model" as const },
+      terms: { status: "CLEARED" as const },
+    };
+    const svc = new FreeCloudService({
+      firewall: fw,
+      providerCatalog: catalog,
+      registry: new NormalizedModelRegistry(),
+      definitions: { groq: managedGroq },
+      now: () => NOW,
+      qualificationRunner: async (model) => receipt(model.providerId, model.modelId),
+    });
+    svc.setConnection(connected("groq", { credentialSource: "FDS_GATEWAY" }));
+    // R33 measured: each Groq model carries an independent quota window.
+    svc.quota.record("groq", "openai/gpt-oss-120b", { remainingRequests: 1000, limitRequests: 1000, remainingTokens: 8000, limitTokens: 8000, observedAt: NOW.toISOString() });
+    svc.quota.record("groq", "qwen/qwen3-32b", { remainingRequests: 1000, limitRequests: 1000, remainingTokens: 8000, limitTokens: 8000, observedAt: NOW.toISOString() });
+
+    const routes = svc.capacityRoutes();
+    const gptOss = routes.find((r) => r.providerId === "groq" && r.modelId === "openai/gpt-oss-120b");
+    const qwen = routes.find((r) => r.providerId === "groq" && r.modelId === "qwen/qwen3-32b");
+    expect(gptOss?.capacityPoolId).toBe("shared:groq:model:openai/gpt-oss-120b");
+    expect(qwen?.capacityPoolId).toBe("shared:groq:model:qwen/qwen3-32b");
+
+    const pools = svc.capacityPools();
+    expect(pools.some((p) => p.poolId === "shared:groq:model:openai/gpt-oss-120b")).toBe(true);
+    expect(pools.some((p) => p.poolId === "shared:groq:model:qwen/qwen3-32b")).toBe(true);
+    // No dead account-level pool when no provider-scoped observation exists.
+    expect(pools.some((p) => p.poolId === "shared:groq")).toBe(false);
+
+    // Ledger proof: a reservation consuming most of model A's pool must not deny model B —
+    // the quota domains are physically independent.
+    const ledger = new CapacityReservationLedger({
+      routes: routes.map((r) => ({ ...r, roles: ["CODER"], enabled: true, healthy: true, lifecycle: "APPROVED" as const })),
+      pools,
+      firstRunReserveRequests: 0,
+      firstRunReserveTokens: 0,
+      maxActiveReservationsPerUser: 10,
+      now: () => NOW.getTime(),
+    });
+    const reqBase = { userId: "u1", role: "CODER", taskKind: "interactive_turn", requests: 1, outputTokens: 0, isNewUser: false, priority: "normal" as const, createdAt: NOW.toISOString(), leaseUntil: new Date(NOW.getTime() + 60_000).toISOString() };
+    const reserveA = ledger.reserve({ ...reqBase, reservationId: "res-a", routeIds: [gptOss!.routeId], inputTokens: 6_000 });
+    expect(reserveA.admitted).toBe(true);
+    const reserveB = ledger.reserve({ ...reqBase, reservationId: "res-b", routeIds: [qwen!.routeId], inputTokens: 6_000 });
+    expect(reserveB.admitted).toBe(true);
+
+    // And the account-scoped collapse: a provider-wide observation un-shards back to one pool.
+    svc.quota.record("groq", undefined, { remainingRequests: 30, limitRequests: 30, observedAt: NOW.toISOString() });
+    const collapsed = svc.capacityRoutes();
+    expect(collapsed.find((r) => r.providerId === "groq" && r.modelId === "openai/gpt-oss-120b")?.capacityPoolId).toBe("shared:groq");
+    expect(svc.capacityPools().some((p) => p.poolId === "shared:groq")).toBe(true);
+    expect(svc.capacityPools().some((p) => p.poolId.includes(":model:"))).toBe(false);
   });
 });

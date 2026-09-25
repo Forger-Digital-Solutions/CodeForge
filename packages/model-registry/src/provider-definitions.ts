@@ -128,6 +128,14 @@ export interface FreeAccessProfile {
   allowanceScope?: "all_chat_models" | "allowlist";
   /** Model ids (provider-native) covered by the free allowance when `allowanceScope === "allowlist"`. */
   allowanceModels?: string[];
+  /**
+   * R34 Mission C: the physical quota domain the provider's limits bind to. "account" (default)
+   * shares one reservation budget across every model on the credential; "model" declares
+   * measured per-model rate windows (Groq 1k req + 8k TPM per model; Mistral codestral 625k
+   * TPM while devstral/small report limit 0). Model domains still collapse to the account pool
+   * whenever a provider-wide quota observation exists — account evidence wins over declaration.
+   */
+  quotaDomain?: "account" | "model";
   /** Model ids explicitly requiring a paid plan (never free on this provider). */
   paidPlanModels?: string[];
   evidence: { source: string; checkedAt: string; note?: string };
@@ -318,6 +326,8 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
       class: "FREE_DAILY_ALLOCATION",
       quota: "Free plan: 30 RPM / 1K RPD / 8K TPM / 200K TPD (gpt-oss, qwen)",
       spillover: "ACCOUNT_DEPENDENT",
+      // R33 measured: every model reported an independent remaining=999 on first call.
+      quotaDomain: "model",
       planDetection: "attestation",
       allowanceScope: "all_chat_models",
       evidence: { source: "https://console.groq.com/docs/rate-limits", checkedAt: CHECKED, note: "Developer plan (paid) shares the same key shape; plan is not exposed by the API." },
@@ -399,6 +409,9 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
       class: "FREE_MONTHLY_ALLOWANCE",
       quota: "Free mode includes monthly usage; current RPS, TPM, and monthly token limits are shown in the Admin Limits page; pay-as-you-go extends usage and bills",
       spillover: "ACCOUNT_DEPENDENT",
+      // R33 measured: codestral carried 125 RPM / 625k TPM while devstral and mistral-small
+      // reported limit 0 on the same credential — the rate windows are per-model.
+      quotaDomain: "model",
       planDetection: "attestation",
       allowanceScope: "all_chat_models",
       evidence: { source: "https://docs.mistral.ai/admin/billing-usage/usage-limits + https://docs.mistral.ai/admin/billing-usage/subscriptions", checkedAt: CHECKED, note: "Free mode is available, but account-level plan, monthly usage, and pay-as-you-go settings must be attested before managed routing; Preview/Beta/Labs routes are excluded from normal production discovery." },

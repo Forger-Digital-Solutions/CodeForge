@@ -609,11 +609,14 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         // its pool claimable by the owning host's fabric plan (and only that plan) instead of
         // collapsing every same-provider key into one shared "unclaimed" identity.
         const capacityIdentity = conn?.userConnectedFree?.capacityIdentity ?? (perUser ? `localconn:${r.providerId}` : undefined);
+        // R34 Mission C: on a model-domain provider (Groq per-model windows, Mistral's
+        // per-model limits) two models are independent physical quota domains — reservations
+        // against model A must not consume model B's budget. A provider-wide observation
+        // collapses the shard back to the account pool: account evidence beats declaration.
+        const modelDomain = def?.freeAccess.quotaDomain === "model" && !this.quota.hasProviderScoped(r.providerId);
         const capacityPoolId = perUser
           ? conn?.userConnectedFree?.capacityPoolId ?? `${r.providerId}:user:${capacityIdentity}`
-          : supplyClass === "OWNER_DEV_FREE" || supplyClass === "OWNER_CREDIT_RESERVE"
-            ? `owner:${r.providerId}`
-            : `shared:${r.providerId}`;
+          : `${supplyClass === "OWNER_DEV_FREE" || supplyClass === "OWNER_CREDIT_RESERVE" ? "owner" : "shared"}:${r.providerId}${modelDomain ? `:model:${r.providerModelId}` : ""}`;
         const quota = r.quota ?? this.quota.get(r.providerId, r.providerModelId);
         routes.push({
           routeId: `fabric:${r.routeId}`,
@@ -664,6 +667,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
    * observations; route-scoped quota stays on the routes. */
   capacityPools(): ProviderCapacityPool[] {
     const observedAt = this.now().toISOString();
+    const snap = this.snapshot();
     const pools = new Map<string, ProviderCapacityPool>();
     for (const conn of this.connections.values()) {
       const def = this.definitions[conn.providerId];
@@ -674,7 +678,10 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       const poolId = perUser
         ? conn.userConnectedFree?.capacityPoolId ?? `${conn.providerId}:user:${capacityIdentity}`
         : `shared:${conn.providerId}`;
-      if (pools.has(poolId)) continue;
+      // Model-domain providers shard into per-model pools below; the account-level pool is
+      // dead weight when no provider-scoped observation exists (no route claims it).
+      const modelDomain = !perUser && def?.freeAccess.quotaDomain === "model" && !this.quota.hasProviderScoped(conn.providerId);
+      if (pools.has(poolId) || modelDomain) continue;
       const windows: CapacityWindow[] = quotaWindows(this.quota.get(conn.providerId, ""), perUser ? "USER_ACCOUNT" : "ORG", this.now);
       if (conn.userConnectedFree) {
         windows.push({ unit: "concurrency", limit: conn.userConnectedFree.concurrencyLimit, remaining: conn.userConnectedFree.concurrencyLimit, resetAt: NO_RESET, scope: "USER_ACCOUNT", observedAt, authoritative: true });
@@ -692,6 +699,33 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         authoritative: windows.length > 0,
         ...(capacityIdentity !== undefined ? { capacityIdentity } : {}),
       });
+    }
+
+    // R34 Mission C: model-domain providers get one physical pool per quota domain — the same
+    // ids `capacityRoutes` claims (`<prefix>:<provider>:model:<model>`). A model with no quota
+    // record still gets a pool (windows empty) so route-level windows keep governing; an
+    // account-scoped observation collapses every model back into the account pool above.
+    for (const model of snap.models) {
+      for (const r of model.routes) {
+        const supplyClass = r.supplyClass;
+        if (supplyClass === undefined || !supplyClassIsZeroCash(supplyClass)) continue;
+        const def = this.definitions[r.providerId];
+        const perUser = supplyClass === "USER_CONNECTED_FREE" || supplyClass === "DISTRIBUTED_USER_FREE";
+        if (perUser || def?.freeAccess.quotaDomain !== "model" || this.quota.hasProviderScoped(r.providerId)) continue;
+        const prefix = supplyClass === "OWNER_DEV_FREE" || supplyClass === "OWNER_CREDIT_RESERVE" ? "owner" : "shared";
+        const modelPoolId = `${prefix}:${r.providerId}:model:${r.providerModelId}`;
+        if (pools.has(modelPoolId)) continue;
+        const modelWindows: CapacityWindow[] = quotaWindows(this.quota.get(r.providerId, r.providerModelId), "ORG", this.now);
+        pools.set(modelPoolId, {
+          poolId: modelPoolId,
+          providerId: r.providerId,
+          scope: "SHARED_OWNER_POOL",
+          supplyClass,
+          windows: modelWindows,
+          observedAt,
+          authoritative: modelWindows.length > 0,
+        });
+      }
     }
     return [...pools.values()];
   }

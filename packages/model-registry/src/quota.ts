@@ -111,6 +111,22 @@ export class RouteQuotaTracker {
     return this.byRoute.get(`${providerId}::${modelId}`) ?? this.byProvider.get(providerId);
   }
 
+  /** True when a genuinely account-scoped observation exists for this provider. */
+  hasProviderScoped(providerId: string): boolean {
+    return this.byProvider.has(providerId);
+  }
+
+  /** Model ids with a route-scoped quota observation for this provider (the measurable
+   *  per-model quota domains — used to enumerate physical pools for model-domain providers). */
+  providerRouteModels(providerId: string): string[] {
+    const prefix = `${providerId}::`;
+    const models: string[] = [];
+    for (const key of this.byRoute.keys()) {
+      if (key.startsWith(prefix)) models.push(key.slice(prefix.length));
+    }
+    return models;
+  }
+
   /** Remaining request budget when known; undefined when the provider does not expose it. */
   remainingRequests(providerId: string, modelId: string): number | undefined {
     return this.get(providerId, modelId)?.remainingRequests;
