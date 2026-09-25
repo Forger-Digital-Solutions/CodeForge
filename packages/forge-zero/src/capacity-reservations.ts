@@ -149,18 +149,19 @@ export class CapacityReservationLedger {
       const concurrencyWindows = windows.filter((window) => window.unit === "concurrency");
       const creditWindows = windows.filter((window) => window.unit === "credits");
       const providerUnitWindows = windows.filter((window) => window.unit === "provider_units");
-      // A credit window is the authoritative accounting dimension for
-      // user-connected Free pools; absent token/request headers should not
-      // turn an otherwise admitted credit reservation into a false denial.
-      const hasCreditAccounting = creditWindows.length > 0;
+      // A credit or provider-units window is the authoritative accounting dimension for
+      // user-connected Free pools and metered pools (e.g. Workers AI neurons); absent
+      // token/request headers should not turn an otherwise admitted reservation into a
+      // false denial on a dimension the provider does not meter.
+      const hasUnitAccounting = creditWindows.length > 0 || providerUnitWindows.length > 0;
       const inputRemaining = inputWindows.length === 0
-        ? (hasCreditAccounting ? Number.MAX_SAFE_INTEGER : 0)
+        ? (hasUnitAccounting ? Number.MAX_SAFE_INTEGER : 0)
         : Math.min(...inputWindows.map((window) => window.remaining));
       // A provider that reports one undifferentiated token window can still serve output; use
       // the input window as the conservative shared ceiling until a separate output header exists.
       const outputRemaining = outputWindows.length === 0 ? inputRemaining : Math.min(...outputWindows.map((window) => window.remaining));
       const concurrencyRemaining = concurrencyWindows.length === 0 ? undefined : Math.min(...concurrencyWindows.map((window) => window.remaining));
-      const requestRemaining = requestWindow?.remaining ?? (hasCreditAccounting ? Number.MAX_SAFE_INTEGER : 0);
+      const requestRemaining = requestWindow?.remaining ?? (hasUnitAccounting ? Number.MAX_SAFE_INTEGER : 0);
       const creditRemaining = creditWindows.length === 0 ? undefined : Math.min(...creditWindows.map((window) => window.remaining));
       const providerUnitsRemaining = providerUnitWindows.length === 0 ? undefined : Math.min(...providerUnitWindows.map((window) => window.remaining));
       const reservedFloorRequests = request.isNewUser ? 0 : this.firstRunReserveRequests;

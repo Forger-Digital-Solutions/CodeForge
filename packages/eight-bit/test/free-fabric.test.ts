@@ -232,6 +232,26 @@ describe("FreeFabric — supply composition + fair admission", () => {
     expect(decision.suggestions.some((s) => /pay|purchase|credit card/i.test(s) && !/never|stays free/i.test(s))).toBe(false);
   });
 
+  it("queues an unmeasured route — absent quota windows are zero usable supply, never assumed", () => {
+    // Live finding (R33 supply audit): GitHub Models serves real inference but emits no
+    // quota headers, so its fabric route arrives with windows:[]. Unmeasured capacity must
+    // behave like exhaustion — a decision to wait — never an admission on faith.
+    const c = clock();
+    const unmeasured = managedRoute("shared", { windows: [] });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [unmeasured],
+      managedPools: () => [poolFor(unmeasured, { windows: [] })],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" });
+    expect(decision.outcome).toBe("QUEUED_FOR_CAPACITY");
+    expect(decision.selected).toBeUndefined();
+    const report = decision.explanation.candidates.find((r) => r.routeId === "shared");
+    expect(report?.status).toBe("CAPACITY_DENIED");
+    expect(report?.reasonCodes).toContain("CAPACITY_EXHAUSTED");
+  });
+
   it("enforces the per-user concurrency cap as QUEUED_FOR_CAPACITY, not a silent extra hold", () => {
     const c = clock();
     const shared = managedRoute("shared");
