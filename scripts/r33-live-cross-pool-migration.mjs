@@ -51,6 +51,7 @@ class InjectOnceAdapter {
     this.armed = false;
     this.injections = 0;
     this.servedStreams = 0;
+    this.usage = [];
   }
   failNextCall() { this.armed = true; }
   listModels() { return this.inner.listModels(); }
@@ -66,7 +67,13 @@ class InjectOnceAdapter {
       throw new ProviderError(`${this.providerId} request rate limited (429): rate limit exceeded, please retry later`, "RATE_LIMITED", true, { status: 429 });
     }
     this.servedStreams += 1;
-    yield* this.inner.streamChat(req, signal);
+    const promptChars = (req.system?.length ?? 0) + req.messages.reduce((n, m) => n + (typeof m.content === "string" ? m.content.length : 0), 0);
+    for await (const ev of this.inner.streamChat(req, signal)) {
+      if (ev.type === "usage" && ev.usage) {
+        this.usage.push({ promptChars, inputTokens: ev.usage.inputTokens ?? null, outputTokens: ev.usage.outputTokens ?? null });
+      }
+      yield ev;
+    }
   }
 }
 
@@ -297,9 +304,9 @@ async function main() {
     });
   }
   evidence.served = {
-    groq: { streams: groq.servedStreams, injections: groq.injections },
-    mistral: { streams: mistral.servedStreams, injections: mistral.injections },
-    "github-models": { streams: github.servedStreams, injections: github.injections },
+    groq: { streams: groq.servedStreams, injections: groq.injections, usage: groq.usage },
+    mistral: { streams: mistral.servedStreams, injections: mistral.injections, usage: mistral.usage },
+    "github-models": { streams: github.servedStreams, injections: github.injections, usage: github.usage },
   };
   const implTurn = evidence.turns.find((t) => t.capacityPoolId && t.capacityPoolId !== `shared:${poolA}`) ?? evidence.turns[0];
   const reviewTurn = evidence.turns.find((t) => implTurn && t.turnId !== implTurn.turnId);

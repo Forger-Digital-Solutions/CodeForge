@@ -910,6 +910,11 @@ export class CodeForgeServer {
       return;
     }
 
+    if (url.pathname === "/api/free-cloud/capacity" && req.method === "GET") {
+      this.handleFreeCloudCapacity(res);
+      return;
+    }
+
     if (url.pathname === "/api/free-cloud/qualify" && req.method === "POST") {
       void this.handleFreeCloudQualify(res);
       return;
@@ -2643,6 +2648,50 @@ export class CodeForgeServer {
     }));
     res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
     res.end(JSON.stringify(candidates));
+  }
+
+  /**
+   * The fabric's physical capacity view: quota pools with their measured windows, the routes
+   * feeding each pool, and the live reservation ledger. This is the operator surface for
+   * "why is a task waiting" — which pool is exhausted, what resets when, and who holds slots.
+   */
+  private handleFreeCloudCapacity(res: http.ServerResponse): void {
+    if (!this.freeCloud || !this.freeFabric) {
+      res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "FREE_CLOUD_UNAVAILABLE" }));
+      return;
+    }
+    const windowOut = (w: { unit: string; limit: number; remaining: number; resetAt: string; scope: string; authoritative?: boolean }) => ({
+      unit: w.unit, limit: w.limit, remaining: w.remaining, resetAt: w.resetAt, scope: w.scope,
+      ...(w.authoritative !== undefined ? { authoritative: w.authoritative } : {}),
+    });
+    const pools = this.freeCloud.capacityPools().map((p) => ({
+      poolId: p.poolId,
+      providerId: p.providerId,
+      scope: p.scope,
+      supplyClass: p.supplyClass,
+      authoritative: p.authoritative,
+      windows: p.windows.map(windowOut),
+    }));
+    const routes = this.freeCloud.capacityRoutes().map((r) => ({
+      routeId: r.routeId,
+      providerId: r.providerId,
+      modelId: r.modelId,
+      capacityPoolId: r.capacityPoolId,
+      supplyClass: r.supplyClass,
+      lifecycle: r.lifecycle,
+      healthy: r.healthy,
+      enabled: r.enabled,
+      windows: r.windows.map(windowOut),
+    }));
+    const snapshot = this.freeFabric.reservationSnapshot();
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify({
+      generatedAt: new Date().toISOString(),
+      pools,
+      routes,
+      reservations: snapshot ?? { activeReservations: 0 },
+    }));
   }
 
   /** Trigger a bounded 8-Bit qualification cycle (Settings "Qualify now" / desktop after connect). */

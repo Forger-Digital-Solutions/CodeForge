@@ -90,6 +90,21 @@ blocked today (single admissible pool); the mechanism is proven by the
 restart/mid-turn/independent-pool suite in
 `packages/server/test/free-fabric-wiring.test.ts`.
 
+## Measured turn economics (live, `token-efficiency-2026-09-25.json`)
+
+A real trivial-fix workflow on `shared:mistral` consumed **8 model calls /
+~22.5k input + ~330 output tokens** end-to-end (implement + park/resume +
+review). Two properties that matter for every capacity projection:
+
+- **~98% of consumed tokens are input** — each call replays the full context.
+  Output is tiny (12–109/call). Provider-side prompt caching, where offered
+  (Cloudflare's neuron rates already price cached input ~5–10× cheaper), is
+  the single largest efficiency lever.
+- **Context grows inside a turn**: input/request rose 2,583 → 3,123 (+21%)
+  across this small task. That is why the fabric's fixed 16k admission demand
+  is honest headroom, not waste — a reservation sized to the *median* request
+  would collide with the provider's real window mid-turn.
+
 ## Honest unknowns still on the table
 
 - **Mistral monthly allowance**: per-minute windows are measured; the free
