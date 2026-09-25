@@ -1,0 +1,128 @@
+{
+  "generatedAt": "2026-09-25T00:32:29.978Z",
+  "mode": "LIVE_INFERENCE_WITH_ONE_INJECTED_RATE_LIMIT",
+  "note": "All successful model calls are real provider inference. Exactly one RATE_LIMITED is injected on pool A after useful progress — the same signal a real 429 produces. No quota was burned to force exhaustion.",
+  "providers": {},
+  "turns": [
+    {
+      "turnId": "2b8d083b-3bc2-439c-a652-64faa98367fc",
+      "status": "completed",
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "turnId": "90d2988f-e965-40ca-9c3b-6f65bcbe190b",
+      "status": "completed",
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "capacityPoolId": "shared:mistral"
+    }
+  ],
+  "migration": {
+    "poolA": "mistral",
+    "injectedAfterServedStreams": 1,
+    "injection": "RATE_LIMITED once on mistral"
+  },
+  "review": {
+    "providerId": "mistral",
+    "capacityPoolId": "shared:mistral",
+    "independentOfImplementation": false
+  },
+  "completion": {
+    "phase": "completed",
+    "status": "completed",
+    "fileFixed": true,
+    "poolA": "mistral",
+    "poolB": "shared:mistral",
+    "migrationProven": false
+  },
+  "errors": [],
+  "waitTrace": [
+    {
+      "t": 505,
+      "turnId": "2b8d083b-3bc2-439c-a652-64faa98367fc",
+      "status": "running",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 1005,
+      "turnId": "2b8d083b-3bc2-439c-a652-64faa98367fc",
+      "status": "waiting_for_free_capacity",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 60812,
+      "turnId": "2b8d083b-3bc2-439c-a652-64faa98367fc",
+      "status": "running",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 62841,
+      "turnId": "2b8d083b-3bc2-439c-a652-64faa98367fc",
+      "status": "completed",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 65574,
+      "turnId": "90d2988f-e965-40ca-9c3b-6f65bcbe190b",
+      "status": "running",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 66074,
+      "turnId": "2b8d083b-3bc2-439c-a652-64faa98367fc",
+      "status": "completed",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 66074,
+      "turnId": "90d2988f-e965-40ca-9c3b-6f65bcbe190b",
+      "status": "running",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 66575,
+      "turnId": "2b8d083b-3bc2-439c-a652-64faa98367fc",
+      "status": "completed",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    },
+    {
+      "t": 66575,
+      "turnId": "90d2988f-e965-40ca-9c3b-6f65bcbe190b",
+      "status": "running",
+      "providerId": "mistral",
+      "capacityPoolId": "shared:mistral"
+    }
+  ],
+  "served": {
+    "groq": {
+      "streams": 0,
+      "injections": 0
+    },
+    "mistral": {
+      "streams": 5,
+      "injections": 1
+    },
+    "github-models": {
+      "streams": 0,
+      "injections": 0
+    }
+  },
+  "waitRecovery": {
+    "parked": true,
+    "parkedAtMs": 1005,
+    "resumed": true,
+    "resumedStatus": "running",
+    "resumedPoolId": "shared:mistral",
+    "waitMs": 59807
+  }
+}

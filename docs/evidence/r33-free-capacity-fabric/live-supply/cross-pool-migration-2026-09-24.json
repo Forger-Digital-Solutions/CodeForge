@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-09-25T00:03:35.252Z",
+  "mode": "LIVE_INFERENCE_WITH_ONE_INJECTED_RATE_LIMIT",
+  "note": "All successful model calls are real provider inference. Exactly one RATE_LIMITED is injected on pool A after useful progress — the same signal a real 429 produces. No quota was burned to force exhaustion.",
+  "providers": {},
+  "turns": [
+    {
+      "turnId": "54fa203a-35f7-4ddf-95f6-dc83c6bca522",
+      "status": "waiting_for_free_capacity",
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "capacityPoolId": "shared:mistral"
+    }
+  ],
+  "migration": {
+    "poolA": "mistral",
+    "injectedAfterServedStreams": 1,
+    "injection": "RATE_LIMITED once on mistral"
+  },
+  "review": {
+    "independentOfImplementation": false,
+    "note": "no distinct review turn observed"
+  },
+  "completion": {
+    "phase": "harness_error",
+    "status": "workflow exceeded 1200000ms deadline",
+    "fileFixed": false,
+    "poolA": "mistral",
+    "poolB": "shared:mistral",
+    "migrationProven": false
+  },
+  "errors": [],
+  "served": {
+    "groq": {
+      "streams": 0,
+      "injections": 0
+    },
+    "mistral": {
+      "streams": 1,
+      "injections": 1
+    },
+    "github-models": {
+      "streams": 0,
+      "injections": 0
+    }
+  }
+}

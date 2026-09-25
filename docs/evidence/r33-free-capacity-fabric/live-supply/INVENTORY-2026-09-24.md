@@ -55,6 +55,36 @@ Cerebras (trial dead), Gemini (project suspended), Mistral non-codestral models 
   stranding). `effectiveQuota` now refills to the provider-declared limit — the reset is
   the provider's own contract, not an invented number.
 
+## Live capacity-transition run — 2026-09-25
+
+`scripts/r33-live-cross-pool-migration.mjs` drove a real workflow (fix `src/calc.ts`, verify,
+review) through the production runtime with real Groq/Mistral/GitHub-Models adapters and one
+bounded injected 429. Artifact: `cross-pool-migration-2026-09-25.json`.
+
+Proven live, end-to-end:
+
+- Real inference on `shared:mistral` → one injected 429 → durable park in
+  `waiting_for_free_capacity` (no false failure, no false completion).
+- Fabric re-admission correctly refused every other route: Groq's measured 8k TPM cannot
+  fit the runtime's 16k-token turn demand; `github-models` has no authoritative quota
+  windows and is fail-closed denied (unmeasured supply is never counted).
+- At 59.8s — matching the authority's `rateLimitDefaultTtlMs` (60s) — the sweeper's probe
+  re-admitted `shared:mistral`, the parked turn resumed from durable state, finished, and
+  the workflow passed review + verification → completion gate `completed`. 5 real Mistral
+  streams total; ~60s wall-clock wait.
+
+**Single-admissible-pool finding:** with the current credential set, `shared:mistral` is
+the only pool whose measured window can serve a 16k-token turn demand. Cross-pool
+migration therefore cannot be demonstrated live today — not a runtime defect, a supply
+fact. Unblocking actions: a Cloudflare analytics-scoped token (activates the neuron pool),
+or any additional verified-free credential with a ≥16k TPM window (SambaNova, NVIDIA NIM,
+etc. — requires sign-up, cannot be self-provisioned).
+
+A 429 message containing "quota"/"daily" phrasing is classified `DAILY_QUOTA_EXHAUSTED`
+(6h TTL) — observed in the first run, which stayed parked for the full 20m deadline. That
+is conservative policy behavior, but it means provider error wording directly controls
+recovery latency.
+
 ## Honesty notes
 
 - Groq "per-model pools" are reported by headers per model; Groq also enforces org-level
