@@ -1218,4 +1218,20 @@ describe("FreeCloudService — billing-safety red team (R34 Mission P)", () => {
     expect(second.admitted).toBe(false);
     expect(second.reason).toBe("CAPACITY_EXHAUSTED");
   });
+
+  it("policy-state preservation: quarantine survives route-table refresh and catalog churn", () => {
+    const { svc, fw } = redService();
+    svc.setConnection(connected("groq", { credentialSource: "FDS_GATEWAY" }));
+    svc.quota.record("groq", "openai/gpt-oss-120b", { remainingRequests: 1000, limitRequests: 1000, observedAt: NOW.toISOString() });
+    const poolId = svc.capacityRoutes().find((r) => r.providerId === "groq")!.capacityPoolId;
+    svc.quarantinePool(poolId, "operator kill switch");
+
+    // A catalog refresh re-registers the model — the route row is rebuilt from scratch, but
+    // the quarantine lives on the pool id, not the row: the rebuilt route is still denied.
+    fw.register(freeRecord("groq", "openai/gpt-oss-120b", { accessClass: "FREE_ALLOWANCE", displayName: "gpt-oss-120b refreshed" }));
+    const after = svc.capacityRoutes().find((r) => r.providerId === "groq");
+    expect(after?.enabled).toBe(false);
+    expect(after?.lifecycle).toBe("QUARANTINED");
+    expect(freeRouteExclusionReason(after!)).toBe("DISABLED");
+  });
 });
