@@ -2696,12 +2696,24 @@ export class CodeForgeServer {
       windows: r.windows.map(windowOut),
     }));
     const snapshot = this.freeFabric.reservationSnapshot();
+    // Per-dispatch estimator truth: what each admitted call reserved vs what the provider
+    // actually billed — the audit trail behind every learned tokenizerRatio.
+    const dispatchTelemetry = defaultCapacityGovernor.dispatchTelemetry().map((t) => ({
+      at: t.at,
+      providerId: t.providerId,
+      estimatedTokens: t.estimatedTokens,
+      promptEstimate: t.promptEstimate,
+      actualInputTokens: t.actualInputTokens,
+      actualTotalTokens: t.actualTotalTokens,
+      tokenizerRatio: t.tokenizerRatio,
+    }));
     res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
     res.end(JSON.stringify({
       generatedAt: new Date().toISOString(),
       pools,
       routes,
       reservations: snapshot ?? { activeReservations: 0 },
+      dispatchTelemetry,
     }));
   }
 

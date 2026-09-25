@@ -498,4 +498,32 @@ describe("ProviderCapacityGovernor — evidence-driven capacity control", () => 
     expect(governor.getCapacityReport("openrouter").activeConcurrent).toBe(0);
     expect(governor.getCapacityReport("openrouter").inFlightTokens).toBe(0);
   });
+
+  it("R34 Mission O: per-dispatch telemetry records estimate vs billed usage per provider", async () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep });
+
+    const res = await governor.acquire("groq", 2000, undefined, { promptTokens: 1000 });
+    res.release(1500, 1200);
+
+    const telemetry = governor.dispatchTelemetry("groq");
+    expect(telemetry).toHaveLength(1);
+    expect(telemetry[0]).toMatchObject({
+      providerId: "groq",
+      estimatedTokens: 2000,
+      promptEstimate: 1000,
+      actualInputTokens: 1200,
+      actualTotalTokens: 1500,
+      tokenizerRatio: 1.2,
+    });
+    // A provider filter excludes everyone else; the record is per-provider truth.
+    expect(governor.dispatchTelemetry("mistral")).toEqual([]);
+    expect(governor.dispatchTelemetry()).toHaveLength(1);
+
+    // A release without provider usage still releases capacity but records no telemetry —
+    // absent evidence stays absent rather than fabricating an observation.
+    const res2 = await governor.acquire("groq", 500);
+    res2.release();
+    expect(governor.dispatchTelemetry("groq")).toHaveLength(1);
+  });
 });

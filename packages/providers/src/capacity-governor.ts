@@ -101,6 +101,21 @@ interface ProviderState {
    * request — the margin must come from evidence, not a constant.
    */
   tokenizerRatio?: number;
+  /** R34 Mission O: bounded per-dispatch truth — what was estimated vs what the provider
+   *  actually billed, so estimator accuracy is auditable per call instead of only via the EMA. */
+  dispatchTelemetry: DispatchTelemetry[];
+}
+
+/** One admitted dispatch's token truth — the estimate that reserved it and the provider's
+ *  reported usage once the call settled. */
+export interface DispatchTelemetry {
+  at: number;
+  providerId: string;
+  estimatedTokens: number;
+  promptEstimate?: number;
+  actualInputTokens?: number;
+  actualTotalTokens?: number;
+  tokenizerRatio?: number;
 }
 
 export interface ProviderCapacityGovernorOptions {
@@ -180,6 +195,7 @@ export class ProviderCapacityGovernor {
         cooldownUntil: 0,
         waitingQueue: 0,
         customLimits: this.defaultLimits[providerId],
+        dispatchTelemetry: [],
       };
       this.states.set(providerId, state);
     }
@@ -203,6 +219,16 @@ export class ProviderCapacityGovernor {
    */
   tokenizerRatio(providerId: string): number | undefined {
     return this.states.get(providerId)?.tokenizerRatio;
+  }
+
+  /** Per-dispatch estimate-vs-actual records (newest last), all providers or one. */
+  dispatchTelemetry(providerId?: string): DispatchTelemetry[] {
+    const out: DispatchTelemetry[] = [];
+    for (const [id, state] of this.states) {
+      if (providerId !== undefined && id !== providerId) continue;
+      out.push(...state.dispatchTelemetry);
+    }
+    return out.sort((a, b) => a.at - b.at);
   }
 
   /**
@@ -361,6 +387,20 @@ export class ProviderCapacityGovernor {
             if (promptEstimate !== undefined && promptEstimate > 0 && typeof actualInputTokens === "number" && actualInputTokens > 0) {
               const observed = actualInputTokens / promptEstimate;
               state.tokenizerRatio = state.tokenizerRatio === undefined ? observed : state.tokenizerRatio * 0.7 + observed * 0.3;
+            }
+            // Per-dispatch truth for the estimator: every settled call records estimate vs
+            // billed so tokenizerRatio claims stay auditable per call, not just in aggregate.
+            if (actualInputTokens !== undefined || actualTokens !== undefined) {
+              state.dispatchTelemetry.push({
+                at: releasedAt,
+                providerId,
+                estimatedTokens,
+                ...(promptEstimate !== undefined ? { promptEstimate } : {}),
+                ...(actualInputTokens !== undefined ? { actualInputTokens } : {}),
+                ...(actualTokens !== undefined ? { actualTotalTokens: actualTokens } : {}),
+                ...(state.tokenizerRatio !== undefined ? { tokenizerRatio: state.tokenizerRatio } : {}),
+              });
+              if (state.dispatchTelemetry.length > 100) state.dispatchTelemetry.splice(0, state.dispatchTelemetry.length - 100);
             }
             // Rate-limit headers arrive with the response HEAD, after the prompt was debited but
             // before the completion existed; the provider debits the completion when generation
