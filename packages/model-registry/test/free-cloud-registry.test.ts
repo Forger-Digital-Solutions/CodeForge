@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ForgeZero, CapacityReservationLedger, type FreeModelRecord } from "@codeforge/forge-zero";
+import { ForgeZero, CapacityReservationLedger, freeRouteExclusionReason, type FreeModelRecord } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider } from "@codeforge/providers";
 import type { ModelQualificationReceipt } from "@codeforge/eight-bit";
 import {
@@ -935,5 +935,173 @@ describe("FreeCloudService — Free Fabric capacity projection", () => {
     expect(collapsed.find((r) => r.providerId === "groq" && r.modelId === "openai/gpt-oss-120b")?.capacityPoolId).toBe("shared:groq");
     expect(svc.capacityPools().some((p) => p.poolId === "shared:groq")).toBe(true);
     expect(svc.capacityPools().some((p) => p.poolId.includes(":model:"))).toBe(false);
+  });
+});
+
+describe("FreeCloudService — managed pools & quarantine (R34 Mission B)", () => {
+  function managedService() {
+    const fw = new ForgeZero();
+    fw.register(freeRecord("mistral", "codestral-latest"));
+    fw.register(freeRecord("mistral", "mistral-small-latest"));
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(createMockProvider({ providerId: "mistral" }));
+    const svc = new FreeCloudService({
+      firewall: fw,
+      providerCatalog: catalog,
+      registry: new NormalizedModelRegistry(),
+      now: () => NOW,
+      qualificationRunner: async (model) => receipt(model.providerId, model.modelId),
+    });
+    return { svc, fw };
+  }
+
+  it("projects one route per registered managed account with PURE_MANAGED_FREE supply", () => {
+    const { svc } = managedService();
+    svc.registerManagedPool("mistral", "acct-a");
+    svc.registerManagedPool("mistral", "acct-b");
+
+    const routes = svc.capacityRoutes().filter((r) => r.providerId === "mistral" && r.capacityPoolId.startsWith("managed:"));
+    // 2 models × 2 accounts — every physical quota domain gets its own route row.
+    expect(routes.length).toBe(4);
+    expect(routes.every((r) => r.supplyClass === "PURE_MANAGED_FREE")).toBe(true);
+    expect(routes.every((r) => r.capacityPoolScope === "SHARED_OWNER_POOL")).toBe(true);
+    const poolIds = new Set(routes.map((r) => r.capacityPoolId));
+    // Mistral is a model-domain provider: each account shards per model.
+    expect(poolIds).toEqual(new Set([
+      "managed:mistral:acct-a:model:codestral-latest",
+      "managed:mistral:acct-b:model:codestral-latest",
+      "managed:mistral:acct-a:model:mistral-small-latest",
+      "managed:mistral:acct-b:model:mistral-small-latest",
+    ]));
+    expect(routes.map((r) => r.capacityIdentity).sort()).toEqual([
+      "managed:mistral:acct-a",
+      "managed:mistral:acct-a",
+      "managed:mistral:acct-b",
+      "managed:mistral:acct-b",
+    ]);
+  });
+
+  it("keeps account quota domains isolated — stamped observations land on their own pool", () => {
+    const { svc } = managedService();
+    svc.registerManagedPool("mistral", "acct-a");
+    svc.registerManagedPool("mistral", "acct-b");
+
+    // Account A reports its window; account B stays unobserved.
+    svc.onProviderResponse({
+      providerId: "mistral",
+      modelId: "codestral-latest",
+      accountId: "acct-a",
+      status: 200,
+      headers: [["x-ratelimit-remaining-requests", "120"], ["x-ratelimit-limit-requests", "125"]],
+      observedAt: NOW.getTime(),
+    });
+
+    const routes = svc.capacityRoutes().filter((r) => r.providerId === "mistral" && r.modelId === "codestral-latest");
+    const aRoute = routes.find((r) => r.capacityPoolId.includes("acct-a"));
+    const bRoute = routes.find((r) => r.capacityPoolId.includes("acct-b"));
+    expect(aRoute?.windows.find((w) => w.unit === "requests")?.remaining).toBe(120);
+    // B is a distinct physical account — A's observation must not leak into its window.
+    expect(bRoute?.windows.find((w) => w.unit === "requests")).toBeUndefined();
+
+    const pools = svc.capacityPools();
+    expect(pools.some((p) => p.poolId.includes("acct-a") && p.windows.some((w) => w.remaining === 120))).toBe(true);
+    expect(pools.some((p) => p.poolId.includes("acct-b") && p.windows.length > 0)).toBe(false);
+  });
+
+  it("quarantining a pool instantly denies its routes — policy exclusion is immediate", () => {
+    const { svc } = managedService();
+    svc.registerManagedPool("mistral", "acct-a");
+    svc.registerManagedPool("mistral", "acct-b");
+
+    const before = svc.capacityRoutes().filter((r) => r.providerId === "mistral");
+    expect(before.every((r) => r.enabled)).toBe(true);
+
+    svc.quarantinePool("managed:mistral:acct-a:model:codestral-latest", "upstream abuse report");
+    const during = svc.capacityRoutes().filter((r) => r.providerId === "mistral" && r.modelId === "codestral-latest");
+    const qa = during.find((r) => r.capacityPoolId.includes("acct-a"));
+    const qb = during.find((r) => r.capacityPoolId.includes("acct-b"));
+    expect(qa?.enabled).toBe(false);
+    expect(qa?.lifecycle).toBe("QUARANTINED");
+    // DISABLED is the first policy gate — quarantined routes fail closed before any other check.
+    expect(freeRouteExclusionReason(qa!)).toBe("DISABLED");
+    // The sibling account is untouched — quarantine is physical-pool precise.
+    expect(qb?.enabled).toBe(true);
+    expect(qb?.lifecycle).toBe("APPROVED");
+
+    expect(svc.poolQuarantineOf("managed:mistral:acct-a:model:codestral-latest")?.reason).toBe("upstream abuse report");
+
+    expect(svc.releasePoolQuarantine("managed:mistral:acct-a:model:codestral-latest")).toBe(true);
+    expect(svc.capacityRoutes().find((r) => r.capacityPoolId.includes("acct-a") && r.modelId === "codestral-latest")?.enabled).toBe(true);
+  });
+
+  it("setManagedPoolState DISABLED/QUARANTINED denies instantly and ACTIVE restores", () => {
+    const { svc } = managedService();
+    const pool = svc.registerManagedPool("mistral", "acct-a");
+
+    svc.setManagedPoolState(pool.poolId, "DISABLED", "credential revoked");
+    for (const r of svc.capacityRoutes().filter((x) => x.providerId === "mistral" && x.capacityPoolId.includes("acct-a"))) {
+      expect(r.enabled).toBe(false);
+      expect(freeRouteExclusionReason(r)).toBe("DISABLED");
+    }
+    svc.setManagedPoolState(pool.poolId, "ACTIVE");
+    expect(svc.capacityRoutes().filter((x) => x.capacityPoolId.includes("acct-a")).every((x) => x.enabled)).toBe(true);
+  });
+
+  it("refuses to register supply that cannot own a managed pool", () => {
+    const { svc } = managedService();
+    expect(() => svc.registerManagedPool("nonexistent", "a1")).toThrow(/unknown provider/);
+    expect(() => svc.registerManagedPool("mistral", "")).toThrow(/accountId/);
+    expect(() => svc.registerManagedPool("mistral", "a1", { supplyClass: "PAID" })).toThrow(/cannot own a managed pool/);
+    expect(() => svc.registerManagedPool("mistral", "a1", { supplyClass: "USER_CONNECTED_FREE" })).toThrow(/cannot own a managed pool/);
+    expect(svc.managedPoolsFor("mistral")).toEqual([]);
+  });
+
+  it("quarantine survives a store-backed reload — disabled supply never silently reopens", async () => {
+    const { InMemoryManagedPoolPersistence } = await import("../src/index.js");
+    const store = new InMemoryManagedPoolPersistence();
+    const { svc } = managedService();
+    svc.attachManagedPoolStore(store);
+    const pool = svc.registerManagedPool("mistral", "acct-a");
+    svc.setManagedPoolState(pool.poolId, "QUARANTINED", "abuse");
+    // Give the fire-and-forget persistence a tick to flush.
+    await new Promise((r) => setTimeout(r, 0));
+
+    // Simulate a restart: a fresh service restores from the same store.
+    const { svc: restored } = managedService();
+    restored.attachManagedPoolStore(store);
+    await restored.loadManagedPools();
+    const routes = restored.capacityRoutes().filter((x) => x.providerId === "mistral" && x.capacityPoolId.includes("acct-a"));
+    expect(routes.every((x) => x.enabled === false && x.lifecycle === "QUARANTINED")).toBe(true);
+    expect(restored.poolQuarantineOf(pool.poolId)?.reason).toBe("abuse");
+  });
+
+  it("a managed pool on a user-connected provider adds a distinct managed domain — no double counting", () => {
+    const fw = new ForgeZero();
+    fw.register(freeRecord("groq", "openai/gpt-oss-120b", { accessClass: "FREE_ALLOWANCE" }));
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(createMockProvider({ providerId: "groq" }));
+    const svc = new FreeCloudService({
+      firewall: fw,
+      providerCatalog: catalog,
+      registry: new NormalizedModelRegistry(),
+      now: () => NOW,
+      qualificationRunner: async (model) => receipt(model.providerId, model.modelId),
+    });
+    svc.setConnection(connected("groq", { planAttested: true }));
+    svc.registerManagedPool("groq", "server-fleet-1");
+
+    const routes = svc.capacityRoutes().filter((r) => r.providerId === "groq" && r.modelId === "openai/gpt-oss-120b");
+    // User pool + managed pool are separate physical domains — both projected.
+    const userRoute = routes.find((r) => r.capacityPoolScope === "PER_USER_POOL");
+    const managedRoute = routes.find((r) => r.capacityPoolScope === "SHARED_OWNER_POOL");
+    expect(userRoute?.capacityPoolId).toBe("groq:user:localconn:groq");
+    expect(userRoute?.supplyClass).toBe("USER_CONNECTED_FREE");
+    expect(managedRoute?.capacityPoolId.startsWith("managed:groq:server-fleet-1")).toBe(true);
+    expect(managedRoute?.supplyClass).toBe("PURE_MANAGED_FREE");
+    expect(managedRoute?.capacityIdentity).toBe("managed:groq:server-fleet-1");
+
+    // Managed supply on a per-user provider does not leak user-scope or admission proof.
+    expect(managedRoute?.capacityScope).toBe("ORG");
+    expect(managedRoute?.freeOnlyAdmissionProven).toBeUndefined();
   });
 });

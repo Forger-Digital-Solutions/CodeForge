@@ -4,6 +4,7 @@ import {
   type CapacityRoute,
   type CapacityWindow,
   type ProviderCapacityPool,
+  type SupplyClass,
 } from "@codeforge/forge-zero";
 import type { ProviderAdapter, ProviderCatalog, ProviderResponseObservation } from "@codeforge/providers";
 import {
@@ -104,6 +105,47 @@ interface RouteHealthEntry {
   lastSuccessAt?: string;
 }
 
+/**
+ * R34 Mission B: one server-owned upstream account behind a provider. A provider connection
+ * says "credentials exist"; a managed pool says "this account is a distinct physical quota
+ * domain we may schedule against." PURE_MANAGED_FREE supply is a fleet of these, not a single
+ * implied bucket — quota observations stamped with `accountId` key to it directly.
+ */
+export type ManagedPoolState = "ACTIVE" | "QUARANTINED" | "DISABLED";
+
+export interface ManagedPoolRecord {
+  /** `managed:<providerId>:<accountId>` */
+  poolId: string;
+  providerId: string;
+  accountId: string;
+  /** Zero-cash only — a managed pool can never be the vehicle for paid or owner supply. */
+  supplyClass: SupplyClass;
+  state: ManagedPoolState;
+  reason?: string;
+  at: string;
+}
+
+/** Persistence seam for the managed fleet. Durable hosts implement this; the in-memory
+ *  default keeps tests and the ephemeral path honest (a quarantine never silently clears). */
+export interface ManagedPoolPersistence {
+  save(record: ManagedPoolRecord): Promise<void>;
+  delete(poolId: string): Promise<void>;
+  loadAll(): Promise<ManagedPoolRecord[]>;
+}
+
+export class InMemoryManagedPoolPersistence implements ManagedPoolPersistence {
+  private readonly rows = new Map<string, ManagedPoolRecord>();
+  async save(record: ManagedPoolRecord): Promise<void> {
+    this.rows.set(record.poolId, { ...record });
+  }
+  async delete(poolId: string): Promise<void> {
+    this.rows.delete(poolId);
+  }
+  async loadAll(): Promise<ManagedPoolRecord[]> {
+    return [...this.rows.values()].map((r) => ({ ...r }));
+  }
+}
+
 const SHARED_MAX_COOLDOWN_MS = 15 * 60_000;
 const NO_RESET = "9999-12-31T23:59:59.999Z";
 /** Clean request cost of the default role-aware suite: 3 compact probes + 10 role cases. */
@@ -142,6 +184,12 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private qualificationStore: QualificationPersistence;
   private readonly receipts = new Map<string, ModelQualificationReceipt>();
   private readonly connections = new Map<string, ProviderConnectionState>();
+  private readonly managedPools = new Map<string, ManagedPoolRecord>();
+  /** Instant-disable set for ANY poolId (shared, per-user, managed). A quarantined pool's
+   *  routes project `enabled: false` + `lifecycle: QUARANTINED` — ForgeZero denies them at
+   *  admission on the next decision with no cache to flush. */
+  private readonly poolQuarantines = new Map<string, { reason: string; at: string }>();
+  private managedPoolStore: ManagedPoolPersistence = new InMemoryManagedPoolPersistence();
   private readonly health = new Map<string, RouteHealthEntry>();
   readonly quota = new RouteQuotaTracker();
   private readonly now: () => Date;
@@ -233,6 +281,133 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
 
   connections_(): ProviderConnectionState[] {
     return [...this.connections.values()];
+  }
+
+  // --- managed pools (R34 Mission B) -----------------------------------------------------------
+  //
+  // A provider connection proves credentials exist; a managed pool is one server-owned upstream
+  // account = one physical quota domain. The fabric projects one route per (model × managed
+  // pool) so per-account windows never contend, and quota observations stamped with the
+  // account that served them land on the right pool. This is also the only supported path for
+  // declaring managed supply on a direct (non-gateway) provider: a server-held Mistral key is
+  // `registerManagedPool("mistral", "ops-acct-1")`, not a phantom connection.
+
+  attachManagedPoolStore(store: ManagedPoolPersistence): void {
+    this.managedPoolStore = store;
+  }
+
+  async loadManagedPools(): Promise<number> {
+    const all = await this.managedPoolStore.loadAll();
+    for (const r of all) {
+      if (!this.validManagedSupplyClass(r.supplyClass)) continue;
+      this.managedPools.set(r.poolId, r);
+      // A quarantine must survive restart — restoring the pool without restoring the block
+      // would silently reopen disabled supply.
+      if (r.state === "ACTIVE") this.poolQuarantines.delete(r.poolId);
+      else this.poolQuarantines.set(r.poolId, { reason: r.reason ?? r.state, at: r.at });
+    }
+    this.emit();
+    return this.managedPools.size;
+  }
+
+  private validManagedSupplyClass(supplyClass: SupplyClass | undefined): supplyClass is SupplyClass {
+    // A managed pool is server-owned fleet capacity. Reject anything that would smuggle in a
+    // paid route or hand the server-side pool to a single user — the class is set at
+    // registration and re-vetted on restore so a corrupt store cannot widen it.
+    return supplyClass !== undefined
+      && supplyClassIsZeroCash(supplyClass)
+      && supplyClass !== "USER_CONNECTED_FREE"
+      && supplyClass !== "DISTRIBUTED_USER_FREE"
+      && supplyClass !== "PAID";
+  }
+
+  registerManagedPool(
+    providerId: string,
+    accountId: string,
+    opts: { supplyClass?: SupplyClass; state?: ManagedPoolState; reason?: string } = {},
+  ): ManagedPoolRecord {
+    if (!this.definitions[providerId]) throw new Error(`managed pool for unknown provider: ${providerId}`);
+    if (!accountId) throw new Error("managed pool requires an accountId");
+    const supplyClass = opts.supplyClass ?? "PURE_MANAGED_FREE";
+    if (!this.validManagedSupplyClass(supplyClass)) throw new Error(`supply class ${supplyClass} cannot own a managed pool`);
+    const record: ManagedPoolRecord = {
+      poolId: `managed:${providerId}:${accountId}`,
+      providerId,
+      accountId,
+      supplyClass,
+      state: opts.state ?? "ACTIVE",
+      ...(opts.reason !== undefined ? { reason: opts.reason } : {}),
+      at: this.now().toISOString(),
+    };
+    this.managedPools.set(record.poolId, record);
+    if (record.state === "ACTIVE") this.poolQuarantines.delete(record.poolId);
+    else this.poolQuarantines.set(record.poolId, { reason: record.reason ?? record.state, at: record.at });
+    void this.managedPoolStore.save(record);
+    this.emit();
+    return record;
+  }
+
+  /** Flip a managed pool's lifecycle. QUARANTINED/DISABLED deny admission immediately —
+   *  the route projection reads this map synchronously on the next decision. */
+  setManagedPoolState(poolId: string, state: ManagedPoolState, reason?: string): ManagedPoolRecord | undefined {
+    const record = this.managedPools.get(poolId);
+    if (!record) return undefined;
+    const next: ManagedPoolRecord = { ...record, state, at: this.now().toISOString(), ...(reason !== undefined ? { reason } : {}) };
+    this.managedPools.set(poolId, next);
+    if (state === "ACTIVE") this.poolQuarantines.delete(poolId);
+    else this.poolQuarantines.set(poolId, { reason: reason ?? state, at: next.at });
+    void this.managedPoolStore.save(next);
+    this.emit();
+    return next;
+  }
+
+  removeManagedPool(poolId: string): boolean {
+    const deleted = this.managedPools.delete(poolId);
+    this.poolQuarantines.delete(poolId);
+    if (deleted) {
+      void this.managedPoolStore.delete(poolId);
+      this.emit();
+    }
+    return deleted;
+  }
+
+  managedPoolsFor(providerId?: string): ManagedPoolRecord[] {
+    const all = [...this.managedPools.values()];
+    return providerId === undefined ? all : all.filter((p) => p.providerId === providerId);
+  }
+
+  /** Instant disable for a poolId the managed registry does not own (shared:, per-user). */
+  quarantinePool(poolId: string, reason: string): void {
+    if (this.managedPools.has(poolId)) {
+      this.setManagedPoolState(poolId, "QUARANTINED", reason);
+      return;
+    }
+    this.poolQuarantines.set(poolId, { reason, at: this.now().toISOString() });
+    this.emit();
+  }
+
+  releasePoolQuarantine(poolId: string): boolean {
+    if (this.managedPools.has(poolId)) {
+      return this.setManagedPoolState(poolId, "ACTIVE") !== undefined;
+    }
+    const released = this.poolQuarantines.delete(poolId);
+    if (released) this.emit();
+    return released;
+  }
+
+  poolQuarantineOf(poolId: string): { reason: string; at: string } | undefined {
+    return this.quarantineFor(poolId);
+  }
+
+  /** Pool ids are `:`-delimited hierarchies: quarantining `managed:p:acct` must also deny the
+   *  sharded `managed:p:acct:model:m` pools — the whole account is the physical domain. */
+  private quarantineFor(poolId: string): { reason: string; at: string } | undefined {
+    const exact = this.poolQuarantines.get(poolId);
+    if (exact) return exact;
+    for (const [qid, entry] of this.poolQuarantines) {
+      if (poolId.startsWith(`${qid}:`)) return entry;
+    }
+    return undefined;
   }
 
   // --- qualification -------------------------------------------------------------------------
@@ -470,7 +645,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   /** Provider response observer for adapters (quota headers + 429 cooldown). */
   readonly onProviderResponse = (obs: ProviderResponseObservation): void => {
     const quota = parseRouteQuota(obs.headers, this.now);
-    this.quota.record(obs.providerId, obs.modelId, quota);
+    this.quota.record(obs.providerId, obs.modelId, quota, obs.accountId);
     // R24: the same header stream is the authority's quota evidence. One observation enters
     // once — no re-parsed copy (§16-17 provenance). Provider-scoped responses (no modelId) have
     // no route to attribute to; the authority keys conditions per route.
@@ -617,27 +792,66 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         const capacityPoolId = perUser
           ? conn?.userConnectedFree?.capacityPoolId ?? `${r.providerId}:user:${capacityIdentity}`
           : `${supplyClass === "OWNER_DEV_FREE" || supplyClass === "OWNER_CREDIT_RESERVE" ? "owner" : "shared"}:${r.providerId}${modelDomain ? `:model:${r.providerModelId}` : ""}`;
-        const quota = r.quota ?? this.quota.get(r.providerId, r.providerModelId);
+        // R34 Mission B: a provider may draw from several physical accounts. Each managed pool
+        // is its own quota domain, so a route projects once per pool it can consume — the
+        // fabric's per-route reservation then lands on the account that would actually serve it.
+        // For an FDS_GATEWAY connection the gateway handle is a catalog entry, not a quota
+        // domain: once managed pools exist they ARE the supply and the implied `shared:` bucket
+        // is suppressed (it would double-count the same upstream accounts).
+        const managed = this.managedPoolsFor(r.providerId);
+        const gatewayBacked = conn?.credentialSource === "FDS_GATEWAY";
+        const targets: Array<{
+          poolId: string;
+          supply: SupplyClass;
+          poolScope: "PER_USER_POOL" | "SHARED_OWNER_POOL";
+          capScope: "USER_ACCOUNT" | "ORG";
+          accountId?: string;
+          identity?: string;
+        }> = [];
+        if (managed.length === 0 || !gatewayBacked || perUser) {
+          targets.push({
+            poolId: capacityPoolId,
+            supply: supplyClass,
+            poolScope: perUser ? "PER_USER_POOL" : "SHARED_OWNER_POOL",
+            capScope: perUser ? "USER_ACCOUNT" : "ORG",
+            ...(capacityIdentity !== undefined ? { identity: capacityIdentity } : {}),
+          });
+        }
+        for (const mp of managed) {
+          const accountDomain = def?.freeAccess.quotaDomain === "model" && !this.quota.hasProviderScoped(r.providerId, mp.accountId);
+          targets.push({
+            poolId: accountDomain ? `${mp.poolId}:model:${r.providerModelId}` : mp.poolId,
+            supply: mp.supplyClass,
+            poolScope: "SHARED_OWNER_POOL",
+            capScope: "ORG",
+            accountId: mp.accountId,
+            identity: `managed:${mp.providerId}:${mp.accountId}`,
+          });
+        }
+        for (const target of targets) {
+        const quarantine = this.quarantineFor(target.poolId);
+        const quota = r.quota ?? this.quota.get(r.providerId, r.providerModelId, target.accountId);
+        const targetPerUser = target.poolScope === "PER_USER_POOL";
         routes.push({
-          routeId: `fabric:${r.routeId}`,
+          routeId: `fabric:${r.routeId}${target.accountId !== undefined ? `:acct:${target.accountId}` : ""}`,
           providerId: r.providerId,
           modelId: r.providerModelId,
           canonicalModelId: r.canonicalModelId,
           family: model.family,
           gateway: r.providerId,
-          supplyClass,
-          capacityPoolId,
-          capacityPoolScope: perUser ? "PER_USER_POOL" : "SHARED_OWNER_POOL",
-          capacityScope: perUser ? "USER_ACCOUNT" : "ORG",
+          supplyClass: target.supply,
+          capacityPoolId: target.poolId,
+          capacityPoolScope: target.poolScope,
+          capacityScope: target.capScope,
           // A permissive provider may train on what it sees: private code requires an explicit
           // user consent decision, not a silent routing default.
           dataPolicyProfile: r.privacyClass === "permissive" ? "USER_CONSENT_REQUIRED" : "PRIVATE_CODE_ALLOWED",
-          lifecycle: r.lifecycle === "RETIRED" ? "REJECTED" : "APPROVED",
+          lifecycle: r.lifecycle === "RETIRED" ? "REJECTED" : quarantine ? "QUARANTINED" : "APPROVED",
           explicitZeroPrice: r.verifiedFree,
           // USER_CONNECTED_FREE needs proof the account cannot silently bill: a managed
           // user-connection that completed its own admission, an explicit free-plan
           // attestation, or a provider whose free surface cannot spill into charges.
-          freeOnlyAdmissionProven: perUser
+          freeOnlyAdmissionProven: targetPerUser
             ? conn?.userConnectedFree?.status === "CONNECTED"
               || conn?.planAttested === true
               || def?.freeAccess.spillover === "NONE"
@@ -653,10 +867,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
           // The fabric is a ForgeAuto surface: executable-without-qualification is an explicit
           // picker privilege, not managed-supply eligibility.
           healthy: r.forgeAutoEligible,
-          enabled: true,
-          windows: quotaWindows(quota, perUser ? "USER_ACCOUNT" : "ORG", this.now),
-          ...(capacityIdentity !== undefined ? { capacityIdentity } : {}),
+          enabled: quarantine === undefined,
+          windows: quotaWindows(quota, targetPerUser ? "USER_ACCOUNT" : "ORG", this.now),
+          ...(target.identity !== undefined ? { capacityIdentity: target.identity } : {}),
         });
+        }
       }
     }
     return routes;
@@ -681,7 +896,10 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       // Model-domain providers shard into per-model pools below; the account-level pool is
       // dead weight when no provider-scoped observation exists (no route claims it).
       const modelDomain = !perUser && def?.freeAccess.quotaDomain === "model" && !this.quota.hasProviderScoped(conn.providerId);
-      if (pools.has(poolId) || modelDomain) continue;
+      // A gateway connection's implied `shared:` bucket is not a quota domain once managed
+      // pools exist — the fleet owns the supply, and counting both would double-admit.
+      const gatewaySupplanted = conn.credentialSource === "FDS_GATEWAY" && this.managedPoolsFor(conn.providerId).length > 0;
+      if (pools.has(poolId) || modelDomain || gatewaySupplanted) continue;
       const windows: CapacityWindow[] = quotaWindows(this.quota.get(conn.providerId, ""), perUser ? "USER_ACCOUNT" : "ORG", this.now);
       if (conn.userConnectedFree) {
         windows.push({ unit: "concurrency", limit: conn.userConnectedFree.concurrencyLimit, remaining: conn.userConnectedFree.concurrencyLimit, resetAt: NO_RESET, scope: "USER_ACCOUNT", observedAt, authoritative: true });
@@ -699,6 +917,48 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         authoritative: windows.length > 0,
         ...(capacityIdentity !== undefined ? { capacityIdentity } : {}),
       });
+    }
+
+    // R34 Mission B: one pool row per registered managed account (sharded per model on
+    // model-domain providers, matching the route projection). Quota evidence is the
+    // account-scoped slice the response observer stamped — a managed account never inherits
+    // another account's window.
+    for (const mp of this.managedPools.values()) {
+      const mpDef = this.definitions[mp.providerId];
+      const accountScoped = this.quota.hasProviderScoped(mp.providerId, mp.accountId);
+      const mpModelDomain = mpDef?.freeAccess.quotaDomain === "model" && !accountScoped;
+      const modelIds = mpModelDomain
+        ? [...new Set(snap.models.flatMap((m) => m.routes.filter((r) => r.providerId === mp.providerId).map((r) => r.providerModelId)))]
+        : [];
+      if (!mpModelDomain || modelIds.length === 0) {
+        const windows = quotaWindows(this.quota.get(mp.providerId, "", mp.accountId), "ORG", this.now);
+        pools.set(mp.poolId, {
+          poolId: mp.poolId,
+          providerId: mp.providerId,
+          scope: "SHARED_OWNER_POOL",
+          supplyClass: mp.supplyClass,
+          windows,
+          observedAt,
+          authoritative: windows.length > 0,
+          capacityIdentity: `managed:${mp.providerId}:${mp.accountId}`,
+        });
+        continue;
+      }
+      for (const modelId of modelIds) {
+        const modelPoolId = `${mp.poolId}:model:${modelId}`;
+        if (pools.has(modelPoolId)) continue;
+        const windows = quotaWindows(this.quota.get(mp.providerId, modelId, mp.accountId), "ORG", this.now);
+        pools.set(modelPoolId, {
+          poolId: modelPoolId,
+          providerId: mp.providerId,
+          scope: "SHARED_OWNER_POOL",
+          supplyClass: mp.supplyClass,
+          windows,
+          observedAt,
+          authoritative: windows.length > 0,
+          capacityIdentity: `managed:${mp.providerId}:${mp.accountId}`,
+        });
+      }
     }
 
     // R34 Mission C: model-domain providers get one physical pool per quota domain — the same

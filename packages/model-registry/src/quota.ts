@@ -85,7 +85,10 @@ export function effectiveQuota(quota: RouteQuota | undefined, now: () => Date = 
   };
 }
 
-/** In-memory per-route quota observations, keyed `${providerId}::${modelId}`. */
+/** In-memory per-route quota observations, keyed `${providerId}::${modelId}` — or
+ * `${providerId}::${accountId}::${modelId}` when the caller stamps the upstream account that
+ * served the response (R34 Mission B: one provider credential ≠ one quota domain; managed
+ * fleets run several accounts per provider, each with independent windows). */
 export class RouteQuotaTracker {
   private readonly byRoute = new Map<string, RouteQuota>();
   private readonly byProvider = new Map<string, RouteQuota>();
@@ -98,31 +101,39 @@ export class RouteQuotaTracker {
    * provider bucket is reserved for observations with no model attached (genuinely
    * account-scoped signals), which `get` still honours as a fallback.
    */
-  record(providerId: string, modelId: string | undefined, quota: RouteQuota | undefined): void {
+  record(providerId: string, modelId: string | undefined, quota: RouteQuota | undefined, accountId?: string): void {
     if (!quota) return;
+    const account = accountId ? `${accountId}::` : "";
     if (modelId) {
-      this.byRoute.set(`${providerId}::${modelId}`, quota);
+      this.byRoute.set(`${providerId}::${account}${modelId}`, quota);
     } else {
-      this.byProvider.set(providerId, quota);
+      this.byProvider.set(`${providerId}::${account}`, quota);
     }
   }
 
-  get(providerId: string, modelId: string): RouteQuota | undefined {
-    return this.byRoute.get(`${providerId}::${modelId}`) ?? this.byProvider.get(providerId);
+  get(providerId: string, modelId: string, accountId?: string): RouteQuota | undefined {
+    const account = accountId ? `${accountId}::` : "";
+    return this.byRoute.get(`${providerId}::${account}${modelId}`) ?? this.byProvider.get(`${providerId}::${account}`) ?? (accountId ? this.byProvider.get(`${providerId}::`) : undefined);
   }
 
-  /** True when a genuinely account-scoped observation exists for this provider. */
-  hasProviderScoped(providerId: string): boolean {
-    return this.byProvider.has(providerId);
+  /** True when a genuinely account-scoped observation exists for this provider (optionally
+   *  for one upstream account only). */
+  hasProviderScoped(providerId: string, accountId?: string): boolean {
+    return this.byProvider.has(`${providerId}::${accountId ? `${accountId}::` : ""}`) || (accountId !== undefined && this.byProvider.has(`${providerId}::`));
   }
 
   /** Model ids with a route-scoped quota observation for this provider (the measurable
    *  per-model quota domains — used to enumerate physical pools for model-domain providers). */
-  providerRouteModels(providerId: string): string[] {
-    const prefix = `${providerId}::`;
+  providerRouteModels(providerId: string, accountId?: string): string[] {
+    const prefix = `${providerId}::${accountId ? `${accountId}::` : ""}`;
     const models: string[] = [];
     for (const key of this.byRoute.keys()) {
-      if (key.startsWith(prefix)) models.push(key.slice(prefix.length));
+      if (!key.startsWith(prefix)) continue;
+      const model = key.slice(prefix.length);
+      // Unscoped keys are `provider::model`; account-scoped are `provider::account::model`.
+      // Without an account filter the second form must not leak `account::model` as a "model".
+      if (accountId === undefined && model.includes("::")) continue;
+      models.push(model);
     }
     return models;
   }

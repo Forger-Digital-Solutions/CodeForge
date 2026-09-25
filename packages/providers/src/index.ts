@@ -408,6 +408,9 @@ export class ProviderError extends Error {
 export interface ProviderResponseObservation {
   providerId: string;
   modelId?: string;
+  /** Which upstream account served this response (managed fleets run several accounts per
+   *  provider, each an independent quota domain). Undefined = the provider's default domain. */
+  accountId?: string;
   status: number;
   headers: Array<[string, string]>;
   observedAt: number;

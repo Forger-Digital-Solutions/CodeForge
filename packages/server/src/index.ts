@@ -920,6 +920,11 @@ export class CodeForgeServer {
       return;
     }
 
+    if (url.pathname === "/api/free-cloud/pools/quarantine" && req.method === "POST") {
+      this.handleFreeCloudPoolQuarantine(req, res);
+      return;
+    }
+
     if (url.pathname === "/api/free-cloud/qualify" && req.method === "POST") {
       void this.handleFreeCloudQualify(res);
       return;
@@ -2677,6 +2682,7 @@ export class CodeForgeServer {
       supplyClass: p.supplyClass,
       authoritative: p.authoritative,
       windows: p.windows.map(windowOut),
+      ...(this.freeCloud!.poolQuarantineOf(p.poolId) !== undefined ? { quarantine: this.freeCloud!.poolQuarantineOf(p.poolId) } : {}),
     }));
     const routes = this.freeCloud.capacityRoutes().map((r) => ({
       routeId: r.routeId,
@@ -2697,6 +2703,49 @@ export class CodeForgeServer {
       routes,
       reservations: snapshot ?? { activeReservations: 0 },
     }));
+  }
+
+  /**
+   * Instant capacity kill switch: quarantining a poolId flips every route claiming it to
+   * `enabled: false` / `lifecycle: QUARANTINED` on the next admission decision — no cache to
+   * flush, no in-flight drain, fail-closed by construction. `release: true` restores it.
+   */
+  private handleFreeCloudPoolQuarantine(req: http.IncomingMessage, res: http.ServerResponse): void {
+    if (!this.freeCloud) {
+      res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "FREE_CLOUD_UNAVAILABLE" }));
+      return;
+    }
+    let body = "";
+    req.on("data", (c) => { body += c; if (body.length > 4096) req.destroy(); });
+    req.on("end", () => {
+      try {
+        const data = JSON.parse(body) as { poolId?: string; reason?: string; release?: boolean };
+        if (!data.poolId || typeof data.poolId !== "string") {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "poolId required" }));
+          return;
+        }
+        const freeCloud = this.freeCloud!;
+        if (data.release === true) {
+          const released = freeCloud.releasePoolQuarantine(data.poolId);
+          res.writeHead(released ? 200 : 404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ ok: released, poolId: data.poolId, quarantined: false }));
+          return;
+        }
+        if (!data.reason || typeof data.reason !== "string") {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: "reason required" }));
+          return;
+        }
+        freeCloud.quarantinePool(data.poolId, data.reason);
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ ok: true, poolId: data.poolId, quarantined: true }));
+      } catch {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ error: "Invalid JSON" }));
+      }
+    });
   }
 
   /** Trigger a bounded 8-Bit qualification cycle (Settings "Qualify now" / desktop after connect). */
