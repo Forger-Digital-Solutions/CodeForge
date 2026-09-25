@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "62e9d8fc9ab6788ca1183a4e66080344c75abdf47581e65ab864e4255d915209",
-  "surfaceVersion": "r34-capacity-efficiency-interim-v1",
+  "sourceStateId": "81cef21f706a32ed9a34db06f06566312d7bc2d53279f4a659142b51b1304fb7",
+  "surfaceVersion": "r35-backend-finalization-interim-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -28,6 +28,7 @@
     "packages/server/src/duplicate-suppression.ts",
     "packages/server/src/forge-verify-persistence.ts",
     "packages/server/src/history-compaction.ts",
+    "packages/server/src/turn-state-machine.ts",
     "packages/server/src/workflow-service.ts",
     "packages/sessions/src/persistence.ts",
     "packages/sessions/src/postgres-persistence.ts",
@@ -59,13 +60,14 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "77c58969eea1395589070edb11b1d1e3869f8233",
+    "packages/server/src/agent-runtime.ts": "77b9c2e6cc194a73e98e5cbeb5547bd0628ff722",
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
     "packages/server/src/duplicate-suppression.ts": "5609d0e3817b1214cf1540810f355bef3ce842c3",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
-    "packages/server/src/workflow-service.ts": "aeb7bd074c3925c280ed8d1ddb68dcfac86950f7",
-    "packages/sessions/src/persistence.ts": "c125b07fa6a670b65943b42112f0704d040342f9",
+    "packages/server/src/turn-state-machine.ts": "bd79b984c832d8ad7020b58b2f4991c747abafd6",
+    "packages/server/src/workflow-service.ts": "a6fa8ae76d908fe503ba6050d8afdf9d2e239b23",
+    "packages/sessions/src/persistence.ts": "5832703ed9a300702e585be80d8886b6d8be2612",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "f330cf400ee11a3fa6edc6833b14af63ccd06210",
     "packages/tools/src/index.ts": "ad3007606e0674f65a396786c8264ddd32732cdc",
@@ -1383,18 +1385,54 @@
       "regressionEvidence": "docs/evidence/r34-capacity-efficiency/R34-CERTIFICATION-ADDENDUM.md; canonical vitest run recorded there.",
       "recertifiedAt": "2026-09-25",
       "sourceStateConstant": "CODEFORGE_R34_INTERIM_CAPACITY_EFFICIENCY_SOURCE_STATE_V1"
+    },
+    {
+      "label": "R35 backend-finalization surface",
+      "reason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification.",
+      "priorSourceStateId": "62e9d8fc9ab6788ca1183a4e66080344c75abdf47581e65ab864e4255d915209",
+      "priorSurfaceVersion": "r34-capacity-efficiency-interim-v1",
+      "resultingSourceStateId": "81cef21f706a32ed9a34db06f06566312d7bc2d53279f4a659142b51b1304fb7",
+      "resultingSurfaceVersion": "r35-backend-finalization-interim-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/turn-state-machine.ts",
+          "change": "New module: canonical turn status set, terminal/waiting/restorable sets, legal transition graph, workflow phase to task/session status maps. Emissions elsewhere are contract-tested against this graph.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "cancelTurn emits the true previous status and is idempotent on terminal turns; completion fallback wording no longer claims verification; resolve paths complete durable writes before HTTP 200.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "change": "Phase changes emit task.status vocabulary on task.state_changed and session.status vocabulary on status.changed via total maps that throw on unknown phases; terminal emissions use the tracked prior task status.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/sessions/src/persistence.ts",
+          "change": "Adds idx_work_items_kind so recovery kind-scans match the Postgres schema.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r35-backend-finalization/; canonical vitest run recorded in R35-FINAL-REPORT.md.",
+      "recertifiedAt": "2026-09-25",
+      "sourceStateConstant": "CODEFORGE_R35_INTERIM_BACKEND_FINALIZATION_SOURCE_STATE_V1"
     }
   ],
-  "generationNote": "This interim source-state ID is derived from the reviewed FG-8 through R34 material implementation surface by packages/forgegreen-campaign/src/source-state.ts. Historical R32, R33 interim identities remain bound to their prior states; this is not final R34 release certification.",
-  "recertifiedAt": "2026-09-25T10:34:54.052Z",
+  "generationNote": "This interim source-state ID is derived from the reviewed FG-8 through R35 material implementation surface by packages/forgegreen-campaign/src/source-state.ts. Historical R32, R33, R34 interim identities remain bound to their prior states; this is not final release certification.",
+  "recertifiedAt": "2026-09-25T12:42:41.404Z",
   "recertification": {
-    "phase": "R34 capacity-efficiency surface",
-    "reason": "Record the R34 capacity-efficiency surface: AgentRuntime admission now demands measured serialized-request tokens (estimatePromptOnlyTokens) plus role-scoped outputTokenDemand scaled by the governor's learned tokenizerRatio, the repo_* tool surface is withheld when no workspace exists so impossible tools cannot consume free-tier context, and dispatch copies compact superseded or mutation-stale tool outputs via the new history-compaction module. Durable history, capacity-wait semantics, completion-gate, ForgeVerify, and ForgeZero authority are unchanged. This is an interim source identity, not final R34 release certification.",
+    "phase": "R35 backend finalization surface",
+    "reason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification.",
     "changedFiles": [
-      "packages/server/src/agent-runtime.ts"
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/workflow-service.ts",
+      "packages/sessions/src/persistence.ts",
+      "packages/server/src/turn-state-machine.ts"
     ],
-    "priorSourceStateId": "98387a8b3a505c8bf1052c5b192bfeae596fbd8f022329f6c96c362c6e67a3a7",
+    "priorSourceStateId": "62e9d8fc9ab6788ca1183a4e66080344c75abdf47581e65ab864e4255d915209",
     "guarded": true
   },
-  "recertificationReason": "Record the R34 capacity-efficiency surface: AgentRuntime admission now demands measured serialized-request tokens (estimatePromptOnlyTokens) plus role-scoped outputTokenDemand scaled by the governor's learned tokenizerRatio, the repo_* tool surface is withheld when no workspace exists so impossible tools cannot consume free-tier context, and dispatch copies compact superseded or mutation-stale tool outputs via the new history-compaction module. Durable history, capacity-wait semantics, completion-gate, ForgeVerify, and ForgeZero authority are unchanged. This is an interim source identity, not final R34 release certification."
+  "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
 }
