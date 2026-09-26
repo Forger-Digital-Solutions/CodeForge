@@ -1,5 +1,5 @@
 {
-  "sourceStateId": "edf8f74bb006db6a56a19abbc5cfd0d07eca7de7614447bf57183b0aeafe093c",
+  "sourceStateId": "a6531eff597a3fc3ca23ce7d5c5b739b2a2d23716110b4c720977d9f59e1571f",
   "surfaceVersion": "r41-reasoning-budget-interim-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
@@ -59,9 +59,9 @@
     "packages/forge-green/src/optimization-types.ts": "1539abf45eaf618db3c2a68cf398b2320db5e7bd",
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
-    "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
+    "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "b5be2f3d210025114bbf03549d8bc341ed955665",
+    "packages/server/src/agent-runtime.ts": "e48e04fa5586e6a318ed9ee601361a277002fa96",
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
     "packages/server/src/duplicate-suppression.ts": "5609d0e3817b1214cf1540810f355bef3ce842c3",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
@@ -80,7 +80,7 @@
     "packages/workflow/src/types.ts": "fc0886656007832fba84a8b394570b4bc9ada7f7",
     "packages/workflow/src/verification-evidence-reuse.ts": "04048bdf9d932c307c45e7d8b44438f757ea8466",
     "packages/workflow/src/verification-reuse-cost-gate.ts": "3c3bc502921ef79a9496d762167f366e5589fd02",
-    "packages/workflow/src/verification-service.ts": "9fe62538955e4646e43fba467d1ee9b449a58074"
+    "packages/workflow/src/verification-service.ts": "62b4dab66a0e6205e39ebeff7b32d1ef0f56f003"
   },
   "candidateA": {
     "kind": "DUPLICATE_READ_ONLY_TOOL_REUSE",
@@ -1466,13 +1466,12 @@
   "generationNote": "This interim source-state ID is derived from the reviewed material surface including the R41 role-output-budget module. Prior campaign identities and their recorded hashes remain unchanged. Computed using packages/forgegreen-campaign/src/source-state.ts idAlgorithm.",
   "recertifiedAt": "2026-09-26",
   "recertification": {
-    "phase": "R41 reasoning-budget interim reconciliation",
-    "reason": "Re-issue the material fingerprint after reviewing the bounded role-dispatch changes; retain historical source-state identities and the certification canaries.",
+    "phase": "R41 npm-echo strip robustness",
+    "reason": "parseTestOutput stripped the npm command-echo block only at output byte 0; a preamble under parallel load (spawn/timeout/PTY artifact) left the > node fail.cjs echo in parsed output and the filename tripped the fail-marker regex. The strip is now anchored to the npm banner shape (> name@version script) wherever it occurs. No assertion or scoring semantics changed.",
     "changedFiles": [
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/src/role-output-budget.ts"
+      "packages/workflow/src/verification-service.ts"
     ],
-    "priorSourceStateId": "244e3eeac774a1976b073dfe22c616210ec79e4e491c5644d60ee9ced91d798e",
+    "priorSourceStateId": "09352f10523d5ff5cd590ceeba79788b973e8ebf66ba1af15afbc31a842e0867",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

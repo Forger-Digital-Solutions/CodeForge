@@ -44,7 +44,7 @@ export interface RoleQualificationOutput {
   transientCases: number;
 }
 
-const TRANSIENT_RE = /\b429\b|rate.?limit|quota|\b401\b|\b403\b|\b5\d\d\b|timed? ?out|econnreset|fetch failed/i;
+const TRANSIENT_RE = /\b429\b|rate.?limit|quota|\b401\b|\b403\b|\b5\d\d\b|timed? ?out|econnreset|fetch failed|no usable completion choices|R41_BOUND/i;
 
 interface ObserveResult {
   text: string;
@@ -256,9 +256,11 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
         {
           role: "system",
           content:
-            "You are a task planner. Reply with exactly one JSON protocol. task_graph_v1 is {\"protocol\":\"task_graph_v1\",\"summary\",\"tasks\":[{\"id\",\"title\",\"objective\",\"dependencies\",\"assignedRole\"}]}; " +
-            "semantic_steps_v1 is {\"protocol\":\"semantic_steps_v1\",\"summary\",\"steps\":[{\"id\",\"intent\",\"phase\",\"after\"}]}, where phase is investigation, planning, implementation, or verification. " +
-            "Never mix protocols. Both forms are normalized to the same task graph: implementation must precede verification. Plan only what the task requires — no invented files, no rewrites.",
+            "You are a task planner. Return exactly one JSON object, no markdown. " +
+            'Use task_graph_v1: {"protocol":"task_graph_v1","summary":"string","tasks":[{"id":"C","title":"string","objective":"string","dependencies":[],"assignedRole":"coder"},{"id":"R","title":"string","objective":"string","dependencies":["C"],"assignedRole":"reviewer"}]}. ' +
+            'Each assignedRole MUST be exactly one of "explorer", "planner", "coder", "reviewer". ' +
+            "Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. " +
+            "Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites.",
         },
         { role: "user", content: `Task: ${caze.task}\n\nExplorer findings (the only repository files that exist for you):\n${findings}` },
       ],
@@ -356,8 +358,8 @@ async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: st
 // ---------------------------------------------------------------------------
 
 function assemble(role: EightBitRole, cases: TestCaseResult[], protocol: RoleProtocol, startedAt: string): RoleQualificationResult {
-  const hardFailures = [...new Set(cases.filter((c) => c.hardFailure || protocol.disqualifyingFailures.includes(c.caseId) && !c.passed).map((c) => c.caseId))];
   const scored = cases.filter((c) => !c.error || !TRANSIENT_RE.test(c.error));
+  const hardFailures = [...new Set(scored.filter((c) => c.hardFailure || protocol.disqualifyingFailures.includes(c.caseId) && !c.passed).map((c) => c.caseId))];
   const passedCount = scored.filter((c) => c.passed).length;
   const score = scored.length === 0 ? 0 : passedCount / scored.length;
   const status: RoleQualificationResult["status"] =

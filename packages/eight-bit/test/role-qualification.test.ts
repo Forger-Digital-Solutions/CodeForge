@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import type { ChatRequest, StreamEvent } from "@codeforge/providers";
 import { createGenericFreeRecord } from "@codeforge/forge-zero";
 import { runRoleQualification, runRoleAwareQualification, ROLE_QUALIFICATION_SUITE_VERSION } from "../src/qualification/role-suite.js";
-import { EXPLORER_REPO, PLANNER_PROTOCOL_V1, ROLE_PROTOCOLS } from "../src/qualification/role-protocols.js";
+import { EXPLORER_REPO, PLANNER_PROTOCOL_V1, PLANNER_PROTOCOL_V2, ROLE_PROTOCOLS } from "../src/qualification/role-protocols.js";
 
 /**
  * R27 role protocol tests. Every adapter is a deterministic script driven by the
@@ -89,11 +89,12 @@ describe("R27 — versioned role protocols", () => {
   it("keeps R24 evidence frozen while qualifying the R27 planner protocol", () => {
     expect(ROLE_PROTOCOLS.map((p) => p.role)).toEqual(["EXPLORER", "PLANNER", "REVIEWER"]);
     for (const p of ROLE_PROTOCOLS) {
-      expect(p.version).toMatch(p.role === "PLANNER" ? /_V2$/ : /_V1$/);
+      expect(p.version).toMatch(p.role === "PLANNER" ? /_V3$/ : /_V1$/);
       expect(p.evidenceFormat).toBe("per_case_details_v1");
       expect(p.scoringDimensions.length).toBeGreaterThan(0);
     }
     expect(PLANNER_PROTOCOL_V1.version).toBe("PLANNER_PROTOCOL_V1");
+    expect(PLANNER_PROTOCOL_V2.version).toBe("PLANNER_PROTOCOL_V2");
     // Explorer is the only protocol that offers tools — including the edit trap.
     expect(EXPLORER_REPO.files["src/router.ts"]).toBeTruthy();
   });
@@ -131,6 +132,17 @@ describe("R27 — versioned role protocols", () => {
     const prose = await runRoleQualification(MODEL, new ScriptedAdapter((req) => body(req).includes("task planner") ? text("sure, just change the file") : goodScript(req)));
     expect(prose.roleResults.PLANNER!.status).toBe("HARD_FAILURE");
     expect(prose.roleResults.PLANNER!.hardFailures).toContain("planner.schema");
+  });
+
+  it("R41: a provider-empty response or bounded probe is inconclusive, not a planner schema failure", async () => {
+    for (const message of ["OpenRouter returned HTTP 200 but no usable completion choices.", "R41_BOUND: request cap reached"]) {
+      const out = await runRoleQualification(MODEL, new ScriptedAdapter(() =>
+        ev([{ type: "error", code: "PROVIDER_UNAVAILABLE", message, retryable: false }])));
+      expect(out.roleResults.PLANNER!.status).toBe("NOT_TESTED");
+      expect(out.roleResults.PLANNER!.hardFailures).toEqual([]);
+      expect(out.roleResults.REVIEWER!.status).toBe("NOT_TESTED");
+      expect(out.roleResults.REVIEWER!.hardFailures).toEqual([]);
+    }
   });
 
   it("PLANNER: semantic steps qualify only after canonical graph validation", async () => {

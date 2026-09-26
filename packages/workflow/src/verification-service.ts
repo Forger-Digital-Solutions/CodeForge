@@ -84,7 +84,10 @@ const NO_TESTS_DISCOVERED_MARKERS: readonly RegExp[] = [
 function parseTestOutput(rawOutput: string): { passed: number; failed: number; skipped: number; failures: Array<{ test: string; message: string }>; signal: VerifierTestSignal; noTestsDiscovered: boolean } {
   // npm prefixes a script run with its own echo (`> pkg@1.0.0 test`, `> node fail.cjs`). Those
   // lines describe the command, not its result — a script *named* fail.cjs is not a failure.
-  const output = rawOutput.replace(/^(?:\s*\n)*(?:> [^\n]*\n?)+/, "");
+  // The banner need not sit at byte 0: a timeout/spawn preamble or stray line can precede it
+  // under load, so strip the contiguous `>`-run headed by a `name@version script` line wherever
+  // it occurs rather than requiring it at output start.
+  const output = rawOutput.replace(/(?:^|\n)> \S+@\S+ \S[^\n]*(?:\n> [^\n]*)*/, "\n");
   let passed = 0;
   let failed = 0;
   let skipped = 0;

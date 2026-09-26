@@ -57,6 +57,13 @@ export interface FailoverRequest {
   routeFilter?: (providerId: string, modelId: string) => boolean;
   /** Capacity advice is ranking-only; ForgeZero and routeFilter retain admission authority. */
   capacityScoreAdjustment?: SelectRouteOptions["capacityScoreAdjustment"];
+  /** R41: advisory per-role quality for the re-decide — keeps replacement selection
+   *  role-aware (see SelectRouteOptions.roleQualityAdjustment). */
+  roleQualityAdjustment?: SelectRouteOptions["roleQualityAdjustment"];
+  /** R41: the candidate's role qualification tier for the re-decide (see
+   *  SelectRouteOptions.roleQualificationTierFor) — a capacity-constrained qualified
+   *  incumbent must not block a healthy probation replacement. */
+  roleQualificationTierFor?: SelectRouteOptions["roleQualificationTierFor"];
   /** Called before a bounded same-route wait so the caller can tell the user what is happening. */
   onWait?: (info: { waitMs: number; reason: FailureReason }) => void;
   /** R24: the requesting user's fairness identity for fabric re-admission. */
@@ -181,6 +188,8 @@ export class EightBitFailoverCoordinator {
       hasAdapter: req.hasAdapter,
       routeFilter: req.routeFilter,
       capacityScoreAdjustment: req.capacityScoreAdjustment,
+      roleQualityAdjustment: req.roleQualityAdjustment,
+      roleQualificationTierFor: req.roleQualificationTierFor,
     };
     const alternates = req.sameModelAlternates ?? [];
 

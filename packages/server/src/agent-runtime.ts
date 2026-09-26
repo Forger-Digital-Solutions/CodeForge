@@ -72,7 +72,7 @@ import {
   type NormalizedIdentity,
 } from "@codeforge/forge-green";
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
-import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider, type FabricOutcome, type FabricRouteDecision } from "@codeforge/eight-bit";
+import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, roleQualityAdvice, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider, type FabricOutcome, type FabricRouteDecision, type ModelQualificationReceipt, type RoleQualificationStatus, type RoleQualificationTier } from "@codeforge/eight-bit";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
@@ -273,6 +273,9 @@ const DEFAULT_APPROVAL_TIMEOUT_MS = 5 * 60 * 1000;
 // estimate must cover the same directive text the dispatch will carry.
 const RECOVERY_DIRECTIVE = "[Recovery directive] A prior process stopped during this turn. Treat all unfinished pre-restart execution as stale. Inspect the current workspace and durable evidence, then create a new plan. Do not replay a prior command, tool call, or model continuation.";
 const CAPACITY_RESUME_DIRECTIVE = "[Capacity directive] This turn paused mid-execution waiting for verified free capacity, and is resuming on a fresh admission decision — possibly a different route and quota pool. Inspect the current workspace and durable evidence; continue the remaining work without replaying tool calls or edits that already succeeded.";
+// Mirrors the certified evidence-freshness window in role-quality.ts — a role verdict
+// older than this contributes no current qualification status (legacy behavior resumes).
+const ROLE_QUALIFICATION_EVIDENCE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 function truncateOutput(text: string, maxBytes: number, label: string): string {
   if (Buffer.byteLength(text, "utf-8") <= maxBytes) return text;
@@ -1577,10 +1580,12 @@ export class AgentRuntime {
             requiredCapabilities: req.role === "coder" ? ["coding", "toolCalling"] : req.role === "explorer" ? ["toolCalling"] : [],
             taskType: req.role,
             hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
-            routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
+            routeFilter: this.roleRouteFilter(role),
             capacityScoreAdjustment: this.freeCloud
               ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
               : undefined,
+            roleQualityAdjustment: this.roleQualityAdjustmentFor(role),
+            roleQualificationTierFor: this.roleQualificationTierCallback(role),
           },
           { runId: req.runId, agentId: req.agentId },
         );
@@ -1772,10 +1777,12 @@ export class AgentRuntime {
                 profiles: this.reasoningRouteProfiles,
               }).outputTokenDemand,
               hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
-              routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
+              routeFilter: this.roleRouteFilter(eightBitRoleForAgentRole(req.role)),
               capacityScoreAdjustment: this.freeCloud
                 ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
                 : undefined,
+              roleQualityAdjustment: this.roleQualityAdjustmentFor(eightBitRoleForAgentRole(req.role)),
+              roleQualificationTierFor: this.roleQualificationTierCallback(eightBitRoleForAgentRole(req.role)),
               onWait: ({ waitMs, reason }) => adapter.emitEightBitStatus(
                 "ROUTE_COOLDOWN",
                 eightBitRoleForAgentRole(req.role),
@@ -3838,6 +3845,67 @@ export class AgentRuntime {
   }
 
   /**
+   * R41: per-candidate advisory role-quality input for route selection and failover. The
+   * route's persisted qualification receipt comes from the Free Cloud hooks (optional —
+   * a host without the hook, or a route without a receipt, contributes a zero adjustment);
+   * the product role is already in 8-Bit's vocabulary, and all scoring stays inside the
+   * certified roleQualityAdvice — a stale receipt reports its requalification reason codes
+   * with a zero score instead of triggering a per-task probe.
+   */
+  private roleQualityAdjustmentFor(role: EightBitRole): ((providerId: string, modelId: string) => { scoreAdjustment: number; reasonCodes: string[] }) | undefined {
+    const freeCloud = this.freeCloud;
+    if (!freeCloud?.getQualificationReceipt) return undefined;
+    const receiptOf = freeCloud.getQualificationReceipt.bind(freeCloud);
+    return (providerId, modelId) => {
+      const advice = roleQualityAdvice(receiptOf(providerId, modelId), role);
+      return { scoreAdjustment: advice.scoreAdjustment, reasonCodes: advice.reasonCodes };
+    };
+  }
+
+  /**
+   * R41: the role-scoped qualification status of a route's persisted receipt. Returns
+   * undefined when no receipt exists or the consulted verdict's evidence is beyond the
+   * certified freshness window — both mean "no current evidence" and keep the legacy
+   * (status-free) routing behavior. An EXPLORER dispatch may consult a legacy TOOL_AGENT
+   * verdict when the receipt never measured EXPLORER; every other role reads only its own
+   * verdict — no cross-role substitution.
+   */
+  private roleQualificationStatus(providerId: string, modelId: string, role: EightBitRole): RoleQualificationStatus | undefined {
+    const receipt: ModelQualificationReceipt | undefined = this.freeCloud?.getQualificationReceipt?.(providerId, modelId);
+    if (!receipt) return undefined;
+    const verdict = receipt.roleResults[role] ?? (role === "EXPLORER" ? receipt.roleResults.TOOL_AGENT : undefined);
+    const at = Date.parse(verdict?.completedAt ?? receipt.completedAt);
+    if (!Number.isFinite(at) || Date.now() - at >= ROLE_QUALIFICATION_EVIDENCE_MAX_AGE_MS) return undefined;
+    return verdict?.status ?? "NOT_TESTED";
+  }
+
+  /**
+   * R41: the role-route admission filter — global ForgeAuto eligibility AND, when a current
+   * qualification receipt exists for this route, a QUALIFIED or PROBATION verdict for this
+   * role. NOT_QUALIFIED / HARD_FAILURE / NOT_TESTED verdicts (and a missing verdict on a
+   * current receipt) reject the route for this role. Applied only to automatic role routing;
+   * explicit model/route pins never traverse this filter.
+   */
+  private roleRouteFilter(role: EightBitRole): ((providerId: string, modelId: string) => boolean) | undefined {
+    const freeCloud = this.freeCloud;
+    if (!freeCloud) return undefined;
+    return (providerId, modelId) => {
+      if (!freeCloud.isForgeAutoEligible(providerId, modelId)) return false;
+      const status = this.roleQualificationStatus(providerId, modelId, role);
+      return status === undefined || status === "QUALIFIED" || status === "PROBATION";
+    };
+  }
+
+  /** R41: the candidate's qualification tier for bare-router roleRoutePriority ordering. */
+  private roleQualificationTierCallback(role: EightBitRole): ((providerId: string, modelId: string) => RoleQualificationTier) | undefined {
+    if (!this.freeCloud) return undefined;
+    return (providerId, modelId) => {
+      const status = this.roleQualificationStatus(providerId, modelId, role);
+      return status === "QUALIFIED" ? "QUALIFIED" : status === "PROBATION" ? "PROBATION" : "NOT_TESTED";
+    };
+  }
+
+  /**
    * Ask the Free Fabric for this turn's admission under its dispatcher-supplied hints
    * (reviewer role evidence, physical pool independence). When a review turn's preferred
    * role cannot admit anywhere, the declared fallback role widens to coding-capable supply
@@ -3855,6 +3923,7 @@ export class AgentRuntime {
       userId: this.userId,
       taskKind: "interactive_turn",
       demand: this.turnDemand(turnId),
+      roleQualityAdjustment: this.roleQualityAdjustmentFor(role),
     });
     let decision = decide(hint?.role ?? "CODER");
     if (decision && decision.outcome !== "ADMITTED" && hint?.role && hint.fallbackRole && hint.role !== hint.fallbackRole) {
@@ -4804,10 +4873,12 @@ export class AgentRuntime {
       estimatedContextTokens,
       estimatedPromptTokens,
       hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
-      routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
+      routeFilter: this.roleRouteFilter(role),
       capacityScoreAdjustment: this.freeCloud
         ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
         : undefined,
+      roleQualityAdjustment: this.roleQualityAdjustmentFor(role),
+      roleQualificationTierFor: this.roleQualificationTierCallback(role),
       // The user sees the wait as it happens, not as a silent pause in the stream.
       onWait: ({ waitMs, reason }) => adapter.emitEightBitStatus(
         "ROUTE_COOLDOWN",

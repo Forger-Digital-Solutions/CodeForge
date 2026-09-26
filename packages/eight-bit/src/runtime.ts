@@ -146,6 +146,9 @@ export class EightBitRuntime {
     userId?: string;
     taskKind?: string;
     demand?: FabricRequest["demand"];
+    /** R41: advisory per-role quality evidence forwarded into the fabric's effective
+     *  score (see FabricRequest.roleQualityAdjustment). */
+    roleQualityAdjustment?: FabricRequest["roleQualityAdjustment"];
     isNewUser?: boolean;
     leaseMs?: number;
   }): FabricRouteDecision | undefined {
@@ -163,6 +166,7 @@ export class EightBitRuntime {
       ...(req.preferIndependentFromPoolId ? { preferIndependentFromPoolId: req.preferIndependentFromPoolId } : {}),
       ...(req.taskKind ? { taskKind: req.taskKind } : {}),
       ...(req.demand ? { demand: req.demand } : {}),
+      ...(req.roleQualityAdjustment ? { roleQualityAdjustment: req.roleQualityAdjustment } : {}),
       isNewUser: req.isNewUser ?? ctx?.isNewUser ?? false,
       ...(req.leaseMs ?? ctx?.leaseMs ? { leaseMs: req.leaseMs ?? ctx?.leaseMs } : {}),
       ...(ctx?.dataContext ? { dataContext: ctx.dataContext } : {}),
@@ -300,6 +304,7 @@ export class EightBitRuntime {
       demand: options.estimatedPromptTokens !== undefined
         ? { requests: 1, estimatedPromptTokens: options.estimatedPromptTokens, outputTokens: options.outputTokenDemand ?? 2_048, outputTokensFor: options.outputTokenDemandFor }
         : { requests: 1, inputTokens: Math.min(options.estimatedContextTokens ?? 16_000, 16_000), outputTokensFor: options.outputTokenDemandFor },
+      roleQualityAdjustment: options.roleQualityAdjustment,
     });
     if (!decision) return this.router.selectRoute({ ...options, scope });
 
@@ -377,6 +382,7 @@ export class EightBitRuntime {
             demand: req.estimatedPromptTokens !== undefined
               ? { requests: 1, estimatedPromptTokens: req.estimatedPromptTokens, outputTokens: req.outputTokenDemand ?? 2_048, outputTokensFor: req.outputTokenDemandFor }
               : { requests: 1, inputTokens: Math.min(req.estimatedContextTokens ?? 16_000, 16_000), outputTokensFor: req.outputTokenDemandFor },
+            roleQualityAdjustment: req.roleQualityAdjustment,
           });
           lastFabricDecision = decision;
           if (decision?.outcome !== "ADMITTED" || !decision.selected) return undefined;

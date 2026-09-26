@@ -82,6 +82,67 @@ describe("ForgeRouter — free-first ranking", () => {
   });
 });
 
+describe("ForgeRouter — name hint never overrides measured evidence", () => {
+  it("a coding-named route wins on the name hint only while no empirical score exists", () => {
+    const fw = new ForgeZero({ context: ctx });
+    fw.register(verifiedFree("openrouter", "aaa-generic"));
+    fw.register(verifiedFree("openrouter", "zzz-coder"));
+    const router = new ForgeRouter({ firewall: fw });
+    // Identical records otherwise: the +8 name/family hint is the only thing that can beat
+    // the aaa-* alphabetical tiebreak, and it does — but only while nothing is measured.
+    const top = router.rank(codingReq);
+    expect(top.map((r) => r.model.modelId)).toEqual(["zzz-coder", "aaa-generic"]);
+    expect(top[0]!.score - top[1]!.score).toBe(8);
+  });
+
+  it("an equal measured agentScore suppresses the name hint — the tiebreak decides", () => {
+    const fw = new ForgeZero({ context: ctx });
+    fw.register(verifiedFree("openrouter", "aaa-generic", { agentScore: 50 }));
+    fw.register(verifiedFree("openrouter", "zzz-coder", { agentScore: 50 }));
+    const router = new ForgeRouter({ firewall: fw });
+    // agentic-coding → both gain the same +5 agentScore term; the per-route name-hint gate
+    // sees a measured score and stays off, so identical totals fall to the modelId tiebreak.
+    const top = router.rank(codingReq);
+    expect(top.map((r) => r.model.modelId)).toEqual(["aaa-generic", "zzz-coder"]);
+    expect(top[0]!.score).toBe(top[1]!.score);
+  });
+
+  it("an equal measured toolReliability suppresses the name hint — the tiebreak decides", () => {
+    const fw = new ForgeZero({ context: ctx });
+    fw.register(verifiedFree("openrouter", "aaa-generic", { toolReliability: 0.9 }));
+    fw.register(verifiedFree("openrouter", "zzz-coder", { toolReliability: 0.9 }));
+    const router = new ForgeRouter({ firewall: fw });
+    const top = router.rank(codingReq);
+    expect(top.map((r) => r.model.modelId)).toEqual(["aaa-generic", "zzz-coder"]);
+    expect(top[0]!.score).toBe(top[1]!.score);
+  });
+
+  it("a provided codingScore stays authoritative — measured score, not the name, decides both directions", () => {
+    const strongGeneric = new ForgeZero({ context: ctx });
+    strongGeneric.register(verifiedFree("openrouter", "aaa-generic", { codingScore: 90 }));
+    strongGeneric.register(verifiedFree("openrouter", "zzz-coder", { codingScore: 30 }));
+    expect(new ForgeRouter({ firewall: strongGeneric }).rank(codingReq)[0]!.model.modelId).toBe("aaa-generic");
+
+    const strongNamed = new ForgeZero({ context: ctx });
+    strongNamed.register(verifiedFree("openrouter", "aaa-generic", { codingScore: 30 }));
+    strongNamed.register(verifiedFree("openrouter", "zzz-coder", { codingScore: 90 }));
+    expect(new ForgeRouter({ firewall: strongNamed }).rank(codingReq)[0]!.model.modelId).toBe("zzz-coder");
+  });
+
+  it("the free-only filter still applies before any scoring — a paid coding-named route never ranks", () => {
+    const fw = new ForgeZero({ context: ctx });
+    fw.register(verifiedFree("openrouter", "aaa-generic", { codingScore: 40 }));
+    fw.register(verifiedFree("openrouter", "super-coder-9000", {
+      freeStatus: "paid",
+      codingScore: 100,
+      costProfile: { inputCostPerMillion: 3, outputCostPerMillion: 15, isFree: false, paidFallbackPossible: true, paidFallbackDisabled: false, source: "test" },
+    }));
+    const router = new ForgeRouter({ firewall: fw });
+    expect(router.rank(codingReq).map((r) => r.model.modelId)).toEqual(["aaa-generic"]);
+    expect(router.route(codingReq)!.model.modelId).toBe("aaa-generic");
+  });
+});
+
 describe("ForgeRouter — required capabilities are requirements", () => {
   it("never ranks a route that lacks a required capability, however well it would score", () => {
     const fw = new ForgeZero({ context: ctx });

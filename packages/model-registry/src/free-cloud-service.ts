@@ -47,6 +47,12 @@ export interface FreeCloudRoutingHooks {
   quotaRemaining(providerId: string, modelId: string): number | undefined;
   /** Deterministic 8-Bit advice for choosing among already-admitted free routes. */
   capacityRoutingAdvice(providerId: string, modelId: string): { scoreAdjustment: number; reasonCodes: string[] };
+  /**
+   * R41: the route's persisted qualification receipt — the evidence behind per-role
+   * advisory ranking. Optional so existing hosts/mocks stay valid; absent (or an absent
+   * receipt) contributes a zero role-quality adjustment, never a disqualification.
+   */
+  getQualificationReceipt?(providerId: string, modelId: string): ModelQualificationReceipt | undefined;
 }
 
 export interface FreeCloudServiceOptions {
@@ -445,6 +451,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
 
   getReceipt(providerId: string, modelId: string): ModelQualificationReceipt | undefined {
     return this.receipts.get(`${providerId}::${modelId}`);
+  }
+
+  /** R41 routing-hook surface: the same persisted receipt, exposed for role-quality advice. */
+  getQualificationReceipt(providerId: string, modelId: string): ModelQualificationReceipt | undefined {
+    return this.getReceipt(providerId, modelId);
   }
 
   /** Test/certification seam: record an externally produced receipt. */

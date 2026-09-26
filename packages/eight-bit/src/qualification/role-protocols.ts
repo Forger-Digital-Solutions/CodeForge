@@ -9,7 +9,7 @@
  * their protocol so old evidence can never be silently reinterpreted under new rules.
  */
 
-export const ROLE_QUALIFICATION_SUITE_VERSION = "R27_ROLE_QUALIFICATION_V2";
+export const ROLE_QUALIFICATION_SUITE_VERSION = "R41_ROLE_QUALIFICATION_V3";
 
 export type RoleProtocolId = "EXPLORER" | "PLANNER" | "REVIEWER";
 
@@ -82,13 +82,19 @@ export const PLANNER_PROTOCOL_V1: RoleProtocol = {
  * R27 extends planner qualification to both machine-readable runtime protocols. The semantic
  * protocol is normalized before scoring, so it cannot bypass graph or verification obligations.
  */
-export const PLANNER_PROTOCOL: RoleProtocol = {
+export const PLANNER_PROTOCOL_V2: RoleProtocol = {
   ...PLANNER_PROTOCOL_V1,
   version: "PLANNER_PROTOCOL_V2",
   scoringDimensions: [
     "protocol_recognized",
     ...PLANNER_PROTOCOL_V1.scoringDimensions,
   ],
+};
+
+/** R41 clarifies the machine-readable role enum in the prompt without relaxing scoring. */
+export const PLANNER_PROTOCOL: RoleProtocol = {
+  ...PLANNER_PROTOCOL_V2,
+  version: "PLANNER_PROTOCOL_V3",
 };
 
 export const REVIEWER_PROTOCOL: RoleProtocol = {

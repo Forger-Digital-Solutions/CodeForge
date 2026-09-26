@@ -7,6 +7,7 @@ import type { EightBitReliabilityTracker } from "./reliability.js";
 import { routeKeyOf, type EightBitRole, type RouteKey } from "./types.js";
 import type { EightBitShadowObserver } from "./shadow.js";
 import type { EightBitRouteHealthAuthority, RouteHealthAssessment } from "./route-health-authority.js";
+import { roleRoutePriority, type RoleQualificationTier } from "./role-quality.js";
 
 /** Sticky binding scope: a session may bind different routes per role/workstream. */
 export interface BindingScope {
@@ -62,6 +63,23 @@ export interface SelectRouteOptions {
    * passed ForgeZero and all admission filters; it never creates eligibility or crosses policy.
    */
   capacityScoreAdjustment?: (providerId: string, modelId: string) => { scoreAdjustment: number; reasonCodes: string[] };
+  /**
+   * R41: advisory per-role quality evidence from the candidate's persisted qualification
+   * receipt (see role-quality.ts). Applied inside the effective score after capacity and
+   * health adjustments — it reorders already-admitted eligible peers by measured role
+   * fitness and can never create eligibility. Its reasonCodes land in the selection's
+   * explanation so a stale or absent receipt shows as a requalification signal, not a hidden
+   * zero.
+   */
+  roleQualityAdjustment?: (providerId: string, modelId: string) => { scoreAdjustment: number; reasonCodes: string[] };
+  /**
+   * R41: the candidate's qualification tier for the requested role, from the host's
+   * persisted receipt. Feeds the frozen roleRoutePriority ordering — healthy availability
+   * first, then QUALIFIED > PROBATION > unknown inside it — evaluated ahead of
+   * effectiveScore so a capacity-constrained qualified route cannot strand work a healthy
+   * probation peer could serve.
+   */
+  roleQualificationTierFor?: (providerId: string, modelId: string) => RoleQualificationTier;
 }
 
 export type SelectRouteResult =
@@ -132,6 +150,8 @@ export class EightBitRouter {
     reasons: string[];
     capacityReasons: string[];
     health?: RouteHealthAssessment;
+    availabilityTier: number;
+    qualificationTier: number;
   }> {
     const req: RoutingRequest = {
       taskType: options.taskType ?? (options.capabilityGuidance?.minimumRole ?? scope.role).toLowerCase(),
@@ -150,12 +170,31 @@ export class EightBitRouter {
         const assessment = this.routeHealth?.assess(ranked.model.providerId, ranked.model.modelId, { role: options.capabilityGuidance?.minimumRole ?? scope.role });
         const healthAdjustment = assessment?.scoreAdjustment ?? 0;
         const healthReasons = assessment ? [`HEALTH_${assessment.state}`, ...assessment.reasonCodes.map((code) => `HEALTH:${code}`)] : [];
-        return { ...ranked, effectiveScore: ranked.score + capacity.scoreAdjustment + healthAdjustment, capacityReasons: [...capacity.reasonCodes, ...healthReasons], health: assessment };
+        // R41: measured role fitness from the persisted qualification receipt is the last
+        // advisory input — it separates eligible peers with identical capability/capacity
+        // scores and, like capacity and health advice, cannot create eligibility.
+        const roleQuality = options.roleQualityAdjustment?.(ranked.model.providerId, ranked.model.modelId) ?? { scoreAdjustment: 0, reasonCodes: [] };
+        // R41: the frozen role-route priority — healthy availability first, then
+        // QUALIFIED > PROBATION > unknown — outranks effectiveScore so a constrained
+        // qualified route cannot strand work a healthy probation peer could serve.
+        const priority = roleRoutePriority(
+          options.roleQualificationTierFor?.(ranked.model.providerId, ranked.model.modelId),
+          capacity.reasonCodes,
+          assessment?.state,
+        );
+        return { ...ranked, effectiveScore: ranked.score + capacity.scoreAdjustment + healthAdjustment + roleQuality.scoreAdjustment, capacityReasons: [...capacity.reasonCodes, ...healthReasons, ...roleQuality.reasonCodes], health: assessment, availabilityTier: priority.availabilityTier, qualificationTier: priority.qualificationTier };
       })
       // Match ForgeRouter.rank()'s documented tiebreak contract (score desc, then modelId asc)
       // so capacity advice can only reorder distinct scores, never relitigate an existing tie;
       // providerId is a last-resort disambiguator for the same modelId served by two providers.
-      .sort((left, right) => right.effectiveScore - left.effectiveScore || left.model.modelId.localeCompare(right.model.modelId) || left.model.providerId.localeCompare(right.model.providerId));
+      // R41 tiers precede that contract: availability (constrained capacity/health) and then
+      // qualification tier are proven facts, not score noise.
+      .sort((left, right) =>
+        left.availabilityTier - right.availabilityTier
+        || left.qualificationTier - right.qualificationTier
+        || right.effectiveScore - left.effectiveScore
+        || left.model.modelId.localeCompare(right.model.modelId)
+        || left.model.providerId.localeCompare(right.model.providerId));
   }
 
   private eligibleForRole(scope: BindingScope, options: SelectRouteOptions): FreeModelRecord[] {
@@ -203,7 +242,11 @@ export class EightBitRouter {
       // is not worse than DEGRADED: a SATURATED / TEMPORARY_CAPACITY incumbent yields to a
       // healthier route immediately (§10) instead of hiding behind the promotion margin.
       const incumbentHealthy = incumbentRanked?.health === undefined || incumbentRanked.health.state === "HEALTHY" || incumbentRanked.health.state === "UNKNOWN" || incumbentRanked.health.state === "DEGRADED";
-      if (incumbentRanked && incumbentHealthy && incumbentRanked.effectiveScore + PROMOTION_MARGIN >= best.effectiveScore) {
+      // R41: the margin only arbitrates within the same priority tiers — a qualified incumbent
+      // that just reported constrained capacity does not retain the binding while a healthy
+      // probation alternate could admit the work.
+      const sameTiers = incumbentRanked !== undefined && incumbentRanked.availabilityTier === best.availabilityTier && incumbentRanked.qualificationTier === best.qualificationTier;
+      if (incumbentRanked && incumbentHealthy && sameTiers && incumbentRanked.effectiveScore + PROMOTION_MARGIN >= best.effectiveScore) {
         const result = { outcome: "selected" as const, model: incumbentRanked.model, sticky: true, score: incumbentRanked.effectiveScore, reasons: this.guidanceReasons(options, [...incumbentRanked.reasons, ...incumbentRanked.capacityReasons]), health: incumbentRanked.health };
         this.observeShadow(options, result.model.providerId, result.model.modelId, result.score);
         return result;

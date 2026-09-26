@@ -21,3 +21,4 @@ export * from "./shadow.js";
 export * from "./route-health-authority.js";
 export * from "./route-health-ledger.js";
 export * from "./route-probe.js";
+export * from "./role-quality.js";

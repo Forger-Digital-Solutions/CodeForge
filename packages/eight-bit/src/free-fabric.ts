@@ -84,6 +84,14 @@ export interface FabricRequest {
   /** Lease the reservation holds for; the caller releases on completion (or it expires). */
   leaseMs?: number;
   dataContext?: RouteDataContext;
+  /**
+   * R41: advisory per-role quality evidence (persisted qualification receipts — see
+   * role-quality.ts). Folded into the candidate's effective score, which the sort only
+   * compares within a supply domain after the qualified/probation tier and after
+   * health/domain demotion — so it reorders eligible peers by measured role fitness and
+   * can never create eligibility, cross a domain boundary, or override health exclusion.
+   */
+  roleQualityAdjustment?: (providerId: string, modelId: string) => { scoreAdjustment: number; reasonCodes: string[] };
 }
 
 export type FabricCandidateStatus =
@@ -311,7 +319,7 @@ export class FreeFabric {
     // Mission A health: hard exclusions remove candidates; strong penalties demote a route
     // behind the next supply domain (saturated shared supply yields to a healthy user pool).
     const healthRole = request.healthRole ?? this.opts.healthRoleFor?.(request.role) ?? FABRIC_HEALTH_ROLE[request.role];
-    const ranked: Array<{ entry: RouteLedgerEntry; healthState?: RouteHealthCondition; scoreAdjustment: number; fitPenalty: number; effectiveScore: number; domainRank: number; roleFallback: boolean }> = [];
+    const ranked: Array<{ entry: RouteLedgerEntry; healthState?: RouteHealthCondition; scoreAdjustment: number; fitPenalty: number; roleReasons: string[]; effectiveScore: number; domainRank: number; roleFallback: boolean }> = [];
     for (const entry of plan.routes) {
       const assess = this.opts.health?.assess(entry.providerId, entry.modelId, { role: healthRole });
       const adjustment = assess?.scoreAdjustment ?? 0;
@@ -333,9 +341,14 @@ export class FreeFabric {
       // Probation-tier admission: the route reached the plan via fallbackRoles, not full
       // qualification — demote it within the domain so a qualified peer always wins first.
       const roleFallback = !entry.roleSuitability.includes(request.role);
+      // R41: measured per-role quality (persisted qualification receipts) separates peers
+      // inside the same domain+tier — it lands in effectiveScore, which the sort only
+      // reaches after independence, domain demotion, and the qualified/probation tier.
+      const roleQuality = request.roleQualityAdjustment?.(entry.providerId, entry.modelId);
       ranked.push({
         entry, healthState: assess?.state, scoreAdjustment: adjustment, fitPenalty: fit,
-        effectiveScore: entry.qualityScore + adjustment + fit,
+        roleReasons: roleQuality?.reasonCodes ?? [],
+        effectiveScore: entry.qualityScore + adjustment + fit + (roleQuality?.scoreAdjustment ?? 0),
         domainRank, roleFallback,
       });
     }
@@ -364,7 +377,7 @@ export class FreeFabric {
           canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
           quotaOwner: entry.quotaOwner, capacityPoolId: entry.capacityPoolId,
         };
-        reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", candidate.roleFallback ? "ROLE_PROBATION_FALLBACK" : "ROLE_QUALIFIED", "HEALTH_ACCEPTED", ...this.independenceReason(request, entry)], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
+        reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", candidate.roleFallback ? "ROLE_PROBATION_FALLBACK" : "ROLE_QUALIFIED", "HEALTH_ACCEPTED", ...this.independenceReason(request, entry), ...candidate.roleReasons], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
         break;
       }
       const decision = this.opts.reservations.reserve({
@@ -397,11 +410,11 @@ export class FreeFabric {
           quotaOwner: entry.quotaOwner, capacityPoolId: entry.capacityPoolId,
           reservationId: decision.reservationId,
         };
-        reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", candidate.roleFallback ? "ROLE_PROBATION_FALLBACK" : "ROLE_QUALIFIED", "QUOTA_RESERVED", decision.reason, ...this.independenceReason(request, entry)], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
+        reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", candidate.roleFallback ? "ROLE_PROBATION_FALLBACK" : "ROLE_QUALIFIED", "QUOTA_RESERVED", decision.reason, ...this.independenceReason(request, entry), ...candidate.roleReasons], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
         break;
       }
       const domainReason = this.quotaDomainReason(entry, decision.reason);
-      reports.set(entry.routeId, this.reportFor(entry, decision.reason === "CAPACITY_EXHAUSTED" || decision.reason === "FIRST_RUN_RESERVE_PROTECTED" ? "CAPACITY_DENIED" : "RESERVATION_DENIED", [domainReason, ...(domainReason !== decision.reason ? [decision.reason] : []), ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : [])], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
+      reports.set(entry.routeId, this.reportFor(entry, decision.reason === "CAPACITY_EXHAUSTED" || decision.reason === "FIRST_RUN_RESERVE_PROTECTED" ? "CAPACITY_DENIED" : "RESERVATION_DENIED", [domainReason, ...(domainReason !== decision.reason ? [decision.reason] : []), ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : []), ...candidate.roleReasons], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
       if (decision.reason === "USER_CONCURRENCY_LIMIT") {
         concurrencyLimited = true;
         queued = { reasonCodes: ["USER_CONCURRENCY_LIMIT"], nextAvailableAt: decision.nextAvailableAt };
@@ -422,8 +435,8 @@ export class FreeFabric {
         candidate.entry,
         "STANDBY",
         demoted
-          ? ["HEALTH_DEMOTED", "RANKED_BEHIND_SELECTED", ...(candidate.roleFallback ? ["ROLE_PROBATION_FALLBACK"] : []), ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : [])]
-          : ["RANKED_BEHIND_SELECTED", ...(candidate.roleFallback ? ["ROLE_PROBATION_FALLBACK"] : []), ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : [])],
+          ? ["HEALTH_DEMOTED", "RANKED_BEHIND_SELECTED", ...(candidate.roleFallback ? ["ROLE_PROBATION_FALLBACK"] : []), ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : []), ...candidate.roleReasons]
+          : ["RANKED_BEHIND_SELECTED", ...(candidate.roleFallback ? ["ROLE_PROBATION_FALLBACK"] : []), ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : []), ...candidate.roleReasons],
         candidate.healthState,
         candidate.scoreAdjustment,
         candidate.fitPenalty,
