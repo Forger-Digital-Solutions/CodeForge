@@ -55,6 +55,13 @@ export interface R20ForgeGreenComparison {
   duplicateReadReductionPercent: number;
   duplicateSearchReductionPercent: number;
   latencyChangePercent: number;
+  /**
+   * R37 Mission T — Verified Work Multiplier: for equal verified outcomes, baseline cost /
+   * optimized cost. Cost is tokens; the multiplier exists only when both arms reached the
+   * same verified outcome (a "saving" that costs correctness is not a saving). Undefined
+   * when outcomes differ or the baseline spent nothing.
+   */
+  verifiedWorkMultiplier?: number;
   promotable: boolean;
 }
 
@@ -94,6 +101,7 @@ export class R20MatchedExperimentHarness {
     if (off.topology !== on.topology) throw new Error("ForgeGreen comparison requires identical topology");
     const correctnessDelta = Number(on.metrics.correct) - Number(off.metrics.correct);
     const completionDelta = Number(on.metrics.status === "completed") - Number(off.metrics.status === "completed");
+    const equalVerifiedOutcome = correctnessDelta === 0 && completionDelta === 0 && off.metrics.correct && on.metrics.correct;
     const comparison = {
       correctnessDelta,
       completionDelta,
@@ -103,6 +111,9 @@ export class R20MatchedExperimentHarness {
       duplicateReadReductionPercent: reduction(off.metrics.duplicateReads, on.metrics.duplicateReads),
       duplicateSearchReductionPercent: reduction(off.metrics.duplicateSearches, on.metrics.duplicateSearches),
       latencyChangePercent: change(off.metrics.wallTimeMs, on.metrics.wallTimeMs),
+      ...(equalVerifiedOutcome && on.metrics.tokens > 0
+        ? { verifiedWorkMultiplier: off.metrics.tokens / on.metrics.tokens }
+        : {}),
       promotable: false,
     };
     comparison.promotable = correctnessDelta >= -correctnessTolerance && completionDelta >= 0 && (comparison.tokenReductionPercent > 0 || comparison.modelCallReductionPercent > 0 || comparison.toolCallReductionPercent > 0 || comparison.latencyChangePercent < 0);

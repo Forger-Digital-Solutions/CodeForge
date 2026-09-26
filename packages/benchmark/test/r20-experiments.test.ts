@@ -33,7 +33,19 @@ describe("R20MatchedExperimentHarness", () => {
     expect(comparison.tokenReductionPercent).toBe(20);
     expect(comparison.modelCallReductionPercent).toBe(20);
     expect(comparison.duplicateReadReductionPercent).toBe(75);
+    // Mission T: same verified outcome at 80% of the cost → 10_000/8_000 = 1.25×
+    expect(comparison.verifiedWorkMultiplier).toBeCloseTo(1.25);
     expect(comparison.promotable).toBe(true);
+  });
+
+  it("withholds the Verified Work Multiplier when outcomes are not equal and verified", async () => {
+    const harness = new R20MatchedExperimentHarness();
+    const result = await harness.run(task, [
+      { id: "off", forgeGreen: false, topology: "T0", execute: async () => metrics() },
+      { id: "on", forgeGreen: true, topology: "T0", execute: async () => metrics({ correct: false, tokens: 1_000 }) },
+    ]);
+    // 10× "cheaper" but wrong — VWM must not certify a saving that cost correctness.
+    expect(harness.compareForgeGreen(result, "off", "on").verifiedWorkMultiplier).toBeUndefined();
   });
 
   it("refuses ForgeGreen promotion when correctness regresses", async () => {
