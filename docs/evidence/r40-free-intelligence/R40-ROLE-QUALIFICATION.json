@@ -1,0 +1,150 @@
+[
+  {
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "role": "explorer",
+    "pass": true,
+    "ms": 476,
+    "in": 126,
+    "out": 107
+  },
+  {
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "role": "coder",
+    "pass": false,
+    "ms": 343,
+    "in": 101,
+    "out": 120
+  },
+  {
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "role": "reviewer",
+    "pass": false,
+    "ms": 384,
+    "in": 114,
+    "out": 120
+  },
+  {
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "role": "planner",
+    "pass": false,
+    "ms": 573,
+    "in": 105,
+    "out": 120
+  },
+  {
+    "provider": "mistral",
+    "model": "codestral-latest",
+    "role": "explorer",
+    "pass": true,
+    "ms": 393,
+    "in": 59,
+    "out": 10
+  },
+  {
+    "provider": "mistral",
+    "model": "codestral-latest",
+    "role": "coder",
+    "pass": true,
+    "ms": 460,
+    "in": 33,
+    "out": 23
+  },
+  {
+    "provider": "mistral",
+    "model": "codestral-latest",
+    "role": "reviewer",
+    "pass": true,
+    "ms": 331,
+    "in": 48,
+    "out": 7
+  },
+  {
+    "provider": "mistral",
+    "model": "codestral-latest",
+    "role": "planner",
+    "pass": true,
+    "ms": 914,
+    "in": 38,
+    "out": 105
+  },
+  {
+    "provider": "openrouter",
+    "model": "cohere/north-mini-code:free",
+    "role": "explorer",
+    "pass": true,
+    "ms": 729,
+    "in": 53,
+    "out": 102
+  },
+  {
+    "provider": "openrouter",
+    "model": "cohere/north-mini-code:free",
+    "role": "coder",
+    "pass": false,
+    "ms": 1607,
+    "in": 30,
+    "out": 120
+  },
+  {
+    "provider": "openrouter",
+    "model": "cohere/north-mini-code:free",
+    "role": "reviewer",
+    "pass": false,
+    "ms": 879,
+    "in": 42,
+    "out": 120
+  },
+  {
+    "provider": "openrouter",
+    "model": "cohere/north-mini-code:free",
+    "role": "planner",
+    "pass": false,
+    "ms": 1531,
+    "in": 33,
+    "out": 120
+  },
+  {
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "role": "coder",
+    "pass": true,
+    "ms": 553,
+    "in": 101,
+    "out": 93,
+    "note": "retry with maxTokens 1500 — reasoning budget was starving output at 120"
+  },
+  {
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "role": "reviewer",
+    "pass": true,
+    "ms": 307,
+    "in": 114,
+    "out": 116,
+    "note": "same retry"
+  },
+  {
+    "provider": "openrouter",
+    "model": "cohere/north-mini-code:free",
+    "role": "coder",
+    "pass": false,
+    "ms": 7877,
+    "in": 30,
+    "out": 500,
+    "note": "reasoningTokens=457 consumed entire 500-token budget, empty content — real capability limit on bounded budgets"
+  },
+  {
+    "provider": "openrouter",
+    "model": "cohere/north-mini-code:free",
+    "role": "reviewer",
+    "pass": true,
+    "ms": 1603,
+    "in": 42,
+    "out": 160,
+    "note": "passed at 500-token budget"
+  }
+]

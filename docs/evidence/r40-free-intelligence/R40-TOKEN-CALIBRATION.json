@@ -1,0 +1,22 @@
+[
+  {
+    "name": "mistral",
+    "model": "codestral-latest",
+    "kind": "real-code",
+    "bytes": 120078,
+    "estimated": 48338,
+    "billed": 31007,
+    "ratio": 0.641,
+    "ms": 1291
+  },
+  {
+    "name": "openrouter",
+    "model": "cohere/north-mini-code:free",
+    "kind": "real-code",
+    "bytes": 120078,
+    "estimated": 48338,
+    "billed": 24906,
+    "ratio": 0.515,
+    "ms": 904
+  }
+]

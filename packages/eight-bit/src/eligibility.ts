@@ -29,6 +29,9 @@ export type EligibilityVerdict =
   | { eligible: true }
   | { eligible: false; code: IneligibilityCode; reason: string };
 
+/** Bounded admission-side correction for systematic token-estimate over-prediction (see below). */
+export const ESTIMATED_CONTEXT_ADMISSION_FACTOR = 0.75;
+
 /**
  * Hard role-capability + free-policy gate, evaluated BEFORE ranking. A route either satisfies
  * every requirement here or it is not a candidate at all — no ranking score can compensate.
@@ -55,8 +58,16 @@ export class EightBitEligibilityPolicy {
       return { eligible: false, code: "MISSING_CAPABILITY", reason: `Role ${ctx.role} requires long context` };
     }
 
+    // R39/R40 receipts show estimateTokens systematically over-predicts real billed input
+    // (~1.6–2.8× too high: 0.35–0.64 actual/estimated across providers and content kinds).
+    // For admission only, apply a bounded correction so an inflated estimate cannot deny a
+    // route that real receipts show it could serve. The factor stays strictly above every
+    // observed actual/estimated ratio (max 0.64) — it narrows over-prediction without ever
+    // risking an under-estimate of the observed envelope. Packing/budget paths keep the raw
+    // conservative estimate.
     const requiredContext = Math.max(contract.minContextTokens, ctx.estimatedContextTokens ?? 0);
-    if (model.contextWindow !== undefined && model.contextWindow < requiredContext) {
+    const admissionContext = Math.ceil(requiredContext * ESTIMATED_CONTEXT_ADMISSION_FACTOR);
+    if (model.contextWindow !== undefined && model.contextWindow < admissionContext) {
       return {
         eligible: false,
         code: "INSUFFICIENT_CONTEXT",

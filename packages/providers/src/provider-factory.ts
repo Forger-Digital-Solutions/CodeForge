@@ -90,6 +90,10 @@ export function createGeminiAdapter(opts: ProviderFactoryOptions = {}): OpenAICo
     providerId: "google",
     baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
     ...common(opts),
+    // Precedence is identical whether or not a credential store is injected: an explicitly
+    // stored "google" credential wins, then <ID>_API_KEY (GOOGLE_API_KEY), then the extra
+    // declared Gemini aliases — so both GOOGLE_API_KEY and GEMINI_API_KEY work deterministically.
+    credentialStore: aliasedCredentialStore(opts.credentialStore, "google", ["GOOGLE_API_KEY", "GEMINI_API_KEY", "GOOGLE_GENERATIVE_AI_API_KEY"]),
     mapModel: mapGeminiModel,
     geminiFreePolicyGate: opts.geminiFreePolicyGate,
     geminiServiceTier: opts.geminiServiceTier,
@@ -186,16 +190,24 @@ function composeObservers(...observers: Array<ProviderResponseObserver | undefin
   };
 }
 
-function aliasedCredentialStore(base: CredentialStore | undefined, providerId: string, environmentName: string): CredentialStore {
+function aliasedCredentialStore(base: CredentialStore | undefined, providerId: string, environmentName: string | string[]): CredentialStore {
+  const names = Array.isArray(environmentName) ? environmentName : [environmentName];
+  // Deterministic precedence: an explicitly stored credential under the provider id wins,
+  // then env aliases in declared order — first alias that is set supplies the key.
+  const resolve = () => {
+    const stored = base?.get(providerId);
+    if (stored) return stored;
+    for (const name of names) {
+      const value = base?.get(name) ?? process.env[name];
+      if (value) return value;
+    }
+    return undefined;
+  };
   return {
-    get: (requestedId) => requestedId === providerId
-      ? base?.get(environmentName) ?? process.env[environmentName]
-      : base?.get(requestedId),
+    get: (requestedId) => requestedId === providerId ? resolve() : base?.get(requestedId),
     set: (requestedId, value) => base?.set(requestedId, value),
     delete: (requestedId) => base?.delete(requestedId) ?? false,
-    has: (requestedId) => requestedId === providerId
-      ? Boolean(base?.get(environmentName) ?? process.env[environmentName])
-      : base?.has(requestedId) ?? false,
+    has: (requestedId) => requestedId === providerId ? Boolean(resolve()) : base?.has(requestedId) ?? false,
   };
 }
 

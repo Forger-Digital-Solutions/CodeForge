@@ -15,6 +15,7 @@ import { createSessionPersistence, EventStore } from "../packages/sessions/dist/
 import { createAgentRuntime, createAutonomousRunOrchestrator, createWorkspaceService } from "../packages/server/dist/index.js";
 
 const OUT = process.argv[2] ?? "docs/evidence/r39-multi/forgegreen-corpus.json";
+const ONLY = process.argv[3] ? new Set(process.argv[3].split(",")) : null;
 const ARMS = ["baseline", "green"];
 
 // ---- task fixtures: small real repos, one task each -------------------------
@@ -79,6 +80,39 @@ const TASKS = [
       "README.md": "# fixture\n",
     },
     verify: ["node -e \"import('./src/math.mjs').then(m=>{if(m.sum([1,2,3])!==6||m.sum([])!==0)process.exit(1)})\""],
+  },
+  {
+    id: "test-repair",
+    cls: "small",
+    goal: "The test in tests/calc.test.mjs fails because divide(a,b) throws on b=0 but the test expects it to return Infinity. Fix the implementation in src/calc.mjs (change divide to return Infinity when b is 0), not the test.",
+    files: {
+      "src/calc.mjs": "export function divide(a, b) { if (b === 0) throw new Error('div0'); return a / b; }\n",
+      "tests/calc.test.mjs": "import assert from 'node:assert';\nimport { divide } from '../src/calc.mjs';\nassert.strictEqual(divide(1, 0), Infinity);\nconsole.log('ok');\n",
+      "README.md": "# fixture\n",
+    },
+    verify: ["node tests/calc.test.mjs"],
+  },
+  {
+    id: "multi-file",
+    cls: "medium",
+    goal: "Add a shared `log` helper in src/util.mjs that prefixes messages with '[app]'. Use it in src/a.mjs and src/b.mjs which currently call console.log directly with plain strings.",
+    files: {
+      "src/util.mjs": "export const VERSION = '1.0';\n",
+      "src/a.mjs": "export function a() { console.log('starting a'); }\n",
+      "src/b.mjs": "export function b() { console.log('starting b'); }\n",
+      "README.md": "# fixture\n",
+    },
+    verify: ["node -e \"const util=await import('./src/util.mjs');const a=await import('./src/a.mjs');const orig=console.log;let seen='';console.log=(m)=>{seen=m};a.a();console.log=orig;if(seen!=='[app] starting a')process.exit(1)\""],
+  },
+  {
+    id: "refactor",
+    cls: "small",
+    goal: "Refactor src/users.mjs: extract the duplicated fullName computation (first + ' ' + last) into an exported helper `fullName` and use it in both exported functions. Keep behavior identical.",
+    files: {
+      "src/users.mjs": "export function greet(u) { return 'Hi ' + u.first + ' ' + u.last; }\nexport function label(u) { return u.first + ' ' + u.last + ' <'+u.id+'>'; }\n",
+      "README.md": "# fixture\n",
+    },
+    verify: ["node -e \"import('./src/users.mjs').then(m=>{const u={first:'A',last:'B',id:'1'};if(m.greet(u)!=='Hi A B'||m.label(u)!=='A B <1>'||m.fullName(u)!=='A B')process.exit(1)})\""],
   },
 ];
 
@@ -154,6 +188,7 @@ const makeRepo = (task) => {
 
 const results = [];
 for (const [i, task] of TASKS.entries()) {
+  if (ONLY && !ONLY.has(task.id)) continue;
   const order = i % 2 === 0 ? ARMS : [...ARMS].reverse(); // alternate to reduce order bias
   const pair = { task: task.id, cls: task.cls, arms: {} };
   for (const arm of order) {

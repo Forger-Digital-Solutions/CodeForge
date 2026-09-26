@@ -1,0 +1,53 @@
+{
+  "at": "2026-09-26T04:55:30.503Z",
+  "probes": [
+    {
+      "model": "mistral-small-latest",
+      "label": "r39-was-429",
+      "result": "RATE_LIMITED",
+      "ms": 271
+    },
+    {
+      "model": "mistral-medium-latest",
+      "label": "r39-was-429",
+      "result": "RATE_LIMITED",
+      "ms": 191
+    },
+    {
+      "model": "mistral-medium-2604",
+      "label": "r39-was-429",
+      "result": "RATE_LIMITED",
+      "ms": 173
+    },
+    {
+      "model": "mistral-large-latest",
+      "label": "r39-was-AUTH",
+      "result": "AUTH_ERROR",
+      "ms": 168
+    },
+    {
+      "model": "openai/gpt-oss-20b",
+      "label": "r39-was-QUOTA",
+      "result": "RECOVERED_SERVING",
+      "ms": 182,
+      "usage": {
+        "inputTokens": 78,
+        "outputTokens": 8,
+        "totalTokens": 86,
+        "reasoningTokens": 6
+      }
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "label": "r39-was-PROVIDER_ERROR",
+      "result": "RECOVERED_SERVING",
+      "ms": 119,
+      "usage": {
+        "inputTokens": 78,
+        "outputTokens": 8,
+        "totalTokens": 86,
+        "reasoningTokens": 6
+      }
+    }
+  ]
+}

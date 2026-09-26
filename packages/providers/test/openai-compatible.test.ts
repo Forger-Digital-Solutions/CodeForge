@@ -141,6 +141,35 @@ describe("OpenAICompatibleAdapter transport", () => {
     expect(createProviderAdapterById("cerebras", { apiKey: "k" })?.providerId).toBe("cerebras");
   });
 
+  it("resolves the google credential from declared Gemini env aliases in deterministic order", async () => {
+    let auth = "";
+    const fetchFn = (async (u: string, init: RequestInit) => {
+      auth = (init.headers as Record<string, string>)?.Authorization ?? "";
+      return jsonResponse({ data: [] });
+    }) as unknown as typeof fetch;
+    const saved = { g: process.env.GOOGLE_API_KEY, gem: process.env.GEMINI_API_KEY, ggai: process.env.GOOGLE_GENERATIVE_AI_API_KEY };
+    try {
+      delete process.env.GOOGLE_API_KEY;
+      process.env.GEMINI_API_KEY = "gemini-env-key";
+      delete process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+      await createProviderAdapterById("google", { fetchFn })!.listModels();
+      expect(auth).toBe("Bearer gemini-env-key");
+      // Deterministic precedence: declared order — first set alias wins.
+      process.env.GOOGLE_API_KEY = "google-env-key";
+      await createProviderAdapterById("google", { fetchFn })!.listModels();
+      expect(auth).toBe("Bearer google-env-key");
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY = "ggai-env-key";
+      delete process.env.GEMINI_API_KEY;
+      delete process.env.GOOGLE_API_KEY;
+      await createProviderAdapterById("google", { fetchFn })!.listModels();
+      expect(auth).toBe("Bearer ggai-env-key");
+    } finally {
+      for (const [key, value] of [["GOOGLE_API_KEY", saved.g], ["GEMINI_API_KEY", saved.gem], ["GOOGLE_GENERATIVE_AI_API_KEY", saved.ggai]] as const) {
+        if (value === undefined) delete process.env[key]; else process.env[key] = value;
+      }
+    }
+  });
+
   it("uses direct Ollama Cloud only, authenticates with a bearer key, and discovers models", async () => {
     let url = "";
     let headers: Record<string, string> | undefined;

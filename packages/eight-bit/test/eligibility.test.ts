@@ -65,6 +65,18 @@ describe("EightBitEligibilityPolicy — fail-closed free boundary", () => {
     expect(verdict.eligible === false && verdict.code).toBe("INSUFFICIENT_CONTEXT");
   });
 
+  it("[R40] admission corrects systematic token-estimate over-prediction without under-admitting", () => {
+    // Receipts (R39/R40): actual billed ≈ 0.35–0.64 of estimateTokens. A route whose window
+    // clears 75% of the inflated estimate is safely servable; below that it stays denied.
+    const est = { role: "CODER" as const, policyMode: "adaptive" as const, estimatedContextTokens: 100_000 };
+    const marginal = makeModel({ contextWindow: 76_000 });
+    const tooSmall = makeModel({ contextWindow: 70_000 });
+    expect(policy.evaluate(marginal, est).eligible).toBe(true);
+    const denied = policy.evaluate(tooSmall, est);
+    expect(denied.eligible).toBe(false);
+    expect(denied.eligible === false && denied.code).toBe("INSUFFICIENT_CONTEXT");
+  });
+
   it("[PASS] hard tool-reliability gate rejects a model with proven-poor reliability, regardless of capability match", () => {
     const model = makeModel();
     const verdict = policy.evaluate(model, {

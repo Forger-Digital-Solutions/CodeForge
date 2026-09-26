@@ -1,0 +1,57 @@
+[
+  {
+    "users": 1,
+    "tasks": 2,
+    "completed": 2,
+    "starved": 0,
+    "fair": true,
+    "complete": true,
+    "rateLimits": 0,
+    "leaked": 0,
+    "divergences": 0
+  },
+  {
+    "users": 10,
+    "tasks": 20,
+    "completed": 20,
+    "starved": 0,
+    "fair": true,
+    "complete": true,
+    "rateLimits": 0,
+    "leaked": 0,
+    "divergences": 0
+  },
+  {
+    "users": 50,
+    "tasks": 100,
+    "completed": 100,
+    "starved": 0,
+    "fair": true,
+    "complete": true,
+    "rateLimits": 0,
+    "leaked": 0,
+    "divergences": 0
+  },
+  {
+    "users": 100,
+    "tasks": 200,
+    "completed": 200,
+    "starved": 0,
+    "fair": true,
+    "complete": true,
+    "rateLimits": 0,
+    "leaked": 0,
+    "divergences": 0
+  },
+  {
+    "users": 373,
+    "tasks": 746,
+    "completed": 746,
+    "starved": 0,
+    "fair": true,
+    "complete": true,
+    "rateLimits": 50,
+    "leaked": 0,
+    "divergences": 0
+  }
+]

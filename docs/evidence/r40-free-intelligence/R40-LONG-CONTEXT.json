@@ -1,0 +1,38 @@
+[
+  {
+    "provider": "mistral",
+    "model": "ministral-8b-latest",
+    "kb": 420,
+    "estimated": 168696,
+    "billed": 58498,
+    "ms": 3403,
+    "ok": true
+  },
+  {
+    "provider": "mistral",
+    "model": "ministral-8b-latest",
+    "kb": 500,
+    "estimated": 200834,
+    "billed": 69641,
+    "ms": 4304,
+    "ok": true
+  },
+  {
+    "provider": "openrouter",
+    "model": "nvidia/nemotron-3-super-120b-a12b:free",
+    "kb": 150,
+    "estimated": 60260,
+    "billed": 20913,
+    "ms": 1425,
+    "ok": true
+  },
+  {
+    "provider": "mistral",
+    "model": "ministral-8b-latest",
+    "kb": 800,
+    "estimated": 321294,
+    "billed": 111408,
+    "ms": 8468,
+    "ok": true
+  }
+]
