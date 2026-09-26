@@ -48,9 +48,11 @@ interface FoldedLine {
 }
 
 // `assert(?:ion)?(?:error|ed|\s|:)` catches "AssertionError"/"assert:" without flagging
-// "assertEquals"; the symbol set is unanchored — ✗/✘/✕/× after whitespace have no word
-// boundary, so a \b-anchored pattern silently let vitest/tap failure lines be omitted.
-const FAILURE_PATTERN = /\b(?:error|failed|failure|fail|exception|panic|fatal|npm err|traceback|not ok|exit code:?\s*[1-9])\b|assert(?:ion)?(?:error|ed|\s|:)|[✗✘✕×]/i;
+// "assertEquals"; the symbol set is unanchored — ✗/✘/✕/×/● after whitespace have no word
+// boundary, so a \b-anchored pattern silently let vitest/tap/jest failure lines be omitted.
+// `panic(?:ked)?` because Rust reports "panicked at", which \bpanic\b misses; "Segmentation
+// fault"/"core dumped"/"timed out" carry neither "error" nor "fail" but are always failures.
+const FAILURE_PATTERN = /\b(?:error|failed|failure|fail|exception|fatal|npm err|traceback|not ok|exit code:?\s*[1-9]|timed out)\b|panic(?:ked)?|seg(?:mentation)?\s*fault|core dumped|assert(?:ion)?(?:error|ed|\s|:)|[✗✘✕×●]/i;
 
 function isFailureLine(line: string): boolean {
   return FAILURE_PATTERN.test(line);
