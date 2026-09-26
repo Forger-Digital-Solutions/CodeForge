@@ -277,7 +277,7 @@ export const BUILT_IN_TOOL_DEFINITIONS: Record<string, ToolDefinition> = {
   },
   edit_file: {
     name: "edit_file",
-    description: "Surgically edit a file by replacing oldText with newText. Checks hash or exact occurrences.",
+    description: "Surgically edit a file by replacing oldText with newText. Read the target with read_file first and pass the hash from its [hash:…] trailer as expectedHash; stale or unseen state is rejected instead of overwriting it.",
     parameters: {
       type: "object",
       properties: {
@@ -285,7 +285,7 @@ export const BUILT_IN_TOOL_DEFINITIONS: Record<string, ToolDefinition> = {
         oldText: { type: "string", description: "Exact text segment to replace" },
         newText: { type: "string", description: "New replacement text" },
         expectedOccurrences: { type: "number", description: "Expected occurrence count (default 1)" },
-        expectedHash: { type: "string", description: "Expected SHA-256 hash of file before edit" },
+        expectedHash: { type: "string", description: "SHA-256 hash of the file as last observed — copy the [hash:…] trailer from the read_file reply" },
       },
       required: ["path", "oldText", "newText"],
     },
@@ -821,7 +821,8 @@ export class ToolBroker {
           const dir = path.dirname(confinement.resolvedPath);
           if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
           fs.writeFileSync(confinement.resolvedPath, content, "utf-8");
-          rawResult = `Successfully wrote ${content.length} characters to ${targetPath}`;
+          const afterHash = crypto.createHash("sha256").update(content, "utf8").digest("hex");
+          rawResult = `Successfully wrote ${content.length} characters to ${targetPath} [hash:${afterHash}]`;
           break;
         }
 
@@ -843,16 +844,16 @@ export class ToolBroker {
           if (expectedHash) {
             const currentHash = crypto.createHash("sha256").update(raw).digest("hex");
             if (currentHash !== expectedHash) {
-              throw new Error(`[${ERROR_CODES.CONTEXT_EVIDENCE_STALE}] Stale edit rejected: file hash mismatch (expected ${expectedHash.slice(0, 8)}, found ${currentHash.slice(0, 8)})`);
+              throw new Error(`[${ERROR_CODES.CONTEXT_EVIDENCE_STALE}] Stale edit rejected: file hash mismatch (expected ${expectedHash.slice(0, 8)}, found ${currentHash.slice(0, 8)}). Re-read the file with read_file and retry with the new hash.`);
             }
           }
 
           const count = raw.split(oldText).length - 1;
           if (count === 0) {
-            throw new Error(`oldText not found in ${targetPath}`);
+            throw new Error(`oldText not found in ${targetPath}. Re-read the file with read_file to see the current content before retrying.`);
           }
           if (count !== expectedOccurrences) {
-            throw new Error(`Expected ${expectedOccurrences} occurrence(s) of oldText but found ${count}`);
+            throw new Error(`Expected ${expectedOccurrences} occurrence(s) of oldText but found ${count} in ${targetPath}. Widen oldText with surrounding context or set expectedOccurrences to the intended count.`);
           }
 
           const replaced = raw.replace(oldText, newText);
@@ -861,7 +862,7 @@ export class ToolBroker {
           }
           fs.writeFileSync(confinement.resolvedPath, replaced, "utf-8");
           const afterHash = crypto.createHash("sha256").update(replaced).digest("hex");
-          rawResult = `Successfully edited ${targetPath} (after hash: ${afterHash.slice(0, 8)})`;
+          rawResult = `Successfully edited ${targetPath} [hash:${afterHash}]`;
           break;
         }
 
@@ -959,7 +960,18 @@ export class ToolBroker {
       const rawMsg = err instanceof Error ? err.message : String(err);
       const redacted = redactSecrets(rawMsg);
       const isEscape = redacted.includes(ERROR_CODES.TOOL_WORKSPACE_ESCAPE);
-      const errorCode = isEscape ? ERROR_CODES.TOOL_PATH_ESCAPE : redacted.includes(ERROR_CODES.TOOL_NO_EFFECT) ? ERROR_CODES.TOOL_NO_EFFECT : ERROR_CODES.TOOL_EXECUTION_FAILED;
+      // Leading `[CODE]` markers thrown by executions are canonical error names; surface them
+      // verbatim so run evidence keeps the specific failure class instead of collapsing to
+      // TOOL_EXECUTION_FAILED.
+      const bracketed = /^\[([A-Z_]+)\]/.exec(redacted)?.[1];
+      const knownCode = bracketed !== undefined && (Object.values(ERROR_CODES) as string[]).includes(bracketed);
+      const errorCode = isEscape
+        ? ERROR_CODES.TOOL_PATH_ESCAPE
+        : redacted.includes(ERROR_CODES.TOOL_NO_EFFECT)
+          ? ERROR_CODES.TOOL_NO_EFFECT
+          : knownCode
+            ? bracketed
+            : ERROR_CODES.TOOL_EXECUTION_FAILED;
 
       return {
         toolExecutionId,

@@ -35,7 +35,7 @@ import {
 import { ApprovalService, type ApprovalRecord, type ApprovalGateResult } from "./approval-service.js";
 import { getSanitizedEnvForChild } from "./env-filter.js";
 import { searchWorkspace } from "./search-service.js";
-import { computeDiff, replaceExact, sha256 } from "./edit-service.js";
+import { computeDiff, readFileWithHash, replaceExact, sha256 } from "./edit-service.js";
 import { createRepositoryIntelligence, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
 import {
   buildContextPack,
@@ -165,6 +165,49 @@ export interface AgentContextMetrics {
   efficiencyReceipt?: EfficiencyReceipt;
   /** R42: the run's selective ForgeGreen policy record — initial level, escalations, replays prevented. */
   forgeGreenPolicy?: ForgeGreenPolicySnapshot;
+  /** R44: structured-output reliability evidence — parse repairs applied, rejection reasons, exhaustion. */
+  structuredOutput?: StructuredOutputTelemetry;
+  /** R44: per-attempt mutation discipline — hash supply, observed state, outcome. */
+  editAttempts?: EditAttemptRecord[];
+}
+
+export type EditAttemptFailureClass =
+  | "missing_state"
+  | "stale_hash"
+  | "invalid_payload"
+  | "target_not_found"
+  | "ambiguous_target"
+  | "no_effect"
+  | "permission"
+  | "execution"
+  | "other";
+
+export interface EditAttemptRecord {
+  seq: number;
+  turn: number;
+  tool: "edit_file" | "write_file";
+  path: string;
+  expectedHashSupplied: boolean;
+  /** Runtime attached the observed hash the model omitted — staleness protection identical to
+   * a model-supplied hash, minus the redundant re-read round trip. */
+  hashAutoAttached: boolean;
+  priorObservation: "read" | "write" | "edit" | "none";
+  outcome: "success" | "failed" | "denied";
+  errorCode?: string;
+  failureClass?: EditAttemptFailureClass;
+}
+
+export interface StructuredOutputTelemetry {
+  /** Re-asks triggered by schema/parse rejection. */
+  repairs: number;
+  /** Re-asks triggered by output truncated at the token cap. */
+  truncationRepairs: number;
+  /** Deterministic extraction/repair strategies that produced the accepted payload. */
+  repairStrategies: string[];
+  /** Validation rejection reasons (bounded tail). */
+  rejections: string[];
+  /** The run exhausted its repair budget and blocked with AGENT_INVALID_STRUCTURED_OUTPUT. */
+  exhausted: boolean;
 }
 
 export interface AgentRuntimeResult {
@@ -535,6 +578,32 @@ export function eightBitRoleForAgentRole(role: AgentRoleType | string): EightBit
   }
 }
 
+/** Map a failed write/edit execution to a first-edit failure class for telemetry. */
+function classifyEditAttemptFailure(exec: ToolExecutionRecord): EditAttemptFailureClass {
+  switch (exec.error) {
+    case ERROR_CODES.CONTEXT_EVIDENCE_STALE:
+      return "stale_hash";
+    case ERROR_CODES.EDIT_MISSING_STATE:
+      return "missing_state";
+    case ERROR_CODES.TOOL_NO_EFFECT:
+      return "no_effect";
+    case ERROR_CODES.TOOL_PERMISSION_DENIED:
+    case ERROR_CODES.TOOL_PATH_ESCAPE:
+    case ERROR_CODES.TOOL_WORKSPACE_ESCAPE:
+    case ERROR_CODES.TOOL_SENSITIVE_PATH_DENIED:
+      return "permission";
+    case ERROR_CODES.TOOL_ARGUMENT_INVALID:
+    case ERROR_CODES.TOOL_UNKNOWN:
+      return "invalid_payload";
+    case ERROR_CODES.TOOL_EXECUTION_FAILED:
+      if (exec.output.includes("not found in")) return "target_not_found";
+      if (exec.output.includes("occurrence")) return "ambiguous_target";
+      return "execution";
+    default:
+      return "other";
+  }
+}
+
 export { outputDemandForRole } from "./role-output-budget.js";
 
 /**
@@ -701,7 +770,7 @@ export function agentToolDefinitions(): ToolDefinition[] {
       type: "function",
       function: {
         name: "edit_file",
-        description: "Safe exact replacement edit with hash protection. Fails if oldText not found exactly or hash stale.",
+        description: "Safe exact replacement edit with hash protection. Read the file first and pass the [hash:…] trailer as expectedHash; fails closed on stale or unseen state.",
         parameters: {
           type: "object",
           properties: {
@@ -1169,6 +1238,10 @@ export class AgentRuntime {
     // getter that snapshots the policy at read/serialize time — escalations during the run land.
     const withGreenPolicy = (metrics: AgentContextMetrics): AgentContextMetrics => {
       Object.defineProperty(metrics, "forgeGreenPolicy", { enumerable: true, configurable: true, get: () => greenPolicy.snapshot() });
+      // R44: live-backed telemetry fields — each rebuilt metrics object reads the run-scoped
+      // collections at serialize time, so every return path carries the final evidence.
+      Object.defineProperty(metrics, "editAttempts", { enumerable: true, configurable: true, get: () => (editAttempts.length > 0 ? editAttempts : undefined) });
+      Object.defineProperty(metrics, "structuredOutput", { enumerable: true, configurable: true, get: () => structuredTelemetry });
       return metrics;
     };
     const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen, this.capacityGovernorIsExplicit ? this.capacityGovernor : undefined, greenPolicy);
@@ -1207,6 +1280,11 @@ export class AgentRuntime {
     const findings: AgentFinding[] = [];
     const evidence: AgentEvidenceRef[] = [];
     const toolCallHistory: string[] = [];
+    // R44 first-edit telemetry: normalized workspace path → last hash this run observed for it
+    // (via read/write/edit). Feeds the mutation gate and per-attempt outcome records.
+    const observedFileState = new Map<string, { hash: string; source: "read" | "write" | "edit" }>();
+    const editAttempts: EditAttemptRecord[] = [];
+    const structuredTelemetry: StructuredOutputTelemetry = { repairs: 0, truncationRepairs: 0, repairStrategies: [], rejections: [], exhausted: false };
     let intelligence: RepositoryIntelligence | undefined;
 
     // R2 durable execution journal. Counters and the transcript live outside the try block so a
@@ -2138,6 +2216,7 @@ export class AgentRuntime {
           if (turnTruncated) {
             if (structuredRepairs < maxStructuredOutputRepairs && turnCount < budget.maxModelTurns) {
               structuredRepairs++;
+              structuredTelemetry.truncationRepairs++;
               messages.push({
                 role: "user",
                 content: `Your previous reply was ${response.text.trim().length === 0 ? "empty" : "cut off before it finished"}. ${expectedStructuredOutput ? `Return only a valid JSON object for the required ${expectedStructuredOutput} schema.` : "Provide the complete final answer now."}`,
@@ -2152,6 +2231,8 @@ export class AgentRuntime {
             if (!validation.success) {
               if (structuredRepairs < maxStructuredOutputRepairs && turnCount < budget.maxModelTurns) {
                 structuredRepairs++;
+                structuredTelemetry.repairs++;
+                if (structuredTelemetry.rejections.length < 8) structuredTelemetry.rejections.push(validation.error.slice(0, 160));
                 messages.push({
                   role: "user",
                   content: `Your prior response was rejected: ${validation.error}. Return only a valid JSON object for the required ${expectedStructuredOutput} schema.`,
@@ -2159,6 +2240,13 @@ export class AgentRuntime {
                 continue;
               }
               const error = ERROR_CODES.AGENT_INVALID_STRUCTURED_OUTPUT;
+              structuredTelemetry.exhausted = true;
+              if (structuredTelemetry.rejections.length < 8) structuredTelemetry.rejections.push(validation.error.slice(0, 160));
+              // R44: structured-output exhaustion is route-quality evidence — a model that
+              // cannot emit the schema after a corrective re-ask is unreliable for this role.
+              if (totalUsage.provider && totalUsage.model) {
+                this.eightBit.recordToolCallOutcome(totalUsage.provider, totalUsage.model, "structured_output_failure", { role: eightBitRoleForAgentRole(req.role), correlationId: req.runId });
+              }
               adapter.emitTurnFailed(req.runId, validation.error, describeRunFailure(new Error(error)));
               forgeGreenR0RunStatus = "blocked";
               return {
@@ -2175,6 +2263,9 @@ export class AgentRuntime {
               };
             }
             structuredData = validation.data;
+            for (const strategy of validation.repairedWith ?? []) {
+              if (!structuredTelemetry.repairStrategies.includes(strategy)) structuredTelemetry.repairStrategies.push(strategy);
+            }
           }
           await persistModelTurn("agent_result_completed");
           stopReason = "completed";
@@ -2479,6 +2570,78 @@ export class AgentRuntime {
             continue;
           }
 
+          // R44 first-edit discipline: a mutation against a file this run has never observed
+          // cannot tell "the state the model assumed" from "the state that is" — with no
+          // observed hash there is nothing to staleness-check, so the write would silently
+          // overwrite unseen external changes. Deny once with the recovery recipe instead.
+          // When state WAS observed but no hash was supplied, attach it so the broker's
+          // staleness check protects the edit exactly as a model-supplied hash would.
+          let pendingEditAttempt: EditAttemptRecord | undefined;
+          if ((tc.name === "edit_file" || tc.name === "write_file") && supervisorArgs !== PARSE_FAILED && !roleIsReadOnly && req.permissions.write === true) {
+            const targetPath = typeof parsedTcArgs.path === "string" ? parsedTcArgs.path : "";
+            const confinement = resolveWithinWorkspace(req.workspacePath, targetPath);
+            const normPath = confinement.valid && confinement.resolvedPath
+              ? path.relative(req.workspacePath, confinement.resolvedPath).replace(/\\/g, "/")
+              : targetPath;
+            const observed = observedFileState.get(normPath);
+            const suppliedHash = typeof parsedTcArgs.expectedHash === "string" && parsedTcArgs.expectedHash.length > 0 ? parsedTcArgs.expectedHash : undefined;
+            const targetExists = confinement.valid && confinement.resolvedPath !== undefined && fs.existsSync(confinement.resolvedPath);
+            pendingEditAttempt = {
+              seq: editAttempts.length + 1,
+              turn: turnCount,
+              tool: tc.name as "edit_file" | "write_file",
+              path: normPath,
+              expectedHashSupplied: suppliedHash !== undefined,
+              hashAutoAttached: false,
+              priorObservation: observed?.source ?? "none",
+              outcome: "failed",
+            };
+            editAttempts.push(pendingEditAttempt);
+            let denyCode: string | undefined;
+            let denyOutput = "";
+            if (targetExists && !suppliedHash && !observed) {
+              denyCode = ERROR_CODES.EDIT_MISSING_STATE;
+              denyOutput = `Error: [${ERROR_CODES.EDIT_MISSING_STATE}] ${tc.name} on "${targetPath}" refused: this run has not observed the file's current state. Call read_file on it — the reply ends with [hash:…] — then retry with expectedHash set to that hash. This keeps changes made outside this run from being silently overwritten.`;
+              pendingEditAttempt.failureClass = "missing_state";
+            } else if (targetExists && tc.name === "write_file" && !suppliedHash && observed) {
+              try {
+                const current = readFileWithHash(req.workspacePath, normPath);
+                if (current.hash !== observed.hash) {
+                  denyCode = ERROR_CODES.CONTEXT_EVIDENCE_STALE;
+                  denyOutput = `Error: [${ERROR_CODES.CONTEXT_EVIDENCE_STALE}] write_file on "${targetPath}" refused: the file changed since this run last observed it. Re-read it with read_file and retry the write. [beforeHash:${current.hash}]`;
+                  pendingEditAttempt.failureClass = "stale_hash";
+                }
+              } catch { /* the broker reports its own error for a file that vanished mid-turn */ }
+            } else if (tc.name === "edit_file" && !suppliedHash && observed) {
+              tc.arguments = JSON.stringify({ ...parsedTcArgs, expectedHash: observed.hash });
+              parsedTcArgs.expectedHash = observed.hash;
+              pendingEditAttempt.hashAutoAttached = true;
+            }
+            if (denyCode) {
+              pendingEditAttempt.outcome = "denied";
+              pendingEditAttempt.errorCode = denyCode;
+              toolExecutions.push({
+                toolExecutionId: `denied-${executionId}`,
+                toolName: tc.name,
+                arguments: parsedTcArgs,
+                success: false,
+                output: denyOutput,
+                error: denyCode,
+                durationMs: 0,
+                readOnly: false,
+                truncated: false,
+              });
+              ledger.recordNoProgressInterruption(`${tc.name} denied: ${pendingEditAttempt.failureClass}`);
+              adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, denyCode);
+              messages.push({ role: "tool", content: denyOutput, toolCallId: tc.id });
+              toolCallCount++;
+              totalUsage.toolCount++;
+              writeCallCount++;
+              await writeRunJournal("active");
+              continue;
+            }
+          }
+
           adapter.emitToolCallStarted(req.runId, tc.id, tc.name, req.agentId);
           adapter.emitToolExecutionStarted(req.runId, tc.id, tc.name, tc.arguments);
 
@@ -2527,6 +2690,13 @@ export class AgentRuntime {
           );
 
           toolExecutions.push(toolExec);
+          if (pendingEditAttempt) {
+            pendingEditAttempt.outcome = toolExec.success ? "success" : "failed";
+            if (!toolExec.success) {
+              pendingEditAttempt.errorCode = toolExec.error;
+              pendingEditAttempt.failureClass = classifyEditAttemptFailure(toolExec);
+            }
+          }
           let noEffectWriteCount = 0;
           if (duplicateSupervisor.isMutating(duplicateIdentity)) {
             if (toolExec.error === ERROR_CODES.TOOL_NO_EFFECT) {
@@ -2613,6 +2783,30 @@ export class AgentRuntime {
               const observations = readToolMessages.get(filePath) ?? [];
               observations.push(toolMessage);
               readToolMessages.set(filePath, observations);
+            }
+          }
+          // R44: the observed-state map the mutation gate reads — the hash marker in the tool
+          // output is the state the model actually saw; fall back to a direct re-hash for
+          // custom executors that do not emit the marker.
+          if (toolExec.success && (tc.name === "read_file" || tc.name === "write_file" || tc.name === "edit_file")) {
+            const parsedArgs = parseToolArgs(tc.arguments);
+            if (typeof parsedArgs === "object" && parsedArgs && "path" in parsedArgs) {
+              const targetPath = String((parsedArgs as { path: unknown }).path);
+              const confinement = resolveWithinWorkspace(req.workspacePath, targetPath);
+              const normPath = confinement.valid && confinement.resolvedPath
+                ? path.relative(req.workspacePath, confinement.resolvedPath).replace(/\\/g, "/")
+                : targetPath;
+              const source = tc.name === "read_file" ? "read" : tc.name === "write_file" ? "write" : "edit";
+              const marker = /\[hash:([0-9a-f]{64})\]/.exec(toolExec.output);
+              if (marker) {
+                observedFileState.set(normPath, { hash: marker[1]!, source });
+              } else {
+                try {
+                  observedFileState.set(normPath, { hash: readFileWithHash(req.workspacePath, normPath).hash, source });
+                } catch {
+                  observedFileState.delete(normPath);
+                }
+              }
             }
           }
           durableExecution.state = "observation_recorded";
@@ -5826,7 +6020,8 @@ export class AgentRuntime {
       const { additions, deletions } = countDiffLines(diff);
       adapter.emitFileChangeProposed(changeId, filePath, existed ? "modified" : "created", additions, deletions, undefined, diff);
       adapter.emitFileChangeApplied(changeId, filePath);
-      return `Successfully wrote ${content.length} characters to ${filePath}`;
+      const afterHash = crypto.createHash("sha256").update(content, "utf8").digest("hex");
+      return `Successfully wrote ${content.length} characters to ${filePath} [hash:${afterHash}]`;
     } catch (error) {
       if (error instanceof Error && error.message.includes(ERROR_CODES.TOOL_NO_EFFECT)) throw error;
       return `Error writing file: ${error instanceof Error ? error.message : String(error)}`;

@@ -81,10 +81,16 @@ class FullFlowScriptedProvider implements ProviderAdapter {
 
     if (isCoder) {
       this.coderCalls++;
-      // Check if tool result is already in history
-      const hasToolResult = req.messages.some((m) => m.role === "tool");
-      if (!hasToolResult) {
-        // Coder calls write_file
+      // R44 edit contract: observe the target (read_file carries the [hash:] marker) before
+      // mutating it, then write, then finish.
+      const toolMessages = req.messages.filter((m) => m.role === "tool");
+      const sawRead = toolMessages.some((m) => typeof m.content === "string" && /\[hash:[0-9a-f]{64}\]/.test(m.content));
+      const sawWrite = toolMessages.some((m) => typeof m.content === "string" && m.content.includes("Successfully wrote"));
+      if (!sawRead) {
+        yield { type: "tool_call_started", toolCallId: "tc-read", toolName: "read_file" };
+        yield { type: "tool_call_completed", toolCallId: "tc-read", toolName: "read_file", arguments: JSON.stringify({ path: "math.mjs" }) };
+        yield { type: "finish", finishReason: "tool_calls" };
+      } else if (!sawWrite) {
         yield { type: "tool_call_started", toolCallId: "tc-write", toolName: "write_file" };
         yield {
           type: "tool_call_completed",
@@ -127,8 +133,15 @@ class RevisionScriptedProvider extends FullFlowScriptedProvider {
     }
     if (systemPrompt.includes("CodeForge Coder")) {
       this.coderRequests.push(req.messages.map((message) => message.content).join("\n"));
-      const hasToolResult = req.messages.some((message) => message.role === "tool");
-      if (!hasToolResult) {
+      // R44 edit contract: read divide.mjs (hash marker in the reply) before each write.
+      const toolMessages = req.messages.filter((m) => m.role === "tool");
+      const sawRead = toolMessages.some((m) => typeof m.content === "string" && /\[hash:[0-9a-f]{64}\]/.test(m.content));
+      const sawWrite = toolMessages.some((m) => typeof m.content === "string" && m.content.includes("Successfully wrote"));
+      if (!sawRead) {
+        yield { type: "tool_call_started", toolCallId: "divide-read", toolName: "read_file" };
+        yield { type: "tool_call_completed", toolCallId: "divide-read", toolName: "read_file", arguments: JSON.stringify({ path: "divide.mjs" }) };
+        yield { type: "finish", finishReason: "tool_calls" };
+      } else if (!sawWrite) {
         this.coderRound++;
         const content = this.coderRound === 1
           ? "export function divide(a, b) { return a / b; }\n"

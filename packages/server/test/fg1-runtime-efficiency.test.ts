@@ -223,9 +223,13 @@ describe("FG-1 runtime efficiency integration", () => {
     for (const name of ["a.ts", "b.ts", "c.ts", "d.ts"]) {
       await fs.writeFile(path.join(tmpDir, name), "export const same = true;\n", "utf-8");
     }
+    // R44: a model must observe a file before mutating it, so each write is preceded by its
+    // read — the no-effect verdict then lands on observed state exactly as production does.
     const provider = new RecordingScriptedProvider("test-provider", [
-      ...["a.ts", "b.ts", "c.ts", "d.ts"].map((name, index) =>
-        toolCallTurn(`no-effect-${index}`, "write_file", { path: name, content: "export const same = true;\n" })),
+      ...["a.ts", "b.ts", "c.ts", "d.ts"].flatMap((name, index) => [
+        toolCallTurn(`read-${index}`, "read_file", { path: name }),
+        toolCallTurn(`no-effect-${index}`, "write_file", { path: name, content: "export const same = true;\n" }),
+      ]),
       finalTurn("unreachable"),
     ]);
     const catalog = new InMemoryProviderCatalog();
@@ -244,11 +248,12 @@ describe("FG-1 runtime efficiency integration", () => {
 
     expect(result.status).toBe("blocked");
     expect(result.error).toBe(ERROR_CODES.AGENT_NO_PROGRESS_DETECTED);
-    expect(result.toolExecutions).toHaveLength(4);
-    expect(result.toolExecutions.every((execution) => execution.error === ERROR_CODES.TOOL_NO_EFFECT)).toBe(true);
+    const writes = result.toolExecutions.filter((execution) => execution.toolName === "write_file");
+    expect(writes).toHaveLength(4);
+    expect(writes.every((execution) => execution.error === ERROR_CODES.TOOL_NO_EFFECT)).toBe(true);
     expect(result.filesChanged).toEqual([]);
-    expect(provider.calls).toBe(4);
-    expect(provider.requests[2]!.messages.some((message) => message.role === "tool" && message.content.includes("new approach"))).toBe(true);
+    expect(provider.calls).toBe(8);
+    expect(provider.requests.slice(4).some((request) => request.messages.some((message) => message.role === "tool" && message.content.includes("new approach")))).toBe(true);
     expect(result.contextMetrics?.efficiencyReceipt?.noProgressInterruptions).toBe(1);
     expect(eventStore.getAll({ sessionId: "no-effect-write", types: ["file.written"] })).toHaveLength(0);
   });
