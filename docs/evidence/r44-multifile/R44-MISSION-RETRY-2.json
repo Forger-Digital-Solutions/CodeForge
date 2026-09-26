@@ -1,0 +1,729 @@
+{
+  "at": "2026-09-26T21:07:28.798Z",
+  "arms": [
+    "green"
+  ],
+  "providers": [
+    "openrouter",
+    "groq",
+    "mistral"
+  ],
+  "verifiedRoutes": 64,
+  "pairs": [
+    {
+      "task": "r44-distributed-bug",
+      "kind": "distributed-bug",
+      "cls": "medium",
+      "arms": {
+        "green": {
+          "arm": "green",
+          "status": "blocked",
+          "topology": null,
+          "counters": {
+            "childrenSpawned": 1,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 0
+          },
+          "changedFiles": [],
+          "verification": [],
+          "review": {
+            "passed": false,
+            "findings": 0
+          },
+          "completion": null,
+          "wallMs": 15594,
+          "calls": 10,
+          "inTokens": 21928,
+          "outTokens": 1229,
+          "reasoningTokens": 0,
+          "errors": 3,
+          "providers": [
+            "openrouter",
+            "mistral",
+            "groq"
+          ],
+          "models": [
+            "dots-studio/dots-3-note-preview:free",
+            "codestral-2508",
+            "qwen/qwen3.8-27b",
+            "mistral-medium-2604"
+          ],
+          "errorKinds": [
+            "RATE_LIMITED",
+            "RATE_LIMITED",
+            "RATE_LIMITED"
+          ],
+          "supplyBlocked": false,
+          "green": {
+            "optimizationSummaries": [
+              {
+                "runId": "child-78466a8a-11ed-411a-8ae4-9b97d3890654",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "FULL",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "NO_INHERITED_EVIDENCE"
+                  ],
+                  "escalations": [
+                    {
+                      "signal": "provider_failover",
+                      "from": "FULL",
+                      "to": "CONSERVATIVE",
+                      "detail": "openrouter/dots-studio/dots-3-note-preview:free -> mistral/codestral-2508 (RATE_LIMITED)"
+                    }
+                  ],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-6b5d2d25-6970-4d22-a0a1-7834845193eb",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "OFF",
+                  "initialReasonCodes": [
+                    "COORDINATED_MULTI_STEP"
+                  ],
+                  "escalations": [
+                    {
+                      "signal": "provider_failover",
+                      "from": "CONSERVATIVE",
+                      "to": "OFF",
+                      "detail": "groq/qwen/qwen3.8-27b -> mistral/mistral-medium-2604 (RATE_LIMITED)"
+                    }
+                  ],
+                  "preventedReplays": 0
+                }
+              }
+            ],
+            "duplicatesSuppressed": 0,
+            "suppressedTools": [],
+            "suppressionDenials": [],
+            "failoverEvents": 4,
+            "verificationEvents": 2,
+            "toolFailures": [],
+            "loopBlocks": [],
+            "turnFailures": [
+              {
+                "turnId": "child-78466a8a-11ed-411a-8ae4-9b97d3890654",
+                "error": "Expected non-empty string for summary"
+              },
+              {
+                "turnId": "child-6b5d2d25-6970-4d22-a0a1-7834845193eb",
+                "error": "[PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: mistral error (429): {\"object\":\"error\",\"message\":\"Ra"
+              }
+            ],
+            "runPolicies": [
+              {
+                "initialLevel": "FULL",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "NO_INHERITED_EVIDENCE"
+                ],
+                "escalations": [
+                  {
+                    "signal": "provider_failover",
+                    "from": "FULL",
+                    "to": "CONSERVATIVE",
+                    "detail": "openrouter/dots-studio/dots-3-note-preview:free -> mistral/codestral-2508 (RATE_LIMITED)"
+                  }
+                ],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "OFF",
+                "initialReasonCodes": [
+                  "COORDINATED_MULTI_STEP"
+                ],
+                "escalations": [
+                  {
+                    "signal": "provider_failover",
+                    "from": "CONSERVATIVE",
+                    "to": "OFF",
+                    "detail": "groq/qwen/qwen3.8-27b -> mistral/mistral-medium-2604 (RATE_LIMITED)"
+                  }
+                ],
+                "preventedReplays": 0
+              }
+            ],
+            "receipts": {
+              "sustainability": [
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                }
+              ],
+              "optimizationDecisions": [],
+              "optimizationReceipts": []
+            },
+            "journals": [
+              {
+                "runId": "child-78466a8a-11ed-411a-8ae4-9b97d3890654",
+                "agentId": "explorer",
+                "role": "explorer",
+                "state": "completed",
+                "turnCount": 6,
+                "toolCallCount": 4,
+                "writeCallCount": 0,
+                "route": {
+                  "providerId": "openrouter",
+                  "modelId": "dots-studio/dots-3-note-preview:free"
+                },
+                "telemetry": {
+                  "stopReason": "completed",
+                  "usage": {
+                    "inputTokens": 18116,
+                    "outputTokens": 1143,
+                    "requestCount": 6,
+                    "toolCount": 4,
+                    "cachedTokens": 14080,
+                    "provider": "mistral",
+                    "model": "codestral-2508"
+                  },
+                  "editAttempts": [],
+                  "structuredOutput": {
+                    "repairs": 1,
+                    "truncationRepairs": 0,
+                    "repairStrategies": [],
+                    "rejections": [
+                      "Structured output is not valid JSON",
+                      "Expected non-empty string for summary"
+                    ],
+                    "exhausted": true
+                  }
+                }
+              },
+              {
+                "runId": "child-6b5d2d25-6970-4d22-a0a1-7834845193eb",
+                "agentId": "coder",
+                "role": "coder",
+                "state": "converged_failed",
+                "turnCount": 2,
+                "toolCallCount": 1,
+                "writeCallCount": 0,
+                "route": {
+                  "providerId": "groq",
+                  "modelId": "qwen/qwen3.8-27b"
+                },
+                "telemetry": {
+                  "stopReason": "error",
+                  "usage": {
+                    "inputTokens": 3812,
+                    "outputTokens": 86,
+                    "requestCount": 2,
+                    "toolCount": 1,
+                    "provider": "groq",
+                    "model": "qwen/qwen3.8-27b"
+                  },
+                  "editAttempts": [],
+                  "structuredOutput": {
+                    "repairs": 0,
+                    "truncationRepairs": 0,
+                    "repairStrategies": [],
+                    "rejections": [],
+                    "exhausted": false
+                  }
+                }
+              }
+            ],
+            "firstEditQuality": {
+              "runsWithEdits": 0,
+              "firstEditSucceeded": 0,
+              "firstEditDenied": 0,
+              "hashAutoAttached": 0,
+              "hashSupplied": 0,
+              "failureClasses": {}
+            },
+            "eventCount": 43
+          }
+        }
+      },
+      "outcome": "INCOMPARABLE"
+    },
+    {
+      "task": "r44-fail-repair",
+      "kind": "fail-repair",
+      "cls": "medium",
+      "arms": {
+        "green": {
+          "arm": "green",
+          "status": "blocked",
+          "topology": null,
+          "counters": {
+            "childrenSpawned": 1,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 0
+          },
+          "changedFiles": [],
+          "verification": [],
+          "review": {
+            "passed": false,
+            "findings": 0
+          },
+          "completion": null,
+          "wallMs": 13247,
+          "calls": 10,
+          "inTokens": 20416,
+          "outTokens": 982,
+          "reasoningTokens": 0,
+          "errors": 3,
+          "providers": [
+            "openrouter",
+            "mistral",
+            "groq"
+          ],
+          "models": [
+            "dots-studio/dots-3-note-preview:free",
+            "codestral-2508",
+            "qwen/qwen3.8-27b",
+            "mistral-medium-2604"
+          ],
+          "errorKinds": [
+            "RATE_LIMITED",
+            "RATE_LIMITED",
+            "RATE_LIMITED"
+          ],
+          "supplyBlocked": false,
+          "green": {
+            "optimizationSummaries": [
+              {
+                "runId": "child-96b87c8a-cd34-4d48-b773-73c39052bed2",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "FULL",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "NO_INHERITED_EVIDENCE"
+                  ],
+                  "escalations": [
+                    {
+                      "signal": "provider_failover",
+                      "from": "FULL",
+                      "to": "CONSERVATIVE",
+                      "detail": "openrouter/dots-studio/dots-3-note-preview:free -> mistral/codestral-2508 (RATE_LIMITED)"
+                    }
+                  ],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-0a97b40a-4a94-4b43-a8bd-83ea0e182602",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "OFF",
+                  "initialReasonCodes": [
+                    "COORDINATED_MULTI_STEP"
+                  ],
+                  "escalations": [
+                    {
+                      "signal": "provider_failover",
+                      "from": "CONSERVATIVE",
+                      "to": "OFF",
+                      "detail": "groq/qwen/qwen3.8-27b -> mistral/mistral-medium-2604 (RATE_LIMITED)"
+                    }
+                  ],
+                  "preventedReplays": 0
+                }
+              }
+            ],
+            "duplicatesSuppressed": 0,
+            "suppressedTools": [],
+            "suppressionDenials": [],
+            "failoverEvents": 4,
+            "verificationEvents": 2,
+            "toolFailures": [],
+            "loopBlocks": [],
+            "turnFailures": [
+              {
+                "turnId": "child-96b87c8a-cd34-4d48-b773-73c39052bed2",
+                "error": "Expected non-empty string for summary"
+              },
+              {
+                "turnId": "child-0a97b40a-4a94-4b43-a8bd-83ea0e182602",
+                "error": "[PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: mistral error (429): {\"object\":\"error\",\"message\":\"Ra"
+              }
+            ],
+            "runPolicies": [
+              {
+                "initialLevel": "FULL",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "NO_INHERITED_EVIDENCE"
+                ],
+                "escalations": [
+                  {
+                    "signal": "provider_failover",
+                    "from": "FULL",
+                    "to": "CONSERVATIVE",
+                    "detail": "openrouter/dots-studio/dots-3-note-preview:free -> mistral/codestral-2508 (RATE_LIMITED)"
+                  }
+                ],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "OFF",
+                "initialReasonCodes": [
+                  "COORDINATED_MULTI_STEP"
+                ],
+                "escalations": [
+                  {
+                    "signal": "provider_failover",
+                    "from": "CONSERVATIVE",
+                    "to": "OFF",
+                    "detail": "groq/qwen/qwen3.8-27b -> mistral/mistral-medium-2604 (RATE_LIMITED)"
+                  }
+                ],
+                "preventedReplays": 0
+              }
+            ],
+            "receipts": {
+              "sustainability": [
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                }
+              ],
+              "optimizationDecisions": [],
+              "optimizationReceipts": []
+            },
+            "journals": [
+              {
+                "runId": "child-96b87c8a-cd34-4d48-b773-73c39052bed2",
+                "agentId": "explorer",
+                "role": "explorer",
+                "state": "completed",
+                "turnCount": 6,
+                "toolCallCount": 4,
+                "writeCallCount": 0,
+                "route": {
+                  "providerId": "openrouter",
+                  "modelId": "dots-studio/dots-3-note-preview:free"
+                },
+                "telemetry": {
+                  "stopReason": "completed",
+                  "usage": {
+                    "inputTokens": 16792,
+                    "outputTokens": 925,
+                    "requestCount": 6,
+                    "toolCount": 4,
+                    "cachedTokens": 14208,
+                    "provider": "mistral",
+                    "model": "codestral-2508"
+                  },
+                  "editAttempts": [],
+                  "structuredOutput": {
+                    "repairs": 1,
+                    "truncationRepairs": 0,
+                    "repairStrategies": [],
+                    "rejections": [
+                      "Structured output is not valid JSON",
+                      "Expected non-empty string for summary"
+                    ],
+                    "exhausted": true
+                  }
+                }
+              },
+              {
+                "runId": "child-0a97b40a-4a94-4b43-a8bd-83ea0e182602",
+                "agentId": "coder",
+                "role": "coder",
+                "state": "converged_failed",
+                "turnCount": 2,
+                "toolCallCount": 1,
+                "writeCallCount": 0,
+                "route": {
+                  "providerId": "groq",
+                  "modelId": "qwen/qwen3.8-27b"
+                },
+                "telemetry": {
+                  "stopReason": "error",
+                  "usage": {
+                    "inputTokens": 3624,
+                    "outputTokens": 57,
+                    "requestCount": 2,
+                    "toolCount": 1,
+                    "provider": "groq",
+                    "model": "qwen/qwen3.8-27b"
+                  },
+                  "editAttempts": [],
+                  "structuredOutput": {
+                    "repairs": 0,
+                    "truncationRepairs": 0,
+                    "repairStrategies": [],
+                    "rejections": [],
+                    "exhausted": false
+                  }
+                }
+              }
+            ],
+            "firstEditQuality": {
+              "runsWithEdits": 0,
+              "firstEditSucceeded": 0,
+              "firstEditDenied": 0,
+              "hashAutoAttached": 0,
+              "hashSupplied": 0,
+              "failureClasses": {}
+            },
+            "eventCount": 43
+          }
+        }
+      },
+      "outcome": "INCOMPARABLE"
+    }
+  ],
+  "callLog": [
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 168.66229999999996,
+      "usage": {
+        "inputTokens": 13,
+        "outputTokens": 1,
+        "totalTokens": 14
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 665.1513,
+      "usage": {
+        "inputTokens": 4,
+        "outputTokens": 1,
+        "totalTokens": 5,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 112.69380000000001,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1849.5363000000002,
+      "usage": {
+        "inputTokens": 2356,
+        "outputTokens": 184,
+        "totalTokens": 2540,
+        "cachedInputTokens": 2304
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1416.4520000000002,
+      "usage": {
+        "inputTokens": 2651,
+        "outputTokens": 138,
+        "totalTokens": 2789,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1378.5775999999996,
+      "usage": {
+        "inputTokens": 2904,
+        "outputTokens": 129,
+        "totalTokens": 3033,
+        "cachedInputTokens": 2304
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1894.074200000001,
+      "usage": {
+        "inputTokens": 3137,
+        "outputTokens": 211,
+        "totalTokens": 3348,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1232.9210000000003,
+      "usage": {
+        "inputTokens": 3460,
+        "outputTokens": 120,
+        "totalTokens": 3580,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2875.3423999999995,
+      "usage": {
+        "inputTokens": 3608,
+        "outputTokens": 361,
+        "totalTokens": 3969,
+        "cachedInputTokens": 3456
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 758.0267999999996,
+      "usage": {
+        "inputTokens": 3812,
+        "outputTokens": 86,
+        "totalTokens": 3898
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 103.42190000000119,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "mistral-medium-2604",
+      "ms": 238.53369999999995,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 140.54859999999462,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 883.9539999999979,
+      "usage": {
+        "inputTokens": 2342,
+        "outputTokens": 64,
+        "totalTokens": 2406,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 958.0500999999931,
+      "usage": {
+        "inputTokens": 2472,
+        "outputTokens": 82,
+        "totalTokens": 2554,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2178.748800000001,
+      "usage": {
+        "inputTokens": 2712,
+        "outputTokens": 207,
+        "totalTokens": 2919,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 681.2044000000024,
+      "usage": {
+        "inputTokens": 3000,
+        "outputTokens": 44,
+        "totalTokens": 3044,
+        "cachedInputTokens": 2304
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 745.0656000000017,
+      "usage": {
+        "inputTokens": 3093,
+        "outputTokens": 52,
+        "totalTokens": 3145,
+        "cachedInputTokens": 2816
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 3685.5007999999943,
+      "usage": {
+        "inputTokens": 3173,
+        "outputTokens": 476,
+        "totalTokens": 3649,
+        "cachedInputTokens": 3072
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 860.8597000000009,
+      "usage": {
+        "inputTokens": 3624,
+        "outputTokens": 57,
+        "totalTokens": 3681
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 104.56390000000829,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "mistral-medium-2604",
+      "ms": 189.8246000000072,
+      "error": "RATE_LIMITED",
+      "ok": false
+    }
+  ]
+}
