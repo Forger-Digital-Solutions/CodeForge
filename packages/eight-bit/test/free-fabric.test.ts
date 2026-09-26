@@ -664,3 +664,78 @@ describe("R37 Mission D/AF — same-provider model-domain independence", () => {
     expect(denied?.reasonCodes).toContain("PROVIDER_QUOTA_EXHAUSTED");
   });
 });
+
+describe("FreeFabric — R38 catalog churn and route re-entry", () => {
+  it("a 429 rate-limited route re-enters after its window expires — no restart, no false wait", () => {
+    const c = clock();
+    const shared = managedRoute("flaky");
+    const authority = new EightBitRouteHealthAuthority(DEFAULT_ROUTE_HEALTH_POLICY, c.now);
+    const fabric = createFreeFabric({
+      managedRoutes: () => [shared],
+      managedPools: () => [poolFor(shared)],
+      health: authority,
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    authority.observe({
+      kind: "call_failure",
+      providerId: shared.providerId,
+      modelId: shared.modelId,
+      observedAt: new Date(c.now()).toISOString(),
+      source: "runtime",
+      reason: "RATE_LIMITED",
+      status: 429,
+      message: "HTTP 429",
+      role: "CODER",
+    });
+    const parked = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" });
+    expect(parked.outcome).toBe("QUEUED_FOR_CAPACITY");
+    expect(parked.explanation.candidates[0]?.healthState).toBe("RATE_LIMITED");
+
+    c.advance(DEFAULT_ROUTE_HEALTH_POLICY.rateLimitDefaultTtlMs + 1_000);
+    const recovered = fabric.decide({ requestId: "r2", userId: "alice", role: "CODER" });
+    expect(recovered.outcome).toBe("ADMITTED");
+    expect(recovered.selected?.routeId).toBe("flaky");
+  });
+
+  it("a retired route stays excluded until catalog 'present' evidence — then re-enters", () => {
+    const c = clock();
+    const shared = managedRoute("churned");
+    const authority = new EightBitRouteHealthAuthority(DEFAULT_ROUTE_HEALTH_POLICY, c.now);
+    const fabric = createFreeFabric({
+      managedRoutes: () => [shared],
+      managedPools: () => [poolFor(shared)],
+      health: authority,
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    authority.observe({
+      kind: "catalog",
+      providerId: shared.providerId,
+      modelId: shared.modelId,
+      observedAt: new Date(c.now()).toISOString(),
+      source: "catalog_refresh",
+      fact: "not_found",
+    });
+    const parked = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" });
+    expect(parked.outcome).toBe("QUEUED_FOR_CAPACITY");
+    expect(parked.explanation.candidates[0]?.healthState).toBe("MODEL_RETIRED");
+
+    // Time passing alone must NOT resurrect a permanently-retired route.
+    c.advance(60 * 60_000);
+    const stillParked = fabric.decide({ requestId: "r2", userId: "alice", role: "CODER" });
+    expect(stillParked.outcome).toBe("QUEUED_FOR_CAPACITY");
+
+    authority.observe({
+      kind: "catalog",
+      providerId: shared.providerId,
+      modelId: shared.modelId,
+      observedAt: new Date(c.now()).toISOString(),
+      source: "catalog_refresh",
+      fact: "present",
+    });
+    const reentered = fabric.decide({ requestId: "r3", userId: "alice", role: "CODER" });
+    expect(reentered.outcome).toBe("ADMITTED");
+    expect(reentered.selected?.routeId).toBe("churned");
+  });
+});

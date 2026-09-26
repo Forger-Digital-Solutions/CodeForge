@@ -1,0 +1,38 @@
+{
+  "at": "2026-09-26T02:51:16.293Z",
+  "probes": [
+    {
+      "model": "openrouter/free",
+      "ok": true,
+      "latencyMs": 1174,
+      "text": "",
+      "inputTokens": 23,
+      "outputTokens": 28,
+      "modelServed": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+    },
+    {
+      "model": "qwen/qwen3.8-27b:free",
+      "ok": false,
+      "latencyMs": 163,
+      "error": "RATE_LIMITED"
+    },
+    {
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "ok": true,
+      "latencyMs": 1149,
+      "text": "",
+      "inputTokens": 23,
+      "outputTokens": 8,
+      "modelServed": "nvidia/nemotron-3-ultra-550b-a55b:free"
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ok": true,
+      "latencyMs": 316,
+      "text": "",
+      "inputTokens": 7,
+      "outputTokens": 8,
+      "modelServed": "cohere/north-mini-code:free"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "at": "2026-09-26T02:55:16.730Z",
+  "events": [
+    {
+      "model": "qwen/qwen3.8-27b:free",
+      "phase": "dispatch",
+      "atMs": 0,
+      "ok": false,
+      "latencyMs": 413,
+      "error": "RATE_LIMITED"
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "phase": "dispatch",
+      "atMs": 414,
+      "ok": true,
+      "latencyMs": 296,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 8,
+        "totalTokens": 15,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 8,
+        "costUsd": 0
+      }
+    }
+  ],
+  "totalMs": 713
+}

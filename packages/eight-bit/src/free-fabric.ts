@@ -469,7 +469,7 @@ export class FreeFabric {
    */
   private quotaDomainReason(entry: RouteLedgerEntry, reason: string): string {
     if (reason !== "CAPACITY_EXHAUSTED") return reason;
-    if (entry.capacityPoolScope === "PER_USER_POOL") return "USER_QUOTA_EXHAUSTED";
+    if (entry.quotaPoolScope === "PER_USER_POOL") return "USER_QUOTA_EXHAUSTED";
     if (entry.capacityPoolId.includes(":model:")) return "MODEL_QUOTA_EXHAUSTED";
     return "PROVIDER_QUOTA_EXHAUSTED";
   }
