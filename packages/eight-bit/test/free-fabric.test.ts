@@ -640,5 +640,27 @@ describe("R37 Mission D/AF — same-provider model-domain independence", () => {
     expect(decision.selected?.routeId).toBe("groq-model-b");
     const denied = decision.explanation.candidates.find((r) => r.routeId === "groq-model-a");
     expect(denied?.status).toBe("CAPACITY_DENIED");
+    // Mission AT: the wait-state ledger names the quota domain, not just "capacity".
+    expect(denied?.reasonCodes).toContain("MODEL_QUOTA_EXHAUSTED");
+    expect(denied?.reasonCodes).toContain("CAPACITY_EXHAUSTED");
+  });
+
+  it("account-scoped exhaustion reports PROVIDER_QUOTA_EXHAUSTED — the domain is named", () => {
+    const c = clock();
+    const dry = managedRoute("account-pool", {
+      capacityPoolId: "shared:mistral",
+      windows: [quotaWindow({ remaining: 0 })],
+    });
+    const wet = managedRoute("other-provider", { qualityScore: 60 });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [dry, wet],
+      managedPools: () => [poolFor(dry), poolFor(wet)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" });
+    expect(decision.outcome).toBe("ADMITTED");
+    const denied = decision.explanation.candidates.find((r) => r.routeId === "account-pool");
+    expect(denied?.reasonCodes).toContain("PROVIDER_QUOTA_EXHAUSTED");
   });
 });

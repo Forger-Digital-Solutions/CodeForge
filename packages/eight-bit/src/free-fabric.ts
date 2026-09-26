@@ -379,14 +379,15 @@ export class FreeFabric {
         reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", candidate.roleFallback ? "ROLE_PROBATION_FALLBACK" : "ROLE_QUALIFIED", "QUOTA_RESERVED", decision.reason, ...this.independenceReason(request, entry)], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
         break;
       }
-      reports.set(entry.routeId, this.reportFor(entry, decision.reason === "CAPACITY_EXHAUSTED" || decision.reason === "FIRST_RUN_RESERVE_PROTECTED" ? "CAPACITY_DENIED" : "RESERVATION_DENIED", [decision.reason, ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : [])], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
+      const domainReason = this.quotaDomainReason(entry, decision.reason);
+      reports.set(entry.routeId, this.reportFor(entry, decision.reason === "CAPACITY_EXHAUSTED" || decision.reason === "FIRST_RUN_RESERVE_PROTECTED" ? "CAPACITY_DENIED" : "RESERVATION_DENIED", [domainReason, ...(domainReason !== decision.reason ? [decision.reason] : []), ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : [])], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
       if (decision.reason === "USER_CONCURRENCY_LIMIT") {
         concurrencyLimited = true;
         queued = { reasonCodes: ["USER_CONCURRENCY_LIMIT"], nextAvailableAt: decision.nextAvailableAt };
         break;
       }
       queued = {
-        reasonCodes: [...new Set([...(queued?.reasonCodes ?? []), decision.reason])],
+        reasonCodes: [...new Set([...(queued?.reasonCodes ?? []), this.quotaDomainReason(entry, decision.reason)])],
         nextAvailableAt: [queued?.nextAvailableAt, decision.nextAvailableAt].filter((v): v is string => v !== undefined).sort()[0],
       };
     }
@@ -459,6 +460,18 @@ export class FreeFabric {
       status, reasonCodes, healthState, scoreAdjustment,
       ...(rightFitPenalty !== undefined && rightFitPenalty !== 0 ? { rightFitPenalty } : {}),
     };
+  }
+
+  /**
+   * R37 Mission AT: quota-domain-qualified denial codes. `CAPACITY_EXHAUSTED` alone cannot
+   * tell the operator whether a model domain, an account domain, or the user's own pool ran
+   * dry — the pool scope/shape encodes it, so the wait-state ledger names it explicitly.
+   */
+  private quotaDomainReason(entry: RouteLedgerEntry, reason: string): string {
+    if (reason !== "CAPACITY_EXHAUSTED") return reason;
+    if (entry.capacityPoolScope === "PER_USER_POOL") return "USER_QUOTA_EXHAUSTED";
+    if (entry.capacityPoolId.includes(":model:")) return "MODEL_QUOTA_EXHAUSTED";
+    return "PROVIDER_QUOTA_EXHAUSTED";
   }
 
   private independenceReason(request: FabricRequest, entry: RouteLedgerEntry): string[] {
