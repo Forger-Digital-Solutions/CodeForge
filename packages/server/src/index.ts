@@ -38,6 +38,7 @@ import { runDemoRuntime } from "./demo-runtime.js";
 import { AgentRuntime, createAgentRuntime, type HostedWorkerOptions } from "./agent-runtime.js";
 import { resolveWithinWorkspace } from "./path-security.js";
 import { buildProviderTopologyCapacity } from "./provider-topology-capacity.js";
+import { buildCapacityConfidence, type CapacityConfidenceReport } from "./capacity-confidence.js";
 import { createWorkflowService, type WorkflowService } from "./workflow-service.js";
 import { WorkspaceService, createWorkspaceService } from "./workspace-service.js";
 import { AutonomousRunOrchestrator, createAutonomousRunOrchestrator, type AutonomousRun } from "./autonomous-orchestrator.js";
@@ -390,6 +391,7 @@ export class CodeForgeServer {
       ...(this.subagentsR1Enabled ? { getAgentRuntime: (sessionId: string) => this.getOrCreateRuntime(sessionId) } : {}),
       subagentsR1Enabled: this.subagentsR1Enabled,
       providerTopologyCapacity: () => this.providerTopologyCapacity(),
+      capacityConfidence: () => this.capacityConfidenceReport(),
       // R45: the orientation probe shares the index's persistent cache — a second open of the
       // same workspace is a warm read, and zero model calls are spent on the coverage signal.
       orientationProbe: async (goal, workspacePath) => {
@@ -2427,6 +2429,17 @@ export class CodeForgeServer {
   /** R24: the live provider-capacity view ForgeGreen topology advice consumes. */
   private providerTopologyCapacity(): ProviderTopologyCapacity | undefined {
     return buildProviderTopologyCapacity({
+      freeCloud: this.freeCloud,
+      routeHealth: this.routeHealth,
+      freeFabric: this.freeFabric,
+      localUserId: this.localUserId,
+    });
+  }
+
+  /** R46: the capacity-confidence projection mission admission consults. Absent freeCloud = UNOBSERVED. */
+  private capacityConfidenceReport(): CapacityConfidenceReport | undefined {
+    if (!this.freeCloud) return undefined;
+    return buildCapacityConfidence({
       freeCloud: this.freeCloud,
       routeHealth: this.routeHealth,
       freeFabric: this.freeFabric,

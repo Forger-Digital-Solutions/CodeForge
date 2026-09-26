@@ -48,6 +48,7 @@ import { reviewDiff, type ReviewFinding } from "@codeforge/workflow";
 import type { AdaptiveTopology, AdaptiveTopologyPlan } from "@codeforge/protocol";
 import type { ProviderTopologyCapacity } from "@codeforge/forge-green";
 import { resolveAdaptiveTopology } from "./adaptive-topology.js";
+import { evaluateMissionAdmission, type CapacityConfidenceReport, type MissionAdmissionVerdict } from "./capacity-confidence.js";
 import { classifyTaskComplexity, type TaskComplexityDecision, type TaskComplexityTier } from "./task-complexity.js";
 
 const execFile = promisify(execFileCallback);
@@ -164,6 +165,8 @@ export interface TopologyDecisionRecord {
   providerCapacity?: ProviderTopologyCapacity;
   /** R45: deterministic orientation coverage probed before spawn (normal-tier adaptive only). */
   orientationCoverage?: { covered: boolean; candidateFiles: number };
+  /** R46: the mission-admission verdict recorded with the plan that produced it. */
+  missionAdmission?: MissionAdmissionVerdict;
   repositoryFileCount: number;
   decidedAt: string;
 }
@@ -236,6 +239,9 @@ export interface OrchestratorOptions {
    * coverage unobserved → no coverage-based reduction.
    */
   orientationProbe?: (goal: string, workspacePath: string) => Promise<{ covered: boolean; candidateFiles: number } | undefined>;
+  /** R46 §13: live capacity-confidence projection for mission admission. Absent = UNOBSERVED,
+   *  which admits honestly — the gate only refuses on provable insufficiency. */
+  capacityConfidence?: () => CapacityConfidenceReport | undefined;
 }
 
 export class AutonomousRunOrchestrator {
@@ -248,6 +254,7 @@ export class AutonomousRunOrchestrator {
   private readonly getAgentRuntime?: (sessionId: string) => AgentRuntime;
   private readonly providerTopologyCapacity?: () => ProviderTopologyCapacity | undefined;
   private readonly orientationProbe?: (goal: string, workspacePath: string) => Promise<{ covered: boolean; candidateFiles: number } | undefined>;
+  private readonly capacityConfidence?: () => CapacityConfidenceReport | undefined;
   private readonly subagentsR1Enabled: boolean;
   private readonly runs: Map<string, AutonomousRun> = new Map();
   private readonly abortControllers: Map<string, AbortController> = new Map();
@@ -259,6 +266,7 @@ export class AutonomousRunOrchestrator {
     this.getAgentRuntime = options.getAgentRuntime;
     this.providerTopologyCapacity = options.providerTopologyCapacity;
     this.orientationProbe = options.orientationProbe;
+    this.capacityConfidence = options.capacityConfidence;
     this.subagentsR1Enabled = options.subagentsR1Enabled ?? false;
     this.subagentManager = options.subagentManager ?? createSubagentManager({
       persistence: options.persistence,
@@ -487,12 +495,23 @@ export class AutonomousRunOrchestrator {
       ...(providerCapacity ? { providerCapacity } : {}),
       ...(orientationCoverage ? { orientationCoverage } : {}),
     });
+    // R46 §13/§16: mission admission — refuse to launch a multi-stage plan into provably
+    // insufficient free supply (zero admissible routes, every usable pool cooling/exhausted,
+    // or every provider-stated window below the plan's measured call need incl. the verify
+    // tail). Unmeasured capacity admits honestly: the fabric fails closed per turn.
+    const missionAdmission = this.capacityConfidence
+      ? (() => {
+          const confidence = this.capacityConfidence!();
+          return confidence ? evaluateMissionAdmission({ topology: topologyPlan.topology, confidence }) : undefined;
+        })()
+      : undefined;
     const topology: TopologyDecisionRecord = {
       policy: options.topology ? "explicit" : fixedR1ByEnv ? "fixed_r1_env" : "adaptive",
       complexity,
       plan: topologyPlan,
       ...(providerCapacity ? { providerCapacity } : {}),
       ...(orientationCoverage ? { orientationCoverage } : {}),
+      ...(missionAdmission ? { missionAdmission } : {}),
       repositoryFileCount,
       decidedAt: new Date().toISOString(),
     };
@@ -545,6 +564,28 @@ export class AutonomousRunOrchestrator {
     this.runs.set(runId, run);
     this.persistRun(run);
     adapter?.emitTaskCreated(runId, redactSecrets(goal.slice(0, 80)), "autonomous");
+
+    if (missionAdmission && missionAdmission.verdict !== "ADMIT") {
+      run.status = "blocked";
+      run.error = missionAdmission.reason;
+      this.persistRun(run);
+      const result: AutonomousRunResult = {
+        runId,
+        status: "blocked",
+        summary: `Mission admission ${missionAdmission.verdict}: ${missionAdmission.reason}`,
+        workspaceId: targetWs.id,
+        baseRevision,
+        changedFiles: [],
+        review: { passed: false, findings: [] },
+        verification: [],
+        integration: { status: "not_attempted", reason: missionAdmission.verdict },
+        evidence: [],
+        counters,
+      };
+      run.result = result;
+      this.persistRun(run);
+      return result;
+    }
 
     let worktreeWs: ForgeWorkspace | undefined;
     let worktreeLease: WorkspaceLease | undefined;
