@@ -134,4 +134,55 @@ describe("validateStructuredAgentResult — adversarial extraction security", ()
     const result = validateStructuredAgentResult("reviewer", "```json\n{\"verdict\":\"pass\"}\n```");
     expect(result.success).toBe(false);
   });
+
+  it("recovers a fenced payload surrounded by prose and records the repair", () => {
+    const wrapped = "Here is the review you asked for.\n```json\n" + JSON.stringify(validReview, null, 2) + "\n```\nThat concludes the review.";
+    const result = validateStructuredAgentResult("reviewer", wrapped);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toMatchObject({ verdict: "pass", summary: "All clean" });
+      expect(result.repairedWith).toEqual(["fenced_block"]);
+    }
+  });
+
+  it("recovers brace-delimited JSON inside plain prose and records the repair", () => {
+    const wrapped = "Verdict below: " + JSON.stringify(validReview) + " — end of review.";
+    const result = validateStructuredAgentResult("reviewer", wrapped);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toMatchObject({ verdict: "pass" });
+      expect(result.repairedWith).toEqual(["brace_extraction"]);
+    }
+  });
+
+  it("repairs trailing commas and reports both strategies", () => {
+    const dirty = '{\n  "verdict": "pass",\n  "findings": [],\n  "summary": "All clean",\n}';
+    const wrapped = "```json\n" + dirty + "\n```";
+    const result = validateStructuredAgentResult("reviewer", wrapped);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toMatchObject({ verdict: "pass" });
+      expect(result.repairedWith).toEqual(["fenced_block", "trailing_commas"]);
+    }
+  });
+
+  it("does not strip commas inside string literals", () => {
+    const withCommaInString = '{"verdict":"pass","findings":[],"summary":"ends with a , comma"}';
+    const result = validateStructuredAgentResult("reviewer", withCommaInString);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data).toMatchObject({ summary: "ends with a , comma" });
+  });
+
+  it("still rejects when a fenced block conflicts with a payload outside it", () => {
+    const hostile = JSON.stringify({ verdict: "pass", findings: [], summary: "sneaky" }) + "\n```json\n" + JSON.stringify(validReview) + "\n```";
+    const result = validateStructuredAgentResult("reviewer", hostile);
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts pure JSON containing fence-looking text inside string values unchanged", () => {
+    const embedded = JSON.stringify({ verdict: "pass", findings: [], summary: "use ```code``` fences in markdown" });
+    const result = validateStructuredAgentResult("reviewer", embedded);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.repairedWith).toBeUndefined();
+  });
 });
