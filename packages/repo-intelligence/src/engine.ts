@@ -727,6 +727,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       createdAt: this.meta("created_at"),
       updatedAt: this.meta("updated_at"),
       sizeBytes,
+      pendingExternalMutations: this.pendingWatchPaths.size,
     };
   }
 

@@ -1137,6 +1137,9 @@ export class AgentRuntime {
     /** FG-9 Candidate A: real FG-1C suppression events this run, wrapped (never re-decided) into
      * the optimization decision/receipt framework. Hashes/ids/sizes only — never raw content. */
     const forgeGreenDuplicateSuppressionEvents: DuplicateToolSuppressionEvent[] = [];
+    // R43: suppression candidates the state-evidence check denied — the workspace moved under
+    // the run without a tracked mutation, so the read executed instead of replaying.
+    const forgeGreenSuppressionDenials: { tool: string; identityKeyHash: string; stateEvidence?: string }[] = [];
     const toolBroker = createToolBroker();
     for (const def of this.externalTools?.definitions ?? []) {
       // External tool namespaces are prefixed (browser_/mcp__) so they can never shadow a
@@ -1549,6 +1552,7 @@ export class AgentRuntime {
           providerCachedInputTokens: totalUsage.cachedTokens,
           toolOutputBytesAvoided,
           duplicateActionsSuppressed: supervisorMetrics.duplicateActionsSuppressed,
+          suppressionEvidenceInvalidations: supervisorMetrics.evidenceInvalidations,
           noProgressInterruptions: supervisorMetrics.noProgressEscalations,
           canonicalCacheHits: canonicalCacheStats.hits,
           canonicalCacheMisses: canonicalCacheStats.misses,
@@ -2325,6 +2329,21 @@ export class AgentRuntime {
             runtimeClassifiedReadOnly: isClassifiedReadOnlyCommand(tc.name, supervisorArgs),
             workstreamScope: req.workstreamScope,
           };
+          // R43: workspace-bound reads must carry proof of the state they observed — the
+          // supervisor's own version only advances on mutations this run performed, so an
+          // external edit (sibling workstream on a shared worktree, a user write, a change
+          // inside the watcher debounce) must independently invalidate a replay. External
+          // reads (browser/network) have no workspace channel and stay legacy-eligible.
+          const externalRead =
+            BROWSER_READ_ONLY_TOOLS.has(tc.name)
+            || this.externalTools?.effectOf?.(tc.name) === "network_read";
+          if (duplicateSupervisor.isReadOnly(duplicateIdentity) && !externalRead) {
+            duplicateIdentity.evidenceRequired = true;
+            duplicateIdentity.stateEvidence = this.suppressionStateEvidence(
+              supervisorArgs === PARSE_FAILED ? undefined : supervisorArgs,
+              intelligence,
+            );
+          }
           // R42: the classifier runs whenever the policy is above OFF — its no-progress bound
           // is a safety mechanism, not an optimization. Only FULL may replay a prior output;
           // CONSERVATIVE still bounds identical repeats but executes the read.
@@ -2333,6 +2352,13 @@ export class AgentRuntime {
             : { action: "execute" as const };
           if (duplicateDecision.action === "execute" && "suppressedDuplicate" in duplicateDecision) {
             greenPolicy.notePreventedReplay();
+          }
+          if (duplicateDecision.action === "execute" && "evidenceMismatch" in duplicateDecision) {
+            forgeGreenSuppressionDenials.push({
+              tool: tc.name,
+              identityKeyHash: duplicateSupervisor.identityKey(duplicateIdentity),
+              stateEvidence: duplicateIdentity.stateEvidence,
+            });
           }
           if (duplicateDecision.action === "escalate") {
             ledger.recordNoProgressInterruption(duplicateDecision.reason);
@@ -2371,6 +2397,7 @@ export class AgentRuntime {
               identityKeyHash: duplicateSupervisor.identityKey(duplicateIdentity),
               priorExecutionId: duplicateDecision.priorExecutionId,
               avoidedBytes: Buffer.byteLength(duplicateDecision.priorOutput, "utf8"),
+              stateEvidence: duplicateDecision.stateEvidence,
             });
             adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, "forgegreen_duplicate_suppressed");
             const replayedContent = `[forgegreen: duplicate read-only action suppressed — identical action against unchanged workspace state; replaying prior authoritative result ${duplicateDecision.priorExecutionId}]\n${duplicateDecision.priorOutput}`;
@@ -2767,6 +2794,7 @@ export class AgentRuntime {
         intelligence,
         { contextBytes: forgeGreenActualContextBytes, contextTokens: forgeGreenActualContextTokens },
         forgeGreenDuplicateSuppressionEvents,
+        forgeGreenSuppressionDenials,
         adapter,
         greenPolicy,
       ).catch((err: unknown) => {
@@ -2825,6 +2853,7 @@ export class AgentRuntime {
     intelligence: RepositoryIntelligence | undefined,
     liveContext: { contextBytes: number | undefined; contextTokens: number | undefined },
     duplicateSuppressionEvents: DuplicateToolSuppressionEvent[],
+    suppressionDenials: { tool: string; identityKeyHash: string; stateEvidence?: string }[],
     adapter: WorkspaceEventAdapter,
     greenPolicy: ForgeGreenRunPolicy,
   ): Promise<void> {
@@ -2920,7 +2949,7 @@ export class AgentRuntime {
             result.decision.expectedEffect.avoidedBytes,
           );
         }
-        adapter.emitForgeGreenOptimizationSummary(req.runId, duplicateSuppressionEvents.length, result ? 1 : 0, 0, result ? 0 : 1, greenPolicy.snapshot());
+        adapter.emitForgeGreenOptimizationSummary(req.runId, duplicateSuppressionEvents.length, result ? 1 : 0, 0, result ? 0 : 1, greenPolicy.snapshot(), suppressionDenials);
       } catch (optimizationErr: unknown) {
         console.error(`[agent-runtime] FG-9 optimization decision failed for run ${req.runId} (measurement above is unaffected)`, optimizationErr);
       }
@@ -5298,6 +5327,15 @@ export class AgentRuntime {
       canonicalArguments: parsedArgs,
       runtimeClassifiedReadOnly: isClassifiedReadOnlyCommand(toolName, parsedArgs),
     };
+    // R43: same external-mutation guard as the autonomous path — filesystem evidence only,
+    // no index is in scope here. Unprobeable workspace reads execute rather than replay.
+    const externalRead =
+      BROWSER_READ_ONLY_TOOLS.has(toolName)
+      || this.externalTools?.effectOf?.(toolName) === "network_read";
+    if (duplicateSupervisor && duplicateSupervisor.isReadOnly(duplicateIdentity) && !externalRead) {
+      duplicateIdentity.evidenceRequired = true;
+      duplicateIdentity.stateEvidence = this.suppressionStateEvidence(parsedArgs, undefined);
+    }
     if (duplicateSupervisor && duplicateSupervisor.isReadOnly(duplicateIdentity)) {
       const decision = this.efficiencyControls.duplicateSuppression ? duplicateSupervisor.classify(duplicateIdentity) : { action: "execute" as const };
       if (decision.action === "escalate") {
@@ -5659,6 +5697,42 @@ export class AgentRuntime {
 
   private validatePath(requestedPath: string): { valid: boolean; resolvedPath?: string; error?: string } {
     return resolveWithinWorkspace(this.workspacePath ?? "", requestedPath);
+  }
+
+  /**
+   * R43: bounded proof of the workspace state a read depends on, captured per tool call.
+   * A path argument gets its target's own mtime/size — one statSync, exact inside and outside
+   * the watcher debounce. Index-backed and root-scoped tools get the repository index
+   * generation plus the pending watcher count, so a filesystem event the index has not yet
+   * absorbed still invalidates a replay. No repository-wide hashing; O(1) per call.
+   */
+  private suppressionStateEvidence(
+    args: unknown,
+    intelligence: RepositoryIntelligence | undefined,
+  ): string | undefined {
+    const parts: string[] = [];
+    const pathArg =
+      typeof args === "object" && args !== null ? (args as Record<string, unknown>).path : undefined;
+    if (typeof pathArg === "string" && pathArg.length > 0) {
+      const resolved = this.validatePath(pathArg);
+      if (resolved.valid && resolved.resolvedPath) {
+        try {
+          const stats = fs.statSync(resolved.resolvedPath);
+          parts.push(`f:${stats.mtimeMs}:${stats.isDirectory() ? "d" : stats.size}`);
+        } catch {
+          parts.push("f:absent");
+        }
+      }
+    }
+    if (intelligence) {
+      try {
+        const status = intelligence.status();
+        parts.push(`i:${status.generation}:${status.graphGeneration}:${status.pendingExternalMutations ?? 0}`);
+      } catch {
+        // Index evidence unavailable — a missing index is weaker evidence, never an error.
+      }
+    }
+    return parts.length > 0 ? parts.join("|") : undefined;
   }
 
   private async executeReadFile(

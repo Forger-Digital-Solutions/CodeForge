@@ -438,6 +438,16 @@ export const ForgeGreenOptimizationSummarySchema = EventBase(
         preventedReplays: z.number().int().nonnegative(),
       })
       .optional(),
+    /** R43: suppression candidates denied on state-evidence mismatch — identity hashes only. */
+    suppressionDenials: z
+      .array(
+        z.object({
+          tool: z.string(),
+          identityKeyHash: z.string(),
+          stateEvidence: z.string().optional(),
+        }),
+      )
+      .optional(),
   }),
 );
 

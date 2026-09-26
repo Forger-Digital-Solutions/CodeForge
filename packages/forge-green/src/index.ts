@@ -133,6 +133,8 @@ export interface EfficiencyReceipt {
   toolOutputBytesAvoided?: number;
   /** FG-1C: duplicate read-only actions suppressed against unchanged state. */
   duplicateActionsSuppressed?: number;
+  /** R43: suppression candidates denied because workspace state evidence changed or was absent. */
+  suppressionEvidenceInvalidations?: number;
   /** FG-1C: bounded no-progress interruptions. */
   noProgressInterruptions?: number;
   /** FG-1D: canonical analysis cache outcomes. */
@@ -401,6 +403,7 @@ export class ForgeGreenAdvisor {
     providerCachedInputTokens?: number;
     toolOutputBytesAvoided?: number;
     duplicateActionsSuppressed?: number;
+    suppressionEvidenceInvalidations?: number;
     noProgressInterruptions?: number;
     canonicalCacheHits?: number;
     canonicalCacheMisses?: number;
@@ -427,6 +430,7 @@ export class ForgeGreenAdvisor {
       ...(typeof input.providerCachedInputTokens === "number" && input.providerCachedInputTokens > 0 ? { providerCachedInputTokens: input.providerCachedInputTokens } : {}),
       ...(typeof input.toolOutputBytesAvoided === "number" && input.toolOutputBytesAvoided > 0 ? { toolOutputBytesAvoided: input.toolOutputBytesAvoided } : {}),
       ...(typeof input.duplicateActionsSuppressed === "number" && input.duplicateActionsSuppressed > 0 ? { duplicateActionsSuppressed: input.duplicateActionsSuppressed } : {}),
+      ...(typeof input.suppressionEvidenceInvalidations === "number" && input.suppressionEvidenceInvalidations > 0 ? { suppressionEvidenceInvalidations: input.suppressionEvidenceInvalidations } : {}),
       ...(typeof input.noProgressInterruptions === "number" && input.noProgressInterruptions > 0 ? { noProgressInterruptions: input.noProgressInterruptions } : {}),
       ...(typeof input.canonicalCacheHits === "number" && input.canonicalCacheHits > 0 ? { canonicalCacheHits: input.canonicalCacheHits } : {}),
       ...(typeof input.canonicalCacheMisses === "number" && input.canonicalCacheMisses > 0 ? { canonicalCacheMisses: input.canonicalCacheMisses } : {}),

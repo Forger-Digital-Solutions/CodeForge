@@ -28,6 +28,11 @@ export interface DuplicateToolSuppressionEvent {
    * event compatibility but is accounted below as `replayedBytes`, never as `bytesAvoided`.
    */
   avoidedBytes: number | undefined;
+  /**
+   * R43: the state evidence that authorized this replay (file mtime/size, index generation —
+   * metadata, never content). Its presence records which proof channel bound the reuse.
+   */
+  stateEvidence?: string;
 }
 
 export interface BuildDuplicateToolReuseResult {

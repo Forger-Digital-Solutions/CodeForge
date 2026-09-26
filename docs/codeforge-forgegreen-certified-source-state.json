@@ -1,5 +1,5 @@
 {
-  "sourceStateId": "0192901843fc05e7cc2f9e18da67dc917780efff5e1183451d98ca32f5813822",
+  "sourceStateId": "f8c2031b8e69d2c6afcd95714b8f68c5b5c53be7e619a5844381ba598551718f",
   "surfaceVersion": "r42-forgegreen-selectivity-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
@@ -54,7 +54,7 @@
     "packages/benchmark/src/protected-acceptance.ts": "0c1538833083910b74c98e8261e02b212753721e",
     "packages/context/src/index.ts": "4c2569d6f73f15b6224fb1f931fde8976358e04e",
     "packages/context/src/planner.ts": "5cab4794355d06008e044ddd80ac1b560ec0f793",
-    "packages/forge-green/src/optimization-candidate-a.ts": "dd12afcef93c68b9f81e1e5d26b0f87cb3690ad4",
+    "packages/forge-green/src/optimization-candidate-a.ts": "67af82aaf7b9d20aac76238752c0532798a975a4",
     "packages/forge-green/src/optimization-candidates-shadow.ts": "a3d1f7b3a5a28d46eb127ce83770d1c292053507",
     "packages/forge-green/src/optimization-decision.ts": "940ab41951d0cae123e82decb8f9d4b0c2e40e05",
     "packages/forge-green/src/optimization-policy.ts": "53dee55244eb1dc5d5ae03a4a30d96ecad0362aa",
@@ -63,9 +63,9 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "f0127f72524d8f4631b0fdad3e37b80947336c03",
+    "packages/server/src/agent-runtime.ts": "3e065102b80d1469c98361a94df94c2f145fd7e0",
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
-    "packages/server/src/duplicate-suppression.ts": "20ea453a7c0233281e9c81b0842666103a73659a",
+    "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
     "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
@@ -1541,6 +1541,82 @@
       "regressionEvidence": "Targeted: packages/server test suite 222/222 including forgegreen-run-policy 10/10 and fg9 unsafe-mutating; tsc -b clean on server+forge-green. Full canonical recorded in docs/evidence/r42-production-stress/R42-REGRESSION.md.",
       "recertifiedAt": "2026-09-26",
       "sourceStateConstant": "R42_FORGEGREEN_SELECTIVITY_SOURCE_STATE"
+    },
+    {
+      "label": "R42 ForgeGreen selectivity source-state reconciliation",
+      "reason": "R42 adds a per-run selective optimization policy (ForgeGreenRunPolicy) that gates the certified controls by request signals and escalates toward baseline on quality-risk signals, plus a conservative no-replay mode in the duplicate classifier and a completed-response replay guard in model-request dedup. agent-runtime.ts and duplicate-suppression.ts changed inside the frozen set; forgegreen-run-policy.ts and model-execution-adapter.ts are added to the material surface because they now decide when optimization may act. No gate was weakened: evaluateCompletion remains the only completion authority, ForgeZero routing authority unchanged, and OFF reproduces the certified disabled arm byte-for-byte.",
+      "priorSourceStateId": "0192901843fc05e7cc2f9e18da67dc917780efff5e1183451d98ca32f5813822",
+      "priorSurfaceVersion": "r42-forgegreen-selectivity-v1",
+      "resultingSourceStateId": "0192901843fc05e7cc2f9e18da67dc917780efff5e1183451d98ca32f5813822",
+      "resultingSurfaceVersion": "r42-forgegreen-selectivity-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/forgegreen-run-policy.ts",
+          "change": "New material file: per-run ForgeGreen level resolution (FULL/CONSERVATIVE/OFF) from request signals with monotonic quality-risk escalation.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/model-execution-adapter.ts",
+          "change": "New material file: model-request dedup consults the run policy — CONSERVATIVE joins in-flight duplicates but never replays a completed response; escalation epoch folds into the dedupe key.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Run policy resolved per executeAgentRun; control call-sites consult it; escalations on unusable response, provider failover, and no-effect write.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/duplicate-suppression.ts",
+          "change": "classify(identity, {replay:false}) keeps the no-progress bound while never replaying a prior output.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/forge-green/src/index.ts",
+          "change": "runDeduplicated accepts completedReplay:false — in-flight join only, finished responses never served.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Targeted: packages/server test suite 222/222 including forgegreen-run-policy 10/10 and fg9 unsafe-mutating; tsc -b clean on server+forge-green. Full canonical recorded in docs/evidence/r42-production-stress/R42-REGRESSION.md.",
+      "recertifiedAt": "2026-09-26",
+      "sourceStateConstant": "R42_FORGEGREEN_SELECTIVITY_SOURCE_STATE"
+    },
+    {
+      "label": "R42 ForgeGreen selectivity source-state reconciliation",
+      "reason": "R42 adds a per-run selective optimization policy (ForgeGreenRunPolicy) that gates the certified controls by request signals and escalates toward baseline on quality-risk signals, plus a conservative no-replay mode in the duplicate classifier and a completed-response replay guard in model-request dedup. agent-runtime.ts and duplicate-suppression.ts changed inside the frozen set; forgegreen-run-policy.ts and model-execution-adapter.ts are added to the material surface because they now decide when optimization may act. No gate was weakened: evaluateCompletion remains the only completion authority, ForgeZero routing authority unchanged, and OFF reproduces the certified disabled arm byte-for-byte.",
+      "priorSourceStateId": "0192901843fc05e7cc2f9e18da67dc917780efff5e1183451d98ca32f5813822",
+      "priorSurfaceVersion": "r42-forgegreen-selectivity-v1",
+      "resultingSourceStateId": "f8c2031b8e69d2c6afcd95714b8f68c5b5c53be7e619a5844381ba598551718f",
+      "resultingSurfaceVersion": "r42-forgegreen-selectivity-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/forgegreen-run-policy.ts",
+          "change": "New material file: per-run ForgeGreen level resolution (FULL/CONSERVATIVE/OFF) from request signals with monotonic quality-risk escalation.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/model-execution-adapter.ts",
+          "change": "New material file: model-request dedup consults the run policy — CONSERVATIVE joins in-flight duplicates but never replays a completed response; escalation epoch folds into the dedupe key.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Run policy resolved per executeAgentRun; control call-sites consult it; escalations on unusable response, provider failover, and no-effect write.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/duplicate-suppression.ts",
+          "change": "classify(identity, {replay:false}) keeps the no-progress bound while never replaying a prior output.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/forge-green/src/index.ts",
+          "change": "runDeduplicated accepts completedReplay:false — in-flight join only, finished responses never served.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Targeted: packages/server test suite 222/222 including forgegreen-run-policy 10/10 and fg9 unsafe-mutating; tsc -b clean on server+forge-green. Full canonical recorded in docs/evidence/r42-production-stress/R42-REGRESSION.md.",
+      "recertifiedAt": "2026-09-26",
+      "sourceStateConstant": "R42_FORGEGREEN_SELECTIVITY_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R42 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, and R42 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
@@ -1549,11 +1625,11 @@
     "phase": "R42 ForgeGreen selectivity reconciliation",
     "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R42 surface so the fg11/fg12e provenance canaries certify the current tree.",
     "changedFiles": [
+      "packages/forge-green/src/optimization-candidate-a.ts",
       "packages/server/src/agent-runtime.ts",
-      "packages/server/src/forgegreen-run-policy.ts",
-      "packages/workflow/src/verification-service.ts"
+      "packages/server/src/duplicate-suppression.ts"
     ],
-    "priorSourceStateId": "897fd073419729e8ee459c21691df59da448ac6f443fe3f43c18a2ec391b4589",
+    "priorSourceStateId": "0192901843fc05e7cc2f9e18da67dc917780efff5e1183451d98ca32f5813822",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

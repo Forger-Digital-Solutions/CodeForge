@@ -841,10 +841,10 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent);
   }
 
-  emitForgeGreenOptimizationSummary(runId: string, candidatesConsidered: number, applied: number, proposed: number, skippedInsufficientEvidence: number, runPolicy?: ForgeGreenPolicySnapshot): void {
+  emitForgeGreenOptimizationSummary(runId: string, candidatesConsidered: number, applied: number, proposed: number, skippedInsufficientEvidence: number, runPolicy?: ForgeGreenPolicySnapshot, suppressionDenials?: { tool: string; identityKeyHash: string; stateEvidence?: string }[]): void {
     this.emitBestEffort({
       type: "forgegreen.optimization_summary",
-      payload: { runId, candidatesConsidered, applied, proposed, skippedInsufficientEvidence, ...(runPolicy ? { runPolicy } : {}) },
+      payload: { runId, candidatesConsidered, applied, proposed, skippedInsufficientEvidence, ...(runPolicy ? { runPolicy } : {}), ...(suppressionDenials && suppressionDenials.length > 0 ? { suppressionDenials } : {}) },
     } as WorkspaceEvent);
   }
 

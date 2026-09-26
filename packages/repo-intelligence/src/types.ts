@@ -382,6 +382,12 @@ export interface IndexStatus {
   createdAt?: string;
   updatedAt?: string;
   sizeBytes: number;
+  /**
+   * R43: filesystem events the watcher has observed but not yet refreshed into the index.
+   * Non-zero means the persisted generation may lag real workspace content — duplicate
+   * suppression treats this as unproven state and executes rather than replaying.
+   */
+  pendingExternalMutations?: number;
 }
 
 export interface RefreshResult {

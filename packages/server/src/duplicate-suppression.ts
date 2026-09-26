@@ -26,19 +26,40 @@ export interface DuplicateActionIdentity {
   /** Targeted workstream scope, so alpha never suppresses (or is suppressed by) beta. */
   workstreamScope?: string;
   policyVersion?: string;
+  /**
+   * R43: runtime-attached proof of the external state this read depends on — file mtime+size
+   * for path-bearing reads, index generation + pending-watcher count for index-backed tools.
+   * Captured at record time and again at classify time; a mismatch means the workspace changed
+   * without this run observing it (external edit, sibling workstream on a shared worktree,
+   * unwatched write inside the watcher debounce), so the prior output is not authoritative.
+   */
+  stateEvidence?: string;
+  /**
+   * Workspace-bound reads must carry state evidence when the runtime can produce it; an
+   * unevidenced workspace read is executed, never blindly replayed. External (non-workspace)
+   * reads leave this unset — their domain has no filesystem evidence channel.
+   */
+  evidenceRequired?: boolean;
 }
 
 export type DuplicateDecision =
   | { action: "execute" }
   | { action: "execute_retry_failed" }
-  | { action: "suppress"; reason: string; priorOutput: string; priorExecutionId: string }
+  | { action: "suppress"; reason: string; priorOutput: string; priorExecutionId: string; stateEvidence?: string }
   | { action: "escalate"; reason: string }
-  | { action: "execute"; suppressedDuplicate: true };
+  | { action: "execute"; suppressedDuplicate: true }
+  /** Replay denied because the recorded state evidence no longer matches — the read executes. */
+  | { action: "execute"; evidenceMismatch: true };
 
 export interface DuplicateSuppressionMetrics {
   duplicateActionsSuppressed: number;
   noProgressEscalations: number;
   noProgressReadSignals: number;
+  /**
+   * R43: suppression candidates denied because the state evidence changed or was required but
+   * absent — the workspace moved under the run without a tracked mutation. Executed, not replayed.
+   */
+  evidenceInvalidations: number;
 }
 
 interface DuplicateRecord {
@@ -46,6 +67,8 @@ interface DuplicateRecord {
   success?: boolean;
   priorOutput?: string;
   priorExecutionId?: string;
+  /** State evidence captured when the authoritative result was produced. */
+  stateEvidence?: string;
   /** Suppressions already issued for the current state version. */
   suppressionsAtState: number;
   /** Executions observed at the current state version. */
@@ -118,7 +141,7 @@ export class DuplicateActionSupervisor {
   private consecutiveNoEffectWrites = 0;
   private readonly records = new Map<string, DuplicateRecord>();
   private readonly readProgress = new Map<number, ReadProgressState>();
-  readonly metrics: DuplicateSuppressionMetrics = { duplicateActionsSuppressed: 0, noProgressEscalations: 0, noProgressReadSignals: 0 };
+  readonly metrics: DuplicateSuppressionMetrics = { duplicateActionsSuppressed: 0, noProgressEscalations: 0, noProgressReadSignals: 0, evidenceInvalidations: 0 };
 
   constructor(
     private readonly options: { maxTrackedIdentities?: number; workstreamScope?: string; policyVersion?: string; externalClassifier?: ExternalToolClassifier } = {},
@@ -185,6 +208,15 @@ export class DuplicateActionSupervisor {
       return { action: "execute" };
     }
     if (record.success === true) {
+      // R43: replay is only authoritative while the state the read observed is provably the
+      // state that exists now. Any asymmetry (changed evidence, or evidence required but
+      // missing on either side) executes the read — stale bytes are never replayed.
+      const evidenceAbsent = record.stateEvidence === undefined || identity.stateEvidence === undefined;
+      if ((!evidenceAbsent && record.stateEvidence !== identity.stateEvidence)
+        || (identity.evidenceRequired === true && evidenceAbsent)) {
+        this.metrics.evidenceInvalidations++;
+        return { action: "execute", evidenceMismatch: true };
+      }
       if (record.suppressionsAtState >= 1) {
         this.recordNoProgressInterruption();
         return {
@@ -202,6 +234,7 @@ export class DuplicateActionSupervisor {
         reason: "Identical read-only action against unchanged workspace state; prior authoritative result replayed without re-execution.",
         priorOutput: record.priorOutput ?? "",
         priorExecutionId: record.priorExecutionId ?? "",
+        stateEvidence: record.stateEvidence,
       };
     }
     // Prior result class at this state was a failure. Allow exactly one retry; a third
@@ -226,6 +259,7 @@ export class DuplicateActionSupervisor {
       success,
       priorOutput: output,
       priorExecutionId: executionId,
+      stateEvidence: identity.stateEvidence,
       suppressionsAtState: sameState && existing ? existing.suppressionsAtState : 0,
       attemptsAtState: sameState && existing ? existing.attemptsAtState + 1 : 1,
     });
