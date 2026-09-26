@@ -387,7 +387,7 @@ export class FreeFabric {
         break;
       }
       queued = {
-        reasonCodes: [...new Set([...(queued?.reasonCodes ?? []), this.quotaDomainReason(entry, decision.reason)])],
+        reasonCodes: [...new Set([...(queued?.reasonCodes ?? []), domainReason, ...(domainReason !== decision.reason ? [decision.reason] : [])])],
         nextAvailableAt: [queued?.nextAvailableAt, decision.nextAvailableAt].filter((v): v is string => v !== undefined).sort()[0],
       };
     }

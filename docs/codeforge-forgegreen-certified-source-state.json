@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "81cef21f706a32ed9a34db06f06566312d7bc2d53279f4a659142b51b1304fb7",
-  "surfaceVersion": "r35-backend-finalization-interim-v1",
+  "sourceStateId": "244e3eeac774a1976b073dfe22c616210ec79e4e491c5644d60ee9ced91d798e",
+  "surfaceVersion": "r37-intelligence-capacity-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -74,7 +74,7 @@
     "packages/workflow/src/diff-review.ts": "3cb34d3f7e6496781088b2ac7f0e5923fc1d3120",
     "packages/workflow/src/forge-verify.ts": "d134438dfde57de85c756cdd8aaab192f1d801e8",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
-    "packages/workflow/src/semantic-diff-review.ts": "7a854b990eb27c1f0aeed04c4d7ba73e06fc2b75",
+    "packages/workflow/src/semantic-diff-review.ts": "ad4308afb2b899921677a9aeb99d124aa91a84ee",
     "packages/workflow/src/types.ts": "fc0886656007832fba84a8b394570b4bc9ada7f7",
     "packages/workflow/src/verification-evidence-reuse.ts": "04048bdf9d932c307c45e7d8b44438f757ea8466",
     "packages/workflow/src/verification-reuse-cost-gate.ts": "3c3bc502921ef79a9496d762167f366e5589fd02",
@@ -1418,20 +1418,35 @@
       "regressionEvidence": "docs/evidence/r35-backend-finalization/; canonical vitest run recorded in R35-FINAL-REPORT.md.",
       "recertifiedAt": "2026-09-25",
       "sourceStateConstant": "CODEFORGE_R35_INTERIM_BACKEND_FINALIZATION_SOURCE_STATE_V1"
+    },
+    {
+      "label": "R37 intelligence-fabric source-state reconciliation",
+      "reason": "The certified surface last froze at r35-backend-finalization-interim-v1. R37 touched exactly one material file via commit 855f178 (ForgeVerify semantic hardening): semantic-diff-review now detects focused-test markers (.only/fit/fdescribe) so a narrowed suite cannot masquerade as green. This strengthens the certified detector's blocking surface — it removes no finding, weakens no gate; evaluateCompletion remains the only completion authority and ForgeZero routing authority is unchanged. The frozen set is re-issued over the reviewed content rather than ignoring the drift.",
+      "priorSourceStateId": "81cef21f706a32ed9a34db06f06566312d7bc2d53279f4a659142b51b1304fb7",
+      "priorSurfaceVersion": "r35-backend-finalization-interim-v1",
+      "resultingSourceStateId": "244e3eeac774a1976b073dfe22c616210ec79e4e491c5644d60ee9ced91d798e",
+      "resultingSurfaceVersion": "r37-intelligence-capacity-v1",
+      "changes": [
+        {
+          "file": "packages/workflow/src/semantic-diff-review.ts",
+          "change": "R37 ForgeVerify hardening: focused-test markers (it.only/test.only/describe.only/fit/fdescribe with title args) are blocking findings, so a suite-narrowing diff cannot evade semantic review. Existing findings unchanged.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "R37 campaign: canonical Vitest suite at the reviewed tree (3746+ pass, expected Postgres-environment skips, zero unexpected failures); focused semantic-diff suite 20/20 including the focused-test cases and the fit() helper false-positive control.",
+      "recertifiedAt": "2026-09-26",
+      "sourceStateConstant": "R37_INTELLIGENCE_CAPACITY_SOURCE_STATE"
     }
   ],
-  "generationNote": "This interim source-state ID is derived from the reviewed FG-8 through R35 material implementation surface by packages/forgegreen-campaign/src/source-state.ts. Historical R32, R33, R34 interim identities remain bound to their prior states; this is not final release certification.",
-  "recertifiedAt": "2026-09-25T12:42:41.404Z",
+  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, and R37 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
+  "recertifiedAt": "2026-09-26",
   "recertification": {
-    "phase": "R35 backend finalization surface",
-    "reason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification.",
+    "phase": "R37 intelligence-capacity reconciliation",
+    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R37 committed surface so the fg11/fg12e provenance canaries certify the current tree.",
     "changedFiles": [
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/src/workflow-service.ts",
-      "packages/sessions/src/persistence.ts",
-      "packages/server/src/turn-state-machine.ts"
+      "packages/workflow/src/semantic-diff-review.ts"
     ],
-    "priorSourceStateId": "62e9d8fc9ab6788ca1183a4e66080344c75abdf47581e65ab864e4255d915209",
+    "priorSourceStateId": "81cef21f706a32ed9a34db06f06566312d7bc2d53279f4a659142b51b1304fb7",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
