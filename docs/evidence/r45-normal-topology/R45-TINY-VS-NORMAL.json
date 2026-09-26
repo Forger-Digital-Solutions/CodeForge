@@ -1,0 +1,113 @@
+{
+  "at": "2026-09-26T22:36:31.416Z",
+  "source": [
+    "R45-TOPOLOGY-BENCHMARK.json",
+    "R45-LIVE-CORPUS.json"
+  ],
+  "comparison": {
+    "single-file-bug": {
+      "tiny": {
+        "calls": 3,
+        "status": "completed",
+        "byRole": {
+          "coder": 3
+        },
+        "coderPacket": true,
+        "coderEvidence": false,
+        "explorerPacket": false
+      },
+      "normal": {
+        "calls": 5,
+        "status": "completed",
+        "byRole": {
+          "explorer": 1,
+          "coder": 3,
+          "reviewer": 1
+        },
+        "coderPacket": false,
+        "coderEvidence": true,
+        "explorerPacket": true
+      },
+      "complex": {
+        "calls": 7,
+        "status": "completed",
+        "byRole": {
+          "explorer": 2,
+          "planner": 1,
+          "coder": 3,
+          "reviewer": 1
+        },
+        "coderPacket": false,
+        "coderEvidence": true,
+        "explorerPacket": true
+      }
+    },
+    "cross-file-rename": {
+      "tiny": {
+        "calls": 4,
+        "status": "completed",
+        "byRole": {
+          "coder": 4
+        },
+        "coderPacket": true,
+        "coderEvidence": false,
+        "explorerPacket": false
+      },
+      "normal": {
+        "calls": 6,
+        "status": "completed",
+        "byRole": {
+          "explorer": 1,
+          "coder": 4,
+          "reviewer": 1
+        },
+        "coderPacket": false,
+        "coderEvidence": true,
+        "explorerPacket": true
+      },
+      "complex": {
+        "calls": 8,
+        "status": "completed",
+        "byRole": {
+          "explorer": 2,
+          "planner": 1,
+          "coder": 4,
+          "reviewer": 1
+        },
+        "coderPacket": false,
+        "coderEvidence": true,
+        "explorerPacket": true
+      }
+    }
+  },
+  "callDelta": {
+    "singleFileBug": {
+      "normalVsTiny": 2,
+      "complexVsNormal": 2
+    },
+    "crossFileRename": {
+      "normalVsTiny": 2,
+      "complexVsNormal": 2
+    }
+  },
+  "liveCorpusNormal": {
+    "missions": 5,
+    "blocked": 5,
+    "rateLimited": 5,
+    "calls": [
+      9,
+      6,
+      6,
+      6,
+      6
+    ],
+    "explorerAdaptiveBudget": [
+      "10->5",
+      "10->4",
+      "10->10",
+      "10->4",
+      "10->4"
+    ]
+  },
+  "verdict": "Tiny trades the explorer+reviewer pair (2 calls) for a zero-call deterministic packet on the coder. On matched fixtures both verified complete: tiny=3-4 calls, normal=5-6 (+explorer evidence + reviewer pass), complex=7-8 (+2nd explorer + planner). In the live free window the adaptive normal path burned 6-9 calls before supply walls; the explorer narrowed its own budget on 4/5 missions and stopped at 2-5 turns vs the 8-turn pre-fix baseline. Tiny fits the narrowest free windows; normal stays the default where supply can serve ~6+ calls and the reviewer/ForgeVerify double-check is affordable."
+}
