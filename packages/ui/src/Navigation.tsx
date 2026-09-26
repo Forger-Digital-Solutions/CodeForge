@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { WorkItem } from "@codeforge/sessions";
+import FileExplorer from "./FileExplorer.js";
 import { presentSessionSummary, type RunTone } from "./run-lifecycle.js";
 
 export interface NavSessionSummary {
@@ -103,6 +104,10 @@ interface NavigationProps {
   onNavigateFiles?: () => void;
   onNavigateTasks?: () => void;
   currentNavView?: "tasks" | "files";
+  /** Workspace root for the Files view — absent when no project is open. */
+  workspacePath?: string;
+  /** Server http origin for the file tree ("" when the document is served by the API). */
+  apiBase?: string;
 }
 
 /** Compact CodeForge diamond/atom brand mark. */
@@ -169,6 +174,8 @@ export default function Navigation({
   onNavigateFiles,
   onNavigateTasks,
   currentNavView = "tasks",
+  workspacePath,
+  apiBase = "",
 }: NavigationProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -350,9 +357,13 @@ export default function Navigation({
             </>
           ) : (
             <div className="nav-files-view">
-              <div className="nav-empty" style={{ padding: "16px", textAlign: "center", color: "var(--cf-text-muted)" }}>
-                File tree view — connect to workspace to browse files
-              </div>
+              {workspacePath ? (
+                <FileExplorer rootPath={workspacePath} apiBase={apiBase} />
+              ) : (
+                <div className="nav-empty" style={{ padding: "16px", textAlign: "center", color: "var(--cf-text-muted)" }}>
+                  Open a project to browse its files
+                </div>
+              )}
             </div>
           )}
         </div>

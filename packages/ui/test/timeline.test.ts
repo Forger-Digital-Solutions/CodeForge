@@ -192,9 +192,121 @@ describe("buildTimeline — command executions fold into their owning run_comman
       ev("subagent.started", { agentId: "a1", role: "Explorer", task: "Map the routes" }),
       ev("subagent.completed", { agentId: "a1", result: "done" }),
     ]);
-    const rows = tl.filter((i) => i.kind === "system") as any[];
-    expect(rows[0].text).toContain("Spawned subagent · Explorer — Map the routes");
-    expect(rows[1].text).toBe("Explorer finished");
+    const rows = tl.filter((i) => i.kind === "subagent") as Array<Extract<(typeof tl)[number], { kind: "subagent" }>>;
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ agentId: "a1", role: "Explorer", task: "Map the routes", status: "completed", result: "done" });
+  });
+});
+
+describe("buildTimeline — streaming command lifecycle", () => {
+  it("reconstructs one live row from started → output → completed", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("turn.started", { turnId: "t1", userMessage: "run tests" }),
+      ev("command.started", { commandId: "c1", command: "npm test", workingDirectory: "G:/repo" }),
+      ev("command.output", { commandId: "c1", output: "running…\n", stream: "stdout" }),
+      ev("command.output", { commandId: "c1", output: "5 passed\n", stream: "stdout" }),
+      ev("command.completed", { commandId: "c1", exitCode: 0, durationMs: 4200 }),
+    ]);
+    expect(tl.map((i) => i.kind)).toEqual(["user", "command"]);
+    const cmd = tl[1] as Extract<(typeof tl)[number], { kind: "command" }>;
+    expect(cmd).toMatchObject({ command: "npm test", status: "completed", exitCode: 0, durationMs: 4200, workingDirectory: "G:/repo" });
+    expect(cmd.output).toBe("running…\n5 passed\n");
+  });
+
+  it("shows a running command as live, and marks nonzero exits failed", () => {
+    reset();
+    const running = buildTimeline([ev("command.started", { commandId: "c1", command: "vitest" })]);
+    expect((running[0] as any).status).toBe("running");
+    reset();
+    const failed = buildTimeline([
+      ev("command.started", { commandId: "c1", command: "vitest" }),
+      ev("command.completed", { commandId: "c1", exitCode: 1, durationMs: 900 }),
+    ]);
+    expect((failed[0] as any)).toMatchObject({ status: "failed", exitCode: 1 });
+  });
+
+  it("adopts the running run_command tool row in place instead of a second row", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("turn.started", { turnId: "t1", userMessage: "go" }),
+      ev("tool.execution_started", { turnId: "t1", toolCallId: "t1c", toolName: "run_command", argsJson: JSON.stringify({ command: "npm test" }) }),
+      ev("command.started", { commandId: "cmd1", command: "npm test" }),
+      ev("command.output", { commandId: "cmd1", output: "ok\n" }),
+      ev("command.completed", { commandId: "cmd1", exitCode: 0, durationMs: 100 }),
+    ]);
+    expect(tl.map((i) => i.kind)).toEqual(["user", "command"]);
+    expect((tl[1] as any).output).toBe("ok\n");
+  });
+});
+
+describe("buildTimeline — steering, capacity, and file changes", () => {
+  it("renders a steering message as a steer row", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("turn.started", { turnId: "t1", userMessage: "refactor auth" }),
+      ev("turn.steered", { turnId: "t1", steering: "keep the session store in memory" }),
+    ]);
+    const steer = tl.find((i) => i.kind === "steer") as any;
+    expect(steer.text).toBe("keep the session store in memory");
+  });
+
+  it("surfaces free-capacity waits as parked notices, not failures", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("turn.started", { turnId: "t1", userMessage: "go" }),
+      ev("eightbit.status", { event: "FREE_CAPACITY_WAIT", role: "agent", reasonCodes: ["ALL_ROUTES_BUSY"], accessibleText: "All free routes are busy — resuming when capacity frees" }),
+      ev("eightbit.status", { event: "ROUTE_ROTATED", role: "agent", reasonCodes: [], accessibleText: "On groq", selected: { providerId: "groq", modelId: "llama-3.3" } }),
+      ev("eightbit.status", { event: "CATALOG_SCAN_STARTED", role: "agent", reasonCodes: [], accessibleText: "scanning" }),
+    ]);
+    const notices = tl.filter((i) => i.kind === "notice") as Array<Extract<(typeof tl)[number], { kind: "notice" }>>;
+    expect(notices).toHaveLength(2);
+    expect(notices[0].notice).toBe("capacity_wait");
+    expect(notices[0].detail).toContain("busy");
+    expect(notices[1].notice).toBe("route_switch");
+    expect(notices[1].text).toContain("groq");
+  });
+
+  it("keeps subagent lifecycle states honest — queued, blocked, failed stay themselves", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("subagent.lifecycle", { agentId: "a1", role: "Coder", task: "Write module", state: "blocked", capsuleVersion: 1, reason: "VERIFY_FAILED" }),
+      ev("subagent.lifecycle", { agentId: "a2", role: "Scout", task: "Scan repo", state: "queued", capsuleVersion: 1 }),
+    ]);
+    const rows = tl.filter((i) => i.kind === "subagent") as Array<Extract<(typeof tl)[number], { kind: "subagent" }>>;
+    expect(rows[0].status).toBe("blocked");
+    expect(rows[1].status).toBe("queued");
+  });
+
+  it("threads progress and artifacts onto the worker's single row", () => {
+    reset();
+    const tl = buildTimeline([
+      ev("subagent.started", { agentId: "a1", role: "Coder", task: "Write module" }),
+      ev("subagent.progress", { agentId: "a1", message: "Writing parser", percent: 40 }),
+      ev("subagent.artifact_written", { agentId: "a1", artifact: { kind: "file", ref: "src/parser.ts", digest: "d", producerAgentId: "a1", createdAt: "2026-01-01T00:00:00Z" } }),
+      ev("subagent.failed", { agentId: "a1", error: "budget exhausted" }),
+    ]);
+    const row = tl.find((i) => i.kind === "subagent") as Extract<(typeof tl)[number], { kind: "subagent" }>;
+    expect(row.status).toBe("failed");
+    expect(row.progress).toBe("Writing parser");
+    expect(row.percent).toBe(40);
+    expect(row.artifacts).toEqual(["src/parser.ts"]);
+  });
+
+  it("tracks a proposed file change through applied and reverted", () => {
+    reset();
+    const applied = buildTimeline([
+      ev("file.change_proposed", { changeId: "ch1", path: "src/a.ts", changeType: "modified", additions: 4, deletions: 1, diff: "@@" }),
+      ev("file.change_applied", { changeId: "ch1", path: "src/a.ts" }),
+    ]);
+    const rowA = applied[0] as Extract<(typeof applied)[number], { kind: "file" }>;
+    expect(rowA).toMatchObject({ action: "modified", additions: 4, deletions: 1, detail: "applied" });
+    reset();
+    const reverted = buildTimeline([
+      ev("file.change_proposed", { changeId: "ch1", path: "src/a.ts", changeType: "modified", additions: 4, deletions: 1 }),
+      ev("file.change_reverted", { changeId: "ch1", path: "src/a.ts" }),
+    ]);
+    expect((reverted[0] as any).action).toBe("reverted");
   });
 });
 

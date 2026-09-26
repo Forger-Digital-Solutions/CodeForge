@@ -3,8 +3,11 @@ import type { WorkspaceEvent } from "@codeforge/protocol";
 import type { SessionRecord, WorkItem, TurnRecord } from "@codeforge/sessions";
 import FileExplorer from "./FileExplorer.js";
 import RunInspection from "./RunInspection.js";
-import { projectSessionChanges, projectSessionCommands, projectSessionVerification } from "./session-activity.js";
+import DiffViewer from "./DiffViewer.js";
+import { projectSessionChanges, projectSessionCommands, projectSessionVerification, projectSessionBrowserActivity, type SessionFileChange } from "./session-activity.js";
 import { displayAgentId, displayModelId } from "./error-copy.js";
+import { formatElapsed } from "./tool-activity.js";
+import { ActivityIcon } from "./activity-icons.js";
 
 function isWorkItemKind<K extends WorkItem["kind"]>(
   item: WorkItem,
@@ -28,21 +31,24 @@ interface InspectorProps {
   startFailure?: { code: string; message: string };
   /** Server http origin for FileExplorer — "" when the page itself is served by the API. */
   apiBase?: string;
+  /** Resizable pane width in px (drag handle in the app shell owns it). */
+  width?: number;
 }
 
 // "commands" (not "terminal") — this panel shows executed-command history, not an interactive
 // PTY. Naming it Terminal misrepresented the functionality; renamed for honesty (recovery brief).
-const TABS = ["changes", "run", "commands", "files", "evidence", "overview"];
+const TABS = ["changes", "run", "commands", "browser", "files", "evidence", "overview"];
 const TAB_LABELS: Record<string, string> = {
   changes: "Changes",
   run: "Run",
   commands: "Commands",
+  browser: "Browser",
   files: "Files",
   evidence: "Evidence",
   overview: "Overview",
 };
 
-export default function Inspector({ activeTab, onTabSelect, session, workItems, events = [], isRunning, statusLabel, workspacePath, activeTaskId, startFailure, apiBase = "" }: InspectorProps) {
+export default function Inspector({ activeTab, onTabSelect, session, workItems, events = [], isRunning, statusLabel, workspacePath, activeTaskId, startFailure, apiBase = "", width }: InspectorProps) {
   const safeTab = TABS.includes(activeTab) ? activeTab : "changes";
   const tabsRef = React.useRef<HTMLDivElement>(null);
   const [tabFade, setTabFade] = React.useState({ left: false, right: false });
@@ -66,6 +72,8 @@ export default function Inspector({ activeTab, onTabSelect, session, workItems, 
         return <RunInspection events={events} workItems={workItems} preferredRunId={activeTaskId} startFailure={startFailure} />;
       case "commands":
         return renderCommands(workItems, events, !isRunning);
+      case "browser":
+        return renderBrowser(events, !isRunning);
       case "files":
         return renderFiles(workspacePath, apiBase);
       case "evidence":
@@ -78,7 +86,7 @@ export default function Inspector({ activeTab, onTabSelect, session, workItems, 
   };
 
   return (
-    <aside className="workspace-inspector">
+    <aside className="workspace-inspector" style={width ? { width } : undefined}>
       <div className={`inspector-tabs${tabFade.left ? " can-scroll-left" : ""}${tabFade.right ? " can-scroll-right" : ""}`} ref={tabsRef}>
         {TABS.map((tab) => (
           <button
@@ -168,15 +176,32 @@ function renderChanges(workItems: WorkItem[], events: WorkspaceEvent[]) {
       </div>
       <div className="changes-list">
         {changes.map((c) => (
-          <div key={c.id} className="change-item">
-            <span className={`change-icon ${c.changeType === "created" ? "add" : c.changeType === "deleted" ? "delete" : "modify"}`}>
-              {c.changeType === "created" ? "+" : c.changeType === "deleted" ? "−" : "✎"}
-            </span>
-            <span className="change-path">{c.path}</span>
-            <span className="change-stats">+{c.additions} −{c.deletions}</span>
-          </div>
+          <ChangeItem key={c.id} change={c} />
         ))}
       </div>
+    </div>
+  );
+}
+
+/** A changed file with its diff a click away — the row stays compact, the patch is on demand. */
+function ChangeItem({ change }: { change: SessionFileChange }) {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <div className="change-item-wrap">
+      <button
+        type="button"
+        className={`change-item${change.diff ? " expandable" : ""}`}
+        onClick={() => change.diff && setOpen((v) => !v)}
+        aria-expanded={change.diff ? open : undefined}
+      >
+        <span className={`change-icon ${change.changeType === "created" ? "add" : change.changeType === "deleted" ? "delete" : "modify"}`}>
+          {change.changeType === "created" ? "+" : change.changeType === "deleted" ? "−" : "✎"}
+        </span>
+        <span className="change-path">{change.path}</span>
+        <span className="change-stats">+{change.additions} −{change.deletions}</span>
+        {change.diff && <span className="activity-caret" aria-hidden="true">{open ? "▾" : "▸"}</span>}
+      </button>
+      {open && change.diff && <DiffViewer diff={change.diff} fileName={change.path} initialOpen />}
     </div>
   );
 }
@@ -189,20 +214,43 @@ function renderCommands(workItems: WorkItem[], events: WorkspaceEvent[], session
   return (
     <div>
       {commands.map((c) => (
-        <div key={c.id} className="terminal-entry">
+        <div key={c.id} className={`terminal-entry${c.status === "running" ? " running" : ""}`}>
           <div className="terminal-cmd">
             <span className={`terminal-cmd-icon ${c.status === "running" ? "running" : c.status === "failed" ? "error" : c.status === "interrupted" ? "error" : "success"}`}>
               {c.status === "running" ? "●" : c.status === "failed" ? "✕" : c.status === "interrupted" ? "◌" : "✓"}
             </span>
-            <span>{c.command || "(command not recorded)"}</span>
-            {c.status === "interrupted" && <span style={{ marginLeft: "auto", color: "var(--cf-text-muted)" }}>did not finish</span>}
-            {c.status !== "interrupted" && c.durationMs !== undefined && <span style={{ marginLeft: "auto", color: "var(--cf-text-muted)" }}>{c.durationMs}ms</span>}
+            <span className="terminal-cmd-text">{c.command || "(command not recorded)"}</span>
+            {c.status === "running" && <span className="terminal-cmd-meta">running</span>}
+            {c.status === "interrupted" && <span className="terminal-cmd-meta">did not finish</span>}
+            {c.status !== "interrupted" && c.durationMs !== undefined && <span className="terminal-cmd-meta">{formatElapsed(c.durationMs)}</span>}
           </div>
+          {c.workingDirectory && <div className="terminal-cwd">{c.workingDirectory}</div>}
           {c.output && (
             <div className="command-block">
               <div className="command-output" style={{ maxHeight: 150, overflow: "auto" }}>{c.output}</div>
             </div>
           )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Browser tool activity — what the agent browsed, in order. Not a live viewport (none exists). */
+function renderBrowser(events: WorkspaceEvent[], sessionTerminal: boolean) {
+  const actions = projectSessionBrowserActivity(events, sessionTerminal);
+  if (actions.length === 0) {
+    return <div className="panel-empty">No browser activity yet. When a run browses the web, each action lands here.</div>;
+  }
+  return (
+    <div className="browser-activity-list">
+      {actions.map((a) => (
+        <div key={a.id} className={`browser-activity ${a.status}`}>
+          <ActivityIcon kind={a.status === "failed" ? "error" : a.status === "blocked" ? "warning" : "browser"} state={a.status === "running" ? "active" : a.status === "completed" ? "completed" : "failed"} size={14} />
+          <span className="browser-activity-tool">{a.tool.replace(/^browser_/, "")}</span>
+          {a.target && <span className="browser-activity-target" title={a.target}>{a.target}</span>}
+          <span className="browser-activity-status">{a.status === "completed" ? "done" : a.status}</span>
+          {a.detail && <div className="browser-activity-detail">{a.detail}</div>}
         </div>
       ))}
     </div>

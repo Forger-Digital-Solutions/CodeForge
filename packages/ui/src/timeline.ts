@@ -6,10 +6,13 @@ import { describeReasonCode } from "./run-lifecycle.js";
  * A single rendered item in the conversation timeline, reconstructed from the event stream.
  * Ordering is chronological (by the seq at which the item first appeared), so assistant prose
  * and tool activity interleave correctly: user → assistant → tool → tool → assistant → …
+ *
+ * `ts` on every item is the source event's timestamp — grouping and elapsed-time surfaces use
+ * it; it is never the ordering key (seq is).
  */
 export type TimelineItem =
-  | { kind: "user"; id: string; seq: number; turnId: string; text: string }
-  | { kind: "assistant"; id: string; seq: number; turnId: string; messageId: string; text: string; streaming: boolean }
+  | { kind: "user"; id: string; seq: number; turnId: string; text: string; ts: string }
+  | { kind: "assistant"; id: string; seq: number; turnId: string; messageId: string; text: string; streaming: boolean; ts: string }
   | {
       kind: "tool";
       id: string;
@@ -23,11 +26,73 @@ export type TimelineItem =
       error?: string;
       /** What the file operation this call performed reported ("28 lines", "written"). */
       fileDetail?: string;
+      ts: string;
     }
-  | { kind: "system"; id: string; seq: number; turnId: string; text: string }
-  | { kind: "phase"; id: string; seq: number; turnId?: string; phase: "testing" | "repairing" | "reviewing" | "outcome"; text: string; detail?: string }
-  | { kind: "file"; id: string; seq: number; turnId?: string; path: string; action: "read" | "written"; detail?: string }
-  | { kind: "command"; id: string; seq: number; turnId?: string; command: string; exitCode: number; output?: string };
+  | { kind: "system"; id: string; seq: number; turnId: string; text: string; ts: string }
+  | { kind: "phase"; id: string; seq: number; turnId?: string; phase: "testing" | "repairing" | "reviewing" | "outcome"; text: string; detail?: string; ts: string }
+  | {
+      kind: "file";
+      id: string;
+      seq: number;
+      turnId?: string;
+      path: string;
+      action: "read" | "written" | "created" | "modified" | "deleted" | "reverted";
+      detail?: string;
+      additions?: number;
+      deletions?: number;
+      diff?: string;
+      ts: string;
+    }
+  | {
+      kind: "command";
+      id: string;
+      seq: number;
+      turnId?: string;
+      command: string;
+      /** Absent while the command is still streaming. */
+      exitCode?: number;
+      output?: string;
+      status: "running" | "completed" | "failed";
+      workingDirectory?: string;
+      durationMs?: number;
+      ts: string;
+    }
+  | {
+      kind: "steer";
+      id: string;
+      seq: number;
+      turnId: string;
+      text: string;
+      ts: string;
+    }
+  | {
+      kind: "subagent";
+      id: string;
+      seq: number;
+      turnId?: string;
+      agentId: string;
+      role: string;
+      task: string;
+      status: "queued" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled";
+      /** Latest progress line the worker reported; full history lives in progressLog. */
+      progress?: string;
+      percent?: number;
+      progressLog: string[];
+      result?: string;
+      error?: string;
+      artifacts: string[];
+      ts: string;
+    }
+  | {
+      kind: "notice";
+      id: string;
+      seq: number;
+      turnId?: string;
+      notice: "capacity_wait" | "route_switch" | "checkpoint";
+      text: string;
+      detail?: string;
+      ts: string;
+    };
 
 /**
  * Reconstruct the ordered conversation timeline from a session's workspace events.
@@ -40,6 +105,12 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
   const items: TimelineItem[] = [];
   const assistantByMsg = new Map<string, Extract<TimelineItem, { kind: "assistant" }>>();
   const toolByCall = new Map<string, Extract<TimelineItem, { kind: "tool" }>>();
+  /** Live command rows by commandId — command.started/output/completed join onto one row. */
+  const commandById = new Map<string, Extract<TimelineItem, { kind: "command" }>>();
+  /** One row per delegated worker — started/progress/lifecycle/terminal all update it. */
+  const subagentById = new Map<string, Extract<TimelineItem, { kind: "subagent" }>>();
+  /** file.change_* records by changeId so apply/revert updates the proposal row. */
+  const fileChangeById = new Map<string, Extract<TimelineItem, { kind: "file" }>>();
   const seenUserTurns = new Set<string>();
   // Track the last open assistant message per turn for delta fallback (no messageId case).
   const lastOpenMsgByTurn = new Map<string, string>();
@@ -49,12 +120,41 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
   let outcomeShown = false;
   const workflowTurns = new Set<string>();
 
-  const ensureAssistant = (turnId: string, messageId: string, seq: number): Extract<TimelineItem, { kind: "assistant" }> => {
+  const ensureAssistant = (turnId: string, messageId: string, seq: number, ts: string): Extract<TimelineItem, { kind: "assistant" }> => {
     let item = assistantByMsg.get(messageId);
     if (!item) {
-      item = { kind: "assistant", id: `assistant-${messageId}`, seq, turnId, messageId, text: "", streaming: true };
+      item = { kind: "assistant", id: `assistant-${messageId}`, seq, turnId, messageId, text: "", streaming: true, ts };
       assistantByMsg.set(messageId, item);
       lastOpenMsgByTurn.set(turnId, messageId);
+      items.push(item);
+    }
+    return item;
+  };
+
+  /**
+   * The command row for `commandId`, creating it when an output/completed record is the first
+   * thing seen (older producers emitted results without a start record).
+   */
+  const ensureCommand = (commandId: string, seq: number, ts: string): Extract<TimelineItem, { kind: "command" }> => {
+    let item = commandById.get(commandId);
+    if (!item) {
+      item = { kind: "command", id: `cmd-${commandId}`, seq, command: "", status: "running", ts };
+      commandById.set(commandId, item);
+      items.push(item);
+    }
+    return item;
+  };
+
+  /** The live worker row for `agentId` — created on the first event that names it. */
+  const ensureSubagent = (agentId: string, seq: number, ts: string): Extract<TimelineItem, { kind: "subagent" }> => {
+    let item = subagentById.get(agentId);
+    if (!item) {
+      item = {
+        kind: "subagent", id: `subagent-${agentId}`, seq, agentId,
+        role: subagentRoles.get(agentId) ?? "subagent", task: "", status: "running",
+        progressLog: [], artifacts: [], ts,
+      };
+      subagentById.set(agentId, item);
       items.push(item);
     }
     return item;
@@ -70,32 +170,37 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
           // the phase strip and grouped activity carry that meaning; a transcript
           // row per dispatch is event spam, not conversation.
           if (p.origin !== "workflow") {
-            items.push({ kind: "user", id: `user-${p.turnId}`, seq: e.seq, turnId: p.turnId, text: p.userMessage });
+            items.push({ kind: "user", id: `user-${p.turnId}`, seq: e.seq, turnId: p.turnId, text: p.userMessage, ts: e.timestamp });
           } else {
             workflowTurns.add(p.turnId);
           }
         }
         break;
       }
+      case "turn.steered": {
+        const p = e.payload as { turnId: string; steering: string };
+        items.push({ kind: "steer", id: `steer-${e.seq}`, seq: e.seq, turnId: p.turnId, text: p.steering, ts: e.timestamp });
+        break;
+      }
       case "workflow.verification_completed": {
         const p = e.payload as { attempt: number; passed: number; failed: number; skipped: number };
         const detail = `${p.passed} passed${p.failed > 0 ? ` · ${p.failed} failed` : ""}${p.skipped > 0 ? ` · ${p.skipped} skipped` : ""}`;
-        items.push({ kind: "phase", id: `verify-${e.seq}`, seq: e.seq, phase: "testing", text: `Verification · attempt ${p.attempt}`, detail });
+        items.push({ kind: "phase", id: `verify-${e.seq}`, seq: e.seq, phase: "testing", text: `Verification · attempt ${p.attempt}`, detail, ts: e.timestamp });
         break;
       }
       case "workflow.repair_attempted": {
         const p = e.payload as { attempt: number; summary?: string };
-        items.push({ kind: "phase", id: `repair-${e.seq}`, seq: e.seq, phase: "repairing", text: `Repairing verification failure · attempt ${p.attempt}`, detail: p.summary });
+        items.push({ kind: "phase", id: `repair-${e.seq}`, seq: e.seq, phase: "repairing", text: `Repairing verification failure · attempt ${p.attempt}`, detail: p.summary, ts: e.timestamp });
         break;
       }
       case "workflow.review_completed": {
         const p = e.payload as { approved: boolean; findings?: unknown[]; diffCount?: number };
-        items.push({ kind: "phase", id: `review-${e.seq}`, seq: e.seq, phase: "reviewing", text: "Review", detail: `${p.approved ? "approved" : "findings"}${p.findings?.length ? ` · ${p.findings.length} findings` : ""}` });
+        items.push({ kind: "phase", id: `review-${e.seq}`, seq: e.seq, phase: "reviewing", text: "Review", detail: `${p.approved ? "approved" : "findings"}${p.findings?.length ? ` · ${p.findings.length} findings` : ""}`, ts: e.timestamp });
         break;
       }
       case "workflow.completion_decided": {
         const p = e.payload as { outcome: string; rationale?: string };
-        items.push({ kind: "phase", id: `outcome-${e.seq}`, seq: e.seq, phase: "outcome", text: p.outcome === "completed" ? "Done" : p.outcome === "blocked" ? "Blocked" : "Failed", detail: humanizeOutcomeRationale(p.outcome, p.rationale) });
+        items.push({ kind: "phase", id: `outcome-${e.seq}`, seq: e.seq, phase: "outcome", text: p.outcome === "completed" ? "Done" : p.outcome === "blocked" ? "Blocked" : "Failed", detail: humanizeOutcomeRationale(p.outcome, p.rationale), ts: e.timestamp });
         outcomeShown = true;
         break;
       }
@@ -108,14 +213,14 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
         // The classified sentence is already owner-aware; humanizeError would re-map "rate limited"
         // inside a managed-free message to generic BYOK wording.
         const detail = p.failure?.message ?? humanizeError(p.error ?? "The task could not be completed.");
-        items.push({ kind: "phase", id: `turn-failed-${p.turnId}-${e.seq}`, seq: e.seq, turnId: p.turnId, phase: "outcome", text: "Failed", detail });
+        items.push({ kind: "phase", id: `turn-failed-${p.turnId}-${e.seq}`, seq: e.seq, turnId: p.turnId, phase: "outcome", text: "Failed", detail, ts: e.timestamp });
         break;
       }
       case "turn.cancelled": {
         const p = e.payload as { turnId: string; reason?: string };
         if (workflowTurns.has(p.turnId)) break;
         if (outcomeShown) { outcomeShown = false; break; }
-        items.push({ kind: "phase", id: `turn-cancelled-${p.turnId}-${e.seq}`, seq: e.seq, turnId: p.turnId, phase: "outcome", text: "Stopped", detail: describeTurnStop(p.reason) });
+        items.push({ kind: "phase", id: `turn-cancelled-${p.turnId}-${e.seq}`, seq: e.seq, turnId: p.turnId, phase: "outcome", text: "Stopped", detail: describeTurnStop(p.reason), ts: e.timestamp });
         break;
       }
       case "turn.completed": {
@@ -125,24 +230,24 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
       }
       case "execution.start_failed": {
         const p = e.payload as { requestId: string; code: string; message: string };
-        items.push({ kind: "phase", id: `start-failed-${p.requestId}-${e.seq}`, seq: e.seq, phase: "outcome", text: "Failed", detail: humanizeError(p.message ?? p.code) });
+        items.push({ kind: "phase", id: `start-failed-${p.requestId}-${e.seq}`, seq: e.seq, phase: "outcome", text: "Failed", detail: humanizeError(p.message ?? p.code), ts: e.timestamp });
         break;
       }
       case "assistant.message.started": {
         const p = e.payload;
-        ensureAssistant(p.turnId, p.messageId, e.seq);
+        ensureAssistant(p.turnId, p.messageId, e.seq, e.timestamp);
         break;
       }
       case "text.delta": {
         const p = e.payload as { turnId: string; delta: string; messageId?: string };
         const messageId = p.messageId ?? lastOpenMsgByTurn.get(p.turnId) ?? `auto-${p.turnId}`;
-        const item = ensureAssistant(p.turnId, messageId, e.seq);
+        const item = ensureAssistant(p.turnId, messageId, e.seq, e.timestamp);
         item.text += p.delta;
         break;
       }
       case "assistant.message.completed": {
         const p = e.payload;
-        const item = ensureAssistant(p.turnId, p.messageId, e.seq);
+        const item = ensureAssistant(p.turnId, p.messageId, e.seq, e.timestamp);
         item.text = p.text; // authoritative final text (survives reload without deltas)
         item.streaming = false;
         lastOpenMsgByTurn.delete(p.turnId);
@@ -169,6 +274,7 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
           toolName: p.toolName,
           status: "running",
           argsJson: p.argsJson,
+          ts: e.timestamp,
         };
         toolByCall.set(p.toolCallId, item);
         items.push(item);
@@ -211,7 +317,7 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
           if (detail) owner.fileDetail = detail;
           break;
         }
-        items.push({ kind: "file", id: `file-${p.fileCallId}`, seq: e.seq, path: p.path, action: "read", detail });
+        items.push({ kind: "file", id: `file-${p.fileCallId}`, seq: e.seq, path: p.path, action: "read", detail, ts: e.timestamp });
         break;
       }
       case "file.written": {
@@ -221,7 +327,75 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
           owner.fileDetail = "written";
           break;
         }
-        items.push({ kind: "file", id: `file-${p.fileCallId}`, seq: e.seq, path: p.path, action: "written" });
+        items.push({ kind: "file", id: `file-${p.fileCallId}`, seq: e.seq, path: p.path, action: "written", ts: e.timestamp });
+        break;
+      }
+      case "file.change_proposed": {
+        const p = e.payload as { changeId: string; path: string; changeType: "created" | "modified" | "deleted"; additions: number; deletions: number; description?: string; diff?: string };
+        const owner = runningToolForPath(toolByCall, p.path, "written");
+        if (owner) {
+          // The write tool row owns this change; carry the diff onto it so Changes stays the source of truth.
+          owner.fileDetail = p.changeType;
+          break;
+        }
+        const item: Extract<TimelineItem, { kind: "file" }> = {
+          kind: "file", id: `change-${p.changeId}`, seq: e.seq, path: p.path, action: p.changeType,
+          detail: p.description, additions: p.additions, deletions: p.deletions, diff: p.diff, ts: e.timestamp,
+        };
+        fileChangeById.set(p.changeId, item);
+        items.push(item);
+        break;
+      }
+      case "file.change_applied": {
+        const p = e.payload as { changeId: string; path: string };
+        const item = fileChangeById.get(p.changeId);
+        if (item && item.action !== "reverted") item.detail = "applied";
+        else if (!item) items.push({ kind: "file", id: `change-${p.changeId}`, seq: e.seq, path: p.path, action: "written", ts: e.timestamp });
+        break;
+      }
+      case "file.change_reverted": {
+        const p = e.payload as { changeId: string; path: string };
+        const item = fileChangeById.get(p.changeId);
+        if (item) {
+          item.action = "reverted";
+          item.detail = "reverted";
+        } else {
+          items.push({ kind: "file", id: `change-${p.changeId}`, seq: e.seq, path: p.path, action: "reverted", detail: "reverted", ts: e.timestamp });
+        }
+        break;
+      }
+      case "command.started": {
+        const p = e.payload as { commandId: string; command: string; workingDirectory?: string };
+        // The run_command tool row for this command is redundant — the live command card is the
+        // richer presentation, so it adopts the tool row's position in the feed.
+        const owner = runningToolForCommand(toolByCall, p.command);
+        if (owner) {
+          const item: Extract<TimelineItem, { kind: "command" }> = {
+            kind: "command", id: `cmd-${p.commandId}`, seq: owner.seq, turnId: owner.turnId,
+            command: p.command, status: "running", workingDirectory: p.workingDirectory, ts: e.timestamp,
+          };
+          items.splice(items.indexOf(owner), 1, item);
+          toolByCall.delete(owner.toolCallId);
+          commandById.set(p.commandId, item);
+          break;
+        }
+        const item = ensureCommand(p.commandId, e.seq, e.timestamp);
+        item.command = p.command;
+        item.workingDirectory = p.workingDirectory;
+        break;
+      }
+      case "command.output": {
+        const p = e.payload as { commandId: string; output: string; stream?: "stdout" | "stderr" };
+        const item = ensureCommand(p.commandId, e.seq, e.timestamp);
+        item.output = (item.output ?? "") + p.output;
+        break;
+      }
+      case "command.completed": {
+        const p = e.payload as { commandId: string; exitCode: number; durationMs: number };
+        const item = ensureCommand(p.commandId, e.seq, e.timestamp);
+        item.exitCode = p.exitCode;
+        item.durationMs = p.durationMs;
+        item.status = p.exitCode === 0 ? "completed" : "failed";
         break;
       }
       case "command.executed": {
@@ -230,41 +404,94 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
         // command again as a second row reads as two commands. The command card is the richer
         // presentation, so the tool row is replaced in place — its seq keeps the slot in order.
         const owner = runningToolForCommand(toolByCall, p.command);
+        const commandItem: Extract<TimelineItem, { kind: "command" }> = {
+          kind: "command",
+          id: `cmd-${p.commandId}`,
+          seq: owner?.seq ?? e.seq,
+          turnId: owner?.turnId,
+          command: p.command,
+          exitCode: p.exitCode,
+          output: p.output,
+          status: p.exitCode === 0 ? "completed" : "failed",
+          ts: e.timestamp,
+        };
         if (owner) {
-          const commandItem: Extract<TimelineItem, { kind: "command" }> = {
-            kind: "command",
-            id: `cmd-${p.commandId}`,
-            seq: owner.seq,
-            turnId: owner.turnId,
-            command: p.command,
-            exitCode: p.exitCode,
-            output: p.output,
-          };
           items.splice(items.indexOf(owner), 1, commandItem);
           toolByCall.delete(owner.toolCallId);
-          break;
+        } else {
+          items.push(commandItem);
         }
-        items.push({ kind: "command", id: `cmd-${p.commandId}`, seq: e.seq, command: p.command, exitCode: p.exitCode, output: p.output });
+        commandById.set(p.commandId, commandItem);
         break;
       }
-      // Subagents do real work inside a run — the RUN inspector has the full tree, but the
-      // conversation should at least say one was spawned and how it ended.
+      // One row per delegated worker: started/progress/lifecycle/terminal all update it in place,
+      // so parallel work reads as a small set of live agents rather than an event dump.
       case "subagent.started": {
         const p = e.payload as { agentId: string; role: string; task: string };
         subagentRoles.set(p.agentId, p.role);
-        items.push({ kind: "system", id: `subagent-${p.agentId}`, seq: e.seq, turnId: p.agentId, text: `Spawned subagent · ${p.role} — ${p.task}` });
+        const item = ensureSubagent(p.agentId, e.seq, e.timestamp);
+        item.role = p.role;
+        item.task = displayableSubagentTask(p.task);
+        item.status = "running";
+        break;
+      }
+      case "subagent.progress": {
+        const p = e.payload as { agentId: string; message: string; percent?: number };
+        const item = ensureSubagent(p.agentId, e.seq, e.timestamp);
+        item.progress = p.message;
+        if (p.percent !== undefined) item.percent = p.percent;
+        if (item.progressLog[item.progressLog.length - 1] !== p.message) item.progressLog.push(p.message);
+        if (item.progressLog.length > 40) item.progressLog.splice(0, item.progressLog.length - 40);
+        break;
+      }
+      case "subagent.lifecycle": {
+        const p = e.payload as { agentId: string; role: string; task: string; state: string; reason?: string };
+        const item = ensureSubagent(p.agentId, e.seq, e.timestamp);
+        subagentRoles.set(p.agentId, p.role);
+        item.role = p.role;
+        item.task = displayableSubagentTask(p.task);
+        item.status = workerTimelineStatus(p.state);
+        if (p.reason && (item.status === "blocked" || item.status === "failed")) {
+          item.error = humanizeBlockReason(p.reason) ?? humanizeError(p.reason);
+        }
+        break;
+      }
+      case "subagent.artifact_written": {
+        const p = e.payload as { agentId: string; artifact: { ref: string } };
+        const item = ensureSubagent(p.agentId, e.seq, e.timestamp);
+        if (!item.artifacts.includes(p.artifact.ref)) item.artifacts.push(p.artifact.ref);
         break;
       }
       case "subagent.completed": {
         const p = e.payload as { agentId: string; result?: string };
-        const role = subagentRoles.get(p.agentId) ?? "subagent";
-        items.push({ kind: "system", id: `subagent-done-${p.agentId}`, seq: e.seq, turnId: p.agentId, text: `${role} finished` });
+        const item = ensureSubagent(p.agentId, e.seq, e.timestamp);
+        item.status = "completed";
+        item.result = p.result;
         break;
       }
       case "subagent.failed": {
         const p = e.payload as { agentId: string; error: string };
-        const role = subagentRoles.get(p.agentId) ?? "subagent";
-        items.push({ kind: "system", id: `subagent-failed-${p.agentId}`, seq: e.seq, turnId: p.agentId, text: `${role} failed — ${humanizeBlockReason(p.error) ?? humanizeError(p.error)}` });
+        const item = ensureSubagent(p.agentId, e.seq, e.timestamp);
+        item.status = "failed";
+        item.error = humanizeBlockReason(p.error) ?? humanizeError(p.error);
+        break;
+      }
+      case "eightbit.status": {
+        const p = e.payload as { event: string; selected?: { providerId: string; modelId: string }; reasonCodes: string[]; accessibleText: string };
+        // Capacity waits and route switches are the honest "why nothing is moving" story — a quiet
+        // notice row, never a failure. Steady-state catalog noise stays out of the feed.
+        if (p.event === "FREE_CAPACITY_WAIT") {
+          items.push({ kind: "notice", id: `notice-${e.seq}`, seq: e.seq, notice: "capacity_wait", text: "Waiting for free capacity", detail: p.accessibleText || undefined, ts: e.timestamp });
+        } else if (p.event === "ROUTE_ROTATED" && p.selected) {
+          items.push({ kind: "notice", id: `notice-${e.seq}`, seq: e.seq, notice: "route_switch", text: `Switched to ${p.selected.providerId}/${p.selected.modelId}`, detail: p.accessibleText || undefined, ts: e.timestamp });
+        } else if (p.event === "NO_ELIGIBLE_FREE_MODEL") {
+          items.push({ kind: "notice", id: `notice-${e.seq}`, seq: e.seq, notice: "capacity_wait", text: "No free route available", detail: p.accessibleText || undefined, ts: e.timestamp });
+        }
+        break;
+      }
+      case "checkpoint.created": {
+        const p = e.payload as { checkpointId: string; label: string; fileCount: number };
+        items.push({ kind: "notice", id: `checkpoint-${p.checkpointId}`, seq: e.seq, notice: "checkpoint", text: p.label, detail: `${p.fileCount} file${p.fileCount === 1 ? "" : "s"}`, ts: e.timestamp });
         break;
       }
       default: {
@@ -274,7 +501,7 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
         const workstreamId = (e as unknown as { workstreamId?: string }).workstreamId;
         const payload = e.payload as Record<string, unknown>;
         const system = (text: string, detail?: string) =>
-          items.push({ kind: "system", id: `${type}-${workstreamId ?? "run"}-${e.seq}`, seq: e.seq, turnId: workstreamId ?? "parallel", text: detail ? `${text} — ${detail}` : text });
+          items.push({ kind: "system", id: `${type}-${workstreamId ?? "run"}-${e.seq}`, seq: e.seq, turnId: workstreamId ?? "parallel", text: detail ? `${text} — ${detail}` : text, ts: e.timestamp });
         switch (type) {
           case "parallel.plan.validated": {
             const order = Array.isArray(payload.order) ? payload.order.length : undefined;
@@ -366,6 +593,42 @@ function runningToolForPath(
 
 function normalizePath(p: string): string {
   return p.replace(/\\/g, "/").replace(/^\.\//, "").toLowerCase();
+}
+
+/**
+ * The backend's worker lifecycle state vocabulary mapped onto the feed's subagent row states.
+ * queued/waiting/blocked stay visible as themselves — collapsing them into "running" would lie
+ * about a parked worker the way the lifecycle bar refuses to.
+ */
+function workerTimelineStatus(state: string): Extract<TimelineItem, { kind: "subagent" }>["status"] {
+  switch (state) {
+    case "created":
+    case "queued":
+      return "queued";
+    case "starting":
+    case "running":
+    case "recovering":
+      return "running";
+    case "waiting":
+      return "waiting";
+    case "blocked":
+      return "blocked";
+    case "completed":
+      return "completed";
+    case "cancelled":
+      return "cancelled";
+    default:
+      return "failed";
+  }
+}
+
+/**
+ * Worker `task` fields sometimes carry internal correlation ids instead of assignment prose
+ * (mirrors `displayableAgentTask` in run-inspection) — those stay out of the primary label.
+ */
+function displayableSubagentTask(task: unknown): string {
+  if (typeof task !== "string" || task.length === 0) return "";
+  return /^(plan-|task-|[0-9a-f]{8}-[0-9a-f]{4}-)/i.test(task) ? "" : task;
 }
 
 /**

@@ -72,8 +72,8 @@ export default function FileExplorer({ rootPath, onFileSelect, refreshKey, apiBa
 
   const renderNode = (node: FileNode, depth: number = 0) => {
     const indent = depth * 16;
-    const icon = node.type === "directory" 
-      ? (node.expanded ? "📂" : "📁") 
+    const icon = node.type === "directory"
+      ? (node.expanded ? "▾" : "▸")
       : getFileIcon(node.name);
     
     return (
@@ -116,8 +116,8 @@ export default function FileExplorer({ rootPath, onFileSelect, refreshKey, apiBa
     <div className="file-explorer">
       <div className="file-explorer-header">
         <span className="explorer-title">Files</span>
-        <button className="explorer-refresh" onClick={fetchTree} title="Refresh">
-          🔄
+        <button className="explorer-refresh" onClick={fetchTree} title="Refresh" aria-label="Refresh file tree">
+          ↻
         </button>
       </div>
       <div className="file-explorer-tree">
@@ -130,22 +130,15 @@ export default function FileExplorer({ rootPath, onFileSelect, refreshKey, apiBa
 function getFileIcon(filename: string): string {
   const ext = filename.split(".").pop()?.toLowerCase();
   const icons: Record<string, string> = {
-    ts: "📄",
-    tsx: "📄",
-    js: "📄",
-    jsx: "📄",
-    json: "⚙",
-    md: "📝",
-    css: "🎨",
-    html: "🌐",
-    svg: "🖼",
-    png: "🖼",
-    jpg: "🖼",
-    git: "📦",
-    env: "🔒",
-    yaml: "⚙",
-    yml: "⚙",
-    lock: "🔒",
+    json: "◇",
+    env: "●",
+    lock: "●",
+    yaml: "◇",
+    yml: "◇",
+    md: "◆",
+    png: "▣",
+    jpg: "▣",
+    svg: "▣",
   };
-  return icons[ext || ""] || "📄";
+  return icons[ext || ""] || "·";
 }

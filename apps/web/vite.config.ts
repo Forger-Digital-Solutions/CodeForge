@@ -25,9 +25,15 @@ export default defineConfig({
         // `forge serve` requires the per-process loopback bearer; a browser page cannot set
         // headers on an EventSource, so the dev proxy attaches it. The token comes from the
         // environment — it is never committed or embedded in the bundle.
-        ...(process.env.CODEFORGE_LOCAL_CONTROL_TOKEN
-          ? { headers: { "X-CodeForge-Control-Token": process.env.CODEFORGE_LOCAL_CONTROL_TOKEN } }
-          : {}),
+        configure: (proxy) => {
+          const token = process.env.CODEFORGE_LOCAL_CONTROL_TOKEN;
+          if (!token) return;
+          proxy.on("proxyReq", (proxyReq) => {
+            proxyReq.setHeader("x-codeforge-control-token", token);
+            // Mutations enforce a loopback-Origin check; the dev proxy IS the origin.
+            proxyReq.removeHeader("origin");
+          });
+        },
       },
     },
   },

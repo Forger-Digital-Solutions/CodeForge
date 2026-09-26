@@ -10,6 +10,8 @@ interface DiffLine {
 interface DiffViewerProps {
   diff: string;
   fileName?: string;
+  /** Render the diff immediately instead of behind the "View Diff" toggle (host already expanded). */
+  initialOpen?: boolean;
 }
 
 const MAX_DIFF_CHARS = 512_000;
@@ -59,8 +61,8 @@ export function parseDiff(diff: string, fileName?: string): { file: string; line
   return { file, lines, truncated };
 }
 
-export default function DiffViewer({ diff, fileName }: DiffViewerProps) {
-  const [showDiff, setShowDiff] = useState(false);
+export default function DiffViewer({ diff, fileName, initialOpen = false }: DiffViewerProps) {
+  const [showDiff, setShowDiff] = useState(initialOpen);
   const { file, lines, truncated } = parseDiff(diff, fileName);
 
   if (!showDiff) {

@@ -1099,6 +1099,8 @@ body {
 .activity-icon-delete { color: #fb7185; }
 .activity-icon-execute { color: #67e8f9; }
 .activity-icon-fetch { color: #60a5fa; }
+.activity-icon-browser { color: #7dd3fc; }
+.activity-icon-subagent { color: #c4b5fd; }
 .activity-icon-test { color: #a3e635; }
 .activity-icon-verify { color: #5eead4; }
 .activity-icon-git { color: #f472b6; }
@@ -1380,6 +1382,59 @@ body {
 .command-activity-prompt, .command-activity-exit, .command-activity-empty { padding: 7px 10px; color: var(--cf-text-muted); }
 .command-activity-prompt { border-bottom: 1px solid var(--cf-border-subtle); color: var(--cf-text); }
 .command-activity-exit { border-top: 1px solid var(--cf-border-subtle); }
+
+.command-activity.running { border-color: var(--cf-border); }
+.command-activity.running .command-activity-head { cursor: default; }
+.command-activity.running .command-activity-head:hover { background: transparent; }
+.command-activity-result.running { color: var(--cf-accent); }
+.command-activity.running .command-activity-detail { border-top-color: var(--cf-border-subtle); }
+
+/* A parked/waiting notice strip — quiet chrome, honest wording, never error red. */
+.activity-notice {
+  margin: 4px 0;
+  border-left: 2px solid var(--cf-warning);
+  background: var(--cf-bg-raised);
+  border-radius: 0 var(--cf-radius-sm) var(--cf-radius-sm) 0;
+}
+.activity-notice .activity-header { padding: 5px 10px; }
+.activity-notice.route_switch,
+.activity-notice.checkpoint { border-left-color: var(--cf-border); }
+
+/* A steering message is still the user's own message — right-aligned, visibly marked as mid-run input. */
+.user-message-steer {
+  border-left: 2px solid var(--cf-accent);
+  opacity: 0.92;
+}
+.user-message-steer .user-message-label { color: var(--cf-accent); }
+
+/* Delegated worker detail: progress log + artifacts inside the expandable row. */
+.subagent-progress-log {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11.5px;
+  color: var(--cf-text-secondary);
+}
+.subagent-progress-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.subagent-result { margin-top: 6px; font-size: 12px; color: var(--cf-text); white-space: pre-wrap; }
+.subagent-error { margin-top: 6px; font-size: 12px; color: var(--cf-danger); white-space: pre-wrap; }
+.subagent-artifacts { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+.subagent-artifact {
+  font-size: 10.5px;
+  padding: 1px 6px;
+  border: 1px solid var(--cf-border-subtle);
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-bg-input);
+  color: var(--cf-text-secondary);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* ────────────────────────────────────────────
    PLAN BLOCK
@@ -2334,6 +2389,98 @@ body {
   border-left: none;
   overflow: hidden;
 }
+
+.inspector-resize-handle {
+  width: 5px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  background: transparent;
+  border-left: 1px solid transparent;
+  margin-left: -1px;
+}
+.inspector-resize-handle:hover,
+.inspector-resize-handle:active {
+  border-left-color: var(--cf-accent);
+}
+
+/* Commands pane — shell transcript, not just a list. */
+.terminal-cmd-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.terminal-cmd-meta {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--cf-text-muted);
+  font-size: 10.5px;
+}
+.terminal-cwd {
+  padding: 0 8px 4px 26px;
+  font-family: var(--cf-font-mono);
+  font-size: 10.5px;
+  color: var(--cf-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Browser pane — an action log of browser_* tool calls, not a live viewport. */
+.browser-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.browser-activity {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 8px;
+  border-radius: var(--cf-radius-sm);
+  flex-wrap: wrap;
+}
+.browser-activity.failed { background: rgba(239, 77, 77, .07); }
+.browser-activity.blocked { background: rgba(251, 191, 36, .07); }
+.browser-activity-tool {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cf-text-secondary);
+  text-transform: capitalize;
+}
+.browser-activity-target {
+  min-width: 0;
+  flex: 1;
+  font-family: var(--cf-font-mono);
+  font-size: 11px;
+  color: var(--cf-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.browser-activity-status { font-size: 10.5px; color: var(--cf-text-muted); }
+.browser-activity-detail {
+  flex-basis: 100%;
+  font-size: 11px;
+  color: var(--cf-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Changes pane — rows expand to their diff. */
+.change-item-wrap { border-bottom: 1px solid var(--cf-border-subtle); }
+.change-item-wrap:last-child { border-bottom: none; }
+button.change-item {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: default;
+}
+button.change-item.expandable { cursor: pointer; }
+button.change-item.expandable:hover { background: var(--cf-bg-hover); }
 
 .inspector-tabs {
   display: flex;

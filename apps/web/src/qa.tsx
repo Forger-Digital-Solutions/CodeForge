@@ -201,6 +201,7 @@ function Layout(opts: LayoutOpts) {
             session={session}
             workItems={workItems}
             turns={turns}
+            events={events}
             isRunning={isRunning}
             workspacePath={undefined}
           />
@@ -318,6 +319,61 @@ const scenarios: Record<string, () => React.ReactElement> = {
     ]}
     isRunning activePhase="implementing" workflowProgress={70} activeTab="terminal" placeholder="Steer the agent…" />,
 };
+
+// ── R36: event-sourced surfaces — streaming commands, subagents, capacity, steering ──
+let qaSeq = 0;
+const qaEvent = (type: string, payload: unknown) => ({ type, payload, seq: ++qaSeq, sessionId: "s", timestamp: now });
+
+const r36Events = [
+  qaEvent("turn.started", { turnId: "t1", userMessage: "Add input validation to the signup form and verify with tests" }),
+  qaEvent("assistant.message.started", { turnId: "t1", messageId: "m1" }),
+  qaEvent("text.delta", { turnId: "t1", messageId: "m1", delta: "I'll map the form, patch the validators, then run the suite." }),
+  qaEvent("assistant.message.completed", { turnId: "t1", messageId: "m1", text: "I'll map the form, patch the validators, then run the suite." }),
+  qaEvent("tool.execution_started", { turnId: "t1", toolCallId: "r1", toolName: "read_file", argsJson: JSON.stringify({ path: "src/signup/form.ts" }) }),
+  qaEvent("file.read", { fileCallId: "f-r1", path: "src/signup/form.ts", lines: 88 }),
+  qaEvent("tool.execution_completed", { turnId: "t1", toolCallId: "r1", toolName: "read_file", result: "form schema" }),
+  qaEvent("tool.execution_started", { turnId: "t1", toolCallId: "r2", toolName: "read_file", argsJson: JSON.stringify({ path: "src/signup/validators.ts" }) }),
+  qaEvent("file.read", { fileCallId: "f-r2", path: "src/signup/validators.ts", lines: 41 }),
+  qaEvent("tool.execution_completed", { turnId: "t1", toolCallId: "r2", toolName: "read_file", result: "validators" }),
+  qaEvent("tool.execution_started", { turnId: "t1", toolCallId: "e1", toolName: "edit_file", argsJson: JSON.stringify({ path: "src/signup/validators.ts" }) }),
+  qaEvent("file.change_proposed", { changeId: "ch1", path: "src/signup/validators.ts", changeType: "modified", additions: 14, deletions: 3, diff: "--- a/src/signup/validators.ts\n+++ b/src/signup/validators.ts\n@@ -3,3 +3,14 @@\n+export function validateEmail(v: string) { return /.+@.+/.test(v); }" }),
+  qaEvent("file.change_applied", { changeId: "ch1", path: "src/signup/validators.ts" }),
+  qaEvent("tool.execution_completed", { turnId: "t1", toolCallId: "e1", toolName: "edit_file", result: "applied" }),
+  qaEvent("turn.steered", { turnId: "t1", steering: "Keep the error messages under the inputs, not toasts." }),
+  qaEvent("command.started", { commandId: "cmd1", command: "npx vitest run src/signup", workingDirectory: "G:\\repo" }),
+  qaEvent("command.output", { commandId: "cmd1", output: " ✓ src/signup/validators.test.ts (6 tests) 41ms\n", stream: "stdout" }),
+  qaEvent("command.completed", { commandId: "cmd1", exitCode: 0, durationMs: 1830 }),
+  qaEvent("command.started", { commandId: "cmd2", command: "npm run typecheck", workingDirectory: "G:\\repo" }),
+  qaEvent("command.output", { commandId: "cmd2", output: "> tsc --noEmit\n", stream: "stdout" }),
+  qaEvent("subagent.started", { agentId: "a1", role: "Explorer", task: "Map signup flow call sites" }),
+  qaEvent("subagent.progress", { agentId: "a1", message: "Scanning routes", percent: 40 }),
+  qaEvent("subagent.started", { agentId: "a2", role: "Reviewer", task: "Check validation edge cases" }),
+  qaEvent("subagent.lifecycle", { agentId: "a2", role: "Reviewer", task: "Check validation edge cases", state: "queued", capsuleVersion: 1 }),
+  qaEvent("eightbit.status", { event: "FREE_CAPACITY_WAIT", role: "agent", reasonCodes: ["ALL_ROUTES_BUSY"], accessibleText: "All free routes are busy — the run is parked and resumes automatically" }),
+  qaEvent("tool.execution_started", { turnId: "t1", toolCallId: "b1", toolName: "browser_navigate", argsJson: JSON.stringify({ url: "http://localhost:5173/signup" }) }),
+  qaEvent("tool.execution_completed", { turnId: "t1", toolCallId: "b1", toolName: "browser_navigate", result: "200 OK" }),
+  qaEvent("subagent.completed", { agentId: "a1", result: "Found 3 call sites" }),
+];
+
+scenarios["live-run"] = () => <Layout
+  session={{ id: "s", title: "Add input validation to the signup form", taskTitle: "Add input validation to the signup form", status: "running", branch: "feat/signup-validation", currentAgentId: "forge-coder", currentModelId: "qwen-2.5-coder" }}
+  events={r36Events}
+  isRunning activePhase="implementing" workflowProgress={62} activeTab="commands" placeholder="Steer the agent…" />;
+
+scenarios["capacity-parked"] = () => <Layout
+  session={{ id: "s", title: "Add input validation to the signup form", taskTitle: "Add input validation to the signup form", status: "waiting_for_free_capacity", branch: "feat/signup-validation" }}
+  events={r36Events}
+  activeTab="overview" placeholder="Steer the agent…" />;
+
+scenarios["browser-tab"] = () => <Layout
+  session={{ id: "s", title: "Add input validation to the signup form", taskTitle: "Add input validation to the signup form", status: "running", branch: "feat/signup-validation" }}
+  events={r36Events}
+  isRunning activePhase="verifying" workflowProgress={80} activeTab="browser" placeholder="Steer the agent…" />;
+
+scenarios["changes-diff"] = () => <Layout
+  session={{ id: "s", title: "Add input validation to the signup form", taskTitle: "Add input validation to the signup form", status: "idle", branch: "feat/signup-validation" }}
+  events={r36Events}
+  activeTab="changes" />;
 
 const SCENARIO_KEYS = Object.keys(scenarios);
 

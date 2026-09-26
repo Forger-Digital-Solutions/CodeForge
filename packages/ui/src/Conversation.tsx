@@ -6,7 +6,7 @@ import InlineComments from "./InlineComments.js";
 import DiffViewer from "./DiffViewer.js";
 import { buildTimeline, type TimelineItem } from "./timeline.js";
 import { parseAssistantContent, parseInlineSpans, reasoningSummary } from "./assistant-content.js";
-import { describeToolTarget, summarizeToolResult, hasToolDetail, relativeToWorkspace } from "./tool-activity.js";
+import { describeToolTarget, summarizeToolResult, hasToolDetail, relativeToWorkspace, formatElapsed } from "./tool-activity.js";
 import { ActivityIcon, activityLabel, resolveActivityKind, type ActivityKind, type ActivityState } from "./activity-icons.js";
 import { EightBitStatusBadge } from "./EightBitStatusBadge.js";
 import { deriveLatestEightBitStatus } from "./eight-bit-status.js";
@@ -56,15 +56,22 @@ interface ConversationProps {
 }
 
 type ToolTimelineItem = Extract<TimelineItem, { kind: "tool" }>;
+type FileTimelineItem = Extract<TimelineItem, { kind: "file" }>;
+type CommandTimelineItem = Extract<TimelineItem, { kind: "command" }>;
 type AssistantTimelineItem = Extract<TimelineItem, { kind: "assistant" }>;
+/** The activity rows a group can fold: completed work that doesn't need attention by itself. */
+type GroupableTimelineItem = ToolTimelineItem | FileTimelineItem | CommandTimelineItem;
 
 type DisplayTimelineItem = TimelineItem | {
   kind: "tool_group";
   id: string;
   seq: number;
+  /** Dominant kind when members are mixed; drives the row's icon. */
   activityKind: ActivityKind;
-  /** Ordered children: the grouped tool calls plus any narration they bridged. */
-  items: Array<ToolTimelineItem | AssistantTimelineItem>;
+  /** True when members span more than one activity kind — the header reads "steps", not a single verb's noun. */
+  mixed: boolean;
+  /** Ordered children: the grouped activity plus any narration it bridged. */
+  items: Array<GroupableTimelineItem | AssistantTimelineItem>;
 };
 
 /** Short step-narration between same-kind calls belongs inside the group, not as a peer row. */
@@ -77,48 +84,75 @@ function isBridgingMessage(item: TimelineItem | undefined, turnId: string): item
   return text.length > 0 && text.length <= GROUP_BRIDGE_MAX_CHARS && !text.endsWith("?");
 }
 
+/** The activity kind a groupable row contributes to a group's shape; undefined if not groupable. */
+function groupableKind(item: TimelineItem): ActivityKind | undefined {
+  if (item.kind === "tool") return item.status === "completed" ? resolveActivityKind(item.toolName) : undefined;
+  // Reverted changes and failed runs are attention, not routine — they never fold into a group.
+  if (item.kind === "file") {
+    if (item.action === "reverted") return undefined;
+    const kinds: Record<string, ActivityKind> = { read: "read", written: "edit", created: "create", modified: "edit", deleted: "delete" };
+    return kinds[item.action];
+  }
+  if (item.kind === "command") return item.status === "completed" ? "execute" : undefined;
+  return undefined;
+}
+
 /**
- * Collapse adjacent completed same-kind tool calls into one expandable row. A short narration
- * message sandwiched between calls of the same kind folds into the group too — the story reads
- * "Explored · 4 files" instead of read / remark / read / remark. Failed, blocked and running
- * calls stay explicit: a summary must never hide something that needs attention.
+ * Collapse adjacent completed activity into one expandable row. Same-kind runs (read×4) fold
+ * into "Explored · 4 files"; mixed work sequences (read → edit → test → read) fold into
+ * "Worked · 5 steps" with a per-kind breakdown as metadata. A short narration message inside a
+ * run folds into the group too. Failed, blocked, reverted and still-running items stay explicit:
+ * a summary must never hide something that needs attention.
  */
 export function groupConsecutiveToolActivity(items: TimelineItem[]): DisplayTimelineItem[] {
   const grouped: DisplayTimelineItem[] = [];
   for (let index = 0; index < items.length;) {
     const item = items[index]!;
-    if (item.kind !== "tool" || item.status !== "completed") {
+    const firstKind = groupableKind(item);
+    if (firstKind === undefined) {
       grouped.push(item);
       index++;
       continue;
     }
-    const activityKind = resolveActivityKind(item.toolName);
-    const members: Array<ToolTimelineItem | AssistantTimelineItem> = [item];
-    let toolCount = 1;
+    const turnId = item.turnId;
+    const members: Array<GroupableTimelineItem | AssistantTimelineItem> = [item as GroupableTimelineItem];
+    const kinds = [firstKind];
     let cursor = index + 1;
     while (cursor < items.length) {
       const candidate = items[cursor]!;
-      if (candidate.kind === "tool" && candidate.status === "completed" && resolveActivityKind(candidate.toolName) === activityKind) {
-        members.push(candidate);
-        toolCount++;
+      const candidateKind = groupableKind(candidate);
+      if (candidateKind !== undefined) {
+        members.push(candidate as GroupableTimelineItem);
+        kinds.push(candidateKind);
         cursor++;
         continue;
       }
-      // Bridge a brief narrating message only when the same work resumes right after it.
+      // Bridge a brief narrating message only when more work resumes right after it.
       const next = items[cursor + 1];
-      if (isBridgingMessage(candidate, item.turnId)
-        && next?.kind === "tool" && next.status === "completed"
-        && resolveActivityKind(next.toolName) === activityKind) {
-        members.push(candidate, next);
-        toolCount++;
+      if (turnId && isBridgingMessage(candidate, turnId) && next && groupableKind(next) !== undefined) {
+        members.push(candidate);
+        members.push(next as GroupableTimelineItem);
+        kinds.push(groupableKind(next)!);
         cursor += 2;
         continue;
       }
       break;
     }
-    grouped.push(toolCount < 2
-      ? item
-      : { kind: "tool_group", id: `tool-group-${item.id}`, seq: item.seq, activityKind, items: members });
+    const distinct = new Set(kinds);
+    const shouldGroup = members.length > 1 && kinds.length >= 2 && (distinct.size === 1 ? kinds.length >= 2 : kinds.length >= 3);
+    if (!shouldGroup) {
+      grouped.push(members[0]!);
+      index++;
+      continue;
+    }
+    const counts = new Map<ActivityKind, number>();
+    for (const kind of kinds) counts.set(kind, (counts.get(kind) ?? 0) + 1);
+    let dominant = kinds[0]!;
+    for (const [kind, count] of counts) if (count > (counts.get(dominant) ?? 0)) dominant = kind;
+    grouped.push({
+      kind: "tool_group", id: `tool-group-${item.id}`, seq: item.seq,
+      activityKind: dominant, mixed: distinct.size > 1, items: members,
+    });
     index = cursor;
   }
   return grouped;
@@ -319,53 +353,116 @@ const GROUP_NOUNS: Partial<Record<ActivityKind, [string, string]>> = {
   edit: ["file", "files"],
   create: ["file", "files"],
   fetch: ["request", "requests"],
+  execute: ["command", "commands"],
+  browser: ["page", "pages"],
+};
+
+const GROUP_BREAKDOWN_NOUN: Partial<Record<ActivityKind, [string, string]>> = {
+  read: ["read", "reads"],
+  search: ["search", "searches"],
+  edit: ["edit", "edits"],
+  create: ["file", "files"],
+  delete: ["delete", "deletes"],
+  execute: ["command", "commands"],
+  fetch: ["fetch", "fetches"],
+  browser: ["page", "pages"],
+  test: ["test", "tests"],
+  verify: ["check", "checks"],
+  build: ["build", "builds"],
+  git: ["git op", "git ops"],
 };
 
 const ToolGroupActivity = ({ item, workspacePath, taskTerminal }: { item: Extract<DisplayTimelineItem, { kind: "tool_group" }>; workspacePath?: string; taskTerminal?: boolean }) => {
   const [expanded, setExpanded] = useState(false);
-  const toolCount = item.items.filter((child) => child.kind === "tool").length;
+  const groupable = item.items.filter((child): child is GroupableTimelineItem => child.kind !== "assistant");
+  const stepCount = groupable.length;
   const [singular, plural] = GROUP_NOUNS[item.activityKind] ?? ["operation", "operations"];
+  const target = item.mixed
+    ? `${stepCount} steps`
+    : `${stepCount} ${stepCount === 1 ? singular : plural}`;
+  // Mixed work gets a compact breakdown ("2 reads · 1 edit"); same-kind groups just say Completed.
+  const breakdown = item.mixed
+    ? [...groupable.reduce((acc, child) => {
+        const kind = groupableKind(child as TimelineItem) ?? "tool";
+        acc.set(kind, (acc.get(kind) ?? 0) + 1);
+        return acc;
+      }, new Map<ActivityKind, number>()).entries()]
+        .slice(0, 3)
+        .map(([kind, count]) => `${count} ${(GROUP_BREAKDOWN_NOUN[kind] ?? ["step", "steps"])[count === 1 ? 0 : 1]}`)
+        .join(" · ")
+    : "Completed";
+  // Elapsed comes from real event timestamps; only shown when the span is meaningful.
+  const first = groupable[0];
+  const last = groupable[groupable.length - 1];
+  const elapsedMs = first && last ? Date.parse(last.ts) - Date.parse(first.ts) : 0;
+  const elapsed = elapsedMs >= 1000 ? formatElapsed(elapsedMs) : undefined;
   return (
     <ActivityLine
       kind={item.activityKind}
       state="completed"
-      verb={GROUP_VERBS[item.activityKind] ?? activityLabel(item.activityKind)}
-      target={`${toolCount} ${toolCount === 1 ? singular : plural}`}
-      meta="Completed"
+      verb={item.mixed ? "Worked" : GROUP_VERBS[item.activityKind] ?? activityLabel(item.activityKind)}
+      target={target}
+      meta={<>{breakdown}{elapsed && <span className="activity-elapsed"> · {elapsed}</span>}</>}
       expandable
       expanded={expanded}
       onToggle={() => setExpanded((value) => !value)}
     >
       {expanded && (
         <div className="activity-group-detail">
-          {item.items.map((child) => child.kind === "tool"
-            ? <ToolActivity key={child.id} item={child} workspacePath={workspacePath} taskTerminal={taskTerminal} />
-            : <div key={child.id} className="activity-group-note">{child.text}</div>)}
+          {item.items.map((child) => {
+            if (child.kind === "tool") return <ToolActivity key={child.id} item={child} workspacePath={workspacePath} taskTerminal={taskTerminal} />;
+            if (child.kind === "command") return <CommandActivity key={child.id} item={child} taskTerminal={taskTerminal} />;
+            if (child.kind === "file") {
+              const present = FILE_ACTION_PRESENT[child.action];
+              return <FileActivity key={child.id} item={child} workspacePath={workspacePath} kind={present.kind} verb={present.verb} hasDiff={Boolean(child.diff)} />;
+            }
+            return <div key={child.id} className="activity-group-note">{child.text}</div>;
+          })}
         </div>
       )}
     </ActivityLine>
   );
 };
 
-const CommandActivity = ({ item }: { item: Extract<TimelineItem, { kind: "command" }> }) => {
+const CommandActivity = ({ item, taskTerminal }: { item: Extract<TimelineItem, { kind: "command" }>; taskTerminal?: boolean }) => {
   const [expanded, setExpanded] = useState(false);
-  const passed = item.exitCode === 0;
+  const running = item.status === "running";
+  // A command still marked running after the run ended was interrupted — never "Passed".
+  const stalled = running && taskTerminal;
+  const passed = item.status === "completed";
+  const failed = item.status === "failed";
+  const result = stalled
+    ? "Cancelled — the run ended first"
+    : running ? "Running" : passed ? "Passed" : `Failed · exit ${item.exitCode ?? "?"}`;
+  const duration = item.durationMs !== undefined ? formatElapsed(item.durationMs) : undefined;
+  const expandable = Boolean(item.output) || running;
+  const head = (
+    <>
+      <ActivityIcon kind={failed || stalled ? "error" : "execute"} state={failed || stalled ? "failed" : running ? "active" : "completed"} size={16} />
+      <span className="command-activity-copy">
+        <span className="command-activity-label">Run command</span>
+        <code className="command-activity-command">{item.command}</code>
+      </span>
+      <span className={`command-activity-result ${failed || stalled ? "failed" : running ? "running" : "passed"}`}>
+        {result}{duration ? ` · ${duration}` : ""}
+      </span>
+      {expandable && <span className="activity-caret" aria-hidden="true">{expanded ? "▾" : "▸"}</span>}
+    </>
+  );
   return (
-    <div className={`command-activity ${passed ? "passed" : "failed"}`}>
-      <button type="button" className="command-activity-head" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}>
-        <ActivityIcon kind={passed ? "execute" : "error"} state={passed ? "completed" : "failed"} size={16} />
-        <span className="command-activity-copy">
-          <span className="command-activity-label">Run command</span>
-          <code className="command-activity-command">{item.command}</code>
-        </span>
-        <span className={passed ? "command-activity-result passed" : "command-activity-result failed"}>{passed ? "Passed" : `Failed · exit ${item.exitCode}`}</span>
-        <span className="activity-caret" aria-hidden="true">{expanded ? "▾" : "▸"}</span>
-      </button>
+    <div className={`command-activity ${failed ? "failed" : running ? "running" : "passed"}`}>
+      {expandable ? (
+        <button type="button" className="command-activity-head" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}>
+          {head}
+        </button>
+      ) : (
+        <div className="command-activity-head">{head}</div>
+      )}
       {expanded && (
         <div className="command-activity-detail">
-          <div className="command-activity-prompt">$ {item.command}</div>
-          {item.output ? <pre>{item.output}</pre> : <div className="command-activity-empty">No command output was recorded.</div>}
-          <div className="command-activity-exit">Exit code {item.exitCode}</div>
+          <div className="command-activity-prompt">{item.workingDirectory ? `${item.workingDirectory} ` : ""}$ {item.command}</div>
+          {item.output ? <pre>{item.output}</pre> : <div className="command-activity-empty">{running ? "No output yet." : "No command output was recorded."}</div>}
+          {item.exitCode !== undefined && <div className="command-activity-exit">Exit code {item.exitCode}</div>}
         </div>
       )}
     </div>
@@ -428,23 +525,150 @@ const TimelineItemView = ({ item, workspacePath, taskTerminal, showSpeaker }: { 
       const target = item.text.replace(/^(Verification|Repairing|Review)\b/, "").replace(/^[·\s:—-]+/, "") || undefined;
       return <ActivityLine kind={kinds[item.phase]} state={outcomeState} verb={verb} target={target} meta={item.detail} />;
     }
-    case "file":
+    case "file": {
+      const filePresent = FILE_ACTION_PRESENT[item.action];
+      const hasDiff = Boolean(item.diff) || item.additions !== undefined || item.deletions !== undefined;
       return (
-        <ActivityLine
-          kind={item.action === "written" ? "edit" : "read"}
-          state="completed"
-          filePath={item.path}
-          verb={item.action === "written" ? "Write" : "Read"}
-          target={relativeToWorkspace(item.path, workspacePath)}
-          meta={item.detail}
-        />
+        <FileActivity item={item} workspacePath={workspacePath} kind={filePresent.kind} verb={filePresent.verb} hasDiff={hasDiff} />
       );
+    }
     case "command":
-      return <CommandActivity item={item} />;
+      return <CommandActivity item={item} taskTerminal={taskTerminal} />;
+    case "steer":
+      // A steering message is the user's own words mid-run — visually a user row, labelled so it
+      // reads as course-correction rather than a new task.
+      return (
+        <div className="user-message user-message-steer">
+          <div className="user-message-label">You · steering</div>
+          <div className="user-message-body">{item.text}</div>
+        </div>
+      );
+    case "subagent":
+      return <SubagentActivity item={item} taskTerminal={taskTerminal} />;
+    case "notice": {
+      const spec = NOTICE_PRESENT[item.notice];
+      return (
+        <div className={`activity-notice ${item.notice}`}>
+          <ActivityLine kind={spec.kind} state={spec.state} verb={spec.verb} target={item.text} meta={item.detail} />
+        </div>
+      );
+    }
     default:
       return null;
   }
 };
+
+/** How a file row reads per recorded action — verbs describe what happened, not the mechanism. */
+const FILE_ACTION_PRESENT: Record<Extract<TimelineItem, { kind: "file" }>["action"], { kind: ActivityKind; verb: string }> = {
+  read: { kind: "read", verb: "Read" },
+  written: { kind: "edit", verb: "Write" },
+  created: { kind: "create", verb: "Create" },
+  modified: { kind: "edit", verb: "Edit" },
+  deleted: { kind: "delete", verb: "Delete" },
+  reverted: { kind: "warning", verb: "Revert" },
+};
+
+const NOTICE_PRESENT: Record<Extract<TimelineItem, { kind: "notice" }>["notice"], { kind: ActivityKind; verb: string; state: ActivityState }> = {
+  capacity_wait: { kind: "waiting", verb: "Parked", state: "pending" },
+  route_switch: { kind: "fetch", verb: "Route", state: "completed" },
+  checkpoint: { kind: "git", verb: "Checkpoint", state: "completed" },
+};
+
+/**
+ * A file row: what changed and by how much. Proposed changes carry a unified diff that expands
+ * on request — the Changes tab stays the full source of truth, the feed shows the shape of it.
+ */
+const FileActivity = ({ item, workspacePath, kind, verb, hasDiff }: { item: Extract<TimelineItem, { kind: "file" }>; workspacePath?: string; kind: ActivityKind; verb: string; hasDiff: boolean }) => {
+  const [expanded, setExpanded] = useState(false);
+  const reverted = item.action === "reverted";
+  return (
+    <ActivityLine
+      kind={kind}
+      state={reverted ? "failed" : "completed"}
+      filePath={item.path}
+      verb={verb}
+      target={relativeToWorkspace(item.path, workspacePath)}
+      meta={<>
+        {(item.additions !== undefined || item.deletions !== undefined) && (
+          <span className="activity-diff-stats">
+            {item.additions !== undefined && <span className="activity-stat activity-stat-additions">+{item.additions}</span>}
+            {item.deletions !== undefined && <span className="activity-stat activity-stat-deletions">−{item.deletions}</span>}
+          </span>
+        )}
+        {item.detail && <span>{item.detail}</span>}
+      </>}
+      expandable={hasDiff && Boolean(item.diff)}
+      expanded={expanded}
+      onToggle={() => setExpanded((v) => !v)}
+    >
+      {expanded && item.diff && <div className="activity-body"><DiffViewer diff={item.diff} fileName={item.path} initialOpen /></div>}
+    </ActivityLine>
+  );
+};
+
+/** A delegated worker: role, task, live progress, and how it ended — one row per agent. */
+const SubagentActivity = ({ item, taskTerminal }: { item: Extract<TimelineItem, { kind: "subagent" }>; taskTerminal?: boolean }) => {
+  const [expanded, setExpanded] = useState(false);
+  // A worker still "running" after the run ended was interrupted — honest copy beats a frozen Working.
+  const interrupted = (item.status === "running" || item.status === "queued" || item.status === "waiting") && taskTerminal;
+  const state: ActivityState = interrupted
+    ? "static"
+    : item.status === "completed" ? "completed"
+    : item.status === "failed" ? "failed"
+    : item.status === "blocked" ? "blocked"
+    : item.status === "cancelled" ? "blocked"
+    : item.status === "queued" || item.status === "waiting" ? "pending"
+    : "active";
+  const meta = interrupted
+    ? "Interrupted — the run ended"
+    : item.status === "running" ? (item.progress ?? "Working")
+    : item.status === "queued" ? "Queued"
+    : item.status === "waiting" ? (item.progress ?? "Waiting")
+    : item.status === "blocked" ? (item.error ?? "Blocked")
+    : item.status === "failed" ? (item.error ?? "Failed")
+    : item.status === "cancelled" ? "Cancelled"
+    : (item.result ? shortenSingleLine(item.result) : "Finished");
+  const percent = item.percent !== undefined && (item.status === "running" || item.status === "waiting") ? ` · ${item.percent}%` : "";
+  const hasDetail = item.progressLog.length > 1 || Boolean(item.result || item.error) || item.artifacts.length > 0;
+  return (
+    <ActivityLine
+      kind="subagent"
+      state={state}
+      verb={item.role || "Subagent"}
+      target={item.task || displayId(item.agentId)}
+      meta={`${meta}${percent}`}
+      expandable={hasDetail}
+      expanded={expanded}
+      onToggle={() => setExpanded((v) => !v)}
+    >
+      {expanded && (
+        <div className="activity-body">
+          {item.progressLog.length > 0 && (
+            <div className="subagent-progress-log">
+              {item.progressLog.map((line, i) => <div key={i} className="subagent-progress-line">{line}</div>)}
+            </div>
+          )}
+          {item.result && item.status === "completed" && <div className="subagent-result">{item.result}</div>}
+          {item.error && <div className="subagent-error">{item.error}</div>}
+          {item.artifacts.length > 0 && (
+            <div className="subagent-artifacts">
+              {item.artifacts.map((ref) => <code key={ref} className="subagent-artifact">{ref}</code>)}
+            </div>
+          )}
+        </div>
+      )}
+    </ActivityLine>
+  );
+};
+
+function shortenSingleLine(text: string, max = 120): string {
+  const line = text.split("\n")[0]!.trim();
+  return line.length > max ? `${line.slice(0, max - 1)}…` : line;
+}
+
+function displayId(id: string): string {
+  return id.length > 12 ? id.slice(0, 12) : id;
+}
 
 const WorkItemRenderer = ({ item, displayMode, taskTerminal = false }: { item: WorkItem; displayMode: string; taskTerminal?: boolean }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);

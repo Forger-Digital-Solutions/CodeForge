@@ -121,6 +121,12 @@ export default function WorkspaceApp({
     try { return window.localStorage.getItem("codeforge:sidebar-collapsed") === "true"; } catch { return false; }
   });
   const [inspectorCollapsed, setInspectorCollapsed] = useState(true);
+  const [inspectorWidth, setInspectorWidth] = useState(() => {
+    try {
+      const stored = Number(window.localStorage.getItem("codeforge:inspector-width"));
+      return Number.isFinite(stored) && stored > 0 ? Math.min(Math.max(stored, 240), 720) : 340;
+    } catch { return 340; }
+  });
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [executionMode, setExecutionMode] = useState<ExecutionMode>(() => readRememberedExecutionMode());
   const [showQuickActions, setShowQuickActions] = useState(false);
@@ -128,6 +134,27 @@ export default function WorkspaceApp({
   React.useEffect(() => {
     try { window.localStorage.setItem("codeforge:sidebar-collapsed", String(sidebarCollapsed)); } catch { /* convenience preference */ }
   }, [sidebarCollapsed]);
+
+  React.useEffect(() => {
+    try { window.localStorage.setItem("codeforge:inspector-width", String(inspectorWidth)); } catch { /* convenience preference */ }
+  }, [inspectorWidth]);
+
+  // Drag the inspector's left edge to resize; capped so the conversation can never be crushed.
+  const startInspectorResize = React.useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const handle = e.currentTarget;
+    handle.setPointerCapture(e.pointerId);
+    const onMove = (ev: PointerEvent) => {
+      const max = Math.min(720, Math.round(window.innerWidth * 0.55));
+      setInspectorWidth(Math.min(Math.max(window.innerWidth - ev.clientX, 240), max));
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }, []);
 
   const apiOrigin = React.useMemo(() => {
     const u = sseUrl ?? "";
@@ -501,6 +528,8 @@ export default function WorkspaceApp({
             onNavigateFiles={() => setState((prev) => ({ ...prev, leftNav: "files" }))}
             onNavigateTasks={() => setState((prev) => ({ ...prev, leftNav: "tasks" }))}
             currentNavView={state.leftNav === "files" ? "files" : "tasks"}
+            workspacePath={state.session?.workspacePath}
+            apiBase={apiOrigin}
           />
         )}
 
@@ -690,7 +719,17 @@ export default function WorkspaceApp({
         </div>
 
         {!inspectorCollapsed && (
+          <div
+            className="inspector-resize-handle"
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize inspector"
+            onPointerDown={startInspectorResize}
+          />
+        )}
+        {!inspectorCollapsed && (
           <Inspector
+            width={inspectorWidth}
             activeTab={state.activeTab}
             onTabSelect={(tab) => setState((prev) => ({ ...prev, activeTab: tab }))}
             session={state.session}

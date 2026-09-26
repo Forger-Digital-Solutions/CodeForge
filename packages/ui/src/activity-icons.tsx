@@ -12,6 +12,8 @@ export type ActivityKind =
   | "tool"
   | "execute"
   | "fetch"
+  | "browser"
+  | "subagent"
   | "build"
   | "test"
   | "verify"
@@ -44,6 +46,8 @@ const LABELS: Record<ActivityKind, string> = {
   tool: "Tool",
   execute: "Execute",
   fetch: "Fetch",
+  browser: "Browse",
+  subagent: "Subagent",
   build: "Build",
   test: "Test",
   verify: "Verify",
@@ -71,6 +75,7 @@ export function activityLabel(kind: ActivityKind): string {
 /** Maps canonical tool names to the small semantic vocabulary used by the transcript. */
 export function resolveActivityKind(toolName: string): ActivityKind {
   const name = toolName.trim().toLowerCase().replace(/[\s-]+/g, "_");
+  if (/(^|_)(browser|navigate|webpage)(_|$)/.test(name)) return "browser";
   if (/(^|_)(search|grep|find|rg)(_|$)/.test(name)) return "search";
   if (/(^|_)(read|cat|list|inspect|stat)(_|$)/.test(name)) return "read";
   if (/(^|_)(reason|think|thinking)(_|$)/.test(name)) return "reason";

@@ -13,7 +13,7 @@ export interface FixtureCase {
   category: string;
   description: string;
   files?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface FixtureCategory {

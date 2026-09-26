@@ -1,5 +1,6 @@
 import type { WorkspaceEvent } from "@codeforge/protocol";
 import type { WorkItem } from "@codeforge/sessions";
+import { describeToolTarget } from "./tool-activity.js";
 
 /**
  * Session-level activity projection for the Inspector.
@@ -206,6 +207,75 @@ export function projectSessionCommands(events: WorkspaceEvent[], workItems: Work
       ...(item.output ? { output: item.output } : {}),
       seq: Number.MAX_SAFE_INTEGER,
     });
+  }
+  return rows;
+}
+
+export interface SessionBrowserAction {
+  id: string;
+  tool: string;
+  target?: string;
+  status: "running" | "completed" | "failed" | "blocked";
+  detail?: string;
+  seq: number;
+}
+
+const BROWSER_TOOL = /^browser_/;
+
+/**
+ * Browser tool calls for the session's Browser pane. Both tool-event vocabularies are folded
+ * (`tool.call_*` and `tool.execution_*`); a call that never resolved while the session is
+ * terminal reports "interrupted" — a tab can be open mid-run without a finished answer.
+ */
+export function projectSessionBrowserActivity(events: WorkspaceEvent[], sessionTerminal = false): SessionBrowserAction[] {
+  const byId = new Map<string, SessionBrowserAction>();
+  const order: string[] = [];
+
+  const upsert = (id: string, patch: Partial<SessionBrowserAction>): void => {
+    const existing = byId.get(id);
+    byId.set(id, { ...(existing ?? { id, tool: "browser", status: "running" as const, seq: 0 }), ...patch });
+    if (!existing) order.push(id);
+  };
+
+  for (const event of [...events].sort((a, b) => a.seq - b.seq)) {
+    const p = event.payload as { toolCallId?: string; toolName?: string; tool?: string; argsJson?: string; result?: string; error?: string; reason?: string };
+    const name = p.toolName ?? p.tool ?? "";
+    if (!p.toolCallId || !BROWSER_TOOL.test(name)) continue;
+    switch (event.type) {
+      case "tool.call_started":
+      case "tool.execution_started":
+      case "tool.started":
+        upsert(p.toolCallId, { tool: name, status: "running", seq: event.seq });
+        if (p.argsJson) {
+          const target = describeToolTarget(name, p.argsJson);
+          if (target) upsert(p.toolCallId, { target });
+        }
+        break;
+      case "tool.call_completed":
+        if (p.argsJson) {
+          const target = describeToolTarget(name, p.argsJson);
+          if (target) upsert(p.toolCallId, { target });
+        }
+        break;
+      case "tool.execution_completed":
+      case "tool.completed":
+        upsert(p.toolCallId, { tool: name, status: "completed", detail: typeof p.result === "string" ? p.result.split("\n")[0]?.slice(0, 160) : undefined });
+        break;
+      case "tool.execution_failed":
+      case "tool.failed":
+        upsert(p.toolCallId, { tool: name, status: "failed", detail: typeof p.error === "string" ? p.error.split("\n")[0]?.slice(0, 160) : undefined });
+        break;
+      case "tool.execution_blocked":
+        upsert(p.toolCallId, { tool: name, status: "blocked", detail: p.reason });
+        break;
+      default:
+        break;
+    }
+  }
+
+  const rows = order.map((id) => byId.get(id)!);
+  if (sessionTerminal) {
+    for (const row of rows) if (row.status === "running") row.status = "failed";
   }
   return rows;
 }
