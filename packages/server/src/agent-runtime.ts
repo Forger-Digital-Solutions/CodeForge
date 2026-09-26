@@ -98,6 +98,7 @@ import {
 import { createToolBroker, type ToolDefinition as RegistryToolDefinition, type ToolExecutionRecord } from "@codeforge/tools";
 import { createModelExecutionAdapter, convertToProviderTools, normalizeProviderError, type ModelExecutionResponse } from "./model-execution-adapter.js";
 import { roleOutputBudget, type ReasoningRouteProfile } from "./role-output-budget.js";
+import { ForgeGreenRunPolicy, type ForgeGreenPolicySnapshot } from "./forgegreen-run-policy.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import type { PaidAutoService } from "@codeforge/paid-auto";
 import { tryConsumeInferenceRequest, type InferenceLane, type WorkflowInferenceBudget } from "./inference-budget.js";
@@ -162,6 +163,8 @@ export interface AgentContextMetrics {
   contextRefreshes?: number;
   staleContextInvalidations?: number;
   efficiencyReceipt?: EfficiencyReceipt;
+  /** R42: the run's selective ForgeGreen policy record — initial level, escalations, replays prevented. */
+  forgeGreenPolicy?: ForgeGreenPolicySnapshot;
 }
 
 export interface AgentRuntimeResult {
@@ -1144,7 +1147,24 @@ export class AgentRuntime {
     // harness's instrumented proxy, or any per-runtime configuration — was silently bypassed
     // (every Groq run record showed pacingWaitMs 0 with 60 s gaps between calls). When no
     // governor was injected the adapter keeps its own default and test providers stay unpaced.
-    const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen, this.capacityGovernorIsExplicit ? this.capacityGovernor : undefined);
+    // R42: per-run selective ForgeGreen policy — resolves the run's optimization level from
+    // request signals and escalates toward baseline on quality-risk signals. The static
+    // efficiencyControls stay the ceiling: a control disabled there is never re-enabled.
+    const greenPolicy = ForgeGreenRunPolicy.forRun({
+      role: req.role,
+      workstreamScope: req.workstreamScope,
+      taskPlan: req.taskPlan,
+      reviewFeedback: req.reviewFeedback,
+      verificationEvidence: req.verificationEvidence,
+      resumeJournal: req.resumeJournal,
+    }, this.efficiencyControls);
+    // Live view: the metrics object is rebuilt by context refresh, so each construction gets a
+    // getter that snapshots the policy at read/serialize time — escalations during the run land.
+    const withGreenPolicy = (metrics: AgentContextMetrics): AgentContextMetrics => {
+      Object.defineProperty(metrics, "forgeGreenPolicy", { enumerable: true, configurable: true, get: () => greenPolicy.snapshot() });
+      return metrics;
+    };
+    const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen, this.capacityGovernorIsExplicit ? this.capacityGovernor : undefined, greenPolicy);
     const contextAssembler = createContextAssembler(resolvedMaxContextTokens, this.forgeGreen);
     const contextPageStore = this.forgeGreenCacheStore ? createContextPageStore(this.forgeGreenCacheStore) : undefined;
     const adapter = req.adapter ?? this.createAdapter();
@@ -1302,7 +1322,7 @@ export class AgentRuntime {
         writeCallCount = resumeJournal.writeCallCount;
         commandCallCount = resumeJournal.commandCallCount;
         const restoredContextBytes = Buffer.byteLength(messages.map((message) => message.content).join("\n"), "utf8");
-        contextMetrics = {
+        contextMetrics = withGreenPolicy({
           candidateFileCount: 0,
           candidateSymbolCount: 0,
           selectedFileCount: 0,
@@ -1314,7 +1334,7 @@ export class AgentRuntime {
           reasonCodes: ["recovery_resume"],
           contextRefreshes: 0,
           staleContextInvalidations: 0,
-        };
+        });
       }
       if (!resumeJournal) {
       // 1. Context Assembly
@@ -1392,7 +1412,7 @@ export class AgentRuntime {
       }
       bootstrapSupplementalBytes = Buffer.byteLength(messages.slice(2).map((message) => message.content).join("\n"), "utf8");
 
-      contextMetrics = {
+      contextMetrics = withGreenPolicy({
         candidateFileCount: indexStatus?.fileCount ?? 0,
         candidateSymbolCount: indexStatus?.symbolCount ?? 0,
         selectedFileCount: assembled.receipt?.retrievedFiles.length ?? assembled.evidence.filter((item) => item.source === "file" || item.source === "search").length,
@@ -1407,7 +1427,7 @@ export class AgentRuntime {
         contextRefreshes: 0,
         staleContextInvalidations: 0,
         efficiencyReceipt: assembled.efficiencyReceipt,
-      };
+      });
       forgeGreenActualContextBytes = contextMetrics.contextBytes;
       forgeGreenActualContextTokens = contextMetrics.estimatedInputTokens;
       // FG-3D: observational ledger accounting for Context Page reuse — reuses the existing
@@ -1444,7 +1464,7 @@ export class AgentRuntime {
             content: `Goal:\n${req.goal}\n\nRuntime refreshed the repository index after a successful workspace mutation. Prior repository excerpts were removed because they are stale. Re-read any file before relying on its content.`,
           };
           const status = intelligence.status();
-          contextMetrics = {
+          contextMetrics = withGreenPolicy({
             candidateFileCount: status.fileCount,
             candidateSymbolCount: status.symbolCount,
             selectedFileCount: 0,
@@ -1459,7 +1479,7 @@ export class AgentRuntime {
             contextRefreshes: (prior.contextRefreshes ?? 0) + 1,
             staleContextInvalidations,
             efficiencyReceipt: prior.efficiencyReceipt,
-          };
+          });
           forgeGreenActualContextBytes = contextMetrics.contextBytes;
           forgeGreenActualContextTokens = contextMetrics.estimatedInputTokens;
           forgeGreenR0Telemetry.recordRepositoryGeneration(contextMetrics.repositoryGeneration);
@@ -1469,7 +1489,7 @@ export class AgentRuntime {
             role: "user",
             content: `Goal:\n${req.goal}\n\nRuntime context invalidated after a successful workspace mutation. Prior repository excerpts were removed because the fresh index could not be built. Re-read any file before relying on its content.`,
           };
-          contextMetrics = {
+          contextMetrics = withGreenPolicy({
             ...prior,
             selectedFileCount: 0,
             selectedEvidenceCount: 0,
@@ -1479,7 +1499,7 @@ export class AgentRuntime {
             reasonCodes: [...new Set([...(prior.reasonCodes ?? []), "context_invalidated_after_mutation", "context_refresh_unavailable"])],
             contextRefreshes: prior.contextRefreshes ?? 0,
             staleContextInvalidations,
-          };
+          });
           forgeGreenActualContextBytes = contextMetrics.contextBytes;
           forgeGreenActualContextTokens = contextMetrics.estimatedInputTokens;
         }
@@ -1616,7 +1636,7 @@ export class AgentRuntime {
             // R34 Mission F: same superseded-output compaction as the interactive loop —
             // role transcripts accumulate stale identical reads too. `messages` itself is
             // the durable transcript and is left untouched.
-            const dispatchMessages = this.efficiencyControls.supersededCompaction
+            const dispatchMessages = greenPolicy.compactsSuperseded()
               ? compactSupersededToolOutputs(messages)
               : messages;
             // R41: the request's output budget is recomputed per dispatch — a failover
@@ -1697,6 +1717,10 @@ export class AgentRuntime {
                 // did not deliver usable output for this role, so a role-scoped outcome
                 // softly demotes it for this role only (cleared by a later verified
                 // completion), while the turn gate below still refuses to count the turn.
+                // R42: an unusable answer is also a ForgeGreen quality signal — optimization
+                // may have hidden context the model needed, so the policy steps down and a
+                // completed-response replay can never serve the identical retry.
+                greenPolicy.escalate("model_response_unusable", `finishReason=${response.finishReason} textBytes=${response.text.length} toolCalls=${response.toolCalls.length}`);
                 this.eightBit.observe({
                   kind: "role_outcome",
                   outcome: "role_failed",
@@ -1807,6 +1831,9 @@ export class AgentRuntime {
             if (outcome.action !== "rotate" || pinned) throw err;
             if (!this.providerCatalog.get(outcome.replacement.providerId)) throw err;
             adapter.emitRouterFailover(req.runId, `${failing.providerId}/${failing.modelId}`, `${outcome.replacement.providerId}/${outcome.replacement.modelId}`, outcome.reason);
+            // R42: a replacement route continues a transcript it did not produce — suppressions
+            // and replays optimized for the failing route must not survive the switch.
+            greenPolicy.escalate("provider_failover", `${failing.providerId}/${failing.modelId} -> ${outcome.replacement.providerId}/${outcome.replacement.modelId} (${outcome.reason})`);
             activeSelection = { providerId: outcome.replacement.providerId, modelId: outcome.replacement.modelId };
             rotations++;
           }
@@ -2294,7 +2321,15 @@ export class AgentRuntime {
             runtimeClassifiedReadOnly: isClassifiedReadOnlyCommand(tc.name, supervisorArgs),
             workstreamScope: req.workstreamScope,
           };
-          const duplicateDecision = this.efficiencyControls.duplicateSuppression ? duplicateSupervisor.classify(duplicateIdentity) : { action: "execute" as const };
+          // R42: the classifier runs whenever the policy is above OFF — its no-progress bound
+          // is a safety mechanism, not an optimization. Only FULL may replay a prior output;
+          // CONSERVATIVE still bounds identical repeats but executes the read.
+          const duplicateDecision = greenPolicy.runsDuplicateClassifier()
+            ? duplicateSupervisor.classify(duplicateIdentity, { replay: greenPolicy.replaysDuplicates() })
+            : { action: "execute" as const };
+          if (duplicateDecision.action === "execute" && "suppressedDuplicate" in duplicateDecision) {
+            greenPolicy.notePreventedReplay();
+          }
           if (duplicateDecision.action === "escalate") {
             ledger.recordNoProgressInterruption(duplicateDecision.reason);
             // When the escalating history also matches the certified CF-07 text-loop shapes
@@ -2465,6 +2500,9 @@ export class AgentRuntime {
           if (duplicateSupervisor.isMutating(duplicateIdentity)) {
             if (toolExec.error === ERROR_CODES.TOOL_NO_EFFECT) {
               noEffectWriteCount = duplicateSupervisor.recordNoEffectWrite();
+              // R42: a rejected write means the model acted on context that no longer matches
+              // the workspace — exactly the failure Green replay/compaction could worsen.
+              greenPolicy.escalate("no_effect_write", `tool=${toolExec.toolName} count=${noEffectWriteCount}`);
               if (noEffectWriteCount >= 2) {
                 toolExec.output += "\nRepeated no-effect writes require a new approach: re-read the relevant files, reconsider the plan and target paths, and make one independently verifiable change before continuing.";
               }
@@ -2477,7 +2515,7 @@ export class AgentRuntime {
 
           // FG-1B: bound the model-context representation of large outputs. The authoritative
           // post-redaction output stays on the record (and in the event stream) untouched.
-          const compression = this.efficiencyControls.toolOutputCompression ? compressToolOutput(toolExec.output, { artifactRef: executionId }) : { applied: false as const };
+          const compression = greenPolicy.compressesToolOutput() ? compressToolOutput(toolExec.output, { artifactRef: executionId }) : { applied: false as const };
           if (compression.applied) {
             toolExec.modelContextOutput = compression.representation;
             toolExec.compression = {

@@ -32,7 +32,8 @@ export type DuplicateDecision =
   | { action: "execute" }
   | { action: "execute_retry_failed" }
   | { action: "suppress"; reason: string; priorOutput: string; priorExecutionId: string }
-  | { action: "escalate"; reason: string };
+  | { action: "escalate"; reason: string }
+  | { action: "execute"; suppressedDuplicate: true };
 
 export interface DuplicateSuppressionMetrics {
   duplicateActionsSuppressed: number;
@@ -161,8 +162,12 @@ export class DuplicateActionSupervisor {
   /**
    * Decide what to do with a pending read-only action before executing it.
    * Mutating actions are always executed and only update the state version after completion.
+   *
+   * `replay: false` keeps the full no-progress accounting (suppression-eligible repeats still
+   * count toward the bounded escalation) but never returns `suppress` — the R42 conservative
+   * policy uses it where a replayed read could serve state this run cannot observe.
    */
-  classify(identity: DuplicateActionIdentity): DuplicateDecision {
+  classify(identity: DuplicateActionIdentity, options?: { replay?: boolean }): DuplicateDecision {
     if (!this.isReadOnly(identity)) {
       return { action: "execute" };
     }
@@ -187,8 +192,11 @@ export class DuplicateActionSupervisor {
           reason: `No-progress loop: read-only action "${identity.tool}" was executed and then suppressed once against unchanged workspace state and is being requested again.`,
         };
       }
-      this.metrics.duplicateActionsSuppressed++;
       record.suppressionsAtState++;
+      if (options?.replay === false) {
+        return { action: "execute", suppressedDuplicate: true };
+      }
+      this.metrics.duplicateActionsSuppressed++;
       return {
         action: "suppress",
         reason: "Identical read-only action against unchanged workspace state; prior authoritative result replayed without re-execution.",

@@ -17,6 +17,7 @@ import { ERROR_CODES, type AgentModelSelection, type AgentUsage } from "@codefor
 import type { ToolDefinition } from "@codeforge/tools";
 import { redactSecrets } from "@codeforge/secrets";
 import { fingerprint, type ForgeGreenAdvisor } from "@codeforge/forge-green";
+import type { ForgeGreenRunPolicy } from "./forgegreen-run-policy.js";
 
 export interface ModelExecutionRequest {
   modelSelection?: AgentModelSelection;
@@ -109,6 +110,7 @@ export class ModelExecutionAdapter {
     firewall: ForgeZero,
     forgeGreen?: ForgeGreenAdvisor,
     governor?: ProviderCapacityGovernor,
+    private readonly greenPolicy?: ForgeGreenRunPolicy,
   ) {
     this.providerCatalog = providerCatalog;
     this.firewall = firewall;
@@ -327,9 +329,19 @@ export class ModelExecutionAdapter {
       userId: req.userId ?? "",
       authorityState: req.authorityState ?? "canonical",
       dedupeScope: req.dedupeScope ?? "request",
+      // R42: the run-policy epoch joins the key so a response cached before an escalation can
+      // never be replayed to a retry issued after it (e.g. an identical re-dispatch following
+      // an unusable answer would otherwise get that same unusable answer back).
+      dedupeEpoch: this.greenPolicy?.dedupeEpoch() ?? 0,
     });
-    const run = this.forgeGreen
-      ? await this.forgeGreen.runDeduplicated(requestKey, () => this.executeUncached({ ...req, modelSelection: resolved }), req.signal)
+    const dedupeMode = this.greenPolicy?.modelDedupeMode() ?? "full";
+    const run = this.forgeGreen && dedupeMode !== "off"
+      ? await this.forgeGreen.runDeduplicated(
+          requestKey,
+          () => this.executeUncached({ ...req, modelSelection: resolved }),
+          req.signal,
+          { completedReplay: dedupeMode === "full" },
+        )
       : { value: await this.executeUncached({ ...req, modelSelection: resolved }), suppressed: false };
     const cached = run.value.usage.cachedTokens;
     return {
@@ -454,6 +466,7 @@ export function createModelExecutionAdapter(
   firewall: ForgeZero,
   forgeGreen?: ForgeGreenAdvisor,
   governor?: ProviderCapacityGovernor,
+  greenPolicy?: ForgeGreenRunPolicy,
 ): ModelExecutionAdapter {
-  return new ModelExecutionAdapter(providerCatalog, firewall, forgeGreen, governor);
+  return new ModelExecutionAdapter(providerCatalog, firewall, forgeGreen, governor, greenPolicy);
 }

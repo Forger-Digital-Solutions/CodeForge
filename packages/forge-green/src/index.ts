@@ -301,7 +301,7 @@ export class ForgeGreenAdvisor {
     return true;
   }
 
-  async runDeduplicated<T>(identity: string, operation: () => Promise<T>, signal?: AbortSignal): Promise<{ value: T; suppressed: boolean }> {
+  async runDeduplicated<T>(identity: string, operation: () => Promise<T>, signal?: AbortSignal, options?: { completedReplay?: boolean }): Promise<{ value: T; suppressed: boolean }> {
     if (signal?.aborted) throw new Error("ForgeGreen optimization cancelled");
     if (!this.enabled) return { value: await awaitAbortable(operation(), signal), suppressed: false };
     const key = hash(identity);
@@ -310,7 +310,9 @@ export class ForgeGreenAdvisor {
       this.duplicateRequestsAvoided++;
       return { value: await awaitAbortable(prior as Promise<T>, signal), suppressed: true };
     }
-    const completed = this.completedRequests.get(key);
+    // completedReplay:false joins concurrent identical dispatches but never replays a finished
+    // response — a re-issued request after a quality-risk signal must re-execute, not replay.
+    const completed = options?.completedReplay === false ? undefined : this.completedRequests.get(key);
     if (completed) {
       completed.touchedAt = Date.now();
       this.duplicateRequestsAvoided++;
