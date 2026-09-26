@@ -212,7 +212,9 @@ export class ContextAssembler {
           const brief = await buildExplorationBrief(options.goal, options.workspacePath, options.intelligence);
           if (brief.files.length > 0 || brief.definitions.length > 0) {
             const rendered = renderExplorationBrief(brief);
-            contextSections.push(rendered);
+            // Excerpts carry file content — the packet must stay inside the untrusted-data
+            // boundary or adversarial repository prose would escape the delimited region.
+            contextSections.push(`Pre-gathered Repository Orientation:\n${formatUntrustedData(rendered, "exploration brief")}`);
             estimatedTokensUsed += estimateTokens(rendered);
             explorationBriefMeta = {
               bytes: brief.bytes,
@@ -278,27 +280,6 @@ export class ContextAssembler {
           const evText = options.explorerEvidence.slice(0, 20).map((e) => `- [${e.kind}] ${e.ref}: ${e.description ?? ""}`).join("\n");
           contextSections.push(`Discovered Explorer Evidence:\n${formatUntrustedData(evText, "explorer evidence")}`);
           estimatedTokensUsed += estimateTokens(evText);
-        } else if (options.intelligence) {
-          // R45 §12 "small" semantics: when no explorer agent ran (tiny/compact topologies),
-          // the deterministic read-plan packet gives the coder the same orientation for zero
-          // model calls. When an explorer did run, its evidence is already rendered above —
-          // injecting the raw packet too would double-pay the context budget.
-          const brief = await buildExplorationBrief(options.goal, options.workspacePath, options.intelligence);
-          if (brief.files.length > 0 || brief.definitions.length > 0) {
-            const rendered = renderExplorationBrief(brief);
-            contextSections.push(`Repository Orientation (deterministic, no explorer ran):\n${rendered}`);
-            estimatedTokensUsed += estimateTokens(rendered);
-            explorationBriefMeta = {
-              bytes: brief.bytes,
-              candidateFiles: brief.files.length,
-              candidatePaths: brief.files.map((f) => f.path),
-              symbolRecall: brief.symbolRecall,
-              excerptedFiles: brief.files.filter((f) => f.excerpt !== undefined).length,
-            };
-            for (const item of brief.files) {
-              evidenceList.push({ source: "search", path: item.path, reasons: item.reasons, fresh: true });
-            }
-          }
         }
         if (options.intelligence) {
           // FG-3B/C/F: start narrow (kernel + a small active-target slice), add bounded one-hop
@@ -346,6 +327,30 @@ export class ContextAssembler {
           if (structuralSection) {
             contextSections.push(formatUntrustedData(structuralSection.content, "structural neighbors"));
             evidenceList.push({ source: "graph", reasons: structuralSection.reasons, fresh: true });
+          }
+        }
+        if (!options.explorerEvidence?.length && options.intelligence) {
+          // R45 §12 "small" semantics: when no explorer agent ran (tiny/compact topologies),
+          // the deterministic read-plan packet gives the coder the same orientation for zero
+          // model calls. When an explorer did run, its evidence is already rendered above —
+          // injecting the raw packet too would double-pay the context budget. Appended after
+          // the progressive file chunks so the symbol-centered target slice keeps the first
+          // untrusted-data slot.
+          const brief = await buildExplorationBrief(options.goal, options.workspacePath, options.intelligence);
+          if (brief.files.length > 0 || brief.definitions.length > 0) {
+            const rendered = renderExplorationBrief(brief);
+            contextSections.push(`Repository Orientation (deterministic, no explorer ran):\n${formatUntrustedData(rendered, "exploration brief")}`);
+            estimatedTokensUsed += estimateTokens(rendered);
+            explorationBriefMeta = {
+              bytes: brief.bytes,
+              candidateFiles: brief.files.length,
+              candidatePaths: brief.files.map((f) => f.path),
+              symbolRecall: brief.symbolRecall,
+              excerptedFiles: brief.files.filter((f) => f.excerpt !== undefined).length,
+            };
+            for (const item of brief.files) {
+              evidenceList.push({ source: "search", path: item.path, reasons: item.reasons, fresh: true });
+            }
           }
         }
         break;

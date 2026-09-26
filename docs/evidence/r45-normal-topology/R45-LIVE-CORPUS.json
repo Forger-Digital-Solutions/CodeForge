@@ -1,0 +1,1881 @@
+{
+  "at": "2026-09-26T22:28:00.745Z",
+  "topology": "normal",
+  "providers": [
+    "openrouter",
+    "groq",
+    "mistral"
+  ],
+  "verifiedRoutes": 64,
+  "missions": [
+    {
+      "task": "r45-rename",
+      "kind": "rename",
+      "topology": "normal",
+      "status": "blocked",
+      "counters": {
+        "childrenSpawned": 1,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "verificationAttempts": 0
+      },
+      "changedFiles": [],
+      "verification": [],
+      "review": {
+        "passed": false,
+        "findings": 0
+      },
+      "completion": null,
+      "wallMs": 22602,
+      "calls": 9,
+      "inTokens": 26893,
+      "outTokens": 1564,
+      "errors": 3,
+      "providers": [
+        "openrouter",
+        "mistral",
+        "groq"
+      ],
+      "models": [
+        "dots-studio/dots-3-note-preview:free",
+        "codestral-2508",
+        "qwen/qwen3.8-27b",
+        "mistral-medium-2604"
+      ],
+      "errorKinds": [
+        "RATE_LIMITED",
+        "RATE_LIMITED",
+        "RATE_LIMITED"
+      ],
+      "supplyBlocked": false,
+      "harvested": {
+        "duplicatesSuppressed": 0,
+        "turnFailures": [
+          {
+            "turnId": "child-d8ff7f43-2f05-461f-ab2e-c2a52a4e5829",
+            "error": "Expected non-empty string for summary"
+          },
+          {
+            "turnId": "child-39d91710-8e02-4810-8366-9ef3b513a104",
+            "error": "[PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: mistral error (429): {\"object\":\"error\",\"message\":\"Ra"
+          }
+        ],
+        "receipts": {
+          "sustainability": [
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            }
+          ]
+        },
+        "journals": [
+          {
+            "runId": "child-d8ff7f43-2f05-461f-ab2e-c2a52a4e5829",
+            "agentId": "explorer",
+            "role": "explorer",
+            "state": "converged_failed",
+            "turnCount": 5,
+            "toolCallCount": 3,
+            "route": {
+              "providerId": "openrouter",
+              "modelId": "dots-studio/dots-3-note-preview:free"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "repo_search",
+                    "target": "authenticate",
+                    "outcome": "success",
+                    "bytes": 1359
+                  }
+                ]
+              },
+              {
+                "turn": 2,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "repo_search",
+                    "target": "import { authenticate }",
+                    "outcome": "success",
+                    "bytes": 1400
+                  }
+                ]
+              },
+              {
+                "turn": 3,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "repo_tests",
+                    "target": "src/auth.mjs",
+                    "outcome": "success",
+                    "bytes": 30
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": {
+              "bytes": 1536,
+              "candidateFiles": 5,
+              "candidatePaths": [
+                "src/auth.mjs",
+                "src/meta.mjs",
+                "src/admin.mjs",
+                "src/index.mjs",
+                "src/login.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 5
+            },
+            "adaptiveTurnBudget": {
+              "original": 10,
+              "applied": 5,
+              "reason": "orientation packet covered 5 candidate files and resolved 1/12 goal symbols"
+            },
+            "routeWindows": [
+              {
+                "providerId": "openrouter",
+                "modelId": "dots-studio/dots-3-note-preview:free",
+                "calls": 0,
+                "firstCallAt": "2026-09-26T22:18:22.686Z",
+                "firstFailureAt": "2026-09-26T22:18:22.686Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              },
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 5,
+                "firstCallAt": "2026-09-26T22:18:27.313Z"
+              }
+            ],
+            "routeFailovers": [
+              {
+                "from": "openrouter/dots-studio/dots-3-note-preview:free",
+                "to": "mistral/codestral-2508",
+                "at": "2026-09-26T22:18:22.704Z",
+                "reason": "RATE_LIMITED",
+                "callsBeforeFailure": 0
+              }
+            ],
+            "editAttempts": [],
+            "structuredOutput": {
+              "repairs": 1,
+              "truncationRepairs": 0,
+              "repairStrategies": [],
+              "rejections": [
+                "Structured output is not valid JSON",
+                "Expected non-empty string for summary"
+              ],
+              "exhausted": true
+            },
+            "stopReason": "error"
+          },
+          {
+            "runId": "child-39d91710-8e02-4810-8366-9ef3b513a104",
+            "agentId": "coder",
+            "role": "coder",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 1,
+            "route": {
+              "providerId": "groq",
+              "modelId": "qwen/qwen3.8-27b"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/auth.mjs",
+                    "outcome": "success",
+                    "bytes": 200
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "groq",
+                "modelId": "qwen/qwen3.8-27b",
+                "calls": 1,
+                "firstCallAt": "2026-09-26T22:18:38.068Z",
+                "firstFailureAt": "2026-09-26T22:18:44.106Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              },
+              {
+                "providerId": "mistral",
+                "modelId": "mistral-medium-2604",
+                "calls": 0,
+                "firstCallAt": "2026-09-26T22:18:44.381Z",
+                "firstFailureAt": "2026-09-26T22:18:44.381Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              }
+            ],
+            "routeFailovers": [
+              {
+                "from": "groq/qwen/qwen3.8-27b",
+                "to": "mistral/mistral-medium-2604",
+                "at": "2026-09-26T22:18:44.125Z",
+                "reason": "RATE_LIMITED",
+                "callsBeforeFailure": 1
+              }
+            ],
+            "editAttempts": [],
+            "structuredOutput": {
+              "repairs": 0,
+              "truncationRepairs": 0,
+              "repairStrategies": [],
+              "rejections": [],
+              "exhausted": false
+            },
+            "stopReason": "error"
+          }
+        ],
+        "explorer": {
+          "turns": [
+            5
+          ],
+          "toolCalls": [
+            3
+          ],
+          "brief": [
+            {
+              "bytes": 1536,
+              "candidateFiles": 5,
+              "candidatePaths": [
+                "src/auth.mjs",
+                "src/meta.mjs",
+                "src/admin.mjs",
+                "src/index.mjs",
+                "src/login.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 5
+            }
+          ],
+          "adaptiveBudget": [
+            {
+              "original": 10,
+              "applied": 5,
+              "reason": "orientation packet covered 5 candidate files and resolved 1/12 goal symbols"
+            }
+          ],
+          "trace": [
+            [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "repo_search",
+                    "target": "authenticate",
+                    "outcome": "success",
+                    "bytes": 1359
+                  }
+                ]
+              },
+              {
+                "turn": 2,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "repo_search",
+                    "target": "import { authenticate }",
+                    "outcome": "success",
+                    "bytes": 1400
+                  }
+                ]
+              },
+              {
+                "turn": 3,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "repo_tests",
+                    "target": "src/auth.mjs",
+                    "outcome": "success",
+                    "bytes": 30
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        "routeWindows": [
+          {
+            "providerId": "openrouter",
+            "modelId": "dots-studio/dots-3-note-preview:free",
+            "calls": 0,
+            "firstCallAt": "2026-09-26T22:18:22.686Z",
+            "firstFailureAt": "2026-09-26T22:18:22.686Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          },
+          {
+            "providerId": "mistral",
+            "modelId": "codestral-2508",
+            "calls": 5,
+            "firstCallAt": "2026-09-26T22:18:27.313Z"
+          },
+          {
+            "providerId": "groq",
+            "modelId": "qwen/qwen3.8-27b",
+            "calls": 1,
+            "firstCallAt": "2026-09-26T22:18:38.068Z",
+            "firstFailureAt": "2026-09-26T22:18:44.106Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          },
+          {
+            "providerId": "mistral",
+            "modelId": "mistral-medium-2604",
+            "calls": 0,
+            "firstCallAt": "2026-09-26T22:18:44.381Z",
+            "firstFailureAt": "2026-09-26T22:18:44.381Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          }
+        ],
+        "routeFailovers": [
+          {
+            "from": "openrouter/dots-studio/dots-3-note-preview:free",
+            "to": "mistral/codestral-2508",
+            "at": "2026-09-26T22:18:22.704Z",
+            "reason": "RATE_LIMITED",
+            "callsBeforeFailure": 0
+          },
+          {
+            "from": "groq/qwen/qwen3.8-27b",
+            "to": "mistral/mistral-medium-2604",
+            "at": "2026-09-26T22:18:44.125Z",
+            "reason": "RATE_LIMITED",
+            "callsBeforeFailure": 1
+          }
+        ],
+        "firstEditQuality": {
+          "runsWithEdits": 0,
+          "firstEditSucceeded": 0,
+          "hashAutoAttached": 0,
+          "hashSupplied": 0,
+          "failureClasses": {}
+        },
+        "eventCount": 40
+      },
+      "rateLimited": true
+    },
+    {
+      "task": "r45-distributed-bug",
+      "kind": "distributed-bug",
+      "topology": "normal",
+      "status": "blocked",
+      "counters": {
+        "childrenSpawned": 1,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "verificationAttempts": 0
+      },
+      "changedFiles": [],
+      "verification": [],
+      "review": {
+        "passed": false,
+        "findings": 0
+      },
+      "completion": null,
+      "wallMs": 18130,
+      "calls": 6,
+      "inTokens": 10115,
+      "outTokens": 1076,
+      "errors": 3,
+      "providers": [
+        "openrouter",
+        "mistral",
+        "groq"
+      ],
+      "models": [
+        "dots-studio/dots-3-note-preview:free",
+        "codestral-2508",
+        "qwen/qwen3.8-27b",
+        "mistral-medium-2604"
+      ],
+      "errorKinds": [
+        "RATE_LIMITED",
+        "RATE_LIMITED",
+        "RATE_LIMITED"
+      ],
+      "supplyBlocked": false,
+      "harvested": {
+        "duplicatesSuppressed": 0,
+        "turnFailures": [
+          {
+            "turnId": "child-270468f8-ead3-4889-a461-3c4d2b5bffbe",
+            "error": "Expected non-empty string for summary"
+          },
+          {
+            "turnId": "child-2b4eb68b-8307-46ef-8142-e9efb6049d3b",
+            "error": "[PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: mistral error (429): {\"object\":\"error\",\"message\":\"Ra"
+          }
+        ],
+        "receipts": {
+          "sustainability": [
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            }
+          ]
+        },
+        "journals": [
+          {
+            "runId": "child-270468f8-ead3-4889-a461-3c4d2b5bffbe",
+            "agentId": "explorer",
+            "role": "explorer",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 0,
+            "route": {
+              "providerId": "openrouter",
+              "modelId": "dots-studio/dots-3-note-preview:free"
+            },
+            "toolTrace": [],
+            "explorationBrief": {
+              "bytes": 1160,
+              "candidateFiles": 3,
+              "candidatePaths": [
+                "tests/report.test.mjs",
+                "src/report.mjs",
+                "src/normalize.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 3
+            },
+            "adaptiveTurnBudget": {
+              "original": 10,
+              "applied": 4,
+              "reason": "orientation packet covered 3 candidate files and resolved 1/12 goal symbols"
+            },
+            "routeWindows": [
+              {
+                "providerId": "openrouter",
+                "modelId": "dots-studio/dots-3-note-preview:free",
+                "calls": 0,
+                "firstCallAt": "2026-09-26T22:20:45.488Z",
+                "firstFailureAt": "2026-09-26T22:20:45.488Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              },
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 2,
+                "firstCallAt": "2026-09-26T22:20:48.156Z"
+              }
+            ],
+            "routeFailovers": [
+              {
+                "from": "openrouter/dots-studio/dots-3-note-preview:free",
+                "to": "mistral/codestral-2508",
+                "at": "2026-09-26T22:20:45.507Z",
+                "reason": "RATE_LIMITED",
+                "callsBeforeFailure": 0
+              }
+            ],
+            "editAttempts": [],
+            "structuredOutput": {
+              "repairs": 1,
+              "truncationRepairs": 0,
+              "repairStrategies": [],
+              "rejections": [
+                "Structured output is not valid JSON",
+                "Expected non-empty string for summary"
+              ],
+              "exhausted": true
+            },
+            "stopReason": "error"
+          },
+          {
+            "runId": "child-2b4eb68b-8307-46ef-8142-e9efb6049d3b",
+            "agentId": "coder",
+            "role": "coder",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 1,
+            "route": {
+              "providerId": "groq",
+              "modelId": "qwen/qwen3.8-27b"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "success",
+                    "bytes": 208
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "groq",
+                "modelId": "qwen/qwen3.8-27b",
+                "calls": 1,
+                "firstCallAt": "2026-09-26T22:20:54.196Z",
+                "firstFailureAt": "2026-09-26T22:21:02.469Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              },
+              {
+                "providerId": "mistral",
+                "modelId": "mistral-medium-2604",
+                "calls": 0,
+                "firstCallAt": "2026-09-26T22:21:02.741Z",
+                "firstFailureAt": "2026-09-26T22:21:02.741Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              }
+            ],
+            "routeFailovers": [
+              {
+                "from": "groq/qwen/qwen3.8-27b",
+                "to": "mistral/mistral-medium-2604",
+                "at": "2026-09-26T22:21:02.488Z",
+                "reason": "RATE_LIMITED",
+                "callsBeforeFailure": 1
+              }
+            ],
+            "editAttempts": [],
+            "structuredOutput": {
+              "repairs": 0,
+              "truncationRepairs": 0,
+              "repairStrategies": [],
+              "rejections": [],
+              "exhausted": false
+            },
+            "stopReason": "error"
+          }
+        ],
+        "explorer": {
+          "turns": [
+            2
+          ],
+          "toolCalls": [
+            0
+          ],
+          "brief": [
+            {
+              "bytes": 1160,
+              "candidateFiles": 3,
+              "candidatePaths": [
+                "tests/report.test.mjs",
+                "src/report.mjs",
+                "src/normalize.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 3
+            }
+          ],
+          "adaptiveBudget": [
+            {
+              "original": 10,
+              "applied": 4,
+              "reason": "orientation packet covered 3 candidate files and resolved 1/12 goal symbols"
+            }
+          ],
+          "trace": [
+            []
+          ]
+        },
+        "routeWindows": [
+          {
+            "providerId": "openrouter",
+            "modelId": "dots-studio/dots-3-note-preview:free",
+            "calls": 0,
+            "firstCallAt": "2026-09-26T22:20:45.488Z",
+            "firstFailureAt": "2026-09-26T22:20:45.488Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          },
+          {
+            "providerId": "mistral",
+            "modelId": "codestral-2508",
+            "calls": 2,
+            "firstCallAt": "2026-09-26T22:20:48.156Z"
+          },
+          {
+            "providerId": "groq",
+            "modelId": "qwen/qwen3.8-27b",
+            "calls": 1,
+            "firstCallAt": "2026-09-26T22:20:54.196Z",
+            "firstFailureAt": "2026-09-26T22:21:02.469Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          },
+          {
+            "providerId": "mistral",
+            "modelId": "mistral-medium-2604",
+            "calls": 0,
+            "firstCallAt": "2026-09-26T22:21:02.741Z",
+            "firstFailureAt": "2026-09-26T22:21:02.741Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          }
+        ],
+        "routeFailovers": [
+          {
+            "from": "openrouter/dots-studio/dots-3-note-preview:free",
+            "to": "mistral/codestral-2508",
+            "at": "2026-09-26T22:20:45.507Z",
+            "reason": "RATE_LIMITED",
+            "callsBeforeFailure": 0
+          },
+          {
+            "from": "groq/qwen/qwen3.8-27b",
+            "to": "mistral/mistral-medium-2604",
+            "at": "2026-09-26T22:21:02.488Z",
+            "reason": "RATE_LIMITED",
+            "callsBeforeFailure": 1
+          }
+        ],
+        "firstEditQuality": {
+          "runsWithEdits": 0,
+          "firstEditSucceeded": 0,
+          "hashAutoAttached": 0,
+          "hashSupplied": 0,
+          "failureClasses": {}
+        },
+        "eventCount": 31
+      },
+      "rateLimited": true
+    },
+    {
+      "task": "r45-feature",
+      "kind": "feature",
+      "topology": "normal",
+      "status": "blocked",
+      "counters": {
+        "childrenSpawned": 1,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "verificationAttempts": 0
+      },
+      "changedFiles": [],
+      "verification": [],
+      "review": {
+        "passed": false,
+        "findings": 0
+      },
+      "completion": null,
+      "wallMs": 17455,
+      "calls": 6,
+      "inTokens": 10412,
+      "outTokens": 768,
+      "errors": 3,
+      "providers": [
+        "openrouter",
+        "mistral",
+        "groq"
+      ],
+      "models": [
+        "dots-studio/dots-3-note-preview:free",
+        "codestral-2508",
+        "qwen/qwen3.8-27b",
+        "mistral-medium-2604"
+      ],
+      "errorKinds": [
+        "RATE_LIMITED",
+        "RATE_LIMITED",
+        "RATE_LIMITED"
+      ],
+      "supplyBlocked": false,
+      "harvested": {
+        "duplicatesSuppressed": 0,
+        "turnFailures": [
+          {
+            "turnId": "child-15216580-ba07-40ee-91c9-5229d2bc26bf",
+            "error": "Expected non-empty string for summary"
+          },
+          {
+            "turnId": "child-27c09e4c-c4ca-4c9e-bb14-01ec3ac4b4a5",
+            "error": "[PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: mistral error (429): {\"object\":\"error\",\"message\":\"Ra"
+          }
+        ],
+        "receipts": {
+          "sustainability": [
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            }
+          ]
+        },
+        "journals": [
+          {
+            "runId": "child-15216580-ba07-40ee-91c9-5229d2bc26bf",
+            "agentId": "explorer",
+            "role": "explorer",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 0,
+            "route": {
+              "providerId": "openrouter",
+              "modelId": "dots-studio/dots-3-note-preview:free"
+            },
+            "toolTrace": [],
+            "explorationBrief": {
+              "bytes": 983,
+              "candidateFiles": 3,
+              "candidatePaths": [
+                "tests/api.test.mjs",
+                "src/api.mjs",
+                "src/limiter.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 0,
+                "total": 12
+              },
+              "excerptedFiles": 2
+            },
+            "adaptiveTurnBudget": {
+              "original": 10,
+              "applied": 10,
+              "reason": "orientation packet weak — 3 candidates, 0/12 symbols resolved; full budget kept"
+            },
+            "routeWindows": [
+              {
+                "providerId": "openrouter",
+                "modelId": "dots-studio/dots-3-note-preview:free",
+                "calls": 0,
+                "firstCallAt": "2026-09-26T22:23:03.835Z",
+                "firstFailureAt": "2026-09-26T22:23:03.835Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              },
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 2,
+                "firstCallAt": "2026-09-26T22:23:06.808Z"
+              }
+            ],
+            "routeFailovers": [
+              {
+                "from": "openrouter/dots-studio/dots-3-note-preview:free",
+                "to": "mistral/codestral-2508",
+                "at": "2026-09-26T22:23:03.850Z",
+                "reason": "RATE_LIMITED",
+                "callsBeforeFailure": 0
+              }
+            ],
+            "editAttempts": [],
+            "structuredOutput": {
+              "repairs": 1,
+              "truncationRepairs": 0,
+              "repairStrategies": [],
+              "rejections": [
+                "Structured output is not valid JSON",
+                "Expected non-empty string for summary"
+              ],
+              "exhausted": true
+            },
+            "stopReason": "error"
+          },
+          {
+            "runId": "child-27c09e4c-c4ca-4c9e-bb14-01ec3ac4b4a5",
+            "agentId": "coder",
+            "role": "coder",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 1,
+            "route": {
+              "providerId": "groq",
+              "modelId": "qwen/qwen3.8-27b"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/api.mjs",
+                    "outcome": "success",
+                    "bytes": 127
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "groq",
+                "modelId": "qwen/qwen3.8-27b",
+                "calls": 1,
+                "firstCallAt": "2026-09-26T22:23:11.087Z",
+                "firstFailureAt": "2026-09-26T22:23:19.675Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              },
+              {
+                "providerId": "mistral",
+                "modelId": "mistral-medium-2604",
+                "calls": 0,
+                "firstCallAt": "2026-09-26T22:23:20.429Z",
+                "firstFailureAt": "2026-09-26T22:23:20.429Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              }
+            ],
+            "routeFailovers": [
+              {
+                "from": "groq/qwen/qwen3.8-27b",
+                "to": "mistral/mistral-medium-2604",
+                "at": "2026-09-26T22:23:19.695Z",
+                "reason": "RATE_LIMITED",
+                "callsBeforeFailure": 1
+              }
+            ],
+            "editAttempts": [],
+            "structuredOutput": {
+              "repairs": 0,
+              "truncationRepairs": 0,
+              "repairStrategies": [],
+              "rejections": [],
+              "exhausted": false
+            },
+            "stopReason": "error"
+          }
+        ],
+        "explorer": {
+          "turns": [
+            2
+          ],
+          "toolCalls": [
+            0
+          ],
+          "brief": [
+            {
+              "bytes": 983,
+              "candidateFiles": 3,
+              "candidatePaths": [
+                "tests/api.test.mjs",
+                "src/api.mjs",
+                "src/limiter.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 0,
+                "total": 12
+              },
+              "excerptedFiles": 2
+            }
+          ],
+          "adaptiveBudget": [
+            {
+              "original": 10,
+              "applied": 10,
+              "reason": "orientation packet weak — 3 candidates, 0/12 symbols resolved; full budget kept"
+            }
+          ],
+          "trace": [
+            []
+          ]
+        },
+        "routeWindows": [
+          {
+            "providerId": "openrouter",
+            "modelId": "dots-studio/dots-3-note-preview:free",
+            "calls": 0,
+            "firstCallAt": "2026-09-26T22:23:03.835Z",
+            "firstFailureAt": "2026-09-26T22:23:03.835Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          },
+          {
+            "providerId": "mistral",
+            "modelId": "codestral-2508",
+            "calls": 2,
+            "firstCallAt": "2026-09-26T22:23:06.808Z"
+          },
+          {
+            "providerId": "groq",
+            "modelId": "qwen/qwen3.8-27b",
+            "calls": 1,
+            "firstCallAt": "2026-09-26T22:23:11.087Z",
+            "firstFailureAt": "2026-09-26T22:23:19.675Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          },
+          {
+            "providerId": "mistral",
+            "modelId": "mistral-medium-2604",
+            "calls": 0,
+            "firstCallAt": "2026-09-26T22:23:20.429Z",
+            "firstFailureAt": "2026-09-26T22:23:20.429Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          }
+        ],
+        "routeFailovers": [
+          {
+            "from": "openrouter/dots-studio/dots-3-note-preview:free",
+            "to": "mistral/codestral-2508",
+            "at": "2026-09-26T22:23:03.850Z",
+            "reason": "RATE_LIMITED",
+            "callsBeforeFailure": 0
+          },
+          {
+            "from": "groq/qwen/qwen3.8-27b",
+            "to": "mistral/mistral-medium-2604",
+            "at": "2026-09-26T22:23:19.695Z",
+            "reason": "RATE_LIMITED",
+            "callsBeforeFailure": 1
+          }
+        ],
+        "firstEditQuality": {
+          "runsWithEdits": 0,
+          "firstEditSucceeded": 0,
+          "hashAutoAttached": 0,
+          "hashSupplied": 0,
+          "failureClasses": {}
+        },
+        "eventCount": 31
+      },
+      "rateLimited": true
+    },
+    {
+      "task": "r45-schema",
+      "kind": "schema",
+      "topology": "normal",
+      "status": "blocked",
+      "counters": {
+        "childrenSpawned": 1,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "verificationAttempts": 0
+      },
+      "changedFiles": [],
+      "verification": [],
+      "review": {
+        "passed": false,
+        "findings": 0
+      },
+      "completion": null,
+      "wallMs": 27893,
+      "calls": 6,
+      "inTokens": 11929,
+      "outTokens": 1629,
+      "errors": 3,
+      "providers": [
+        "openrouter",
+        "mistral",
+        "groq"
+      ],
+      "models": [
+        "dots-studio/dots-3-note-preview:free",
+        "codestral-2508",
+        "qwen/qwen3.8-27b",
+        "mistral-medium-2604"
+      ],
+      "errorKinds": [
+        "RATE_LIMITED",
+        "RATE_LIMITED",
+        "RATE_LIMITED"
+      ],
+      "supplyBlocked": false,
+      "harvested": {
+        "duplicatesSuppressed": 0,
+        "turnFailures": [
+          {
+            "turnId": "child-124bf41f-e95a-4002-bbd9-678e63afad25",
+            "error": "Expected non-empty string for summary"
+          },
+          {
+            "turnId": "child-d8f2124c-b332-42c6-a0a3-3aa6f3e1187b",
+            "error": "[PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: mistral error (429): {\"object\":\"error\",\"message\":\"Ra"
+          }
+        ],
+        "receipts": {
+          "sustainability": [
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            }
+          ]
+        },
+        "journals": [
+          {
+            "runId": "child-124bf41f-e95a-4002-bbd9-678e63afad25",
+            "agentId": "explorer",
+            "role": "explorer",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 0,
+            "route": {
+              "providerId": "openrouter",
+              "modelId": "dots-studio/dots-3-note-preview:free"
+            },
+            "toolTrace": [],
+            "explorationBrief": {
+              "bytes": 1798,
+              "candidateFiles": 4,
+              "candidatePaths": [
+                "src/schema.mjs",
+                "tests/jobs.test.mjs",
+                "src/handler.mjs",
+                "src/client.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 4
+            },
+            "adaptiveTurnBudget": {
+              "original": 10,
+              "applied": 4,
+              "reason": "orientation packet covered 4 candidate files and resolved 1/12 goal symbols"
+            },
+            "routeWindows": [
+              {
+                "providerId": "openrouter",
+                "modelId": "dots-studio/dots-3-note-preview:free",
+                "calls": 0,
+                "firstCallAt": "2026-09-26T22:25:21.479Z",
+                "firstFailureAt": "2026-09-26T22:25:21.479Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              },
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 2,
+                "firstCallAt": "2026-09-26T22:25:29.236Z"
+              }
+            ],
+            "routeFailovers": [
+              {
+                "from": "openrouter/dots-studio/dots-3-note-preview:free",
+                "to": "mistral/codestral-2508",
+                "at": "2026-09-26T22:25:21.498Z",
+                "reason": "RATE_LIMITED",
+                "callsBeforeFailure": 0
+              }
+            ],
+            "editAttempts": [],
+            "structuredOutput": {
+              "repairs": 1,
+              "truncationRepairs": 0,
+              "repairStrategies": [],
+              "rejections": [
+                "Structured output is not valid JSON",
+                "Expected non-empty string for summary"
+              ],
+              "exhausted": true
+            },
+            "stopReason": "error"
+          },
+          {
+            "runId": "child-d8f2124c-b332-42c6-a0a3-3aa6f3e1187b",
+            "agentId": "coder",
+            "role": "coder",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 1,
+            "route": {
+              "providerId": "groq",
+              "modelId": "qwen/qwen3.8-27b"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/schema.mjs",
+                    "outcome": "success",
+                    "bytes": 221
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "groq",
+                "modelId": "qwen/qwen3.8-27b",
+                "calls": 1,
+                "firstCallAt": "2026-09-26T22:25:36.623Z",
+                "firstFailureAt": "2026-09-26T22:25:48.347Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              },
+              {
+                "providerId": "mistral",
+                "modelId": "mistral-medium-2604",
+                "calls": 0,
+                "firstCallAt": "2026-09-26T22:25:48.565Z",
+                "firstFailureAt": "2026-09-26T22:25:48.565Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              }
+            ],
+            "routeFailovers": [
+              {
+                "from": "groq/qwen/qwen3.8-27b",
+                "to": "mistral/mistral-medium-2604",
+                "at": "2026-09-26T22:25:48.366Z",
+                "reason": "RATE_LIMITED",
+                "callsBeforeFailure": 1
+              }
+            ],
+            "editAttempts": [],
+            "structuredOutput": {
+              "repairs": 0,
+              "truncationRepairs": 0,
+              "repairStrategies": [],
+              "rejections": [],
+              "exhausted": false
+            },
+            "stopReason": "error"
+          }
+        ],
+        "explorer": {
+          "turns": [
+            2
+          ],
+          "toolCalls": [
+            0
+          ],
+          "brief": [
+            {
+              "bytes": 1798,
+              "candidateFiles": 4,
+              "candidatePaths": [
+                "src/schema.mjs",
+                "tests/jobs.test.mjs",
+                "src/handler.mjs",
+                "src/client.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 4
+            }
+          ],
+          "adaptiveBudget": [
+            {
+              "original": 10,
+              "applied": 4,
+              "reason": "orientation packet covered 4 candidate files and resolved 1/12 goal symbols"
+            }
+          ],
+          "trace": [
+            []
+          ]
+        },
+        "routeWindows": [
+          {
+            "providerId": "openrouter",
+            "modelId": "dots-studio/dots-3-note-preview:free",
+            "calls": 0,
+            "firstCallAt": "2026-09-26T22:25:21.479Z",
+            "firstFailureAt": "2026-09-26T22:25:21.479Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          },
+          {
+            "providerId": "mistral",
+            "modelId": "codestral-2508",
+            "calls": 2,
+            "firstCallAt": "2026-09-26T22:25:29.236Z"
+          },
+          {
+            "providerId": "groq",
+            "modelId": "qwen/qwen3.8-27b",
+            "calls": 1,
+            "firstCallAt": "2026-09-26T22:25:36.623Z",
+            "firstFailureAt": "2026-09-26T22:25:48.347Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          },
+          {
+            "providerId": "mistral",
+            "modelId": "mistral-medium-2604",
+            "calls": 0,
+            "firstCallAt": "2026-09-26T22:25:48.565Z",
+            "firstFailureAt": "2026-09-26T22:25:48.565Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          }
+        ],
+        "routeFailovers": [
+          {
+            "from": "openrouter/dots-studio/dots-3-note-preview:free",
+            "to": "mistral/codestral-2508",
+            "at": "2026-09-26T22:25:21.498Z",
+            "reason": "RATE_LIMITED",
+            "callsBeforeFailure": 0
+          },
+          {
+            "from": "groq/qwen/qwen3.8-27b",
+            "to": "mistral/mistral-medium-2604",
+            "at": "2026-09-26T22:25:48.366Z",
+            "reason": "RATE_LIMITED",
+            "callsBeforeFailure": 1
+          }
+        ],
+        "firstEditQuality": {
+          "runsWithEdits": 0,
+          "firstEditSucceeded": 0,
+          "hashAutoAttached": 0,
+          "hashSupplied": 0,
+          "failureClasses": {}
+        },
+        "eventCount": 31
+      },
+      "rateLimited": true
+    },
+    {
+      "task": "r45-fail-repair",
+      "kind": "fail-repair",
+      "topology": "normal",
+      "status": "blocked",
+      "counters": {
+        "childrenSpawned": 1,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "verificationAttempts": 0
+      },
+      "changedFiles": [],
+      "verification": [],
+      "review": {
+        "passed": false,
+        "findings": 0
+      },
+      "completion": null,
+      "wallMs": 11868,
+      "calls": 6,
+      "inTokens": 9912,
+      "outTokens": 1037,
+      "errors": 3,
+      "providers": [
+        "openrouter",
+        "mistral",
+        "groq"
+      ],
+      "models": [
+        "dots-studio/dots-3-note-preview:free",
+        "codestral-2508",
+        "qwen/qwen3.8-27b",
+        "mistral-medium-2604"
+      ],
+      "errorKinds": [
+        "RATE_LIMITED",
+        "RATE_LIMITED",
+        "RATE_LIMITED"
+      ],
+      "supplyBlocked": false,
+      "harvested": {
+        "duplicatesSuppressed": 0,
+        "turnFailures": [
+          {
+            "turnId": "child-8f1b1f14-5e52-4678-9e72-7528b98bd45a",
+            "error": "Expected non-empty string for summary"
+          },
+          {
+            "turnId": "child-e6e40629-2486-4f03-afcc-7dbf97dd091a",
+            "error": "[PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: mistral error (429): {\"object\":\"error\",\"message\":\"Ra"
+          }
+        ],
+        "receipts": {
+          "sustainability": [
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            }
+          ]
+        },
+        "journals": [
+          {
+            "runId": "child-8f1b1f14-5e52-4678-9e72-7528b98bd45a",
+            "agentId": "explorer",
+            "role": "explorer",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 0,
+            "route": {
+              "providerId": "openrouter",
+              "modelId": "dots-studio/dots-3-note-preview:free"
+            },
+            "toolTrace": [],
+            "explorationBrief": {
+              "bytes": 724,
+              "candidateFiles": 2,
+              "candidatePaths": [
+                "src/stats.mjs",
+                "tests/stats.test.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 2
+            },
+            "adaptiveTurnBudget": {
+              "original": 10,
+              "applied": 4,
+              "reason": "orientation packet covered 2 candidate files and resolved 1/12 goal symbols"
+            },
+            "routeWindows": [
+              {
+                "providerId": "openrouter",
+                "modelId": "dots-studio/dots-3-note-preview:free",
+                "calls": 0,
+                "firstCallAt": "2026-09-26T22:27:49.667Z",
+                "firstFailureAt": "2026-09-26T22:27:49.667Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              },
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 2,
+                "firstCallAt": "2026-09-26T22:27:53.045Z"
+              }
+            ],
+            "routeFailovers": [
+              {
+                "from": "openrouter/dots-studio/dots-3-note-preview:free",
+                "to": "mistral/codestral-2508",
+                "at": "2026-09-26T22:27:49.685Z",
+                "reason": "RATE_LIMITED",
+                "callsBeforeFailure": 0
+              }
+            ],
+            "editAttempts": [],
+            "structuredOutput": {
+              "repairs": 1,
+              "truncationRepairs": 0,
+              "repairStrategies": [],
+              "rejections": [
+                "Structured output is not valid JSON",
+                "Expected non-empty string for summary"
+              ],
+              "exhausted": true
+            },
+            "stopReason": "error"
+          },
+          {
+            "runId": "child-e6e40629-2486-4f03-afcc-7dbf97dd091a",
+            "agentId": "coder",
+            "role": "coder",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 1,
+            "route": {
+              "providerId": "groq",
+              "modelId": "qwen/qwen3.8-27b"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/stats.mjs",
+                    "outcome": "success",
+                    "bytes": 126
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "groq",
+                "modelId": "qwen/qwen3.8-27b",
+                "calls": 1,
+                "firstCallAt": "2026-09-26T22:27:58.428Z",
+                "firstFailureAt": "2026-09-26T22:28:00.383Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              },
+              {
+                "providerId": "mistral",
+                "modelId": "mistral-medium-2604",
+                "calls": 0,
+                "firstCallAt": "2026-09-26T22:28:00.673Z",
+                "firstFailureAt": "2026-09-26T22:28:00.673Z",
+                "failureCode": "PROVIDER_RATE_LIMITED"
+              }
+            ],
+            "routeFailovers": [
+              {
+                "from": "groq/qwen/qwen3.8-27b",
+                "to": "mistral/mistral-medium-2604",
+                "at": "2026-09-26T22:28:00.401Z",
+                "reason": "RATE_LIMITED",
+                "callsBeforeFailure": 1
+              }
+            ],
+            "editAttempts": [],
+            "structuredOutput": {
+              "repairs": 0,
+              "truncationRepairs": 0,
+              "repairStrategies": [],
+              "rejections": [],
+              "exhausted": false
+            },
+            "stopReason": "error"
+          }
+        ],
+        "explorer": {
+          "turns": [
+            2
+          ],
+          "toolCalls": [
+            0
+          ],
+          "brief": [
+            {
+              "bytes": 724,
+              "candidateFiles": 2,
+              "candidatePaths": [
+                "src/stats.mjs",
+                "tests/stats.test.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 2
+            }
+          ],
+          "adaptiveBudget": [
+            {
+              "original": 10,
+              "applied": 4,
+              "reason": "orientation packet covered 2 candidate files and resolved 1/12 goal symbols"
+            }
+          ],
+          "trace": [
+            []
+          ]
+        },
+        "routeWindows": [
+          {
+            "providerId": "openrouter",
+            "modelId": "dots-studio/dots-3-note-preview:free",
+            "calls": 0,
+            "firstCallAt": "2026-09-26T22:27:49.667Z",
+            "firstFailureAt": "2026-09-26T22:27:49.667Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          },
+          {
+            "providerId": "mistral",
+            "modelId": "codestral-2508",
+            "calls": 2,
+            "firstCallAt": "2026-09-26T22:27:53.045Z"
+          },
+          {
+            "providerId": "groq",
+            "modelId": "qwen/qwen3.8-27b",
+            "calls": 1,
+            "firstCallAt": "2026-09-26T22:27:58.428Z",
+            "firstFailureAt": "2026-09-26T22:28:00.383Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          },
+          {
+            "providerId": "mistral",
+            "modelId": "mistral-medium-2604",
+            "calls": 0,
+            "firstCallAt": "2026-09-26T22:28:00.673Z",
+            "firstFailureAt": "2026-09-26T22:28:00.673Z",
+            "failureCode": "PROVIDER_RATE_LIMITED"
+          }
+        ],
+        "routeFailovers": [
+          {
+            "from": "openrouter/dots-studio/dots-3-note-preview:free",
+            "to": "mistral/codestral-2508",
+            "at": "2026-09-26T22:27:49.685Z",
+            "reason": "RATE_LIMITED",
+            "callsBeforeFailure": 0
+          },
+          {
+            "from": "groq/qwen/qwen3.8-27b",
+            "to": "mistral/mistral-medium-2604",
+            "at": "2026-09-26T22:28:00.401Z",
+            "reason": "RATE_LIMITED",
+            "callsBeforeFailure": 1
+          }
+        ],
+        "firstEditQuality": {
+          "runsWithEdits": 0,
+          "firstEditSucceeded": 0,
+          "hashAutoAttached": 0,
+          "hashSupplied": 0,
+          "failureClasses": {}
+        },
+        "eventCount": 31
+      },
+      "rateLimited": true
+    }
+  ],
+  "callLog": [
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 127.20769999999993,
+      "usage": {
+        "inputTokens": 13,
+        "outputTokens": 1,
+        "totalTokens": 14
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 255.0327000000002,
+      "usage": {
+        "inputTokens": 4,
+        "outputTokens": 1,
+        "totalTokens": 5,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 91.60519999999997,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 4606.502200000001,
+      "usage": {
+        "inputTokens": 3163,
+        "outputTokens": 707,
+        "totalTokens": 3870,
+        "cachedInputTokens": 1920
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1292.0427999999993,
+      "usage": {
+        "inputTokens": 4294,
+        "outputTokens": 153,
+        "totalTokens": 4447,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1044.2109999999993,
+      "usage": {
+        "inputTokens": 4917,
+        "outputTokens": 97,
+        "totalTokens": 5014,
+        "cachedInputTokens": 128
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 3282.096300000001,
+      "usage": {
+        "inputTokens": 5027,
+        "outputTokens": 273,
+        "totalTokens": 5300,
+        "cachedInputTokens": 4992
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1486.5403999999999,
+      "usage": {
+        "inputTokens": 5328,
+        "outputTokens": 174,
+        "totalTokens": 5502,
+        "cachedInputTokens": 5248
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 1151.6733999999997,
+      "usage": {
+        "inputTokens": 4164,
+        "outputTokens": 160,
+        "totalTokens": 4324
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 170.32380000000194,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "mistral-medium-2604",
+      "ms": 252.88320000000022,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 147.52190000002156,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2645.959200000012,
+      "usage": {
+        "inputTokens": 2930,
+        "outputTokens": 211,
+        "totalTokens": 3141,
+        "cachedInputTokens": 1920
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2666.632100000017,
+      "usage": {
+        "inputTokens": 3169,
+        "outputTokens": 405,
+        "totalTokens": 3574,
+        "cachedInputTokens": 1920
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 1546.0817000000097,
+      "usage": {
+        "inputTokens": 4016,
+        "outputTokens": 460,
+        "totalTokens": 4476
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 108.78320000000531,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "mistral-medium-2604",
+      "ms": 249.2375999999931,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 147.9775999999838,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2955.444200000027,
+      "usage": {
+        "inputTokens": 2936,
+        "outputTokens": 420,
+        "totalTokens": 3356,
+        "cachedInputTokens": 1920
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1870.5409999999683,
+      "usage": {
+        "inputTokens": 3384,
+        "outputTokens": 276,
+        "totalTokens": 3660,
+        "cachedInputTokens": 128
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 691.2829999999958,
+      "usage": {
+        "inputTokens": 4092,
+        "outputTokens": 72,
+        "totalTokens": 4164
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 126.3570999999647,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "mistral-medium-2604",
+      "ms": 730.953199999989,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 123.19250000000466,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 7735.067700000014,
+      "usage": {
+        "inputTokens": 3314,
+        "outputTokens": 795,
+        "totalTokens": 4109,
+        "cachedInputTokens": 1920
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 4530.007500000007,
+      "usage": {
+        "inputTokens": 4137,
+        "outputTokens": 719,
+        "totalTokens": 4856,
+        "cachedInputTokens": 1920
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 869.0643999999738,
+      "usage": {
+        "inputTokens": 4478,
+        "outputTokens": 115,
+        "totalTokens": 4593
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 227.95709999999963,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "mistral-medium-2604",
+      "ms": 196.35430000000633,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 194.63669999991544,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 3356.8977000000887,
+      "usage": {
+        "inputTokens": 2793,
+        "outputTokens": 517,
+        "totalTokens": 3310,
+        "cachedInputTokens": 128
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 3001.8251000000164,
+      "usage": {
+        "inputTokens": 3338,
+        "outputTokens": 463,
+        "totalTokens": 3801,
+        "cachedInputTokens": 1920
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 666.6293000000296,
+      "usage": {
+        "inputTokens": 3781,
+        "outputTokens": 57,
+        "totalTokens": 3838
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 155.98889999999665,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "mistral-medium-2604",
+      "ms": 268.2399999999907,
+      "error": "RATE_LIMITED",
+      "ok": false
+    }
+  ]
+}

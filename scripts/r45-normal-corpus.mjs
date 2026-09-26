@@ -272,6 +272,10 @@ for (const task of TASKS) {
     providers: [...new Set(calls.map((c) => c.provider))],
     models: [...new Set(calls.map((c) => c.model))],
     errorKinds: calls.filter((c) => !c.ok).map((c) => c.error),
+    // A mission can hold real capacity early yet still die on rate limits mid-run;
+    // supplyBlocked only marks zero-capacity runs, so record rate-limit pressure too.
+    rateLimited: calls.some((c) => !c.ok)
+      || harvested.turnFailures.some((f) => /RATE_LIMIT|UNAVAILABLE|429/i.test(f.error ?? "")),
     supplyBlocked,
     harvested,
   };
