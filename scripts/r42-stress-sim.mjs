@@ -72,7 +72,7 @@ const verdict = (role, status, passes, total, completedAt) => ({
 const mkReceipt = (providerId, modelId, roles, ageDays = 1) => {
   const completedAt = new Date(now - ageDays * DAY).toISOString();
   return {
-    suiteVersion: "r42-fixture", providerId, modelId,
+    suiteVersion: "R41_ROLE_QUALIFICATION_V3", providerId, modelId,
     modelDisplayName: modelId, accessClass: "FREE", freeStatus: "VERIFIED_FREE",
     roleResults: Object.fromEntries(Object.entries(roles).map(([role, [status, p, t]]) =>
       [role, verdict(role, status, p, t, completedAt)])),

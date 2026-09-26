@@ -66,7 +66,7 @@ function connected(providerId: string, extra: Partial<ProviderConnectionState> =
 function receipt(providerId: string, modelId: string, state: ModelQualificationReceipt["qualificationState"] = "QUALIFIED"): ModelQualificationReceipt {
   const role = (status: "QUALIFIED" | "NOT_QUALIFIED") => ({ role: "CODER" as const, status, testCases: [], hardFailures: [], overallScore: status === "QUALIFIED" ? 1 : 0, startedAt: NOW.toISOString(), completedAt: NOW.toISOString() });
   return {
-    suiteVersion: "test",
+    suiteVersion: "R41_ROLE_QUALIFICATION_V3",
     providerId,
     modelId,
     modelDisplayName: modelId,

@@ -152,7 +152,7 @@ function mockReceipt(providerId: string, modelId: string): ModelQualificationRec
     completedAt: new Date(T0).toISOString(),
   });
   return {
-    suiteVersion: "r27-test",
+    suiteVersion: "R41_ROLE_QUALIFICATION_V3",
     providerId,
     modelId,
     modelDisplayName: modelId,

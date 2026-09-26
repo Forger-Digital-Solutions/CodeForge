@@ -2,6 +2,7 @@ import type { FreeModelRecord, ForgeZero, PrivacyClass, AccessClass, SupplyClass
 import type { ModelIdentity, ProviderIdentity } from "@codeforge/core";
 import { verifyModelEligibility, FREE_ACCESS_CLASSES } from "@codeforge/forge-zero";
 import type { ModelQualificationReceipt } from "@codeforge/eight-bit";
+import { receiptSuiteSupported } from "@codeforge/eight-bit";
 import { canonicalIdentityFor, type CanonicalIdentity } from "./canonical.js";
 import {
   PROVIDER_DEFINITIONS,
@@ -313,7 +314,11 @@ function modelRolesFor(qualified: ReadonlySet<string>): ModelRole[] {
 function qualificationFor(receipt: ModelQualificationReceipt | undefined, now: Date): { state: QualificationState; roles: ModelRole[]; fallbackRoles: ModelRole[]; version?: string; roleSuitability?: Record<string, QualificationState> } {
   if (!receipt) return { state: "NOT_TESTED", roles: [], fallbackRoles: [] };
   const ageMs = now.getTime() - new Date(receipt.completedAt).getTime();
-  if (!(ageMs < 30 * 24 * 60 * 60 * 1000)) return { state: "STALE", roles: [], fallbackRoles: [], version: receipt.suiteVersion };
+  // R43: age and protocol compat are the same invalidation — an unreadable suite version is
+  // stale evidence, never trust and never permanent quarantine: STALE reopens measurement.
+  if (!receiptSuiteSupported(receipt) || !(ageMs < 30 * 24 * 60 * 60 * 1000)) {
+    return { state: "STALE", roles: [], fallbackRoles: [], version: receipt.suiteVersion };
+  }
   const qualified = new Set(Object.entries(receipt.roleResults).filter(([, r]) => r.status === "QUALIFIED").map(([role]) => role));
   // R37 Mission G/H: PROBATION verdicts are measured "close enough" evidence — the route may
   // serve the role as a degraded fallback when no fully qualified candidate can admit, but

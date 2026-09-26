@@ -73,7 +73,7 @@ function chaosHarness(routes: Array<{ providerId: string; modelId: string }>) {
     now: () => new Date(clock),
     qualificationCycleIntervalMs: 0,
     qualificationRunner: async (model) => ({
-      suiteVersion: "chaos",
+      suiteVersion: "R41_ROLE_QUALIFICATION_V3",
       providerId: model.providerId,
       modelId: model.modelId,
       modelDisplayName: model.modelId,

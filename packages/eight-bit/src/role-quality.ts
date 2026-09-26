@@ -36,6 +36,22 @@ const MAX_EVIDENCE_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const MAX_ROLE_ADJUSTMENT = 12;
 
 /**
+ * Receipt producers the current qualification semantics know how to interpret. A suite or
+ * protocol bump that makes old evidence incompatible drops the old version here — those
+ * receipts then read as absent at the fabric layer and STALE at the registry, reopening
+ * bounded requalification instead of lending trust to an unreadable verdict.
+ */
+export const SUPPORTED_RECEIPT_SUITE_VERSIONS: ReadonlySet<string> = new Set([
+  "R10_FREE_QUALIFICATION_V1",
+  "R1_FREE_CLOUD_COMPACT_V1",
+  "R41_ROLE_QUALIFICATION_V3",
+]);
+
+export function receiptSuiteSupported(receipt: ModelQualificationReceipt | undefined): boolean {
+  return receipt !== undefined && SUPPORTED_RECEIPT_SUITE_VERSIONS.has(receipt.suiteVersion);
+}
+
+/**
  * The role-admission verdict for one route: the current qualification status for this role, or
  * undefined when no *fresh* evidence exists — an expired receipt must not quarantine a route
  * forever, it simply reverts the route to unmeasured (legacy) eligibility. EXPLORER inherits
@@ -47,6 +63,8 @@ export function roleQualificationStatusFor(
   nowMs = Date.now(),
 ): "QUALIFIED" | "NOT_QUALIFIED" | "HARD_FAILURE" | "NOT_TESTED" | "PROBATION" | undefined {
   if (!receipt) return undefined;
+  // A receipt written by an incompatible suite carries no interpretable verdicts.
+  if (!receiptSuiteSupported(receipt)) return undefined;
   const verdict = receipt.roleResults[role] ?? (role === "EXPLORER" ? receipt.roleResults.TOOL_AGENT : undefined);
   const at = Date.parse(verdict?.completedAt ?? receipt.completedAt);
   if (!Number.isFinite(at) || nowMs - at >= MAX_EVIDENCE_AGE_MS) return undefined;
@@ -76,6 +94,7 @@ export function roleQualityAdvice(
     needsRequalification: stale, reasonCodes: [reason],
   });
   if (!receipt) return empty("ROLE_EVIDENCE_ABSENT", true);
+  if (!receiptSuiteSupported(receipt)) return empty("RECEIPT_SUITE_UNSUPPORTED", true);
   const verdict = receipt.roleResults[role];
   if (!verdict) return empty("ROLE_NOT_MEASURED", true);
   const at = Date.parse(verdict.completedAt);
