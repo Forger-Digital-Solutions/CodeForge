@@ -1,0 +1,289 @@
+{
+  "generatedAt": "2026-09-26T20:32:33.646Z",
+  "evidenceClass": "deterministic scripted-provider arms through production executeAgentRun",
+  "arms": [
+    {
+      "id": "explorer-discovery",
+      "role": "explorer",
+      "status": "completed",
+      "stopReason": "completed",
+      "usage": {
+        "inputTokens": 150,
+        "outputTokens": 55,
+        "requestCount": 4,
+        "toolCount": 3,
+        "provider": "bench-provider",
+        "model": "scripted-free"
+      },
+      "editAttempts": [],
+      "structuredOutput": {
+        "repairs": 0,
+        "truncationRepairs": 0,
+        "repairStrategies": [],
+        "rejections": [],
+        "exhausted": false
+      },
+      "contextBytes": 2803,
+      "filesChanged": []
+    },
+    {
+      "id": "planner-task-graph",
+      "role": "planner",
+      "status": "completed",
+      "stopReason": "completed",
+      "usage": {
+        "inputTokens": 110,
+        "outputTokens": 40,
+        "requestCount": 3,
+        "toolCount": 2,
+        "provider": "bench-provider",
+        "model": "scripted-free"
+      },
+      "editAttempts": [],
+      "structuredOutput": {
+        "repairs": 0,
+        "truncationRepairs": 0,
+        "repairStrategies": [],
+        "rejections": [],
+        "exhausted": false
+      },
+      "contextBytes": 3235,
+      "filesChanged": []
+    },
+    {
+      "id": "coder-first-edit",
+      "role": "coder",
+      "status": "completed",
+      "stopReason": "completed",
+      "usage": {
+        "inputTokens": 150,
+        "outputTokens": 55,
+        "requestCount": 4,
+        "toolCount": 3,
+        "provider": "bench-provider",
+        "model": "scripted-free"
+      },
+      "editAttempts": [
+        {
+          "seq": 1,
+          "turn": 2,
+          "tool": "edit_file",
+          "path": "src/calc.ts",
+          "expectedHashSupplied": false,
+          "hashAutoAttached": true,
+          "priorObservation": "read",
+          "outcome": "success"
+        }
+      ],
+      "structuredOutput": {
+        "repairs": 0,
+        "truncationRepairs": 0,
+        "repairStrategies": [],
+        "rejections": [],
+        "exhausted": false
+      },
+      "contextBytes": 2282,
+      "filesChanged": [
+        "src/calc.ts"
+      ]
+    },
+    {
+      "id": "coder-stale-recovery",
+      "role": "coder",
+      "status": "completed",
+      "stopReason": "completed",
+      "usage": {
+        "inputTokens": 190,
+        "outputTokens": 70,
+        "requestCount": 5,
+        "toolCount": 4,
+        "provider": "bench-provider",
+        "model": "scripted-free"
+      },
+      "editAttempts": [
+        {
+          "seq": 1,
+          "turn": 2,
+          "tool": "edit_file",
+          "path": "src/state.ts",
+          "expectedHashSupplied": false,
+          "hashAutoAttached": true,
+          "priorObservation": "read",
+          "outcome": "failed",
+          "errorCode": "CONTEXT_EVIDENCE_STALE",
+          "failureClass": "stale_hash"
+        },
+        {
+          "seq": 2,
+          "turn": 4,
+          "tool": "edit_file",
+          "path": "src/state.ts",
+          "expectedHashSupplied": false,
+          "hashAutoAttached": true,
+          "priorObservation": "read",
+          "outcome": "success"
+        }
+      ],
+      "structuredOutput": {
+        "repairs": 0,
+        "truncationRepairs": 0,
+        "repairStrategies": [],
+        "rejections": [],
+        "exhausted": false
+      },
+      "contextBytes": 2273,
+      "filesChanged": [
+        "src/state.ts"
+      ]
+    },
+    {
+      "id": "reviewer-fenced-verdict",
+      "role": "reviewer",
+      "status": "completed",
+      "stopReason": "completed",
+      "usage": {
+        "inputTokens": 70,
+        "outputTokens": 25,
+        "requestCount": 2,
+        "toolCount": 1,
+        "provider": "bench-provider",
+        "model": "scripted-free"
+      },
+      "editAttempts": [],
+      "structuredOutput": {
+        "repairs": 0,
+        "truncationRepairs": 0,
+        "repairStrategies": [
+          "fenced_block"
+        ],
+        "rejections": [],
+        "exhausted": false
+      },
+      "contextBytes": 2192,
+      "filesChanged": []
+    },
+    {
+      "id": "reviewer-invalid-blocks",
+      "role": "reviewer",
+      "status": "blocked",
+      "stopReason": "error",
+      "usage": {
+        "inputTokens": 60,
+        "outputTokens": 20,
+        "requestCount": 2,
+        "toolCount": 0,
+        "provider": "bench-provider",
+        "model": "scripted-free"
+      },
+      "editAttempts": [],
+      "structuredOutput": {
+        "repairs": 1,
+        "truncationRepairs": 0,
+        "repairStrategies": [],
+        "rejections": [
+          "Structured output is not valid JSON",
+          "Structured output is not valid JSON"
+        ],
+        "exhausted": true
+      },
+      "contextBytes": 2192,
+      "filesChanged": []
+    }
+  ],
+  "checks": [
+    {
+      "arm": "explorer-discovery",
+      "role": "explorer",
+      "name": "returns structured explorer findings with evidence",
+      "pass": true
+    },
+    {
+      "arm": "explorer-discovery",
+      "role": "explorer",
+      "name": "completes within the 10-turn budget without hitting it",
+      "pass": true
+    },
+    {
+      "arm": "explorer-discovery",
+      "role": "explorer",
+      "name": "makes zero write attempts",
+      "pass": true
+    },
+    {
+      "arm": "planner-task-graph",
+      "role": "planner",
+      "name": "emits a parseable task graph",
+      "pass": true
+    },
+    {
+      "arm": "planner-task-graph",
+      "role": "planner",
+      "name": "graph is acyclic and ordered",
+      "pass": true
+    },
+    {
+      "arm": "planner-task-graph",
+      "role": "planner",
+      "name": "references real files before planning",
+      "pass": true
+    },
+    {
+      "arm": "coder-first-edit",
+      "role": "coder",
+      "name": "first edit succeeds — read→hash auto-attach→edit in one pass",
+      "pass": true
+    },
+    {
+      "arm": "coder-first-edit",
+      "role": "coder",
+      "name": "no redundant rereads before the successful edit",
+      "pass": true
+    },
+    {
+      "arm": "coder-first-edit",
+      "role": "coder",
+      "name": "exactly one mutation attempt total",
+      "pass": true
+    },
+    {
+      "arm": "coder-stale-recovery",
+      "role": "coder",
+      "name": "stale hash fails closed with CONTEXT_EVIDENCE_STALE",
+      "pass": true
+    },
+    {
+      "arm": "coder-stale-recovery",
+      "role": "coder",
+      "name": "recovery edit succeeds after the reread",
+      "pass": true
+    },
+    {
+      "arm": "reviewer-fenced-verdict",
+      "role": "reviewer",
+      "name": "fenced JSON is recovered by bounded repair, not rejected",
+      "pass": true
+    },
+    {
+      "arm": "reviewer-fenced-verdict",
+      "role": "reviewer",
+      "name": "the applied repair strategy is recorded",
+      "pass": true
+    },
+    {
+      "arm": "reviewer-invalid-blocks",
+      "role": "reviewer",
+      "name": "prose verdicts never become valid structured output",
+      "pass": true
+    },
+    {
+      "arm": "reviewer-invalid-blocks",
+      "role": "reviewer",
+      "name": "exhaustion reports AGENT_INVALID_STRUCTURED_OUTPUT",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "pass": 15,
+    "fail": 0
+  }
+}

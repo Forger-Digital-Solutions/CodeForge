@@ -1,0 +1,205 @@
+{
+  "generatedAt": "2026-09-26T20:27:53.455Z",
+  "evidenceClass": "deterministic simulated capacity; not live-provider traffic",
+  "scenarios": [
+    {
+      "name": "qualifiedVsQualified",
+      "checks": [
+        "qualified-vs-qualified: healthy qualified route serves before saturation",
+        "qualified-vs-qualified: 429 burst parks the preferred QUALIFIED route",
+        "qualified-vs-qualified: healthy QUALIFIED peer serves — zero waits while a peer is usable",
+        "qualified-vs-qualified: parked route does not enter the candidate set as selected",
+        "qualified-vs-qualified: zero leaked reservations"
+      ]
+    },
+    {
+      "name": "qualifiedVsProbation",
+      "checks": [
+        "qualified-vs-probation: QUALIFIED-exhausted does not block a healthy PROBATION peer",
+        "qualified-vs-probation: probation verdict remains legible in the role evidence",
+        "qualified-vs-probation: zero leaked reservations"
+      ]
+    },
+    {
+      "name": "staleVsQualified",
+      "checks": [
+        "stale-vs-qualified: >30d receipt reads as expired (no verdict)",
+        "stale-vs-qualified: stale evidence never excludes — legacy eligibility preserved",
+        "stale-vs-qualified: fresh QUALIFIED evidence outranks the stale route",
+        "stale-vs-qualified: stale route flags bounded requalification, not quarantine"
+      ]
+    },
+    {
+      "name": "crossProviderFailover",
+      "checks": [
+        "cross-provider: OpenRouter-limited fails over to a healthy peer provider",
+        "cross-provider: the limited provider is never selected while parked",
+        "cross-provider: recovered provider re-enters rotation after a probe success",
+        "cross-provider: zero leaked reservations"
+      ]
+    },
+    {
+      "name": "roleMismatch",
+      "checks": [
+        "role-mismatch: REVIEWER work lands on the reviewer-role route, never the coder-only route",
+        "role-mismatch: CODER work lands on the coder-role route"
+      ]
+    },
+    {
+      "name": "expiredRequalification",
+      "checks": [
+        "expired-requalification: current HARD_FAILURE receipt excludes the route",
+        "expired-requalification: expired HARD_FAILURE reverts to legacy eligibility",
+        "expired-requalification: fresh receipt restores the route on the next decide",
+        "expired-requalification: zero leaked reservations"
+      ]
+    },
+    {
+      "name": "allExhaustedFailsClosed",
+      "checks": [
+        "all-exhausted: genuinely exhausted supply queues instead of inventing capacity",
+        "all-exhausted: a queued decision selects nothing — nothing billable is held",
+        "all-exhausted: zero leaked reservations"
+      ]
+    },
+    {
+      "name": "catalogRemoval",
+      "checks": [
+        "catalog-removal: a retired model reads MODEL_RETIRED (hard exclusion)",
+        "catalog-removal: retired route never serves; healthy peer absorbs the work",
+        "catalog-removal: zero leaked reservations"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "qualified-vs-qualified: healthy qualified route serves before saturation",
+      "pass": true,
+      "detail": "[{\"outcome\":\"ADMITTED\",\"provider\":\"mistral\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"mistral\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"mistral\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"mistral\",\"zero\":true}]"
+    },
+    {
+      "name": "qualified-vs-qualified: 429 burst parks the preferred QUALIFIED route",
+      "pass": true
+    },
+    {
+      "name": "qualified-vs-qualified: healthy QUALIFIED peer serves — zero waits while a peer is usable",
+      "pass": true,
+      "detail": "[{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true}]"
+    },
+    {
+      "name": "qualified-vs-qualified: parked route does not enter the candidate set as selected",
+      "pass": true
+    },
+    {
+      "name": "qualified-vs-qualified: zero leaked reservations",
+      "pass": true
+    },
+    {
+      "name": "qualified-vs-probation: QUALIFIED-exhausted does not block a healthy PROBATION peer",
+      "pass": true,
+      "detail": "[{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true}]"
+    },
+    {
+      "name": "qualified-vs-probation: probation verdict remains legible in the role evidence",
+      "pass": true
+    },
+    {
+      "name": "qualified-vs-probation: zero leaked reservations",
+      "pass": true
+    },
+    {
+      "name": "stale-vs-qualified: >30d receipt reads as expired (no verdict)",
+      "pass": true
+    },
+    {
+      "name": "stale-vs-qualified: stale evidence never excludes — legacy eligibility preserved",
+      "pass": true
+    },
+    {
+      "name": "stale-vs-qualified: fresh QUALIFIED evidence outranks the stale route",
+      "pass": true,
+      "detail": "[{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true}]"
+    },
+    {
+      "name": "stale-vs-qualified: stale route flags bounded requalification, not quarantine",
+      "pass": true,
+      "detail": "[\"ROLE_EVIDENCE_STALE\"]"
+    },
+    {
+      "name": "cross-provider: OpenRouter-limited fails over to a healthy peer provider",
+      "pass": true,
+      "detail": "[{\"outcome\":\"ADMITTED\",\"provider\":\"groq\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"groq\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"groq\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"groq\",\"zero\":true}]"
+    },
+    {
+      "name": "cross-provider: the limited provider is never selected while parked",
+      "pass": true
+    },
+    {
+      "name": "cross-provider: recovered provider re-enters rotation after a probe success",
+      "pass": true,
+      "detail": "[{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true}]"
+    },
+    {
+      "name": "cross-provider: zero leaked reservations",
+      "pass": true
+    },
+    {
+      "name": "role-mismatch: REVIEWER work lands on the reviewer-role route, never the coder-only route",
+      "pass": true,
+      "detail": "ADMITTED:openrouter"
+    },
+    {
+      "name": "role-mismatch: CODER work lands on the coder-role route",
+      "pass": true,
+      "detail": "ADMITTED:mistral"
+    },
+    {
+      "name": "expired-requalification: current HARD_FAILURE receipt excludes the route",
+      "pass": true,
+      "detail": "[{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"openrouter\",\"zero\":true}]"
+    },
+    {
+      "name": "expired-requalification: expired HARD_FAILURE reverts to legacy eligibility",
+      "pass": true
+    },
+    {
+      "name": "expired-requalification: fresh receipt restores the route on the next decide",
+      "pass": true,
+      "detail": "[{\"outcome\":\"ADMITTED\",\"provider\":\"mistral\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"mistral\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"mistral\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"mistral\",\"zero\":true}]"
+    },
+    {
+      "name": "expired-requalification: zero leaked reservations",
+      "pass": true
+    },
+    {
+      "name": "all-exhausted: genuinely exhausted supply queues instead of inventing capacity",
+      "pass": true,
+      "detail": "QUEUED_FOR_CAPACITY"
+    },
+    {
+      "name": "all-exhausted: a queued decision selects nothing — nothing billable is held",
+      "pass": true
+    },
+    {
+      "name": "all-exhausted: zero leaked reservations",
+      "pass": true
+    },
+    {
+      "name": "catalog-removal: a retired model reads MODEL_RETIRED (hard exclusion)",
+      "pass": true
+    },
+    {
+      "name": "catalog-removal: retired route never serves; healthy peer absorbs the work",
+      "pass": true,
+      "detail": "[{\"outcome\":\"ADMITTED\",\"provider\":\"groq\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"groq\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"groq\",\"zero\":true},{\"outcome\":\"ADMITTED\",\"provider\":\"groq\",\"zero\":true}]"
+    },
+    {
+      "name": "catalog-removal: zero leaked reservations",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "pass": 28,
+    "fail": 0
+  }
+}
