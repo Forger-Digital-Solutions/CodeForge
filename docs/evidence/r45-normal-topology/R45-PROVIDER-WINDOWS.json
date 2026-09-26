@@ -1,0 +1,76 @@
+{
+  "at": "2026-09-26T22:17:28.131Z",
+  "missions": [
+    {
+      "task": "r45-distributed-bug",
+      "calls": 8,
+      "status": "blocked",
+      "errorKinds": [
+        "RATE_LIMITED",
+        "RATE_LIMITED",
+        "RATE_LIMITED"
+      ],
+      "supplyBlocked": false
+    }
+  ],
+  "routeWindows": [
+    {
+      "role": "explorer",
+      "windows": [
+        {
+          "providerId": "openrouter",
+          "modelId": "dots-studio/dots-3-note-preview:free",
+          "calls": 0,
+          "firstCallAt": "2026-09-26T22:15:59.403Z",
+          "firstFailureAt": "2026-09-26T22:15:59.403Z",
+          "failureCode": "PROVIDER_RATE_LIMITED"
+        },
+        {
+          "providerId": "mistral",
+          "modelId": "codestral-2508",
+          "calls": 4,
+          "firstCallAt": "2026-09-26T22:16:01.692Z"
+        }
+      ],
+      "failovers": [
+        {
+          "from": "openrouter/dots-studio/dots-3-note-preview:free",
+          "to": "mistral/codestral-2508",
+          "at": "2026-09-26T22:15:59.426Z",
+          "reason": "RATE_LIMITED",
+          "callsBeforeFailure": 0
+        }
+      ]
+    },
+    {
+      "role": "coder",
+      "windows": [
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.8-27b",
+          "calls": 1,
+          "firstCallAt": "2026-09-26T22:16:07.914Z",
+          "firstFailureAt": "2026-09-26T22:16:17.521Z",
+          "failureCode": "PROVIDER_RATE_LIMITED"
+        },
+        {
+          "providerId": "mistral",
+          "modelId": "mistral-medium-2604",
+          "calls": 0,
+          "firstCallAt": "2026-09-26T22:16:17.809Z",
+          "firstFailureAt": "2026-09-26T22:16:17.809Z",
+          "failureCode": "PROVIDER_RATE_LIMITED"
+        }
+      ],
+      "failovers": [
+        {
+          "from": "groq/qwen/qwen3.8-27b",
+          "to": "mistral/mistral-medium-2604",
+          "at": "2026-09-26T22:16:17.543Z",
+          "reason": "RATE_LIMITED",
+          "callsBeforeFailure": 1
+        }
+      ]
+    }
+  ]
+}

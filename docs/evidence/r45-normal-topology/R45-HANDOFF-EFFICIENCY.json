@@ -1,0 +1,108 @@
+{
+  "at": "2026-09-26T22:17:28.127Z",
+  "summary": {
+    "coderReceivesExplorerEvidence": {
+      "normal": true,
+      "complex": true,
+      "verifiedVia": "coder bootstrap context contains Discovered Explorer Evidence section"
+    },
+    "tinyCoderReceivesOrientationPacket": true,
+    "evidenceRefSeenInCoderContext": "math.mjs target refs + packet candidates both present",
+    "coderFirstReadWasRootCauseFile": {
+      "live": true,
+      "path": "src/normalize.mjs",
+      "mission": "r45-distributed-bug"
+    },
+    "rediscoveryObserved": "none in scripted arms; live coder went straight to the root-cause file"
+  },
+  "topologyBenchmark": [
+    {
+      "fixture": "single-file-bug",
+      "topology": "tiny",
+      "totalCalls": 3,
+      "callsByRole": {
+        "coder": 3
+      },
+      "coderHandoff": {
+        "explorerEvidence": false,
+        "orientationPacket": true
+      },
+      "explorerGotPacket": false
+    },
+    {
+      "fixture": "single-file-bug",
+      "topology": "normal",
+      "totalCalls": 5,
+      "callsByRole": {
+        "explorer": 1,
+        "coder": 3,
+        "reviewer": 1
+      },
+      "coderHandoff": {
+        "explorerEvidence": true,
+        "orientationPacket": false
+      },
+      "explorerGotPacket": true
+    },
+    {
+      "fixture": "single-file-bug",
+      "topology": "complex",
+      "totalCalls": 7,
+      "callsByRole": {
+        "explorer": 2,
+        "planner": 1,
+        "coder": 3,
+        "reviewer": 1
+      },
+      "coderHandoff": {
+        "explorerEvidence": true,
+        "orientationPacket": false
+      },
+      "explorerGotPacket": true
+    },
+    {
+      "fixture": "cross-file-rename",
+      "topology": "tiny",
+      "totalCalls": 4,
+      "callsByRole": {
+        "coder": 4
+      },
+      "coderHandoff": {
+        "explorerEvidence": false,
+        "orientationPacket": true
+      },
+      "explorerGotPacket": false
+    },
+    {
+      "fixture": "cross-file-rename",
+      "topology": "normal",
+      "totalCalls": 6,
+      "callsByRole": {
+        "explorer": 1,
+        "coder": 4,
+        "reviewer": 1
+      },
+      "coderHandoff": {
+        "explorerEvidence": true,
+        "orientationPacket": false
+      },
+      "explorerGotPacket": true
+    },
+    {
+      "fixture": "cross-file-rename",
+      "topology": "complex",
+      "totalCalls": 8,
+      "callsByRole": {
+        "explorer": 2,
+        "planner": 1,
+        "coder": 4,
+        "reviewer": 1
+      },
+      "coderHandoff": {
+        "explorerEvidence": true,
+        "orientationPacket": false
+      },
+      "explorerGotPacket": true
+    }
+  ]
+}

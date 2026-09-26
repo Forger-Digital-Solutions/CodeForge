@@ -146,6 +146,12 @@ export interface AgentRuntimeRequest {
    * read-only tool calls implied by the transcript and then continues the recorded loop.
    */
   resumeJournal?: { journal: AgentRunJournal; replayToolCallIds: string[] };
+  /**
+   * R45: permits the adaptive explorer turn budget to narrow `executionBudget.maxModelTurns`.
+   * A caller that explicitly pins a turn count keeps authority — the flag only marks budgets
+   * that were derived from role defaults (e.g. SubagentManager's merge) as adaptive-eligible.
+   */
+  adaptiveTurnBudgetAllowed?: boolean;
 }
 
 export interface AgentContextMetrics {
@@ -1390,6 +1396,10 @@ export class AgentRuntime {
           toolTrace,
           explorationBrief: explorationBriefMeta,
           adaptiveTurnBudget,
+          // R45 §18: route-window telemetry — calls-to-first-failure per route and failover
+          // edges, so the corpus can separate provider availability from agent efficiency.
+          routeWindows: routeWindows.size > 0 ? [...routeWindows.values()] : undefined,
+          routeFailovers: routeFailovers.length > 0 ? routeFailovers : undefined,
         },
         ...(journalActiveRoute ? { route: { providerId: journalActiveRoute.providerId, modelId: journalActiveRoute.modelId } } : {}),
         ...(detail ? { recoveryDetail: redactSecrets(detail).slice(0, 4_096) } : {}),
@@ -1549,7 +1559,11 @@ export class AgentRuntime {
       // shrinks to confirm-and-answer — narrow its turn budget accordingly rather than letting
       // a strong packet sit unused while the model serializes ten navigation turns. The
       // decision is recorded in metrics, never silent.
-      if (req.role === "explorer" && !req.executionBudget && explorationBriefMeta) {
+      // The adaptive budget applies unless the caller pinned a turn count: no executionBudget
+      // at all, a derived budget explicitly marked adaptive-eligible, or one whose turn field
+      // was left to the role default.
+      const turnBudgetDerived = !req.executionBudget || req.adaptiveTurnBudgetAllowed === true || req.executionBudget.maxModelTurns === undefined;
+      if (req.role === "explorer" && turnBudgetDerived && explorationBriefMeta) {
         const recall = explorationBriefMeta.symbolRecall;
         // Coverage = candidate files located AND the goal grounded in code — at least one
         // goal-named symbol resolved to a definition, or the goal named no symbols at all.

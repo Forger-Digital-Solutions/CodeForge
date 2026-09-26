@@ -465,6 +465,9 @@ export class SubagentManager {
           taskPlan: options.taskPlan,
           reviewFeedback: options.reviewFeedback,
           executionBudget: this.executionBudget(def.id, options.executionBudget),
+          // R45: the merged budget above is a role default unless the caller overrode the turn
+          // count — only then does adaptive narrowing stay eligible.
+          ...(options.executionBudget?.maxModelTurns === undefined ? { adaptiveTurnBudgetAllowed: true } : {}),
           diff: def.id === "reviewer" ? contextSummary : undefined,
           // Review runs before verification in the autonomous loop — there is no
           // verification evidence to hand the reviewer yet, and labeling the diff as

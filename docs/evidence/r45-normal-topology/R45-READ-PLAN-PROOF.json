@@ -1,0 +1,39 @@
+{
+  "at": "2026-09-26T22:17:28.130Z",
+  "precomputes": [
+    "candidate files (ranked, with reasons)",
+    "file summaries (exports w/ line numbers)",
+    "goal-symbol definitions + references",
+    "related tests",
+    "hash-marked excerpts",
+    "coverage/uncertainty (symbolRecall)"
+  ],
+  "deterministicRecall": [
+    {
+      "fixture": "four-file-bug",
+      "briefRecall": 1
+    },
+    {
+      "fixture": "cross-ref-rename",
+      "briefRecall": 1
+    },
+    {
+      "fixture": "false-positive-name",
+      "briefRecall": 1
+    }
+  ],
+  "falseNegativesFoundAndFixed": "totals/rounding morphology miss fixed via stem-variant token expansion (false-positive-name 0/2 -> 2/2)",
+  "liveRecall": {
+    "mission": "r45-distributed-bug",
+    "candidatePaths": [
+      "tests/report.test.mjs",
+      "src/report.mjs",
+      "src/normalize.mjs"
+    ],
+    "relevant": 3,
+    "recall": 1,
+    "allExcerpted": true
+  },
+  "safetyAfterMutation": "packet excerpts carry [hash:H] current-content proof; runtime invalidates prior reads after mutations (observed live: refresh notice + stale-read invalidation message)",
+  "callsSavedEstimate": "live explorer still serialized verification reads (8 turns pre-narrow / 4 at cap) — packet delivered but weak model re-verified; narrowing bounds the waste"
+}

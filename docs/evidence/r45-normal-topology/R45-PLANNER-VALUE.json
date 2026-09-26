@@ -1,0 +1,24 @@
+{
+  "at": "2026-09-26T22:17:28.129Z",
+  "measuredOverhead": {
+    "complexArms": [
+      {
+        "fixture": "single-file-bug",
+        "plannerCalls": 1,
+        "planAccepted": true
+      },
+      {
+        "fixture": "cross-file-rename",
+        "plannerCalls": 1,
+        "planAccepted": true
+      }
+    ],
+    "plannerCostCalls": 1,
+    "planValidity": "authorizedPlannerResult accepted emitted task_graph_v1 in both complex arms"
+  },
+  "differentialValue": {
+    "status": "UNPROVEN",
+    "note": "scripted coders cannot benefit from plans; requires live-model comparison on matched fixtures — deferred to live corpus / R46"
+  },
+  "verdict": "Planner overhead = 1 model call + ~1 turn on complex topology. Whether it prevents coder repair loops on ambiguous tasks is UNPROVEN deterministically."
+}
