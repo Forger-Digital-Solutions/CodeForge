@@ -1,0 +1,54 @@
+{
+  "at": "2026-09-26T17:11:43.465Z",
+  "evidenceClass": "deterministic simulated capacity; not live-provider traffic",
+  "scenarios": {
+    "endurance": {
+      "epochs": 120,
+      "stat": {
+        "completed": 960,
+        "waits": 30,
+        "falseWaits": 0,
+        "denied": 0,
+        "injected429": 4,
+        "parkedEpochs": 0,
+        "recoveries": 4,
+        "timeouts": 27,
+        "ineligibleClosures": 0,
+        "roleBudgetMismatches": 0,
+        "starved": 0
+      },
+      "servedByProvider": {
+        "mistral": 480,
+        "openrouter": 252,
+        "groq": 228
+      },
+      "wallMs": 74
+    }
+  },
+  "checks": [
+    {
+      "name": "endurance: sustained mixed workload completed with zero starvation",
+      "pass": true,
+      "detail": "completed=960/960 denied=0 starved=0",
+      "scenario": "endurance"
+    },
+    {
+      "name": "endurance: zero false waits under churn",
+      "pass": true,
+      "detail": "0/30",
+      "scenario": "endurance"
+    },
+    {
+      "name": "endurance: zero leaked reservations after 120 epochs",
+      "pass": true,
+      "scenario": "endurance"
+    },
+    {
+      "name": "endurance: every parked route recovered and re-entered",
+      "pass": true,
+      "detail": "recoveries=4 parks=4",
+      "scenario": "endurance"
+    }
+  ],
+  "allChecksPassed": true
+}

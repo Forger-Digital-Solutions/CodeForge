@@ -1,0 +1,112 @@
+{
+  "at": "2026-09-26T17:11:43.391Z",
+  "evidenceClass": "deterministic simulated capacity; not live-provider traffic",
+  "scenarios": {
+    "recovery": {
+      "phases": [
+        {
+          "id": "p1",
+          "outcome": "ADMITTED",
+          "route": "mistral",
+          "healthMistral": "UNKNOWN"
+        },
+        {
+          "id": "f0",
+          "outcome": "ADMITTED",
+          "route": "openrouter",
+          "healthMistral": "RATE_LIMITED"
+        },
+        {
+          "id": "f1",
+          "outcome": "ADMITTED",
+          "route": "openrouter",
+          "healthMistral": "RATE_LIMITED"
+        },
+        {
+          "id": "f2",
+          "outcome": "ADMITTED",
+          "route": "openrouter",
+          "healthMistral": "RATE_LIMITED"
+        },
+        {
+          "id": "f3",
+          "outcome": "ADMITTED",
+          "route": "openrouter",
+          "healthMistral": "RATE_LIMITED"
+        },
+        {
+          "id": "r0",
+          "outcome": "ADMITTED",
+          "route": "mistral",
+          "healthMistral": "HEALTHY"
+        },
+        {
+          "id": "r1",
+          "outcome": "ADMITTED",
+          "route": "mistral",
+          "healthMistral": "HEALTHY"
+        },
+        {
+          "id": "r2",
+          "outcome": "ADMITTED",
+          "route": "mistral",
+          "healthMistral": "HEALTHY"
+        },
+        {
+          "id": "r3",
+          "outcome": "ADMITTED",
+          "route": "mistral",
+          "healthMistral": "HEALTHY"
+        },
+        {
+          "id": "r4",
+          "outcome": "ADMITTED",
+          "route": "mistral",
+          "healthMistral": "HEALTHY"
+        },
+        {
+          "id": "r5",
+          "outcome": "ADMITTED",
+          "route": "mistral",
+          "healthMistral": "HEALTHY"
+        }
+      ],
+      "wallMs": 2
+    }
+  },
+  "checks": [
+    {
+      "name": "recovery: baseline admits on primary",
+      "pass": true,
+      "scenario": "recovery"
+    },
+    {
+      "name": "recovery: injected 429 burst parks primary (hard-excluded)",
+      "pass": true,
+      "detail": "RATE_LIMITED",
+      "scenario": "recovery"
+    },
+    {
+      "name": "recovery: parked primary never selected; failover served on alternate",
+      "pass": true,
+      "scenario": "recovery"
+    },
+    {
+      "name": "recovery: successful probe restores primary to HEALTHY",
+      "pass": true,
+      "detail": "HEALTHY",
+      "scenario": "recovery"
+    },
+    {
+      "name": "recovery: recovered route re-enters selection",
+      "pass": true,
+      "scenario": "recovery"
+    },
+    {
+      "name": "recovery: zero leaked reservations",
+      "pass": true,
+      "scenario": "recovery"
+    }
+  ],
+  "allChecksPassed": true
+}

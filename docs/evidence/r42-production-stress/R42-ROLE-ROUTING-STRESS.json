@@ -1,0 +1,428 @@
+{
+  "at": "2026-09-26T17:11:43.207Z",
+  "evidenceClass": "deterministic simulated capacity; not live-provider traffic",
+  "scenarios": {
+    "roleConflicts": {
+      "wallMs": 30
+    },
+    "evidenceExpiry": {
+      "rows": [
+        {
+          "status": "HARD_FAILURE",
+          "ageDays": 0,
+          "readStatus": "HARD_FAILURE",
+          "allowed": false,
+          "scoreAdjustment": -12,
+          "needsRequalification": false,
+          "reasonCodes": [
+            "ROLE_CRITICAL_FAILURE"
+          ]
+        },
+        {
+          "status": "HARD_FAILURE",
+          "ageDays": 15,
+          "readStatus": "HARD_FAILURE",
+          "allowed": false,
+          "scoreAdjustment": -6,
+          "needsRequalification": false,
+          "reasonCodes": [
+            "ROLE_CRITICAL_FAILURE"
+          ]
+        },
+        {
+          "status": "HARD_FAILURE",
+          "ageDays": 29.999305555555555,
+          "readStatus": "HARD_FAILURE",
+          "allowed": false,
+          "scoreAdjustment": -1,
+          "needsRequalification": false,
+          "reasonCodes": [
+            "ROLE_CRITICAL_FAILURE"
+          ]
+        },
+        {
+          "status": "HARD_FAILURE",
+          "ageDays": 30,
+          "readStatus": null,
+          "allowed": true,
+          "scoreAdjustment": 0,
+          "needsRequalification": true,
+          "reasonCodes": [
+            "ROLE_EVIDENCE_STALE"
+          ]
+        },
+        {
+          "status": "HARD_FAILURE",
+          "ageDays": 45,
+          "readStatus": null,
+          "allowed": true,
+          "scoreAdjustment": 0,
+          "needsRequalification": true,
+          "reasonCodes": [
+            "ROLE_EVIDENCE_STALE"
+          ]
+        },
+        {
+          "status": "QUALIFIED",
+          "ageDays": 0,
+          "readStatus": "QUALIFIED",
+          "allowed": true,
+          "scoreAdjustment": 8,
+          "needsRequalification": false,
+          "reasonCodes": [
+            "ROLE_QUALIFIED_EVIDENCE"
+          ]
+        },
+        {
+          "status": "QUALIFIED",
+          "ageDays": 15,
+          "readStatus": "QUALIFIED",
+          "allowed": true,
+          "scoreAdjustment": 4,
+          "needsRequalification": false,
+          "reasonCodes": [
+            "ROLE_QUALIFIED_EVIDENCE"
+          ]
+        },
+        {
+          "status": "QUALIFIED",
+          "ageDays": 29.999305555555555,
+          "readStatus": "QUALIFIED",
+          "allowed": true,
+          "scoreAdjustment": 0,
+          "needsRequalification": false,
+          "reasonCodes": [
+            "ROLE_QUALIFIED_EVIDENCE"
+          ]
+        },
+        {
+          "status": "QUALIFIED",
+          "ageDays": 30,
+          "readStatus": null,
+          "allowed": true,
+          "scoreAdjustment": 0,
+          "needsRequalification": true,
+          "reasonCodes": [
+            "ROLE_EVIDENCE_STALE"
+          ]
+        },
+        {
+          "status": "QUALIFIED",
+          "ageDays": 45,
+          "readStatus": null,
+          "allowed": true,
+          "scoreAdjustment": 0,
+          "needsRequalification": true,
+          "reasonCodes": [
+            "ROLE_EVIDENCE_STALE"
+          ]
+        },
+        {
+          "status": "PROBATION",
+          "ageDays": 0,
+          "readStatus": "PROBATION",
+          "allowed": true,
+          "scoreAdjustment": 0,
+          "needsRequalification": false,
+          "reasonCodes": [
+            "ROLE_PROBATION_EVIDENCE"
+          ]
+        },
+        {
+          "status": "PROBATION",
+          "ageDays": 15,
+          "readStatus": "PROBATION",
+          "allowed": true,
+          "scoreAdjustment": 0,
+          "needsRequalification": false,
+          "reasonCodes": [
+            "ROLE_PROBATION_EVIDENCE"
+          ]
+        },
+        {
+          "status": "PROBATION",
+          "ageDays": 29.999305555555555,
+          "readStatus": "PROBATION",
+          "allowed": true,
+          "scoreAdjustment": 0,
+          "needsRequalification": false,
+          "reasonCodes": [
+            "ROLE_PROBATION_EVIDENCE"
+          ]
+        },
+        {
+          "status": "PROBATION",
+          "ageDays": 30,
+          "readStatus": null,
+          "allowed": true,
+          "scoreAdjustment": 0,
+          "needsRequalification": true,
+          "reasonCodes": [
+            "ROLE_EVIDENCE_STALE"
+          ]
+        },
+        {
+          "status": "PROBATION",
+          "ageDays": 45,
+          "readStatus": null,
+          "allowed": true,
+          "scoreAdjustment": 0,
+          "needsRequalification": true,
+          "reasonCodes": [
+            "ROLE_EVIDENCE_STALE"
+          ]
+        }
+      ],
+      "wallMs": 0
+    },
+    "capacityVsQuality": {
+      "wallMs": 3
+    },
+    "stampede": {
+      "users": 373,
+      "servedByRoute": {
+        "r42:mistral/codestral-latest": 128,
+        "r42:openrouter/nvidia/nemotron-3-super-120b-a12b:free": 117,
+        "r42:groq/openai/gpt-oss-120b": 128
+      },
+      "servedByProvider": {
+        "mistral": 128,
+        "openrouter": 117,
+        "groq": 128
+      },
+      "providerConcentration": 0.34316353887399464,
+      "peakHolds": 48,
+      "waits": 1267,
+      "rounds": 8,
+      "wallMs": 175
+    }
+  },
+  "checks": [
+    {
+      "name": "gemini: structurally suspended route never appears as a fabric candidate",
+      "pass": true,
+      "detail": "0 candidates",
+      "scenario": "roles"
+    },
+    {
+      "name": "gemini: never selected across repeated admissions",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "role-status: fresh QUALIFIED coder verdict read",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "role-status: EXPLORER inherits TOOL_AGENT verdict",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "role-status: HARD_FAILURE reviewer verdict read",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "admission: no receipt -> legacy eligibility",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "admission: role never measured on a fresh receipt reads NOT_TESTED -> excluded",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "admission: NOT_TESTED role excluded",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "admission: HARD_FAILURE role excluded",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "admission: PROBATION role admitted",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: zero-billing route only",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: zero-billing route only",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: zero-billing route only",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: zero-billing route only",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: zero-billing route only",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: zero-billing route only",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: zero-billing route only",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: zero-billing route only",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: zero-billing route only",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: zero-billing route only",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: zero-billing route only",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: zero-billing route only",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "reviewer arm: every selection was the qualified reviewer route",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "planner arm: only the qualified planner route served",
+      "pass": true,
+      "scenario": "roles"
+    },
+    {
+      "name": "no qualified reviewer anywhere -> fail closed, never a disqualified route",
+      "pass": true,
+      "detail": "DENIED_NO_SUPPLY",
+      "scenario": "roles"
+    },
+    {
+      "name": "expiry: fresh HARD_FAILURE excludes",
+      "pass": true,
+      "scenario": "expiry"
+    },
+    {
+      "name": "expiry: 29.999d HARD_FAILURE still excludes",
+      "pass": true,
+      "scenario": "expiry"
+    },
+    {
+      "name": "expiry: 30d HARD_FAILURE evidence expires -> legacy eligibility",
+      "pass": true,
+      "scenario": "expiry"
+    },
+    {
+      "name": "expiry: 45d HARD_FAILURE stays legacy-eligible",
+      "pass": true,
+      "scenario": "expiry"
+    },
+    {
+      "name": "expiry: stale QUALIFIED keeps eligibility but contributes no ranking score",
+      "pass": true,
+      "scenario": "expiry"
+    },
+    {
+      "name": "expiry: stale evidence flags requalification",
+      "pass": true,
+      "scenario": "expiry"
+    },
+    {
+      "name": "expiry: fresh QUALIFIED contributes bounded positive adjustment",
+      "pass": true,
+      "scenario": "expiry"
+    },
+    {
+      "name": "expiry: fresh HARD_FAILURE contributes bounded negative adjustment",
+      "pass": true,
+      "scenario": "expiry"
+    },
+    {
+      "name": "expiry: PROBATION never promotes above zero",
+      "pass": true,
+      "scenario": "expiry"
+    },
+    {
+      "name": "setup: tenant holds the qualified route's only slot",
+      "pass": true,
+      "detail": "mistral",
+      "scenario": "capacity"
+    },
+    {
+      "name": "pressure: saturated QUALIFIED loses to healthy PROBATION — no stampede, no false wait",
+      "pass": true,
+      "detail": "ADMITTED:openrouter",
+      "scenario": "capacity"
+    },
+    {
+      "name": "pressure: all capacity constrained -> bounded wait or fail-closed, never the saturated route",
+      "pass": true,
+      "detail": "QUEUED_FOR_CAPACITY",
+      "scenario": "capacity"
+    },
+    {
+      "name": "pressure: window reopen re-admits on the recovered route",
+      "pass": true,
+      "detail": "ADMITTED:openrouter",
+      "scenario": "capacity"
+    },
+    {
+      "name": "stampede: all 373 simultaneous tasks served",
+      "pass": true,
+      "detail": "373/373",
+      "scenario": "stampede"
+    },
+    {
+      "name": "stampede: zero false waits",
+      "pass": true,
+      "detail": "0 of 1267 waits",
+      "scenario": "stampede"
+    },
+    {
+      "name": "stampede: zero leaked reservations",
+      "pass": true,
+      "scenario": "stampede"
+    },
+    {
+      "name": "stampede: no provider exceeded its concurrency ceiling",
+      "pass": true,
+      "detail": "peakHolds=48",
+      "scenario": "stampede"
+    },
+    {
+      "name": "stampede: quality-steered spread — every healthy eligible route served some work",
+      "pass": true,
+      "detail": "{\"r42:mistral/codestral-latest\":128,\"r42:openrouter/nvidia/nemotron-3-super-120b-a12b:free\":117,\"r42:groq/openai/gpt-oss-120b\":128}",
+      "scenario": "stampede"
+    }
+  ],
+  "allChecksPassed": true
+}

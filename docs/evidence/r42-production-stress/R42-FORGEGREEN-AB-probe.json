@@ -1,0 +1,753 @@
+{
+  "at": "2026-09-26T16:38:05.943Z",
+  "arms": [
+    "baseline",
+    "green"
+  ],
+  "providers": [
+    "openrouter",
+    "groq",
+    "mistral"
+  ],
+  "verifiedRoutes": 64,
+  "pairs": [
+    {
+      "task": "one-shot-edit",
+      "cls": "tiny",
+      "arms": {
+        "green": {
+          "arm": "green",
+          "status": "completed",
+          "topology": "normal",
+          "counters": {
+            "childrenSpawned": 2,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 1
+          },
+          "verification": [
+            {
+              "command": "node -e \"import('./src/flag.mjs').then(m=>{if(m.ENABLED!==false)process.exit(1)})\"",
+              "exitCode": 0,
+              "passed": true,
+              "testSignal": null
+            }
+          ],
+          "review": {
+            "passed": true,
+            "findings": 1
+          },
+          "completion": {
+            "verdict": null
+          },
+          "wallMs": 79479,
+          "calls": 18,
+          "inTokens": 52286,
+          "outTokens": 3038,
+          "reasoningTokens": 1507,
+          "errors": 0,
+          "providers": [
+            "openrouter"
+          ],
+          "models": [
+            "dots-studio/dots-3-note-preview:free"
+          ],
+          "errorKinds": [],
+          "green": {
+            "optimizationSummaries": [
+              {
+                "runId": "child-997b2798-1bbf-488b-a34d-dbdc780a6e14",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "FULL",
+                  "level": "FULL",
+                  "initialReasonCodes": [
+                    "NO_INHERITED_EVIDENCE"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-70a384f9-d9ab-4b24-9c37-d387ae6a3f1f",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "COORDINATED_MULTI_STEP"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-1e83227c-71ab-4c01-8e2e-b304b0fc063f",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "REPAIR_OR_REVIEW_EVIDENCE",
+                    "REVIEW_EVIDENCE_FIDELITY"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              }
+            ],
+            "duplicatesSuppressed": 0,
+            "suppressedTools": [],
+            "failoverEvents": 3,
+            "verificationEvents": 3,
+            "runPolicies": [
+              {
+                "initialLevel": "FULL",
+                "level": "FULL",
+                "initialReasonCodes": [
+                  "NO_INHERITED_EVIDENCE"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "COORDINATED_MULTI_STEP"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "REPAIR_OR_REVIEW_EVIDENCE",
+                  "REVIEW_EVIDENCE_FIDELITY"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              }
+            ],
+            "eventCount": 81
+          }
+        },
+        "baseline": {
+          "arm": "baseline",
+          "status": "completed",
+          "topology": "normal",
+          "counters": {
+            "childrenSpawned": 2,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 1
+          },
+          "verification": [
+            {
+              "command": "node -e \"import('./src/flag.mjs').then(m=>{if(m.ENABLED!==false)process.exit(1)})\"",
+              "exitCode": 0,
+              "passed": true,
+              "testSignal": null
+            }
+          ],
+          "review": {
+            "passed": true,
+            "findings": 1
+          },
+          "completion": {
+            "verdict": null
+          },
+          "wallMs": 61689,
+          "calls": 14,
+          "inTokens": 39871,
+          "outTokens": 2346,
+          "reasoningTokens": 1303,
+          "errors": 0,
+          "providers": [
+            "openrouter"
+          ],
+          "models": [
+            "dots-studio/dots-3-note-preview:free"
+          ],
+          "errorKinds": [],
+          "green": {
+            "optimizationSummaries": [
+              {
+                "runId": "child-a3e5ec16-6f25-4a0e-869b-353040518d7a",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "FULL",
+                  "level": "FULL",
+                  "initialReasonCodes": [
+                    "NO_INHERITED_EVIDENCE"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-c6b24567-cf69-4094-852a-b66a5fa7bf60",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "COORDINATED_MULTI_STEP"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-600cb68f-5bf4-464b-9597-14b3647565fd",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "REPAIR_OR_REVIEW_EVIDENCE",
+                    "REVIEW_EVIDENCE_FIDELITY"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              }
+            ],
+            "duplicatesSuppressed": 0,
+            "suppressedTools": [],
+            "failoverEvents": 3,
+            "verificationEvents": 3,
+            "runPolicies": [
+              {
+                "initialLevel": "FULL",
+                "level": "FULL",
+                "initialReasonCodes": [
+                  "NO_INHERITED_EVIDENCE"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "COORDINATED_MULTI_STEP"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "REPAIR_OR_REVIEW_EVIDENCE",
+                  "REVIEW_EVIDENCE_FIDELITY"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              }
+            ],
+            "eventCount": 69
+          }
+        }
+      },
+      "outcome": "BOTH_PASS",
+      "vwm": {
+        "requests": 0.778,
+        "inTokens": 0.763
+      }
+    }
+  ],
+  "callLog": [
+    {
+      "provider": "groq",
+      "model": "openai/gpt-oss-20b",
+      "ms": 137.54289999999992,
+      "usage": {
+        "inputTokens": 72,
+        "outputTokens": 1,
+        "totalTokens": 73
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 485.9515000000001,
+      "usage": {
+        "inputTokens": 4,
+        "outputTokens": 1,
+        "totalTokens": 5,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3343.6584000000003,
+      "usage": {
+        "inputTokens": 2123,
+        "outputTokens": 167,
+        "totalTokens": 2290,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 105,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3297.8721000000005,
+      "usage": {
+        "inputTokens": 2681,
+        "outputTokens": 48,
+        "totalTokens": 2729,
+        "cachedInputTokens": 2048,
+        "reasoningTokens": 19,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3286.4889000000003,
+      "usage": {
+        "inputTokens": 2787,
+        "outputTokens": 100,
+        "totalTokens": 2887,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 86,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2372.503300000002,
+      "usage": {
+        "inputTokens": 2933,
+        "outputTokens": 90,
+        "totalTokens": 3023,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 66,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3172.9929999999986,
+      "usage": {
+        "inputTokens": 3033,
+        "outputTokens": 131,
+        "totalTokens": 3164,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 110,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 1538.4184999999998,
+      "usage": {
+        "inputTokens": 3079,
+        "outputTokens": 51,
+        "totalTokens": 3130,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 26,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3537.4058000000005,
+      "usage": {
+        "inputTokens": 3282,
+        "outputTokens": 50,
+        "totalTokens": 3332,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 20,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 7370.814899999998,
+      "usage": {
+        "inputTokens": 3329,
+        "outputTokens": 618,
+        "totalTokens": 3947,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 195,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 5341.1636,
+      "usage": {
+        "inputTokens": 3782,
+        "outputTokens": 465,
+        "totalTokens": 4247,
+        "cachedInputTokens": 3072,
+        "reasoningTokens": 109,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2339.745600000002,
+      "usage": {
+        "inputTokens": 2817,
+        "outputTokens": 144,
+        "totalTokens": 2961,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 92,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2513.1834000000017,
+      "usage": {
+        "inputTokens": 2934,
+        "outputTokens": 123,
+        "totalTokens": 3057,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 32,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 1693.6361000000034,
+      "usage": {
+        "inputTokens": 2801,
+        "outputTokens": 60,
+        "totalTokens": 2861,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 16,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2192.3392999999996,
+      "usage": {
+        "inputTokens": 2922,
+        "outputTokens": 113,
+        "totalTokens": 3035,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 67,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 1994.9092000000019,
+      "usage": {
+        "inputTokens": 2991,
+        "outputTokens": 81,
+        "totalTokens": 3072,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 33,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 4508.55829999999,
+      "usage": {
+        "inputTokens": 3220,
+        "outputTokens": 243,
+        "totalTokens": 3463,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 68,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 4096.707299999995,
+      "usage": {
+        "inputTokens": 2437,
+        "outputTokens": 229,
+        "totalTokens": 2666,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 195,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3228.532500000001,
+      "usage": {
+        "inputTokens": 2543,
+        "outputTokens": 161,
+        "totalTokens": 2704,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 148,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3021.201399999991,
+      "usage": {
+        "inputTokens": 2592,
+        "outputTokens": 164,
+        "totalTokens": 2756,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 120,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2227.0706000000064,
+      "usage": {
+        "inputTokens": 2123,
+        "outputTokens": 105,
+        "totalTokens": 2228,
+        "cachedInputTokens": 2048,
+        "reasoningTokens": 76,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 1936.014200000005,
+      "usage": {
+        "inputTokens": 2654,
+        "outputTokens": 73,
+        "totalTokens": 2727,
+        "cachedInputTokens": 2048,
+        "reasoningTokens": 42,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2116.775099999999,
+      "usage": {
+        "inputTokens": 2760,
+        "outputTokens": 96,
+        "totalTokens": 2856,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 81,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 6267.288900000014,
+      "usage": {
+        "inputTokens": 2860,
+        "outputTokens": 471,
+        "totalTokens": 3331,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 165,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2692.671300000002,
+      "usage": {
+        "inputTokens": 3207,
+        "outputTokens": 93,
+        "totalTokens": 3300,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 81,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 4962.285199999998,
+      "usage": {
+        "inputTokens": 3553,
+        "outputTokens": 350,
+        "totalTokens": 3903,
+        "cachedInputTokens": 3072,
+        "reasoningTokens": 101,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3413.996299999999,
+      "usage": {
+        "inputTokens": 2817,
+        "outputTokens": 189,
+        "totalTokens": 3006,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 146,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 1928.5684000000037,
+      "usage": {
+        "inputTokens": 2891,
+        "outputTokens": 45,
+        "totalTokens": 2936,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 16,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2849.1506999999983,
+      "usage": {
+        "inputTokens": 2989,
+        "outputTokens": 142,
+        "totalTokens": 3131,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 13,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 1787.0773000000045,
+      "usage": {
+        "inputTokens": 2893,
+        "outputTokens": 47,
+        "totalTokens": 2940,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 19,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2982.33679999999,
+      "usage": {
+        "inputTokens": 2999,
+        "outputTokens": 84,
+        "totalTokens": 3083,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 66,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3164.0686000000132,
+      "usage": {
+        "inputTokens": 3145,
+        "outputTokens": 168,
+        "totalTokens": 3313,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 95,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2716.736200000014,
+      "usage": {
+        "inputTokens": 2437,
+        "outputTokens": 181,
+        "totalTokens": 2618,
+        "cachedInputTokens": 2048,
+        "reasoningTokens": 110,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 5306.432100000005,
+      "usage": {
+        "inputTokens": 2543,
+        "outputTokens": 302,
+        "totalTokens": 2845,
+        "cachedInputTokens": 2048,
+        "reasoningTokens": 292,
+        "costUsd": 0
+      },
+      "ok": true
+    }
+  ]
+}

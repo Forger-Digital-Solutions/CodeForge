@@ -1,0 +1,145 @@
+{
+  "at": "2026-09-26T17:11:43.389Z",
+  "evidenceClass": "deterministic simulated capacity; not live-provider traffic",
+  "scenarios": {
+    "budgetUnderPressure": {
+      "rows": [
+        {
+          "role": "explorer",
+          "route": "groq/openai/gpt-oss-120b",
+          "outputTokenDemand": 2048,
+          "maxTokens": 2048,
+          "contextFits": true,
+          "reasoningProfileApplied": true
+        },
+        {
+          "role": "explorer",
+          "route": "mistral/codestral-latest",
+          "outputTokenDemand": 1024,
+          "maxTokens": 1024,
+          "contextFits": true,
+          "reasoningProfileApplied": false
+        },
+        {
+          "role": "explorer",
+          "route": "unresolved",
+          "outputTokenDemand": 2048,
+          "maxTokens": 2048,
+          "contextFits": true,
+          "reasoningProfileApplied": false
+        },
+        {
+          "role": "planner",
+          "route": "groq/openai/gpt-oss-120b",
+          "outputTokenDemand": 2560,
+          "maxTokens": 2560,
+          "contextFits": true,
+          "reasoningProfileApplied": true
+        },
+        {
+          "role": "planner",
+          "route": "mistral/codestral-latest",
+          "outputTokenDemand": 1536,
+          "maxTokens": 1536,
+          "contextFits": true,
+          "reasoningProfileApplied": false
+        },
+        {
+          "role": "planner",
+          "route": "unresolved",
+          "outputTokenDemand": 2560,
+          "maxTokens": 2560,
+          "contextFits": true,
+          "reasoningProfileApplied": false
+        },
+        {
+          "role": "coder",
+          "route": "groq/openai/gpt-oss-120b",
+          "outputTokenDemand": 4096,
+          "maxTokens": 4096,
+          "contextFits": true,
+          "reasoningProfileApplied": true
+        },
+        {
+          "role": "coder",
+          "route": "mistral/codestral-latest",
+          "outputTokenDemand": 4096,
+          "maxTokens": 4096,
+          "contextFits": true,
+          "reasoningProfileApplied": false
+        },
+        {
+          "role": "coder",
+          "route": "unresolved",
+          "outputTokenDemand": 4096,
+          "maxTokens": 4096,
+          "contextFits": true,
+          "reasoningProfileApplied": false
+        },
+        {
+          "role": "reviewer",
+          "route": "groq/openai/gpt-oss-120b",
+          "outputTokenDemand": 2048,
+          "maxTokens": 2048,
+          "contextFits": true,
+          "reasoningProfileApplied": true
+        },
+        {
+          "role": "reviewer",
+          "route": "mistral/codestral-latest",
+          "outputTokenDemand": 1024,
+          "maxTokens": 1024,
+          "contextFits": true,
+          "reasoningProfileApplied": false
+        },
+        {
+          "role": "reviewer",
+          "route": "unresolved",
+          "outputTokenDemand": 2048,
+          "maxTokens": 2048,
+          "contextFits": true,
+          "reasoningProfileApplied": false
+        }
+      ],
+      "wallMs": 1
+    }
+  },
+  "checks": [
+    {
+      "name": "budget: reasoning route gets role demand + measured reserve",
+      "pass": true,
+      "scenario": "budget"
+    },
+    {
+      "name": "budget: unprofiled route gets role demand only",
+      "pass": true,
+      "scenario": "budget"
+    },
+    {
+      "name": "budget: unresolved route holds the bounded worst case",
+      "pass": true,
+      "scenario": "budget"
+    },
+    {
+      "name": "budget: every role demand within the 4k hard cap",
+      "pass": true,
+      "scenario": "budget"
+    },
+    {
+      "name": "budget: coder keeps the full generation room on every route",
+      "pass": true,
+      "scenario": "budget"
+    },
+    {
+      "name": "budget: nearly-full context contracts maxTokens, never overruns",
+      "pass": true,
+      "scenario": "budget"
+    },
+    {
+      "name": "budget: zero context room marks unfit before any request",
+      "pass": true,
+      "scenario": "budget"
+    }
+  ],
+  "allChecksPassed": true
+}
