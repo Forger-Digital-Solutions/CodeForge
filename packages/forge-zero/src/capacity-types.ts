@@ -139,6 +139,9 @@ export interface CapacityRoute {
   managedMultiUserAllowed: boolean;
   privacyClass: PrivacyClass;
   roles: readonly string[];
+  /** R37 Mission G/H: measured PROBATION-tier roles. Eligible only as degraded fallback —
+   * a qualified peer for the requested role always ranks ahead. */
+  fallbackRoles?: readonly string[];
   qualityScore: number;
   /** Declared context window of the model behind this route — the fit signal scarcity-aware
    *  ranking uses to keep small requests off scarce large-context pools (R37 Mission AH). */

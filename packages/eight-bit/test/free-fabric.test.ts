@@ -561,3 +561,56 @@ describe("R37 Mission AH — right-fit capacity preservation", () => {
     expect(decision.selected?.routeId).toBe("shared-huge");
   });
 });
+
+describe("R37 Mission G/H — probation-tier role fallback", () => {
+  it("a probation-qualified route admits when it is the only eligible supply — no premature wait", () => {
+    const c = clock();
+    const probation = managedRoute("probation", { roles: [], fallbackRoles: ["CODER"], qualityScore: 60 });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [probation],
+      managedPools: () => [poolFor(probation)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" });
+    expect(decision.outcome).toBe("ADMITTED");
+    expect(decision.selected?.routeId).toBe("probation");
+    const report = decision.explanation.candidates.find((r) => r.routeId === "probation");
+    expect(report?.status).toBe("SELECTED");
+    expect(report?.reasonCodes).toContain("ROLE_PROBATION_FALLBACK");
+  });
+
+  it("a qualified peer always outranks a probation route regardless of quality score", () => {
+    const c = clock();
+    const qualified = managedRoute("qualified", { qualityScore: 50 });
+    const probation = managedRoute("probation", { roles: [], fallbackRoles: ["CODER"], qualityScore: 95 });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [probation, qualified],
+      managedPools: () => [poolFor(probation), poolFor(qualified)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" });
+    expect(decision.outcome).toBe("ADMITTED");
+    // Qualified at score 50 beats probation at 95 — the -25 fallback penalty holds.
+    expect(decision.selected?.routeId).toBe("qualified");
+    const report = decision.explanation.candidates.find((r) => r.routeId === "probation");
+    expect(report?.status).toBe("STANDBY");
+    expect(report?.reasonCodes).toContain("ROLE_PROBATION_FALLBACK");
+  });
+
+  it("a route with neither qualified nor probation role evidence stays role-ineligible", () => {
+    const c = clock();
+    const wrong = managedRoute("wrong", { roles: ["VISION"], fallbackRoles: ["EXPLORER"] });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [wrong],
+      managedPools: () => [poolFor(wrong)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" });
+    expect(decision.outcome).toBe("DENIED_NO_SUPPLY");
+    const report = decision.explanation.candidates.find((r) => r.routeId === "wrong");
+    expect(report?.status).toBe("ROLE_INELIGIBLE");
+  });
+});

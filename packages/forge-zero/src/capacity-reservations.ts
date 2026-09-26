@@ -126,7 +126,9 @@ export class CapacityReservationLedger {
     let protectedByFirstRunReserve = false;
     for (const routeId of request.routeIds) {
       const route = this.routes.get(routeId);
-      if (!route || !route.roles.includes(request.role) || freeRouteExclusionReason(route, this.policy, request.dataContext ?? this.dataContext) !== undefined) continue;
+      // R37: probation-tier roles reserve capacity too — the fabric only ranks them behind
+      // qualified peers; eligibility (qualified OR fallback) is what this check mirrors.
+      if (!route || !(route.roles.includes(request.role) || route.fallbackRoles?.includes(request.role) === true) || freeRouteExclusionReason(route, this.policy, request.dataContext ?? this.dataContext) !== undefined) continue;
       if (route.capacityPoolScope === "PER_USER_POOL" && route.capacityIdentity !== undefined && request.capacityIdentity !== route.capacityIdentity) continue;
       sawEligibleRoute = true;
       // Two model routes backed by one provider account must contend for the same reservation

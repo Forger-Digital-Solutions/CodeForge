@@ -175,6 +175,9 @@ export interface ProviderRouteView {
   cooldownUntil?: number;
   qualificationState: QualificationState;
   roles: ModelRole[];
+  /** R37: measured PROBATION-tier roles — eligible only as degraded fallback behind
+   * qualified peers, never a substitute for them. */
+  fallbackRoles?: ModelRole[];
   qualificationVersion?: string;
   roleSuitability?: Record<string, QualificationState>;
   capacityEvidence?: FreeModelRecord["capacityEvidence"];
@@ -290,14 +293,9 @@ function bestAuthClass(def: ProviderDefinition | undefined, conn: ProviderConnec
   return def?.authClasses[0] ?? "UNSUPPORTED";
 }
 
-function qualificationFor(receipt: ModelQualificationReceipt | undefined, now: Date): { state: QualificationState; roles: ModelRole[]; version?: string; roleSuitability?: Record<string, QualificationState> } {
-  if (!receipt) return { state: "NOT_TESTED", roles: [] };
-  const ageMs = now.getTime() - new Date(receipt.completedAt).getTime();
-  if (!(ageMs < 30 * 24 * 60 * 60 * 1000)) return { state: "STALE", roles: [], version: receipt.suiteVersion };
-  const qualified = new Set(Object.entries(receipt.roleResults).filter(([, r]) => r.status === "QUALIFIED").map(([role]) => role));
-  const roleSuitability = Object.fromEntries(
-    Object.entries(receipt.roleResults).map(([role, result]) => [role, result.status as QualificationState]),
-  );
+/** Maps an EightBit-role verdict set onto product roles — used for both the qualified tier
+ * and the probation (fallback) tier, so the two never drift apart in naming. */
+function modelRolesFor(qualified: ReadonlySet<string>): ModelRole[] {
   const roles: ModelRole[] = [];
   // PRIMARY_CODING_AGENT is earned by the CODER verdict alone — tool competence is necessary
   // but not sufficient, and conflating it made an explorer-strong/coder-weak model eligible
@@ -309,12 +307,27 @@ function qualificationFor(receipt: ModelQualificationReceipt | undefined, now: D
   if (qualified.has("TOOL_AGENT") || qualified.has("EXPLORER")) roles.push("SUBAGENT");
   if (qualified.has("VISION")) roles.push("VISION");
   if (qualified.has("ANALYST")) roles.push("SEARCH_ASSIST", "SUMMARIZER");
+  return [...new Set(roles)];
+}
+
+function qualificationFor(receipt: ModelQualificationReceipt | undefined, now: Date): { state: QualificationState; roles: ModelRole[]; fallbackRoles: ModelRole[]; version?: string; roleSuitability?: Record<string, QualificationState> } {
+  if (!receipt) return { state: "NOT_TESTED", roles: [], fallbackRoles: [] };
+  const ageMs = now.getTime() - new Date(receipt.completedAt).getTime();
+  if (!(ageMs < 30 * 24 * 60 * 60 * 1000)) return { state: "STALE", roles: [], fallbackRoles: [], version: receipt.suiteVersion };
+  const qualified = new Set(Object.entries(receipt.roleResults).filter(([, r]) => r.status === "QUALIFIED").map(([role]) => role));
+  // R37 Mission G/H: PROBATION verdicts are measured "close enough" evidence — the route may
+  // serve the role as a degraded fallback when no fully qualified candidate can admit, but
+  // it must never outrank a qualified peer. NOT_QUALIFIED/HARD_FAILURE/NOT_TESTED stay out.
+  const probation = new Set(Object.entries(receipt.roleResults).filter(([, r]) => r.status === "PROBATION").map(([role]) => role));
+  const roleSuitability = Object.fromEntries(
+    Object.entries(receipt.roleResults).map(([role, result]) => [role, result.status as QualificationState]),
+  );
   const state: QualificationState =
     receipt.qualificationState === "QUALIFIED" ? "QUALIFIED"
       : receipt.qualificationState === "PROBATION" ? "PROBATION"
         : receipt.qualificationState === "HARD_FAILURE" ? "HARD_FAILURE"
           : "NOT_QUALIFIED";
-  return { state, roles: [...new Set(roles)], version: receipt.suiteVersion, roleSuitability };
+  return { state, roles: modelRolesFor(qualified), fallbackRoles: modelRolesFor(probation), version: receipt.suiteVersion, roleSuitability };
 }
 
 function healthFrom(model: FreeModelRecord | undefined, live: { status: RouteHealth; cooldownUntil?: number } | undefined, conn: ProviderConnectionState | undefined, now: Date): { health: RouteHealth; cooldownUntil?: number } {
@@ -571,6 +584,7 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
       cooldownUntil: h.cooldownUntil,
       qualificationState: q.state,
       roles: q.roles,
+      ...(q.fallbackRoles.length > 0 ? { fallbackRoles: q.fallbackRoles } : {}),
       qualificationVersion: q.version,
       roleSuitability: q.roleSuitability,
       capacityEvidence: seed.model?.capacityEvidence,

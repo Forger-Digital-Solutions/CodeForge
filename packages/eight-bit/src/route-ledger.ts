@@ -84,6 +84,8 @@ export interface RouteLedgerEntry {
   multiTenantStatus: LedgerMultiTenantStatus;
   productionStatus: LedgerProductionStatus;
   roleSuitability: readonly string[];
+  /** Probation-tier roles — eligible only as degraded fallback behind qualified peers. */
+  fallbackRoles?: readonly string[];
   qualityScore: number;
   /** Model context window — right-fit signal for capacity preservation (R37 Mission AH). */
   contextWindow?: number;
@@ -282,6 +284,7 @@ function buildEntry(
     multiTenantStatus: route.managedMultiUserAllowed ? "CLEARED" : "NOT_CLEARED",
     productionStatus: productionStatus(route, terms, exclusionReason === undefined),
     roleSuitability: route.roles,
+    ...(route.fallbackRoles !== undefined ? { fallbackRoles: route.fallbackRoles } : {}),
     qualityScore: route.qualityScore,
     ...(route.contextWindow !== undefined ? { contextWindow: route.contextWindow } : {}),
     freeEligible: exclusionReason === undefined,
@@ -384,7 +387,10 @@ export function forgeAutoSupplyPlan(
   role: string,
   userIdentity?: string | readonly string[],
 ): ForgeAutoSupplyPlan {
-  const eligible = entries.filter((e) => e.freeEligible && e.roleSuitability.includes(role));
+  // R37 Mission G/H: probation-tier roles count as eligible supply — a measured "close
+  // enough" route is a legitimate degraded fallback. Ranking (not this eligibility filter)
+  // keeps it behind every qualified peer, so the plan can never prefer it outright.
+  const eligible = entries.filter((e) => e.freeEligible && (e.roleSuitability.includes(role) || e.fallbackRoles?.includes(role) === true));
   // A user may hold several connected accounts (Copilot + Ollama …): every capacity identity
   // they own is theirs to schedule on, and every identity they do not own is unreachable.
   const owned = new Set(typeof userIdentity === "string" ? [userIdentity] : userIdentity ?? []);
