@@ -1,0 +1,169 @@
+{
+  "status": "completed",
+  "topology": "normal",
+  "counters": {
+    "childrenSpawned": 2,
+    "reviewRounds": 0,
+    "taskAttempts": 1,
+    "verificationAttempts": 1
+  },
+  "wallMs": 66329,
+  "modelCalls": [
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 2583,
+      "usage": {
+        "inputTokens": 1524,
+        "outputTokens": 180,
+        "totalTokens": 1704,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 200,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 1595,
+      "usage": {
+        "inputTokens": 1579,
+        "outputTokens": 77,
+        "totalTokens": 1656,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 75,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 4357,
+      "usage": {
+        "inputTokens": 1587,
+        "outputTokens": 106,
+        "totalTokens": 1693,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 118,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 3584,
+      "usage": {
+        "inputTokens": 1731,
+        "outputTokens": 192,
+        "totalTokens": 1923,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 207,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 553,
+      "usage": {
+        "inputTokens": 1741,
+        "outputTokens": 20,
+        "totalTokens": 1761,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 18,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 15847,
+      "usage": {
+        "inputTokens": 1802,
+        "outputTokens": 540,
+        "totalTokens": 2342,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 139,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 7947,
+      "usage": {
+        "inputTokens": 2251,
+        "outputTokens": 272,
+        "totalTokens": 2523,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 119,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 5613,
+      "usage": {
+        "inputTokens": 1806,
+        "outputTokens": 222,
+        "totalTokens": 2028,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 251,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 1127,
+      "usage": {
+        "inputTokens": 2152,
+        "outputTokens": 102,
+        "totalTokens": 2254,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 106,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 2905,
+      "usage": {
+        "inputTokens": 2205,
+        "outputTokens": 146,
+        "totalTokens": 2351,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 167,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 1344,
+      "usage": {
+        "inputTokens": 2213,
+        "outputTokens": 46,
+        "totalTokens": 2259,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 45,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 649,
+      "usage": {
+        "inputTokens": 2223,
+        "outputTokens": 21,
+        "totalTokens": 2244,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 17,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "ms": 4154,
+      "usage": {
+        "inputTokens": 2227,
+        "outputTokens": 327,
+        "totalTokens": 2554,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 297,
+        "costUsd": 0
+      }
+    }
+  ]
+}

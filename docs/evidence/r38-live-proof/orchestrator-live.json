@@ -1,0 +1,11 @@
+{
+  "status": "completed",
+  "topology": "tiny",
+  "counters": {
+    "childrenSpawned": 0,
+    "reviewRounds": 0,
+    "taskAttempts": 1,
+    "verificationAttempts": 1
+  },
+  "wallMs": 8532
+}
