@@ -614,3 +614,31 @@ describe("R37 Mission G/H — probation-tier role fallback", () => {
     expect(report?.status).toBe("ROLE_INELIGIBLE");
   });
 });
+
+describe("R37 Mission D/AF — same-provider model-domain independence", () => {
+  it("model A's exhausted quota never blocks model B on the same provider", () => {
+    const c = clock();
+    const exhausted = managedRoute("groq-model-a", {
+      providerId: "groq",
+      capacityPoolId: "shared:groq:model:model-a",
+      windows: [quotaWindow({ remaining: 0 }), quotaWindow({ unit: "input_tokens", limit: 8_000, remaining: 8_000 })],
+    });
+    const available = managedRoute("groq-model-b", {
+      providerId: "groq",
+      capacityPoolId: "shared:groq:model:model-b",
+      qualityScore: 60,
+      windows: [quotaWindow(), quotaWindow({ unit: "input_tokens", limit: 8_000, remaining: 8_000 })],
+    });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [exhausted, available],
+      managedPools: () => [poolFor(exhausted), poolFor(available)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" });
+    expect(decision.outcome).toBe("ADMITTED");
+    expect(decision.selected?.routeId).toBe("groq-model-b");
+    const denied = decision.explanation.candidates.find((r) => r.routeId === "groq-model-a");
+    expect(denied?.status).toBe("CAPACITY_DENIED");
+  });
+});
