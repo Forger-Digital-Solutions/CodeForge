@@ -1,0 +1,44 @@
+{
+  "at": "2026-09-26T14:01:21.004Z",
+  "route": {
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "catalogAt": "2026-09-26T13:59:19.231Z",
+    "priceUsdPerToken": {
+      "input": 0,
+      "output": 0
+    }
+  },
+  "task": "review-guest-authorization-defect",
+  "maxRequests": 2,
+  "cases": [
+    {
+      "label": "old-cap",
+      "maxTokens": 500,
+      "inputTokens": 96,
+      "outputTokens": 211,
+      "reasoningTokens": 211,
+      "costUsd": 0,
+      "visibleChars": 222,
+      "finishReason": "stop",
+      "usable": true,
+      "correct": true,
+      "errorCode": null,
+      "latencyMs": 1624
+    },
+    {
+      "label": "r41-profile",
+      "maxTokens": 2048,
+      "inputTokens": 96,
+      "outputTokens": 288,
+      "reasoningTokens": 297,
+      "costUsd": 0,
+      "visibleChars": 200,
+      "finishReason": "stop",
+      "usable": true,
+      "correct": true,
+      "errorCode": null,
+      "latencyMs": 3764
+    }
+  ]
+}

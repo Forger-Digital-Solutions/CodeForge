@@ -1,0 +1,1359 @@
+{
+  "at": "2026-09-26T15:10:42.868Z",
+  "profileSource": "R41-ROLE-PROFILES.json",
+  "zeroSpendBasis": "R40 verified free + R41 authenticated catalog ($0 per-token for OpenRouter); no Gemini or paid/BYOK route",
+  "maxTotalRequests": 90,
+  "maxArmMs": 300000,
+  "topology": "fixed_r1",
+  "pairs": [
+    {
+      "task": "multi-file",
+      "arms": {
+        "homogeneous": {
+          "status": "blocked",
+          "independentlyVerified": false,
+          "failureReason": "VERIFICATION_FAILED",
+          "qualityEquivalentSuccess": false,
+          "wallMs": 103678,
+          "requests": 33,
+          "inputTokens": 107605,
+          "outputTokens": 3925,
+          "reasoningTokens": 0,
+          "toolCalls": 26,
+          "providerSwitches": 0,
+          "roleRoutes": {
+            "EXPLORER": [
+              "mistral/codestral-latest"
+            ],
+            "PLANNER": [
+              "mistral/codestral-latest"
+            ],
+            "CODER": [
+              "mistral/codestral-latest"
+            ],
+            "REVIEWER": [
+              "mistral/codestral-latest"
+            ]
+          },
+          "errorCodes": [],
+          "counters": {
+            "childrenSpawned": 4,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 1
+          },
+          "verification": [
+            {
+              "command": "node tests/log.test.mjs",
+              "exitCode": 1,
+              "timedOut": false
+            }
+          ],
+          "reviewerFindings": 1,
+          "integration": "blocked"
+        },
+        "heterogeneous": {
+          "status": "completed",
+          "independentlyVerified": true,
+          "failureReason": null,
+          "qualityEquivalentSuccess": true,
+          "wallMs": 133922,
+          "requests": 34,
+          "inputTokens": 87485,
+          "outputTokens": 6033,
+          "reasoningTokens": 3966,
+          "toolCalls": 28,
+          "providerSwitches": 3,
+          "roleRoutes": {
+            "EXPLORER": [
+              "openrouter/cohere/north-mini-code:free"
+            ],
+            "PLANNER": [
+              "mistral/codestral-latest"
+            ],
+            "CODER": [
+              "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+              "mistral/codestral-latest"
+            ],
+            "REVIEWER": [
+              "mistral/codestral-latest"
+            ]
+          },
+          "errorCodes": [
+            "503"
+          ],
+          "counters": {
+            "childrenSpawned": 4,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 1
+          },
+          "verification": [
+            {
+              "command": "node tests/log.test.mjs",
+              "exitCode": 0,
+              "timedOut": false
+            }
+          ],
+          "reviewerFindings": 1,
+          "integration": "integrated"
+        }
+      }
+    }
+  ],
+  "calls": [
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 1930,
+      "toolCalls": 1,
+      "visibleChars": 592,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2182,
+        "outputTokens": 144,
+        "totalTokens": 2326,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 1828,
+      "toolCalls": 1,
+      "visibleChars": 1037,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2338,
+        "outputTokens": 249,
+        "totalTokens": 2587,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 1052,
+      "toolCalls": 1,
+      "visibleChars": 51,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2339,
+        "outputTokens": 52,
+        "totalTokens": 2391,
+        "cachedInputTokens": 1792
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 1725,
+      "toolCalls": 1,
+      "visibleChars": 134,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3298,
+        "outputTokens": 45,
+        "totalTokens": 3343,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 1153,
+      "toolCalls": 1,
+      "visibleChars": 148,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2412,
+        "outputTokens": 50,
+        "totalTokens": 2462,
+        "cachedInputTokens": 1792
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 768,
+      "toolCalls": 1,
+      "visibleChars": 152,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3535,
+        "outputTokens": 63,
+        "totalTokens": 3598,
+        "cachedInputTokens": 1792
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 907,
+      "toolCalls": 1,
+      "visibleChars": 363,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2606,
+        "outputTokens": 102,
+        "totalTokens": 2708,
+        "cachedInputTokens": 2304
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 519,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3657,
+        "outputTokens": 14,
+        "totalTokens": 3671,
+        "cachedInputTokens": 3584
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 810,
+      "toolCalls": 1,
+      "visibleChars": 158,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3751,
+        "outputTokens": 55,
+        "totalTokens": 3806,
+        "cachedInputTokens": 1792
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 1047,
+      "toolCalls": 1,
+      "visibleChars": 241,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2781,
+        "outputTokens": 82,
+        "totalTokens": 2863,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 994,
+      "toolCalls": 1,
+      "visibleChars": 156,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3879,
+        "outputTokens": 78,
+        "totalTokens": 3957,
+        "cachedInputTokens": 3584
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 1108,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2922,
+        "outputTokens": 14,
+        "totalTokens": 2936,
+        "cachedInputTokens": 2432
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 843,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3950,
+        "outputTokens": 21,
+        "totalTokens": 3971,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 3097,
+      "toolCalls": 0,
+      "visibleChars": 1398,
+      "finishReason": "stop",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3016,
+        "outputTokens": 336,
+        "totalTokens": 3352,
+        "cachedInputTokens": 2816
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 1538,
+      "toolCalls": 0,
+      "visibleChars": 693,
+      "finishReason": "stop",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3984,
+        "outputTokens": 187,
+        "totalTokens": 4171,
+        "cachedInputTokens": 3328
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 1184,
+      "toolCalls": 0,
+      "visibleChars": 472,
+      "finishReason": "stop",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 4199,
+        "outputTokens": 148,
+        "totalTokens": 4347,
+        "cachedInputTokens": 4096
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 6974,
+      "toolCalls": 0,
+      "visibleChars": 2424,
+      "finishReason": "stop",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3380,
+        "outputTokens": 893,
+        "totalTokens": 4273,
+        "cachedInputTokens": 2688
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "PLANNER",
+      "maxTokens": 1536,
+      "latencyMs": 4269,
+      "toolCalls": 0,
+      "visibleChars": 1834,
+      "finishReason": "stop",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2738,
+        "outputTokens": 499,
+        "totalTokens": 3237,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 1266,
+      "toolCalls": 1,
+      "visibleChars": 213,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3763,
+        "outputTokens": 108,
+        "totalTokens": 3871,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 786,
+      "toolCalls": 1,
+      "visibleChars": 136,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3005,
+        "outputTokens": 49,
+        "totalTokens": 3054,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 707,
+      "toolCalls": 1,
+      "visibleChars": 86,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3137,
+        "outputTokens": 70,
+        "totalTokens": 3207,
+        "cachedInputTokens": 2560
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 712,
+      "toolCalls": 1,
+      "visibleChars": 141,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3173,
+        "outputTokens": 50,
+        "totalTokens": 3223,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 752,
+      "toolCalls": 1,
+      "visibleChars": 86,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3301,
+        "outputTokens": 70,
+        "totalTokens": 3371,
+        "cachedInputTokens": 2944
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 844,
+      "toolCalls": 1,
+      "visibleChars": 96,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3343,
+        "outputTokens": 67,
+        "totalTokens": 3410,
+        "cachedInputTokens": 2304
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 653,
+      "toolCalls": 1,
+      "visibleChars": 118,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3422,
+        "outputTokens": 45,
+        "totalTokens": 3467,
+        "cachedInputTokens": 3200
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 597,
+      "toolCalls": 1,
+      "visibleChars": 93,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3478,
+        "outputTokens": 41,
+        "totalTokens": 3519,
+        "cachedInputTokens": 3456
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 1095,
+      "toolCalls": 0,
+      "visibleChars": 499,
+      "finishReason": "stop",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3530,
+        "outputTokens": 109,
+        "totalTokens": 3639,
+        "cachedInputTokens": 3328
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 637,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3180,
+        "outputTokens": 40,
+        "totalTokens": 3220,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 641,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3270,
+        "outputTokens": 27,
+        "totalTokens": 3297,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 571,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3360,
+        "outputTokens": 14,
+        "totalTokens": 3374,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 675,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3461,
+        "outputTokens": 61,
+        "totalTokens": 3522,
+        "cachedInputTokens": 3200
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 431,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3529,
+        "outputTokens": 15,
+        "totalTokens": 3544,
+        "cachedInputTokens": 2048
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 1797,
+      "toolCalls": 0,
+      "visibleChars": 492,
+      "finishReason": "stop",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3686,
+        "outputTokens": 127,
+        "totalTokens": 3813,
+        "cachedInputTokens": 3328
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 1852,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1678,
+        "outputTokens": 164,
+        "totalTokens": 1842,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 183,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 512,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1690,
+        "outputTokens": 24,
+        "totalTokens": 1714,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 20,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 1018,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1700,
+        "outputTokens": 44,
+        "totalTokens": 1744,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 40,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 500,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1759,
+        "outputTokens": 17,
+        "totalTokens": 1776,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 7,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 2642,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1812,
+        "outputTokens": 59,
+        "totalTokens": 1871,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 59,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 2330,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1869,
+        "outputTokens": 37,
+        "totalTokens": 1906,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 36,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 638,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1874,
+        "outputTokens": 26,
+        "totalTokens": 1900,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 22,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 11330,
+      "toolCalls": 0,
+      "visibleChars": 2865,
+      "finishReason": "stop",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1994,
+        "outputTokens": 988,
+        "totalTokens": 2982,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 386,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 5142,
+      "toolCalls": 0,
+      "visibleChars": 2059,
+      "finishReason": "stop",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2661,
+        "outputTokens": 526,
+        "totalTokens": 3187,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 83,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 1527,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1670,
+        "outputTokens": 215,
+        "totalTokens": 1885,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 228,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 1134,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1682,
+        "outputTokens": 44,
+        "totalTokens": 1726,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 42,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 904,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1692,
+        "outputTokens": 75,
+        "totalTokens": 1767,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 79,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 476,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1749,
+        "outputTokens": 34,
+        "totalTokens": 1783,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 36,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 452,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1808,
+        "outputTokens": 36,
+        "totalTokens": 1844,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 29,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 5776,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1861,
+        "outputTokens": 417,
+        "totalTokens": 2278,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 431,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 759,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1866,
+        "outputTokens": 34,
+        "totalTokens": 1900,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 32,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 1678,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1986,
+        "outputTokens": 237,
+        "totalTokens": 2223,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 242,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 5792,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2077,
+        "outputTokens": 358,
+        "totalTokens": 2435,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 395,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 2333,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2159,
+        "outputTokens": 346,
+        "totalTokens": 2505,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 369,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "PLANNER",
+      "maxTokens": 1536,
+      "latencyMs": 3374,
+      "toolCalls": 0,
+      "visibleChars": 1717,
+      "finishReason": "stop",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2968,
+        "outputTokens": 467,
+        "totalTokens": 3435,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 7071,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 4332,
+        "outputTokens": 247,
+        "totalTokens": 4579,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 222,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 2946,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 4447,
+        "outputTokens": 261,
+        "totalTokens": 4708,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 234,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 4843,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 4499,
+        "outputTokens": 502,
+        "totalTokens": 5001,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 429,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 1091,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3712,
+        "outputTokens": 112,
+        "totalTokens": 3824,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 89,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 2027,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3837,
+        "outputTokens": 176,
+        "totalTokens": 4013,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 155,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 6094,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 4041,
+        "outputTokens": 178,
+        "totalTokens": 4219,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 97,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 1960,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3970,
+        "outputTokens": 51,
+        "totalTokens": 4021,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 21,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 294,
+      "toolCalls": 0,
+      "visibleChars": 0,
+      "finishReason": null,
+      "structuredError": null,
+      "errorCode": "503",
+      "usage": null
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 836,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3282,
+        "outputTokens": 63,
+        "totalTokens": 3345,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 1021,
+      "toolCalls": 0,
+      "visibleChars": 318,
+      "finishReason": "stop",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3316,
+        "outputTokens": 71,
+        "totalTokens": 3387,
+        "cachedInputTokens": 2560
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 2430,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3227,
+        "outputTokens": 40,
+        "totalTokens": 3267,
+        "cachedInputTokens": 2048
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 556,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3321,
+        "outputTokens": 27,
+        "totalTokens": 3348,
+        "cachedInputTokens": 2048
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 447,
+      "toolCalls": 1,
+      "visibleChars": 0,
+      "finishReason": "tool_calls",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3421,
+        "outputTokens": 14,
+        "totalTokens": 3435,
+        "cachedInputTokens": 3328
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 1342,
+      "toolCalls": 0,
+      "visibleChars": 553,
+      "finishReason": "stop",
+      "structuredError": null,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3525,
+        "outputTokens": 143,
+        "totalTokens": 3668,
+        "cachedInputTokens": 3328
+      }
+    }
+  ]
+}

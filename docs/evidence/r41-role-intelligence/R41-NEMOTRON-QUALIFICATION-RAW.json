@@ -1,0 +1,509 @@
+{
+  "schemaVersion": 1,
+  "campaign": "R25 Mission A — live free-provider role qualification",
+  "generatedAt": "2026-09-26T14:02:20.580Z",
+  "zeroSpendBasis": "openrouter :free $0 unit price (live catalog); groq owner free-plan + observed rate-limit headers",
+  "openrouterUsageBefore": {
+    "status": 200,
+    "usage": 0,
+    "limit": null,
+    "limitRemaining": null,
+    "isFreeTier": false
+  },
+  "routes": [
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "startedAt": "2026-09-26T14:02:20.704Z",
+      "observations": [
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431340912
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431341714
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431345123
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431347484
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431348972
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431351410
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431352759
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431352972
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431354223
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431359124
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431361332
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431363518
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431368471
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431373410
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431376225
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431376469
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431382670
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431425392
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431426880
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431427991
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431430905
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431435611
+        },
+        {
+          "status": 200,
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431435875
+        }
+      ],
+      "receipt": {
+        "suiteVersion": "R27_ROLE_QUALIFICATION_V2",
+        "qualificationState": "QUALIFIED",
+        "hardFailureRoles": [
+          "PLANNER"
+        ],
+        "totalLatencyMs": 8049,
+        "metadata": {
+          "compact": true,
+          "requests": 14,
+          "transient": false,
+          "quotaExhausted": false,
+          "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+          "roleSuiteVersion": "R27_ROLE_QUALIFICATION_V2",
+          "roleTransientCases": 3
+        },
+        "roleResults": {
+          "CODER": {
+            "status": "QUALIFIED",
+            "overallScore": 1,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "compact.tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 775,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 5634,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 53
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 269
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "TOOL_AGENT": {
+            "status": "QUALIFIED",
+            "overallScore": 1,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "compact.tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 775,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 5634,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 53
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 269
+                    }
+                  ]
+                }
+              },
+              {
+                "caseId": "compact.structured",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1639,
+                "retries": 0,
+                "details": {
+                  "textLength": 64,
+                  "parsed": true
+                }
+              }
+            ]
+          },
+          "ANALYST": {
+            "status": "QUALIFIED",
+            "overallScore": 1,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "compact.structured",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1639,
+                "retries": 0,
+                "details": {
+                  "textLength": 64,
+                  "parsed": true
+                }
+              }
+            ]
+          },
+          "EXPLORER": {
+            "status": "NOT_TESTED",
+            "overallScore": 0,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "explorer.route_execution",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 4013,
+                "retries": 0,
+                "error": "OpenRouter stream error (503): Upstream error from Nvidia: Service temporarily overloaded"
+              },
+              {
+                "caseId": "explorer.reservation_release",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 3151,
+                "retries": 1,
+                "error": "OpenRouter stream error (503): Upstream error from Nvidia: Service temporarily overloaded",
+                "details": {
+                  "firstAttempt": {
+                    "modelCalls": 6,
+                    "filesRead": [
+                      "src/fabric/admission.ts",
+                      "src/fabric/ledger.ts"
+                    ],
+                    "relevantFilesRead": [
+                      "src/fabric/admission.ts",
+                      "src/fabric/ledger.ts"
+                    ],
+                    "searches": 3,
+                    "totalToolCalls": 6,
+                    "validCalls": 6,
+                    "validToolCallRate": 1,
+                    "readPrecision": 1,
+                    "hallucinatedPaths": [],
+                    "mutationAttempts": 0,
+                    "reportedFiles": [],
+                    "answerFiles": [
+                      "src/fabric/admission.ts",
+                      "src/fabric/ledger.ts"
+                    ],
+                    "recall": 0
+                  }
+                }
+              }
+            ]
+          },
+          "PLANNER": {
+            "status": "HARD_FAILURE",
+            "overallScore": 0,
+            "hardFailures": [
+              "planner.release_callsite",
+              "planner.schema"
+            ],
+            "cases": [
+              {
+                "caseId": "planner.release_callsite",
+                "passed": false,
+                "hardFailure": true,
+                "latencyMs": 6188,
+                "retries": 0,
+                "details": {
+                  "tasks": 0,
+                  "roles": [],
+                  "requiredRolesPresent": false,
+                  "dependencyOrderValid": false,
+                  "inventedPaths": [],
+                  "verificationStepPresent": false,
+                  "scopeWithinBudget": true,
+                  "schemaValid": false
+                }
+              },
+              {
+                "caseId": "planner.schema",
+                "passed": false,
+                "hardFailure": true,
+                "latencyMs": 42727,
+                "retries": 0,
+                "details": {
+                  "tasks": 0,
+                  "roles": [],
+                  "requiredRolesPresent": false,
+                  "dependencyOrderValid": false,
+                  "inventedPaths": [],
+                  "verificationStepPresent": false,
+                  "scopeWithinBudget": true,
+                  "schemaValid": false
+                }
+              }
+            ]
+          },
+          "REVIEWER": {
+            "status": "QUALIFIED",
+            "overallScore": 1,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "reviewer.one_bug",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1514,
+                "retries": 0,
+                "details": {
+                  "schemaValid": true,
+                  "verdict": "reject",
+                  "expectedApproved": false,
+                  "verdictCorrect": true,
+                  "findingLocalized": true,
+                  "findings": [
+                    "The change modifies add() to return a * b (product) instead of a + b (sum), which does not satisfy the intent to return the sum of its arguments."
+                  ]
+                }
+              },
+              {
+                "caseId": "reviewer.clean",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1091,
+                "retries": 0,
+                "details": {
+                  "schemaValid": true,
+                  "verdict": "approve",
+                  "expectedApproved": true,
+                  "verdictCorrect": true,
+                  "findingLocalized": true,
+                  "findings": []
+                }
+              },
+              {
+                "caseId": "reviewer.clean_comment",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 2943,
+                "retries": 0,
+                "details": {
+                  "schemaValid": true,
+                  "verdict": "approve",
+                  "expectedApproved": true,
+                  "verdictCorrect": true,
+                  "findingLocalized": true,
+                  "findings": []
+                }
+              },
+              {
+                "caseId": "reviewer.swallowed_failure",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 4670,
+                "retries": 0,
+                "details": {
+                  "schemaValid": true,
+                  "verdict": "reject",
+                  "expectedApproved": false,
+                  "verdictCorrect": true,
+                  "findingLocalized": true,
+                  "findings": [
+                    "The recordFailure function only sends telemetry and ignores errors; it does not store or update any failure state that could be used to demote a route."
+                  ]
+                }
+              },
+              {
+                "caseId": "reviewer.reservation_leak",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 287,
+                "retries": 0,
+                "error": "OpenRouter stream error (503): Upstream error from Nvidia: Service temporarily overloaded"
+              },
+              {
+                "caseId": "reviewer.test_cheat",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 3943,
+                "retries": 0,
+                "details": {
+                  "schemaValid": true,
+                  "verdict": "reject",
+                  "expectedApproved": false,
+                  "verdictCorrect": true,
+                  "findingLocalized": true,
+                  "findings": [
+                    "The test no longer asserts the result of `run()`; it always passes regardless of the router's behavior, which does not fix the flakiness but hides it."
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "wallMs": 98896
+    }
+  ],
+  "openrouterUsageAfter": {
+    "status": 200,
+    "usage": 0,
+    "limit": null,
+    "limitRemaining": null,
+    "isFreeTier": false
+  }
+}

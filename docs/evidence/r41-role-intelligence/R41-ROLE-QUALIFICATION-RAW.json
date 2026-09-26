@@ -1,0 +1,1331 @@
+{
+  "schemaVersion": 1,
+  "campaign": "R25 Mission A — live free-provider role qualification",
+  "generatedAt": "2026-09-26T13:59:36.969Z",
+  "zeroSpendBasis": "openrouter :free $0 unit price (live catalog); groq owner free-plan + observed rate-limit headers",
+  "openrouterUsageBefore": {
+    "status": 200,
+    "usage": 0,
+    "limit": null,
+    "limitRemaining": null,
+    "isFreeTier": false
+  },
+  "routes": [
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "startedAt": "2026-09-26T13:59:37.164Z",
+      "observations": [
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431177329
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431178157
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431178703
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431180358
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431181504
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431184338
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431185232
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431185616
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431186133
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431186995
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431189325
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431189944
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431190491
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431191334
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431192192
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431193553
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431194320
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431196562
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431197079
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431197868
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431198593
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431199326
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431200076
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431217001
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431230077
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431231650
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431235126
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431237240
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431239771
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431243521
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431246836
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431259084
+        },
+        {
+          "status": 200,
+          "model": "cohere/north-mini-code:free",
+          "quotaHeaders": {},
+          "observedAt": 1790431269777
+        }
+      ],
+      "receipt": {
+        "suiteVersion": "R27_ROLE_QUALIFICATION_V2",
+        "qualificationState": "QUALIFIED",
+        "hardFailureRoles": [
+          "PLANNER",
+          "REVIEWER"
+        ],
+        "totalLatencyMs": 4133,
+        "metadata": {
+          "compact": true,
+          "requests": 17,
+          "transient": false,
+          "quotaExhausted": false,
+          "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+          "roleSuiteVersion": "R27_ROLE_QUALIFICATION_V2",
+          "roleTransientCases": 0
+        },
+        "roleResults": {
+          "CODER": {
+            "status": "QUALIFIED",
+            "overallScore": 1,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "compact.tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 767,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1829,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 87
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 108
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "TOOL_AGENT": {
+            "status": "QUALIFIED",
+            "overallScore": 1,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "compact.tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 767,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1829,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 87
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 108
+                    }
+                  ]
+                }
+              },
+              {
+                "caseId": "compact.structured",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1536,
+                "retries": 0,
+                "details": {
+                  "textLength": 61,
+                  "parsed": true
+                }
+              }
+            ]
+          },
+          "ANALYST": {
+            "status": "QUALIFIED",
+            "overallScore": 1,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "compact.structured",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1536,
+                "retries": 0,
+                "details": {
+                  "textLength": 61,
+                  "parsed": true
+                }
+              }
+            ]
+          },
+          "EXPLORER": {
+            "status": "PROBATION",
+            "overallScore": 0.5,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "explorer.route_execution",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 7838,
+                "retries": 0,
+                "details": {
+                  "modelCalls": 6,
+                  "filesRead": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "relevantFilesRead": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "searches": 2,
+                  "totalToolCalls": 5,
+                  "validCalls": 5,
+                  "validToolCallRate": 1,
+                  "readPrecision": 1,
+                  "hallucinatedPaths": [],
+                  "mutationAttempts": 0,
+                  "reportedFiles": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "answerFiles": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "recall": 1
+                }
+              },
+              {
+                "caseId": "explorer.reservation_release",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 5692,
+                "retries": 1,
+                "details": {
+                  "modelCalls": 6,
+                  "filesRead": [],
+                  "relevantFilesRead": [],
+                  "searches": 5,
+                  "totalToolCalls": 6,
+                  "validCalls": 6,
+                  "validToolCallRate": 1,
+                  "readPrecision": 0,
+                  "hallucinatedPaths": [],
+                  "mutationAttempts": 0,
+                  "reportedFiles": [],
+                  "answerFiles": [
+                    "src/fabric/admission.ts",
+                    "src/fabric/ledger.ts"
+                  ],
+                  "recall": 0,
+                  "firstAttempt": {
+                    "modelCalls": 6,
+                    "filesRead": [],
+                    "relevantFilesRead": [],
+                    "searches": 5,
+                    "totalToolCalls": 6,
+                    "validCalls": 6,
+                    "validToolCallRate": 1,
+                    "readPrecision": 0,
+                    "hallucinatedPaths": [],
+                    "mutationAttempts": 0,
+                    "reportedFiles": [],
+                    "answerFiles": [
+                      "src/fabric/admission.ts",
+                      "src/fabric/ledger.ts"
+                    ],
+                    "recall": 0
+                  }
+                }
+              }
+            ]
+          },
+          "PLANNER": {
+            "status": "HARD_FAILURE",
+            "overallScore": 0,
+            "hardFailures": [
+              "planner.schema"
+            ],
+            "cases": [
+              {
+                "caseId": "planner.release_callsite",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 16835,
+                "retries": 0,
+                "error": "OpenRouter returned HTTP 200 but no usable completion choices."
+              },
+              {
+                "caseId": "planner.schema",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 12702,
+                "retries": 0,
+                "error": "OpenRouter returned HTTP 200 but no usable completion choices."
+              }
+            ]
+          },
+          "REVIEWER": {
+            "status": "HARD_FAILURE",
+            "overallScore": 0.5,
+            "hardFailures": [
+              "reviewer.one_bug"
+            ],
+            "cases": [
+              {
+                "caseId": "reviewer.one_bug",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 3464,
+                "retries": 1,
+                "details": {
+                  "schemaValid": true,
+                  "verdict": "reject",
+                  "expectedApproved": false,
+                  "verdictCorrect": true,
+                  "findingLocalized": false,
+                  "findings": [
+                    "The diff changes the implementation from subtraction to multiplication, which does not satisfy the intent of returning the sum of the arguments. The correct fix should return a + b."
+                  ],
+                  "firstAttempt": {
+                    "schemaValid": true,
+                    "verdict": "reject",
+                    "expectedApproved": false,
+                    "verdictCorrect": true,
+                    "findingLocalized": false,
+                    "findings": [
+                      "The diff changes the implementation from subtraction to multiplication, which does not satisfy the intent of returning the sum of the arguments."
+                    ]
+                  }
+                }
+              },
+              {
+                "caseId": "reviewer.clean",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1986,
+                "retries": 0,
+                "details": {
+                  "schemaValid": true,
+                  "verdict": "approve",
+                  "expectedApproved": true,
+                  "verdictCorrect": true,
+                  "findingLocalized": true,
+                  "findings": []
+                }
+              },
+              {
+                "caseId": "reviewer.clean_comment",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1563,
+                "retries": 0,
+                "details": {
+                  "schemaValid": true,
+                  "verdict": "approve",
+                  "expectedApproved": true,
+                  "verdictCorrect": true,
+                  "findingLocalized": true,
+                  "findings": []
+                }
+              },
+              {
+                "caseId": "reviewer.swallowed_failure",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 3367,
+                "retries": 1,
+                "details": {
+                  "schemaValid": true,
+                  "verdict": "approve",
+                  "expectedApproved": false,
+                  "verdictCorrect": false,
+                  "findingLocalized": false,
+                  "findings": [],
+                  "firstAttempt": {
+                    "schemaValid": true,
+                    "verdict": "approve",
+                    "expectedApproved": false,
+                    "verdictCorrect": false,
+                    "findingLocalized": false,
+                    "findings": []
+                  }
+                }
+              },
+              {
+                "caseId": "reviewer.reservation_leak",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 10372,
+                "retries": 1,
+                "error": "OpenRouter returned HTTP 200 but no usable completion choices.",
+                "details": {
+                  "firstAttempt": {
+                    "schemaValid": true,
+                    "verdict": "approve",
+                    "expectedApproved": false,
+                    "verdictCorrect": false,
+                    "findingLocalized": false,
+                    "findings": []
+                  }
+                }
+              },
+              {
+                "caseId": "reviewer.test_cheat",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 2534,
+                "retries": 0,
+                "details": {
+                  "schemaValid": true,
+                  "verdict": "reject",
+                  "expectedApproved": false,
+                  "verdictCorrect": true,
+                  "findingLocalized": true,
+                  "findings": [
+                    "The diff replaces the actual test logic with a static expectation, removing the call to `run()` and thus no longer testing the router's behavior. This does not address the underlying flakiness but merely makes the test pass by testing a trivial condition."
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "wallMs": 94631
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "startedAt": "2026-09-26T14:01:11.796Z",
+      "observations": [
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "999",
+            "x-ratelimit-remaining-tokens": "7584",
+            "x-ratelimit-reset-requests": "1m26.4s",
+            "x-ratelimit-reset-tokens": "3.119s"
+          },
+          "observedAt": 1790431272057
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "998",
+            "x-ratelimit-remaining-tokens": "7302",
+            "x-ratelimit-reset-requests": "2m52.8s",
+            "x-ratelimit-reset-tokens": "5.234s"
+          },
+          "observedAt": 1790431272468
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "997",
+            "x-ratelimit-remaining-tokens": "7037",
+            "x-ratelimit-reset-requests": "4m19.2s",
+            "x-ratelimit-reset-tokens": "7.222s"
+          },
+          "observedAt": 1790431272782
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "996",
+            "x-ratelimit-remaining-tokens": "6918",
+            "x-ratelimit-reset-requests": "5m45.6s",
+            "x-ratelimit-reset-tokens": "8.115s"
+          },
+          "observedAt": 1790431273232
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "995",
+            "x-ratelimit-remaining-tokens": "6487",
+            "x-ratelimit-reset-requests": "7m12s",
+            "x-ratelimit-reset-tokens": "11.347s"
+          },
+          "observedAt": 1790431273668
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "994",
+            "x-ratelimit-remaining-tokens": "6068",
+            "x-ratelimit-reset-requests": "8m38.4s",
+            "x-ratelimit-reset-tokens": "14.49s"
+          },
+          "observedAt": 1790431273929
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "993",
+            "x-ratelimit-remaining-tokens": "5628",
+            "x-ratelimit-reset-requests": "10m4.8s",
+            "x-ratelimit-reset-tokens": "17.79s"
+          },
+          "observedAt": 1790431274212
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "992",
+            "x-ratelimit-remaining-tokens": "5006",
+            "x-ratelimit-reset-requests": "11m31.2s",
+            "x-ratelimit-reset-tokens": "22.455s"
+          },
+          "observedAt": 1790431274441
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "991",
+            "x-ratelimit-remaining-tokens": "4281",
+            "x-ratelimit-reset-requests": "12m57.599s",
+            "x-ratelimit-reset-tokens": "27.892s"
+          },
+          "observedAt": 1790431274832
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "990",
+            "x-ratelimit-remaining-tokens": "4085",
+            "x-ratelimit-reset-requests": "14m24s",
+            "x-ratelimit-reset-tokens": "29.362s"
+          },
+          "observedAt": 1790431275420
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "989",
+            "x-ratelimit-remaining-tokens": "3575",
+            "x-ratelimit-reset-requests": "15m50.4s",
+            "x-ratelimit-reset-tokens": "33.187s"
+          },
+          "observedAt": 1790431275803
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "988",
+            "x-ratelimit-remaining-tokens": "3319",
+            "x-ratelimit-reset-requests": "17m16.8s",
+            "x-ratelimit-reset-tokens": "35.107s"
+          },
+          "observedAt": 1790431276215
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "987",
+            "x-ratelimit-remaining-tokens": "2884",
+            "x-ratelimit-reset-requests": "18m43.2s",
+            "x-ratelimit-reset-tokens": "38.37s"
+          },
+          "observedAt": 1790431276712
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "986",
+            "x-ratelimit-remaining-tokens": "2391",
+            "x-ratelimit-reset-requests": "20m9.6s",
+            "x-ratelimit-reset-tokens": "42.067s"
+          },
+          "observedAt": 1790431277348
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "985",
+            "x-ratelimit-remaining-tokens": "2003",
+            "x-ratelimit-reset-requests": "21m36s",
+            "x-ratelimit-reset-tokens": "44.977s"
+          },
+          "observedAt": 1790431277769
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "984",
+            "x-ratelimit-remaining-tokens": "1705",
+            "x-ratelimit-reset-requests": "23m2.4s",
+            "x-ratelimit-reset-tokens": "47.212s"
+          },
+          "observedAt": 1790431278219
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "983",
+            "x-ratelimit-remaining-tokens": "1313",
+            "x-ratelimit-reset-requests": "24m28.8s",
+            "x-ratelimit-reset-tokens": "50.152s"
+          },
+          "observedAt": 1790431278676
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "982",
+            "x-ratelimit-remaining-tokens": "1124",
+            "x-ratelimit-reset-requests": "25m55.199s",
+            "x-ratelimit-reset-tokens": "51.57s"
+          },
+          "observedAt": 1790431278962
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "981",
+            "x-ratelimit-remaining-tokens": "963",
+            "x-ratelimit-reset-requests": "27m21.6s",
+            "x-ratelimit-reset-tokens": "52.777s"
+          },
+          "observedAt": 1790431279394
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "980",
+            "x-ratelimit-remaining-tokens": "561",
+            "x-ratelimit-reset-requests": "28m48s",
+            "x-ratelimit-reset-tokens": "55.792s"
+          },
+          "observedAt": 1790431279721
+        },
+        {
+          "status": 200,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "979",
+            "x-ratelimit-remaining-tokens": "16",
+            "x-ratelimit-reset-requests": "30m14.4s",
+            "x-ratelimit-reset-tokens": "59.88s"
+          },
+          "observedAt": 1790431280279
+        },
+        {
+          "status": 429,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "retry-after": "4",
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "979",
+            "x-ratelimit-remaining-tokens": "169",
+            "x-ratelimit-reset-requests": "30m14.4s",
+            "x-ratelimit-reset-tokens": "58.732s"
+          },
+          "observedAt": 1790431280489
+        },
+        {
+          "status": 429,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "retry-after": "2",
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "979",
+            "x-ratelimit-remaining-tokens": "176",
+            "x-ratelimit-reset-requests": "30m14.4s",
+            "x-ratelimit-reset-tokens": "58.68s"
+          },
+          "observedAt": 1790431280541
+        },
+        {
+          "status": 429,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "retry-after": "1",
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "979",
+            "x-ratelimit-remaining-tokens": "182",
+            "x-ratelimit-reset-requests": "30m14.4s",
+            "x-ratelimit-reset-tokens": "58.635s"
+          },
+          "observedAt": 1790431280589
+        },
+        {
+          "status": 429,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "retry-after": "1",
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "979",
+            "x-ratelimit-remaining-tokens": "190",
+            "x-ratelimit-reset-requests": "30m14.4s",
+            "x-ratelimit-reset-tokens": "58.574s"
+          },
+          "observedAt": 1790431280647
+        },
+        {
+          "status": 429,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "retry-after": "1",
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "979",
+            "x-ratelimit-remaining-tokens": "196",
+            "x-ratelimit-reset-requests": "30m14.4s",
+            "x-ratelimit-reset-tokens": "58.53s"
+          },
+          "observedAt": 1790431280696
+        },
+        {
+          "status": 429,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "retry-after": "3",
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "979",
+            "x-ratelimit-remaining-tokens": "205",
+            "x-ratelimit-reset-requests": "30m14.4s",
+            "x-ratelimit-reset-tokens": "58.462s"
+          },
+          "observedAt": 1790431280762
+        },
+        {
+          "status": 429,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "retry-after": "1",
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "979",
+            "x-ratelimit-remaining-tokens": "212",
+            "x-ratelimit-reset-requests": "30m14.4s",
+            "x-ratelimit-reset-tokens": "58.41s"
+          },
+          "observedAt": 1790431280813
+        },
+        {
+          "status": 429,
+          "model": "openai/gpt-oss-120b",
+          "quotaHeaders": {
+            "retry-after": "1",
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "979",
+            "x-ratelimit-remaining-tokens": "221",
+            "x-ratelimit-reset-requests": "30m14.4s",
+            "x-ratelimit-reset-tokens": "58.342s"
+          },
+          "observedAt": 1790431280880
+        }
+      ],
+      "receipt": {
+        "suiteVersion": "R27_ROLE_QUALIFICATION_V2",
+        "qualificationState": "QUALIFIED",
+        "hardFailureRoles": [],
+        "totalLatencyMs": 1725,
+        "metadata": {
+          "compact": true,
+          "requests": 14,
+          "transient": false,
+          "quotaExhausted": false,
+          "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+          "roleSuiteVersion": "R27_ROLE_QUALIFICATION_V2",
+          "roleTransientCases": 8
+        },
+        "roleResults": {
+          "CODER": {
+            "status": "QUALIFIED",
+            "overallScore": 1,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "compact.tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 351,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 934,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 40
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 177
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "TOOL_AGENT": {
+            "status": "PROBATION",
+            "overallScore": 0.6666666666666666,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "compact.tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 351,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 934,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 40
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 177
+                    }
+                  ]
+                }
+              },
+              {
+                "caseId": "compact.structured",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 439,
+                "retries": 0,
+                "details": {
+                  "textLength": 0,
+                  "parsed": false
+                }
+              }
+            ]
+          },
+          "ANALYST": {
+            "status": "NOT_QUALIFIED",
+            "overallScore": 0,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "compact.structured",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 439,
+                "retries": 0,
+                "details": {
+                  "textLength": 0,
+                  "parsed": false
+                }
+              }
+            ]
+          },
+          "EXPLORER": {
+            "status": "PROBATION",
+            "overallScore": 0.5,
+            "hardFailures": [],
+            "cases": [
+              {
+                "caseId": "explorer.route_execution",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1695,
+                "retries": 0,
+                "details": {
+                  "modelCalls": 5,
+                  "filesRead": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "relevantFilesRead": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "searches": 1,
+                  "totalToolCalls": 4,
+                  "validCalls": 4,
+                  "validToolCallRate": 1,
+                  "readPrecision": 1,
+                  "hallucinatedPaths": [],
+                  "mutationAttempts": 0,
+                  "reportedFiles": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "answerFiles": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "recall": 1
+                }
+              },
+              {
+                "caseId": "explorer.reservation_release",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 2511,
+                "retries": 1,
+                "details": {
+                  "modelCalls": 6,
+                  "filesRead": [
+                    "src/fabric/admission.ts"
+                  ],
+                  "relevantFilesRead": [
+                    "src/fabric/admission.ts"
+                  ],
+                  "searches": 5,
+                  "totalToolCalls": 6,
+                  "validCalls": 6,
+                  "validToolCallRate": 1,
+                  "readPrecision": 1,
+                  "hallucinatedPaths": [],
+                  "mutationAttempts": 0,
+                  "reportedFiles": [],
+                  "answerFiles": [
+                    "src/fabric/admission.ts",
+                    "src/fabric/ledger.ts"
+                  ],
+                  "recall": 0,
+                  "firstAttempt": {
+                    "modelCalls": 6,
+                    "filesRead": [
+                      "src/fabric/admission.ts"
+                    ],
+                    "relevantFilesRead": [
+                      "src/fabric/admission.ts"
+                    ],
+                    "searches": 5,
+                    "totalToolCalls": 6,
+                    "validCalls": 6,
+                    "validToolCallRate": 1,
+                    "readPrecision": 1,
+                    "hallucinatedPaths": [],
+                    "mutationAttempts": 0,
+                    "reportedFiles": [],
+                    "answerFiles": [
+                      "src/fabric/admission.ts",
+                      "src/fabric/ledger.ts"
+                    ],
+                    "recall": 0
+                  }
+                }
+              }
+            ]
+          },
+          "PLANNER": {
+            "status": "NOT_TESTED",
+            "overallScore": 0,
+            "hardFailures": [
+              "planner.schema"
+            ],
+            "cases": [
+              {
+                "caseId": "planner.release_callsite",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 54,
+                "retries": 0,
+                "error": "groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per minute (TPM): Limit 80"
+              },
+              {
+                "caseId": "planner.schema",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 51,
+                "retries": 0,
+                "error": "groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per minute (TPM): Limit 80"
+              }
+            ]
+          },
+          "REVIEWER": {
+            "status": "NOT_TESTED",
+            "overallScore": 0,
+            "hardFailures": [
+              "reviewer.one_bug"
+            ],
+            "cases": [
+              {
+                "caseId": "reviewer.one_bug",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 48,
+                "retries": 0,
+                "error": "groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per minute (TPM): Limit 80"
+              },
+              {
+                "caseId": "reviewer.clean",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 58,
+                "retries": 0,
+                "error": "groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per minute (TPM): Limit 80"
+              },
+              {
+                "caseId": "reviewer.clean_comment",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 48,
+                "retries": 0,
+                "error": "groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per minute (TPM): Limit 80"
+              },
+              {
+                "caseId": "reviewer.swallowed_failure",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 66,
+                "retries": 0,
+                "error": "groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per minute (TPM): Limit 80"
+              },
+              {
+                "caseId": "reviewer.reservation_leak",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 52,
+                "retries": 0,
+                "error": "groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per minute (TPM): Limit 80"
+              },
+              {
+                "caseId": "reviewer.test_cheat",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 66,
+                "retries": 0,
+                "error": "groq error (429): {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kqgggdwjf66vq62sv6mwem6j` service tier `on_demand` on tokens per minute (TPM): Limit 80"
+              }
+            ]
+          }
+        }
+      },
+      "wallMs": 9084
+    }
+  ],
+  "openrouterUsageAfter": {
+    "status": 200,
+    "usage": 0,
+    "limit": null,
+    "limitRemaining": null,
+    "isFreeTier": false
+  }
+}

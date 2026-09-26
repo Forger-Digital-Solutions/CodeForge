@@ -1,0 +1,475 @@
+{
+  "at": "2026-09-26T14:47:40.344Z",
+  "suiteVersion": "R41_COMPOSITE_LIVE_SNAPSHOT_V1",
+  "qualificationPolicy": "Use the recorded R27 role cases and R41 enum-clarified planner cases without re-running. NOT_TESTED for blocked probes; legacy one-case Reviewer is labeled historical.",
+  "routes": [
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "receipt": {
+        "suiteVersion": "R41_COMPOSITE_LIVE_SNAPSHOT_V1",
+        "providerId": "mistral",
+        "modelId": "codestral-latest",
+        "modelDisplayName": "codestral-latest",
+        "accessClass": "FREE_ALLOWANCE",
+        "freeStatus": "verified_free",
+        "roleResults": {
+          "CODER": {
+            "role": "CODER",
+            "status": "QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "compact",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 516,
+                "retries": 0
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "compact",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1395,
+                "retries": 0
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 1,
+            "startedAt": "2026-09-26T14:02:05.764Z",
+            "completedAt": "2026-09-26T14:02:05.764Z",
+            "evidenceSource": "R41-MISTRAL-QUALIFICATION-RAW.json"
+          },
+          "EXPLORER": {
+            "role": "EXPLORER",
+            "status": "NOT_QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "explorer.route_execution",
+                "category": "explorer",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 3499,
+                "retries": 1
+              },
+              {
+                "caseId": "explorer.reservation_release",
+                "category": "explorer",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 2379,
+                "retries": 1
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0,
+            "startedAt": "2026-09-26T14:02:05.764Z",
+            "completedAt": "2026-09-26T14:02:05.764Z",
+            "evidenceSource": "R41-MISTRAL-QUALIFICATION-RAW.json"
+          },
+          "PLANNER": {
+            "role": "PLANNER",
+            "status": "QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "planner.release_callsite",
+                "category": "plan",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1833,
+                "retries": 0
+              },
+              {
+                "caseId": "planner.schema",
+                "category": "plan",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 3875,
+                "retries": 0
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 1,
+            "startedAt": "2026-09-26T14:26:40.994Z",
+            "completedAt": "2026-09-26T14:26:40.994Z",
+            "evidenceSource": "R41-PLANNER-CLARIFIED.json (R27 tasks + V3 enum-clarified prompt)"
+          },
+          "REVIEWER": {
+            "role": "REVIEWER",
+            "status": "QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "r40.reviewer",
+                "category": "review",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 331,
+                "retries": 0
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 1,
+            "startedAt": "2026-09-26T05:00:00.000Z",
+            "completedAt": "2026-09-26T05:00:00.000Z",
+            "evidenceSource": "../r40-free-intelligence/R40-ROLE-QUALIFICATION.json (single historical task)"
+          }
+        },
+        "startedAt": "2026-09-26T14:02:05.764Z",
+        "completedAt": "2026-09-26T14:02:05.764Z",
+        "totalLatencyMs": 0,
+        "qualificationState": "QUALIFIED",
+        "hardFailureRoles": [],
+        "metadata": {
+          "sources": [
+            "R41-MISTRAL-QUALIFICATION-RAW.json",
+            "R41-PLANNER-CLARIFIED.json (R27 tasks + V3 enum-clarified prompt)",
+            "../r40-free-intelligence/R40-ROLE-QUALIFICATION.json (single historical task)"
+          ],
+          "composite": true
+        }
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "receipt": {
+        "suiteVersion": "R41_COMPOSITE_LIVE_SNAPSHOT_V1",
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free",
+        "modelDisplayName": "cohere/north-mini-code:free",
+        "accessClass": "FREE_ROUTED",
+        "freeStatus": "verified_free",
+        "roleResults": {
+          "CODER": {
+            "role": "CODER",
+            "status": "QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "compact",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 767,
+                "retries": 0
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "compact",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1829,
+                "retries": 0
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 1,
+            "startedAt": "2026-09-26T13:59:37.164Z",
+            "completedAt": "2026-09-26T13:59:37.164Z",
+            "evidenceSource": "R41-ROLE-QUALIFICATION-RAW.json"
+          },
+          "EXPLORER": {
+            "role": "EXPLORER",
+            "status": "PROBATION",
+            "testCases": [
+              {
+                "caseId": "explorer.route_execution",
+                "category": "explorer",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 7838,
+                "retries": 0
+              },
+              {
+                "caseId": "explorer.reservation_release",
+                "category": "explorer",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 5692,
+                "retries": 1
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0.5,
+            "startedAt": "2026-09-26T13:59:37.164Z",
+            "completedAt": "2026-09-26T13:59:37.164Z",
+            "evidenceSource": "R41-ROLE-QUALIFICATION-RAW.json"
+          },
+          "PLANNER": {
+            "role": "PLANNER",
+            "status": "NOT_TESTED",
+            "testCases": [
+              {
+                "caseId": "planner.release_callsite",
+                "category": "planner",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 16835,
+                "retries": 0,
+                "error": "HTTP 200 no usable completion choices"
+              },
+              {
+                "caseId": "planner.schema",
+                "category": "planner",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 12702,
+                "retries": 0,
+                "error": "HTTP 200 no usable completion choices"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0,
+            "startedAt": "2026-09-26T13:59:37.164Z",
+            "completedAt": "2026-09-26T13:59:37.164Z",
+            "evidenceSource": "R41-ROLE-QUALIFICATION-RAW.json"
+          },
+          "REVIEWER": {
+            "role": "REVIEWER",
+            "status": "HARD_FAILURE",
+            "testCases": [
+              {
+                "caseId": "reviewer.one_bug",
+                "category": "reviewer",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 3464,
+                "retries": 1
+              },
+              {
+                "caseId": "reviewer.clean",
+                "category": "reviewer",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1986,
+                "retries": 0
+              },
+              {
+                "caseId": "reviewer.clean_comment",
+                "category": "reviewer",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1563,
+                "retries": 0
+              },
+              {
+                "caseId": "reviewer.swallowed_failure",
+                "category": "reviewer",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 3367,
+                "retries": 1
+              },
+              {
+                "caseId": "reviewer.reservation_leak",
+                "category": "reviewer",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 10372,
+                "retries": 1,
+                "error": "HTTP 200 no usable completion choices"
+              },
+              {
+                "caseId": "reviewer.test_cheat",
+                "category": "reviewer",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 2534,
+                "retries": 0
+              }
+            ],
+            "hardFailures": [
+              "reviewer.one_bug"
+            ],
+            "overallScore": 0.6,
+            "startedAt": "2026-09-26T13:59:37.164Z",
+            "completedAt": "2026-09-26T13:59:37.164Z",
+            "evidenceSource": "R41-ROLE-QUALIFICATION-RAW.json"
+          }
+        },
+        "startedAt": "2026-09-26T13:59:37.164Z",
+        "completedAt": "2026-09-26T13:59:37.164Z",
+        "totalLatencyMs": 94631,
+        "qualificationState": "QUALIFIED",
+        "hardFailureRoles": [
+          "REVIEWER"
+        ],
+        "metadata": {
+          "sources": [
+            "R41-ROLE-QUALIFICATION-RAW.json"
+          ],
+          "composite": true
+        }
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "receipt": {
+        "suiteVersion": "R41_COMPOSITE_LIVE_SNAPSHOT_V1",
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "modelDisplayName": "nvidia/nemotron-3-super-120b-a12b:free",
+        "accessClass": "FREE_ROUTED",
+        "freeStatus": "verified_free",
+        "roleResults": {
+          "CODER": {
+            "role": "CODER",
+            "status": "QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "compact",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 775,
+                "retries": 0
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "compact",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 5634,
+                "retries": 0
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 1,
+            "startedAt": "2026-09-26T14:02:20.704Z",
+            "completedAt": "2026-09-26T14:02:20.704Z",
+            "evidenceSource": "R41-NEMOTRON-QUALIFICATION-RAW.json"
+          },
+          "EXPLORER": {
+            "role": "EXPLORER",
+            "status": "NOT_TESTED",
+            "testCases": [
+              {
+                "caseId": "explorer.route_execution",
+                "category": "explorer",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 4013,
+                "retries": 0,
+                "error": "HTTP 503 provider outage"
+              },
+              {
+                "caseId": "explorer.reservation_release",
+                "category": "explorer",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 3151,
+                "retries": 1,
+                "error": "HTTP 503 provider outage"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0,
+            "startedAt": "2026-09-26T14:02:20.704Z",
+            "completedAt": "2026-09-26T14:02:20.704Z",
+            "evidenceSource": "R41-NEMOTRON-QUALIFICATION-RAW.json"
+          },
+          "PLANNER": {
+            "role": "PLANNER",
+            "status": "PROBATION",
+            "testCases": [
+              {
+                "caseId": "planner.release_callsite",
+                "category": "plan",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 10248,
+                "retries": 0
+              },
+              {
+                "caseId": "planner.schema",
+                "category": "plan",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 5811,
+                "retries": 0
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0.5,
+            "startedAt": "2026-09-26T14:26:40.994Z",
+            "completedAt": "2026-09-26T14:26:40.994Z",
+            "evidenceSource": "R41-PLANNER-CLARIFIED.json (R27 tasks + V3 enum-clarified prompt)"
+          },
+          "REVIEWER": {
+            "role": "REVIEWER",
+            "status": "QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "reviewer.one_bug",
+                "category": "reviewer",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1514,
+                "retries": 0
+              },
+              {
+                "caseId": "reviewer.clean",
+                "category": "reviewer",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1091,
+                "retries": 0
+              },
+              {
+                "caseId": "reviewer.clean_comment",
+                "category": "reviewer",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 2943,
+                "retries": 0
+              },
+              {
+                "caseId": "reviewer.swallowed_failure",
+                "category": "reviewer",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 4670,
+                "retries": 0
+              },
+              {
+                "caseId": "reviewer.reservation_leak",
+                "category": "reviewer",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 287,
+                "retries": 0,
+                "error": "HTTP 503 provider outage"
+              },
+              {
+                "caseId": "reviewer.test_cheat",
+                "category": "reviewer",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 3943,
+                "retries": 0
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 1,
+            "startedAt": "2026-09-26T14:02:20.704Z",
+            "completedAt": "2026-09-26T14:02:20.704Z",
+            "evidenceSource": "R41-NEMOTRON-QUALIFICATION-RAW.json"
+          }
+        },
+        "startedAt": "2026-09-26T14:02:20.704Z",
+        "completedAt": "2026-09-26T14:02:20.704Z",
+        "totalLatencyMs": 98896,
+        "qualificationState": "QUALIFIED",
+        "hardFailureRoles": [],
+        "metadata": {
+          "sources": [
+            "R41-NEMOTRON-QUALIFICATION-RAW.json",
+            "R41-PLANNER-CLARIFIED.json (R27 tasks + V3 enum-clarified prompt)"
+          ],
+          "composite": true
+        }
+      }
+    }
+  ]
+}

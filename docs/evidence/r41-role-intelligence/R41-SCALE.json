@@ -1,0 +1,40 @@
+{
+  "at": "2026-09-26T15:10:24.058Z",
+  "evidenceClass": "deterministic simulated capacity; not live 373 users",
+  "users": 373,
+  "tasks": 746,
+  "completed": 746,
+  "starved": 0,
+  "queuedCapacityAttempts": 8892,
+  "falseWaits": 0,
+  "leakedReservations": 0,
+  "injected429": 50,
+  "peakHolds": 48,
+  "rounds": 46,
+  "servedByRoute": {
+    "r41:mistral/codestral-latest": 272,
+    "r41:openrouter/nvidia/nemotron-3-super-120b-a12b:free": 282,
+    "r41:openrouter/cohere/north-mini-code:free": 96,
+    "r41:groq/openai/gpt-oss-120b": 96
+  },
+  "servedByProvider": {
+    "mistral": 272,
+    "openrouter": 378,
+    "groq": 96
+  },
+  "providerConcentration": 0.5067024128686327,
+  "reenteredHealthyObservations": 16,
+  "routeCount": 4,
+  "poolCount": 3,
+  "failureSamples": [],
+  "parameters": {
+    "concurrencyPerProvider": 16,
+    "requestWindow": 2000,
+    "inputWindow": 4000000,
+    "outputWindow": 4000000,
+    "initialInputDemand": 1500,
+    "maxOutputDemand": 4096,
+    "injected429EveryCompleted": 12,
+    "injected429RetryAfterMs": 3000
+  }
+}

@@ -1,0 +1,555 @@
+{
+  "at": "2026-09-26T14:02:05.764Z",
+  "providerId": "mistral",
+  "modelId": "codestral-latest",
+  "source": "R27 frozen role qualification; R40 free inventory + R41 catalog",
+  "maxRequests": 28,
+  "requests": 36,
+  "usage": [
+    {
+      "maxTokens": 200,
+      "inputTokens": 217,
+      "outputTokens": 14,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 400,
+      "inputTokens": 241,
+      "outputTokens": 14,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 400,
+      "inputTokens": 277,
+      "outputTokens": 69,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 120,
+      "inputTokens": 55,
+      "outputTokens": 30,
+      "reasoningTokens": null,
+      "finishReason": "stop",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 350,
+      "outputTokens": 16,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 373,
+      "outputTokens": 16,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 396,
+      "outputTokens": 16,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 419,
+      "outputTokens": 16,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 442,
+      "outputTokens": 16,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 465,
+      "outputTokens": 16,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 350,
+      "outputTokens": 16,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 373,
+      "outputTokens": 16,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 396,
+      "outputTokens": 16,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 419,
+      "outputTokens": 16,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 442,
+      "outputTokens": 16,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 465,
+      "outputTokens": 16,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 345,
+      "outputTokens": 12,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 364,
+      "outputTokens": 13,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 384,
+      "outputTokens": 12,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 403,
+      "outputTokens": 13,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 423,
+      "outputTokens": 13,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 443,
+      "outputTokens": 12,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 345,
+      "outputTokens": 12,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 364,
+      "outputTokens": 13,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 384,
+      "outputTokens": 12,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 403,
+      "outputTokens": 13,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 423,
+      "outputTokens": 13,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    },
+    {
+      "maxTokens": 800,
+      "inputTokens": 443,
+      "outputTokens": 12,
+      "reasoningTokens": null,
+      "finishReason": "tool_calls",
+      "errorCode": null
+    }
+  ],
+  "receipt": {
+    "suiteVersion": "R27_ROLE_QUALIFICATION_V2",
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [
+      "PLANNER",
+      "REVIEWER"
+    ],
+    "roleResults": {
+      "CODER": {
+        "status": "QUALIFIED",
+        "overallScore": 1,
+        "startedAt": "2026-09-26T14:02:05.764Z",
+        "completedAt": "2026-09-26T14:02:08.261Z",
+        "cases": [
+          {
+            "caseId": "compact.tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 516,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "passed": true,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 1395,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 14
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 69
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "TOOL_AGENT": {
+        "status": "QUALIFIED",
+        "overallScore": 1,
+        "startedAt": "2026-09-26T14:02:05.764Z",
+        "completedAt": "2026-09-26T14:02:08.261Z",
+        "cases": [
+          {
+            "caseId": "compact.tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 516,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "passed": true,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 1395,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 14
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 69
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "passed": true,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 586,
+            "details": {
+              "textLength": 83,
+              "parsed": true
+            }
+          }
+        ]
+      },
+      "ANALYST": {
+        "status": "QUALIFIED",
+        "overallScore": 1,
+        "startedAt": "2026-09-26T14:02:05.764Z",
+        "completedAt": "2026-09-26T14:02:08.261Z",
+        "cases": [
+          {
+            "caseId": "compact.structured",
+            "passed": true,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 586,
+            "details": {
+              "textLength": 83,
+              "parsed": true
+            }
+          }
+        ]
+      },
+      "EXPLORER": {
+        "status": "NOT_QUALIFIED",
+        "overallScore": 0,
+        "startedAt": "2026-09-26T14:02:08.261Z",
+        "completedAt": "2026-09-26T14:02:20.149Z",
+        "cases": [
+          {
+            "caseId": "explorer.route_execution",
+            "passed": false,
+            "hardFailure": false,
+            "retries": 1,
+            "latencyMs": 3499,
+            "details": {
+              "modelCalls": 6,
+              "filesRead": [],
+              "relevantFilesRead": [],
+              "searches": 6,
+              "totalToolCalls": 6,
+              "validCalls": 6,
+              "validToolCallRate": 1,
+              "readPrecision": 0,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [],
+              "answerFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "recall": 0,
+              "firstAttempt": {
+                "modelCalls": 6,
+                "filesRead": [],
+                "relevantFilesRead": [],
+                "searches": 6,
+                "totalToolCalls": 6,
+                "validCalls": 6,
+                "validToolCallRate": 1,
+                "readPrecision": 0,
+                "hallucinatedPaths": [],
+                "mutationAttempts": 0,
+                "reportedFiles": [],
+                "answerFiles": [
+                  "src/router.ts",
+                  "src/provider/client.ts"
+                ],
+                "recall": 0
+              }
+            }
+          },
+          {
+            "caseId": "explorer.reservation_release",
+            "passed": false,
+            "hardFailure": false,
+            "retries": 1,
+            "latencyMs": 2379,
+            "details": {
+              "modelCalls": 6,
+              "filesRead": [],
+              "relevantFilesRead": [],
+              "searches": 6,
+              "totalToolCalls": 6,
+              "validCalls": 6,
+              "validToolCallRate": 1,
+              "readPrecision": 0,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [],
+              "answerFiles": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "recall": 0,
+              "firstAttempt": {
+                "modelCalls": 6,
+                "filesRead": [],
+                "relevantFilesRead": [],
+                "searches": 6,
+                "totalToolCalls": 6,
+                "validCalls": 6,
+                "validToolCallRate": 1,
+                "readPrecision": 0,
+                "hallucinatedPaths": [],
+                "mutationAttempts": 0,
+                "reportedFiles": [],
+                "answerFiles": [
+                  "src/fabric/admission.ts",
+                  "src/fabric/ledger.ts"
+                ],
+                "recall": 0
+              }
+            }
+          }
+        ]
+      },
+      "PLANNER": {
+        "status": "HARD_FAILURE",
+        "overallScore": 0,
+        "startedAt": "2026-09-26T14:02:08.261Z",
+        "completedAt": "2026-09-26T14:02:20.149Z",
+        "cases": [
+          {
+            "caseId": "planner.release_callsite",
+            "passed": false,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 0,
+            "errorKind": "OTHER"
+          },
+          {
+            "caseId": "planner.schema",
+            "passed": false,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 0,
+            "errorKind": "OTHER"
+          }
+        ]
+      },
+      "REVIEWER": {
+        "status": "HARD_FAILURE",
+        "overallScore": 0,
+        "startedAt": "2026-09-26T14:02:08.261Z",
+        "completedAt": "2026-09-26T14:02:20.149Z",
+        "cases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "passed": false,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 0,
+            "errorKind": "OTHER"
+          },
+          {
+            "caseId": "reviewer.clean",
+            "passed": false,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 0,
+            "errorKind": "OTHER"
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "passed": false,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 0,
+            "errorKind": "OTHER"
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "passed": false,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 1,
+            "errorKind": "OTHER"
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "passed": false,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 0,
+            "errorKind": "OTHER"
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "passed": false,
+            "hardFailure": false,
+            "retries": 0,
+            "latencyMs": 0,
+            "errorKind": "OTHER"
+          }
+        ]
+      }
+    }
+  },
+  "errorCode": null
+}

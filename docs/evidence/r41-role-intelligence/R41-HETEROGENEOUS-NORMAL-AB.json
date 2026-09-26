@@ -1,0 +1,707 @@
+{
+  "at": "2026-09-26T14:52:16.136Z",
+  "profileSource": "R41-ROLE-PROFILES.json",
+  "zeroSpendBasis": "R40 verified free + R41 authenticated catalog ($0 per-token for OpenRouter); no Gemini or paid/BYOK route",
+  "maxTotalRequests": 90,
+  "maxArmMs": 300000,
+  "topology": "normal",
+  "pairs": [
+    {
+      "task": "bug-fix",
+      "arms": {
+        "homogeneous": {
+          "status": "completed",
+          "independentlyVerified": true,
+          "failureReason": null,
+          "qualityEquivalentSuccess": true,
+          "wallMs": 36214,
+          "requests": 14,
+          "inputTokens": 41505,
+          "outputTokens": 1433,
+          "reasoningTokens": 0,
+          "toolCalls": 10,
+          "providerSwitches": 0,
+          "roleRoutes": {
+            "EXPLORER": [
+              "mistral/codestral-latest"
+            ],
+            "PLANNER": [],
+            "CODER": [
+              "mistral/codestral-latest"
+            ],
+            "REVIEWER": [
+              "mistral/codestral-latest"
+            ]
+          },
+          "errorCodes": [],
+          "counters": {
+            "childrenSpawned": 2,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 1
+          },
+          "verification": [
+            {
+              "command": "node tests/pagination.test.mjs",
+              "exitCode": 0,
+              "timedOut": false
+            }
+          ],
+          "reviewerFindings": 1,
+          "integration": "integrated"
+        },
+        "heterogeneous": {
+          "status": "blocked",
+          "independentlyVerified": true,
+          "failureReason": "REVIEWER_BUDGET_EXHAUSTED",
+          "qualityEquivalentSuccess": false,
+          "wallMs": 114202,
+          "requests": 19,
+          "inputTokens": 45540,
+          "outputTokens": 7025,
+          "reasoningTokens": 5604,
+          "toolCalls": 14,
+          "providerSwitches": 0,
+          "roleRoutes": {
+            "EXPLORER": [
+              "openrouter/cohere/north-mini-code:free"
+            ],
+            "PLANNER": [],
+            "CODER": [
+              "openrouter/cohere/north-mini-code:free"
+            ],
+            "REVIEWER": [
+              "openrouter/nvidia/nemotron-3-super-120b-a12b:free"
+            ]
+          },
+          "errorCodes": [],
+          "counters": {
+            "childrenSpawned": 2,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 0
+          },
+          "verification": [],
+          "reviewerFindings": 0,
+          "integration": "blocked"
+        }
+      }
+    },
+    {
+      "task": "bug-fix",
+      "arms": {
+        "homogeneous": {
+          "status": "completed",
+          "independentlyVerified": true,
+          "failureReason": null,
+          "qualityEquivalentSuccess": true,
+          "wallMs": 36214,
+          "requests": 14,
+          "inputTokens": 41505,
+          "outputTokens": 1433,
+          "reasoningTokens": 0,
+          "toolCalls": 10,
+          "providerSwitches": 0,
+          "roleRoutes": {
+            "EXPLORER": [
+              "mistral/codestral-latest"
+            ],
+            "PLANNER": [],
+            "CODER": [
+              "mistral/codestral-latest"
+            ],
+            "REVIEWER": [
+              "mistral/codestral-latest"
+            ]
+          },
+          "errorCodes": [],
+          "counters": {
+            "childrenSpawned": 2,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 1
+          },
+          "verification": [
+            {
+              "command": "node tests/pagination.test.mjs",
+              "exitCode": 0,
+              "timedOut": false
+            }
+          ],
+          "reviewerFindings": 1,
+          "integration": "integrated"
+        },
+        "heterogeneous": {
+          "status": "blocked",
+          "independentlyVerified": true,
+          "failureReason": "REVIEWER_BUDGET_EXHAUSTED",
+          "qualityEquivalentSuccess": false,
+          "wallMs": 114202,
+          "requests": 19,
+          "inputTokens": 45540,
+          "outputTokens": 7025,
+          "reasoningTokens": 5604,
+          "toolCalls": 14,
+          "providerSwitches": 0,
+          "roleRoutes": {
+            "EXPLORER": [
+              "openrouter/cohere/north-mini-code:free"
+            ],
+            "PLANNER": [],
+            "CODER": [
+              "openrouter/cohere/north-mini-code:free"
+            ],
+            "REVIEWER": [
+              "openrouter/nvidia/nemotron-3-super-120b-a12b:free"
+            ]
+          },
+          "errorCodes": [],
+          "counters": {
+            "childrenSpawned": 2,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 0
+          },
+          "verification": [],
+          "reviewerFindings": 0,
+          "integration": "blocked"
+        }
+      }
+    }
+  ],
+  "calls": [
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 1907,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2290,
+        "outputTokens": 208,
+        "totalTokens": 2498,
+        "cachedInputTokens": 1792
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 1234,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2624,
+        "outputTokens": 56,
+        "totalTokens": 2680,
+        "cachedInputTokens": 1792
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 856,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2770,
+        "outputTokens": 73,
+        "totalTokens": 2843,
+        "cachedInputTokens": 2560
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 825,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2892,
+        "outputTokens": 47,
+        "totalTokens": 2939,
+        "cachedInputTokens": 1792
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 928,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3051,
+        "outputTokens": 89,
+        "totalTokens": 3140,
+        "cachedInputTokens": 2816
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 1376,
+      "toolCalls": 0,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3153,
+        "outputTokens": 109,
+        "totalTokens": 3262,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "EXPLORER",
+      "maxTokens": 1024,
+      "latencyMs": 2465,
+      "toolCalls": 0,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3290,
+        "outputTokens": 183,
+        "totalTokens": 3473,
+        "cachedInputTokens": 3200
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 850,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3374,
+        "outputTokens": 45,
+        "totalTokens": 3419,
+        "cachedInputTokens": 2432
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 2855,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3514,
+        "outputTokens": 258,
+        "totalTokens": 3772,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 1579,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3093,
+        "outputTokens": 119,
+        "totalTokens": 3212,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 1148,
+      "toolCalls": 0,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3230,
+        "outputTokens": 87,
+        "totalTokens": 3317,
+        "cachedInputTokens": 2304
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 565,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2656,
+        "outputTokens": 15,
+        "totalTokens": 2671,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 552,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2720,
+        "outputTokens": 16,
+        "totalTokens": 2736,
+        "cachedInputTokens": 2560
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 1285,
+      "toolCalls": 0,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2848,
+        "outputTokens": 128,
+        "totalTokens": 2976,
+        "cachedInputTokens": 2560
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 3630,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1624,
+        "outputTokens": 175,
+        "totalTokens": 1799,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 196,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 1079,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1690,
+        "outputTokens": 56,
+        "totalTokens": 1746,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 59,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 5252,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1776,
+        "outputTokens": 457,
+        "totalTokens": 2233,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 383,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 7399,
+      "toolCalls": 0,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1827,
+        "outputTokens": 945,
+        "totalTokens": 2772,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 413,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "EXPLORER",
+      "maxTokens": 2048,
+      "latencyMs": 4533,
+      "toolCalls": 0,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2334,
+        "outputTokens": 530,
+        "totalTokens": 2864,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 179,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 3400,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2449,
+        "outputTokens": 503,
+        "totalTokens": 2952,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 457,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 2577,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2461,
+        "outputTokens": 19,
+        "totalTokens": 2480,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 19,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 1141,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2465,
+        "outputTokens": 105,
+        "totalTokens": 2570,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 119,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 15456,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2536,
+        "outputTokens": 882,
+        "totalTokens": 3418,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 777,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 545,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2548,
+        "outputTokens": 31,
+        "totalTokens": 2579,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 26,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 1295,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2619,
+        "outputTokens": 105,
+        "totalTokens": 2724,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 21,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 647,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 1991,
+        "outputTokens": 47,
+        "totalTokens": 2038,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 47,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 1091,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2069,
+        "outputTokens": 38,
+        "totalTokens": 2107,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 35,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 1546,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2074,
+        "outputTokens": 34,
+        "totalTokens": 2108,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 33,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 3719,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2161,
+        "outputTokens": 170,
+        "totalTokens": 2331,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 131,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "role": "CODER",
+      "maxTokens": 4096,
+      "latencyMs": 2093,
+      "toolCalls": 0,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 2062,
+        "outputTokens": 179,
+        "totalTokens": 2241,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 32,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 10842,
+      "toolCalls": 1,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3169,
+        "outputTokens": 701,
+        "totalTokens": 3870,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 679,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 12260,
+      "toolCalls": 0,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 3313,
+        "outputTokens": 1024,
+        "totalTokens": 4337,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 999,
+        "costUsd": 0
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "role": "REVIEWER",
+      "maxTokens": 1024,
+      "latencyMs": 20306,
+      "toolCalls": 0,
+      "errorCode": null,
+      "usage": {
+        "inputTokens": 4372,
+        "outputTokens": 1024,
+        "totalTokens": 5396,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 999,
+        "costUsd": 0
+      }
+    }
+  ]
+}
