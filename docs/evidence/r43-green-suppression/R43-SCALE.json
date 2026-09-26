@@ -1,0 +1,80 @@
+{
+  "generatedAt": "2026-09-26T18:50:24.406Z",
+  "evidenceClass": "deterministic revalidation of the R42 373-user scale harness on R43 code; simulated capacity, no live traffic",
+  "scenario": "r42-stress-sim scale",
+  "source": {
+    "at": "2026-09-26T18:50:02.660Z",
+    "evidenceClass": "deterministic simulated capacity; not live-provider traffic",
+    "scenarios": {
+      "scale": {
+        "users": 373,
+        "tasks": 746,
+        "completed": 746,
+        "starved": 0,
+        "queuedCapacityAttempts": 8892,
+        "falseWaits": 0,
+        "leakedReservations": 0,
+        "injected429": 50,
+        "peakHolds": 48,
+        "rounds": 46,
+        "servedByRoute": {
+          "r42:mistral/codestral-latest": 277,
+          "r42:openrouter/nvidia/nemotron-3-super-120b-a12b:free": 277,
+          "r42:openrouter/cohere/north-mini-code:free": 96,
+          "r42:groq/openai/gpt-oss-120b": 96
+        },
+        "servedByProvider": {
+          "mistral": 277,
+          "openrouter": 373,
+          "groq": 96
+        },
+        "providerConcentration": 0.5,
+        "reenteredHealthyObservations": 16,
+        "roleViolations": 0,
+        "timestampsRebased": true,
+        "receiptSource": "R41-ROLE-PROFILES (timestamps re-based)",
+        "wallMs": 893
+      }
+    },
+    "checks": [
+      {
+        "name": "scale: 746/746 tasks completed",
+        "pass": true,
+        "detail": "746",
+        "scenario": "scale"
+      },
+      {
+        "name": "scale: zero starvation",
+        "pass": true,
+        "detail": "0",
+        "scenario": "scale"
+      },
+      {
+        "name": "scale: zero false waits",
+        "pass": true,
+        "detail": "0/8892",
+        "scenario": "scale"
+      },
+      {
+        "name": "scale: zero leaked reservations",
+        "pass": true,
+        "detail": "0",
+        "scenario": "scale"
+      },
+      {
+        "name": "scale: zero role-ineligible selections under pressure",
+        "pass": true,
+        "detail": "0",
+        "scenario": "scale"
+      },
+      {
+        "name": "scale: every distinct park recovered and no route left parked",
+        "pass": true,
+        "detail": "recovered=16 parks=16 injected=50 parkedAtEnd=0",
+        "scenario": "scale"
+      }
+    ],
+    "allChecksPassed": true
+  },
+  "note": "full artifact re-emitted under scratch dir; canonical R42 evidence untouched"
+}

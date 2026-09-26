@@ -1,0 +1,124 @@
+{
+  "generatedAt": "2026-09-26T18:51:44.505Z",
+  "evidenceClass": "live provider catalog refresh; zero inference calls billed",
+  "refreshMs": 1466,
+  "providersDiscovered": [
+    "openrouter",
+    "groq",
+    "mistral"
+  ],
+  "refreshErrors": [],
+  "verifiedFreeRoutes": 64,
+  "verifiedByProvider": {
+    "openrouter": {
+      "routes": 21,
+      "models": [
+        "stealth/space-bunny-alpha",
+        "inclusionai/ling-3.0-flash-sante:free",
+        "inclusionai/ling-3.0-flash-fin:free",
+        "qwen/qwen3.8-27b:free",
+        "dots-studio/dots-3-note-preview:free",
+        "liquid/lfm-2.5-2.6b:free",
+        "nvidia/nemotron-3.5-lightning:free",
+        "thinkingmachines/inkling-small:free",
+        "poolside/laguna-s-2.1:free",
+        "thinkingmachines/inkling:free",
+        "poolside/laguna-xs-2.1:free",
+        "cohere/north-mini-code:free",
+        "nvidia/nemotron-3.5-content-safety:free",
+        "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "google/gemma-4-26b-a4b-it:free",
+        "google/gemma-4-31b-it:free",
+        "google/lyria-3-pro-preview",
+        "google/lyria-3-clip-preview",
+        "nvidia/nemotron-3-super-120b-a12b:free",
+        "openrouter/free"
+      ]
+    },
+    "groq": {
+      "routes": 6,
+      "models": [
+        "openai/gpt-oss-120b",
+        "qwen/qwen3.8-27b",
+        "canopylabs/orpheus-v1-english",
+        "canopylabs/orpheus-arabic-saudi",
+        "openai/gpt-oss-20b",
+        "allam-2-7b"
+      ]
+    },
+    "mistral": {
+      "routes": 37,
+      "models": [
+        "codestral-2508",
+        "codestral-latest",
+        "mistral-code-latest",
+        "mistral-code-fim-latest",
+        "mistral-small-2603",
+        "mistral-small-latest",
+        "mistral-vibe-cli-fast",
+        "magistral-small-latest",
+        "voxtral-small-2507",
+        "voxtral-small-latest",
+        "ministral-3b-2512",
+        "ministral-3b-latest",
+        "ministral-8b-2512",
+        "ministral-8b-latest",
+        "ministral-14b-2512",
+        "ministral-14b-latest",
+        "mistral-medium-latest",
+        "mistral-medium",
+        "mistral-medium-3-5",
+        "mistral-medium-3.5",
+        "mistral-medium-3",
+        "mistral-medium-2604",
+        "mistral-vibe-cli-latest",
+        "mistral-vibe-cli-with-tools",
+        "magistral-medium-latest",
+        "mistral-ocr-2512",
+        "mistral-ocr-3-0",
+        "mistral-ocr-3",
+        "mistral-ocr-4-0",
+        "mistral-ocr-latest",
+        "mistral-ocr-4",
+        "mistral-ocr-4-1",
+        "voxtral-mini-2602",
+        "voxtral-mini-latest",
+        "voxtral-mini-transcribe-realtime-2602",
+        "voxtral-mini-realtime-2602",
+        "voxtral-mini-realtime-latest"
+      ]
+    }
+  },
+  "suspendedOrExcluded": [],
+  "geminiRoutesSeen": [],
+  "checks": [
+    {
+      "name": "free-supply: refresh produced verified-free routes with zero enumeration errors",
+      "pass": true,
+      "detail": "64 routes, 0 errors"
+    },
+    {
+      "name": "free-supply: every verified route is billing-proof — paid fallback impossible AND disabled",
+      "pass": true,
+      "detail": "0 violations"
+    },
+    {
+      "name": "free-supply: no route is remote=false or BYOK-dependent",
+      "pass": true
+    },
+    {
+      "name": "free-supply: suspended consumer supply (gemini) never enters the verified-free set",
+      "pass": true,
+      "detail": "0 leaks"
+    },
+    {
+      "name": "free-supply: non-verified models are excluded from candidacy by construction",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "pass": 5,
+    "fail": 0
+  }
+}
