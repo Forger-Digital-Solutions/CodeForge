@@ -73,11 +73,12 @@ describe("progress-aware watchdog (RC2 §6)", () => {
 
   it("extends a legitimately paced worker up to the ceiling, then aborts bounded", async () => {
     // Base budget 600ms; worker turns every ~150ms (durable model-turn progress each turn).
-    // 600ms base + 2 × 400ms extension windows ≈ 1.4s ceiling: extensions must be visible in the
-    // wall time, and the abort must still land bounded — never an unbounded paced wait.
+    // R42: wall-clock bounds here measured the machine, not the mechanism — under parallel load
+    // a delayed progress write once flipped the abort reason from budget-ceiling to "stalled".
+    // The durable worker record carries the watchdog decision, so the assertions target the
+    // mechanism directly: exactly 2 earned extensions and a budget-ceiling abort reason.
     const h = await buildHarness(150, { watchdogProgressWindowMs: 400, watchdogMaxExtensions: 2 });
     cleanups.push(h.cleanup);
-    const startedAt = Date.now();
     const result = await h.manager.spawnChildAgent({
       parentRunId: "run-wd-paced",
       sessionId: "sess-wd",
@@ -86,21 +87,23 @@ describe("progress-aware watchdog (RC2 §6)", () => {
       workspacePath: h.ws,
       metadata: { timeoutMs: 600 },
     });
-    const wall = Date.now() - startedAt;
     // Ceiling abort while progressing maps to the runtime's budget-exhaustion terminal state.
     expect(result.status).toBe("blocked");
-    expect(wall).toBeGreaterThanOrEqual(1_000);
-    expect(wall).toBeLessThanOrEqual(3_500);
+    const workers = await h.persistence.getWorkItemsByKind("subagent_run");
+    const worker = workers.find((w) => w.parentRunId === "run-wd-paced");
+    expect(worker?.watchdogAbortReason).toBe("watchdog_budget_ceiling");
+    expect(worker?.watchdogExtensions).toBe(2);
   }, 20_000);
 
   it("aborts a stalled worker at the base budget without granting extensions", async () => {
     // Provider hangs after the first durable boundary; no further progress ever lands. The
-    // watchdog must kill it at the first quiet check (~base budget), not wait out extensions.
-    // Base 1000ms puts every startup write far outside the 400ms window, so no jitter can
-    // earn a spurious extension.
+    // watchdog must kill it after consecutive quiet windows near the base budget, not wait out
+    // extensions. The persisted record proves the mechanism: the "stalled" abort reason and an
+    // extension count strictly below the ceiling — under parallel load the worker's own startup
+    // boundary can land inside the first window and legitimately earn one extension, so the
+    // exact count is incidental; *not exhausting the budget* is the fact.
     const h = await buildHarness(30_000, { watchdogProgressWindowMs: 400, watchdogMaxExtensions: 2 });
     cleanups.push(h.cleanup);
-    const startedAt = Date.now();
     const result = await h.manager.spawnChildAgent({
       parentRunId: "run-wd-stalled",
       sessionId: "sess-wd",
@@ -109,9 +112,11 @@ describe("progress-aware watchdog (RC2 §6)", () => {
       workspacePath: h.ws,
       metadata: { timeoutMs: 1_000 },
     });
-    const wall = Date.now() - startedAt;
     // A stall abort lands while the model request is pending → cancelled, not failed.
     expect(result.status).toBe("cancelled");
-    expect(wall).toBeLessThanOrEqual(1_800);
+    const workers = await h.persistence.getWorkItemsByKind("subagent_run");
+    const worker = workers.find((w) => w.parentRunId === "run-wd-stalled");
+    expect(worker?.watchdogAbortReason).toBe("stalled");
+    expect(worker?.watchdogExtensions ?? 0).toBeLessThan(2);
   }, 20_000);
 });

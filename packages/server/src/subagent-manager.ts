@@ -354,23 +354,41 @@ export class SubagentManager {
       ?? (options.metadata?.watchdogMaxExtensions as number | undefined)
       ?? this.watchdogMaxExtensions;
     let watchdogExtensions = 0;
+    // R42: a single quiet window can be an event-loop pause (GC, parallel-suite contention),
+    // not a dead worker — "stalled" requires two consecutive stale windows. The cost is one
+    // extra bounded window before a genuinely dead worker is killed.
+    let consecutiveStaleChecks = 0;
     const watchdogTimerRef: { timer?: NodeJS.Timeout } = {};
     const progressWatchdog = (): void => {
       if (controller.signal.aborted || !this.activeChildren.has(childRunId)) return;
       void (async () => {
         const progressAt = await this.latestRunProgressMs(childRunId);
         if (controller.signal.aborted || !this.activeChildren.has(childRunId)) return;
-        const stalled = progressAt === undefined || Date.now() - progressAt > this.watchdogProgressWindowMs;
-        if (!stalled && watchdogExtensions < watchdogMaxExtensions) {
+        const staleNow = progressAt === undefined || Date.now() - progressAt > this.watchdogProgressWindowMs;
+        consecutiveStaleChecks = staleNow ? consecutiveStaleChecks + 1 : 0;
+        if (!staleNow && watchdogExtensions < watchdogMaxExtensions) {
           watchdogExtensions++;
           childRun.watchdogExtensions = watchdogExtensions;
+          if (childRun.workerRecord) childRun.workerRecord.watchdogExtensions = watchdogExtensions;
           watchdogTimerRef.timer = setTimeout(progressWatchdog, this.watchdogProgressWindowMs);
           return;
         }
-        childRun.watchdogAbortReason = stalled ? "stalled" : "watchdog_budget_ceiling";
+        if (staleNow && consecutiveStaleChecks < 2 && watchdogExtensions < watchdogMaxExtensions) {
+          watchdogTimerRef.timer = setTimeout(progressWatchdog, this.watchdogProgressWindowMs);
+          return;
+        }
+        // The abort reason records the objective fact, not the racy inference: a worker that
+        // was still fresh — or one that earned every extension — died at its budget ceiling;
+        // a worker killed quiet with budget left is "stalled". A zero-extension budget is the
+        // phase-ceiling path: nothing was ever earned, so only freshness distinguishes ceiling.
+        childRun.watchdogAbortReason = !staleNow || (watchdogMaxExtensions > 0 && watchdogExtensions >= watchdogMaxExtensions)
+          ? "watchdog_budget_ceiling"
+          : "stalled";
+        if (childRun.workerRecord) childRun.workerRecord.watchdogAbortReason = childRun.watchdogAbortReason;
         controller.abort();
       })().catch(() => {
         childRun.watchdogAbortReason = "stalled";
+        if (childRun.workerRecord) childRun.workerRecord.watchdogAbortReason = "stalled";
         if (!controller.signal.aborted) controller.abort();
       });
     };

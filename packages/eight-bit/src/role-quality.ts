@@ -34,6 +34,30 @@ export function roleRoutePriority(
 
 const MAX_EVIDENCE_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const MAX_ROLE_ADJUSTMENT = 12;
+
+/**
+ * The role-admission verdict for one route: the current qualification status for this role, or
+ * undefined when no *fresh* evidence exists — an expired receipt must not quarantine a route
+ * forever, it simply reverts the route to unmeasured (legacy) eligibility. EXPLORER inherits
+ * TOOL_AGENT's verdict when it was never measured itself.
+ */
+export function roleQualificationStatusFor(
+  receipt: ModelQualificationReceipt | undefined,
+  role: EightBitRole,
+  nowMs = Date.now(),
+): "QUALIFIED" | "NOT_QUALIFIED" | "HARD_FAILURE" | "NOT_TESTED" | "PROBATION" | undefined {
+  if (!receipt) return undefined;
+  const verdict = receipt.roleResults[role] ?? (role === "EXPLORER" ? receipt.roleResults.TOOL_AGENT : undefined);
+  const at = Date.parse(verdict?.completedAt ?? receipt.completedAt);
+  if (!Number.isFinite(at) || nowMs - at >= MAX_EVIDENCE_AGE_MS) return undefined;
+  return verdict?.status ?? "NOT_TESTED";
+}
+
+/** R41 admission rule: only a current disqualified/unmeasured verdict excludes the route. */
+export function roleAdmissionAllowed(receipt: ModelQualificationReceipt | undefined, role: EightBitRole, nowMs = Date.now()): boolean {
+  const status = roleQualificationStatusFor(receipt, role, nowMs);
+  return status === undefined || status === "QUALIFIED" || status === "PROBATION";
+}
 const TRANSIENT = /\b429\b|rate.?limit|quota|\b401\b|\b403\b|\b5\d\d\b|timed? ?out|econnreset|fetch failed|no usable completion choices|R41_BOUND/i;
 
 /**

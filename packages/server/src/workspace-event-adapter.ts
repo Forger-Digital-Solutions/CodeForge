@@ -1,6 +1,7 @@
 import type { RunFailure, RunOutcome, WorkspaceEvent } from "@codeforge/protocol";
 import type { EventStore, ISessionPersistence } from "@codeforge/sessions";
 import { redactSecrets } from "@codeforge/secrets";
+import type { ForgeGreenPolicySnapshot } from "./forgegreen-run-policy.js";
 
 const MAX_SAFE_EVENT_TEXT = 32 * 1024;
 
@@ -840,10 +841,10 @@ export class WorkspaceEventAdapter {
     } as WorkspaceEvent);
   }
 
-  emitForgeGreenOptimizationSummary(runId: string, candidatesConsidered: number, applied: number, proposed: number, skippedInsufficientEvidence: number): void {
+  emitForgeGreenOptimizationSummary(runId: string, candidatesConsidered: number, applied: number, proposed: number, skippedInsufficientEvidence: number, runPolicy?: ForgeGreenPolicySnapshot): void {
     this.emitBestEffort({
       type: "forgegreen.optimization_summary",
-      payload: { runId, candidatesConsidered, applied, proposed, skippedInsufficientEvidence },
+      payload: { runId, candidatesConsidered, applied, proposed, skippedInsufficientEvidence, ...(runPolicy ? { runPolicy } : {}) },
     } as WorkspaceEvent);
   }
 

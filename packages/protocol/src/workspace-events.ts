@@ -421,6 +421,23 @@ export const ForgeGreenOptimizationSummarySchema = EventBase(
     applied: z.number().int().nonnegative(),
     proposed: z.number().int().nonnegative(),
     skippedInsufficientEvidence: z.number().int().nonnegative(),
+    /** R42: the run's selective policy record — resolved level, escalations, replays prevented. */
+    runPolicy: z
+      .object({
+        initialLevel: z.enum(["OFF", "CONSERVATIVE", "FULL"]),
+        level: z.enum(["OFF", "CONSERVATIVE", "FULL"]),
+        initialReasonCodes: z.array(z.string()),
+        escalations: z.array(
+          z.object({
+            signal: z.string(),
+            from: z.enum(["OFF", "CONSERVATIVE", "FULL"]),
+            to: z.enum(["OFF", "CONSERVATIVE", "FULL"]),
+            detail: z.string(),
+          }),
+        ),
+        preventedReplays: z.number().int().nonnegative(),
+      })
+      .optional(),
   }),
 );
 

@@ -86,8 +86,11 @@ export class ForgeGreenRunPolicy {
     this.level = initial.level;
   }
 
-  static forRun(signals: ForgeGreenRunSignals, ceiling: Record<ForgeGreenControl, boolean>): ForgeGreenRunPolicy {
-    return new ForgeGreenRunPolicy(initialForgeGreenLevel(signals), ceiling);
+  static forRun(signals: ForgeGreenRunSignals, ceiling: Record<ForgeGreenControl, boolean>, forcedLevel?: ForgeGreenLevel): ForgeGreenRunPolicy {
+    const initial = forcedLevel
+      ? { level: forcedLevel, reasonCodes: ["FORCED_LEVEL_BENCHMARK_ARM"] }
+      : initialForgeGreenLevel(signals);
+    return new ForgeGreenRunPolicy(initial, ceiling);
   }
 
   get currentLevel(): ForgeGreenLevel {
@@ -131,7 +134,7 @@ export class ForgeGreenRunPolicy {
    * retry after a bad answer must re-execute rather than replay it.
    */
   modelDedupeMode(): "off" | "inflight" | "full" {
-    if (this.level === "OFF") return "off";
+    if (!this.ceiling.duplicateSuppression || this.level === "OFF") return "off";
     return this.level === "CONSERVATIVE" ? "inflight" : "full";
   }
 

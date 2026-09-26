@@ -96,6 +96,10 @@ export const SubagentRunWorkItemSchema = z.object({
   artifacts: z.array(AgentArtifactReferenceSchema).max(100),
   resultSummary: z.string().max(16_000).optional(),
   error: z.string().max(16_000).optional(),
+  /** R42: watchdog decision record — how many budget extensions the worker earned and why it
+   * was aborted. Persisted so a watchdog kill is auditable as a mechanism, not a timing guess. */
+  watchdogExtensions: z.number().int().nonnegative().optional(),
+  watchdogAbortReason: z.enum(["stalled", "watchdog_budget_ceiling"]).optional(),
   startedAt: z.string().datetime().optional(),
   completedAt: z.string().datetime().optional(),
   createdAt: z.string().datetime(),

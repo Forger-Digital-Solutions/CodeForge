@@ -75,7 +75,13 @@ afterEach(async () => {
   while (owned.length) await fs.rm(owned.pop()!, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
 });
 
-describe("CF-10C adversarial delivery certification", () => {
+// R42: every test in this file drives the real delivery pipeline — each `createDelivery` is a
+// serialized storm of ~60 git/node process spawns (worktree add, diff, secret scan, per-commit
+// reconcile, real `node --test` verification). Standalone a case is 5–20s; under canonical
+// parallel workers the same spawn latency inflates 3–5x and twice breached the default 30s and
+// the legacy 60s override. The deadline is a harness bound on real work, not a behavior
+// assertion, so the whole describe gets a spawn-storm-aware ceiling.
+describe("CF-10C adversarial delivery certification", { timeout: 180_000 }, () => {
   it.each([
     ["API token", "src/token.mjs", "export const token = 'sk-FakeDeliveryToken123456';\n", "sk_key"],
     ["private key", "src/key.pem", "-----BEGIN PRIVATE KEY-----\nFAKE-ONLY\n-----END PRIVATE KEY-----\n", "private_key"],
@@ -139,7 +145,7 @@ describe("CF-10C adversarial delivery certification", () => {
     const three = await third.delivery.createDelivery({ missionId: third.mission.id, deliveryId: "delivery-determinism-three" });
     expect(three.commitPlan).not.toEqual(one.commitPlan);
     await Promise.all([first.persistence.close(), second.persistence.close(), third.persistence.close()]);
-  }, 60_000);
+  }, 180_000);
 
   it("fails closed when a controlled pre-finalization mutation makes the delivered tree differ", async () => {
     const f = await fixture();

@@ -72,7 +72,7 @@ import {
   type NormalizedIdentity,
 } from "@codeforge/forge-green";
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
-import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, roleQualityAdvice, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider, type FabricOutcome, type FabricRouteDecision, type ModelQualificationReceipt, type RoleQualificationStatus, type RoleQualificationTier } from "@codeforge/eight-bit";
+import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, roleQualityAdvice, roleQualificationStatusFor, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider, type FabricOutcome, type FabricRouteDecision, type ModelQualificationReceipt, type RoleQualificationStatus, type RoleQualificationTier } from "@codeforge/eight-bit";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
@@ -276,10 +276,6 @@ const DEFAULT_APPROVAL_TIMEOUT_MS = 5 * 60 * 1000;
 // estimate must cover the same directive text the dispatch will carry.
 const RECOVERY_DIRECTIVE = "[Recovery directive] A prior process stopped during this turn. Treat all unfinished pre-restart execution as stale. Inspect the current workspace and durable evidence, then create a new plan. Do not replay a prior command, tool call, or model continuation.";
 const CAPACITY_RESUME_DIRECTIVE = "[Capacity directive] This turn paused mid-execution waiting for verified free capacity, and is resuming on a fresh admission decision — possibly a different route and quota pool. Inspect the current workspace and durable evidence; continue the remaining work without replaying tool calls or edits that already succeeded.";
-// Mirrors the certified evidence-freshness window in role-quality.ts — a role verdict
-// older than this contributes no current qualification status (legacy behavior resumes).
-const ROLE_QUALIFICATION_EVIDENCE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-
 function truncateOutput(text: string, maxBytes: number, label: string): string {
   if (Buffer.byteLength(text, "utf-8") <= maxBytes) return text;
   const buf = Buffer.from(text, "utf-8");
@@ -425,6 +421,12 @@ export interface AgentRuntimeOptions {
    * settings — only the ForgeGreen A/B harness passes it.
    */
   efficiencyControls?: { duplicateSuppression?: boolean; toolOutputCompression?: boolean; supersededCompaction?: boolean };
+  /**
+   * R42 A/B seam: pin every run's INITIAL ForgeGreen level for an experimental arm. Signal
+   * resolution is bypassed but escalation is not — quality-risk signals still downgrade, so a
+   * forced-FULL arm measures initial-level cost without ever disabling the safety path.
+   */
+  forgeGreenInitialLevel?: "OFF" | "CONSERVATIVE" | "FULL";
   /** Test-only synchronization point at the real post-approval execution boundary. */
   afterApprovalResolvedBoundary?: () => Promise<void>;
   /** 8-Bit routing/failover/health/reliability core. Optional so existing callers/tests stay
@@ -811,6 +813,7 @@ export class AgentRuntime {
   private readonly recoveryOriginalStatusByTurn = new Map<string, Exclude<TurnStatus, "idle" | "completed" | "failed" | "cancelled">>();
   private readonly forgeGreenCacheStore?: ForgeGreenCacheStore;
   private readonly efficiencyControls: { duplicateSuppression: boolean; toolOutputCompression: boolean; supersededCompaction: boolean };
+  private readonly forgeGreenInitialLevel?: "OFF" | "CONSERVATIVE" | "FULL";
   private readonly eightBit: EightBitRuntime;
   private readonly freeCloud?: FreeCloudRoutingHooks;
   private readonly paidAuto?: PaidAutoService;
@@ -838,6 +841,7 @@ export class AgentRuntime {
     this.userIntentHold = options.userIntentHold;
     this.forgeGreenCacheStore = options.forgeGreenCacheStore;
     this.efficiencyControls = { duplicateSuppression: options.efficiencyControls?.duplicateSuppression ?? true, toolOutputCompression: options.efficiencyControls?.toolOutputCompression ?? true, supersededCompaction: options.efficiencyControls?.supersededCompaction ?? true };
+    this.forgeGreenInitialLevel = options.forgeGreenInitialLevel;
     this.afterApprovalResolvedBoundary = options.afterApprovalResolvedBoundary;
     this.demoMode = options.demoMode ?? false;
     this.repositoryIntelligenceFactory = options.repositoryIntelligenceFactory ?? (() => createRepositoryIntelligence({
@@ -1157,7 +1161,7 @@ export class AgentRuntime {
       reviewFeedback: req.reviewFeedback,
       verificationEvidence: req.verificationEvidence,
       resumeJournal: req.resumeJournal,
-    }, this.efficiencyControls);
+    }, this.efficiencyControls, this.forgeGreenInitialLevel);
     // Live view: the metrics object is rebuilt by context refresh, so each construction gets a
     // getter that snapshots the policy at read/serialize time — escalations during the run land.
     const withGreenPolicy = (metrics: AgentContextMetrics): AgentContextMetrics => {
@@ -2764,6 +2768,7 @@ export class AgentRuntime {
         { contextBytes: forgeGreenActualContextBytes, contextTokens: forgeGreenActualContextTokens },
         forgeGreenDuplicateSuppressionEvents,
         adapter,
+        greenPolicy,
       ).catch((err: unknown) => {
         console.error("[agent-runtime] FG-8 sustainability measurement failed outside its own recovery path", err);
       });
@@ -2821,6 +2826,7 @@ export class AgentRuntime {
     liveContext: { contextBytes: number | undefined; contextTokens: number | undefined },
     duplicateSuppressionEvents: DuplicateToolSuppressionEvent[],
     adapter: WorkspaceEventAdapter,
+    greenPolicy: ForgeGreenRunPolicy,
   ): Promise<void> {
     const identity: NormalizedIdentity = {
       runId: req.runId,
@@ -2914,7 +2920,7 @@ export class AgentRuntime {
             result.decision.expectedEffect.avoidedBytes,
           );
         }
-        adapter.emitForgeGreenOptimizationSummary(req.runId, duplicateSuppressionEvents.length, result ? 1 : 0, 0, result ? 0 : 1);
+        adapter.emitForgeGreenOptimizationSummary(req.runId, duplicateSuppressionEvents.length, result ? 1 : 0, 0, result ? 0 : 1, greenPolicy.snapshot());
       } catch (optimizationErr: unknown) {
         console.error(`[agent-runtime] FG-9 optimization decision failed for run ${req.runId} (measurement above is unaffected)`, optimizationErr);
       }
@@ -3910,11 +3916,7 @@ export class AgentRuntime {
    */
   private roleQualificationStatus(providerId: string, modelId: string, role: EightBitRole): RoleQualificationStatus | undefined {
     const receipt: ModelQualificationReceipt | undefined = this.freeCloud?.getQualificationReceipt?.(providerId, modelId);
-    if (!receipt) return undefined;
-    const verdict = receipt.roleResults[role] ?? (role === "EXPLORER" ? receipt.roleResults.TOOL_AGENT : undefined);
-    const at = Date.parse(verdict?.completedAt ?? receipt.completedAt);
-    if (!Number.isFinite(at) || Date.now() - at >= ROLE_QUALIFICATION_EVIDENCE_MAX_AGE_MS) return undefined;
-    return verdict?.status ?? "NOT_TESTED";
+    return roleQualificationStatusFor(receipt, role);
   }
 
   /**
