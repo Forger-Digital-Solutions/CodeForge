@@ -181,6 +181,11 @@ export interface AgentContextMetrics {
   };
   /** R45: the explorer's turn budget was narrowed by scaffold coverage — recorded, never silent. */
   adaptiveTurnBudget?: { original: number; applied: number; reason: string };
+  /** R45 §18: per-route window observed during this run — calls served before the first
+   * failure on each route, plus the failover edges taken. Lives on the journal so provider
+   * availability is measurable separately from agent efficiency. */
+  routeWindows?: Array<{ providerId: string; modelId: string; calls: number; firstCallAt: string; firstFailureAt?: string; failureCode?: string }>;
+  routeFailovers?: Array<{ from: string; to: string; at: string; reason: string; callsBeforeFailure: number }>;
 }
 
 export interface ToolTurnRecord {
@@ -1272,6 +1277,8 @@ export class AgentRuntime {
       Object.defineProperty(metrics, "toolTrace", { enumerable: true, configurable: true, get: () => (toolTrace.length > 0 ? toolTrace : undefined) });
       Object.defineProperty(metrics, "explorationBrief", { enumerable: true, configurable: true, get: () => explorationBriefMeta });
       Object.defineProperty(metrics, "adaptiveTurnBudget", { enumerable: true, configurable: true, get: () => adaptiveTurnBudget });
+      Object.defineProperty(metrics, "routeWindows", { enumerable: true, configurable: true, get: () => (routeWindows.size > 0 ? [...routeWindows.values()] : undefined) });
+      Object.defineProperty(metrics, "routeFailovers", { enumerable: true, configurable: true, get: () => (routeFailovers.length > 0 ? routeFailovers : undefined) });
       return metrics;
     };
     const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen, this.capacityGovernorIsExplicit ? this.capacityGovernor : undefined, greenPolicy);
@@ -1318,6 +1325,20 @@ export class AgentRuntime {
     // R45: per-turn tool trace for exploration-efficiency forensics; scaffold coverage +
     // the adaptive budget decision land on the journal via contextMetrics getters.
     const toolTrace: ToolTurnRecord[] = [];
+    // R45 §18: per-route window telemetry — calls served on each route, when the first failure
+    // arrived, and failover edges. This is what lets provider availability be separated from
+    // agent efficiency in the corpus evidence instead of one undifferentiated call count.
+    const routeWindows = new Map<string, { providerId: string; modelId: string; calls: number; firstCallAt: string; firstFailureAt?: string; failureCode?: string }>();
+    const routeFailovers: Array<{ from: string; to: string; at: string; reason: string; callsBeforeFailure: number }> = [];
+    const routeWindowFor = (providerId: string, modelId: string): { providerId: string; modelId: string; calls: number; firstCallAt: string; firstFailureAt?: string; failureCode?: string } => {
+      const key = `${providerId}/${modelId}`;
+      let w = routeWindows.get(key);
+      if (!w) {
+        w = { providerId, modelId, calls: 0, firstCallAt: new Date().toISOString() };
+        routeWindows.set(key, w);
+      }
+      return w;
+    };
     let explorationBriefMeta: AgentContextMetrics["explorationBrief"];
     let adaptiveTurnBudget: AgentContextMetrics["adaptiveTurnBudget"];
     let intelligence: RepositoryIntelligence | undefined;
@@ -1864,6 +1885,7 @@ export class AgentRuntime {
               && (response.toolCalls.length > 0 || response.text.trim().length > 0);
             if (activeSelection) {
               if (turnServed) {
+                routeWindowFor(activeSelection.providerId, activeSelection.modelId).calls++;
                 this.eightBit.recordSuccess(activeSelection.providerId, activeSelection.modelId, {
                   latencyMs: Date.now() - modelCallStartedAt,
                   role: eightBitRoleForAgentRole(req.role),
@@ -1904,6 +1926,13 @@ export class AgentRuntime {
             if (err instanceof RoleContextOverflowError) throw err;
             const isCancelled = req.signal?.aborted || (err instanceof Error && err.message.includes(ERROR_CODES.AGENT_CANCELLED));
             const normalized = normalizeProviderError(err);
+            if (activeSelection) {
+              const window = routeWindowFor(activeSelection.providerId, activeSelection.modelId);
+              if (window.firstFailureAt === undefined) {
+                window.firstFailureAt = new Date().toISOString();
+                window.failureCode = normalized.code;
+              }
+            }
             forgeGreenR0Telemetry.recordProviderFailure({
               providerId: activeSelection?.providerId,
               modelId: activeSelection?.modelId,
@@ -1994,6 +2023,13 @@ export class AgentRuntime {
             if (outcome.action !== "rotate" || pinned) throw err;
             if (!this.providerCatalog.get(outcome.replacement.providerId)) throw err;
             adapter.emitRouterFailover(req.runId, `${failing.providerId}/${failing.modelId}`, `${outcome.replacement.providerId}/${outcome.replacement.modelId}`, outcome.reason);
+            routeFailovers.push({
+              from: `${failing.providerId}/${failing.modelId}`,
+              to: `${outcome.replacement.providerId}/${outcome.replacement.modelId}`,
+              at: new Date().toISOString(),
+              reason: outcome.reason,
+              callsBeforeFailure: routeWindowFor(failing.providerId, failing.modelId).calls,
+            });
             // R42: a replacement route continues a transcript it did not produce — suppressions
             // and replays optimized for the failing route must not survive the switch.
             greenPolicy.escalate("provider_failover", `${failing.providerId}/${failing.modelId} -> ${outcome.replacement.providerId}/${outcome.replacement.modelId} (${outcome.reason})`);

@@ -162,6 +162,8 @@ export interface TopologyDecisionRecord {
   plan: AdaptiveTopologyPlan;
   /** R24: the live capacity snapshot ForgeGreen advised against, when one was observed. */
   providerCapacity?: ProviderTopologyCapacity;
+  /** R45: deterministic orientation coverage probed before spawn (normal-tier adaptive only). */
+  orientationCoverage?: { covered: boolean; candidateFiles: number };
   repositoryFileCount: number;
   decidedAt: string;
 }
@@ -227,6 +229,13 @@ export interface OrchestratorOptions {
    * absent, adaptive topology plans fall back to PROVIDER_CAPACITY_UNOBSERVED (no reduction).
    */
   providerTopologyCapacity?: () => ProviderTopologyCapacity | undefined;
+  /**
+   * R45: deterministic read-plan coverage probe, run before spawn for normal-tier tasks on the
+   * adaptive path. Pure local indexing — no model call. The answer gates whether a narrow
+   * capacity window may substitute packet orientation for a dedicated explorer. Absent →
+   * coverage unobserved → no coverage-based reduction.
+   */
+  orientationProbe?: (goal: string, workspacePath: string) => Promise<{ covered: boolean; candidateFiles: number } | undefined>;
 }
 
 export class AutonomousRunOrchestrator {
@@ -238,6 +247,7 @@ export class AutonomousRunOrchestrator {
   private readonly agentRuntime?: AgentRuntime;
   private readonly getAgentRuntime?: (sessionId: string) => AgentRuntime;
   private readonly providerTopologyCapacity?: () => ProviderTopologyCapacity | undefined;
+  private readonly orientationProbe?: (goal: string, workspacePath: string) => Promise<{ covered: boolean; candidateFiles: number } | undefined>;
   private readonly subagentsR1Enabled: boolean;
   private readonly runs: Map<string, AutonomousRun> = new Map();
   private readonly abortControllers: Map<string, AbortController> = new Map();
@@ -248,6 +258,7 @@ export class AutonomousRunOrchestrator {
     this.agentRuntime = options.agentRuntime;
     this.getAgentRuntime = options.getAgentRuntime;
     this.providerTopologyCapacity = options.providerTopologyCapacity;
+    this.orientationProbe = options.orientationProbe;
     this.subagentsR1Enabled = options.subagentsR1Enabled ?? false;
     this.subagentManager = options.subagentManager ?? createSubagentManager({
       persistence: options.persistence,
@@ -463,17 +474,25 @@ export class AutonomousRunOrchestrator {
     // request and the operator-pinned fixed_r1 baseline keep their authority over capacity.
     const adaptivePath = !options.topology && !fixedR1ByEnv;
     const providerCapacity = adaptivePath ? this.providerTopologyCapacity?.() : undefined;
+    // R45 §17: coverage probing only runs on the adaptive path for normal-tier tasks — tiny
+    // has no explorer to shed, complex keeps its full team regardless of packet coverage, and
+    // explicit/pinned topologies keep their authority over this signal.
+    const orientationCoverage = adaptivePath && complexity.tier === "normal" && this.orientationProbe
+      ? await this.orientationProbe(goal, targetWs.rootPath).catch(() => undefined)
+      : undefined;
     const topologyPlan = resolveAdaptiveTopology({
       goal,
       ...(options.hasImages ? { hasImages: true } : {}),
       ...(options.topology ? { requestedTopology: options.topology } : fixedR1ByEnv ? { requestedTopology: "fixed_r1" as const } : { complexityHint: complexity.tier }),
       ...(providerCapacity ? { providerCapacity } : {}),
+      ...(orientationCoverage ? { orientationCoverage } : {}),
     });
     const topology: TopologyDecisionRecord = {
       policy: options.topology ? "explicit" : fixedR1ByEnv ? "fixed_r1_env" : "adaptive",
       complexity,
       plan: topologyPlan,
       ...(providerCapacity ? { providerCapacity } : {}),
+      ...(orientationCoverage ? { orientationCoverage } : {}),
       repositoryFileCount,
       decidedAt: new Date().toISOString(),
     };
@@ -735,6 +754,10 @@ export class AutonomousRunOrchestrator {
             adapter,
             reviewFeedback,
             taskPlan,
+            // R45: same handoff the R1 spawn path carries — without it the plain-runtime coder
+            // rediscovered everything upstream already mapped (the R44 normal-topology gap).
+            explorerEvidence,
+            findings: explorerFindings,
           });
           changedFiles = coderRunResult.filesChanged.length > 0
             ? coderRunResult.filesChanged

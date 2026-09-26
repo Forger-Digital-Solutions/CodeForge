@@ -49,6 +49,7 @@ import { CloudPublicationBridge, createCloudPublicationBridge } from "./cloud-pu
 import { CloudPublicationClient, CloudPublicationError } from "./cloud-publication-client.js";
 import { createWorkspaceEventAdapter } from "./workspace-event-adapter.js";
 import { createRepositoryIntelligence, REPOSITORY_INDEX_VERSION, REPOSITORY_PARSER_VERSION, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
+import { buildExplorationBrief } from "@codeforge/context";
 import { UserIntentHoldController } from "./user-intent-hold.js";
 import { createExternalToolSurface, loadExternalToolConfig, type ExternalToolConfig, type ExternalToolSurface, type PluginToolHost } from "./external-tools.js";
 import { buildActivityOverview, type ActivityOverview, type ActivityPeriod } from "./activity-overview.js";
@@ -389,6 +390,26 @@ export class CodeForgeServer {
       ...(this.subagentsR1Enabled ? { getAgentRuntime: (sessionId: string) => this.getOrCreateRuntime(sessionId) } : {}),
       subagentsR1Enabled: this.subagentsR1Enabled,
       providerTopologyCapacity: () => this.providerTopologyCapacity(),
+      // R45: the orientation probe shares the index's persistent cache — a second open of the
+      // same workspace is a warm read, and zero model calls are spent on the coverage signal.
+      orientationProbe: async (goal, workspacePath) => {
+        const intelligence = createRepositoryIntelligence();
+        try {
+          await intelligence.openWorkspace(workspacePath);
+          const status = intelligence.status();
+          if (status.fileCount === 0 || status.state === "NOT_INDEXED" || status.state === "ERROR") {
+            await intelligence.indexWorkspace();
+          }
+          const brief = await buildExplorationBrief(goal, workspacePath, intelligence);
+          const recall = brief.symbolRecall;
+          return {
+            covered: brief.files.length > 0 && (recall.total === 0 || recall.resolved >= 1),
+            candidateFiles: brief.files.length,
+          };
+        } catch {
+          return undefined;
+        }
+      },
     });
     this.workflowService = createWorkflowService({
       eventStore: this.eventStore,

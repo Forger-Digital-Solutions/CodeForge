@@ -1,0 +1,171 @@
+{
+  "at": "2026-09-26T22:08:21.254Z",
+  "results": [
+    {
+      "fixture": "single-file-bug",
+      "topology": "tiny",
+      "status": "completed",
+      "wallMs": 4534,
+      "totalCalls": 3,
+      "callsByRole": {
+        "coder": 3
+      },
+      "coderCalls": 3,
+      "plannerCalls": 0,
+      "explorerCalls": 0,
+      "reviewerCalls": 0,
+      "coderHandoff": {
+        "explorerEvidence": false,
+        "orientationPacket": true
+      },
+      "explorerGotPacket": false,
+      "verification": {
+        "exitCode": 0,
+        "failed": 0
+      },
+      "integrated": "integrated",
+      "planTopology": "tiny",
+      "planReason": "Explicitly requested topology: tiny"
+    },
+    {
+      "fixture": "single-file-bug",
+      "topology": "normal",
+      "status": "completed",
+      "wallMs": 5230,
+      "totalCalls": 5,
+      "callsByRole": {
+        "explorer": 1,
+        "coder": 3,
+        "reviewer": 1
+      },
+      "coderCalls": 3,
+      "plannerCalls": 0,
+      "explorerCalls": 1,
+      "reviewerCalls": 1,
+      "coderHandoff": {
+        "explorerEvidence": true,
+        "orientationPacket": false
+      },
+      "explorerGotPacket": true,
+      "verification": {
+        "exitCode": 0,
+        "failed": 0
+      },
+      "integrated": "integrated",
+      "planTopology": "normal",
+      "planReason": "Explicitly requested topology: normal"
+    },
+    {
+      "fixture": "single-file-bug",
+      "topology": "complex",
+      "status": "completed",
+      "wallMs": 5868,
+      "totalCalls": 7,
+      "callsByRole": {
+        "explorer": 2,
+        "planner": 1,
+        "coder": 3,
+        "reviewer": 1
+      },
+      "coderCalls": 3,
+      "plannerCalls": 1,
+      "explorerCalls": 2,
+      "reviewerCalls": 1,
+      "coderHandoff": {
+        "explorerEvidence": true,
+        "orientationPacket": false
+      },
+      "explorerGotPacket": true,
+      "verification": {
+        "exitCode": 0,
+        "failed": 0
+      },
+      "integrated": "integrated",
+      "planTopology": "complex",
+      "planReason": "Explicitly requested topology: complex"
+    },
+    {
+      "fixture": "cross-file-rename",
+      "topology": "tiny",
+      "status": "completed",
+      "wallMs": 4673,
+      "totalCalls": 4,
+      "callsByRole": {
+        "coder": 4
+      },
+      "coderCalls": 4,
+      "plannerCalls": 0,
+      "explorerCalls": 0,
+      "reviewerCalls": 0,
+      "coderHandoff": {
+        "explorerEvidence": false,
+        "orientationPacket": true
+      },
+      "explorerGotPacket": false,
+      "verification": {
+        "exitCode": 0,
+        "failed": 0
+      },
+      "integrated": "integrated",
+      "planTopology": "tiny",
+      "planReason": "Explicitly requested topology: tiny"
+    },
+    {
+      "fixture": "cross-file-rename",
+      "topology": "normal",
+      "status": "completed",
+      "wallMs": 5495,
+      "totalCalls": 6,
+      "callsByRole": {
+        "explorer": 1,
+        "coder": 4,
+        "reviewer": 1
+      },
+      "coderCalls": 4,
+      "plannerCalls": 0,
+      "explorerCalls": 1,
+      "reviewerCalls": 1,
+      "coderHandoff": {
+        "explorerEvidence": true,
+        "orientationPacket": false
+      },
+      "explorerGotPacket": true,
+      "verification": {
+        "exitCode": 0,
+        "failed": 0
+      },
+      "integrated": "integrated",
+      "planTopology": "normal",
+      "planReason": "Explicitly requested topology: normal"
+    },
+    {
+      "fixture": "cross-file-rename",
+      "topology": "complex",
+      "status": "completed",
+      "wallMs": 6379,
+      "totalCalls": 8,
+      "callsByRole": {
+        "explorer": 2,
+        "planner": 1,
+        "coder": 4,
+        "reviewer": 1
+      },
+      "coderCalls": 4,
+      "plannerCalls": 1,
+      "explorerCalls": 2,
+      "reviewerCalls": 1,
+      "coderHandoff": {
+        "explorerEvidence": true,
+        "orientationPacket": false
+      },
+      "explorerGotPacket": true,
+      "verification": {
+        "exitCode": 0,
+        "failed": 0
+      },
+      "integrated": "integrated",
+      "planTopology": "complex",
+      "planReason": "Explicitly requested topology: complex"
+    }
+  ]
+}

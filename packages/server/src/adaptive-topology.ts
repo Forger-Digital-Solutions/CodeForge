@@ -13,6 +13,12 @@ export interface ResolveAdaptiveTopologyInput {
   /** Observed only after 8-Bit has admitted free routes. ForgeGreen may reduce parallelism; it
    * never selects a model, admits a route, or overrides an explicit user topology request. */
   providerCapacity?: ProviderTopologyCapacity;
+  /** R45: deterministic read-plan coverage probed before spawn. When the orientation packet
+   * already covers the task's candidate files and resolved symbols, a "normal" task under a
+   * narrow free-capacity window can shed its dedicated explorer — the packet is delivered to
+   * the coder directly at context-assembly time. Never applied to explicit requests, never
+   * removes ForgeVerify. */
+  orientationCoverage?: { covered: boolean; candidateFiles: number };
 }
 
 /**
@@ -45,6 +51,17 @@ export function resolveAdaptiveTopology(input: ResolveAdaptiveTopologyInput): Ad
     return capacityAwarePlan("tiny", "Tiny task: single targeted Coder mutation directly to ForgeVerify", input.providerCapacity);
   }
   if (input.complexityHint === "normal") {
+    // R45 §17: a normal task with strong deterministic orientation coverage running against a
+    // narrow free window sheds its explorer — the packet reaches the coder directly. Capacity
+    // that is merely unobserved (undefined) never justifies the reduction, and the reduction
+    // can never remove ForgeVerify: tiny is the floor.
+    const narrow = input.providerCapacity !== undefined &&
+      ((input.providerCapacity.saturatedRoutes ?? 0) > 0 ||
+        input.providerCapacity.minimumRouteConcurrency <= 1 ||
+        input.providerCapacity.distinctHealthyProviders <= 1);
+    if (input.orientationCoverage?.covered && narrow) {
+      return capacityAwarePlan("tiny", `Normal task, narrow free capacity; orientation packet covers ${input.orientationCoverage.candidateFiles} candidate files — deterministic orientation substitutes the explorer`, input.providerCapacity);
+    }
     return capacityAwarePlan("normal", "Normal task: Explorer -> Coder -> Reviewer -> ForgeVerify", input.providerCapacity);
   }
   if (input.complexityHint === "complex") {
