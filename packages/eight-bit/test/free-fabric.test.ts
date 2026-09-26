@@ -481,3 +481,83 @@ describe("FreeFabric — R34 measured demand (Mission E)", () => {
     expect(decision.outcome).toBe("ADMITTED");
   });
 });
+
+describe("R37 Mission AH — right-fit capacity preservation", () => {
+  function sizedRoute(id: string, contextWindow: number, qualityScore = 70): CapacityRoute {
+    return managedRoute(id, {
+      contextWindow,
+      qualityScore,
+      windows: [quotaWindow(), quotaWindow({ unit: "input_tokens", limit: 10_000_000, remaining: 10_000_000 })],
+    });
+  }
+
+  it("a small task prefers the tight-fitting pool over the scarce large-context route", () => {
+    const c = clock();
+    const small = sizedRoute("small-ctx", 8_000);
+    const huge = sizedRoute("huge-ctx", 200_000);
+    const fabric = createFreeFabric({
+      managedRoutes: () => [huge, small],
+      managedPools: () => [poolFor(huge), poolFor(small)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    // est 1_500 × 1.5 (unlearned) × 1.15 ≈ 2_588 input → ~3.6k demand: 8k pool fits
+    // (2.2×), 200k pool is 56× oversized and takes a bounded right-fit penalty.
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER", demand: { requests: 1, estimatedPromptTokens: 1_500 } });
+    expect(decision.outcome).toBe("ADMITTED");
+    expect(decision.selected?.routeId).toBe("small-ctx");
+    const hugeReport = decision.explanation.candidates.find((r) => r.routeId === "huge-ctx");
+    expect(hugeReport?.status).toBe("STANDBY");
+    expect(hugeReport?.reasonCodes).toContain("RIGHT_SIZE_PRESERVED");
+  });
+
+  it("a genuinely large task is still routed to the large-context route", () => {
+    const c = clock();
+    const small = sizedRoute("small-ctx", 8_000);
+    const huge = sizedRoute("huge-ctx", 200_000);
+    const fabric = createFreeFabric({
+      managedRoutes: () => [huge, small],
+      managedPools: () => [poolFor(huge), poolFor(small)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    // est 60_000 → ~103.5k input + 1k output ≈ 105k demand: the 200k pool is a
+    // right-size fit (<2×), the 8k pool is denied by penalty AND cannot serve anyway.
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER", demand: { requests: 1, estimatedPromptTokens: 60_000 } });
+    expect(decision.outcome).toBe("ADMITTED");
+    expect(decision.selected?.routeId).toBe("huge-ctx");
+  });
+
+  it("right-fit penalty never denies admission — oversized is still better than waiting", () => {
+    const c = clock();
+    const huge = sizedRoute("huge-ctx", 200_000);
+    const fabric = createFreeFabric({
+      managedRoutes: () => [huge],
+      managedPools: () => [poolFor(huge)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    // Tiny demand on the only pool: penalty applies but admission must still succeed.
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER", demand: { requests: 1, estimatedPromptTokens: 100 } });
+    expect(decision.outcome).toBe("ADMITTED");
+    expect(decision.selected?.routeId).toBe("huge-ctx");
+  });
+
+  it("right-fit ordering respects domain boundaries — user pool still yields to shared supply", () => {
+    const c = clock();
+    const sharedHuge = sizedRoute("shared-huge", 200_000);
+    const userSmall = userRoute("alicehash", { contextWindow: 8_000 });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [sharedHuge],
+      managedPools: () => [poolFor(sharedHuge)],
+      userSources: [{ routesForUser: () => [userSmall], poolsForUser: () => [] }],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    // Domain order dominates the bounded fit penalty: the user's own entitlement is
+    // preserved even when it is the better-sized pool for a small task.
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", userIdentities: ["alicehash"], role: "CODER", demand: { requests: 1, estimatedPromptTokens: 1_500 } });
+    expect(decision.outcome).toBe("ADMITTED");
+    expect(decision.selected?.routeId).toBe("shared-huge");
+  });
+});

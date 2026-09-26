@@ -85,6 +85,8 @@ export interface RouteLedgerEntry {
   productionStatus: LedgerProductionStatus;
   roleSuitability: readonly string[];
   qualityScore: number;
+  /** Model context window — right-fit signal for capacity preservation (R37 Mission AH). */
+  contextWindow?: number;
   freeEligible: boolean;
   exclusionReason?: string;
   onExhaustion: RouteExhaustionBehavior;
@@ -281,6 +283,7 @@ function buildEntry(
     productionStatus: productionStatus(route, terms, exclusionReason === undefined),
     roleSuitability: route.roles,
     qualityScore: route.qualityScore,
+    ...(route.contextWindow !== undefined ? { contextWindow: route.contextWindow } : {}),
     freeEligible: exclusionReason === undefined,
     exclusionReason,
     onExhaustion: exhaustionBehavior(route, wf.expiresAt, now),

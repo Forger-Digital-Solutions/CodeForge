@@ -140,6 +140,9 @@ export interface CapacityRoute {
   privacyClass: PrivacyClass;
   roles: readonly string[];
   qualityScore: number;
+  /** Declared context window of the model behind this route — the fit signal scarcity-aware
+   *  ranking uses to keep small requests off scarce large-context pools (R37 Mission AH). */
+  contextWindow?: number;
   healthy: boolean;
   enabled: boolean;
   windows: readonly CapacityWindow[];

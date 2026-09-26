@@ -125,6 +125,16 @@ export interface ProviderCapacityGovernorOptions {
   sleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
 }
 
+/** Estimator error distribution — R37 Mission F. Ratios are actualInputTokens/promptEstimate. */
+export interface EstimatorAccuracyReport {
+  samples: number;
+  meanRatio?: number;
+  p50Ratio?: number;
+  p95Ratio?: number;
+  underestimateRate?: number;
+  overestimateRate?: number;
+}
+
 export interface ProviderCapacityReport {
   providerId: string;
   tpmUsed: number;
@@ -229,6 +239,32 @@ export class ProviderCapacityGovernor {
       out.push(...state.dispatchTelemetry);
     }
     return out.sort((a, b) => a.at - b.at);
+  }
+
+  /**
+   * R37 Mission F: estimator error distribution over the per-dispatch truth rows. Error is
+   * signed `actual/estimate` on the prompt dimension: >1 underestimates, <1 overestimates.
+   * Rows without both sides of the measurement cannot judge the estimator and are excluded —
+   * the report only ever summarizes provider-billed evidence.
+   */
+  estimatorAccuracy(providerId?: string): EstimatorAccuracyReport {
+    const rows = this.dispatchTelemetry(providerId).filter(
+      (row): row is DispatchTelemetry & { promptEstimate: number; actualInputTokens: number } =>
+        row.promptEstimate !== undefined && row.promptEstimate > 0 &&
+        row.actualInputTokens !== undefined && row.actualInputTokens > 0,
+    );
+    const ratios = rows.map((r) => r.actualInputTokens / r.promptEstimate).sort((a, b) => a - b);
+    const pick = (p: number): number | undefined =>
+      ratios.length === 0 ? undefined : ratios[Math.min(ratios.length - 1, Math.floor(p * ratios.length))];
+    const mean = ratios.length === 0 ? undefined : ratios.reduce((a, b) => a + b, 0) / ratios.length;
+    return {
+      samples: ratios.length,
+      meanRatio: mean,
+      p50Ratio: pick(0.5),
+      p95Ratio: pick(0.95),
+      underestimateRate: ratios.length === 0 ? undefined : ratios.filter((r) => r > 1).length / ratios.length,
+      overestimateRate: ratios.length === 0 ? undefined : ratios.filter((r) => r < 1).length / ratios.length,
+    };
   }
 
   /**

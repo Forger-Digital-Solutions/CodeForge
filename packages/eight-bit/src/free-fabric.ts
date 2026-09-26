@@ -101,6 +101,8 @@ export interface FabricCandidateReport {
   reasonCodes: string[];
   healthState?: RouteHealthCondition;
   scoreAdjustment?: number;
+  /** R37 Mission AH: negative when the route was demoted to preserve oversized capacity. */
+  rightFitPenalty?: number;
 }
 
 export type FabricOutcome =
@@ -249,37 +251,6 @@ export class FreeFabric {
       reports.set(entry.routeId, this.explainExcluded(entry, request.role, owned));
     }
 
-    // Mission A health: hard exclusions remove candidates; strong penalties demote a route
-    // behind the next supply domain (saturated shared supply yields to a healthy user pool).
-    const healthRole = request.healthRole ?? this.opts.healthRoleFor?.(request.role) ?? FABRIC_HEALTH_ROLE[request.role];
-    const ranked: Array<{ entry: RouteLedgerEntry; healthState?: RouteHealthCondition; scoreAdjustment: number; effectiveScore: number; domainRank: number }> = [];
-    for (const entry of plan.routes) {
-      const assess = this.opts.health?.assess(entry.providerId, entry.modelId, { role: healthRole });
-      const adjustment = assess?.scoreAdjustment ?? 0;
-      if (assess?.hardExclude) {
-        reports.set(entry.routeId, {
-          routeId: entry.routeId, providerId: entry.providerId, modelId: entry.modelId,
-          canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
-          quotaOwner: entry.quotaOwner, quotaOwnerIdentity: entry.quotaOwnerIdentity,
-          status: "HEALTH_EXCLUDED", reasonCodes: ["HEALTH_HARD_EXCLUDED", ...assess.reasonCodes],
-          healthState: assess.state, scoreAdjustment: adjustment,
-        });
-        continue;
-      }
-      // A deeply unhealthy route is demoted behind every undemoted supply domain — a saturated
-      // shared route yields to the user's own healthy pool, not just to sponsored supply.
-      const domainRank = FORGEAUTO_DOMAIN_ORDER.indexOf(entry.quotaOwner)
-        + (adjustment <= this.opts.domainDemotionScore ? FORGEAUTO_DOMAIN_ORDER.length : 0);
-      ranked.push({ entry, healthState: assess?.state, scoreAdjustment: adjustment, effectiveScore: entry.qualityScore + adjustment, domainRank });
-    }
-    ranked.sort((a, b) => {
-      const priorPool = request.preferIndependentFromPoolId;
-      const independenceOrder = priorPool === undefined ? 0
-        : Number(a.entry.capacityPoolId === priorPool) - Number(b.entry.capacityPoolId === priorPool);
-      return independenceOrder || a.domainRank - b.domainRank
-        || b.effectiveScore - a.effectiveScore || a.entry.routeId.localeCompare(b.entry.routeId);
-    });
-
     const demand = {
       requests: Math.max(1, request.demand?.requests ?? 1),
       inputTokens: Math.max(0, request.demand?.inputTokens ?? 4_000),
@@ -301,6 +272,52 @@ export class FreeFabric {
       );
       return Math.ceil(measuredPromptTokens * ratio * TOKENIZER_RESERVE_MARGIN);
     };
+    /**
+     * R37 Mission AH — capacity preservation. A request that fits comfortably should not burn
+     * a scarce large-context route when a sufficient smaller one exists in the same supply
+     * domain. The penalty is deliberately bounded (≤12): it right-sizes near-ties, it never
+     * overrides a domain boundary or a real capability gap, and it is advisory — it cannot
+     * make an ineligible route eligible or deny admission outright.
+     */
+    const rightFitPenalty = (entry: RouteLedgerEntry): number => {
+      if (entry.contextWindow === undefined) return 0;
+      const need = inputDemandFor(entry) + demand.outputTokens;
+      const oversize = entry.contextWindow / Math.max(1, need);
+      if (oversize <= 4) return 0;
+      return -Math.min(12, Math.round(Math.log2(oversize)));
+    };
+
+    // Mission A health: hard exclusions remove candidates; strong penalties demote a route
+    // behind the next supply domain (saturated shared supply yields to a healthy user pool).
+    const healthRole = request.healthRole ?? this.opts.healthRoleFor?.(request.role) ?? FABRIC_HEALTH_ROLE[request.role];
+    const ranked: Array<{ entry: RouteLedgerEntry; healthState?: RouteHealthCondition; scoreAdjustment: number; fitPenalty: number; effectiveScore: number; domainRank: number }> = [];
+    for (const entry of plan.routes) {
+      const assess = this.opts.health?.assess(entry.providerId, entry.modelId, { role: healthRole });
+      const adjustment = assess?.scoreAdjustment ?? 0;
+      if (assess?.hardExclude) {
+        reports.set(entry.routeId, {
+          routeId: entry.routeId, providerId: entry.providerId, modelId: entry.modelId,
+          canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
+          quotaOwner: entry.quotaOwner, quotaOwnerIdentity: entry.quotaOwnerIdentity,
+          status: "HEALTH_EXCLUDED", reasonCodes: ["HEALTH_HARD_EXCLUDED", ...assess.reasonCodes],
+          healthState: assess.state, scoreAdjustment: adjustment,
+        });
+        continue;
+      }
+      // A deeply unhealthy route is demoted behind every undemoted supply domain — a saturated
+      // shared route yields to the user's own healthy pool, not just to sponsored supply.
+      const domainRank = FORGEAUTO_DOMAIN_ORDER.indexOf(entry.quotaOwner)
+        + (adjustment <= this.opts.domainDemotionScore ? FORGEAUTO_DOMAIN_ORDER.length : 0);
+      const fit = rightFitPenalty(entry);
+      ranked.push({ entry, healthState: assess?.state, scoreAdjustment: adjustment, fitPenalty: fit, effectiveScore: entry.qualityScore + adjustment + fit, domainRank });
+    }
+    ranked.sort((a, b) => {
+      const priorPool = request.preferIndependentFromPoolId;
+      const independenceOrder = priorPool === undefined ? 0
+        : Number(a.entry.capacityPoolId === priorPool) - Number(b.entry.capacityPoolId === priorPool);
+      return independenceOrder || a.domainRank - b.domainRank
+        || b.effectiveScore - a.effectiveScore || a.entry.routeId.localeCompare(b.entry.routeId);
+    });
 
     let selected: FabricRouteDecision["selected"];
     let queued: { nextAvailableAt?: string; reasonCodes: string[] } | undefined;
@@ -316,7 +333,7 @@ export class FreeFabric {
           canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
           quotaOwner: entry.quotaOwner, capacityPoolId: entry.capacityPoolId,
         };
-        reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", "ROLE_QUALIFIED", "HEALTH_ACCEPTED", ...this.independenceReason(request, entry)], candidate.healthState, candidate.scoreAdjustment));
+        reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", "ROLE_QUALIFIED", "HEALTH_ACCEPTED", ...this.independenceReason(request, entry)], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
         break;
       }
       const decision = this.opts.reservations.reserve({
@@ -349,10 +366,10 @@ export class FreeFabric {
           quotaOwner: entry.quotaOwner, capacityPoolId: entry.capacityPoolId,
           reservationId: decision.reservationId,
         };
-        reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", "ROLE_QUALIFIED", "QUOTA_RESERVED", decision.reason, ...this.independenceReason(request, entry)], candidate.healthState, candidate.scoreAdjustment));
+        reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", "ROLE_QUALIFIED", "QUOTA_RESERVED", decision.reason, ...this.independenceReason(request, entry)], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
         break;
       }
-      reports.set(entry.routeId, this.reportFor(entry, decision.reason === "CAPACITY_EXHAUSTED" || decision.reason === "FIRST_RUN_RESERVE_PROTECTED" ? "CAPACITY_DENIED" : "RESERVATION_DENIED", [decision.reason], candidate.healthState, candidate.scoreAdjustment));
+      reports.set(entry.routeId, this.reportFor(entry, decision.reason === "CAPACITY_EXHAUSTED" || decision.reason === "FIRST_RUN_RESERVE_PROTECTED" ? "CAPACITY_DENIED" : "RESERVATION_DENIED", [decision.reason, ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : [])], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
       if (decision.reason === "USER_CONCURRENCY_LIMIT") {
         concurrencyLimited = true;
         queued = { reasonCodes: ["USER_CONCURRENCY_LIMIT"], nextAvailableAt: decision.nextAvailableAt };
@@ -372,9 +389,12 @@ export class FreeFabric {
       reports.set(candidate.entry.routeId, this.reportFor(
         candidate.entry,
         "STANDBY",
-        demoted ? ["HEALTH_DEMOTED", "RANKED_BEHIND_SELECTED"] : ["RANKED_BEHIND_SELECTED"],
+        demoted
+          ? ["HEALTH_DEMOTED", "RANKED_BEHIND_SELECTED", ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : [])]
+          : ["RANKED_BEHIND_SELECTED", ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : [])],
         candidate.healthState,
         candidate.scoreAdjustment,
+        candidate.fitPenalty,
       ));
     }
 
@@ -421,12 +441,13 @@ export class FreeFabric {
     };
   }
 
-  private reportFor(entry: RouteLedgerEntry, status: FabricCandidateStatus, reasonCodes: string[], healthState?: RouteHealthCondition, scoreAdjustment?: number): FabricCandidateReport {
+  private reportFor(entry: RouteLedgerEntry, status: FabricCandidateStatus, reasonCodes: string[], healthState?: RouteHealthCondition, scoreAdjustment?: number, rightFitPenalty?: number): FabricCandidateReport {
     return {
       routeId: entry.routeId, providerId: entry.providerId, modelId: entry.modelId,
       canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
       quotaOwner: entry.quotaOwner, quotaOwnerIdentity: entry.quotaOwnerIdentity,
       status, reasonCodes, healthState, scoreAdjustment,
+      ...(rightFitPenalty !== undefined && rightFitPenalty !== 0 ? { rightFitPenalty } : {}),
     };
   }
 

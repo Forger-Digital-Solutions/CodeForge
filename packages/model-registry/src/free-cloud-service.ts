@@ -860,6 +860,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
           managedMultiUserAllowed: r.termsStatus === "CLEARED",
           privacyClass: r.privacyClass ?? "standard",
           roles: r.roles,
+          ...(r.contextWindow !== undefined ? { contextWindow: r.contextWindow } : {}),
           qualityScore: options.qualityScoreOf?.(r.providerId, r.providerModelId)
             ?? this.firewall.getModel(r.providerId, r.providerModelId)?.codingScore
             ?? this.firewall.getModel(r.providerId, r.providerModelId)?.agentScore

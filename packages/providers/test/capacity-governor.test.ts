@@ -527,3 +527,43 @@ describe("ProviderCapacityGovernor — evidence-driven capacity control", () => 
     expect(governor.dispatchTelemetry("groq")).toHaveLength(1);
   });
 });
+
+describe("R37 Mission F — estimator accuracy reporting", () => {
+  it("summarizes estimate-vs-billed error with p50/p95 and under/over rates", async () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({
+      now: clock.now, sleep: clock.sleep,
+      limits: { groq: { maxTokensPerMinute: 10_000_000, maxRequestsPerMinute: 100_000, maxConcurrent: 100 } },
+    });
+
+    // 8 underestimates (actual 1.2× estimate), 2 overestimates (actual 0.8×).
+    for (const [promptEstimate, actualInput] of [
+      [1000, 1200], [1000, 1200], [1000, 1200], [1000, 1200],
+      [1000, 1200], [1000, 1200], [1000, 1200], [1000, 1200],
+      [1000, 800], [1000, 800],
+    ] as const) {
+      const res = await governor.acquire("groq", 2000, undefined, { promptTokens: promptEstimate });
+      res.release(actualInput + 300, actualInput);
+    }
+
+    const report = governor.estimatorAccuracy("groq");
+    expect(report.samples).toBe(10);
+    expect(report.meanRatio).toBeCloseTo(1.12, 2);
+    expect(report.p50Ratio).toBeCloseTo(1.2);
+    expect(report.p95Ratio).toBeCloseTo(1.2);
+    expect(report.underestimateRate).toBeCloseTo(0.8);
+    expect(report.overestimateRate).toBeCloseTo(0.2);
+  });
+
+  it("excludes unmeasured rows — absent evidence is not an accuracy claim", async () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep });
+
+    const res = await governor.acquire("groq", 2000);
+    res.release();
+    const report = governor.estimatorAccuracy("groq");
+    expect(report.samples).toBe(0);
+    expect(report.p50Ratio).toBeUndefined();
+    expect(report.underestimateRate).toBeUndefined();
+  });
+});
