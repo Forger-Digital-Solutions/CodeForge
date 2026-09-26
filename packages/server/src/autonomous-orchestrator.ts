@@ -744,7 +744,13 @@ export class AutonomousRunOrchestrator {
         } else {
         counters.childrenSpawned++;
 
-        // Inspect diff in worktree
+        // Inspect diff in worktree. The reviewer gets the full file inventory (--stat)
+        // plus a generously bounded body — a bare 2KB slice silently dropped most of any
+        // multi-file diff, so the reviewer could pass files it never saw (R43 multi-file
+        // root cause). The context assembler's own token budget bounds the final size;
+        // 24KB covers realistic coordinated changes, and the marker tells the reviewer
+        // it can re-run the diff in the worktree for the remainder.
+        const { stdout: diffStat } = await this.git(worktreeWs.rootPath, ["diff", "--stat", baseRevision]).catch(() => ({ stdout: "" }));
         const { stdout: diffOut } = await this.git(worktreeWs.rootPath, ["diff", baseRevision]).catch(() => ({ stdout: "" }));
 
         // Spawn independent Reviewer child agent with private context
@@ -754,8 +760,9 @@ export class AutonomousRunOrchestrator {
           agentId: "reviewer",
           task: `Review implementation for goal: ${goal}`,
           workspacePath: worktreeWs.rootPath,
-          contextSummary: diffOut ? `Diff against base:
-${diffOut.slice(0, 2000)}` : `Changes verified for task: ${goal}`,
+          contextSummary: diffOut
+            ? `Diff stat against base:\n${diffStat.trim()}\n\nDiff against base:\n${diffOut.slice(0, 24_000)}${diffOut.length > 24_000 ? `\n[diff truncated: ${diffOut.length - 24_000} bytes omitted; run git diff ${baseRevision} in the worktree for the remainder]` : ""}`
+            : `Changes verified for task: ${goal}`,
           findings: reviewFindings,
           adapter,
           signal: controller.signal,

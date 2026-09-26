@@ -466,7 +466,10 @@ export class SubagentManager {
           reviewFeedback: options.reviewFeedback,
           executionBudget: this.executionBudget(def.id, options.executionBudget),
           diff: def.id === "reviewer" ? contextSummary : undefined,
-          verificationEvidence: def.id === "reviewer" ? contextSummary : undefined,
+          // Review runs before verification in the autonomous loop — there is no
+          // verification evidence to hand the reviewer yet, and labeling the diff as
+          // "Verification Results" taught reviewers that an unrun gate had passed.
+          verificationEvidence: undefined,
           structuredOutput: options.structuredOutput,
           customToolExecutor: options.customToolExecutor,
           roleRouting: this.r1Enabled,
