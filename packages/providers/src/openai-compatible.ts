@@ -72,8 +72,10 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
   constructor(cfg: OpenAICompatibleConfig) {
     // Match OpenRouterAdapter: absent an explicit store, resolve `<PROVIDER>_API_KEY` from the
     // environment — otherwise factory-built adapters fail with MISSING_API_KEY even when the
-    // documented env var is set.
+    // documented env var is set. `credentialStore` may arrive explicitly undefined via the
+    // factory's common() spread, so normalize it after merging rather than in the spread.
     this.cfg = { credentialStore: new EnvironmentCredentialStore(), ...cfg };
+    this.cfg.credentialStore = cfg.credentialStore ?? new EnvironmentCredentialStore();
     this.providerId = cfg.providerId;
     this.timeoutMs = cfg.timeoutMs ?? 60000;
     this.fetchFn = cfg.fetchFn ?? fetch;

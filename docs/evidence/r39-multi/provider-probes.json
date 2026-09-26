@@ -1,0 +1,28 @@
+[
+  {
+    "id": "groq",
+    "model": "openai/gpt-oss-20b",
+    "ok": true,
+    "ms": 364,
+    "usage": {
+      "inputTokens": 78,
+      "outputTokens": 8,
+      "totalTokens": 86,
+      "reasoningTokens": 6
+    }
+  },
+  {
+    "id": "mistral",
+    "model": "mistral-small-latest",
+    "ok": false,
+    "ms": 195,
+    "error": "RATE_LIMITED"
+  },
+  {
+    "id": "cerebras",
+    "model": "gpt-oss-120b",
+    "ok": false,
+    "ms": 117,
+    "error": "PAYMENT_REQUIRED"
+  }
+]

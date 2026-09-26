@@ -1,0 +1,124 @@
+[
+  {
+    "provider": "openrouter",
+    "model": "cohere/north-mini-code:free",
+    "estimated": 2051,
+    "actual": 873,
+    "ratio": 0.426,
+    "ms": 960,
+    "ok": true
+  },
+  {
+    "provider": "openrouter",
+    "model": "cohere/north-mini-code:free",
+    "estimated": 8096,
+    "actual": 3447,
+    "ratio": 0.426,
+    "ms": 332,
+    "ok": true
+  },
+  {
+    "provider": "openrouter",
+    "model": "cohere/north-mini-code:free",
+    "estimated": 16124,
+    "actual": 6866,
+    "ratio": 0.426,
+    "ms": 610,
+    "ok": true
+  },
+  {
+    "provider": "openrouter",
+    "model": "cohere/north-mini-code:free",
+    "estimated": 32179,
+    "actual": 13704,
+    "ratio": 0.426,
+    "ms": 1005,
+    "ok": true
+  },
+  {
+    "provider": "groq",
+    "model": "openai/gpt-oss-20b",
+    "estimated": 2051,
+    "actual": 945,
+    "ratio": 0.461,
+    "ms": 423,
+    "ok": true
+  },
+  {
+    "provider": "groq",
+    "model": "openai/gpt-oss-20b",
+    "estimated": 8096,
+    "actual": 3519,
+    "ratio": 0.435,
+    "ms": 487,
+    "ok": true
+  },
+  {
+    "provider": "groq",
+    "model": "openai/gpt-oss-20b",
+    "estimated": 16124,
+    "ok": false,
+    "ms": 100,
+    "error": "RATE_LIMITED"
+  },
+  {
+    "provider": "groq",
+    "model": "openai/gpt-oss-20b",
+    "estimated": 32179,
+    "ok": false,
+    "ms": 279,
+    "error": "PROVIDER_ERROR"
+  },
+  {
+    "provider": "mistral",
+    "model": "codestral-latest",
+    "estimated": 2051,
+    "actual": 1010,
+    "ratio": 0.492,
+    "ms": 370,
+    "ok": true
+  },
+  {
+    "provider": "mistral",
+    "model": "codestral-latest",
+    "estimated": 8096,
+    "actual": 3980,
+    "ratio": 0.492,
+    "ms": 416,
+    "ok": true
+  },
+  {
+    "provider": "mistral",
+    "model": "codestral-latest",
+    "estimated": 16124,
+    "actual": 7925,
+    "ratio": 0.492,
+    "ms": 574,
+    "ok": true
+  },
+  {
+    "provider": "mistral",
+    "model": "codestral-latest",
+    "estimated": 32179,
+    "actual": 15815,
+    "ratio": 0.491,
+    "ms": 738,
+    "ok": true
+  },
+  {
+    "provider": "mistral",
+    "model": "mistral-medium-2604",
+    "estimated": 64322,
+    "ok": false,
+    "ms": 275,
+    "error": "RATE_LIMITED"
+  },
+  {
+    "provider": "mistral",
+    "model": "mistral-medium-2604",
+    "estimated": 130592,
+    "ok": false,
+    "ms": 734,
+    "error": "RATE_LIMITED"
+  }
+]

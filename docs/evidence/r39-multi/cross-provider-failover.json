@@ -1,0 +1,27 @@
+{
+  "steps": [
+    {
+      "step": "primary",
+      "provider": "mistral",
+      "model": "mistral-small-latest",
+      "result": "RATE_LIMITED",
+      "ms": 274
+    },
+    {
+      "step": "alternate",
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "result": "SERVED",
+      "ms": 138,
+      "usage": {
+        "inputTokens": 19,
+        "outputTokens": 2,
+        "totalTokens": 21
+      }
+    },
+    {
+      "step": "total_failover_ms",
+      "ms": 413
+    }
+  ]
+}
