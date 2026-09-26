@@ -3094,7 +3094,7 @@ export class AgentRuntime {
         // R45 §32: budget exhaustion is model-quality evidence — a route that burns its turn
         // budget serializing work the packet already covered is weak for this role. Kept
         // distinct from availability signals: 429s never reach this path (they rotate or wait).
-        if (stopReason === "budget_exhausted" && journalActiveRoute) {
+        if (exhaustedModelTurns && journalActiveRoute) {
           this.eightBit.observe({
             kind: "role_outcome",
             outcome: "role_failed",

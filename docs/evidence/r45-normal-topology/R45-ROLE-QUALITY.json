@@ -1,0 +1,45 @@
+{
+  "at": "2026-09-26T22:35:37.207Z",
+  "results": [
+    {
+      "arm": "wander-exhausts-budget",
+      "status": "blocked",
+      "error": "AGENT_MODEL_TURN_LIMIT",
+      "turns": 4,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 4,
+        "reason": "orientation packet covered 4 candidate files and resolved 2/10 goal symbols"
+      },
+      "observations": 9,
+      "roleFailedObservations": [
+        {
+          "kind": "role_outcome",
+          "outcome": "role_failed",
+          "providerId": "test-provider",
+          "modelId": "free-model-1",
+          "observedAt": "2026-09-26T22:35:36.715Z",
+          "source": "runtime",
+          "role": "EXPLORER",
+          "requestShape": "production",
+          "correlationId": "run-wander-exhausts-budget"
+        }
+      ],
+      "roleFailedCount": 1
+    },
+    {
+      "arm": "packet-answers-immediately",
+      "status": "completed",
+      "error": null,
+      "turns": 1,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 4,
+        "reason": "orientation packet covered 4 candidate files and resolved 2/10 goal symbols"
+      },
+      "observations": 2,
+      "roleFailedObservations": [],
+      "roleFailedCount": 0
+    }
+  ]
+}
