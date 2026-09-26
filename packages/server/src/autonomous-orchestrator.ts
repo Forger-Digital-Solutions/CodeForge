@@ -570,6 +570,11 @@ export class AutonomousRunOrchestrator {
         if (result.findings) allFindings.push(...result.findings);
         if (result.evidence) allEvidence.push(...result.evidence);
       }
+      // R45: explorer evidence is a run-scoped handoff — the coder consumes it directly so a
+      // downstream role never re-navigates what upstream already located. Previously scoped
+      // to the planner branch only, which left normal topologies (no planner) without it.
+      const explorerEvidence = explorerResults.flatMap((result) => result.evidence ?? []);
+      const explorerFindings = explorerResults.flatMap((result) => result.findings ?? []);
 
       // ==========================================
       // PHASE 2: TASK & EXECUTION PLANNING
@@ -579,8 +584,6 @@ export class AutonomousRunOrchestrator {
       // Without a planner in the topology the coder works from the goal-derived task graph.
       if (runAgentRuntime && topologyPlan.hasPlanner) {
         counters.childrenSpawned++;
-        const explorerEvidence = explorerResults.flatMap((result) => result.evidence ?? []);
-        const explorerFindings = explorerResults.flatMap((result) => result.findings ?? []);
         const incompleteExplorerRoles = explorerResults
           .map((result, index) => result.status === "completed" ? undefined : `Explorer ${index + 1} ${result.status}`)
           .filter((status): status is string => status !== undefined);
@@ -688,6 +691,10 @@ export class AutonomousRunOrchestrator {
             adapter,
             signal: controller.signal,
             taskPlan,
+            // R45: hand the writer the explorer's file/symbol evidence so it does not
+            // rediscover the repository the upstream role already mapped.
+            explorerEvidence,
+            findings: explorerFindings,
             reviewFeedback,
             workspaceKind: "git-worktree",
             workspaceBranch: worktreeWs.branch,

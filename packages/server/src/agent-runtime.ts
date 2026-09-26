@@ -169,6 +169,31 @@ export interface AgentContextMetrics {
   structuredOutput?: StructuredOutputTelemetry;
   /** R44: per-attempt mutation discipline — hash supply, observed state, outcome. */
   editAttempts?: EditAttemptRecord[];
+  /** R45: per-model-turn tool-call trace — the forensic feed for exploration efficiency
+   * analysis (which turns serialized batchable reads, which carried no information). */
+  toolTrace?: ToolTurnRecord[];
+  /** R45: deterministic orientation packet coverage, when the read-plan scaffold ran. */
+  explorationBrief?: {
+    bytes: number;
+    candidateFiles: number;
+    symbolRecall: { resolved: number; total: number };
+    excerptedFiles: number;
+  };
+  /** R45: the explorer's turn budget was narrowed by scaffold coverage — recorded, never silent. */
+  adaptiveTurnBudget?: { original: number; applied: number; reason: string };
+}
+
+export interface ToolTurnRecord {
+  turn: number;
+  /** Tool requests this single model turn carried — >1 means the model batched. */
+  batchSize: number;
+  calls: Array<{
+    tool: string;
+    /** Primary target (path, query head, or command head) — enough to classify later. */
+    target?: string;
+    outcome: "success" | "failed" | "denied" | "suppressed";
+    bytes?: number;
+  }>;
 }
 
 export type EditAttemptFailureClass =
@@ -1178,7 +1203,7 @@ export class AgentRuntime {
    * loop detection, budget governance, and structured result extraction.
    */
   async executeAgentRun(req: AgentRuntimeRequest): Promise<AgentRuntimeResult> {
-    const budget: AgentExecutionBudget =
+    let budget: AgentExecutionBudget =
       req.executionBudget ??
       DEFAULT_EXECUTION_BUDGETS[req.role] ??
       DEFAULT_EXECUTION_BUDGETS.default!;
@@ -1242,6 +1267,11 @@ export class AgentRuntime {
       // collections at serialize time, so every return path carries the final evidence.
       Object.defineProperty(metrics, "editAttempts", { enumerable: true, configurable: true, get: () => (editAttempts.length > 0 ? editAttempts : undefined) });
       Object.defineProperty(metrics, "structuredOutput", { enumerable: true, configurable: true, get: () => structuredTelemetry });
+      // R45: exploration forensics — the per-turn tool trace and scaffold coverage survive
+      // metrics rebuilds the same way.
+      Object.defineProperty(metrics, "toolTrace", { enumerable: true, configurable: true, get: () => (toolTrace.length > 0 ? toolTrace : undefined) });
+      Object.defineProperty(metrics, "explorationBrief", { enumerable: true, configurable: true, get: () => explorationBriefMeta });
+      Object.defineProperty(metrics, "adaptiveTurnBudget", { enumerable: true, configurable: true, get: () => adaptiveTurnBudget });
       return metrics;
     };
     const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen, this.capacityGovernorIsExplicit ? this.capacityGovernor : undefined, greenPolicy);
@@ -1285,6 +1315,11 @@ export class AgentRuntime {
     const observedFileState = new Map<string, { hash: string; source: "read" | "write" | "edit" }>();
     const editAttempts: EditAttemptRecord[] = [];
     const structuredTelemetry: StructuredOutputTelemetry = { repairs: 0, truncationRepairs: 0, repairStrategies: [], rejections: [], exhausted: false };
+    // R45: per-turn tool trace for exploration-efficiency forensics; scaffold coverage +
+    // the adaptive budget decision land on the journal via contextMetrics getters.
+    const toolTrace: ToolTurnRecord[] = [];
+    let explorationBriefMeta: AgentContextMetrics["explorationBrief"];
+    let adaptiveTurnBudget: AgentContextMetrics["adaptiveTurnBudget"];
     let intelligence: RepositoryIntelligence | undefined;
 
     // R2 durable execution journal. Counters and the transcript live outside the try block so a
@@ -1331,6 +1366,9 @@ export class AgentRuntime {
           usage: totalUsage,
           editAttempts,
           structuredOutput: structuredTelemetry,
+          toolTrace,
+          explorationBrief: explorationBriefMeta,
+          adaptiveTurnBudget,
         },
         ...(journalActiveRoute ? { route: { providerId: journalActiveRoute.providerId, modelId: journalActiveRoute.modelId } } : {}),
         ...(detail ? { recoveryDetail: redactSecrets(detail).slice(0, 4_096) } : {}),
@@ -1484,6 +1522,33 @@ export class AgentRuntime {
       });
       const assembled = await assembleContext();
       replaceBootstrapEvidence(assembled);
+      explorationBriefMeta = assembled.explorationBrief;
+
+      // R45: when the deterministic orientation packet has real coverage, the explorer's job
+      // shrinks to confirm-and-answer — narrow its turn budget accordingly rather than letting
+      // a strong packet sit unused while the model serializes ten navigation turns. The
+      // decision is recorded in metrics, never silent.
+      if (req.role === "explorer" && !req.executionBudget && explorationBriefMeta) {
+        const recall = explorationBriefMeta.symbolRecall;
+        // Coverage = candidate files located AND the goal grounded in code — at least one
+        // goal-named symbol resolved to a definition, or the goal named no symbols at all.
+        // Free-text recall ratios are noisy (every noun looks like an identifier).
+        const covered = explorationBriefMeta.candidateFiles > 0 && (recall.total === 0 || recall.resolved >= 1);
+        if (covered && budget.maxModelTurns > 4) {
+          adaptiveTurnBudget = {
+            original: budget.maxModelTurns,
+            applied: 4,
+            reason: `orientation packet covered ${explorationBriefMeta.candidateFiles} candidate files and resolved ${recall.resolved}/${recall.total} goal symbols`,
+          };
+          budget = { ...budget, maxModelTurns: 4 };
+        } else if (!covered) {
+          adaptiveTurnBudget = {
+            original: budget.maxModelTurns,
+            applied: budget.maxModelTurns,
+            reason: `orientation packet weak — ${explorationBriefMeta.candidateFiles} candidates, ${recall.resolved}/${recall.total} symbols resolved; full budget kept`,
+          };
+        }
+      }
 
       messages = [
         { role: "system", content: assembled.systemPrompt },
@@ -2288,6 +2353,30 @@ export class AgentRuntime {
 
         await persistModelTurn("tool_requests_decoded");
 
+        // R45: the turn's forensic record is pushed empty and filled as each call resolves —
+        // a crash mid-turn still leaves the requests that were decoded on the journal.
+        const turnRecord: ToolTurnRecord = { turn: turnCount, batchSize: toolCalls.length, calls: [] };
+        if (toolTrace.length < 64) toolTrace.push(turnRecord);
+        const traceCall = (name: string, args: string, outcome: ToolTurnRecord["calls"][number]["outcome"], record?: ToolExecutionRecord): void => {
+          if (turnRecord.calls.length >= 32) return;
+          const parsed = parseToolArgs(args);
+          const parsedRecord = typeof parsed === "object" && parsed ? (parsed as Record<string, unknown>) : undefined;
+          const target = parsedRecord
+            ? (typeof parsedRecord.path === "string" ? parsedRecord.path
+              : typeof parsedRecord.query === "string" ? parsedRecord.query
+              : typeof parsedRecord.symbol === "string" ? parsedRecord.symbol
+              : typeof parsedRecord.command === "string" ? String(parsedRecord.command).slice(0, 80)
+              : typeof parsedRecord.pattern === "string" ? parsedRecord.pattern
+              : undefined)
+            : undefined;
+          turnRecord.calls.push({
+            tool: name,
+            ...(target !== undefined ? { target } : {}),
+            outcome,
+            ...(record ? { bytes: record.rawOutputBytes ?? Buffer.byteLength(record.output ?? "", "utf8") } : {}),
+          });
+        };
+
         for (const tc of toolCalls) {
           if (req.signal?.aborted) {
             throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
@@ -2344,6 +2433,7 @@ export class AgentRuntime {
                 truncated: false,
               };
               toolExecutions.push(reusedResult);
+              traceCall(tc.name, tc.arguments, reusedResult.success ? "success" : "failed", reusedResult);
               forgeGreenR0Telemetry.recordToolExecution({
                 toolName: tc.name,
                 success: reusedResult.success,
@@ -2504,6 +2594,7 @@ export class AgentRuntime {
               stateEvidence: duplicateDecision.stateEvidence,
             });
             adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, "forgegreen_duplicate_suppressed");
+            traceCall(tc.name, tc.arguments, "suppressed");
             const replayedContent = `[forgegreen: duplicate read-only action suppressed — identical action against unchanged workspace state; replaying prior authoritative result ${duplicateDecision.priorExecutionId}]\n${duplicateDecision.priorOutput}`;
             forgeGreenR0Telemetry.recordDuplicateEquivalentToolCall(tc.name, Buffer.byteLength(replayedContent, "utf8"));
             messages.push({
@@ -2540,6 +2631,7 @@ export class AgentRuntime {
                 truncated: false,
               };
               toolExecutions.push(denyRecord);
+              traceCall(tc.name, tc.arguments, "denied", denyRecord);
               ledger.recordNoProgressInterruption(`run_command denied: ${why}`);
               adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.TOOL_PERMISSION_DENIED);
               messages.push({ role: "tool", content: denyRecord.output, toolCallId: tc.id });
@@ -2574,6 +2666,7 @@ export class AgentRuntime {
               truncated: false,
             };
             toolExecutions.push(denyRecord);
+            traceCall(tc.name, tc.arguments, "denied", denyRecord);
             ledger.recordNoProgressInterruption(`${tc.name} denied: ${why}`);
             adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.TOOL_PERMISSION_DENIED);
             messages.push({ role: "tool", content: denyRecord.output, toolCallId: tc.id });
@@ -2633,7 +2726,7 @@ export class AgentRuntime {
             if (denyCode) {
               pendingEditAttempt.outcome = "denied";
               pendingEditAttempt.errorCode = denyCode;
-              toolExecutions.push({
+              const gateDenyRecord: ToolExecutionRecord = {
                 toolExecutionId: `denied-${executionId}`,
                 toolName: tc.name,
                 arguments: parsedTcArgs,
@@ -2643,7 +2736,9 @@ export class AgentRuntime {
                 durationMs: 0,
                 readOnly: false,
                 truncated: false,
-              });
+              };
+              toolExecutions.push(gateDenyRecord);
+              traceCall(tc.name, tc.arguments, "denied", gateDenyRecord);
               ledger.recordNoProgressInterruption(`${tc.name} denied: ${pendingEditAttempt.failureClass}`);
               adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, denyCode);
               messages.push({ role: "tool", content: denyOutput, toolCallId: tc.id });
@@ -2703,6 +2798,7 @@ export class AgentRuntime {
           );
 
           toolExecutions.push(toolExec);
+          traceCall(tc.name, tc.arguments, toolExec.success ? "success" : "failed", toolExec);
           if (pendingEditAttempt) {
             pendingEditAttempt.outcome = toolExec.success ? "success" : "failed";
             if (!toolExec.success) {

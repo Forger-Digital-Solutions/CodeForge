@@ -17,8 +17,10 @@ import type { ContextLevel } from "./levels.js";
 import { ContextCapacityError, resolveContextCapacity, type ContextCapacitySource } from "./budget.js";
 import { createContextPlanner } from "./planner.js";
 import type { ContextPageStore } from "./pages.js";
+import { buildExplorationBrief, renderExplorationBrief } from "./exploration-brief.js";
 
 export * from "./pack.js";
+export * from "./exploration-brief.js";
 export * from "./levels.js";
 export * from "./budget.js";
 export * from "./kernel.js";
@@ -82,6 +84,15 @@ export interface AssembledContext {
     pagesReused: number;
     pagesPulled: number;
     omittedOptionalPages: number;
+  };
+  /** R45: present when the deterministic read-plan scaffold ran for the explorer role —
+   * the orientation packet's size and symbol recall, so the runtime can adapt budgets and
+   * report the scaffold's coverage in receipts. */
+  explorationBrief?: {
+    bytes: number;
+    candidateFiles: number;
+    symbolRecall: { resolved: number; total: number };
+    excerptedFiles: number;
   };
 }
 
@@ -169,6 +180,7 @@ export class ContextAssembler {
     const contextSections: string[] = [renderContextKernel(kernel)];
     let estimatedTokensUsed = estimateTokens(roleDef.systemPromptTemplate) + estimateTokens(contextSections[0]!) + 200;
     let progressive: AssembledContext["progressive"];
+    let explorationBriefMeta: AssembledContext["explorationBrief"];
 
     // FG-3 §10: this guarantee is universal, not just for the coder role's planner path — a
     // budget may never silently truncate the kernel itself. If even the role's system prompt
@@ -193,19 +205,43 @@ export class ContextAssembler {
           contextSections.push(repoOverview);
           estimatedTokensUsed += estimateTokens(repoOverview);
 
-          const matches = await options.intelligence.findRelevantContext(options.goal, { limit: 15 });
-          const safeMatches = matches.items.filter((match) => !isSensitiveContextPath(match.path));
-          if (safeMatches.length > 0) {
-            const hints = safeMatches.map((m) => `- ${m.path} (${m.reasons.join(", ")})`).join("\n");
-            contextSections.push(`Relevant File Candidates:\n${formatUntrustedData(hints, "candidate files")}`);
-            for (const item of safeMatches) {
+          // R45: the deterministic read-plan scaffold replaces path-only hints with a bounded
+          // orientation packet — definitions, consumers, related tests, and hash-marked
+          // excerpts — so weak models do not serialize navigation across the turn budget.
+          const brief = await buildExplorationBrief(options.goal, options.workspacePath, options.intelligence);
+          if (brief.files.length > 0 || brief.definitions.length > 0) {
+            const rendered = renderExplorationBrief(brief);
+            contextSections.push(rendered);
+            estimatedTokensUsed += estimateTokens(rendered);
+            explorationBriefMeta = {
+              bytes: brief.bytes,
+              candidateFiles: brief.files.length,
+              symbolRecall: brief.symbolRecall,
+              excerptedFiles: brief.files.filter((f) => f.excerpt !== undefined).length,
+            };
+            for (const item of brief.files) {
               evidenceList.push({
                 source: "search",
                 path: item.path,
-                symbol: item.symbol?.qualifiedName,
                 reasons: item.reasons,
                 fresh: true,
               });
+            }
+          } else {
+            const matches = await options.intelligence.findRelevantContext(options.goal, { limit: 15 });
+            const safeMatches = matches.items.filter((match) => !isSensitiveContextPath(match.path));
+            if (safeMatches.length > 0) {
+              const hints = safeMatches.map((m) => `- ${m.path} (${m.reasons.join(", ")})`).join("\n");
+              contextSections.push(`Relevant File Candidates:\n${formatUntrustedData(hints, "candidate files")}`);
+              for (const item of safeMatches) {
+                evidenceList.push({
+                  source: "search",
+                  path: item.path,
+                  symbol: item.symbol?.qualifiedName,
+                  reasons: item.reasons,
+                  fresh: true,
+                });
+              }
             }
           }
         }
@@ -233,6 +269,14 @@ export class ContextAssembler {
           contextSections.push(`Implementation Plan:\n${options.taskPlan}`);
           estimatedTokensUsed += estimateTokens(options.taskPlan);
         }
+        // R45 no-rediscovery: upstream explorer findings hand the coder its file set directly —
+        // rendered as evidence AND fed into the progressive planner as mentioned targets, so
+        // context retrieval starts from the located files instead of rediscovering them.
+        if (options.explorerEvidence && options.explorerEvidence.length > 0) {
+          const evText = options.explorerEvidence.slice(0, 20).map((e) => `- [${e.kind}] ${e.ref}: ${e.description ?? ""}`).join("\n");
+          contextSections.push(`Discovered Explorer Evidence:\n${formatUntrustedData(evText, "explorer evidence")}`);
+          estimatedTokensUsed += estimateTokens(evText);
+        }
         if (options.intelligence) {
           // FG-3B/C/F: start narrow (kernel + a small active-target slice), add bounded one-hop
           // structural neighbors, rather than the pre-FG-3 eager ~80%-of-budget broad grab. The
@@ -242,13 +286,16 @@ export class ContextAssembler {
             requestedTokens: Math.floor(budget.repository * 0.8),
             declaredModelContextWindow: options.modelContextWindow,
           });
+          const explorerPaths = (options.explorerEvidence ?? [])
+            .map((e) => e.ref)
+            .filter((ref) => /^(?:[\w.-]+\/)+[\w.-]+$/.test(ref));
           const planner = createContextPlanner();
           const plan = await planner.planNarrow({
             goal: options.goal,
             kernel,
             capacity,
             intelligence: options.intelligence,
-            mentionedPaths: options.mentionedPaths,
+            mentionedPaths: [...(options.mentionedPaths ?? []), ...explorerPaths],
             pageStore: options.pageStore,
             minimumLevel: options.minimumContextLevel,
           });
@@ -349,6 +396,7 @@ export class ContextAssembler {
       receipt,
       kernel,
       ...(progressive ? { progressive } : {}),
+      ...(explorationBriefMeta ? { explorationBrief: explorationBriefMeta } : {}),
       efficiencyReceipt: this.forgeGreen.createReceipt({
         workspaceId: cacheIdentity.workspaceId,
         repositoryGeneration: cacheIdentity.repositoryGeneration,
