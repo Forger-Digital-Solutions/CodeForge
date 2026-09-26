@@ -56,6 +56,21 @@ import type { AgentRuntime } from "./agent-runtime.js";
 
 export const MAX_REVIEW_REVISION_ROUNDS = 2;
 
+/** Bound on the diff body handed to the independent reviewer. 24KB covers realistic
+ * coordinated multi-file changes; the truncation marker points the reviewer at the worktree
+ * for the remainder instead of silently dropping the tail (the R43 defect: a bare ~2KB
+ * slice that reviewed most multi-file diffs blind). */
+export const REVIEWER_DIFF_BODY_BYTES = 24_000;
+
+/**
+ * Build the reviewer's diff context: the full `--stat` inventory of every changed file plus
+ * a bounded diff body with an explicit truncation marker. Never labels diff text as
+ * verification evidence — verification has not run when the reviewer sees this.
+ */
+export function buildReviewerDiffContext(diffStat: string, diffOut: string, baseRevision: string): string {
+  return `Diff stat against base:\n${diffStat.trim()}\n\nDiff against base:\n${diffOut.slice(0, REVIEWER_DIFF_BODY_BYTES)}${diffOut.length > REVIEWER_DIFF_BODY_BYTES ? `\n[diff truncated: ${diffOut.length - REVIEWER_DIFF_BODY_BYTES} bytes omitted; run git diff ${baseRevision} in the worktree for the remainder]` : ""}`;
+}
+
 /**
  * R1 phase ceilings reserve time for planning and execution. Explorers are read-only evidence
  * producers; a paced provider must not be allowed to consume the parent run's entire deadline
@@ -761,7 +776,7 @@ export class AutonomousRunOrchestrator {
           task: `Review implementation for goal: ${goal}`,
           workspacePath: worktreeWs.rootPath,
           contextSummary: diffOut
-            ? `Diff stat against base:\n${diffStat.trim()}\n\nDiff against base:\n${diffOut.slice(0, 24_000)}${diffOut.length > 24_000 ? `\n[diff truncated: ${diffOut.length - 24_000} bytes omitted; run git diff ${baseRevision} in the worktree for the remainder]` : ""}`
+            ? buildReviewerDiffContext(diffStat, diffOut, baseRevision)
             : `Changes verified for task: ${goal}`,
           findings: reviewFindings,
           adapter,
