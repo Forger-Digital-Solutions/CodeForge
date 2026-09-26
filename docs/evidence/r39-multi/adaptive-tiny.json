@@ -1,0 +1,401 @@
+{
+  "result": {
+    "status": "completed",
+    "topology": {
+      "policy": "adaptive",
+      "complexity": {
+        "tier": "normal",
+        "reasonCodes": [
+          "GOAL_NAMES_SINGLE_FILE",
+          "DEFAULT_NORMAL"
+        ],
+        "rationale": "Ordinary bug or feature: one explorer, one coder, one independent reviewer, then ForgeVerify.",
+        "classifierVersion": "r21-task-complexity-v1"
+      },
+      "plan": {
+        "topology": "normal",
+        "explorers": 1,
+        "hasPlanner": false,
+        "hasReviewer": true,
+        "hasVision": false,
+        "requiresForgeVerify": true,
+        "reason": "Normal task: Explorer -> Coder -> Reviewer -> ForgeVerify; ForgeGreen capacity advice: PROVIDER_CAPACITY_UNOBSERVED",
+        "stages": [
+          "Explorer",
+          "Coder",
+          "Reviewer",
+          "ForgeVerify"
+        ]
+      },
+      "repositoryFileCount": 2,
+      "decidedAt": "2026-09-26T04:11:17.678Z"
+    },
+    "counters": {
+      "childrenSpawned": 2,
+      "reviewRounds": 0,
+      "taskAttempts": 1,
+      "verificationAttempts": 1
+    }
+  },
+  "calls": [
+    {
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "ms": 175.3674000000001,
+      "usage": {
+        "inputTokens": 72,
+        "outputTokens": 1,
+        "totalTokens": 73
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 275.19090000000006,
+      "usage": {
+        "inputTokens": 4,
+        "outputTokens": 1,
+        "totalTokens": 5,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3944.4451,
+      "usage": {
+        "inputTokens": 2151,
+        "outputTokens": 159,
+        "totalTokens": 2310,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 74,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3021.092200000001,
+      "usage": {
+        "inputTokens": 2714,
+        "outputTokens": 49,
+        "totalTokens": 2763,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 20,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 1896.6311999999998,
+      "usage": {
+        "inputTokens": 2835,
+        "outputTokens": 79,
+        "totalTokens": 2914,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 61,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 4086.9108000000015,
+      "usage": {
+        "inputTokens": 2930,
+        "outputTokens": 222,
+        "totalTokens": 3152,
+        "cachedInputTokens": 2048,
+        "reasoningTokens": 178,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2836.0283000000018,
+      "usage": {
+        "inputTokens": 2988,
+        "outputTokens": 103,
+        "totalTokens": 3091,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 85,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2200.532500000001,
+      "usage": {
+        "inputTokens": 3033,
+        "outputTokens": 90,
+        "totalTokens": 3123,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 70,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2410.4723999999987,
+      "usage": {
+        "inputTokens": 3078,
+        "outputTokens": 108,
+        "totalTokens": 3186,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 88,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 10919.290500000003,
+      "usage": {
+        "inputTokens": 3120,
+        "outputTokens": 874,
+        "totalTokens": 3994,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 344,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 7299.133499999996,
+      "usage": {
+        "inputTokens": 3721,
+        "outputTokens": 611,
+        "totalTokens": 4332,
+        "cachedInputTokens": 3072,
+        "reasoningTokens": 154,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3135.6996999999974,
+      "usage": {
+        "inputTokens": 2890,
+        "outputTokens": 204,
+        "totalTokens": 3094,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 166,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2339.861300000004,
+      "usage": {
+        "inputTokens": 2974,
+        "outputTokens": 71,
+        "totalTokens": 3045,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 17,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 4227.562100000003,
+      "usage": {
+        "inputTokens": 3095,
+        "outputTokens": 332,
+        "totalTokens": 3427,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 105,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 1878.3358999999982,
+      "usage": {
+        "inputTokens": 3044,
+        "outputTokens": 50,
+        "totalTokens": 3094,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 25,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3150.152000000002,
+      "usage": {
+        "inputTokens": 3185,
+        "outputTokens": 188,
+        "totalTokens": 3373,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 160,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2115.137600000002,
+      "usage": {
+        "inputTokens": 3241,
+        "outputTokens": 60,
+        "totalTokens": 3301,
+        "cachedInputTokens": 3072,
+        "reasoningTokens": 36,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3024.5093999999954,
+      "usage": {
+        "inputTokens": 3337,
+        "outputTokens": 172,
+        "totalTokens": 3509,
+        "cachedInputTokens": 3072,
+        "reasoningTokens": 42,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 4143.190900000001,
+      "usage": {
+        "inputTokens": 3412,
+        "outputTokens": 271,
+        "totalTokens": 3683,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 20,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 9730.900099999999,
+      "usage": {
+        "inputTokens": 2558,
+        "outputTokens": 715,
+        "totalTokens": 3273,
+        "cachedInputTokens": 1536,
+        "reasoningTokens": 818,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 4962.514599999995,
+      "usage": {
+        "inputTokens": 2603,
+        "outputTokens": 351,
+        "totalTokens": 2954,
+        "cachedInputTokens": 2048,
+        "reasoningTokens": 295,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 3039.2666000000027,
+      "usage": {
+        "inputTokens": 2744,
+        "outputTokens": 167,
+        "totalTokens": 2911,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 150,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 2183.245299999995,
+      "usage": {
+        "inputTokens": 2783,
+        "outputTokens": 40,
+        "totalTokens": 2823,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 15,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 1631.1535999999905,
+      "usage": {
+        "inputTokens": 2820,
+        "outputTokens": 39,
+        "totalTokens": 2859,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 14,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 6111.157500000001,
+      "usage": {
+        "inputTokens": 2857,
+        "outputTokens": 453,
+        "totalTokens": 3310,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 448,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 4116.634300000005,
+      "usage": {
+        "inputTokens": 2953,
+        "outputTokens": 285,
+        "totalTokens": 3238,
+        "cachedInputTokens": 2560,
+        "reasoningTokens": 202,
+        "costUsd": 0
+      },
+      "ok": true
+    }
+  ]
+}

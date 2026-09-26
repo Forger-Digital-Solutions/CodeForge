@@ -1,0 +1,27 @@
+{
+  "evidenceClass": "LIVE_FREE_PROVIDER + DETERMINISTIC",
+  "deterministic": {
+    "cases": 4,
+    "semanticDefectsCaught": 0,
+    "msPerCase": 5.5,
+    "inferenceRequests": 0,
+    "note": "All 4 architecturally-wrong-but-valid diffs escaped semanticDiffFindings; only finding emitted was the unrelated unreferenced-export signal (empty workspace). Deterministic review remains a zero-cost first filter, not a semantic oracle. R38 corpus: 14 structural defect classes caught at ~300ms each."
+  },
+  "liveReviewer": [
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "batch": "4 semantic defects",
+      "ms": 1218,
+      "usage": { "inputTokens": 144, "outputTokens": 125, "totalTokens": 269 }
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "probe": "wrong-priority defect verdict",
+      "result": "correctly identified defect ('no')",
+      "usage": { "inputTokens": 30, "outputTokens": 2, "totalTokens": 32 }
+    }
+  ],
+  "economics": "Model reviewer catches semantic classes the deterministic layer structurally misses, at ~30-270 tokens per case. Justifies deterministic-first + reviewer-on-diff layering."
+}

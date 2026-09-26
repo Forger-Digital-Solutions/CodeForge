@@ -1,0 +1,237 @@
+[
+  {
+    "users": 1,
+    "tasks": 2,
+    "completed": 2,
+    "starved": 0,
+    "fair": true,
+    "complete": true,
+    "maxWaitTicks": 0,
+    "rateLimits": 0,
+    "quotaResets": 0,
+    "leaked": 0,
+    "divergences": 0,
+    "perRoute": [
+      {
+        "id": "or-model-a",
+        "dispatched": 2,
+        "completed": 2,
+        "failed": 0,
+        "quotaConsumed": 2,
+        "peakLeases": 2
+      },
+      {
+        "id": "or-model-b",
+        "dispatched": 0,
+        "completed": 0,
+        "failed": 0,
+        "quotaConsumed": 0,
+        "peakLeases": 0
+      },
+      {
+        "id": "groq-model",
+        "dispatched": 0,
+        "completed": 0,
+        "failed": 0,
+        "quotaConsumed": 0,
+        "peakLeases": 0
+      },
+      {
+        "id": "mistral-codestral",
+        "dispatched": 0,
+        "completed": 0,
+        "failed": 0,
+        "quotaConsumed": 0,
+        "peakLeases": 0
+      }
+    ]
+  },
+  {
+    "users": 10,
+    "tasks": 20,
+    "completed": 20,
+    "starved": 0,
+    "fair": true,
+    "complete": true,
+    "maxWaitTicks": 1,
+    "rateLimits": 0,
+    "quotaResets": 0,
+    "leaked": 0,
+    "divergences": 0,
+    "perRoute": [
+      {
+        "id": "or-model-a",
+        "dispatched": 9,
+        "completed": 9,
+        "failed": 0,
+        "quotaConsumed": 9,
+        "peakLeases": 3
+      },
+      {
+        "id": "or-model-b",
+        "dispatched": 5,
+        "completed": 5,
+        "failed": 0,
+        "quotaConsumed": 5,
+        "peakLeases": 2
+      },
+      {
+        "id": "groq-model",
+        "dispatched": 4,
+        "completed": 4,
+        "failed": 0,
+        "quotaConsumed": 4,
+        "peakLeases": 2
+      },
+      {
+        "id": "mistral-codestral",
+        "dispatched": 2,
+        "completed": 2,
+        "failed": 0,
+        "quotaConsumed": 2,
+        "peakLeases": 1
+      }
+    ]
+  },
+  {
+    "users": 50,
+    "tasks": 100,
+    "completed": 100,
+    "starved": 0,
+    "fair": true,
+    "complete": true,
+    "maxWaitTicks": 6,
+    "rateLimits": 0,
+    "quotaResets": 4,
+    "leaked": 0,
+    "divergences": 0,
+    "perRoute": [
+      {
+        "id": "or-model-a",
+        "dispatched": 40,
+        "completed": 40,
+        "failed": 0,
+        "quotaConsumed": 40,
+        "peakLeases": 3
+      },
+      {
+        "id": "or-model-b",
+        "dispatched": 30,
+        "completed": 30,
+        "failed": 0,
+        "quotaConsumed": 30,
+        "peakLeases": 2
+      },
+      {
+        "id": "groq-model",
+        "dispatched": 18,
+        "completed": 18,
+        "failed": 0,
+        "quotaConsumed": 18,
+        "peakLeases": 2
+      },
+      {
+        "id": "mistral-codestral",
+        "dispatched": 12,
+        "completed": 12,
+        "failed": 0,
+        "quotaConsumed": 12,
+        "peakLeases": 1
+      }
+    ]
+  },
+  {
+    "users": 100,
+    "tasks": 200,
+    "completed": 200,
+    "starved": 0,
+    "fair": true,
+    "complete": true,
+    "maxWaitTicks": 62,
+    "rateLimits": 0,
+    "quotaResets": 10,
+    "leaked": 0,
+    "divergences": 0,
+    "perRoute": [
+      {
+        "id": "or-model-a",
+        "dispatched": 78,
+        "completed": 78,
+        "failed": 0,
+        "quotaConsumed": 78,
+        "peakLeases": 3
+      },
+      {
+        "id": "or-model-b",
+        "dispatched": 56,
+        "completed": 56,
+        "failed": 0,
+        "quotaConsumed": 56,
+        "peakLeases": 2
+      },
+      {
+        "id": "groq-model",
+        "dispatched": 36,
+        "completed": 36,
+        "failed": 0,
+        "quotaConsumed": 36,
+        "peakLeases": 2
+      },
+      {
+        "id": "mistral-codestral",
+        "dispatched": 30,
+        "completed": 30,
+        "failed": 0,
+        "quotaConsumed": 30,
+        "peakLeases": 1
+      }
+    ]
+  },
+  {
+    "users": 373,
+    "tasks": 746,
+    "completed": 746,
+    "starved": 0,
+    "fair": true,
+    "complete": true,
+    "maxWaitTicks": 356,
+    "rateLimits": 50,
+    "quotaResets": 52,
+    "leaked": 0,
+    "divergences": 0,
+    "perRoute": [
+      {
+        "id": "or-model-a",
+        "dispatched": 300,
+        "completed": 262,
+        "failed": 38,
+        "quotaConsumed": 300,
+        "peakLeases": 3
+      },
+      {
+        "id": "or-model-b",
+        "dispatched": 225,
+        "completed": 225,
+        "failed": 0,
+        "quotaConsumed": 225,
+        "peakLeases": 2
+      },
+      {
+        "id": "groq-model",
+        "dispatched": 149,
+        "completed": 137,
+        "failed": 12,
+        "quotaConsumed": 149,
+        "peakLeases": 2
+      },
+      {
+        "id": "mistral-codestral",
+        "dispatched": 122,
+        "completed": 122,
+        "failed": 0,
+        "quotaConsumed": 122,
+        "peakLeases": 1
+      }
+    ]
+  }
+]
