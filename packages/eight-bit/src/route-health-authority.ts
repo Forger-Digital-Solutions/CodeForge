@@ -1,5 +1,6 @@
 import { routeKeyOf, type EightBitRole, type FailureReason } from "./types.js";
 import type { ToolCallOutcome } from "./reliability.js";
+import { classifyRateLimit, type RateLimitClass } from "@codeforge/forge-zero";
 
 /**
  * 8-Bit Route Health Authority (R24 Mission A).
@@ -143,6 +144,9 @@ export interface RouteCondition {
   source: ObservationSource;
   /** Role-scoped conditions (TOOL_UNRELIABLE, CAPABILITY_LIMITED) only bind the roles listed. */
   roles?: EightBitRole[];
+  /** R46 §20: the inferred 429 bucket when this condition is a rate limit — RPM/TPM/DAILY/
+   * ACCOUNT/BURST, or UNKNOWN when the body carried no signal (never guessed). */
+  rateLimitClass?: RateLimitClass;
 }
 
 export interface RouteHealthAssessment {
@@ -631,18 +635,20 @@ export class EightBitRouteHealthAuthority {
         break;
       }
       case "RATE_LIMITED": {
-        if (isDailyQuotaMessage(message)) {
+        const rateLimitClass = classifyRateLimit(message ?? "");
+        if (isDailyQuotaMessage(message) || rateLimitClass === "DAILY") {
           const ttl = retryAfterMs ?? this.policy.dailyQuotaDefaultTtlMs;
-          this.setCondition(state, { state: "DAILY_QUOTA_EXHAUSTED", since: iso, expiresAt: now + ttl, confidence: 0.9, sampleSize: 1, reasonCode: "DAILY_LIMIT_429", resetEstimate: new Date(now + ttl).toISOString(), source });
+          this.setCondition(state, { state: "DAILY_QUOTA_EXHAUSTED", since: iso, expiresAt: now + ttl, confidence: 0.9, sampleSize: 1, reasonCode: "DAILY_LIMIT_429", resetEstimate: new Date(now + ttl).toISOString(), source, rateLimitClass });
         } else {
           const ttl = retryAfterMs ?? this.policy.rateLimitDefaultTtlMs;
-          this.setCondition(state, { state: "RATE_LIMITED", since: iso, expiresAt: now + ttl, confidence: 0.9, sampleSize: 1, reasonCode: "HTTP_429", resetEstimate: new Date(now + ttl).toISOString(), source });
+          this.setCondition(state, { state: "RATE_LIMITED", since: iso, expiresAt: now + ttl, confidence: 0.9, sampleSize: 1, reasonCode: "HTTP_429", resetEstimate: new Date(now + ttl).toISOString(), source, rateLimitClass });
         }
         break;
       }
       case "QUOTA_EXHAUSTED": {
         const ttl = retryAfterMs ?? this.policy.dailyQuotaDefaultTtlMs;
-        this.setCondition(state, { state: "DAILY_QUOTA_EXHAUSTED", since: iso, expiresAt: now + ttl, confidence: 0.95, sampleSize: 1, reasonCode: "QUOTA_EXHAUSTED", resetEstimate: new Date(now + ttl).toISOString(), source });
+        const rateLimitClass = classifyRateLimit(message ?? "");
+        this.setCondition(state, { state: "DAILY_QUOTA_EXHAUSTED", since: iso, expiresAt: now + ttl, confidence: 0.95, sampleSize: 1, reasonCode: "QUOTA_EXHAUSTED", resetEstimate: new Date(now + ttl).toISOString(), source, rateLimitClass });
         break;
       }
       case "AUTH_FAILURE": {

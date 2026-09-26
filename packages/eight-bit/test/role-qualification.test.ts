@@ -216,6 +216,15 @@ describe("R27 — composed runner emits one receipt with all role evidence", () 
     expect(calls).toBeLessThan(4); // compact's bounded probes only, no role spend
   });
 
+  it("R46 §30: a compact HARD_FAILURE skips the role suite — no quota spent re-proving stage 1", async () => {
+    const hardDown = new ScriptedAdapter(() => [{ type: "error", message: "400 invalid request: model cannot process tool schema" } as StreamEvent]);
+    const receipt = await runRoleAwareQualification(MODEL, hardDown);
+    expect(receipt.qualificationState).toBe("HARD_FAILURE");
+    expect(receipt.roleResults.EXPLORER).toBeUndefined();
+    expect(receipt.roleResults.PLANNER).toBeUndefined();
+    expect(hardDown.requests.length).toBeLessThanOrEqual(4);
+  });
+
   it("specialization is representable: explorer-strong/coder-weak ≠ coder-strong", async () => {
     const explorerOnly = new ScriptedAdapter((req) => {
       const t = body(req);

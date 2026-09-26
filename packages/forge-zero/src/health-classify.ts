@@ -11,11 +11,21 @@ import type { ModelHealthState } from "./types.js";
 
 export type FailureScope = "model" | "provider";
 
+/**
+ * R46 §20: the inferred rate-limit class behind a 429. Provider bodies name different
+ * buckets — "tokens per minute" is a minute wall on throughput, "requests per day" is an
+ * allocation wall, "insufficient quota" is account exhaustion, concurrency errors are a
+ * burst shape. When the body carries no signal the class is UNKNOWN: honest, never guessed.
+ */
+export type RateLimitClass = "RPM" | "TPM" | "DAILY" | "ACCOUNT" | "BURST" | "UNKNOWN";
+
 export interface ProviderFailureClassification {
   scope: FailureScope;
   status: ModelHealthState["status"];
   retryAfter: number;
   reason: string;
+  /** Present only when the failure was a 429-class event. */
+  rateLimitClass?: RateLimitClass;
 }
 
 /** Daily/quota signal in provider 429 bodies (observed verbatim in Groq TPD bodies and the
@@ -33,6 +43,37 @@ const RETRY_AFTER_PATTERNS: RegExp[] = [
   /retry[- ]after["'s:]*\s*(\d+)\s*s/i,
   /try again in\s+(\d+)\s*s/i,
 ];
+
+/** Account-allocation signals: the account itself is out, not a per-minute bucket. Checked
+ * before the daily/minute signals because "quota exhausted" bodies often say both. */
+const ACCOUNT_QUOTA_SIGNALS: RegExp[] = [
+  /insufficient[_ ]?quota/i,
+  /exceeded your (current )?quota/i,
+  /credit balance/i,
+  /billing/i,
+  /account.{0,40}(quota|limit).{0,40}(exhaust|exceed|reach)/i,
+  // OpenRouter's daily free bucket is account-wide: every `:free` sibling shares it.
+  /free-models-per-day/i,
+  /models?\s+per\s+day/i,
+];
+const TPM_SIGNALS: RegExp[] = [/tokens?\s+per\s+minute/i, /\btpm\b/i, /tokens?\/min/i];
+const RPM_SIGNALS: RegExp[] = [/requests?\s+per\s+minute/i, /\brpm\b/i, /requests?\/min/i];
+const BURST_SIGNALS: RegExp[] = [/burst/i, /concurren/i];
+
+/**
+ * Order is evidential: an account wall outranks every time-window signal (the body may
+ * mention the window it exceeded), daily walls outrank minute windows (a TPD body often
+ * prints the TPM figure too), and burst/concurrency is only claimed when named.
+ */
+export function classifyRateLimit(errorMessage: string): RateLimitClass {
+  const msg = errorMessage ?? "";
+  if (ACCOUNT_QUOTA_SIGNALS.some((p) => p.test(msg))) return "ACCOUNT";
+  if (DAILY_QUOTA_SIGNALS.some((p) => p.test(msg))) return "DAILY";
+  if (TPM_SIGNALS.some((p) => p.test(msg))) return "TPM";
+  if (RPM_SIGNALS.some((p) => p.test(msg))) return "RPM";
+  if (BURST_SIGNALS.some((p) => p.test(msg))) return "BURST";
+  return "UNKNOWN";
+}
 
 const MINUTE_COOLDOWN_DEFAULT_MS = 60_000;
 const MINUTE_COOLDOWN_MAX_MS = 15 * 60_000;
@@ -75,19 +116,31 @@ export function classifyProviderFailure(
     };
   }
   if (/\b429\b|rate.?limit|too many requests/i.test(msg)) {
-    if (DAILY_QUOTA_SIGNALS.some((p) => p.test(msg))) {
+    const rateLimitClass = classifyRateLimit(msg);
+    if (rateLimitClass === "DAILY") {
       return {
         scope: "model",
         status: "quota_exhausted",
         retryAfter: nextDailyResetUtc(now),
         reason: "daily-token/quota wall observed in the 429 body; model-scoped until the daily window resets",
+        rateLimitClass,
+      };
+    }
+    if (rateLimitClass === "ACCOUNT") {
+      return {
+        scope: "provider",
+        status: "quota_exhausted",
+        retryAfter: nextDailyResetUtc(now),
+        reason: "account-allocation wall observed in the 429 body; provider-scoped because siblings share the account quota",
+        rateLimitClass,
       };
     }
     return {
       scope: "model",
       status: "rate_limited",
       retryAfter: boundedMinuteCooldown(msg, now),
-      reason: "minute-level rate limit (RPM/TPM/concurrency); model-scoped bounded cooldown",
+      reason: `${rateLimitClass === "UNKNOWN" ? "rate limit (class undetermined)" : `${rateLimitClass} rate limit`} observed in the 429 body; model-scoped bounded cooldown`,
+      rateLimitClass,
     };
   }
   if (/\b5\d{2}\b|overloaded|temporarily unavailable|bad gateway|service unavailable/i.test(msg)) {
@@ -109,6 +162,7 @@ export interface FailureHealthMarking {
   retryAfter: number | undefined;
   scope: FailureScope;
   reason: string;
+  rateLimitClass?: RateLimitClass;
 }
 
 /** Turn a runtime error string into the health marking(s) ForgeZero should apply. Returns
@@ -129,5 +183,6 @@ export function planFailureHealthMarking(
       classification.retryAfter === Number.POSITIVE_INFINITY ? undefined : classification.retryAfter,
     scope: classification.scope,
     reason: classification.reason,
+    ...(classification.rateLimitClass !== undefined ? { rateLimitClass: classification.rateLimitClass } : {}),
   };
 }

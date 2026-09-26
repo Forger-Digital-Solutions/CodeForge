@@ -433,6 +433,10 @@ export async function runRoleAwareQualification(
 ): Promise<ModelQualificationReceipt> {
   const receipt = await runCompactQualification(model, adapter, options);
   if (receipt.metadata?.transient === true) return receipt;
+  // R46 §30 staged qualification: a compact HARD_FAILURE means every measured coding
+  // dimension already failed — ten deeper role probes against a measurably incapable
+  // route only spend scarce free quota proving what stage 1 answered.
+  if (receipt.qualificationState === "HARD_FAILURE") return receipt;
 
   const role = await runRoleQualification(model, adapter, options);
   const roleResults: ModelQualificationReceipt["roleResults"] = { ...receipt.roleResults };

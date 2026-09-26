@@ -158,3 +158,40 @@ describe("failure-scoped health marking (R3.6 window-1 cascade fix)", () => {
     expect(firewall.verify("groq", "openai/gpt-oss-20b").ok).toBe(true);
   });
 });
+
+describe("R46 §20 rate-limit classification", () => {
+  it("a TPM body classifies TPM; RPM and TPD classify their own buckets", () => {
+    expect(classifyProviderFailure("groq error (429): Rate limit reached for model `m` on tokens per minute (TPM)", NOW)!.rateLimitClass).toBe("TPM");
+    expect(classifyProviderFailure("groq error (429): Rate limit reached for model `m` on requests per minute (RPM)", NOW)!.rateLimitClass).toBe("RPM");
+    expect(classifyProviderFailure("groq error (429): Rate limit reached for model `m` on tokens per day (TPD)", NOW)!.rateLimitClass).toBe("DAILY");
+  });
+
+  it("OpenRouter free-models-per-day is ACCOUNT — every :free sibling shares the account bucket", () => {
+    const c = classifyProviderFailure("openrouter error (429): Rate limit exceeded: free-models-per-day limit reached (50/50)", NOW);
+    expect(c!.rateLimitClass).toBe("ACCOUNT");
+    expect(c!.scope).toBe("provider");
+    expect(c!.status).toBe("quota_exhausted");
+  });
+
+  it("an account wall marks provider-scoped — sibling churn is prevented at the firewall", () => {
+    const firewall = buildFirewall();
+    const marking = planFailureHealthMarking("groq", "openai/gpt-oss-120b", "error (429): You have exceeded your current quota for this billing period", NOW);
+    expect(marking!.rateLimitClass).toBe("ACCOUNT");
+    expect(marking!.scope).toBe("provider");
+    firewall.markProviderHealth(marking!.providerId, marking!.status, { retryAfter: marking!.retryAfter, lastError: marking!.reason });
+    expect(firewall.verify("groq", "openai/gpt-oss-120b").ok).toBe(false);
+    expect(firewall.verify("groq", "openai/gpt-oss-20b").ok).toBe(false);
+  });
+
+  it("a bare 429 with no bucket signal is UNKNOWN — evidence over guessing", () => {
+    const c = classifyProviderFailure("openrouter error (429): Too many requests", NOW);
+    expect(c!.rateLimitClass).toBe("UNKNOWN");
+    expect(c!.scope).toBe("model");
+    expect(c!.status).toBe("rate_limited");
+  });
+
+  it("concurrency pressure classifies BURST", () => {
+    const c = classifyProviderFailure("error (429): rate limit exceeded: too many concurrent requests", NOW);
+    expect(c!.rateLimitClass).toBe("BURST");
+  });
+});
