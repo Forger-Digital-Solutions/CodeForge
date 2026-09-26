@@ -3091,6 +3091,22 @@ export class AgentRuntime {
         await this.persistCompletedAgentRunResponse(req, result, hadModelFinalResponse);
         adapter.emitAgentCompleted(req.agentId, req.runId);
       } else {
+        // R45 §32: budget exhaustion is model-quality evidence — a route that burns its turn
+        // budget serializing work the packet already covered is weak for this role. Kept
+        // distinct from availability signals: 429s never reach this path (they rotate or wait).
+        if (stopReason === "budget_exhausted" && journalActiveRoute) {
+          this.eightBit.observe({
+            kind: "role_outcome",
+            outcome: "role_failed",
+            providerId: journalActiveRoute.providerId,
+            modelId: journalActiveRoute.modelId,
+            observedAt: new Date().toISOString(),
+            source: "runtime",
+            role: eightBitRoleForAgentRole(req.role),
+            requestShape: "production",
+            correlationId: req.runId,
+          });
+        }
         adapter.emitTurnFailed(req.runId, result.summary);
       }
 
