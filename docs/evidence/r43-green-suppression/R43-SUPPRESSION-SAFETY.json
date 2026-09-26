@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-09-26T18:57:46.664Z",
+  "evidenceClass": "deterministic vitest coverage of the production suppression/dedup paths",
+  "suites": {
+    "r43-suppression-evidence.test.ts": [
+      "suppresses a repeated read against unchanged state and records the state evidence that authorized it",
+      "executes the repeat when the file changed externally between calls — no stale replay"
+    ],
+    "r43-dedup-safety.test.ts": [
+      "model-response dedup: provider failover never replays a response cached under another route",
+      "dedupe epoch: quality-risk escalation invalidates cached completed responses",
+      "thrown model calls are never cached or replayed",
+      "interactive run: identical read executes once, suppresses once, re-executes after mutation"
+    ]
+  },
+  "result": "16/16 tests pass (r43-dedup-safety 8, r43-suppression-evidence 8 incl. external-mutation denial + state-evidence authorization)",
+  "mechanisms": {
+    "stateVersionInvalidation": "supervisor stateVersion advances on observed mutation; identical read after mutation re-executes",
+    "externalMutationEvidence": "stat signature (size+mtimeMs) recorded at first read, revalidated at suppression attempt; changed file -> denial event",
+    "repoIndexEvidence": "repository-intelligence reads carry generation/index evidence; pendingExternalMutations signal",
+    "failoverDedup": "providerId+modelId inside request identity — cross-route replay impossible",
+    "escalationEpoch": "dedupeEpoch folds into request identity; FULL->CONSERVATIVE->OFF escalation prevents replay",
+    "failedResponseSafety": "thrown operations never cache; unusable resolved responses covered by epoch bump",
+    "mutationTools": "write/edit never suppress",
+    "boundedEscalation": "repeated suppression and repeated failures escalate, fail closed as blocked"
+  }
+}
