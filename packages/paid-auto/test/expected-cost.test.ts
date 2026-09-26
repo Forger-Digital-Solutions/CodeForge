@@ -117,3 +117,52 @@ describe("16-Bit validation scenarios (R37 Phase 6)", () => {
     expect(ranking.selected).toBe("qwen3.8-flash");
   });
 });
+
+describe("16-Bit sensitivity analysis (R38 Phase 12 — Gate K)", () => {
+  const twoWayEvidence = { "qwen3.8-flash": { successRate: 0.9 }, "glm-5.3-flash": { successRate: 0.9 } };
+
+  it("success-rate perturbation ±10% on the winner does not flip the cheaper pick", () => {
+    const up = rank16Bit(task, { "qwen3.8-flash": { successRate: 0.81 }, "glm-5.3-flash": { successRate: 0.9 } });
+    const down = rank16Bit(task, { "qwen3.8-flash": { successRate: 0.99 }, "glm-5.3-flash": { successRate: 0.9 } });
+    expect(up.selected).toBe("qwen3.8-flash");
+    expect(down.selected).toBe("qwen3.8-flash");
+  });
+
+  it("doubling output length preserves ordering — attempt cost scales linearly for both", () => {
+    const ranking = rank16Bit({ ...task, outputTokens: 4_000 }, twoWayEvidence);
+    expect(ranking.selected).toBe("qwen3.8-flash");
+    const qwen = ranking.candidates.find((c) => c.canonicalModelId === "qwen3.8-flash")!;
+    const glm = ranking.candidates.find((c) => c.canonicalModelId === "glm-5.3-flash")!;
+    expect(qwen.expectedCostUsd).toBeLessThan(glm.expectedCostUsd);
+  });
+
+  it("retry-rate increase raises expected cost proportionally — evidence flows through", () => {
+    const calm = rank16Bit(task, twoWayEvidence);
+    const storm = rank16Bit(task, { "qwen3.8-flash": { successRate: 0.9, expectedRetries: 2 }, "glm-5.3-flash": { successRate: 0.9 } });
+    const qwenCalm = calm.candidates.find((c) => c.canonicalModelId === "qwen3.8-flash")!;
+    const qwenStorm = storm.candidates.find((c) => c.canonicalModelId === "qwen3.8-flash")!;
+    expect(qwenStorm.expectedCostUsd).toBeGreaterThan(qwenCalm.expectedCostUsd);
+  });
+
+  it("verification-cost increase is material — a large review bill can reorder", () => {
+    const ranking = rank16Bit(task, { "qwen3.8-flash": { successRate: 0.9, verificationCostUsd: 0.05 }, "glm-5.3-flash": { successRate: 0.9 } });
+    expect(ranking.selected).toBe("glm-5.3-flash");
+  });
+
+  it("tool requirement changes economics only for tool-bound tasks", () => {
+    const noTools = rank16Bit(task, twoWayEvidence);
+    const withTools = rank16Bit({ ...task, requiresTools: true }, { "qwen3.8-flash": { successRate: 0.9, toolReliability: 0.5 }, "glm-5.3-flash": { successRate: 0.9, toolReliability: 0.99 } });
+    expect(noTools.selected).toBe("qwen3.8-flash");
+    expect(withTools.selected).toBe("glm-5.3-flash");
+  });
+
+  it("chooser stability: the winner is never a surprise under honest uncertainty", () => {
+    // With zero measured evidence the default pick is cheapest-priced; it only moves
+    // when evidence arrives — never on a whim.
+    const ranking = rank16Bit(task);
+    const qwen = ranking.candidates.find((c) => c.canonicalModelId === "qwen3.8-flash")!;
+    expect(ranking.selected).toBe("qwen3.8-flash");
+    expect(qwen.fullyMeasured).toBe(false);
+    expect(qwen.reasonCodes).toContain("UNMEASURED_EVIDENCE");
+  });
+});
