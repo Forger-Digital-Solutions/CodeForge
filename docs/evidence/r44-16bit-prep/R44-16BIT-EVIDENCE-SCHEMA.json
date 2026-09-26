@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "codeforge-16bit-campaign-evidence/v1",
+  "title": "16-Bit Campaign Evidence Record",
+  "description": "Per-run evidence contract for the upcoming 16-Bit (Paid Auto) campaign. Mirrors the R44 8-Bit corpus receipt shape so results are comparable across modes. A record is only valid when budgetAuthorization is present and spendReceipts reconcile exactly with callLog usage.",
+  "type": "object",
+  "required": ["schemaVersion", "campaignId", "mode", "task", "arm", "route", "budgetAuthorization", "status", "spend", "calls", "provenance"],
+  "properties": {
+    "schemaVersion": { "const": "16bit-evidence-1" },
+    "campaignId": { "type": "string", "pattern": "^r[0-9]+-16bit-" },
+    "mode": { "const": "16bit" },
+    "task": {
+      "type": "object",
+      "required": ["id", "family", "goal"],
+      "properties": {
+        "id": { "type": "string" },
+        "family": { "enum": ["rename", "feature", "distributed-bug", "schema", "refactor", "fail-repair", "large-diff", "suppression", "other"] },
+        "goal": { "type": "string" }
+      }
+    },
+    "arm": { "enum": ["baseline", "green", "green-forced"] },
+    "route": {
+      "type": "object",
+      "required": ["providerId", "modelId", "priceCard"],
+      "properties": {
+        "providerId": { "type": "string" },
+        "modelId": { "type": "string" },
+        "servedModelId": { "type": "string", "description": "Model the provider actually served — must equal modelId or a declared same-model fallback identity." },
+        "priceCard": {
+          "type": "object",
+          "required": ["inputPerMillionUsdMicros", "outputPerMillionUsdMicros", "observedAt", "source"],
+          "properties": {
+            "inputPerMillionUsdMicros": { "type": "string" },
+            "outputPerMillionUsdMicros": { "type": "string" },
+            "cachedInputPerMillionUsdMicros": { "type": "string" },
+            "observedAt": { "type": "string", "format": "date-time" },
+            "source": { "type": "string", "description": "Where the exact current price was read (e.g. openrouter /models endpoint)." }
+          }
+        }
+      }
+    },
+    "budgetAuthorization": {
+      "type": "object",
+      "required": ["ledger", "campaignReservationId", "ceilingUsdMicros", "authorizer"],
+      "properties": {
+        "ledger": { "const": "DurablePaidEvaluationBudgetLedger" },
+        "campaignReservationId": { "type": "string" },
+        "ceilingUsdMicros": { "type": "string" },
+        "spentUsdMicros": { "type": "string" },
+        "authorizer": { "type": "string", "description": "Explicit human authorization reference — never implicit." }
+      }
+    },
+    "status": { "enum": ["completed", "blocked", "failed", "cancelled"] },
+    "roles": {
+      "type": "array",
+      "description": "Per-role receipts harvested from agent_run_journal work items — same shape as the 8-Bit corpus so role quality compares across modes.",
+      "items": {
+        "type": "object",
+        "required": ["role", "state", "turnCount", "toolCallCount"],
+        "properties": {
+          "role": { "enum": ["explorer", "planner", "coder", "reviewer", "fast-worker", "mission-planner", "replanner"] },
+          "runId": { "type": "string" },
+          "state": { "type": "string" },
+          "turnCount": { "type": "integer" },
+          "toolCallCount": { "type": "integer" },
+          "route": { "type": "object", "properties": { "providerId": { "type": "string" }, "modelId": { "type": "string" } } },
+          "telemetry": {
+            "type": "object",
+            "properties": {
+              "stopReason": { "type": "string" },
+              "usage": { "type": "object" },
+              "editAttempts": { "type": "array" },
+              "structuredOutput": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    "forgeGreen": {
+      "type": "object",
+      "properties": {
+        "runPolicies": { "type": "array" },
+        "duplicatesSuppressed": { "type": "integer" },
+        "suppressionDenials": { "type": "array" },
+        "sustainabilityReceipts": { "type": "array" }
+      }
+    },
+    "forgeVerify": {
+      "type": "object",
+      "properties": {
+        "review": { "type": "object", "properties": { "passed": { "type": "boolean" }, "findings": { "type": "integer" } } },
+        "verification": { "type": "array" },
+        "repairCycles": { "type": "integer" },
+        "completionVerdict": { "type": ["string", "null"] }
+      }
+    },
+    "spend": {
+      "type": "object",
+      "required": ["estimatedUsdMicros", "actualUsdMicros", "withinCeiling"],
+      "properties": {
+        "estimatedUsdMicros": { "type": "string" },
+        "actualUsdMicros": { "type": "string" },
+        "withinCeiling": { "type": "boolean" },
+        "perCallUsdMicros": { "type": "array", "items": { "type": "object", "properties": { "model": { "type": "string" }, "usdMicros": { "type": "string" } } } }
+      }
+    },
+    "calls": { "type": "array", "items": { "type": "object", "required": ["provider", "model", "ok"], "properties": { "provider": { "type": "string" }, "model": { "type": "string" }, "ms": { "type": "number" }, "usage": { "type": ["object", "null"] }, "ok": { "type": "boolean" }, "error": { "type": "string" } } } },
+    "failovers": { "type": "array" },
+    "wallMs": { "type": "integer" },
+    "provenance": { "enum": ["OBSERVED_PRODUCTION", "OBSERVED_BENCHMARK", "MOCK"], "description": "MOCK records are harness validation only — never evidence of paid-model quality." }
+  }
+}
