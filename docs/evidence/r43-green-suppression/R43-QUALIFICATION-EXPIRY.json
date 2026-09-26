@@ -1,0 +1,246 @@
+{
+  "generatedAt": "2026-09-26T18:43:40.295Z",
+  "evidenceClass": "deterministic simulated capacity; not live-provider traffic",
+  "scenarios": [
+    {
+      "name": "midrunExpiry",
+      "checks": [
+        "midrun-expiry: fresh-in-window QUALIFIED evidence steers coder picks to the measured route",
+        "midrun-expiry: crossing the 30d boundary reads the verdict as expired (undefined status)",
+        "midrun-expiry: expired evidence stops contributing ranking score but never quarantines the route",
+        "midrun-expiry: expired TOOL_AGENT verdict does not leak into EXPLORER inheritance",
+        "midrun-expiry: expired route still serves work (no quarantine, no starvation)",
+        "midrun-expiry: zero leaked reservations"
+      ]
+    },
+    {
+      "name": "requalification",
+      "checks": [
+        "requalification: current HARD_FAILURE receipt excludes the route from coder work",
+        "requalification: expired HARD_FAILURE reverts to legacy eligibility (never permanent quarantine)",
+        "requalification: stale route flags needsRequalification so the bounded suite retests it",
+        "requalification: fresh receipt restores QUALIFIED status on the next decision",
+        "requalification: requalified route competes again and wins on measured evidence",
+        "requalification: zero leaked reservations"
+      ]
+    },
+    {
+      "name": "suiteVersion",
+      "checks": [
+        "suite-version: supported suite reads its verdicts",
+        "suite-version: receiptSuiteSupported distinguishes current vs incompatible producers",
+        "suite-version: fresh-but-incompatible receipt exposes no verdict (unreadable, not trusted)",
+        "suite-version: incompatible receipt does NOT permanently exclude — legacy eligibility",
+        "suite-version: incompatible receipt flags requalification with an explicit reason code",
+        "suite-version: unsupported-suite 'QUALIFIED' lends no ordering trust — supported route wins",
+        "suite-version: requalification under the current suite reopens the route's verdicts"
+      ]
+    },
+    {
+      "name": "roleSwap",
+      "checks": [
+        "role-swap: pre-swap coder picks land on the qualified route",
+        "role-swap: the very next coder decision respects the fresh NOT_QUALIFIED verdict",
+        "role-swap: unaffected roles keep their verdicts — reviewer still lands on the qualified route",
+        "role-swap: zero leaked reservations"
+      ]
+    },
+    {
+      "name": "healthVsQualification",
+      "checks": [
+        "health-vs-qual: injected 429 burst parks the QUALIFIED route",
+        "health-vs-qual: parked qualified route is not served — admission falls to the unmeasured route, never the HARD_FAILURE route",
+        "health-vs-qual: the disqualified route is never a candidate regardless of perfect health",
+        "health-vs-qual: recovered qualified route re-enters and wins on the next decide",
+        "health-vs-qual: zero leaked reservations"
+      ]
+    },
+    {
+      "name": "driftScale",
+      "users": 373,
+      "stat": {
+        "completed": 373,
+        "waits": 1267,
+        "falseWaits": 0,
+        "starved": 0,
+        "roleViolations": 0,
+        "peakHolds": 48,
+        "rounds": 8
+      },
+      "servedByProvider": {
+        "mistral": 128,
+        "openrouter": 128,
+        "groq": 117
+      },
+      "checks": [
+        "drift-scale: all mid-run evidence mutations applied",
+        "drift-scale: 373 tasks served across receipt expiry/requalification drift",
+        "drift-scale: zero role-ineligible selections while evidence churned",
+        "drift-scale: zero starvation",
+        "drift-scale: zero false waits",
+        "drift-scale: zero leaked reservations"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "midrun-expiry: fresh-in-window QUALIFIED evidence steers coder picks to the measured route",
+      "pass": true,
+      "detail": "[\"mistral\",\"mistral\",\"mistral\",\"mistral\"]"
+    },
+    {
+      "name": "midrun-expiry: crossing the 30d boundary reads the verdict as expired (undefined status)",
+      "pass": true,
+      "detail": "undefined"
+    },
+    {
+      "name": "midrun-expiry: expired evidence stops contributing ranking score but never quarantines the route",
+      "pass": true,
+      "detail": "[\"ROLE_EVIDENCE_STALE\"]"
+    },
+    {
+      "name": "midrun-expiry: expired TOOL_AGENT verdict does not leak into EXPLORER inheritance",
+      "pass": true
+    },
+    {
+      "name": "midrun-expiry: expired route still serves work (no quarantine, no starvation)",
+      "pass": true,
+      "detail": "mistral"
+    },
+    {
+      "name": "midrun-expiry: zero leaked reservations",
+      "pass": true
+    },
+    {
+      "name": "requalification: current HARD_FAILURE receipt excludes the route from coder work",
+      "pass": true,
+      "detail": "[\"openrouter\",\"openrouter\",\"openrouter\",\"openrouter\"]"
+    },
+    {
+      "name": "requalification: expired HARD_FAILURE reverts to legacy eligibility (never permanent quarantine)",
+      "pass": true
+    },
+    {
+      "name": "requalification: stale route flags needsRequalification so the bounded suite retests it",
+      "pass": true,
+      "detail": "[\"ROLE_EVIDENCE_STALE\"]"
+    },
+    {
+      "name": "requalification: fresh receipt restores QUALIFIED status on the next decision",
+      "pass": true
+    },
+    {
+      "name": "requalification: requalified route competes again and wins on measured evidence",
+      "pass": true,
+      "detail": "[\"mistral\",\"mistral\",\"mistral\",\"mistral\"]"
+    },
+    {
+      "name": "requalification: zero leaked reservations",
+      "pass": true
+    },
+    {
+      "name": "suite-version: supported suite reads its verdicts",
+      "pass": true
+    },
+    {
+      "name": "suite-version: receiptSuiteSupported distinguishes current vs incompatible producers",
+      "pass": true
+    },
+    {
+      "name": "suite-version: fresh-but-incompatible receipt exposes no verdict (unreadable, not trusted)",
+      "pass": true
+    },
+    {
+      "name": "suite-version: incompatible receipt does NOT permanently exclude — legacy eligibility",
+      "pass": true
+    },
+    {
+      "name": "suite-version: incompatible receipt flags requalification with an explicit reason code",
+      "pass": true,
+      "detail": "[\"RECEIPT_SUITE_UNSUPPORTED\"]"
+    },
+    {
+      "name": "suite-version: unsupported-suite 'QUALIFIED' lends no ordering trust — supported route wins",
+      "pass": true,
+      "detail": "[\"openrouter\",\"openrouter\",\"openrouter\",\"openrouter\"]"
+    },
+    {
+      "name": "suite-version: requalification under the current suite reopens the route's verdicts",
+      "pass": true
+    },
+    {
+      "name": "role-swap: pre-swap coder picks land on the qualified route",
+      "pass": true
+    },
+    {
+      "name": "role-swap: the very next coder decision respects the fresh NOT_QUALIFIED verdict",
+      "pass": true,
+      "detail": "[\"openrouter\",\"openrouter\",\"openrouter\"]"
+    },
+    {
+      "name": "role-swap: unaffected roles keep their verdicts — reviewer still lands on the qualified route",
+      "pass": true,
+      "detail": "[\"mistral\",\"mistral\",\"mistral\"]"
+    },
+    {
+      "name": "role-swap: zero leaked reservations",
+      "pass": true
+    },
+    {
+      "name": "health-vs-qual: injected 429 burst parks the QUALIFIED route",
+      "pass": true
+    },
+    {
+      "name": "health-vs-qual: parked qualified route is not served — admission falls to the unmeasured route, never the HARD_FAILURE route",
+      "pass": true,
+      "detail": "ADMITTED:openrouter"
+    },
+    {
+      "name": "health-vs-qual: the disqualified route is never a candidate regardless of perfect health",
+      "pass": true,
+      "detail": "mistral,openrouter"
+    },
+    {
+      "name": "health-vs-qual: recovered qualified route re-enters and wins on the next decide",
+      "pass": true,
+      "detail": "ADMITTED:mistral"
+    },
+    {
+      "name": "health-vs-qual: zero leaked reservations",
+      "pass": true
+    },
+    {
+      "name": "drift-scale: all mid-run evidence mutations applied",
+      "pass": true,
+      "detail": "4/4"
+    },
+    {
+      "name": "drift-scale: 373 tasks served across receipt expiry/requalification drift",
+      "pass": true,
+      "detail": "373"
+    },
+    {
+      "name": "drift-scale: zero role-ineligible selections while evidence churned",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "drift-scale: zero starvation",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "drift-scale: zero false waits",
+      "pass": true,
+      "detail": "0/1267"
+    },
+    {
+      "name": "drift-scale: zero leaked reservations",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "pass": 34,
+    "fail": 0
+  }
+}

@@ -76,4 +76,19 @@ describe("FG-1B deterministic tool-output compression", () => {
     const result = compressToolOutput(output, { artifactRef: "exec-7" });
     expect(result.representation).toContain("Error: connection refused");
   });
+
+  it("retains vitest/tap failure formats — ✗, ×, AssertionError, FAIL, not ok — buried mid-output", () => {
+    const lines: string[] = [];
+    for (let i = 0; i < 900; i++) lines.push(`   ✓ case ${i} passes (${i % 9}ms)`);
+    lines[200] = " ✗ packages/server/test/regression.test.ts > replays stale output";
+    lines[201] = "   AssertionError: expected 'stale-marker' to contain 'fresh-content'";
+    lines[600] = " FAIL |packages/server/test/regression.test.ts| suppression suite";
+    lines[601] = "not ok 12 superseded read kept stale bytes";
+    const result = compressToolOutput(lines.join("\n"), { artifactRef: "exec-8" });
+    expect(result.applied).toBe(true);
+    expect(result.representation).toContain("replays stale output");
+    expect(result.representation).toContain("AssertionError");
+    expect(result.representation).toContain("FAIL |packages/server/test/regression.test.ts|");
+    expect(result.representation).toContain("not ok 12");
+  });
 });

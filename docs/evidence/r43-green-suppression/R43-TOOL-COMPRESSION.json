@@ -1,0 +1,115 @@
+{
+  "generatedAt": "2026-09-26T18:47:19.374Z",
+  "evidenceClass": "deterministic production functions; no live-provider traffic",
+  "compressions": {
+    "vitestLog": {
+      "originalBytes": 32238,
+      "compressedBytes": 2293,
+      "savedBytes": 29945,
+      "ratio": 0.0711,
+      "strategies": [
+        "global_repeat_fold",
+        "failure_neighborhood_retention",
+        "outside_context_omitted"
+      ],
+      "omittedLineCount": 1033
+    },
+    "npmLog": {
+      "originalBytes": 37379,
+      "compressedBytes": 1446,
+      "savedBytes": 35933,
+      "ratio": 0.0387,
+      "strategies": [
+        "failure_neighborhood_retention",
+        "outside_context_omitted"
+      ],
+      "omittedLineCount": 1160
+    },
+    "repeatedNoise": {
+      "originalBytes": 72520,
+      "compressedBytes": 309,
+      "savedBytes": 72211,
+      "ratio": 0.0043,
+      "strategies": [
+        "consecutive_repeat_fold",
+        "failure_neighborhood_retention"
+      ],
+      "omittedLineCount": 2496
+    }
+  },
+  "checks": [
+    {
+      "name": "compression: every over-threshold output was compressed",
+      "pass": true,
+      "detail": "{\"vitestLog\":29945,\"npmLog\":35933,\"repeatedNoise\":72211}"
+    },
+    {
+      "name": "compression: representation never exceeds the 24KiB hard bound",
+      "pass": true,
+      "detail": "{\"vitestLog\":2293,\"npmLog\":1446,\"repeatedNoise\":309}"
+    },
+    {
+      "name": "compression: failure neighborhood retained verbatim (error line + assertion + frame)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "compression: artifact reference + digest marker present for retrieval",
+      "pass": true
+    },
+    {
+      "name": "compression: omissions are explicitly marked, never silent",
+      "pass": true
+    },
+    {
+      "name": "compression: npm error lines survive global-repeat folding",
+      "pass": true
+    },
+    {
+      "name": "compression: pure determinism — identical input, identical representation",
+      "pass": true
+    },
+    {
+      "name": "compression: sub-threshold output passes through untouched",
+      "pass": true
+    },
+    {
+      "name": "compaction: superseded identical-args read removed from the dispatch copy",
+      "pass": true
+    },
+    {
+      "name": "compaction: mutation-invalidated read marked stale (edit to other.mjs after its read)",
+      "pass": true
+    },
+    {
+      "name": "compaction: the newer read and the mutation result are untouched",
+      "pass": true
+    },
+    {
+      "name": "compaction: durable transcript not mutated — returns a new array, original intact",
+      "pass": true
+    },
+    {
+      "name": "compaction: measured dispatch-copy savings",
+      "pass": true,
+      "detail": "11519B removed of 18060B"
+    },
+    {
+      "name": "compaction: idempotent — a second pass removes nothing further",
+      "pass": true
+    },
+    {
+      "name": "compaction: no stale outputs -> input array returned untouched (identity fast path)",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "pass": 15,
+    "fail": 0
+  },
+  "dispatchCopy": {
+    "beforeBytes": 18060,
+    "afterBytes": 6541,
+    "savedBytes": 11519
+  }
+}
