@@ -12,6 +12,7 @@ import {
 } from "@codeforge/eight-bit";
 import type { ISessionPersistence } from "@codeforge/sessions";
 import type { FreeCloudService } from "./free-cloud-service.js";
+import { PROVIDER_DEFINITIONS } from "./provider-definitions.js";
 
 export interface RefreshOptions {
   registry?: NormalizedModelRegistry;
@@ -175,6 +176,20 @@ export class FreeModelCatalogRefresh {
         }
       } catch (e) {
         const err = e instanceof Error ? e.message : String(e);
+        // R46 §23: some free pools (Cloudflare Workers AI) expose no catalog listing — the
+        // provider definition's declared allowanceModels is their documented discovery source.
+        // Probe-verify that declared set instead of silently contributing zero routes.
+        const declared = PROVIDER_DEFINITIONS[adapter.providerId]?.freeAccess?.allowanceModels ?? [];
+        const policy = await this.getProviderPolicy(adapter.providerId).catch(() => undefined);
+        if (declared.length > 0 && policy?.hasAllowanceFree) {
+          const declaredInfos: LiveModelInfo[] = declared.map((modelId) => ({ modelId, isFree: false }));
+          const allowanceResult = await this.verifyAllowanceWithProbe(adapter, declaredInfos);
+          allowanceResults.push(allowanceResult);
+          for (const rec of allowanceResult.records) refreshedRecords.push(rec);
+          refreshedProviders.add(adapter.providerId);
+          errors.push(`${adapter.providerId}: catalog listing unsupported (${err.slice(0, 120)}) — verified declared allowlist via probe`);
+          continue;
+        }
         errors.push(`${adapter.providerId}: ${err}`);
         totalFailed++;
         // NOTE: If listModels failed (e.g. temporary provider outage or network drop), adapter.providerId
@@ -384,9 +399,15 @@ export class FreeModelCatalogRefresh {
   }
 
   private hasCredentials(providerId: string): boolean {
-    // Check EnvironmentCredentialStore pattern
-    const envVar = `${providerId.toUpperCase()}_API_KEY`;
-    return !!process.env[envVar];
+    // Prefer the provider definition's declared env aliases — the computed
+    // `<ID>_API_KEY` convention produces unsettable names for dashed ids like
+    // cloudflare-workers-ai and misses documented aliases like CLOUDFLARE_API_KEY.
+    const def = PROVIDER_DEFINITIONS[providerId];
+    if (def) {
+      const aliases = def.connection.fields.flatMap((f) => f.environmentAliases);
+      if (aliases.length > 0) return aliases.some((name) => !!process.env[name]);
+    }
+    return !!process.env[`${providerId.toUpperCase()}_API_KEY`];
   }
 
   private convertToLiveModelInfo(models: ProviderModel[]): LiveModelInfo[] {
