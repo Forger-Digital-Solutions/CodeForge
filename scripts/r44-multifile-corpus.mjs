@@ -282,7 +282,9 @@ for (const [i, task] of TASKS.entries()) {
       lastArmSawRateLimits = false;
     }
     const repoDir = makeRepo(task);
-    const sessionId = `r44-${task.id}-${arm}`;
+    // Unique per-attempt session id: a reused id harvests stale agent_run_journal rows from
+    // the prior run's leftover sqlite in tmpdir and pollutes the telemetry record.
+    const sessionId = `r44-${task.id}-${arm}-${Date.now().toString(36)}`;
     const persistence = createSessionPersistence({ dbPath: path.join(os.tmpdir(), `${sessionId}.db`) });
     await persistence.init();
     const worktreeDir = fs.mkdtempSync(path.join(os.tmpdir(), `r44-wt-${task.id}-${arm}-`));
@@ -301,7 +303,17 @@ for (const [i, task] of TASKS.entries()) {
     const t0 = performance.now();
     let result;
     try {
-      result = await orchestrator.startRun({ sessionId, workspacePath: repoDir, goal: task.goal, verificationCommands: task.verify, topology: "normal" });
+      // Default topology is an explicit "normal" (reproducible corpus). R44_TOPOLOGY=adaptive
+      // lets the classifier decide, optionally narrowed by R44_HINT (e.g. "tiny" for a
+      // capacity-constrained minimum mission).
+      const topologyEnv = process.env.R44_TOPOLOGY ?? "normal";
+      const runOpts = { sessionId, workspacePath: repoDir, goal: task.goal, verificationCommands: task.verify };
+      if (topologyEnv === "adaptive") {
+        if (process.env.R44_HINT) runOpts.complexityHint = process.env.R44_HINT;
+      } else {
+        runOpts.topology = topologyEnv;
+      }
+      result = await orchestrator.startRun(runOpts);
     } catch (e) {
       result = { status: "error", error: String(e?.message).slice(0, 200) };
     }
