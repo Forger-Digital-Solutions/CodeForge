@@ -17,7 +17,9 @@ const TEST_PATH_RE =
 const ASSERTION_CALL_RE = /\bassert\.[a-zA-Z]+\s*\(|\bassert\s*\(|\bexpect\s*\(|\bexpectTypeOf\s*\(|\bt\.[a-zA-Z]+\s*\(|\bshould\.[a-zA-Z]+\s*\(/g;
 const STRICT_MATCHER_RE = /\bstrictEqual\b|\bdeepStrictEqual\b|\bstrictDeepEqual\b|\.toBe\s*\(|\.toStrictEqual\s*\(|\.toEqual\s*\(|\.toBeCloseTo\s*\(|\.eql\s*\(|\.toBeInstanceOf\s*\(/g;
 const LOOSE_MATCHER_RE = /assert\.ok\s*\(|assert\.isOk\s*\(|\.toBeTruthy\s*\(|\.toBeDefined\s*\(|\.toBeGreaterThanOrEqual\s*\(|\.toBeLessThanOrEqual\s*\(|not\.toThrow|\.isOk\s*\(|\.isTrue\s*\(|\.resolves\s*\(|\.rejects\s*\(/g;
-const SKIP_OR_TODO_RE = /\b(it|test|describe|suite|context)\.(skip|todo)\s*\(|\bx(it|test|describe|suite)\s*\(|\bit\s*\(\s*['"`][^'"`]*['"`]\s*\)/g;
+// `.only`/`fit`/`fdescribe` is strictly worse than `.skip`: it narrows the suite so the
+// unaffected remainder silently never runs — green output on a fraction of the evidence.
+const SKIP_OR_TODO_RE = /\b(it|test|describe|suite|context)\.(skip|todo|only)\s*\(|\bx(it|test|describe|suite)\s*\(|\bf(it|test|describe|suite)\s*\(\s*['"`]|\bit\s*\(\s*['"`][^'"`]*['"`]\s*\)/g;
 const SUPPRESS_RE = /@ts-ignore|@ts-expect-error|@ts-nocheck|eslint-disable|vitest-ignore|jest-disable|@vitest-skip|\/\* *istanbul ignore/g;
 
 const ENV_GATE_RE =
@@ -94,7 +96,7 @@ function testWeakeningFinding(entry: DiffEntry, lines: DiffLines): ReviewFinding
       code: "test_assertion_weakened",
       severity: "blocking",
       path: entry.path,
-      message: `Test file ${entry.path} adds ${skipDelta} skipped/todo test block(s); a run may not complete on verification it disabled.`,
+      message: `Test file ${entry.path} adds ${skipDelta} skipped/focused test block(s); a run may not complete on verification it disabled or narrowed.`,
     };
   }
   const suppressDelta = countMatches(addedText, SUPPRESS_RE) - countMatches(removedText, SUPPRESS_RE);

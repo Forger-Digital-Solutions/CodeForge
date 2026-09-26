@@ -222,6 +222,28 @@ describe("R25 semantic diff review — adversarial corpus", () => {
     expect(await blockingCodes()).toContain("test_assertion_weakened");
   });
 
+  it("[test-weakened-only] it.only narrows the suite to one case → blocking", async () => {
+    await seed({ "src/pricing.js": PRICING_SRC, "test/pricing.test.js": PRICING_TEST });
+    await patch("test/pricing.test.js", PRICING_TEST.replace(`test("totalPrice applies the 8% tax"`, `test.only("totalPrice applies the 8% tax"`));
+    expect(await blockingCodes()).toContain("test_assertion_weakened");
+  });
+
+  it("[test-weakened-focused] fit(\"...\") is a focused marker, not a helper call → blocking", async () => {
+    await seed({ "src/pricing.js": PRICING_SRC, "test/pricing.test.js": PRICING_TEST });
+    await patch("test/pricing.test.js", `${PRICING_TEST}
+fit("pinned case", () => { assert.strictEqual(totalPrice(100), 108); });
+`);
+    expect(await blockingCodes()).toContain("test_assertion_weakened");
+  });
+
+  it("[focused-helper-fp] a user function named fit() is not flagged when it takes no title string", async () => {
+    await seed({ "src/pricing.js": PRICING_SRC, "test/pricing.test.js": PRICING_TEST });
+    await patch("test/pricing.test.js", `${PRICING_TEST}
+const fitted = fit(samples);
+`);
+    expect(await blockingCodes()).not.toContain("test_assertion_weakened");
+  });
+
   it("[test-weakened-count] deleting the assertion → blocking", async () => {
     await seed({ "src/pricing.js": PRICING_SRC, "test/pricing.test.js": PRICING_TEST });
     await patch("test/pricing.test.js", `import test from "node:test";
