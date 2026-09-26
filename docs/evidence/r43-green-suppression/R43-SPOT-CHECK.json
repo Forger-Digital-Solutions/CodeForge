@@ -1,0 +1,638 @@
+{
+  "at": "2026-09-26T19:21:41.084Z",
+  "arms": [
+    "baseline",
+    "green"
+  ],
+  "providers": [
+    "openrouter",
+    "groq",
+    "mistral"
+  ],
+  "verifiedRoutes": 64,
+  "pairs": [
+    {
+      "task": "meta-update",
+      "kind": "suppression",
+      "cls": "tiny",
+      "arms": {
+        "baseline": {
+          "arm": "baseline",
+          "status": "blocked",
+          "topology": null,
+          "counters": {
+            "childrenSpawned": 1,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 0
+          },
+          "verification": [],
+          "review": {
+            "passed": false,
+            "findings": 0
+          },
+          "completion": null,
+          "wallMs": 39766,
+          "calls": 12,
+          "inTokens": 26369,
+          "outTokens": 1190,
+          "reasoningTokens": 0,
+          "errors": 3,
+          "providers": [
+            "openrouter",
+            "mistral",
+            "groq"
+          ],
+          "models": [
+            "dots-studio/dots-3-note-preview:free",
+            "codestral-2508",
+            "qwen/qwen3.8-27b",
+            "google/gemma-4-26b-a4b-it:free",
+            "codestral-latest"
+          ],
+          "errorKinds": [
+            "RATE_LIMITED",
+            "RATE_LIMITED",
+            "RATE_LIMITED"
+          ],
+          "green": {
+            "optimizationSummaries": [
+              {
+                "runId": "child-c4809c80-57c6-4dc4-a174-d7d922a01f52",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "FULL",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "NO_INHERITED_EVIDENCE"
+                  ],
+                  "escalations": [
+                    {
+                      "signal": "provider_failover",
+                      "from": "FULL",
+                      "to": "CONSERVATIVE",
+                      "detail": "openrouter/dots-studio/dots-3-note-preview:free -> mistral/codestral-2508 (RATE_LIMITED)"
+                    }
+                  ],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-5be9375b-3381-418a-bd47-26a86a4787ce",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "OFF",
+                  "initialReasonCodes": [
+                    "COORDINATED_MULTI_STEP"
+                  ],
+                  "escalations": [
+                    {
+                      "signal": "provider_failover",
+                      "from": "CONSERVATIVE",
+                      "to": "OFF",
+                      "detail": "groq/qwen/qwen3.8-27b -> openrouter/google/gemma-4-26b-a4b-it:free (RATE_LIMITED)"
+                    }
+                  ],
+                  "preventedReplays": 0
+                }
+              }
+            ],
+            "duplicatesSuppressed": 0,
+            "suppressedTools": [],
+            "suppressionDenials": [],
+            "failoverEvents": 5,
+            "verificationEvents": 2,
+            "toolFailures": [
+              {
+                "tool": "edit_file",
+                "error": "TOOL_EXECUTION_FAILED"
+              },
+              {
+                "tool": "edit_file",
+                "error": "TOOL_EXECUTION_FAILED"
+              }
+            ],
+            "loopBlocks": [
+              {
+                "tool": "edit_file",
+                "reason": "AGENT_TOOL_LOOP_DETECTED"
+              }
+            ],
+            "turnFailures": [
+              {
+                "turnId": "child-c4809c80-57c6-4dc4-a174-d7d922a01f52",
+                "error": "Expected non-empty string for summary"
+              }
+            ],
+            "runPolicies": [
+              {
+                "initialLevel": "FULL",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "NO_INHERITED_EVIDENCE"
+                ],
+                "escalations": [
+                  {
+                    "signal": "provider_failover",
+                    "from": "FULL",
+                    "to": "CONSERVATIVE",
+                    "detail": "openrouter/dots-studio/dots-3-note-preview:free -> mistral/codestral-2508 (RATE_LIMITED)"
+                  }
+                ],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "OFF",
+                "initialReasonCodes": [
+                  "COORDINATED_MULTI_STEP"
+                ],
+                "escalations": [
+                  {
+                    "signal": "provider_failover",
+                    "from": "CONSERVATIVE",
+                    "to": "OFF",
+                    "detail": "groq/qwen/qwen3.8-27b -> openrouter/google/gemma-4-26b-a4b-it:free (RATE_LIMITED)"
+                  }
+                ],
+                "preventedReplays": 0
+              }
+            ],
+            "receipts": {
+              "sustainability": [
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                }
+              ],
+              "optimizationDecisions": [],
+              "optimizationReceipts": []
+            },
+            "eventCount": 47
+          }
+        },
+        "green": {
+          "arm": "green",
+          "status": "completed",
+          "topology": "normal",
+          "counters": {
+            "childrenSpawned": 2,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 1
+          },
+          "verification": [
+            {
+              "command": "node -e \"const fs=await import('node:fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));if(p.version!=='2.0.0'||p.description!=='fixture app')process.exit(1)\"",
+              "exitCode": 0,
+              "passed": true,
+              "testSignal": null
+            }
+          ],
+          "review": {
+            "passed": true,
+            "findings": 0
+          },
+          "completion": {
+            "verdict": null
+          },
+          "wallMs": 23560,
+          "calls": 9,
+          "inTokens": 25287,
+          "outTokens": 1103,
+          "reasoningTokens": 0,
+          "errors": 0,
+          "providers": [
+            "mistral"
+          ],
+          "models": [
+            "codestral-latest"
+          ],
+          "errorKinds": [],
+          "green": {
+            "optimizationSummaries": [
+              {
+                "runId": "child-ccbad1e1-1e80-41a6-9e6d-1f4e5ef79f5c",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "FULL",
+                  "level": "FULL",
+                  "initialReasonCodes": [
+                    "NO_INHERITED_EVIDENCE"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-1dfdfe2b-045d-4d4e-bffb-a01a8ce84871",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "COORDINATED_MULTI_STEP"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-95019566-569f-4f8c-8521-eadf6374721d",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "REVIEW_EVIDENCE_FIDELITY"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              }
+            ],
+            "duplicatesSuppressed": 0,
+            "suppressedTools": [],
+            "suppressionDenials": [],
+            "failoverEvents": 3,
+            "verificationEvents": 3,
+            "toolFailures": [],
+            "loopBlocks": [],
+            "turnFailures": [
+              {
+                "turnId": "child-ccbad1e1-1e80-41a6-9e6d-1f4e5ef79f5c",
+                "error": "Expected non-empty string for summary"
+              }
+            ],
+            "runPolicies": [
+              {
+                "initialLevel": "FULL",
+                "level": "FULL",
+                "initialReasonCodes": [
+                  "NO_INHERITED_EVIDENCE"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "COORDINATED_MULTI_STEP"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "REVIEW_EVIDENCE_FIDELITY"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              }
+            ],
+            "receipts": {
+              "sustainability": [
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                }
+              ],
+              "optimizationDecisions": [],
+              "optimizationReceipts": []
+            },
+            "eventCount": 54
+          }
+        }
+      },
+      "outcome": "BASELINE_FAIL_GREEN_PASS"
+    }
+  ],
+  "callLog": [
+    {
+      "provider": "groq",
+      "model": "openai/gpt-oss-20b",
+      "ms": 281.6405,
+      "usage": {
+        "inputTokens": 72,
+        "outputTokens": 1,
+        "totalTokens": 73
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 307.4578999999999,
+      "usage": {
+        "inputTokens": 4,
+        "outputTokens": 1,
+        "totalTokens": 5,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 99.64940000000024,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1088.2610999999997,
+      "usage": {
+        "inputTokens": 2235,
+        "outputTokens": 123,
+        "totalTokens": 2358,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1075.1000000000004,
+      "usage": {
+        "inputTokens": 2452,
+        "outputTokens": 76,
+        "totalTokens": 2528,
+        "cachedInputTokens": 2304
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1068.0831000000007,
+      "usage": {
+        "inputTokens": 2541,
+        "outputTokens": 71,
+        "totalTokens": 2612,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1361.1170000000002,
+      "usage": {
+        "inputTokens": 2625,
+        "outputTokens": 161,
+        "totalTokens": 2786,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1684.7020000000011,
+      "usage": {
+        "inputTokens": 2814,
+        "outputTokens": 131,
+        "totalTokens": 2945,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 527.0404999999992,
+      "usage": {
+        "inputTokens": 3267,
+        "outputTokens": 26,
+        "totalTokens": 3293
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 1300.4961999999996,
+      "usage": {
+        "inputTokens": 3407,
+        "outputTokens": 198,
+        "totalTokens": 3605
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 135.74760000000242,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemma-4-26b-a4b-it:free",
+      "ms": 68.93499999999767,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "ms": 2166.0071000000025,
+      "usage": {
+        "inputTokens": 3406,
+        "outputTokens": 205,
+        "totalTokens": 3611,
+        "cachedInputTokens": 2304
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "ms": 1931.6096000000034,
+      "usage": {
+        "inputTokens": 3622,
+        "outputTokens": 199,
+        "totalTokens": 3821,
+        "cachedInputTokens": 2304
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "ms": 455.3764999999985,
+      "usage": {
+        "inputTokens": 2235,
+        "outputTokens": 12,
+        "totalTokens": 2247,
+        "cachedInputTokens": 2176
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "ms": 3906.105499999998,
+      "usage": {
+        "inputTokens": 2341,
+        "outputTokens": 410,
+        "totalTokens": 2751,
+        "cachedInputTokens": 2176
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "ms": 2957.9069000000018,
+      "usage": {
+        "inputTokens": 2778,
+        "outputTokens": 270,
+        "totalTokens": 3048,
+        "cachedInputTokens": 2688
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "ms": 1005.364499999996,
+      "usage": {
+        "inputTokens": 3103,
+        "outputTokens": 106,
+        "totalTokens": 3209,
+        "cachedInputTokens": 3072
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "ms": 1567.190499999997,
+      "usage": {
+        "inputTokens": 3316,
+        "outputTokens": 164,
+        "totalTokens": 3480,
+        "cachedInputTokens": 3200
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "ms": 593.9669999999969,
+      "usage": {
+        "inputTokens": 3064,
+        "outputTokens": 32,
+        "totalTokens": 3096,
+        "cachedInputTokens": 2304
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "ms": 2919.125,
+      "usage": {
+        "inputTokens": 3209,
+        "outputTokens": 41,
+        "totalTokens": 3250,
+        "cachedInputTokens": 2304
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "ms": 591.2813000000024,
+      "usage": {
+        "inputTokens": 2558,
+        "outputTokens": 12,
+        "totalTokens": 2570,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-latest",
+      "ms": 862.1330000000016,
+      "usage": {
+        "inputTokens": 2683,
+        "outputTokens": 56,
+        "totalTokens": 2739,
+        "cachedInputTokens": 2560
+      },
+      "ok": true
+    }
+  ]
+}

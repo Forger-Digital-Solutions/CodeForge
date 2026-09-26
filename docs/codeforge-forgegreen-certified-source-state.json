@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "f8c2031b8e69d2c6afcd95714b8f68c5b5c53be7e619a5844381ba598551718f",
-  "surfaceVersion": "r42-forgegreen-selectivity-v1",
+  "sourceStateId": "09afc53fd6157105e68a49bcc1d5a4c01f31005bff3d4fe5b04e8a949e4c41df",
+  "surfaceVersion": "r43-green-suppression-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -64,7 +64,7 @@
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/src/agent-runtime.ts": "3e065102b80d1469c98361a94df94c2f145fd7e0",
-    "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
+    "packages/server/src/autonomous-orchestrator.ts": "5545ea784fe6d56d7a3afcc734335e55f215dfc0",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
@@ -1617,6 +1617,24 @@
       "regressionEvidence": "Targeted: packages/server test suite 222/222 including forgegreen-run-policy 10/10 and fg9 unsafe-mutating; tsc -b clean on server+forge-green. Full canonical recorded in docs/evidence/r42-production-stress/R42-REGRESSION.md.",
       "recertifiedAt": "2026-09-26",
       "sourceStateConstant": "R42_FORGEGREEN_SELECTIVITY_SOURCE_STATE"
+    },
+    {
+      "label": "R43 reviewer-context + evidence-hardening source-state reconciliation",
+      "reason": "R43 hardens duplicate suppression with workspace state evidence (stat signature revalidation for path reads, repository-intelligence generation evidence, pendingExternalMutations), tightens the FG-1B failure-line detector so vitest/tap failure formats are never omitted, gives the reviewer the full --stat inventory plus a 24KB-bounded diff instead of a 2KB slice, stops mislabeling that diff as verification evidence, and adds receipt suite-version compatibility so an incompatible suite reads STALE rather than trusted. Material change inside the frozen set: autonomous-orchestrator.ts (reviewer diff context). No gate weakened; completion authority unchanged.",
+      "priorSourceStateId": "f8c2031b8e69d2c6afcd95714b8f68c5b5c53be7e619a5844381ba598551718f",
+      "priorSurfaceVersion": "r42-forgegreen-selectivity-v1",
+      "resultingSourceStateId": "09afc53fd6157105e68a49bcc1d5a4c01f31005bff3d4fe5b04e8a949e4c41df",
+      "resultingSurfaceVersion": "r43-green-suppression-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "Reviewer context: full diff stat + bounded body; stop relaying diff text as verification evidence.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "Targeted: packages/server test suite 222/222 including forgegreen-run-policy 10/10 and fg9 unsafe-mutating; tsc -b clean on server+forge-green. Full canonical recorded in docs/evidence/r42-production-stress/R42-REGRESSION.md.",
+      "recertifiedAt": "2026-09-26",
+      "sourceStateConstant": "R42_FORGEGREEN_SELECTIVITY_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R42 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, and R42 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
@@ -1625,11 +1643,9 @@
     "phase": "R42 ForgeGreen selectivity reconciliation",
     "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R42 surface so the fg11/fg12e provenance canaries certify the current tree.",
     "changedFiles": [
-      "packages/forge-green/src/optimization-candidate-a.ts",
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/src/duplicate-suppression.ts"
+      "packages/server/src/autonomous-orchestrator.ts"
     ],
-    "priorSourceStateId": "0192901843fc05e7cc2f9e18da67dc917780efff5e1183451d98ca32f5813822",
+    "priorSourceStateId": "f8c2031b8e69d2c6afcd95714b8f68c5b5c53be7e619a5844381ba598551718f",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

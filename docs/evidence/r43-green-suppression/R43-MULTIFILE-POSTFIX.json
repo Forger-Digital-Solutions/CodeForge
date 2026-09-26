@@ -1,0 +1,899 @@
+{
+  "at": "2026-09-26T19:25:17.919Z",
+  "arms": [
+    "baseline",
+    "green"
+  ],
+  "providers": [
+    "openrouter",
+    "groq",
+    "mistral"
+  ],
+  "verifiedRoutes": 64,
+  "pairs": [
+    {
+      "task": "mf-impl-tests",
+      "kind": "multifile",
+      "cls": "medium",
+      "arms": {
+        "baseline": {
+          "arm": "baseline",
+          "status": "blocked",
+          "topology": null,
+          "counters": {
+            "childrenSpawned": 1,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 0
+          },
+          "verification": [],
+          "review": {
+            "passed": false,
+            "findings": 0
+          },
+          "completion": null,
+          "wallMs": 15252,
+          "calls": 8,
+          "inTokens": 14708,
+          "outTokens": 1064,
+          "reasoningTokens": 0,
+          "errors": 3,
+          "providers": [
+            "openrouter",
+            "mistral",
+            "groq"
+          ],
+          "models": [
+            "dots-studio/dots-3-note-preview:free",
+            "codestral-2508",
+            "qwen/qwen3.8-27b",
+            "mistral-medium-2604"
+          ],
+          "errorKinds": [
+            "RATE_LIMITED",
+            "RATE_LIMITED",
+            "RATE_LIMITED"
+          ],
+          "green": {
+            "optimizationSummaries": [
+              {
+                "runId": "child-02ae89b3-d1cb-42fa-82bb-cd95e788c873",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "FULL",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "NO_INHERITED_EVIDENCE"
+                  ],
+                  "escalations": [
+                    {
+                      "signal": "provider_failover",
+                      "from": "FULL",
+                      "to": "CONSERVATIVE",
+                      "detail": "openrouter/dots-studio/dots-3-note-preview:free -> mistral/codestral-2508 (RATE_LIMITED)"
+                    }
+                  ],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-9693ab8f-e171-4437-8766-10b4da34974a",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "OFF",
+                  "initialReasonCodes": [
+                    "COORDINATED_MULTI_STEP"
+                  ],
+                  "escalations": [
+                    {
+                      "signal": "provider_failover",
+                      "from": "CONSERVATIVE",
+                      "to": "OFF",
+                      "detail": "groq/qwen/qwen3.8-27b -> mistral/mistral-medium-2604 (RATE_LIMITED)"
+                    }
+                  ],
+                  "preventedReplays": 0
+                }
+              }
+            ],
+            "duplicatesSuppressed": 0,
+            "suppressedTools": [],
+            "suppressionDenials": [],
+            "failoverEvents": 4,
+            "verificationEvents": 2,
+            "toolFailures": [],
+            "loopBlocks": [],
+            "turnFailures": [
+              {
+                "turnId": "child-02ae89b3-d1cb-42fa-82bb-cd95e788c873",
+                "error": "Expected non-empty string for summary"
+              },
+              {
+                "turnId": "child-9693ab8f-e171-4437-8766-10b4da34974a",
+                "error": "[PROVIDER_RATE_LIMITED] Provider rate limit exceeded: [PROVIDER_RATE_LIMITED] Provider rate limit exceeded: mistral error (429): {\"object\":\"error\",\"message\":\"Ra"
+              }
+            ],
+            "runPolicies": [
+              {
+                "initialLevel": "FULL",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "NO_INHERITED_EVIDENCE"
+                ],
+                "escalations": [
+                  {
+                    "signal": "provider_failover",
+                    "from": "FULL",
+                    "to": "CONSERVATIVE",
+                    "detail": "openrouter/dots-studio/dots-3-note-preview:free -> mistral/codestral-2508 (RATE_LIMITED)"
+                  }
+                ],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "OFF",
+                "initialReasonCodes": [
+                  "COORDINATED_MULTI_STEP"
+                ],
+                "escalations": [
+                  {
+                    "signal": "provider_failover",
+                    "from": "CONSERVATIVE",
+                    "to": "OFF",
+                    "detail": "groq/qwen/qwen3.8-27b -> mistral/mistral-medium-2604 (RATE_LIMITED)"
+                  }
+                ],
+                "preventedReplays": 0
+              }
+            ],
+            "receipts": {
+              "sustainability": [
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                }
+              ],
+              "optimizationDecisions": [],
+              "optimizationReceipts": []
+            },
+            "eventCount": 37
+          }
+        },
+        "green": {
+          "arm": "green",
+          "status": "blocked",
+          "topology": null,
+          "counters": {
+            "childrenSpawned": 1,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 0
+          },
+          "verification": [],
+          "review": {
+            "passed": false,
+            "findings": 0
+          },
+          "completion": null,
+          "wallMs": 2524,
+          "calls": 0,
+          "inTokens": 0,
+          "outTokens": 0,
+          "reasoningTokens": 0,
+          "errors": 0,
+          "providers": [],
+          "models": [],
+          "errorKinds": [],
+          "green": {
+            "optimizationSummaries": [
+              {
+                "runId": "child-2bc979e9-c3b6-439b-a781-0a19d8eeedb8",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "FULL",
+                  "level": "FULL",
+                  "initialReasonCodes": [
+                    "NO_INHERITED_EVIDENCE"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-60b77708-feb1-45c5-bd90-a0d21cfca69d",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "COORDINATED_MULTI_STEP"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              }
+            ],
+            "duplicatesSuppressed": 0,
+            "suppressedTools": [],
+            "suppressionDenials": [],
+            "failoverEvents": 0,
+            "verificationEvents": 2,
+            "toolFailures": [],
+            "loopBlocks": [],
+            "turnFailures": [
+              {
+                "turnId": "child-2bc979e9-c3b6-439b-a781-0a19d8eeedb8",
+                "error": "[PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found."
+              },
+              {
+                "turnId": "child-60b77708-feb1-45c5-bd90-a0d21cfca69d",
+                "error": "[PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found."
+              }
+            ],
+            "runPolicies": [
+              {
+                "initialLevel": "FULL",
+                "level": "FULL",
+                "initialReasonCodes": [
+                  "NO_INHERITED_EVIDENCE"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "COORDINATED_MULTI_STEP"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              }
+            ],
+            "receipts": {
+              "sustainability": [
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                }
+              ],
+              "optimizationDecisions": [],
+              "optimizationReceipts": []
+            },
+            "eventCount": 24
+          }
+        }
+      },
+      "outcome": "BOTH_FAIL"
+    },
+    {
+      "task": "mf-move-helper",
+      "kind": "multifile",
+      "cls": "medium",
+      "arms": {
+        "green": {
+          "arm": "green",
+          "status": "blocked",
+          "topology": null,
+          "counters": {
+            "childrenSpawned": 1,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 0
+          },
+          "verification": [],
+          "review": {
+            "passed": false,
+            "findings": 0
+          },
+          "completion": null,
+          "wallMs": 2346,
+          "calls": 0,
+          "inTokens": 0,
+          "outTokens": 0,
+          "reasoningTokens": 0,
+          "errors": 0,
+          "providers": [],
+          "models": [],
+          "errorKinds": [],
+          "green": {
+            "optimizationSummaries": [
+              {
+                "runId": "child-503dc5a7-6083-4faf-b1fb-fccdaf93050a",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "FULL",
+                  "level": "FULL",
+                  "initialReasonCodes": [
+                    "NO_INHERITED_EVIDENCE"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-091a8de8-1601-4ffe-8d4f-8cce4ec613d7",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "COORDINATED_MULTI_STEP"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              }
+            ],
+            "duplicatesSuppressed": 0,
+            "suppressedTools": [],
+            "suppressionDenials": [],
+            "failoverEvents": 0,
+            "verificationEvents": 2,
+            "toolFailures": [],
+            "loopBlocks": [],
+            "turnFailures": [
+              {
+                "turnId": "child-503dc5a7-6083-4faf-b1fb-fccdaf93050a",
+                "error": "[PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found."
+              },
+              {
+                "turnId": "child-091a8de8-1601-4ffe-8d4f-8cce4ec613d7",
+                "error": "[PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found."
+              }
+            ],
+            "runPolicies": [
+              {
+                "initialLevel": "FULL",
+                "level": "FULL",
+                "initialReasonCodes": [
+                  "NO_INHERITED_EVIDENCE"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "COORDINATED_MULTI_STEP"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              }
+            ],
+            "receipts": {
+              "sustainability": [
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                }
+              ],
+              "optimizationDecisions": [],
+              "optimizationReceipts": []
+            },
+            "eventCount": 24
+          }
+        },
+        "baseline": {
+          "arm": "baseline",
+          "status": "blocked",
+          "topology": null,
+          "counters": {
+            "childrenSpawned": 1,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 0
+          },
+          "verification": [],
+          "review": {
+            "passed": false,
+            "findings": 0
+          },
+          "completion": null,
+          "wallMs": 2317,
+          "calls": 0,
+          "inTokens": 0,
+          "outTokens": 0,
+          "reasoningTokens": 0,
+          "errors": 0,
+          "providers": [],
+          "models": [],
+          "errorKinds": [],
+          "green": {
+            "optimizationSummaries": [
+              {
+                "runId": "child-a6276b47-70a6-4f5b-ba49-08387f95e656",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "FULL",
+                  "level": "FULL",
+                  "initialReasonCodes": [
+                    "NO_INHERITED_EVIDENCE"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-20acfcf0-3dea-4952-bf0f-7d990b8c2daa",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "COORDINATED_MULTI_STEP"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              }
+            ],
+            "duplicatesSuppressed": 0,
+            "suppressedTools": [],
+            "suppressionDenials": [],
+            "failoverEvents": 0,
+            "verificationEvents": 2,
+            "toolFailures": [],
+            "loopBlocks": [],
+            "turnFailures": [
+              {
+                "turnId": "child-a6276b47-70a6-4f5b-ba49-08387f95e656",
+                "error": "[PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found."
+              },
+              {
+                "turnId": "child-20acfcf0-3dea-4952-bf0f-7d990b8c2daa",
+                "error": "[PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found."
+              }
+            ],
+            "runPolicies": [
+              {
+                "initialLevel": "FULL",
+                "level": "FULL",
+                "initialReasonCodes": [
+                  "NO_INHERITED_EVIDENCE"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "COORDINATED_MULTI_STEP"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              }
+            ],
+            "receipts": {
+              "sustainability": [
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                }
+              ],
+              "optimizationDecisions": [],
+              "optimizationReceipts": []
+            },
+            "eventCount": 24
+          }
+        }
+      },
+      "outcome": "BOTH_FAIL"
+    },
+    {
+      "task": "coordinated-api",
+      "kind": "multifile",
+      "cls": "medium",
+      "arms": {
+        "baseline": {
+          "arm": "baseline",
+          "status": "blocked",
+          "topology": null,
+          "counters": {
+            "childrenSpawned": 1,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 0
+          },
+          "verification": [],
+          "review": {
+            "passed": false,
+            "findings": 0
+          },
+          "completion": null,
+          "wallMs": 2340,
+          "calls": 0,
+          "inTokens": 0,
+          "outTokens": 0,
+          "reasoningTokens": 0,
+          "errors": 0,
+          "providers": [],
+          "models": [],
+          "errorKinds": [],
+          "green": {
+            "optimizationSummaries": [
+              {
+                "runId": "child-656661cb-8b08-4d23-9053-7f26114c5cbf",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "FULL",
+                  "level": "FULL",
+                  "initialReasonCodes": [
+                    "NO_INHERITED_EVIDENCE"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-526de338-66cd-449b-9ad3-8c47516211d0",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "COORDINATED_MULTI_STEP"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              }
+            ],
+            "duplicatesSuppressed": 0,
+            "suppressedTools": [],
+            "suppressionDenials": [],
+            "failoverEvents": 0,
+            "verificationEvents": 2,
+            "toolFailures": [],
+            "loopBlocks": [],
+            "turnFailures": [
+              {
+                "turnId": "child-656661cb-8b08-4d23-9053-7f26114c5cbf",
+                "error": "[PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found."
+              },
+              {
+                "turnId": "child-526de338-66cd-449b-9ad3-8c47516211d0",
+                "error": "[PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found."
+              }
+            ],
+            "runPolicies": [
+              {
+                "initialLevel": "FULL",
+                "level": "FULL",
+                "initialReasonCodes": [
+                  "NO_INHERITED_EVIDENCE"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "COORDINATED_MULTI_STEP"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              }
+            ],
+            "receipts": {
+              "sustainability": [
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                }
+              ],
+              "optimizationDecisions": [],
+              "optimizationReceipts": []
+            },
+            "eventCount": 24
+          }
+        },
+        "green": {
+          "arm": "green",
+          "status": "blocked",
+          "topology": null,
+          "counters": {
+            "childrenSpawned": 1,
+            "reviewRounds": 0,
+            "taskAttempts": 1,
+            "verificationAttempts": 0
+          },
+          "verification": [],
+          "review": {
+            "passed": false,
+            "findings": 0
+          },
+          "completion": null,
+          "wallMs": 2418,
+          "calls": 0,
+          "inTokens": 0,
+          "outTokens": 0,
+          "reasoningTokens": 0,
+          "errors": 0,
+          "providers": [],
+          "models": [],
+          "errorKinds": [],
+          "green": {
+            "optimizationSummaries": [
+              {
+                "runId": "child-55cb6a70-6994-4f48-9eb6-d95e1acf6b65",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "FULL",
+                  "level": "FULL",
+                  "initialReasonCodes": [
+                    "NO_INHERITED_EVIDENCE"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              },
+              {
+                "runId": "child-a0456f12-bfb2-4b74-bf3f-9e3e147a52ca",
+                "candidatesConsidered": 0,
+                "applied": 0,
+                "proposed": 0,
+                "skippedInsufficientEvidence": 1,
+                "runPolicy": {
+                  "initialLevel": "CONSERVATIVE",
+                  "level": "CONSERVATIVE",
+                  "initialReasonCodes": [
+                    "COORDINATED_MULTI_STEP"
+                  ],
+                  "escalations": [],
+                  "preventedReplays": 0
+                }
+              }
+            ],
+            "duplicatesSuppressed": 0,
+            "suppressedTools": [],
+            "suppressionDenials": [],
+            "failoverEvents": 0,
+            "verificationEvents": 2,
+            "toolFailures": [],
+            "loopBlocks": [],
+            "turnFailures": [
+              {
+                "turnId": "child-55cb6a70-6994-4f48-9eb6-d95e1acf6b65",
+                "error": "[PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found."
+              },
+              {
+                "turnId": "child-a0456f12-bfb2-4b74-bf3f-9e3e147a52ca",
+                "error": "[PROVIDER_UNAVAILABLE] [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found."
+              }
+            ],
+            "runPolicies": [
+              {
+                "initialLevel": "FULL",
+                "level": "FULL",
+                "initialReasonCodes": [
+                  "NO_INHERITED_EVIDENCE"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              },
+              {
+                "initialLevel": "CONSERVATIVE",
+                "level": "CONSERVATIVE",
+                "initialReasonCodes": [
+                  "COORDINATED_MULTI_STEP"
+                ],
+                "escalations": [],
+                "preventedReplays": 0
+              }
+            ],
+            "receipts": {
+              "sustainability": [
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                },
+                {
+                  "suppressionEvidenceInvalidations": 0
+                }
+              ],
+              "optimizationDecisions": [],
+              "optimizationReceipts": []
+            },
+            "eventCount": 24
+          }
+        }
+      },
+      "outcome": "BOTH_FAIL"
+    }
+  ],
+  "callLog": [
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 120.26520000000005,
+      "usage": {
+        "inputTokens": 13,
+        "outputTokens": 1,
+        "totalTokens": 14
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 365.2198000000003,
+      "usage": {
+        "inputTokens": 4,
+        "outputTokens": 1,
+        "totalTokens": 5,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "ms": 40.24260000000004,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2063.8876999999998,
+      "usage": {
+        "inputTokens": 2397,
+        "outputTokens": 141,
+        "totalTokens": 2538,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1255.7582999999995,
+      "usage": {
+        "inputTokens": 2614,
+        "outputTokens": 100,
+        "totalTokens": 2714,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2606.3097000000007,
+      "usage": {
+        "inputTokens": 2848,
+        "outputTokens": 300,
+        "totalTokens": 3148,
+        "cachedInputTokens": 2688
+      },
+      "ok": true
+    },
+    {
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 5268.2248,
+      "usage": {
+        "inputTokens": 3176,
+        "outputTokens": 464,
+        "totalTokens": 3640,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 712.4219999999987,
+      "usage": {
+        "inputTokens": 3673,
+        "outputTokens": 59,
+        "totalTokens": 3732
+      },
+      "ok": true
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "ms": 159.2309000000023,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "provider": "mistral",
+      "model": "mistral-medium-2604",
+      "ms": 236.6242999999995,
+      "error": "RATE_LIMITED",
+      "ok": false
+    }
+  ]
+}
