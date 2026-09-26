@@ -47,6 +47,12 @@ export interface FailoverRequest {
   estimatedPromptTokens?: number;
   /** R34 Mission K: bounded output allowance; defaults to the writer-sized 2048. */
   outputTokenDemand?: number;
+  /**
+   * R41: per-candidate completion demand for the re-decide — the bounded output budget this
+   * continuation would place on THAT replacement route (see SelectRouteOptions.
+   * outputTokenDemandFor). Lets a tight output window admit a lighter qualifying candidate.
+   */
+  outputTokenDemandFor?: (providerId: string, modelId: string) => number | undefined;
   hasAdapter: (providerId: string) => boolean;
   routeFilter?: (providerId: string, modelId: string) => boolean;
   /** Capacity advice is ranking-only; ForgeZero and routeFilter retain admission authority. */
@@ -171,6 +177,7 @@ export class EightBitFailoverCoordinator {
       estimatedContextTokens: req.estimatedContextTokens,
       estimatedPromptTokens: req.estimatedPromptTokens,
       outputTokenDemand: req.outputTokenDemand,
+      outputTokenDemandFor: req.outputTokenDemandFor,
       hasAdapter: req.hasAdapter,
       routeFilter: req.routeFilter,
       capacityScoreAdjustment: req.capacityScoreAdjustment,

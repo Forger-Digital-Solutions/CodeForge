@@ -69,6 +69,14 @@ export interface FabricRequest {
      * a fixed 16k demand, while a genuinely large turn still fails closed against it.
      */
     estimatedPromptTokens?: number;
+    /**
+     * R41: per-candidate completion demand — the bounded output budget this dispatch would
+     * actually place on THAT route (e.g. a role baseline plus a measured reasoning reserve
+     * for that exact provider/model). The flat `outputTokens` is the cross-candidate worst
+     * case; holding every candidate to it makes a tight output window false-wait when a
+     * lighter qualifying route would fit. Returning undefined falls back to the flat value.
+     */
+    outputTokensFor?: (providerId: string, modelId: string) => number | undefined;
     credits?: number;
     providerUnits?: number;
   };
@@ -272,6 +280,19 @@ export class FreeFabric {
       );
       return Math.ceil(measuredPromptTokens * ratio * TOKENIZER_RESERVE_MARGIN);
     };
+    // R41: the output hold is per-candidate too — a reasoning-profiled route legitimately
+    // reserves more than a plain one, so a tight output window can admit the qualifying
+    // lighter route instead of stalling on the cross-fleet worst case.
+    const outputDemandFor = (entry: RouteLedgerEntry): number => {
+      const measured = request.demand?.outputTokensFor?.(entry.providerId, entry.modelId);
+      // Only a real nonzero request size is honored: a zero, sub-token, or non-finite
+      // callback result would under-reserve a dispatch that still emits tokens, so those
+      // fall back to the flat demand. A fractional demand ceils up — the hold must cover
+      // the whole tokens the request may emit, never a rounded-down remainder.
+      return typeof measured === "number" && Number.isFinite(measured) && measured >= 1
+        ? Math.ceil(measured)
+        : demand.outputTokens;
+    };
     /**
      * R37 Mission AH — capacity preservation. A request that fits comfortably should not burn
      * a scarce large-context route when a sufficient smaller one exists in the same supply
@@ -281,7 +302,7 @@ export class FreeFabric {
      */
     const rightFitPenalty = (entry: RouteLedgerEntry): number => {
       if (entry.contextWindow === undefined) return 0;
-      const need = inputDemandFor(entry) + demand.outputTokens;
+      const need = inputDemandFor(entry) + outputDemandFor(entry);
       const oversize = entry.contextWindow / Math.max(1, need);
       if (oversize <= 4) return 0;
       return -Math.min(12, Math.round(Math.log2(oversize)));
@@ -354,7 +375,7 @@ export class FreeFabric {
         taskKind: request.taskKind ?? "task",
         requests: demand.requests,
         inputTokens: inputDemandFor(entry),
-        outputTokens: demand.outputTokens,
+        outputTokens: outputDemandFor(entry),
         credits: demand.credits,
         providerUnits: demand.providerUnits,
         // For the user's own pool the route's identity IS the request's right to it —

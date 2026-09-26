@@ -125,6 +125,33 @@ describe("EightBitRouteHealthAuthority — permanent conditions (§8)", () => {
     expect(userFacingRouteStatus(a.state)).toBe("Unavailable");
   });
 
+  it("[R40/R41] Google CONSUMER_SUSPENDED → ACCESS_RESTRICTED: permanent hard exclusion, requalified only by a proven catalog change", () => {
+    const c = clock();
+    const authority = new EightBitRouteHealthAuthority(DEFAULT_ROUTE_HEALTH_POLICY, c.now);
+    const route = { providerId: "google", modelId: "gemini-2.0-flash-exp" };
+    authority.observe({ kind: "call_failure", ...route, observedAt: iso(c.now()), source: "runtime", reason: "ACCESS_RESTRICTED", status: 403, message: 'google error (403): PERMISSION_DENIED {"reason":"CONSUMER_SUSPENDED"}', role: "REVIEWER" });
+    const a = authority.assess(route.providerId, route.modelId, { role: "REVIEWER" });
+    expect(a.state).toBe("ACCESS_RESTRICTED");
+    expect(a.hardExclude).toBe(true);
+    expect(authority.probeAdvice(route.providerId, route.modelId).never).toBe(true);
+    // Permanent: time alone never requalifies a suspended consumer.
+    c.advance(30 * 24 * 60 * 60_000);
+    expect(authority.assess(route.providerId, route.modelId).hardExclude).toBe(true);
+    // A routine catalog listing ("present") is not proof the suspension lifted — it clears
+    // retirement facts only, so ACCESS_RESTRICTED survives an ordinary refresh.
+    authority.observe({ kind: "catalog", ...route, observedAt: iso(c.now()), source: "registry", fact: "present" });
+    expect(authority.assess(route.providerId, route.modelId).state).toBe("ACCESS_RESTRICTED");
+    // A credential change cannot clear it either — this was never a credential fault.
+    authority.credentialChanged(route.providerId, route.modelId);
+    expect(authority.assess(route.providerId, route.modelId).state).toBe("ACCESS_RESTRICTED");
+    // Only an explicit catalog change — the refresh verified the route is served again —
+    // requalifies it, dropping the permanent exclusion to a low-confidence UNKNOWN.
+    authority.catalogChanged(route.providerId, route.modelId, "CATALOG_REQUALIFIED");
+    const after = authority.assess(route.providerId, route.modelId);
+    expect(after.state).not.toBe("ACCESS_RESTRICTED");
+    expect(after.hardExclude).toBe(false);
+  });
+
   it("[R23 F6] Cloudflare plan attestation unreadable → BILLING_VERIFICATION_REQUIRED until an attestation clears it", () => {
     const authority = createEightBitRouteHealthAuthority({}, () => T0);
     const route = { providerId: "cloudflare", modelId: "@cf/openai/gpt-oss-120b" };

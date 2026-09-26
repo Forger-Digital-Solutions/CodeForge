@@ -97,6 +97,7 @@ import {
 } from "@codeforge/agent";
 import { createToolBroker, type ToolDefinition as RegistryToolDefinition, type ToolExecutionRecord } from "@codeforge/tools";
 import { createModelExecutionAdapter, convertToProviderTools, normalizeProviderError, type ModelExecutionResponse } from "./model-execution-adapter.js";
+import { roleOutputBudget, type ReasoningRouteProfile } from "./role-output-budget.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import type { PaidAutoService } from "@codeforge/paid-auto";
 import { tryConsumeInferenceRequest, type InferenceLane, type WorkflowInferenceBudget } from "./inference-budget.js";
@@ -455,6 +456,12 @@ export interface AgentRuntimeOptions {
   /** Shared provider pacing. Supplying one explicitly also governs deterministic test adapters. */
   capacityGovernor?: ProviderCapacityGovernor;
   /**
+   * R41: measured reasoning-output profiles keyed `${providerId}/${modelId}`, consulted by
+   * the per-role output budget on every dispatch. Absent = the built-in conservative set from
+   * R40 measurements; supplying one replaces it entirely (tests inject their own).
+   */
+  reasoningRouteProfiles?: Readonly<Record<string, ReasoningRouteProfile>>;
+  /**
    * R33: cadence (ms) at which the runtime re-polls the Free Fabric on behalf of turns parked
    * in `waiting_for_free_capacity`. A fresh admission decision replaces a manual resume — the
    * turn wakes itself when eligible supply returns. 0/absent disables the sweeper (tests
@@ -520,22 +527,20 @@ export function eightBitRoleForAgentRole(role: AgentRoleType | string): EightBit
   }
 }
 
+export { outputDemandForRole } from "./role-output-budget.js";
+
 /**
- * R34 Mission K: bounded output allowance reserved per dispatch by role. A writer must be
- * able to emit a large edit; structured reasoning roles (verdicts, findings, plans) measurably
- * produce far less. Reserving writer-sized output on a reviewer turn is what kept Groq's
- * 8k-TPM pools unreachable for the light roles the fabric could otherwise serve.
+ * R41: thrown inside the role-run dispatch loop when the measured transcript already fills
+ * the route's context window — zero room remains for even one completion token. It is a
+ * local admission verdict, not a provider or route-health failure: no request was ever
+ * sent, so there is nothing to retry, rotate, or record against the route. The run loop
+ * converts it into an honest blocked stop instead of emitting a degenerate near-zero-token
+ * request that could only truncate.
  */
-export function outputDemandForRole(role: AgentRoleType | string): number {
-  switch (role) {
-    case "coder":
-      return 2_048;
-    case "planner":
-    case "mission-planner":
-    case "replanner":
-      return 1_536;
-    default:
-      return 1_024;
+class RoleContextOverflowError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RoleContextOverflowError";
   }
 }
 
@@ -805,6 +810,7 @@ export class AgentRuntime {
   private readonly paidAuto?: PaidAutoService;
   private readonly capacityGovernor: ProviderCapacityGovernor;
   private readonly capacityGovernorIsExplicit: boolean;
+  private readonly reasoningRouteProfiles?: Readonly<Record<string, ReasoningRouteProfile>>;
   private readonly authorityFor?: () => TaskAuthority;
   private readonly externalTools?: AgentRuntimeOptions["externalTools"];
   /** Legacy-parity authority used when no shared lease is wired (direct-constructed runtimes). */
@@ -845,6 +851,7 @@ export class AgentRuntime {
     this.paidAuto = options.paidAuto;
     this.capacityGovernor = options.capacityGovernor ?? defaultCapacityGovernor;
     this.capacityGovernorIsExplicit = options.capacityGovernor !== undefined;
+    this.reasoningRouteProfiles = options.reasoningRouteProfiles;
     this.hostedWorker = options.hostedWorker;
     this.authorityFor = options.authorityFor;
     this.externalTools = options.externalTools;
@@ -1548,7 +1555,25 @@ export class AgentRuntime {
               tools: convertToProviderTools(toolBroker.getRegistry().getForRole(req.role, req.permissions)),
               maxTokens: 4_096,
             }),
-            outputTokenDemand: outputDemandForRole(req.role),
+            // R41: the flat demand stays the role's bounded worst case — including headroom
+            // for a measured-reasoning candidate — as the fallback for any consumer that
+            // ignores the per-candidate callback (see roleOutputBudget).
+            outputTokenDemand: roleOutputBudget({
+              role: req.role,
+              maxOutputTokens: budget.maxOutputTokens,
+              profiles: this.reasoningRouteProfiles,
+            }).outputTokenDemand,
+            // R41: the fabric sizes each candidate's hold by the demand this dispatch would
+            // actually place on it — a reasoning-profiled candidate reserves its measured
+            // baseline+reserve while a plain one holds only the baseline — so a tight output
+            // window can admit a qualifying route instead of false-waiting on the worst case.
+            outputTokenDemandFor: (providerId, modelId) => roleOutputBudget({
+              role: req.role,
+              providerId,
+              modelId,
+              maxOutputTokens: budget.maxOutputTokens,
+              profiles: this.reasoningRouteProfiles,
+            }).outputTokenDemand,
             requiredCapabilities: req.role === "coder" ? ["coding", "toolCalling"] : req.role === "explorer" ? ["toolCalling"] : [],
             taskType: req.role,
             hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
@@ -1589,10 +1614,41 @@ export class AgentRuntime {
             const dispatchMessages = this.efficiencyControls.supersededCompaction
               ? compactSupersededToolOutputs(messages)
               : messages;
+            // R41: the request's output budget is recomputed per dispatch — a failover
+            // replacement route may carry a different measured reasoning profile, and the
+            // context room left shrinks as the transcript grows. A profiled reasoning route
+            // gets its measured headroom; an unprofiled one gets the role baseline; a coder
+            // keeps the full 4k its patches rely on.
+            const dispatchContextLimit = Math.min(
+              resolvedMaxContextTokens,
+              (activeSelection ? this.firewall.getModel(activeSelection.providerId, activeSelection.modelId)?.contextWindow : undefined) ?? resolvedMaxContextTokens,
+            );
+            const dispatchPromptTokens = estimatePromptOnlyTokens({
+              model: activeSelection?.modelId ?? "",
+              messages: dispatchMessages,
+              tools: convertToProviderTools(availableTools),
+            });
+            const dispatchOutputBudget = roleOutputBudget({
+              role: req.role,
+              providerId: activeSelection?.providerId,
+              modelId: activeSelection?.modelId,
+              contextTokensRemaining: dispatchContextLimit - dispatchPromptTokens,
+              maxOutputTokens: budget.maxOutputTokens,
+              profiles: this.reasoningRouteProfiles,
+            });
+            if (!dispatchOutputBudget.contextFits) {
+              // R41: fail closed before the wire — the assembled transcript alone consumes
+              // this route's entire context window, so any request could only return
+              // truncated output. Not a route failure: nothing was sent, nothing rotates.
+              throw new RoleContextOverflowError(
+                `[${ERROR_CODES.AGENT_CONTEXT_BUDGET_EXCEEDED}] The ${req.role} transcript measures ~${dispatchPromptTokens} tokens but route ${activeSelection ? `${activeSelection.providerId}/${activeSelection.modelId}` : "<none>"} leaves only ${dispatchContextLimit} context tokens — no completion could ever fit, so no provider request was sent.`,
+              );
+            }
             const response = await modelAdapter.execute({
               modelSelection: activeSelection,
               messages: dispatchMessages,
               tools: availableTools,
+              maxTokens: dispatchOutputBudget.maxTokens,
               signal: req.signal,
               userId: req.userId ?? this.userId,
               authorityState: req.authorityState ?? "canonical",
@@ -1611,19 +1667,49 @@ export class AgentRuntime {
               outputTokens: response.usage.outputTokens,
               stablePromptCacheHit: response.optimization?.promptPrefixCacheHit,
             });
+            // R41: a response only proves the route served this role when it delivered a
+            // complete, usable payload. A body truncated by the output cap (e.g. hidden
+            // reasoning consumed the whole budget) or an empty answer is an honest failure
+            // observation for the route's health — never a verified success, and never a
+            // blind retry trigger (the turn loop below decides how the run continues).
+            const turnServed = (response.finishReason === "stop" || response.finishReason === "tool_calls")
+              && (response.toolCalls.length > 0 || response.text.trim().length > 0);
             if (activeSelection) {
-              this.eightBit.recordSuccess(activeSelection.providerId, activeSelection.modelId, {
-                latencyMs: Date.now() - modelCallStartedAt,
-                role: eightBitRoleForAgentRole(req.role),
-                inputTokens: response.usage.inputTokens,
-                outputTokens: response.usage.outputTokens,
-                correlationId: req.runId,
-              });
-              this.observeGovernorPressure(activeSelection.providerId, activeSelection.modelId, req.runId);
-              this.freeCloud?.recordRouteSuccess(activeSelection.providerId, activeSelection.modelId);
+              if (turnServed) {
+                this.eightBit.recordSuccess(activeSelection.providerId, activeSelection.modelId, {
+                  latencyMs: Date.now() - modelCallStartedAt,
+                  role: eightBitRoleForAgentRole(req.role),
+                  inputTokens: response.usage.inputTokens,
+                  outputTokens: response.usage.outputTokens,
+                  correlationId: req.runId,
+                });
+                this.observeGovernorPressure(activeSelection.providerId, activeSelection.modelId, req.runId);
+                this.freeCloud?.recordRouteSuccess(activeSelection.providerId, activeSelection.modelId);
+              } else {
+                // R41: an empty or cap-truncated payload is not provider-outage evidence —
+                // a call_failure would poison availability and churn quota on a route that
+                // answered normally. It is honest role-level evidence instead: this route
+                // did not deliver usable output for this role, so a role-scoped outcome
+                // softly demotes it for this role only (cleared by a later verified
+                // completion), while the turn gate below still refuses to count the turn.
+                this.eightBit.observe({
+                  kind: "role_outcome",
+                  outcome: "role_failed",
+                  providerId: activeSelection.providerId,
+                  modelId: activeSelection.modelId,
+                  observedAt: new Date().toISOString(),
+                  source: "runtime",
+                  role: eightBitRoleForAgentRole(req.role),
+                  requestShape: "production",
+                  correlationId: req.runId,
+                });
+              }
             }
             return response;
           } catch (err: unknown) {
+            // R41: a context-fit verdict is a local admission decision — no provider request
+            // was made, so there is no failure evidence to record and no route to rotate.
+            if (err instanceof RoleContextOverflowError) throw err;
             const isCancelled = req.signal?.aborted || (err instanceof Error && err.message.includes(ERROR_CODES.AGENT_CANCELLED));
             const normalized = normalizeProviderError(err);
             forgeGreenR0Telemetry.recordProviderFailure({
@@ -1670,7 +1756,21 @@ export class AgentRuntime {
                 tools: convertToProviderTools(availableTools),
                 maxTokens: 4_096,
               }),
-              outputTokenDemand: outputDemandForRole(req.role),
+              // R41: the replacement route is the thing being decided — flat demand stays
+              // the bounded worst case, while the per-candidate callback lets the re-decide
+              // reserve exactly what this continuation would place on each candidate.
+              outputTokenDemand: roleOutputBudget({
+                role: req.role,
+                maxOutputTokens: budget.maxOutputTokens,
+                profiles: this.reasoningRouteProfiles,
+              }).outputTokenDemand,
+              outputTokenDemandFor: (providerId, modelId) => roleOutputBudget({
+                role: req.role,
+                providerId,
+                modelId,
+                maxOutputTokens: budget.maxOutputTokens,
+                profiles: this.reasoningRouteProfiles,
+              }).outputTokenDemand,
               hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
               routeFilter: this.freeCloud ? (providerId, modelId) => this.freeCloud!.isForgeAutoEligible(providerId, modelId) : undefined,
               capacityScoreAdjustment: this.freeCloud
@@ -1871,6 +1971,10 @@ export class AgentRuntime {
         }
       }
 
+      // R41: set when a dispatch was declined because the transcript alone fills the route's
+      // context window — carried into the blocked summary so the reason stays inspectable.
+      let contextOverflowBlockedReason: string | undefined;
+
       while (turnCount < budget.maxModelTurns) {
         if (req.signal?.aborted) {
           throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
@@ -1909,12 +2013,24 @@ export class AgentRuntime {
           response = await requestModelTurn();
           await persistModelTurn("provider_response_completed");
         } catch (err: unknown) {
+          if (err instanceof RoleContextOverflowError) {
+            // R41: the transcript alone exceeds this route's context window — an honest
+            // non-completion, not a provider error to normalize and surface as failed.
+            contextOverflowBlockedReason = err.message;
+            stopReason = "error";
+            break;
+          }
           const norm = normalizeProviderError(err);
           throw new Error(`[${norm.code}] ${norm.message}`);
         }
 
         totalUsage.inputTokens += response.usage.inputTokens;
         totalUsage.outputTokens += response.usage.outputTokens;
+        // R41: reasoning models burn completion tokens invisibly — keep the reported reasoning
+        // share in the run's accounting so role costs and budgets reflect it.
+        if (typeof response.usage.reasoningTokens === "number") {
+          totalUsage.reasoningTokens = (totalUsage.reasoningTokens ?? 0) + response.usage.reasoningTokens;
+        }
         if (typeof response.usage.cachedTokens === "number") {
           totalUsage.cachedTokens = (totalUsage.cachedTokens ?? 0) + response.usage.cachedTokens;
         }
@@ -1961,6 +2077,34 @@ export class AgentRuntime {
 
         // If no tools requested -> Assistant finished
         if (toolCalls.length === 0) {
+          // R41: a provider safety refusal is final for this dispatch shape — re-asking the
+          // same transcript can only draw the same refusal, so content_filter is an honest
+          // blocked stop after this single response, never a repair trigger.
+          if (response.finishReason === "content_filter") {
+            stopReason = "error";
+            break;
+          }
+          // R41: a reply cut off by the output cap is not a verified completion — with a
+          // bounded budget the signature R40 failure is hidden reasoning consuming every
+          // token before any answer exists. It consumes the same bounded repair budget as a
+          // schema-invalid answer (one re-ask by default); once that is spent the run breaks
+          // to the post-loop path, which reports a non-completion honestly instead of
+          // stamping a truncated answer "completed". An empty `stop` reply still ends the
+          // loop as before — the completion gate arbitrates whether the run actually
+          // verified anything.
+          const turnTruncated = response.finishReason === "length";
+          if (turnTruncated) {
+            if (structuredRepairs < maxStructuredOutputRepairs && turnCount < budget.maxModelTurns) {
+              structuredRepairs++;
+              messages.push({
+                role: "user",
+                content: `Your previous reply was ${response.text.trim().length === 0 ? "empty" : "cut off before it finished"}. ${expectedStructuredOutput ? `Return only a valid JSON object for the required ${expectedStructuredOutput} schema.` : "Provide the complete final answer now."}`,
+              });
+              continue;
+            }
+            stopReason = "error";
+            break;
+          }
           if (expectedStructuredOutput) {
             const validation = validateStructuredAgentResult(expectedStructuredOutput, finalSummary);
             if (!validation.success) {
@@ -2488,11 +2632,13 @@ export class AgentRuntime {
       const hadModelFinalResponse = finalSummary.trim().length > 0;
       const completedResponse = status === "completed"
         ? (hadModelFinalResponse ? finalSummary : "Completed the requested work.")
-        : exhaustedModelTurns
-          ? `[${ERROR_CODES.AGENT_MODEL_TURN_LIMIT}] The ${req.role} agent used all ${budget.maxModelTurns} model turns without finishing; the work is unfinished, not complete.`
-          : stopReason === "budget_exhausted"
-            ? `[${ERROR_CODES.AGENT_TOOL_LIMIT}] The ${req.role} agent reached its tool-call budget without finishing; the work is unfinished, not complete.`
-            : (hadModelFinalResponse ? finalSummary : `Agent ${req.role} stopped (${stopReason}) without finishing.`);
+        : contextOverflowBlockedReason !== undefined
+          ? contextOverflowBlockedReason
+          : exhaustedModelTurns
+            ? `[${ERROR_CODES.AGENT_MODEL_TURN_LIMIT}] The ${req.role} agent used all ${budget.maxModelTurns} model turns without finishing; the work is unfinished, not complete.`
+            : stopReason === "budget_exhausted"
+              ? `[${ERROR_CODES.AGENT_TOOL_LIMIT}] The ${req.role} agent reached its tool-call budget without finishing; the work is unfinished, not complete.`
+              : (hadModelFinalResponse ? finalSummary : `Agent ${req.role} stopped (${stopReason}) without finishing.`);
 
       const result: AgentRuntimeResult = {
         status,
@@ -2506,6 +2652,7 @@ export class AgentRuntime {
         structuredData,
         contextMetrics,
         ...(status !== "completed" && stopReason === "budget_exhausted" ? { error: exhaustedModelTurns ? ERROR_CODES.AGENT_MODEL_TURN_LIMIT : ERROR_CODES.AGENT_TOOL_LIMIT } : {}),
+        ...(status !== "completed" && contextOverflowBlockedReason !== undefined ? { error: ERROR_CODES.AGENT_CONTEXT_BUDGET_EXCEEDED } : {}),
       };
 
       if (status === "completed") {

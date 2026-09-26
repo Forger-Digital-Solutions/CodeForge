@@ -54,3 +54,27 @@ describe("classifyFailure — R23 live campaign fixtures (2026-09-21)", () => {
     expect(classifyFailure(Object.assign(new Error("groq stream ended before the provider sent [DONE] (HTTP 200, 0 byte(s), 0 frame(s), no terminal finish_reason)"), { code: "STREAM_INTERRUPTED", status: 200 }))).toBe("PROVIDER_OUTAGE");
   });
 });
+
+/**
+ * R40/R41 — Google structural entitlement: the provider confirms an account-level
+ * suspension of the API consumer rather than a credential fault on our side.
+ */
+describe("classifyFailure — Google consumer suspension (structural entitlement)", () => {
+  it("[PASS] a 403 carrying CONSUMER_SUSPENDED is ACCESS_RESTRICTED (permanent), not AUTH_FAILURE", () => {
+    // R40: google returns 403 PERMISSION_DENIED with a CONSUMER_SUSPENDED detail; the
+    // openai-compatible adapter maps it to AUTH_ERROR and embeds the redacted body
+    // (≤200 chars) in the message, so the suspension claim survives to classification.
+    const suspended = Object.assign(
+      new Error('google error (403): PERMISSION_DENIED, body: {"error":{"status":"PERMISSION_DENIED","details":[{"reason":"CONSUMER_SUSPENDED"}]}'),
+      { code: "AUTH_ERROR", status: 403 },
+    );
+    expect(classifyFailure(suspended)).toBe("ACCESS_RESTRICTED");
+    // Case/separator-insensitive: the same claim in prose form classifies identically.
+    expect(classifyFailure(new Error("google error (403): Consumer Suspended for this project"))).toBe("ACCESS_RESTRICTED");
+    // Structural: remove-and-refresh policy, never an automatic retry.
+    expect(FAILURE_POLICY.ACCESS_RESTRICTED).toBe("remove_and_refresh");
+    // Not every 403 is a restriction — a bare PERMISSION_DENIED stays a credential fault.
+    expect(classifyFailure(Object.assign(new Error("google error (403): PERMISSION_DENIED"), { code: "AUTH_ERROR", status: 403 }))).toBe("AUTH_FAILURE");
+    expect(classifyFailure(Object.assign(new Error("google error (403): forbidden"), { code: "AUTH_ERROR", status: 403 }))).toBe("AUTH_FAILURE");
+  });
+});

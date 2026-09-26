@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "244e3eeac774a1976b073dfe22c616210ec79e4e491c5644d60ee9ced91d798e",
-  "surfaceVersion": "r37-intelligence-capacity-v1",
+  "sourceStateId": "edf8f74bb006db6a56a19abbc5cfd0d07eca7de7614447bf57183b0aeafe093c",
+  "surfaceVersion": "r41-reasoning-budget-interim-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -28,6 +28,7 @@
     "packages/server/src/duplicate-suppression.ts",
     "packages/server/src/forge-verify-persistence.ts",
     "packages/server/src/history-compaction.ts",
+    "packages/server/src/role-output-budget.ts",
     "packages/server/src/turn-state-machine.ts",
     "packages/server/src/workflow-service.ts",
     "packages/sessions/src/persistence.ts",
@@ -60,11 +61,12 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "6943c7b7aed2cab4560d268387cb488a942970bb",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "77b9c2e6cc194a73e98e5cbeb5547bd0628ff722",
+    "packages/server/src/agent-runtime.ts": "b5be2f3d210025114bbf03549d8bc341ed955665",
     "packages/server/src/autonomous-orchestrator.ts": "5464894a400b551c28197454c097f9061171298d",
     "packages/server/src/duplicate-suppression.ts": "5609d0e3817b1214cf1540810f355bef3ce842c3",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
+    "packages/server/src/role-output-budget.ts": "f2560f9ee66fe33d5cf9f0bb6b1d1f3bd7a441dc",
     "packages/server/src/turn-state-machine.ts": "bd79b984c832d8ad7020b58b2f4991c747abafd6",
     "packages/server/src/workflow-service.ts": "a6fa8ae76d908fe503ba6050d8afdf9d2e239b23",
     "packages/sessions/src/persistence.ts": "5832703ed9a300702e585be80d8886b6d8be2612",
@@ -1436,17 +1438,41 @@
       "regressionEvidence": "R37 campaign: canonical Vitest suite at the reviewed tree (3746+ pass, expected Postgres-environment skips, zero unexpected failures); focused semantic-diff suite 20/20 including the focused-test cases and the fit() helper false-positive control.",
       "recertifiedAt": "2026-09-26",
       "sourceStateConstant": "R37_INTELLIGENCE_CAPACITY_SOURCE_STATE"
+    },
+    {
+      "label": "R41 reasoning-budget interim source-state reconciliation",
+      "reason": "R41 changes the certified AgentRuntime dispatch surface: orchestrated role calls now use bounded per-route reasoning/output budgets and reject insufficient context, truncated completion, and content-filtered completion without claiming success. The new role-output-budget module is material because AgentRuntime imports it. This is an interim source identity, not a claim that the R41 live role, ForgeGreen, scale, or canonical gates are complete.",
+      "priorSourceStateId": "244e3eeac774a1976b073dfe22c616210ec79e4e491c5644d60ee9ced91d798e",
+      "priorSurfaceVersion": "r37-intelligence-capacity-v1",
+      "resultingSourceStateId": "edf8f74bb006db6a56a19abbc5cfd0d07eca7de7614447bf57183b0aeafe093c",
+      "resultingSurfaceVersion": "r41-reasoning-budget-interim-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Orchestrated role calls reserve and dispatch route-specific bounded output budgets, block context exhaustion, retain reported reasoning usage, and withhold successful-route observations for unusable responses. Paid Auto and completion authority remain unchanged.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/role-output-budget.ts",
+          "change": "New bounded per-role, time-limited measured reasoning reserve policy used by AgentRuntime.",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "Pre-reconciliation canonical: 3795 pass / 2 fingerprint guards fail / 48 skip; full typecheck clean. After fingerprint review: focused provenance guards 8/8 and post-reconciliation canonical 3798 pass / 0 fail / 48 skip (469.81s). Historical five R40 timing flakes did not reproduce; their mechanisms are not yet closed.",
+      "recertifiedAt": "2026-09-26",
+      "sourceStateConstant": "R41_REASONING_BUDGET_INTERIM_SOURCE_STATE"
     }
   ],
-  "generationNote": "This source-state ID is deterministically derived from the material FG-8 through FG-12F implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, and R37 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
+  "generationNote": "This interim source-state ID is derived from the reviewed material surface including the R41 role-output-budget module. Prior campaign identities and their recorded hashes remain unchanged. Computed using packages/forgegreen-campaign/src/source-state.ts idAlgorithm.",
   "recertifiedAt": "2026-09-26",
   "recertification": {
-    "phase": "R37 intelligence-capacity reconciliation",
-    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R37 committed surface so the fg11/fg12e provenance canaries certify the current tree.",
+    "phase": "R41 reasoning-budget interim reconciliation",
+    "reason": "Re-issue the material fingerprint after reviewing the bounded role-dispatch changes; retain historical source-state identities and the certification canaries.",
     "changedFiles": [
-      "packages/workflow/src/semantic-diff-review.ts"
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/role-output-budget.ts"
     ],
-    "priorSourceStateId": "81cef21f706a32ed9a34db06f06566312d7bc2d53279f4a659142b51b1304fb7",
+    "priorSourceStateId": "244e3eeac774a1976b073dfe22c616210ec79e4e491c5644d60ee9ced91d798e",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

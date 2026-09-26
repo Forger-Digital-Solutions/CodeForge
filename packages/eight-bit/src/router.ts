@@ -38,6 +38,14 @@ export interface SelectRouteOptions {
   /** R34 Mission K: bounded output allowance for this dispatch (tokens). Defaults to the
    *  writer-sized 2048 reservation; lighter roles pass a smaller honest bound. */
   outputTokenDemand?: number;
+  /**
+   * R41: per-candidate completion demand forwarded to fabric admission — the bounded output
+   * budget this dispatch would place on THAT route (role baseline plus the route's measured
+   * reasoning reserve, when one exists). Overrides `outputTokenDemand` per candidate so a
+   * tight output window can admit a qualifying lighter route instead of false-waiting on
+   * the cross-candidate worst case.
+   */
+  outputTokenDemandFor?: (providerId: string, modelId: string) => number | undefined;
   requiredCapabilities?: string[];
   taskType?: string;
   /** FG-4 advisory capability requirement. Hard eligibility remains owned by 8-Bit. */

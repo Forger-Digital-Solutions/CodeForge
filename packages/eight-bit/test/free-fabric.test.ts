@@ -450,6 +450,38 @@ describe("FreeFabric — R34 measured demand (Mission E)", () => {
     expect(fabric2.decide({ requestId: "r1", userId: "alice", role: "CODER", demand: { requests: 1, estimatedPromptTokens: 3_000 } }).outcome).toBe("ADMITTED");
   });
 
+  it("per-candidate output demand falls back to the flat demand on 0/NaN/sub-token and ceils fractions", () => {
+    const c = clock();
+    const mk = () => {
+      const route = managedRoute("out", {
+        windows: [
+          quotaWindow(),
+          quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 1_500_000 }),
+          quotaWindow({ unit: "output_tokens", limit: 1, remaining: 1 }),
+        ],
+      });
+      return createFreeFabric({
+        managedRoutes: () => [route],
+        managedPools: () => [poolFor(route)],
+        reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+        now: c.now,
+      });
+    };
+    const decide = (fabric: ReturnType<typeof mk>, requestId: string, outputTokensFor: () => number | undefined) =>
+      fabric.decide({ requestId, userId: "alice", role: "CODER", demand: { requests: 1, outputTokens: 100, outputTokensFor } });
+
+    // 0, NaN, a sub-token fraction, and undefined are not real request sizes — the flat
+    // 100-token demand applies instead, and 100 > the pool's 1-token output window. If any
+    // of these were honored as-is the route would admit while reserving nothing.
+    for (const bad of [0, Number.NaN, 0.5, undefined]) {
+      expect(decide(mk(), `r-${String(bad)}`, () => bad).outcome).toBe("QUEUED_FOR_CAPACITY");
+    }
+    // A fractional demand ceils up: 1.4 holds 2 tokens, still over the 1-token window.
+    expect(decide(mk(), "r-frac", () => 1.4).outcome).toBe("QUEUED_FOR_CAPACITY");
+    // A valid nonzero demand is honored exactly — a 1-token request fits the window.
+    expect(decide(mk(), "r-ok", () => 1).outcome).toBe("ADMITTED");
+  });
+
   it("a genuinely large grown-context turn still fails closed against a small pool", () => {
     const c = clock();
     const groqLike = narrowPoolRoute("groq-small");

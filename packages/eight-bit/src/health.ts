@@ -59,6 +59,12 @@ export function classifyFailure(error: unknown): FailureReason {
   // inkling: "only available on agentic harnesses") is a permission restriction — permanent for the
   // direct API path, never a credential problem to retry. A bare 401/403 stays AUTH_FAILURE.
   if (/only available (on|to|via|for)|not available (for|to) (this|your) (client|harness|integration|application)|restricted to (approved|partner|agentic)|agentic harness/.test(msg)) return "ACCESS_RESTRICTED";
+  // R40/R41: Google's 403 PERMISSION_DENIED envelope carries a CONSUMER_SUSPENDED detail —
+  // a confirmed account-level suspension of the API consumer. Structural and permanent for
+  // the direct path, not a credential fault to retry. Only that explicit claim qualifies:
+  // a bare 403/PERMISSION_DENIED still falls through to AUTH_FAILURE, and no cause beyond
+  // the confirmed suspension is inferred.
+  if (/consumer[_\s-]?suspended/.test(msg)) return "ACCESS_RESTRICTED";
   if (/\b401\b|invalid api key|unauthor|auth ?error|missing_api_key/.test(msg)) return "AUTH_FAILURE";
   // HTTP 410 is a retirement signal (GitHub Models API brownout, 2026-09-21) — refresh, do not retry.
   if (status === 410 || /\b410\b|has been retired|is being retired|scheduled for retirement/.test(msg)) return "MODEL_RETIRED";
