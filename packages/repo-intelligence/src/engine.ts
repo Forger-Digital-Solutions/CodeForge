@@ -822,6 +822,19 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
 
   async findRelevantContext(task: string, options: QueryOptions & { mentionedPaths?: string[] } = {}): Promise<QueryPage<RepositoryMatch>> {
     const tokens = [...new Set(task.split(/[^A-Za-z0-9_./-]+/).filter((token) => token.length >= 3))].slice(0, 12);
+    // Natural-language task text inflects identifiers ("totals" for `total`, "rounding" for
+    // `round`). One morphological stem per token recovers those for the substring matchers
+    // below; FTS content search keeps base tokens since quoted terms need exact matches.
+    const stemVariant = (token: string): string | undefined => {
+      if (/ies$/.test(token) && token.length >= 6) return `${token.slice(0, -3)}y`;
+      if (/ing$/.test(token) && token.length >= 7) return token.slice(0, -3);
+      if (/ed$/.test(token) && token.length >= 6) return token.slice(0, -2);
+      if (/es$/.test(token) && token.length >= 6) return token.slice(0, -2);
+      if (/s$/.test(token) && !/ss$/.test(token) && token.length >= 5) return token.slice(0, -1);
+      return undefined;
+    };
+    const variantTokens = tokens.map(stemVariant).filter((t): t is string => t !== undefined && !tokens.includes(t));
+    const lexicalTokens = [...tokens, ...variantTokens];
     const scores = new Map<string, RepositoryMatch>();
     const add = (match: RepositoryMatch): void => {
       const current = scores.get(match.path);
@@ -840,13 +853,15 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
     if (tokens.length > 1) {
       for (const match of (await this.searchText(tokens.join(" "), { limit: 100 })).items) add({ ...match, score: match.score + 80, reasons: [...match.reasons, "multi_token_match"] });
     }
-    for (const token of tokens) {
+    for (const token of lexicalTokens) {
       for (const symbol of (await this.searchSymbols(token, { limit: 100 })).items) {
         const exact = symbol.name.toLowerCase() === token.toLowerCase();
         const testLike = symbol.kind === "test" || /(?:^|\/)(?:test|tests|__tests__)\/|\.(?:test|spec)\./i.test(symbol.path);
         add({ path: symbol.path, symbol, line: symbol.startLine, score: exact ? (testLike ? 100 : 135) : (testLike ? 50 : 65), reasons: [exact ? "exact_symbol_match" : "symbol_name_match", ...(testLike ? ["test_symbol"] : ["implementation_symbol"])], confidence: "high" });
       }
       for (const match of (await this.searchFiles(token, { limit: 50 })).items) add(match);
+    }
+    for (const token of tokens) {
       for (const match of (await this.searchText(token, { limit: 50 })).items) add(match);
     }
     for (const match of [...scores.values()].slice(0, 50)) {

@@ -1,0 +1,928 @@
+{
+  "at": "2026-09-26T21:50:15.923Z",
+  "fixtures": [
+    {
+      "id": "four-file-bug",
+      "relevant": [
+        "src/normalize.mjs",
+        "src/report.mjs",
+        "tests/report.test.mjs"
+      ]
+    },
+    {
+      "id": "cross-ref-rename",
+      "relevant": [
+        "src/auth.mjs",
+        "src/index.mjs",
+        "src/login.mjs",
+        "src/admin.mjs"
+      ]
+    },
+    {
+      "id": "false-positive-name",
+      "relevant": [
+        "src/money.mjs",
+        "tests/money.test.mjs"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "fixture": "four-file-bug",
+      "arm": "packet",
+      "status": "completed",
+      "turns": 1,
+      "toolCalls": 0,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 4,
+        "reason": "orientation packet covered 4 candidate files and resolved 2/10 goal symbols"
+      },
+      "brief": {
+        "bytes": 1094,
+        "candidateFiles": 4,
+        "candidatePaths": [
+          "tests/report.test.mjs",
+          "src/report.mjs",
+          "src/normalize.mjs",
+          "src/util.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 2,
+          "total": 10
+        },
+        "excerptedFiles": 4
+      },
+      "briefRecall": 1,
+      "classes": {},
+      "relevantFilesRead": 0,
+      "relevantTotal": 3,
+      "recall": 0,
+      "trace": []
+    },
+    {
+      "fixture": "four-file-bug",
+      "arm": "serial",
+      "status": "completed",
+      "turns": 4,
+      "toolCalls": 3,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 4,
+        "reason": "orientation packet covered 4 candidate files and resolved 2/10 goal symbols"
+      },
+      "brief": {
+        "bytes": 1094,
+        "candidateFiles": 4,
+        "candidatePaths": [
+          "tests/report.test.mjs",
+          "src/report.mjs",
+          "src/normalize.mjs",
+          "src/util.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 2,
+          "total": 10
+        },
+        "excerptedFiles": 4
+      },
+      "briefRecall": 1,
+      "classes": {
+        "necessary": 1,
+        "serialized_but_batchable": 2
+      },
+      "relevantFilesRead": 3,
+      "relevantTotal": 3,
+      "recall": 1,
+      "trace": [
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/normalize.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 1
+        },
+        {
+          "turn": 2,
+          "tool": "read_file",
+          "target": "src/report.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        },
+        {
+          "turn": 3,
+          "tool": "read_file",
+          "target": "tests/report.test.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        }
+      ]
+    },
+    {
+      "fixture": "four-file-bug",
+      "arm": "batch",
+      "status": "completed",
+      "turns": 2,
+      "toolCalls": 3,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 4,
+        "reason": "orientation packet covered 4 candidate files and resolved 2/10 goal symbols"
+      },
+      "brief": {
+        "bytes": 1094,
+        "candidateFiles": 4,
+        "candidatePaths": [
+          "tests/report.test.mjs",
+          "src/report.mjs",
+          "src/normalize.mjs",
+          "src/util.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 2,
+          "total": 10
+        },
+        "excerptedFiles": 4
+      },
+      "briefRecall": 1,
+      "classes": {
+        "necessary": 3
+      },
+      "relevantFilesRead": 3,
+      "relevantTotal": 3,
+      "recall": 1,
+      "trace": [
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/normalize.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 3
+        },
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/report.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 3
+        },
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "tests/report.test.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 3
+        }
+      ]
+    },
+    {
+      "fixture": "four-file-bug",
+      "arm": "wander",
+      "status": "blocked",
+      "turns": 4,
+      "toolCalls": 4,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 4,
+        "reason": "orientation packet covered 4 candidate files and resolved 2/10 goal symbols"
+      },
+      "brief": {
+        "bytes": 1094,
+        "candidateFiles": 4,
+        "candidatePaths": [
+          "tests/report.test.mjs",
+          "src/report.mjs",
+          "src/normalize.mjs",
+          "src/util.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 2,
+          "total": 10
+        },
+        "excerptedFiles": 4
+      },
+      "briefRecall": 1,
+      "classes": {
+        "low_information": 2,
+        "serialized_but_batchable": 2
+      },
+      "relevantFilesRead": 2,
+      "relevantTotal": 3,
+      "recall": 0.6666666666666666,
+      "trace": [
+        {
+          "turn": 1,
+          "tool": "list_files",
+          "target": ".",
+          "outcome": "success",
+          "class": "low_information",
+          "batchSize": 1
+        },
+        {
+          "turn": 2,
+          "tool": "read_file",
+          "target": "README.md",
+          "outcome": "failed",
+          "class": "low_information",
+          "batchSize": 1
+        },
+        {
+          "turn": 3,
+          "tool": "read_file",
+          "target": "src/normalize.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        },
+        {
+          "turn": 4,
+          "tool": "read_file",
+          "target": "src/report.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        }
+      ]
+    },
+    {
+      "fixture": "four-file-bug",
+      "arm": "reread",
+      "status": "blocked",
+      "turns": 4,
+      "toolCalls": 4,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 4,
+        "reason": "orientation packet covered 4 candidate files and resolved 2/10 goal symbols"
+      },
+      "brief": {
+        "bytes": 1094,
+        "candidateFiles": 4,
+        "candidatePaths": [
+          "tests/report.test.mjs",
+          "src/report.mjs",
+          "src/normalize.mjs",
+          "src/util.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 2,
+          "total": 10
+        },
+        "excerptedFiles": 4
+      },
+      "briefRecall": 1,
+      "classes": {
+        "necessary": 1,
+        "duplicate_suppressed": 1,
+        "serialized_but_batchable": 2
+      },
+      "relevantFilesRead": 3,
+      "relevantTotal": 3,
+      "recall": 1,
+      "trace": [
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/normalize.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 1
+        },
+        {
+          "turn": 2,
+          "tool": "read_file",
+          "target": "src/normalize.mjs",
+          "outcome": "suppressed",
+          "class": "duplicate_suppressed",
+          "batchSize": 1
+        },
+        {
+          "turn": 3,
+          "tool": "read_file",
+          "target": "src/report.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        },
+        {
+          "turn": 4,
+          "tool": "read_file",
+          "target": "tests/report.test.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        }
+      ]
+    },
+    {
+      "fixture": "cross-ref-rename",
+      "arm": "packet",
+      "status": "completed",
+      "turns": 1,
+      "toolCalls": 0,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 5,
+        "reason": "orientation packet covered 6 candidate files and resolved 1/7 goal symbols"
+      },
+      "brief": {
+        "bytes": 1521,
+        "candidateFiles": 6,
+        "candidatePaths": [
+          "src/auth.mjs",
+          "src/index.mjs",
+          "src/admin.mjs",
+          "src/login.mjs",
+          "src/meta.mjs",
+          "src/unused1.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 1,
+          "total": 7
+        },
+        "excerptedFiles": 6
+      },
+      "briefRecall": 1,
+      "classes": {},
+      "relevantFilesRead": 0,
+      "relevantTotal": 4,
+      "recall": 0,
+      "trace": []
+    },
+    {
+      "fixture": "cross-ref-rename",
+      "arm": "serial",
+      "status": "completed",
+      "turns": 5,
+      "toolCalls": 4,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 5,
+        "reason": "orientation packet covered 6 candidate files and resolved 1/7 goal symbols"
+      },
+      "brief": {
+        "bytes": 1521,
+        "candidateFiles": 6,
+        "candidatePaths": [
+          "src/auth.mjs",
+          "src/index.mjs",
+          "src/admin.mjs",
+          "src/login.mjs",
+          "src/meta.mjs",
+          "src/unused1.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 1,
+          "total": 7
+        },
+        "excerptedFiles": 6
+      },
+      "briefRecall": 1,
+      "classes": {
+        "necessary": 1,
+        "serialized_but_batchable": 3
+      },
+      "relevantFilesRead": 4,
+      "relevantTotal": 4,
+      "recall": 1,
+      "trace": [
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/auth.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 1
+        },
+        {
+          "turn": 2,
+          "tool": "read_file",
+          "target": "src/index.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        },
+        {
+          "turn": 3,
+          "tool": "read_file",
+          "target": "src/login.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        },
+        {
+          "turn": 4,
+          "tool": "read_file",
+          "target": "src/admin.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        }
+      ]
+    },
+    {
+      "fixture": "cross-ref-rename",
+      "arm": "batch",
+      "status": "completed",
+      "turns": 2,
+      "toolCalls": 4,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 5,
+        "reason": "orientation packet covered 6 candidate files and resolved 1/7 goal symbols"
+      },
+      "brief": {
+        "bytes": 1521,
+        "candidateFiles": 6,
+        "candidatePaths": [
+          "src/auth.mjs",
+          "src/index.mjs",
+          "src/admin.mjs",
+          "src/login.mjs",
+          "src/meta.mjs",
+          "src/unused1.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 1,
+          "total": 7
+        },
+        "excerptedFiles": 6
+      },
+      "briefRecall": 1,
+      "classes": {
+        "necessary": 4
+      },
+      "relevantFilesRead": 4,
+      "relevantTotal": 4,
+      "recall": 1,
+      "trace": [
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/auth.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 4
+        },
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/index.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 4
+        },
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/login.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 4
+        },
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/admin.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 4
+        }
+      ]
+    },
+    {
+      "fixture": "cross-ref-rename",
+      "arm": "wander",
+      "status": "blocked",
+      "turns": 5,
+      "toolCalls": 5,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 5,
+        "reason": "orientation packet covered 6 candidate files and resolved 1/7 goal symbols"
+      },
+      "brief": {
+        "bytes": 1521,
+        "candidateFiles": 6,
+        "candidatePaths": [
+          "src/auth.mjs",
+          "src/index.mjs",
+          "src/admin.mjs",
+          "src/login.mjs",
+          "src/meta.mjs",
+          "src/unused1.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 1,
+          "total": 7
+        },
+        "excerptedFiles": 6
+      },
+      "briefRecall": 1,
+      "classes": {
+        "low_information": 2,
+        "serialized_but_batchable": 3
+      },
+      "relevantFilesRead": 3,
+      "relevantTotal": 4,
+      "recall": 0.75,
+      "trace": [
+        {
+          "turn": 1,
+          "tool": "list_files",
+          "target": ".",
+          "outcome": "success",
+          "class": "low_information",
+          "batchSize": 1
+        },
+        {
+          "turn": 2,
+          "tool": "read_file",
+          "target": "README.md",
+          "outcome": "failed",
+          "class": "low_information",
+          "batchSize": 1
+        },
+        {
+          "turn": 3,
+          "tool": "read_file",
+          "target": "src/auth.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        },
+        {
+          "turn": 4,
+          "tool": "read_file",
+          "target": "src/index.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        },
+        {
+          "turn": 5,
+          "tool": "read_file",
+          "target": "src/login.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        }
+      ]
+    },
+    {
+      "fixture": "cross-ref-rename",
+      "arm": "reread",
+      "status": "blocked",
+      "turns": 5,
+      "toolCalls": 5,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 5,
+        "reason": "orientation packet covered 6 candidate files and resolved 1/7 goal symbols"
+      },
+      "brief": {
+        "bytes": 1521,
+        "candidateFiles": 6,
+        "candidatePaths": [
+          "src/auth.mjs",
+          "src/index.mjs",
+          "src/admin.mjs",
+          "src/login.mjs",
+          "src/meta.mjs",
+          "src/unused1.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 1,
+          "total": 7
+        },
+        "excerptedFiles": 6
+      },
+      "briefRecall": 1,
+      "classes": {
+        "necessary": 1,
+        "duplicate_suppressed": 1,
+        "serialized_but_batchable": 3
+      },
+      "relevantFilesRead": 4,
+      "relevantTotal": 4,
+      "recall": 1,
+      "trace": [
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/auth.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 1
+        },
+        {
+          "turn": 2,
+          "tool": "read_file",
+          "target": "src/auth.mjs",
+          "outcome": "suppressed",
+          "class": "duplicate_suppressed",
+          "batchSize": 1
+        },
+        {
+          "turn": 3,
+          "tool": "read_file",
+          "target": "src/index.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        },
+        {
+          "turn": 4,
+          "tool": "read_file",
+          "target": "src/login.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        },
+        {
+          "turn": 5,
+          "tool": "read_file",
+          "target": "src/admin.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        }
+      ]
+    },
+    {
+      "fixture": "false-positive-name",
+      "arm": "packet",
+      "status": "completed",
+      "turns": 1,
+      "toolCalls": 0,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 10,
+        "reason": "orientation packet weak — 4 candidates, 0/12 symbols resolved; full budget kept"
+      },
+      "brief": {
+        "bytes": 1056,
+        "candidateFiles": 4,
+        "candidatePaths": [
+          "src/bug.mjs",
+          "src/money.mjs",
+          "src/other.mjs",
+          "tests/money.test.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 0,
+          "total": 12
+        },
+        "excerptedFiles": 4
+      },
+      "briefRecall": 1,
+      "classes": {},
+      "relevantFilesRead": 0,
+      "relevantTotal": 2,
+      "recall": 0,
+      "trace": []
+    },
+    {
+      "fixture": "false-positive-name",
+      "arm": "serial",
+      "status": "completed",
+      "turns": 3,
+      "toolCalls": 2,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 10,
+        "reason": "orientation packet weak — 4 candidates, 0/12 symbols resolved; full budget kept"
+      },
+      "brief": {
+        "bytes": 1056,
+        "candidateFiles": 4,
+        "candidatePaths": [
+          "src/bug.mjs",
+          "src/money.mjs",
+          "src/other.mjs",
+          "tests/money.test.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 0,
+          "total": 12
+        },
+        "excerptedFiles": 4
+      },
+      "briefRecall": 1,
+      "classes": {
+        "necessary": 1,
+        "serialized_but_batchable": 1
+      },
+      "relevantFilesRead": 2,
+      "relevantTotal": 2,
+      "recall": 1,
+      "trace": [
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/money.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 1
+        },
+        {
+          "turn": 2,
+          "tool": "read_file",
+          "target": "tests/money.test.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        }
+      ]
+    },
+    {
+      "fixture": "false-positive-name",
+      "arm": "batch",
+      "status": "completed",
+      "turns": 2,
+      "toolCalls": 2,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 10,
+        "reason": "orientation packet weak — 4 candidates, 0/12 symbols resolved; full budget kept"
+      },
+      "brief": {
+        "bytes": 1056,
+        "candidateFiles": 4,
+        "candidatePaths": [
+          "src/bug.mjs",
+          "src/money.mjs",
+          "src/other.mjs",
+          "tests/money.test.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 0,
+          "total": 12
+        },
+        "excerptedFiles": 4
+      },
+      "briefRecall": 1,
+      "classes": {
+        "necessary": 2
+      },
+      "relevantFilesRead": 2,
+      "relevantTotal": 2,
+      "recall": 1,
+      "trace": [
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/money.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 2
+        },
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "tests/money.test.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 2
+        }
+      ]
+    },
+    {
+      "fixture": "false-positive-name",
+      "arm": "wander",
+      "status": "completed",
+      "turns": 5,
+      "toolCalls": 4,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 10,
+        "reason": "orientation packet weak — 4 candidates, 0/12 symbols resolved; full budget kept"
+      },
+      "brief": {
+        "bytes": 1056,
+        "candidateFiles": 4,
+        "candidatePaths": [
+          "src/bug.mjs",
+          "src/money.mjs",
+          "src/other.mjs",
+          "tests/money.test.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 0,
+          "total": 12
+        },
+        "excerptedFiles": 4
+      },
+      "briefRecall": 1,
+      "classes": {
+        "low_information": 2,
+        "serialized_but_batchable": 2
+      },
+      "relevantFilesRead": 2,
+      "relevantTotal": 2,
+      "recall": 1,
+      "trace": [
+        {
+          "turn": 1,
+          "tool": "list_files",
+          "target": ".",
+          "outcome": "success",
+          "class": "low_information",
+          "batchSize": 1
+        },
+        {
+          "turn": 2,
+          "tool": "read_file",
+          "target": "README.md",
+          "outcome": "failed",
+          "class": "low_information",
+          "batchSize": 1
+        },
+        {
+          "turn": 3,
+          "tool": "read_file",
+          "target": "src/money.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        },
+        {
+          "turn": 4,
+          "tool": "read_file",
+          "target": "tests/money.test.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        }
+      ]
+    },
+    {
+      "fixture": "false-positive-name",
+      "arm": "reread",
+      "status": "completed",
+      "turns": 4,
+      "toolCalls": 3,
+      "adaptiveBudget": {
+        "original": 10,
+        "applied": 10,
+        "reason": "orientation packet weak — 4 candidates, 0/12 symbols resolved; full budget kept"
+      },
+      "brief": {
+        "bytes": 1056,
+        "candidateFiles": 4,
+        "candidatePaths": [
+          "src/bug.mjs",
+          "src/money.mjs",
+          "src/other.mjs",
+          "tests/money.test.mjs"
+        ],
+        "symbolRecall": {
+          "resolved": 0,
+          "total": 12
+        },
+        "excerptedFiles": 4
+      },
+      "briefRecall": 1,
+      "classes": {
+        "necessary": 1,
+        "duplicate_suppressed": 1,
+        "serialized_but_batchable": 1
+      },
+      "relevantFilesRead": 2,
+      "relevantTotal": 2,
+      "recall": 1,
+      "trace": [
+        {
+          "turn": 1,
+          "tool": "read_file",
+          "target": "src/money.mjs",
+          "outcome": "success",
+          "class": "necessary",
+          "batchSize": 1
+        },
+        {
+          "turn": 2,
+          "tool": "read_file",
+          "target": "src/money.mjs",
+          "outcome": "suppressed",
+          "class": "duplicate_suppressed",
+          "batchSize": 1
+        },
+        {
+          "turn": 3,
+          "tool": "read_file",
+          "target": "tests/money.test.mjs",
+          "outcome": "success",
+          "class": "serialized_but_batchable",
+          "batchSize": 1
+        }
+      ]
+    }
+  ]
+}

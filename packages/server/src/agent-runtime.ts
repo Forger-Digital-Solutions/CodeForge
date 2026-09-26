@@ -1534,13 +1534,16 @@ export class AgentRuntime {
         // goal-named symbol resolved to a definition, or the goal named no symbols at all.
         // Free-text recall ratios are noisy (every noun looks like an identifier).
         const covered = explorationBriefMeta.candidateFiles > 0 && (recall.total === 0 || recall.resolved >= 1);
-        if (covered && budget.maxModelTurns > 4) {
+        // Scaled, not fixed: a 3-candidate packet needs one confirm turn, a 15-candidate
+        // packet legitimately needs more verification room. Still strictly below the default.
+        const applied = Math.min(budget.maxModelTurns, Math.max(4, Math.ceil(explorationBriefMeta.candidateFiles / 2) + 2));
+        if (covered && budget.maxModelTurns > applied) {
           adaptiveTurnBudget = {
             original: budget.maxModelTurns,
-            applied: 4,
+            applied,
             reason: `orientation packet covered ${explorationBriefMeta.candidateFiles} candidate files and resolved ${recall.resolved}/${recall.total} goal symbols`,
           };
-          budget = { ...budget, maxModelTurns: 4 };
+          budget = { ...budget, maxModelTurns: applied };
         } else if (!covered) {
           adaptiveTurnBudget = {
             original: budget.maxModelTurns,

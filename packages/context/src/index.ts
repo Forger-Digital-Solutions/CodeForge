@@ -91,6 +91,7 @@ export interface AssembledContext {
   explorationBrief?: {
     bytes: number;
     candidateFiles: number;
+    candidatePaths: string[];
     symbolRecall: { resolved: number; total: number };
     excerptedFiles: number;
   };
@@ -216,6 +217,7 @@ export class ContextAssembler {
             explorationBriefMeta = {
               bytes: brief.bytes,
               candidateFiles: brief.files.length,
+              candidatePaths: brief.files.map((f) => f.path),
               symbolRecall: brief.symbolRecall,
               excerptedFiles: brief.files.filter((f) => f.excerpt !== undefined).length,
             };
