@@ -279,6 +279,7 @@ describe("R44 — structured-output telemetry", () => {
       runId: "run-bad-review", agentId: "reviewer", role: "reviewer", goal: "Review", workspaceId: "ws-1", workspacePath: tmpDir,
       permissions: { read: true, search: true, write: false, executeCommand: false, network: false },
       structuredOutput: "reviewer",
+      roleRouting: true,
     });
 
     expect(result.status).toBe("blocked");
@@ -288,5 +289,11 @@ describe("R44 — structured-output telemetry", () => {
     expect(so!.repairs).toBe(1);
     expect(so!.rejections.length).toBe(2);
     expect(so!.exhausted).toBe(true);
+
+    // R44 regression: a structured-output exhaustion must journal converged_failed — before the
+    // stopReason fix the durable record claimed "completed" and misled recovery classification.
+    const journals = (await persistence.getWorkItems("test-session")).filter((i) => (i as unknown as { kind: string }).kind === "agent_run_journal");
+    expect(journals.length).toBe(1);
+    expect((journals[0] as unknown as { state: string }).state).toBe("converged_failed");
   });
 });

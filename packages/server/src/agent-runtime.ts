@@ -2249,6 +2249,10 @@ export class AgentRuntime {
                 continue;
               }
               const error = ERROR_CODES.AGENT_INVALID_STRUCTURED_OUTPUT;
+              // The finally block derives the journal's terminal state from stopReason —
+              // this early return must set it or a structured-output failure journals as
+              // "completed" and misleads recovery classification.
+              stopReason = "error";
               structuredTelemetry.exhausted = true;
               if (structuredTelemetry.rejections.length < 8) structuredTelemetry.rejections.push(validation.error.slice(0, 160));
               // R44: structured-output exhaustion is route-quality evidence — a model that

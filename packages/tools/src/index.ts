@@ -850,7 +850,7 @@ export class ToolBroker {
 
           const count = raw.split(oldText).length - 1;
           if (count === 0) {
-            throw new Error(`oldText not found in ${targetPath}. Re-read the file with read_file to see the current content before retrying.`);
+            throw new Error(`oldText not found in ${targetPath}. oldText must match the file byte-for-byte — copy it exactly from a read_file reply, including indentation, whitespace, and line endings; do not reformat or paraphrase it.`);
           }
           if (count !== expectedOccurrences) {
             throw new Error(`Expected ${expectedOccurrences} occurrence(s) of oldText but found ${count} in ${targetPath}. Widen oldText with surrounding context or set expectedOccurrences to the intended count.`);
