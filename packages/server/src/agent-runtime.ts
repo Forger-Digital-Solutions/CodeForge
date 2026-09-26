@@ -1323,6 +1323,15 @@ export class AgentRuntime {
         toolCallCount,
         writeCallCount,
         commandCallCount,
+        // R44: first-edit quality and structured-output evidence ride the journal so
+        // benchmark harnesses can attribute them per role without reaching into live
+        // runtime state. The upsert overwrites, so only the final snapshot persists.
+        telemetry: {
+          stopReason,
+          usage: totalUsage,
+          editAttempts,
+          structuredOutput: structuredTelemetry,
+        },
         ...(journalActiveRoute ? { route: { providerId: journalActiveRoute.providerId, modelId: journalActiveRoute.modelId } } : {}),
         ...(detail ? { recoveryDetail: redactSecrets(detail).slice(0, 4_096) } : {}),
         createdAt: journalCreatedAt,
