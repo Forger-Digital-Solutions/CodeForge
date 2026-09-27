@@ -311,6 +311,83 @@ describe("R48 C2 — paid per-role routing in executeAgentRun", () => {
     expect(zai.requests).toBeGreaterThan(0);
   });
 
+  it("reviewer independence — preferIndependentFromPoolId demotes the implementer's paid route", async () => {
+    // qwen is cheapest and QUALIFIED — without the hint it wins. The implementer ran on
+    // qwen's direct route, so the reviewer must prefer glm's independent pool instead.
+    const alibaba = new ScriptedPaidUpstream("alibaba");
+    const zai = new ScriptedPaidUpstream("zai");
+    const paidAuto = paidService(
+      [verdict("qwen3.8-flash", "REVIEWER", "QUALIFIED"), verdict("glm-5.3-flash", "REVIEWER", "QUALIFIED")],
+      { alibaba, zai },
+    );
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-paid-role", eventStore, persistence });
+
+    const result = await runtime(paidAuto).executeAgentRun({
+      runId: "run-paid-role-8",
+      agentId: "agent-paid-8",
+      role: "reviewer",
+      goal: "Review the diff",
+      workspaceId: "ws-paid-role",
+      workspacePath: ws,
+      permissions: { read: true, search: true, write: false, executeCommand: false, network: false },
+      modelSelection: { providerId: PAID_AUTO_PROVIDER_ID, modelId: PAID_AUTO_AUTO_MODEL_ID },
+      roleRouting: true,
+      preferIndependentFromPoolId: "qwen3.8-flash:direct",
+      adapter,
+    });
+
+    expect(result.status).toBe("completed");
+    expect(zai.requests).toBeGreaterThan(0);
+    expect(alibaba.requests).toBe(0);
+    const selection = eventStore.getAll().find((event) => event.type === "router.selection");
+    expect(selection?.payload).toMatchObject({ providerId: PAID_AUTO_PROVIDER_ID, modelId: "glm-5.3-flash" });
+    expect((selection?.payload as { reasons?: string[] }).reasons).toContain("INDEPENDENT_POOL_PREFERRED");
+    // The same-pool candidate stayed reachable (demoted, not excluded) and says so.
+    expect(result.routePoolId).toBe("glm-5.3-flash:direct");
+  });
+
+  it("same-pool fallback — when the only executable route is the implementer's, it serves with SAME_POOL evidence", async () => {
+    const alibaba = new ScriptedPaidUpstream("alibaba");
+    // Only qwen's direct route is READY — every other candidate is unqualified-for-exec,
+    // so the demoted same-pool route is the only thing that can serve.
+    const routes = Object.fromEntries(PAID_AUTO_MODELS.flatMap((model) => [model.direct, model.fallback]).map((route) => [route.routeId, {
+      state: "NOT_CONFIGURED" as const,
+      commercialEligibility: "verified" as const,
+      privacy: "verified" as const,
+      capabilityParity: "verified" as const,
+      certification: "CERTIFIED" as const,
+    }])) as Partial<Record<PaidAutoRouteId, { state: "NOT_CONFIGURED"; commercialEligibility: "verified"; privacy: "verified"; capabilityParity: "verified"; certification: "CERTIFIED" }>>;
+    routes["qwen3.8-flash:direct"] = { state: "READY", commercialEligibility: "verified", privacy: "verified", capabilityParity: "verified", certification: "CERTIFIED" };
+    const paidAuto = new PaidAutoService({
+      credentialStore: credentials,
+      paidExecutionEnabled: true,
+      openRouterFallbackEnabled: true,
+      routeQualifications: routes,
+      roleVerdicts: [verdict("qwen3.8-flash", "REVIEWER", "QUALIFIED")],
+      adapters: { alibaba },
+    });
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-paid-role", eventStore, persistence });
+
+    const result = await runtime(paidAuto).executeAgentRun({
+      runId: "run-paid-role-9",
+      agentId: "agent-paid-9",
+      role: "reviewer",
+      goal: "Review the diff",
+      workspaceId: "ws-paid-role",
+      workspacePath: ws,
+      permissions: { read: true, search: true, write: false, executeCommand: false, network: false },
+      modelSelection: { providerId: PAID_AUTO_PROVIDER_ID, modelId: PAID_AUTO_AUTO_MODEL_ID },
+      roleRouting: true,
+      preferIndependentFromPoolId: "qwen3.8-flash:direct",
+      adapter,
+    });
+
+    expect(result.status).toBe("completed");
+    expect(alibaba.requests).toBeGreaterThan(0);
+    const selection = eventStore.getAll().find((event) => event.type === "router.selection");
+    expect((selection?.payload as { reasons?: string[] }).reasons).toContain("SAME_POOL_FALLBACK");
+  });
+
   it("paid-auto/auto without a Paid Auto service fails closed instead of guessing", async () => {
     const adapter = createWorkspaceEventAdapter({ sessionId: "sess-paid-role", eventStore, persistence });
     const result = await runtime(undefined).executeAgentRun({

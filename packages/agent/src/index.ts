@@ -701,6 +701,10 @@ export interface AgentResult {
   risks: string[];
   recommendations: string[];
   structuredData?: StructuredAgentResult;
+  /** R48: the physical quota pool this run's route drew from (fabric capacityPoolId on the
+   *  free path, paid routeId on the paid path). An orchestrator hands it to a reviewer
+   *  spawn as preferIndependentFromPoolId so the review measures a different pool. */
+  routePoolId?: string;
 }
 
 export interface AgentModelSelection {

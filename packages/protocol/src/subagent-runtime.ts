@@ -139,7 +139,14 @@ export const AgentRunJournalSchema = z.object({
   toolCallCount: z.number().int().nonnegative(),
   writeCallCount: z.number().int().nonnegative(),
   commandCallCount: z.number().int().nonnegative(),
-  route: z.object({ providerId: z.string().min(1), modelId: z.string().min(1) }).optional(),
+  route: z.object({
+    providerId: z.string().min(1),
+    modelId: z.string().min(1),
+    /** R48: the physical quota pool this route drew from — a fabric capacityPoolId on the
+     *  free path, a paid routeId (`<canonical>:direct|openrouter`) on the paid path. A
+     *  reviewer run's preferIndependentFromPoolId is measured against this identity. */
+    capacityPoolId: z.string().max(512).optional(),
+  }).optional(),
   recoveryDetail: z.string().max(4_096).optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),

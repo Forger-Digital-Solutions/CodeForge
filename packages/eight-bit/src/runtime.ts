@@ -315,6 +315,7 @@ export class EightBitRuntime {
       roleQualityAdjustment: options.roleQualityAdjustment,
       routeAdmission: options.routeFilter,
       roleQualificationTierFor: options.roleQualificationTierFor,
+      ...(options.preferIndependentFromPoolId ? { preferIndependentFromPoolId: options.preferIndependentFromPoolId } : {}),
     });
     if (!decision) return this.router.selectRoute({ ...options, scope });
 

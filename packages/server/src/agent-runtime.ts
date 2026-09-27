@@ -101,7 +101,7 @@ import { createModelExecutionAdapter, convertToProviderTools, normalizeProviderE
 import { roleOutputBudget, type ReasoningRouteProfile } from "./role-output-budget.js";
 import { ForgeGreenRunPolicy, type ForgeGreenPolicySnapshot } from "./forgegreen-run-policy.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
-import { PAID_AUTO_AUTO_MODEL_ID, PAID_AUTO_PROVIDER_ID, type PaidAutoService } from "@codeforge/paid-auto";
+import { PAID_AUTO_AUTO_MODEL_ID, PAID_AUTO_PROVIDER_ID, type PaidAutoRouteId, type PaidAutoService } from "@codeforge/paid-auto";
 import { tryConsumeInferenceRequest, type InferenceLane, type WorkflowInferenceBudget } from "./inference-budget.js";
 
 export interface AgentRuntimeRequest {
@@ -137,9 +137,19 @@ export interface AgentRuntimeRequest {
    * R1: resolve this run's route through 8-Bit's role-scoped eligibility/ranking instead of the
    * legacy deterministic fallback, so different worker roles can be served by different qualified
    * models. Explicit `modelSelection` always wins and is never substituted; a route failure only
-   * ever rotates within the free fleet (never paid/BYOK).
+   * ever rotates within the free fleet. The sole paid-mode opt-in is `paid-auto/auto`
+   * (PAID_AUTO_AUTO_MODEL_ID): it resolves per-role inside the qualified paid roster and
+   * rotates within that roster only — the free fleet is never consulted for a paid turn.
    */
   roleRouting?: boolean;
+  /**
+   * R48: reviewer independence — prefer a quota pool different from the implementing
+   * route's. The value is the implementer's pool identity: a fabric `capacityPoolId` on
+   * the free path, a paid routeId (`<canonical>:direct|openrouter`) on the paid path.
+   * Soft preference in both fabrics — the same pool still serves when nothing
+   * independent can, and the decision evidence says so honestly.
+   */
+  preferIndependentFromPoolId?: string;
   /**
    * R2 durable recovery: when present, this run continues a crashed run from its recorded
    * conversation instead of starting fresh. The caller must have classified the journal as
@@ -266,6 +276,11 @@ export interface AgentRuntimeResult {
   error?: string;
   structuredData?: StructuredAgentResult;
   contextMetrics?: AgentContextMetrics;
+  /** R48: the physical quota pool the served route drew from — fabric capacityPoolId on the
+   *  free path, paid routeId on the paid path. A reviewer run's `preferIndependentFromPoolId`
+   *  asks for a pool different from this identity. Undefined for pinned selections (the
+   *  caller already knows the route) and non-fabric free selections (pool unmeasured). */
+  routePoolId?: string;
 }
 
 export type DurableToolExecutionState = "requested" | "started" | "completed" | "observation_recorded" | "failed" | "cancelled";
@@ -1365,6 +1380,10 @@ export class AgentRuntime {
     let commandCallCount = 0;
     let messages: ChatMessage[] = [];
     let journalActiveRoute: AgentModelSelection | undefined;
+    // R48: the physical quota pool the served route draws from — fabric capacityPoolId on
+    // the free path, paid routeId on the paid path. Declared outside the try like the
+    // journal so terminal/catch evidence still carries the last admitted pool.
+    let servedPoolId: string | undefined;
     let finalSummary = "";
     let stopReason: AgentStopReason = "completed" as AgentStopReason;
     // R21: "completed" is only earned by the model finishing its answer. A loop that ends because
@@ -1409,7 +1428,7 @@ export class AgentRuntime {
           routeWindows: routeWindows.size > 0 ? [...routeWindows.values()] : undefined,
           routeFailovers: routeFailovers.length > 0 ? routeFailovers : undefined,
         },
-        ...(journalActiveRoute ? { route: { providerId: journalActiveRoute.providerId, modelId: journalActiveRoute.modelId } } : {}),
+        ...(journalActiveRoute ? { route: { providerId: journalActiveRoute.providerId, modelId: journalActiveRoute.modelId, ...(servedPoolId ? { capacityPoolId: servedPoolId } : {}) } } : {}),
         ...(detail ? { recoveryDetail: redactSecrets(detail).slice(0, 4_096) } : {}),
         createdAt: journalCreatedAt,
         updatedAt: new Date().toISOString(),
@@ -1774,6 +1793,7 @@ export class AgentRuntime {
           {
             policyMode: "adaptive",
             userId: req.userId ?? this.userId,
+            preferIndependentFromPoolId: req.preferIndependentFromPoolId,
             estimatedContextTokens: budget.maxContextTokens,
             // R34 Mission E: the role-route admission reserves the assembled transcript's
             // measured size (context assembler output is already in `messages`), scaled per
@@ -1823,6 +1843,7 @@ export class AgentRuntime {
         activeSelection = { providerId: routing.model.providerId, modelId: routing.model.modelId };
         roleRouteRotatable = true;
         journalActiveRoute = activeSelection;
+        servedPoolId = routing.fabric?.selected?.capacityPoolId;
         adapter.emitRouterSelection(req.runId, routing.model.modelId, routing.model.providerId, Math.round(routing.score), routing.reasons);
       }
 
@@ -1855,6 +1876,7 @@ export class AgentRuntime {
             maxTokens: 4_096,
           }),
           requiresTools: req.role !== "planner" && req.role !== "reviewer",
+          ...(req.preferIndependentFromPoolId ? { preferIndependentFromRouteId: req.preferIndependentFromPoolId as PaidAutoRouteId } : {}),
         };
         const selection = this.paidAuto.selectRoleRoute(paidRoleRouteInput);
         if (selection.outcome !== "selected" || !selection.selected) {
@@ -1863,6 +1885,7 @@ export class AgentRuntime {
         activeSelection = { providerId: PAID_AUTO_PROVIDER_ID, modelId: selection.selected.canonicalModelId };
         roleRouteRotatable = true;
         journalActiveRoute = activeSelection;
+        servedPoolId = selection.selected.route.routeId;
         adapter.emitRouterSelection(req.runId, selection.selected.canonicalModelId, PAID_AUTO_PROVIDER_ID, selection.selected.expectedCostUsd, selection.reasonCodes);
       }
 
@@ -2044,6 +2067,7 @@ export class AgentRuntime {
               // and replays optimized for the failing route must not survive the switch.
               greenPolicy.escalate("provider_failover", `${failing.providerId}/${failing.modelId} -> ${PAID_AUTO_PROVIDER_ID}/${next.canonicalModelId} (${normalized.code})`);
               activeSelection = { providerId: PAID_AUTO_PROVIDER_ID, modelId: next.canonicalModelId };
+              servedPoolId = next.route.routeId;
               rotations++;
               continue;
             }
@@ -2129,6 +2153,7 @@ export class AgentRuntime {
             // and replays optimized for the failing route must not survive the switch.
             greenPolicy.escalate("provider_failover", `${failing.providerId}/${failing.modelId} -> ${outcome.replacement.providerId}/${outcome.replacement.modelId} (${outcome.reason})`);
             activeSelection = { providerId: outcome.replacement.providerId, modelId: outcome.replacement.modelId };
+            servedPoolId = outcome.capacityPoolId ?? servedPoolId;
             rotations++;
           }
         }
@@ -3091,6 +3116,7 @@ export class AgentRuntime {
               stopReason,
               filesChanged: Array.from(changedFiles),
               error: toolExec.error,
+              ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
             };
           }
           if (noEffectWriteCount >= 4) {
@@ -3111,6 +3137,7 @@ export class AgentRuntime {
               filesChanged: Array.from(changedFiles),
               error: ERROR_CODES.AGENT_NO_PROGRESS_DETECTED,
               contextMetrics,
+              ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
             };
           }
         }
@@ -3176,6 +3203,7 @@ export class AgentRuntime {
         filesChanged: Array.from(changedFiles),
         structuredData,
         contextMetrics,
+        ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
         ...(status !== "completed" && stopReason === "budget_exhausted" ? { error: exhaustedModelTurns ? ERROR_CODES.AGENT_MODEL_TURN_LIMIT : ERROR_CODES.AGENT_TOOL_LIMIT } : {}),
         ...(status !== "completed" && contextOverflowBlockedReason !== undefined ? { error: ERROR_CODES.AGENT_CONTEXT_BUDGET_EXCEEDED } : {}),
       };
@@ -3223,6 +3251,7 @@ export class AgentRuntime {
         stopReason: isCancelled ? "cancelled" : "error",
         filesChanged: Array.from(changedFiles),
         error: errorMsg,
+        ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
       };
     } finally {
       // R2: write terminal journal state regardless of how the run ended. The terminal state

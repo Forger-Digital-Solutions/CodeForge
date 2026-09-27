@@ -732,6 +732,11 @@ export class AutonomousRunOrchestrator {
       let reviewPassed = false;
       let reviewFindings: AgentFinding[] = [];
       let lastDeterministicReview: Awaited<ReturnType<typeof reviewDiff>> | undefined;
+      // R48: the implementing run's quota-pool identity — the reviewer spawn prefers a
+      // different physical pool so the review is capacity-independent, not the same
+      // account judging its own output. Undefined when the implementer's pool was never
+      // measured (pinned route, non-fabric selection); the hint is simply absent then.
+      let implementerPoolId: string | undefined;
 
       while (!reviewPassed) {
         if (controller.signal.aborted) throw new Error("Run cancelled during execution/revision");
@@ -782,6 +787,7 @@ export class AutonomousRunOrchestrator {
             return blockedResult;
           }
           changedFiles = codeResult.files;
+          implementerPoolId = codeResult.routePoolId ?? implementerPoolId;
         } else if (this.agentRuntime) {
           const coderRunResult = await this.agentRuntime.executeAgentRun({
             runId,
@@ -800,6 +806,7 @@ export class AutonomousRunOrchestrator {
             explorerEvidence,
             findings: explorerFindings,
           });
+          implementerPoolId = coderRunResult.routePoolId ?? implementerPoolId;
           changedFiles = coderRunResult.filesChanged.length > 0
             ? coderRunResult.filesChanged
             : (await fs.readdir(worktreeWs.rootPath)).filter((f) => !f.startsWith("."));
@@ -855,6 +862,9 @@ export class AutonomousRunOrchestrator {
           structuredOutput: "reviewer",
           workspaceKind: "git-worktree",
           workspaceBranch: worktreeWs.branch,
+          // R48: the review must not silently reuse the implementer's quota pool — prefer
+          // an independent route; a same-pool admission records SAME_POOL_FALLBACK.
+          ...(implementerPoolId ? { preferIndependentFromPoolId: implementerPoolId } : {}),
         });
 
         reviewFindings = [...deterministicFindings, ...(reviewResult.findings || [])];

@@ -424,6 +424,11 @@ export class PaidAutoService {
     /** Additional measured economics (successRate/roleFit/toolReliability) — caller-owned. */
     measured?: SixteenBitEvidenceMap;
     priceOverrides?: SixteenBitRankOptions["priceOverrides"];
+    /** R48: reviewer independence — prefer candidates whose executable route is NOT this
+     *  route id (the implementer's quota pool). Soft preference like the free fabric's:
+     *  the same pool stays reachable when no independent route can serve, and the
+     *  candidate's reasonCodes record SAME_POOL_FALLBACK/INDEPENDENT_POOL_PREFERRED. */
+    preferIndependentFromRouteId?: PaidAutoRouteId;
   }): PaidRoleRouteSelection {
     const task: SixteenBitTaskProfile = {
       role: input.role,
@@ -451,8 +456,15 @@ export class PaidAutoService {
         route,
         roleStatus: evidence[candidate.canonicalModelId]?.roleStatus ?? "NOT_TESTED",
         expectedCostUsd: candidate.expectedCostUsd,
-        reasonCodes: candidate.reasonCodes,
+        reasonCodes: input.preferIndependentFromRouteId !== undefined
+          ? [...candidate.reasonCodes, route.routeId === input.preferIndependentFromRouteId ? "SAME_POOL_FALLBACK" : "INDEPENDENT_POOL_PREFERRED"]
+          : candidate.reasonCodes,
       });
+    }
+    // Soft preference only: an independent-pool candidate outranks the implementer's pool,
+    // but the implementer's pool still serves when nothing independent can.
+    if (input.preferIndependentFromRouteId !== undefined) {
+      orderedCandidates.sort((a, b) => Number(a.route.routeId === input.preferIndependentFromRouteId) - Number(b.route.routeId === input.preferIndependentFromRouteId));
     }
     const selected = orderedCandidates[0];
     const outcome: PaidRoleRouteOutcome = selected

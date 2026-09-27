@@ -80,6 +80,10 @@ export interface SelectRouteOptions {
    * probation peer could serve.
    */
   roleQualificationTierFor?: (providerId: string, modelId: string) => RoleQualificationTier;
+  /** R48: reviewer independence on the run path — prefer a physical quota pool different
+   *  from the implementation route's. Soft preference, never an exclusion; the fabric
+   *  records SAME_POOL_FALLBACK honestly when only the same pool could admit. */
+  preferIndependentFromPoolId?: string;
 }
 
 export type SelectRouteResult =

@@ -63,6 +63,9 @@ export interface SpawnChildOptions {
   workspaceKind?: "local" | "git-worktree";
   workspaceBranch?: string;
   customToolExecutor?: (name: string, args: Record<string, unknown>) => Promise<string>;
+  /** R48: reviewer independence — the implementing run's quota-pool identity. Routing
+   *  prefers a different pool; the same pool still serves when nothing independent can. */
+  preferIndependentFromPoolId?: string;
 }
 
 export interface ChildRun {
@@ -476,6 +479,7 @@ export class SubagentManager {
           structuredOutput: options.structuredOutput,
           customToolExecutor: options.customToolExecutor,
           roleRouting: this.r1Enabled,
+          ...(options.preferIndependentFromPoolId ? { preferIndependentFromPoolId: options.preferIndependentFromPoolId } : {}),
         });
         usage = runtimeRes.usage;
         const runtimeStatus = childRun.watchdogAbortReason === "watchdog_budget_ceiling" && runtimeRes.status === "cancelled"
@@ -491,6 +495,7 @@ export class SubagentManager {
           risks: runtimeStatus === "blocked" ? ["Reviewer or budget blocker"] : [],
           recommendations: runtimeStatus === "completed" ? ["Proceed"] : ["Resolve blockers"],
           structuredData: runtimeRes.structuredData,
+          ...(runtimeRes.routePoolId ? { routePoolId: runtimeRes.routePoolId } : {}),
         };
       } else if (def.id === "explorer") {
         result = await this.executeExplorer(childRun, contextSummary, adapter);
