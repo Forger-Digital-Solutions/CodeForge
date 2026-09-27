@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "499bc26c2afd7784c12b9ae8e432b9add24f97ff233c4b660dfadb6f2b34ada5",
-  "surfaceVersion": "r47-16bit-first-light-v1",
+  "sourceStateId": "9012e79edc1ae0dfd626a0eb44ab9c2ba352b739f50fa3758efd5b2e4097a709",
+  "surfaceVersion": "r48-role-aware-runtime-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -48,7 +48,7 @@
     "packages/workflow/src/verification-service.ts"
   ],
   "materialFileHashes": {
-    "packages/agent/src/index.ts": "aa573e39d9f43c9462b41b8412d44eb27f1d2e83",
+    "packages/agent/src/index.ts": "9dd54a7fea5c74ced1d6b76496d63717a5b90c08",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
     "packages/benchmark/src/index.ts": "615c02c9d77491a17e8b6a80a82cb619efd6be02",
@@ -64,13 +64,13 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "954f3088b3b831dadb7f67e2da27c435d2193f0a",
-    "packages/server/src/autonomous-orchestrator.ts": "04857cabc3f736e3ce9b8513b92ea95a9e01f595",
+    "packages/server/src/agent-runtime.ts": "7bbe6c28bb7543b0984bd2c0b9dcd5ae57f2752d",
+    "packages/server/src/autonomous-orchestrator.ts": "1f1caf104b21864943ea1da8370314886aed3451",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
     "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
-    "packages/server/src/model-execution-adapter.ts": "5e47f372c649bea2c7641c3afaf1dae8b3468280",
+    "packages/server/src/model-execution-adapter.ts": "d1f23c207ca52bd529148e37f90d891e5b8bdcd9",
     "packages/server/src/role-output-budget.ts": "f2560f9ee66fe33d5cf9f0bb6b1d1f3bd7a441dc",
     "packages/server/src/turn-state-machine.ts": "bd79b984c832d8ad7020b58b2f4991c747abafd6",
     "packages/server/src/workflow-service.ts": "a6fa8ae76d908fe503ba6050d8afdf9d2e239b23",
@@ -1736,19 +1736,53 @@
       "regressionEvidence": "docs/evidence/r47-16bit/R47-16BIT-CAMPAIGN.md + R47-CLOSURE-MATRIX.md; Phase A 635 focused tests; Phase B paid-auto 50/50, server pipeline 75/75, regression sweep 152/152",
       "recertifiedAt": "2026-09-27",
       "sourceStateConstant": "CODEFORGE_R47_16BIT_FIRST_LIGHT_SOURCE_STATE"
+    },
+    {
+      "label": "R48 role-aware fleet routing and no-false-waiting",
+      "reason": "Recertify the reviewed R48 changes: role-verdict qualification floor in 8-Bit routing and Free Fabric admission (QUALIFIED > PROBATION > NOT_TESTED, capability contracts per role); index-keyed parallel tool-call assembly; served-model identity through streams and receipts; measured reasoning-token headroom in qualification probes and dispatch; paid-auto/auto per-role selection over canonical measured models with paid-only failover and probation policy; ForgeVerify reviewer physical-pool independence; bounded no-false-waiting for queued capacity; partial execution budgets merged over role defaults. ForgeZero free-route eligibility, paid/free isolation, and completion-gate authority are unchanged.",
+      "priorSourceStateId": "499bc26c2afd7784c12b9ae8e432b9add24f97ff233c4b660dfadb6f2b34ada5",
+      "priorSurfaceVersion": "r47-16bit-first-light-v1",
+      "resultingSourceStateId": "9012e79edc1ae0dfd626a0eb44ab9c2ba352b739f50fa3758efd5b2e4097a709",
+      "resultingSurfaceVersion": "r48-role-aware-runtime-v1",
+      "changes": [
+        {
+          "file": "packages/agent/src/index.ts",
+          "change": "R48: AgentResult exposes routePoolId (physical capacity-pool provenance) and SpawnSubagentOptions accepts a reviewer independence hint so orchestrators can request a reviewer on a different pool than the implementer. No completion-policy change.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "R48: paid-auto/auto sentinel resolves per-role through measured paid evidence (sentinel never dispatched; paid-only rotation inside the canonical roster; no free substitution); fabric QUEUED_FOR_CAPACITY gets one bounded wait + re-decision (stale reset re-decides immediately, distant reset fails closed, DENIED never waits); partial execution budgets merge over role defaults instead of NaN-ing the context gate; denial summaries carry fabric reason codes and next_available; servedPoolId tracked into the run journal. Completion gate unchanged.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "R48: reviewer spawns inherit the implementer's served capacityPoolId as a soft independence preference so ForgeVerify review prefers a different physical pool where qualified supply exists.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/model-execution-adapter.ts",
+          "change": "R48: parallel tool-call fragments accumulate keyed by toolCallId/index instead of a single shared slot (explorer closure fix); provider-reported served-model identity surfaces on finish events; the stream error drain preserves retryable instead of flattening it away.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r48-role-routing/R48-LIVE-EVIDENCE.md; server suite 876 pass / 2 pre-existing baseline failures; touched packages 596 pass; paid role-routing 9/9, role-routing 18/18, fabric 36/36; live E3 paid mission completed end-to-end at $0.0087 of $0.25 cap with independent reviewer pool",
+      "recertifiedAt": "2026-09-27",
+      "sourceStateConstant": "CODEFORGE_R48_ROLE_AWARE_RUNTIME_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-27T01:53:51.635Z",
+  "recertifiedAt": "2026-09-27T12:34:39.065Z",
   "recertification": {
-    "phase": "R47 shared-runtime closure and 16-Bit first light",
-    "reason": "Recertify the reviewed R47 changes: shared-runtime closure (Explorer output contract, deterministic recovery, role-scoped outcome telemetry, account-identity fail-closed, observer wiring, data-policy contract tests) plus 16-Bit first light — budget-gated paid adapter, route-priced expected-cost ranking, credential-absent direct→fallback dispatch, and one live budget-capped mission completed under the completion gate. ForgeZero free-route eligibility, provider routing policy, and completion-gate authority are unchanged.",
+    "phase": "R48 role-aware fleet routing and no-false-waiting",
+    "reason": "Recertify the reviewed R48 changes: role-verdict qualification floor in 8-Bit routing and Free Fabric admission (QUALIFIED > PROBATION > NOT_TESTED, capability contracts per role); index-keyed parallel tool-call assembly; served-model identity through streams and receipts; measured reasoning-token headroom in qualification probes and dispatch; paid-auto/auto per-role selection over canonical measured models with paid-only failover and probation policy; ForgeVerify reviewer physical-pool independence; bounded no-false-waiting for queued capacity; partial execution budgets merged over role defaults. ForgeZero free-route eligibility, paid/free isolation, and completion-gate authority are unchanged.",
     "changedFiles": [
       "packages/agent/src/index.ts",
       "packages/server/src/agent-runtime.ts",
+      "packages/server/src/autonomous-orchestrator.ts",
       "packages/server/src/model-execution-adapter.ts"
     ],
-    "priorSourceStateId": "92534354261ed024d151f4a4e1a151a25336bbcb1f58406551a178d16ff532d1",
+    "priorSourceStateId": "499bc26c2afd7784c12b9ae8e432b9add24f97ff233c4b660dfadb6f2b34ada5",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
