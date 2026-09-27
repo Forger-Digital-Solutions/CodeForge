@@ -1,0 +1,381 @@
+{
+  "schemaVersion": 1,
+  "round": "R49",
+  "generatedAt": "2026-09-27T14:31:19.944Z",
+  "provenance": "deterministic production FreeFabric/CapacityReservationLedger/RouteHealthAuthority",
+  "paidSpendUsd": 0,
+  "passed": true,
+  "scenarios": [
+    {
+      "id": "A_SHARED_ACCOUNT_EXHAUSTED",
+      "expected": "select independent Groq; do not switch pointlessly between OpenRouter siblings; do not wait",
+      "pass": true,
+      "decision": {
+        "outcome": "ADMITTED",
+        "selected": {
+          "providerId": "groq",
+          "modelId": "groq-model",
+          "capacityPoolId": "groq-model"
+        },
+        "nextAvailableAt": "2026-09-28T14:00:00.000Z",
+        "reasonCodes": [
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED"
+        ],
+        "candidates": [
+          {
+            "providerId": "openrouter",
+            "modelId": "or-a-model",
+            "status": "CAPACITY_DENIED",
+            "reasonCodes": [
+              "PROVIDER_QUOTA_EXHAUSTED",
+              "CAPACITY_EXHAUSTED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          },
+          {
+            "providerId": "openrouter",
+            "modelId": "or-b-model",
+            "status": "CAPACITY_DENIED",
+            "reasonCodes": [
+              "PROVIDER_QUOTA_EXHAUSTED",
+              "CAPACITY_EXHAUSTED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          },
+          {
+            "providerId": "groq",
+            "modelId": "groq-model",
+            "status": "SELECTED",
+            "reasonCodes": [
+              "AUTHORIZED",
+              "ROLE_QUALIFIED",
+              "QUOTA_RESERVED",
+              "ADMITTED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "B_OPENROUTER_EXHAUSTED_GROQ_HEALTHY",
+      "expected": "execute on Groq",
+      "pass": true,
+      "decision": {
+        "outcome": "ADMITTED",
+        "selected": {
+          "providerId": "groq",
+          "modelId": "groq-model",
+          "capacityPoolId": "groq-model"
+        },
+        "nextAvailableAt": "2026-09-28T14:00:00.000Z",
+        "reasonCodes": [
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED"
+        ],
+        "candidates": [
+          {
+            "providerId": "openrouter",
+            "modelId": "or-a-model",
+            "status": "CAPACITY_DENIED",
+            "reasonCodes": [
+              "PROVIDER_QUOTA_EXHAUSTED",
+              "CAPACITY_EXHAUSTED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          },
+          {
+            "providerId": "openrouter",
+            "modelId": "or-b-model",
+            "status": "CAPACITY_DENIED",
+            "reasonCodes": [
+              "PROVIDER_QUOTA_EXHAUSTED",
+              "CAPACITY_EXHAUSTED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          },
+          {
+            "providerId": "groq",
+            "modelId": "groq-model",
+            "status": "SELECTED",
+            "reasonCodes": [
+              "AUTHORIZED",
+              "ROLE_QUALIFIED",
+              "QUOTA_RESERVED",
+              "ADMITTED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "C_GROQ_LIMITED_CLOUDFLARE_HEALTHY",
+      "expected": "execute on policy-eligible Cloudflare",
+      "pass": true,
+      "decision": {
+        "outcome": "ADMITTED",
+        "selected": {
+          "providerId": "cloudflare-workers-ai",
+          "modelId": "cloudflare-model",
+          "capacityPoolId": "cloudflare-account"
+        },
+        "nextAvailableAt": "2026-09-27T14:01:00.000Z",
+        "reasonCodes": [
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED"
+        ],
+        "candidates": [
+          {
+            "providerId": "groq",
+            "modelId": "groq-model",
+            "status": "CAPACITY_DENIED",
+            "reasonCodes": [
+              "PROVIDER_QUOTA_EXHAUSTED",
+              "CAPACITY_EXHAUSTED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          },
+          {
+            "providerId": "cloudflare-workers-ai",
+            "modelId": "cloudflare-model",
+            "status": "SELECTED",
+            "reasonCodes": [
+              "AUTHORIZED",
+              "ROLE_QUALIFIED",
+              "QUOTA_RESERVED",
+              "ADMITTED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "D_PROBATION_AFTER_QUALIFIED_EXHAUSTION",
+      "expected": "use healthy probation route",
+      "pass": true,
+      "decision": {
+        "outcome": "ADMITTED",
+        "selected": {
+          "providerId": "provider-p",
+          "modelId": "probation-model",
+          "capacityPoolId": "probation-pool"
+        },
+        "nextAvailableAt": "2026-09-27T14:01:00.000Z",
+        "reasonCodes": [
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED"
+        ],
+        "candidates": [
+          {
+            "providerId": "provider-q",
+            "modelId": "qualified-model",
+            "status": "CAPACITY_DENIED",
+            "reasonCodes": [
+              "PROVIDER_QUOTA_EXHAUSTED",
+              "CAPACITY_EXHAUSTED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          },
+          {
+            "providerId": "provider-p",
+            "modelId": "probation-model",
+            "status": "SELECTED",
+            "reasonCodes": [
+              "AUTHORIZED",
+              "ROLE_QUALIFIED",
+              "QUOTA_RESERVED",
+              "ADMITTED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "E_ONLY_NOT_QUALIFIED",
+      "expected": "DENIED_NO_SUPPLY; never wait or cheat",
+      "pass": true,
+      "decision": {
+        "outcome": "DENIED_NO_SUPPLY",
+        "selected": null,
+        "nextAvailableAt": null,
+        "reasonCodes": [
+          "NO_ROLE_QUALIFIED_ROUTE",
+          "NO_ELIGIBLE_ROUTE"
+        ],
+        "candidates": [
+          {
+            "providerId": "provider-nq",
+            "modelId": "nq-model",
+            "status": "ROLE_INELIGIBLE",
+            "reasonCodes": [
+              "ROLE_VERDICT_EXCLUDED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "F_ALL_ADMISSIBLE_POOLS_UNAVAILABLE",
+      "expected": "genuine QUEUED_FOR_CAPACITY with earliest provider reset",
+      "pass": true,
+      "decision": {
+        "outcome": "QUEUED_FOR_CAPACITY",
+        "selected": null,
+        "nextAvailableAt": "2026-09-27T14:00:30.000Z",
+        "reasonCodes": [
+          "PROVIDER_QUOTA_EXHAUSTED",
+          "CAPACITY_EXHAUSTED"
+        ],
+        "candidates": [
+          {
+            "providerId": "provider-1",
+            "modelId": "r1-model",
+            "status": "CAPACITY_DENIED",
+            "reasonCodes": [
+              "PROVIDER_QUOTA_EXHAUSTED",
+              "CAPACITY_EXHAUSTED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          },
+          {
+            "providerId": "provider-2",
+            "modelId": "r2-model",
+            "status": "CAPACITY_DENIED",
+            "reasonCodes": [
+              "PROVIDER_QUOTA_EXHAUSTED",
+              "CAPACITY_EXHAUSTED"
+            ],
+            "healthState": null,
+            "scoreAdjustment": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "G_COOLDOWN_EXPIRES",
+      "expected": "queued/excluded before reset, automatically admitted after fresh clock passes reset",
+      "pass": true,
+      "before": {
+        "outcome": "QUEUED_FOR_CAPACITY",
+        "selected": null,
+        "nextAvailableAt": null,
+        "reasonCodes": [
+          "ALL_ELIGIBLE_ROUTES_UNHEALTHY"
+        ],
+        "candidates": [
+          {
+            "providerId": "recovering-provider",
+            "modelId": "recovering-model",
+            "status": "HEALTH_EXCLUDED",
+            "reasonCodes": [
+              "HEALTH_HARD_EXCLUDED",
+              "RATE_LIMITED:HTTP_429"
+            ],
+            "healthState": "RATE_LIMITED",
+            "scoreAdjustment": -100
+          }
+        ]
+      },
+      "after": {
+        "outcome": "ADMITTED",
+        "selected": {
+          "providerId": "recovering-provider",
+          "modelId": "recovering-model",
+          "capacityPoolId": "recovering-pool"
+        },
+        "nextAvailableAt": null,
+        "reasonCodes": [
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED"
+        ],
+        "candidates": [
+          {
+            "providerId": "recovering-provider",
+            "modelId": "recovering-model",
+            "status": "SELECTED",
+            "reasonCodes": [
+              "AUTHORIZED",
+              "ROLE_QUALIFIED",
+              "QUOTA_RESERVED",
+              "ADMITTED"
+            ],
+            "healthState": "UNKNOWN",
+            "scoreAdjustment": -5
+          }
+        ]
+      }
+    },
+    {
+      "id": "H_REPEATED_NON_CONVERGENCE",
+      "expected": "role-quality evidence demotes Qwen; healthy qualified peer selected",
+      "pass": true,
+      "decision": {
+        "outcome": "ADMITTED",
+        "selected": {
+          "providerId": "openrouter",
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "capacityPoolId": "openrouter-pool"
+        },
+        "nextAvailableAt": null,
+        "reasonCodes": [
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED"
+        ],
+        "candidates": [
+          {
+            "providerId": "openrouter",
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "status": "SELECTED",
+            "reasonCodes": [
+              "AUTHORIZED",
+              "ROLE_QUALIFIED",
+              "QUOTA_RESERVED",
+              "ADMITTED"
+            ],
+            "healthState": "UNKNOWN",
+            "scoreAdjustment": -5
+          },
+          {
+            "providerId": "groq",
+            "modelId": "qwen/qwen3.8-27b",
+            "status": "STANDBY",
+            "reasonCodes": [
+              "RANKED_BEHIND_SELECTED"
+            ],
+            "healthState": "CAPABILITY_LIMITED",
+            "scoreAdjustment": -28
+          }
+        ]
+      }
+    }
+  ]
+}

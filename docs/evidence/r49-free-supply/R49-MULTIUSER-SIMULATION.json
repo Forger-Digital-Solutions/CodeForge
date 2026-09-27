@@ -1,0 +1,400 @@
+{
+  "schemaVersion": 1,
+  "round": "R49",
+  "generatedAt": "2026-09-27T14:38:32.011Z",
+  "provenance": "simulated; production CapacityReservationLedger cross-validated against independent synthetic counters",
+  "paidSpendUsd": 0,
+  "scenarios": {
+    "singleUser": {
+      "users": 1,
+      "tasksPerUser": 8,
+      "routes": [
+        {
+          "id": "groq-model-a",
+          "concurrency": 2,
+          "quotaPerWindow": 4,
+          "windowTicks": 5,
+          "failedCallsConsumeQuota": true
+        }
+      ],
+      "maxTicks": 30
+    },
+    "modestConcurrent": {
+      "users": 32,
+      "tasksPerUser": 4,
+      "routes": [
+        {
+          "id": "openrouter-account",
+          "concurrency": 8,
+          "quotaPerWindow": 40,
+          "windowTicks": 20,
+          "failedCallsConsumeQuota": true,
+          "fault": {
+            "fromTick": 2,
+            "throughTick": 8,
+            "kind": "429"
+          }
+        },
+        {
+          "id": "groq-model-a",
+          "concurrency": 8,
+          "quotaPerWindow": 40,
+          "windowTicks": 10,
+          "failedCallsConsumeQuota": true
+        },
+        {
+          "id": "cloudflare-account",
+          "concurrency": 4,
+          "quotaPerWindow": 20,
+          "windowTicks": 15,
+          "failedCallsConsumeQuota": true,
+          "fault": {
+            "fromTick": 5,
+            "throughTick": 7,
+            "kind": "5xx"
+          }
+        }
+      ],
+      "maxTicks": 120
+    },
+    "largeConcurrent": {
+      "users": 1000,
+      "tasksPerUser": 2,
+      "routes": [
+        {
+          "id": "openrouter-account",
+          "concurrency": 64,
+          "quotaPerWindow": 600,
+          "windowTicks": 50,
+          "failedCallsConsumeQuota": true,
+          "fault": {
+            "fromTick": 5,
+            "throughTick": 15,
+            "kind": "429"
+          }
+        },
+        {
+          "id": "groq-model-a",
+          "concurrency": 64,
+          "quotaPerWindow": 800,
+          "windowTicks": 40,
+          "failedCallsConsumeQuota": true
+        },
+        {
+          "id": "cloudflare-permanently-exhausted",
+          "concurrency": 32,
+          "quotaPerWindow": 200,
+          "windowTicks": 1000,
+          "failedCallsConsumeQuota": true,
+          "fault": {
+            "fromTick": 0,
+            "throughTick": 300,
+            "kind": "403"
+          }
+        }
+      ],
+      "maxTicks": 300
+    },
+    "onePoolComparison": {
+      "users": 200,
+      "tasksPerUser": 3,
+      "routes": [
+        {
+          "id": "pool-a",
+          "concurrency": 20,
+          "quotaPerWindow": 200,
+          "windowTicks": 20,
+          "failedCallsConsumeQuota": true
+        }
+      ],
+      "maxTicks": 20
+    },
+    "threePoolComparison": {
+      "users": 200,
+      "tasksPerUser": 3,
+      "routes": [
+        {
+          "id": "pool-a",
+          "concurrency": 20,
+          "quotaPerWindow": 200,
+          "windowTicks": 20,
+          "failedCallsConsumeQuota": true
+        },
+        {
+          "id": "pool-b",
+          "concurrency": 20,
+          "quotaPerWindow": 200,
+          "windowTicks": 20,
+          "failedCallsConsumeQuota": true
+        },
+        {
+          "id": "pool-c",
+          "concurrency": 20,
+          "quotaPerWindow": 200,
+          "windowTicks": 20,
+          "failedCallsConsumeQuota": true
+        }
+      ],
+      "maxTicks": 20
+    }
+  },
+  "results": {
+    "singleUser": {
+      "evidenceClass": "synthetic_control_plane",
+      "simulatedUsers": 1,
+      "simulatedTasks": 8,
+      "ticks": 7,
+      "attemptedAdmissions": 8,
+      "duplicateAdmissions": 0,
+      "inFlightReplayRejections": 8,
+      "idempotentReplays": 8,
+      "completedTasks": 8,
+      "checkpointedTasks": 0,
+      "recoveredTasks": 0,
+      "migratedTasks": 0,
+      "rateLimits": 0,
+      "forbiddenResponses": 0,
+      "serverErrors": 0,
+      "quotaResets": 1,
+      "quotaDeniedSlots": 6,
+      "maximumConcurrentLeases": 2,
+      "leakedLeases": 0,
+      "capacityAccountingErrors": 0,
+      "fairFirstAdmissions": true,
+      "starvedUsers": 0,
+      "maximumFirstAdmissionWaitTicks": 0,
+      "ledgerAdmissions": 8,
+      "ledgerAccountingDivergences": 0,
+      "complete": true,
+      "routes": [
+        {
+          "id": "groq-model-a",
+          "dispatched": 8,
+          "completed": 8,
+          "failed": 0,
+          "quotaConsumed": 8,
+          "peakLeases": 2
+        }
+      ]
+    },
+    "modestConcurrent": {
+      "evidenceClass": "synthetic_control_plane",
+      "simulatedUsers": 32,
+      "simulatedTasks": 128,
+      "ticks": 18,
+      "attemptedAdmissions": 152,
+      "duplicateAdmissions": 0,
+      "inFlightReplayRejections": 152,
+      "idempotentReplays": 128,
+      "completedTasks": 128,
+      "checkpointedTasks": 24,
+      "recoveredTasks": 16,
+      "migratedTasks": 16,
+      "rateLimits": 24,
+      "forbiddenResponses": 0,
+      "serverErrors": 0,
+      "quotaResets": 2,
+      "quotaDeniedSlots": 184,
+      "maximumConcurrentLeases": 20,
+      "leakedLeases": 0,
+      "capacityAccountingErrors": 0,
+      "fairFirstAdmissions": true,
+      "starvedUsers": 0,
+      "maximumFirstAdmissionWaitTicks": 1,
+      "ledgerAdmissions": 152,
+      "ledgerAccountingDivergences": 0,
+      "complete": true,
+      "routes": [
+        {
+          "id": "openrouter-account",
+          "dispatched": 40,
+          "completed": 16,
+          "failed": 24,
+          "quotaConsumed": 40,
+          "peakLeases": 8
+        },
+        {
+          "id": "groq-model-a",
+          "dispatched": 80,
+          "completed": 80,
+          "failed": 0,
+          "quotaConsumed": 80,
+          "peakLeases": 8
+        },
+        {
+          "id": "cloudflare-account",
+          "dispatched": 32,
+          "completed": 32,
+          "failed": 0,
+          "quotaConsumed": 32,
+          "peakLeases": 4
+        }
+      ]
+    },
+    "largeConcurrent": {
+      "evidenceClass": "synthetic_control_plane",
+      "simulatedUsers": 1000,
+      "simulatedTasks": 2000,
+      "ticks": 52,
+      "attemptedAdmissions": 2312,
+      "duplicateAdmissions": 0,
+      "inFlightReplayRejections": 2312,
+      "idempotentReplays": 2000,
+      "completedTasks": 2000,
+      "checkpointedTasks": 312,
+      "recoveredTasks": 288,
+      "migratedTasks": 288,
+      "rateLimits": 280,
+      "forbiddenResponses": 32,
+      "serverErrors": 0,
+      "quotaResets": 2,
+      "quotaDeniedSlots": 4040,
+      "maximumConcurrentLeases": 160,
+      "leakedLeases": 0,
+      "capacityAccountingErrors": 0,
+      "fairFirstAdmissions": true,
+      "starvedUsers": 0,
+      "maximumFirstAdmissionWaitTicks": 9,
+      "ledgerAdmissions": 2312,
+      "ledgerAccountingDivergences": 0,
+      "complete": true,
+      "routes": [
+        {
+          "id": "openrouter-account",
+          "dispatched": 728,
+          "completed": 448,
+          "failed": 280,
+          "quotaConsumed": 728,
+          "peakLeases": 64
+        },
+        {
+          "id": "groq-model-a",
+          "dispatched": 1552,
+          "completed": 1552,
+          "failed": 0,
+          "quotaConsumed": 1552,
+          "peakLeases": 64
+        },
+        {
+          "id": "cloudflare-permanently-exhausted",
+          "dispatched": 32,
+          "completed": 0,
+          "failed": 32,
+          "quotaConsumed": 32,
+          "peakLeases": 32
+        }
+      ]
+    },
+    "onePoolComparison": {
+      "evidenceClass": "synthetic_control_plane",
+      "simulatedUsers": 200,
+      "simulatedTasks": 600,
+      "ticks": 20,
+      "attemptedAdmissions": 200,
+      "duplicateAdmissions": 0,
+      "inFlightReplayRejections": 200,
+      "idempotentReplays": 200,
+      "completedTasks": 200,
+      "checkpointedTasks": 0,
+      "recoveredTasks": 0,
+      "migratedTasks": 0,
+      "rateLimits": 0,
+      "forbiddenResponses": 0,
+      "serverErrors": 0,
+      "quotaResets": 0,
+      "quotaDeniedSlots": 200,
+      "maximumConcurrentLeases": 20,
+      "leakedLeases": 0,
+      "capacityAccountingErrors": 0,
+      "fairFirstAdmissions": true,
+      "starvedUsers": 200,
+      "maximumFirstAdmissionWaitTicks": 9,
+      "ledgerAdmissions": 200,
+      "ledgerAccountingDivergences": 0,
+      "complete": false,
+      "routes": [
+        {
+          "id": "pool-a",
+          "dispatched": 200,
+          "completed": 200,
+          "failed": 0,
+          "quotaConsumed": 200,
+          "peakLeases": 20
+        }
+      ]
+    },
+    "threePoolComparison": {
+      "evidenceClass": "synthetic_control_plane",
+      "simulatedUsers": 200,
+      "simulatedTasks": 600,
+      "ticks": 10,
+      "attemptedAdmissions": 600,
+      "duplicateAdmissions": 0,
+      "inFlightReplayRejections": 600,
+      "idempotentReplays": 600,
+      "completedTasks": 600,
+      "checkpointedTasks": 0,
+      "recoveredTasks": 0,
+      "migratedTasks": 0,
+      "rateLimits": 0,
+      "forbiddenResponses": 0,
+      "serverErrors": 0,
+      "quotaResets": 0,
+      "quotaDeniedSlots": 0,
+      "maximumConcurrentLeases": 60,
+      "leakedLeases": 0,
+      "capacityAccountingErrors": 0,
+      "fairFirstAdmissions": true,
+      "starvedUsers": 0,
+      "maximumFirstAdmissionWaitTicks": 3,
+      "ledgerAdmissions": 600,
+      "ledgerAccountingDivergences": 0,
+      "complete": true,
+      "routes": [
+        {
+          "id": "pool-a",
+          "dispatched": 200,
+          "completed": 200,
+          "failed": 0,
+          "quotaConsumed": 200,
+          "peakLeases": 20
+        },
+        {
+          "id": "pool-b",
+          "dispatched": 200,
+          "completed": 200,
+          "failed": 0,
+          "quotaConsumed": 200,
+          "peakLeases": 20
+        },
+        {
+          "id": "pool-c",
+          "dispatched": 200,
+          "completed": 200,
+          "failed": 0,
+          "quotaConsumed": 200,
+          "peakLeases": 20
+        }
+      ]
+    }
+  },
+  "comparison": {
+    "onePoolSuccessFraction": 0.3333333333333333,
+    "threePoolSuccessFraction": 1,
+    "onePoolCompleted": 200,
+    "threePoolCompleted": 600,
+    "simulatedTasks": 600
+  },
+  "assertions": {
+    "noDuplicateAdmissions": true,
+    "noLeakedLeases": true,
+    "noAccountingErrors": true,
+    "fairFirstAdmissions": true,
+    "noStarvedUsersWhenScenarioCompletes": true,
+    "recoveringProviderObserved": true,
+    "permanentFailureDidNotBlockIndependentSupply": true,
+    "independentSupplyIncreasesSuccessFraction": true,
+    "independentSupplyUsesMoreThanOneRoute": true
+  },
+  "passed": true
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "round": "R49",
+  "generatedAt": "2026-09-27T14:31:19.946Z",
+  "provenance": "deterministic production quota parser/effectiveQuota + scenario G route-health clock",
+  "paidSpendUsd": 0,
+  "initial": {
+    "remainingRequests": 999,
+    "limitRequests": 1000,
+    "remainingTokens": 0,
+    "limitTokens": 8000,
+    "requestResetAt": "2026-09-27T14:02:00.000Z",
+    "tokenResetAt": "2026-09-27T14:00:07.500Z",
+    "resetAt": "2026-09-27T14:00:07.500Z",
+    "observedAt": "2026-09-27T14:00:00.000Z"
+  },
+  "afterTokenReset": {
+    "remainingRequests": 999,
+    "limitRequests": 1000,
+    "remainingTokens": 8000,
+    "limitTokens": 8000,
+    "requestResetAt": "2026-09-27T14:02:00.000Z",
+    "resetAt": "2026-09-27T14:02:00.000Z",
+    "observedAt": "2026-09-27T14:00:00.000Z"
+  },
+  "afterAllResets": {
+    "remainingRequests": 1000,
+    "limitRequests": 1000,
+    "remainingTokens": 8000,
+    "limitTokens": 8000,
+    "observedAt": "2026-09-27T14:00:00.000Z"
+  },
+  "assertions": {
+    "tokenRefilledAtOwnReset": true,
+    "requestWindowUnchangedAtTokenReset": true,
+    "requestResetClearedAtOwnReset": true,
+    "cooldownRouteReenteredAutomatically": true
+  }
+}
