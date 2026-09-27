@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createSubagentManager } from "../src/subagent-manager.js";
 import { createWorkspaceEventAdapter } from "../src/workspace-event-adapter.js";
+import type { AgentRuntime } from "../src/agent-runtime.js";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 
 describe("Subagent Foundation — Explorer, Reviewer, Privilege Ceiling & Context Isolation", () => {
@@ -290,5 +291,37 @@ describe("Subagent Foundation — Explorer, Reviewer, Privilege Ceiling & Contex
     if (reviewResult.success) {
       expect(reviewResult.data.verdict).toBe("pass");
     }
+  });
+
+  it("R49: forwards the runtime's served route verbatim into the child AgentResult", async () => {
+    const servedRoute = { providerId: "groq", modelId: "qwen/qwen3.8-27b", capacityPoolId: "groq-pool-1" };
+    const runtime = {
+      executeAgentRun: async () => ({
+        status: "completed",
+        summary: "Implemented",
+        findings: [],
+        evidence: [],
+        toolExecutions: [],
+        usage: { inputTokens: 0, outputTokens: 0, requestCount: 1, toolCount: 0 },
+        stopReason: "completed",
+        filesChanged: ["src/feature.ts"],
+        routePoolId: "groq-pool-1",
+        route: { ...servedRoute },
+      }),
+    } as unknown as AgentRuntime;
+    const manager = createSubagentManager({ persistence, agentRuntime: runtime });
+
+    const result = await manager.spawnChildAgent({
+      parentRunId: "run-route-provenance",
+      agentId: "coder",
+      task: "Implement the feature",
+      workspacePath: ws,
+    });
+
+    expect(result.status).toBe("completed");
+    // The AgentResult must carry the exact route object the runtime journaled — not a
+    // provider/model reconstruction that could drop extra selection fields.
+    expect(result.route).toEqual(servedRoute);
+    expect(result.routePoolId).toBe("groq-pool-1");
   });
 });

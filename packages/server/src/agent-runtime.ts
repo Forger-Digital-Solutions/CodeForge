@@ -281,6 +281,8 @@ export interface AgentRuntimeResult {
    *  asks for a pool different from this identity. Undefined for pinned selections (the
    *  caller already knows the route) and non-fabric free selections (pool unmeasured). */
   routePoolId?: string;
+  /** Exact route that served the run's final implementation attempt. */
+  route?: AgentModelSelection;
 }
 
 export type DurableToolExecutionState = "requested" | "started" | "completed" | "observation_recorded" | "failed" | "cancelled";
@@ -1095,6 +1097,32 @@ export class AgentRuntime {
 
   getModelSelection(): ModelSelection | null {
     return this.modelSelection ? { ...this.modelSelection } : null;
+  }
+
+  /**
+   * R49: production verification outcome as advisory role-scoped 8-Bit evidence. This is the
+   * canonical seam for callers that know whether the served route's work actually verified —
+   * it never rewrites qualification receipts and never creates eligibility, and paid routes
+   * are ignored outright (8-Bit evidence is free-fleet only).
+   */
+  recordRoleOutcome(
+    route: AgentModelSelection | undefined,
+    role: AgentRoleType | string,
+    outcome: "verified_complete" | "verification_failed" | "role_failed",
+    correlationId: string,
+  ): void {
+    if (!route || route.providerId === PAID_AUTO_PROVIDER_ID) return;
+    this.eightBit.observe({
+      kind: "role_outcome",
+      outcome,
+      providerId: route.providerId,
+      modelId: route.modelId,
+      observedAt: new Date().toISOString(),
+      source: "runtime",
+      role: eightBitRoleForAgentRole(role),
+      requestShape: "production",
+      correlationId,
+    });
   }
 
   /**
@@ -3154,6 +3182,7 @@ export class AgentRuntime {
               filesChanged: Array.from(changedFiles),
               error: toolExec.error,
               ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
+              ...(journalActiveRoute ? { route: { ...journalActiveRoute } } : {}),
             };
           }
           if (noEffectWriteCount >= 4) {
@@ -3175,6 +3204,7 @@ export class AgentRuntime {
               error: ERROR_CODES.AGENT_NO_PROGRESS_DETECTED,
               contextMetrics,
               ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
+              ...(journalActiveRoute ? { route: { ...journalActiveRoute } } : {}),
             };
           }
         }
@@ -3241,6 +3271,7 @@ export class AgentRuntime {
         structuredData,
         contextMetrics,
         ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
+        ...(journalActiveRoute ? { route: { ...journalActiveRoute } } : {}),
         ...(status !== "completed" && stopReason === "budget_exhausted" ? { error: exhaustedModelTurns ? ERROR_CODES.AGENT_MODEL_TURN_LIMIT : ERROR_CODES.AGENT_TOOL_LIMIT } : {}),
         ...(status !== "completed" && contextOverflowBlockedReason !== undefined ? { error: ERROR_CODES.AGENT_CONTEXT_BUDGET_EXCEEDED } : {}),
       };
@@ -3289,6 +3320,7 @@ export class AgentRuntime {
         filesChanged: Array.from(changedFiles),
         error: errorMsg,
         ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
+        ...(journalActiveRoute ? { route: { ...journalActiveRoute } } : {}),
       };
     } finally {
       // R2: write terminal journal state regardless of how the run ended. The terminal state

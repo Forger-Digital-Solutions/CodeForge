@@ -303,3 +303,54 @@ describe("R48 — reasoning-starvation headroom", () => {
     expect(silentPlannerCalls.length).toBe(2);
   });
 });
+
+describe("R49 — exact qualification request telemetry", () => {
+  it("requestCount counts every issued stream call — explorer loop turns included", async () => {
+    const adapter = new ScriptedAdapter(goodScript);
+    const out = await runRoleQualification(MODEL, adapter);
+    const explorer = out.roleResults.EXPLORER!;
+    // Each explorer case took a tool turn before its answer turn — more than one model call
+    // per case — which the old `retries + 1` arithmetic could never represent.
+    expect(explorer.testCases.every((c) => ((c.details as { modelCalls?: number }).modelCalls ?? 0) > 1)).toBe(true);
+    expect(out.requestCount).toBe(adapter.requests.length);
+    expect(out.requestCount).toBeGreaterThan(explorer.testCases.length);
+  });
+
+  it("requestCount counts reasoning-headroom retries as real requests", async () => {
+    const adapter = new ScriptedAdapter((req) => {
+      const t = body(req);
+      if (t.includes("task planner") && (req.maxTokens ?? 0) <= 1_200) {
+        return [
+          { type: "usage", usage: { inputTokens: 200, outputTokens: 1_200, reasoningTokens: 700 } },
+          { type: "finish", finishReason: "length" },
+        ];
+      }
+      return goodScript(req);
+    });
+    const out = await runRoleQualification(MODEL, adapter);
+    const plannerCalls = adapter.requests.filter((r) => body(r).includes("task planner"));
+    // Two planner cases × (starved call + headroom retry) — all four are real requests.
+    expect(plannerCalls.length).toBe(4);
+    expect(out.requestCount).toBe(adapter.requests.length);
+  });
+
+  it("requestCount counts a clean-fail case rerun (withRetry) as two real requests", async () => {
+    const adapter = new ScriptedAdapter((req) => {
+      const t = body(req);
+      if (t.includes("task planner")) {
+        // Schema-valid plan missing the reviewer/verification dependency — fails on evidence
+        // (not a hard failure), so withRetry re-issues the case once.
+        return text(JSON.stringify({
+          summary: "Implement only.",
+          tasks: [{ id: "t1", title: "Implement the change in src/provider/client.ts", objective: "Make the minimal fix", dependencies: [], assignedRole: "coder" }],
+        }));
+      }
+      return goodScript(req);
+    });
+    const out = await runRoleQualification(MODEL, adapter);
+    const plannerCalls = adapter.requests.filter((r) => body(r).includes("task planner"));
+    expect(plannerCalls.length).toBe(4); // two cases × two attempts each
+    expect(out.requestCount).toBe(adapter.requests.length);
+    expect(out.roleResults.PLANNER!.testCases.every((c) => c.retries === 1)).toBe(true);
+  });
+});

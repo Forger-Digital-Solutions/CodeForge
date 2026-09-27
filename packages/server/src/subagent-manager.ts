@@ -496,6 +496,7 @@ export class SubagentManager {
           recommendations: runtimeStatus === "completed" ? ["Proceed"] : ["Resolve blockers"],
           structuredData: runtimeRes.structuredData,
           ...(runtimeRes.routePoolId ? { routePoolId: runtimeRes.routePoolId } : {}),
+          ...(runtimeRes.route ? { route: runtimeRes.route } : {}),
         };
       } else if (def.id === "explorer") {
         result = await this.executeExplorer(childRun, contextSummary, adapter);

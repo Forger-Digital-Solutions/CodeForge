@@ -7,6 +7,7 @@ import {
   type AgentResult,
   type AgentFinding,
   type AgentEvidenceRef,
+  type AgentModelSelection,
   type PlannerResult,
   validateStructuredAgentResult,
   validatePlanningCompleteness,
@@ -737,6 +738,9 @@ export class AutonomousRunOrchestrator {
       // account judging its own output. Undefined when the implementer's pool was never
       // measured (pinned route, non-fabric selection); the hint is simply absent then.
       let implementerPoolId: string | undefined;
+      // R49: the exact route that served the most recent implementation attempt, forwarded
+      // to 8-Bit as role-scoped verification evidence (see recordRoleOutcome call sites).
+      let implementerRoute: AgentModelSelection | undefined;
 
       while (!reviewPassed) {
         if (controller.signal.aborted) throw new Error("Run cancelled during execution/revision");
@@ -788,6 +792,7 @@ export class AutonomousRunOrchestrator {
           }
           changedFiles = codeResult.files;
           implementerPoolId = codeResult.routePoolId ?? implementerPoolId;
+          implementerRoute = codeResult.route ?? implementerRoute;
         } else if (this.agentRuntime) {
           const coderRunResult = await this.agentRuntime.executeAgentRun({
             runId,
@@ -807,6 +812,7 @@ export class AutonomousRunOrchestrator {
             findings: explorerFindings,
           });
           implementerPoolId = coderRunResult.routePoolId ?? implementerPoolId;
+          implementerRoute = coderRunResult.route ?? implementerRoute;
           changedFiles = coderRunResult.filesChanged.length > 0
             ? coderRunResult.filesChanged
             : (await fs.readdir(worktreeWs.rootPath)).filter((f) => !f.startsWith("."));
@@ -992,6 +998,9 @@ export class AutonomousRunOrchestrator {
         };
         run.result = blockedResult;
         this.persistRun(run);
+        // R49: the implementer's route produced work that ForgeVerify rejected — role-scoped
+        // negative evidence for 8-Bit (no-op when the route was paid or unmeasured).
+        this.runtimeForSession(sessionId)?.recordRoleOutcome(implementerRoute, "coder", "verification_failed", runId);
         return blockedResult;
       }
 
@@ -1124,6 +1133,9 @@ export class AutonomousRunOrchestrator {
       // Success!
       run.finalRevision = intResult.finalRevision;
       this.transitionRun(run, "completed", adapter);
+      // R49: positive role evidence only after the completion gate AND integration both
+      // accepted the work — passing verification alone is not completion evidence.
+      this.runtimeForSession(sessionId)?.recordRoleOutcome(implementerRoute, "coder", "verified_complete", runId);
 
       const completedResult: AutonomousRunResult = {
         runId,

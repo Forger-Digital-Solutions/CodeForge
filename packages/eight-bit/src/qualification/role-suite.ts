@@ -58,6 +58,13 @@ const TRANSIENT_RE = /\b429\b|rate.?limit|quota|\b401\b|\b403\b|\b5\d\d\b|timed?
 const QUALIFICATION_REASONING_RESERVE_TOKENS = 1_024;
 const QUALIFICATION_OUTPUT_HARD_CAP_TOKENS = 4_096;
 
+/** R49: exact stream-request telemetry. Incremented inside observeOnce immediately before the
+ *  adapter request — every issued call counts: explorer loop turns, reasoning-headroom retries,
+ *  and withRetry case reruns. Derived `retries + 1` arithmetic could never see the loop turns. */
+interface QualificationRequestCounter {
+  count: number;
+}
+
 interface ObserveResult {
   text: string;
   toolCalls: Array<{ name: string; args: Record<string, unknown>; malformed: boolean }>;
@@ -73,7 +80,7 @@ interface ObserveResult {
   error?: string;
 }
 
-async function observeOnce(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number): Promise<ObserveResult> {
+async function observeOnce(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number, counter?: QualificationRequestCounter): Promise<ObserveResult> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   const calls: ObserveResult["toolCalls"] = [];
@@ -84,6 +91,7 @@ async function observeOnce(adapter: CompactQualificationAdapter, req: ChatReques
   let reasoningTokens: number | undefined;
   try {
     if (!adapter.streamChat) return { text, toolCalls: calls, error: "provider exposes no streamChat" };
+    if (counter) counter.count++;
     for await (const ev of adapter.streamChat(req, controller.signal)) {
       if (ev.type === "text_delta") text += ev.delta;
       if (ev.type === "finish") finishReason = ev.finishReason;
@@ -112,8 +120,8 @@ async function observeOnce(adapter: CompactQualificationAdapter, req: ChatReques
   }
 }
 
-async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number): Promise<ObserveResult> {
-  const first = await observeOnce(adapter, req, timeoutMs);
+async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number, counter?: QualificationRequestCounter): Promise<ObserveResult> {
+  const first = await observeOnce(adapter, req, timeoutMs, counter);
   // Starvation signature: the call returned without error yet delivered no usable payload —
   // either the provider truncated at the cap (length) or the answer never arrived (empty
   // text, no tool calls). A reasoning-only burn surfaces as an EMPTY_COMPLETION error — a
@@ -127,7 +135,7 @@ async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, t
   const headroom = Math.max(first.reasoningTokens ?? 0, QUALIFICATION_REASONING_RESERVE_TOKENS);
   const retryMax = Math.min(QUALIFICATION_OUTPUT_HARD_CAP_TOKENS, baseline + headroom);
   if (retryMax <= baseline) return first;
-  const second = await observeOnce(adapter, { ...req, maxTokens: retryMax }, timeoutMs);
+  const second = await observeOnce(adapter, { ...req, maxTokens: retryMax }, timeoutMs, counter);
   return {
     ...second,
     reasoningRetried: true,
@@ -200,7 +208,7 @@ async function withRetry(run: () => Promise<TestCaseResult>): Promise<TestCaseRe
 // Explorer
 // ---------------------------------------------------------------------------
 
-async function runExplorerCase(adapter: CompactQualificationAdapter, modelId: string, caze: ExplorerCase, timeoutMs: number): Promise<TestCaseResult> {
+async function runExplorerCase(adapter: CompactQualificationAdapter, modelId: string, caze: ExplorerCase, timeoutMs: number, counter?: QualificationRequestCounter): Promise<TestCaseResult> {
   const started = Date.now();
   const messages: ChatRequest["messages"] = [
     {
@@ -222,7 +230,7 @@ async function runExplorerCase(adapter: CompactQualificationAdapter, modelId: st
 
   while (modelCalls < caze.maxModelCalls) {
     modelCalls++;
-    lastObs = await observe(adapter, { model: modelId, messages, tools: EXPLORER_TOOLS, toolChoice: "auto", temperature: 0, maxTokens: 800 }, timeoutMs);
+    lastObs = await observe(adapter, { model: modelId, messages, tools: EXPLORER_TOOLS, toolChoice: "auto", temperature: 0, maxTokens: 800 }, timeoutMs, counter);
     if (lastObs.reasoningRetried) reasoningRetries++;
     if (lastObs.error) return caseResult(caze.caseId, "explore", false, started, { error: lastObs.error.slice(0, 200) });
     totalToolCalls += lastObs.toolCalls.length;
@@ -295,7 +303,7 @@ function plannerTaskText(task: PlannerGraphTask): string {
   return `${typeof task.title === "string" ? task.title : ""} ${typeof task.objective === "string" ? task.objective : ""}`.toLowerCase();
 }
 
-async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: string, caze: PlannerCase, timeoutMs: number): Promise<TestCaseResult> {
+async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: string, caze: PlannerCase, timeoutMs: number, counter?: QualificationRequestCounter): Promise<TestCaseResult> {
   const started = Date.now();
   const findings = caze.findingsFiles.map((f) => `--- ${f} ---\n${EXPLORER_REPO.files[f] ?? "(missing)"}`).join("\n");
   const obs = await observe(
@@ -318,6 +326,7 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
       maxTokens: 1_200,
     },
     timeoutMs,
+    counter,
   );
   if (obs.error) return caseResult(caze.caseId, "plan", false, started, { error: obs.error.slice(0, 200) });
 
@@ -359,7 +368,7 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
 // Reviewer
 // ---------------------------------------------------------------------------
 
-async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: string, caze: ReviewerCase, timeoutMs: number): Promise<TestCaseResult> {
+async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: string, caze: ReviewerCase, timeoutMs: number, counter?: QualificationRequestCounter): Promise<TestCaseResult> {
   const started = Date.now();
   const obs = await observe(
     adapter,
@@ -380,6 +389,7 @@ async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: st
       maxTokens: 900,
     },
     timeoutMs,
+    counter,
   );
   if (obs.error) return caseResult(caze.caseId, "review", false, started, { error: obs.error.slice(0, 200) });
 
@@ -435,25 +445,19 @@ export async function runRoleQualification(
 ): Promise<RoleQualificationOutput> {
   const timeoutMs = options.caseTimeoutMs ?? EXPLORER_PROTOCOL.caseTimeoutMs;
   const startedAt = (options.now ?? (() => new Date()))().toISOString();
-  let requestCount = 0;
+  const counter = { count: 0 };
 
   const explorerCases: TestCaseResult[] = [];
   for (const caze of EXPLORER_CASES) {
-    const r = await withRetry(() => runExplorerCase(adapter, model.modelId, caze, timeoutMs));
-    requestCount += r.retries + 1;
-    explorerCases.push(r);
+    explorerCases.push(await withRetry(() => runExplorerCase(adapter, model.modelId, caze, timeoutMs, counter)));
   }
   const plannerCases: TestCaseResult[] = [];
   for (const caze of PLANNER_CASES) {
-    const r = await withRetry(() => runPlannerCase(adapter, model.modelId, caze, timeoutMs));
-    requestCount += r.retries + 1;
-    plannerCases.push(r);
+    plannerCases.push(await withRetry(() => runPlannerCase(adapter, model.modelId, caze, timeoutMs, counter)));
   }
   const reviewerCases: TestCaseResult[] = [];
   for (const caze of REVIEWER_CASES) {
-    const r = await withRetry(() => runReviewerCase(adapter, model.modelId, caze, timeoutMs));
-    requestCount += r.retries + 1;
-    reviewerCases.push(r);
+    reviewerCases.push(await withRetry(() => runReviewerCase(adapter, model.modelId, caze, timeoutMs, counter)));
   }
 
   const all = [...explorerCases, ...plannerCases, ...reviewerCases];
@@ -464,7 +468,7 @@ export async function runRoleQualification(
       PLANNER: assemble("PLANNER", plannerCases, PLANNER_PROTOCOL, startedAt),
       REVIEWER: assemble("REVIEWER", reviewerCases, REVIEWER_PROTOCOL, startedAt),
     },
-    requestCount,
+    requestCount: counter.count,
     transientCases,
   };
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtemp, writeFile, readFile, rm, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import { createAutonomousRunOrchestrator, MAX_REVIEW_REVISION_ROUNDS } from "../src/autonomous-orchestrator.js";
+import type { AgentRuntime, AgentRuntimeRequest, AgentRuntimeResult } from "../src/agent-runtime.js";
 import { createWorkspaceService } from "../src/workspace-service.js";
 import { createSubagentManager } from "../src/subagent-manager.js";
 import { createIntegrationService } from "../src/integration-service.js";
@@ -405,5 +406,148 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     });
     expect(res2.status).toBe("integrated");
     expect(res2.finalRevision).toBe(baseHead.trim());
+  });
+
+  describe("R49 — ForgeVerify outcome → 8-Bit role-quality feedback", () => {
+    const IMPLEMENTER_ROUTE = { providerId: "groq", modelId: "qwen/qwen3.8-27b" };
+
+    /** Runtime stub: explorer/reviewer complete with a verdict; the coder writes a real file
+     *  into the worktree and reports the exact route that served the implementation. */
+    function runtimeRecordingRoleOutcomes() {
+      const recordRoleOutcome = vi.fn();
+      const runtime = {
+        executeAgentRun: async (request: AgentRuntimeRequest): Promise<AgentRuntimeResult> => {
+          const base = {
+            findings: [],
+            evidence: [],
+            toolExecutions: [],
+            usage: { inputTokens: 0, outputTokens: 0, requestCount: 1, toolCount: 0 },
+            stopReason: "completed" as const,
+          };
+          if (request.role === "coder") {
+            // Modify a TRACKED file — `git diff baseRevision` (the gate's effective-change
+            // probe) never reports untracked additions.
+            const mathFile = join(request.workspacePath, "src", "math.ts");
+            await writeFile(mathFile, `${await readFile(mathFile, "utf-8")}\nexport function multiply(a: number, b: number): number { return a * b; }\n`);
+            return {
+              ...base,
+              status: "completed",
+              summary: "Implemented feature",
+              filesChanged: ["src/math.ts"],
+              routePoolId: "groq-pool",
+              route: { ...IMPLEMENTER_ROUTE },
+            };
+          }
+          if (request.role === "reviewer") {
+            return {
+              ...base,
+              status: "completed",
+              summary: "Approved",
+              filesChanged: [],
+              structuredData: { verdict: "pass", findings: [], summary: "Approved" },
+            };
+          }
+          return { ...base, status: "completed", summary: "Explored", filesChanged: [] };
+        },
+        recordRoleOutcome,
+      } as unknown as AgentRuntime;
+      return { runtime, recordRoleOutcome };
+    }
+
+    it("failed ForgeVerify records verification_failed for the implementer's exact route exactly once", async () => {
+      const { runtime, recordRoleOutcome } = runtimeRecordingRoleOutcomes();
+      const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
+      const orchestrator = createAutonomousRunOrchestrator({ workspaceService: wsService, persistence, agentRuntime: runtime });
+
+      const result = await orchestrator.startRun({
+        sessionId: "sess-r49-vf",
+        workspacePath: targetRepo,
+        goal: "Add feature",
+        topology: "normal",
+        verificationCommands: ["node -e \"process.exit(1)\""],
+        adapter: createWorkspaceEventAdapter({ sessionId: "sess-r49-vf", eventStore, persistence }),
+      });
+
+      expect(result.status).toBe("blocked");
+      expect(result.integration.reason).toBe("VERIFICATION_FAILED");
+      expect(recordRoleOutcome).toHaveBeenCalledTimes(1);
+      expect(recordRoleOutcome).toHaveBeenCalledWith(
+        { providerId: "groq", modelId: "qwen/qwen3.8-27b" },
+        "coder",
+        "verification_failed",
+        result.runId,
+      );
+    });
+
+    it("a fully completed and integrated run records verified_complete exactly once — via the R1 subagent path", async () => {
+      const { runtime, recordRoleOutcome } = runtimeRecordingRoleOutcomes();
+      const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
+      const orchestrator = createAutonomousRunOrchestrator({
+        workspaceService: wsService,
+        persistence,
+        agentRuntime: runtime,
+        subagentsR1Enabled: true,
+      });
+
+      const result = await orchestrator.startRun({
+        sessionId: "sess-r49-complete",
+        workspacePath: targetRepo,
+        goal: "Add feature",
+        topology: "normal",
+        verificationCommands: ["node -e \"process.exit(0)\""],
+        adapter: createWorkspaceEventAdapter({ sessionId: "sess-r49-complete", eventStore, persistence }),
+      });
+
+      if (result.status !== "completed") console.log("r49-complete blocked:", result.error, JSON.stringify(result.integration), result.summary, result.completion?.rationale, JSON.stringify(result.completion?.blockers));
+      expect(result.status).toBe("completed");
+      expect(result.integration.status).toBe("integrated");
+      expect(recordRoleOutcome).toHaveBeenCalledTimes(1);
+      expect(recordRoleOutcome).toHaveBeenCalledWith(
+        { providerId: "groq", modelId: "qwen/qwen3.8-27b" },
+        "coder",
+        "verified_complete",
+        result.runId,
+      );
+      // No negative evidence was emitted on the way to completion.
+      expect(recordRoleOutcome.mock.calls.every(([, , outcome]) => outcome === "verified_complete")).toBe(true);
+    });
+
+    it("emits no role evidence when the completion gate blocks after verification", async () => {
+      const { runtime, recordRoleOutcome } = runtimeRecordingRoleOutcomes();
+      const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
+      const orchestrator = createAutonomousRunOrchestrator({ workspaceService: wsService, persistence, agentRuntime: runtime });
+
+      const result = await orchestrator.startRun({
+        sessionId: "sess-r49-gate",
+        workspacePath: targetRepo,
+        goal: "Add unverified feature",
+        topology: "normal",
+      });
+
+      expect(result.status).toBe("blocked");
+      expect(result.completion?.blockers.map((blocker) => blocker.code)).toContain("verification_not_run");
+      expect(recordRoleOutcome).not.toHaveBeenCalled();
+    });
+
+    it("emits no positive role evidence when integration blocks after a passing gate", async () => {
+      // Dirty the primary workspace so safe integration fails closed after the gate completes.
+      await writeFile(join(targetRepo, "user_untracked.txt"), "user file\n");
+      const { runtime, recordRoleOutcome } = runtimeRecordingRoleOutcomes();
+      const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
+      const orchestrator = createAutonomousRunOrchestrator({ workspaceService: wsService, persistence, agentRuntime: runtime });
+
+      const result = await orchestrator.startRun({
+        sessionId: "sess-r49-int-block",
+        workspacePath: targetRepo,
+        goal: "Add feature",
+        topology: "normal",
+        verificationCommands: ["node -e \"process.exit(0)\""],
+        adapter: createWorkspaceEventAdapter({ sessionId: "sess-r49-int-block", eventStore, persistence }),
+      });
+
+      expect(result.status).toBe("blocked");
+      expect(recordRoleOutcome).not.toHaveBeenCalled();
+      expect(recordRoleOutcome.mock.calls.some(([, , outcome]) => outcome === "verified_complete")).toBe(false);
+    });
   });
 });

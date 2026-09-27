@@ -705,6 +705,8 @@ export interface AgentResult {
    *  free path, paid routeId on the paid path). An orchestrator hands it to a reviewer
    *  spawn as preferIndependentFromPoolId so the review measures a different pool. */
   routePoolId?: string;
+  /** Exact route that served the run's final implementation attempt. */
+  route?: AgentModelSelection;
 }
 
 export interface AgentModelSelection {

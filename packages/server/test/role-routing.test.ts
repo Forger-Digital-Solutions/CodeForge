@@ -12,6 +12,7 @@ import {
   InMemoryProviderCatalog,
 } from "@codeforge/providers";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
+import { PAID_AUTO_PROVIDER_ID } from "@codeforge/paid-auto";
 import { createEightBitRuntime, type ModelQualificationReceipt, type RoleQualificationResult } from "@codeforge/eight-bit";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { createAgentRuntime, eightBitRoleForAgentRole } from "../src/agent-runtime.js";
@@ -753,6 +754,11 @@ describe("R48 — bounded capacity wait on QUEUED fabric verdicts", () => {
     const eightBit = createEightBitRuntime({ firewall, persistence });
     const selectInitialRoute = vi.spyOn(eightBit, "selectInitialRoute").mockImplementation(async () => {
       const next = scripted.shift() ?? scripted[scripted.length - 1];
+      // queuedWaitMs computes nextAvailableAt at decision time — a fixture timestamp created
+      // at test start goes stale whenever run setup is slow, silently skipping the wait branch.
+      if (next && typeof next.queuedWaitMs === "number") {
+        next.queued = { nextAvailableAt: new Date(Date.now() + next.queuedWaitMs).toISOString() };
+      }
       return (next?.outcome === "selected" ? { ...next, model: realModel } : next) as never;
     });
     const runtime = createAgentRuntime({
@@ -779,7 +785,7 @@ describe("R48 — bounded capacity wait on QUEUED fabric verdicts", () => {
 
   it("a near-term QUEUED verdict waits once then re-decides — no false failure", async () => {
     const { runtime, adapter, provider, selectInitialRoute } = runtimeWithScriptedEightBit([
-      { outcome: "no_eligible_route", reasonCodes: ["FABRIC_QUEUED_FOR_CAPACITY"], queued: { nextAvailableAt: new Date(Date.now() + 5_000).toISOString() } },
+      { outcome: "no_eligible_route", reasonCodes: ["FABRIC_QUEUED_FOR_CAPACITY"], queuedWaitMs: 5_000 },
       { outcome: "selected", model: { providerId: "fleet-a", modelId: "model-a" }, score: 80, reasons: ["ADMITTED"] },
     ]);
 
@@ -797,7 +803,7 @@ describe("R48 — bounded capacity wait on QUEUED fabric verdicts", () => {
 
   it("a QUEUED verdict beyond the horizon fails closed without waiting", async () => {
     const { runtime, adapter, selectInitialRoute } = runtimeWithScriptedEightBit([
-      { outcome: "no_eligible_route", reasonCodes: ["FABRIC_QUEUED_FOR_CAPACITY"], queued: { nextAvailableAt: new Date(Date.now() + 3_600_000).toISOString() } },
+      { outcome: "no_eligible_route", reasonCodes: ["FABRIC_QUEUED_FOR_CAPACITY"], queuedWaitMs: 3_600_000 },
       { outcome: "selected", model: { providerId: "fleet-a", modelId: "model-a" }, score: 80, reasons: ["ADMITTED"] },
     ]);
 
@@ -812,7 +818,7 @@ describe("R48 — bounded capacity wait on QUEUED fabric verdicts", () => {
 
   it("a stale reset (nextAvailableAt already past) re-decides immediately — the queue answer aged out", async () => {
     const { runtime, adapter, provider, selectInitialRoute } = runtimeWithScriptedEightBit([
-      { outcome: "no_eligible_route", reasonCodes: ["FABRIC_QUEUED_FOR_CAPACITY"], queued: { nextAvailableAt: new Date(Date.now() - 500).toISOString() } },
+      { outcome: "no_eligible_route", reasonCodes: ["FABRIC_QUEUED_FOR_CAPACITY"], queuedWaitMs: -500 },
       { outcome: "selected", model: { providerId: "fleet-a", modelId: "model-a" }, score: 80, reasons: ["ADMITTED"] },
     ]);
 
@@ -836,5 +842,94 @@ describe("R48 — bounded capacity wait on QUEUED fabric verdicts", () => {
     expect(result.status).toBe("failed");
     expect(result.summary).toContain("NO_ROLE_QUALIFIED_ROUTE");
     expect(selectInitialRoute).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("R49 — production verification outcomes feed 8-Bit role health", () => {
+  let ws: string;
+  let eventStore: EventStore;
+  let persistence: ReturnType<typeof createSessionPersistence>;
+  let firewall: ForgeZero;
+
+  beforeEach(async () => {
+    ws = await mkdtemp(join(tmpdir(), "cf-role-outcome-"));
+    eventStore = new EventStore();
+    persistence = createSessionPersistence({ dbPath: ":memory:" });
+    firewall = new ForgeZero();
+  });
+
+  afterEach(async () => {
+    persistence.close();
+    await rm(ws, { recursive: true, force: true });
+  });
+
+  function runtimeWithAuthority() {
+    firewall.register(fleetRecord("groq", "qwen/qwen3.8-27b"));
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(new ScriptedFleetProvider("groq"));
+    const eightBit = createEightBitRuntime({ firewall, persistence });
+    const runtime = createAgentRuntime({
+      sessionId: "sess-role-outcome",
+      eventStore,
+      persistence,
+      firewall,
+      providerCatalog: catalog,
+      workspacePath: ws,
+      eightBit,
+    });
+    return { runtime, eightBit };
+  }
+
+  it("recordRoleOutcome lands verification_failed on the exact route — CODER-scoped CAPABILITY_LIMITED, ForgeZero eligibility untouched", () => {
+    const { runtime, eightBit } = runtimeWithAuthority();
+    const observeSpy = vi.spyOn(eightBit, "observe");
+    const eligibleBefore = firewall.eligibleModels().map((model) => `${model.providerId}::${model.modelId}`);
+    expect(firewall.canRouteTo("groq", "qwen/qwen3.8-27b")).toBe(true);
+
+    runtime.recordRoleOutcome(
+      { providerId: "groq", modelId: "qwen/qwen3.8-27b" },
+      "coder",
+      "verification_failed",
+      "run-r49-verify-fail",
+    );
+
+    const roleOutcomes = observeSpy.mock.calls.map(([observation]) => observation).filter((observation) => observation.kind === "role_outcome");
+    expect(roleOutcomes).toHaveLength(1);
+    expect(roleOutcomes[0]).toMatchObject({
+      kind: "role_outcome",
+      outcome: "verification_failed",
+      providerId: "groq",
+      modelId: "qwen/qwen3.8-27b",
+      role: "CODER",
+      requestShape: "production",
+      source: "runtime",
+      correlationId: "run-r49-verify-fail",
+    });
+
+    // The advice is role-scoped negative for CODER…
+    const coderAdvice = eightBit.routeHealth.assess("groq", "qwen/qwen3.8-27b", { role: "CODER" });
+    expect(coderAdvice.state).toBe("CAPABILITY_LIMITED");
+    expect(coderAdvice.scoreAdjustment).toBeLessThan(0);
+    expect(coderAdvice.reasonCodes).toContain("CAPABILITY_LIMITED:ROLE_VERIFICATION_FAILED");
+
+    // …and does not bleed into another role's verdict.
+    const reviewerAdvice = eightBit.routeHealth.assess("groq", "qwen/qwen3.8-27b", { role: "REVIEWER" });
+    expect(reviewerAdvice.state).not.toBe("CAPABILITY_LIMITED");
+    expect(reviewerAdvice.reasonCodes.every((code) => !code.startsWith("CAPABILITY_LIMITED"))).toBe(true);
+
+    // Advisory evidence only — ForgeZero eligibility is unchanged.
+    expect(firewall.canRouteTo("groq", "qwen/qwen3.8-27b")).toBe(true);
+    expect(firewall.eligibleModels().map((model) => `${model.providerId}::${model.modelId}`)).toEqual(eligibleBefore);
+  });
+
+  it("recordRoleOutcome ignores undefined and paid routes", () => {
+    const { runtime, eightBit } = runtimeWithAuthority();
+    const observeSpy = vi.spyOn(eightBit, "observe");
+
+    runtime.recordRoleOutcome(undefined, "coder", "verification_failed", "run-r49-skip");
+    runtime.recordRoleOutcome({ providerId: PAID_AUTO_PROVIDER_ID, modelId: "gemini-3-pro" }, "coder", "verified_complete", "run-r49-skip");
+
+    expect(observeSpy.mock.calls.filter(([observation]) => observation.kind === "role_outcome")).toHaveLength(0);
+    expect(eightBit.routeHealth.assess(PAID_AUTO_PROVIDER_ID, "gemini-3-pro", { role: "CODER" }).state).toBe("UNKNOWN");
   });
 });
