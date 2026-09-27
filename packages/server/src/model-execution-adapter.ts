@@ -381,7 +381,10 @@ export class ModelExecutionAdapter {
 
     let text = "";
     const toolCalls: Array<{ id: string; name: string; arguments: string }> = [];
-    let currentToolCall: { id: string; name: string; arguments: string } | null = null;
+    // Parallel tool calls share one event stream keyed by `toolCallId` — not arrival order.
+    // A single slot drops earlier calls' names and concatenates their arguments into
+    // malformed JSON (the explorer zero-read signature).
+    const openToolCalls = new Map<string, { id: string; name: string; arguments: string }>();
     let finishReason: "stop" | "tool_calls" | "length" | "content_filter" | "error" = "stop";
     let usage: AgentUsage = {
       inputTokens: 0,
@@ -403,25 +406,26 @@ export class ModelExecutionAdapter {
           text += event.delta;
           break;
         case "tool_call_started":
-          currentToolCall = { id: event.toolCallId, name: event.toolName, arguments: "" };
+          openToolCalls.set(event.toolCallId, { id: event.toolCallId, name: event.toolName, arguments: "" });
           break;
-        case "tool_call_delta":
-          if (currentToolCall) {
-            currentToolCall.arguments += event.delta;
-          }
+        case "tool_call_delta": {
+          const pending = openToolCalls.get(event.toolCallId) ?? { id: event.toolCallId, name: "", arguments: "" };
+          openToolCalls.set(event.toolCallId, pending);
+          pending.arguments += event.delta;
           break;
-        case "tool_call_completed":
-          if (currentToolCall) {
-            // Providers are allowed to send the complete arguments only on the
-            // terminal event. Preserve them verbatim; ToolBroker performs the
-            // authoritative schema validation before any execution.
-            toolCalls.push({
-              ...currentToolCall,
-              arguments: event.arguments ?? currentToolCall.arguments,
-            });
-          }
-          currentToolCall = null;
+        }
+        case "tool_call_completed": {
+          const pending = openToolCalls.get(event.toolCallId) ?? { id: event.toolCallId, name: "", arguments: "" };
+          openToolCalls.delete(event.toolCallId);
+          // Providers are allowed to send the complete arguments only on the
+          // terminal event. Preserve them verbatim; ToolBroker performs the
+          // authoritative schema validation before any execution.
+          toolCalls.push({
+            ...pending,
+            arguments: event.arguments ?? pending.arguments,
+          });
           break;
+        }
         case "usage":
           usageSource = "PROVIDER_REPORTED";
           usage = {

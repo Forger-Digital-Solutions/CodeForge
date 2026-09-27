@@ -157,3 +157,53 @@ describe("OpenAICompatibleAdapter in-band stream errors", () => {
     expect((events.at(-1) as Extract<StreamEvent, { type: "error" }>).code).toBe("PROVIDER_ERROR");
   });
 });
+
+describe("R48 — parallel tool-call stream assembly", () => {
+  it("keeps interleaved parallel tool calls separated by their provider index", async () => {
+    // The explorer zero-read signature: two calls' deltas interleave on the wire; a
+    // single-slot accumulator merged them into one call with malformed arguments.
+    const fetchFn = (async () => sseResponse([
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_a","function":{"name":"search_files","arguments":"{\\"query"}}]}}]}',
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":1,"id":"call_b","function":{"name":"read_file","arguments":"{\\"path"}}]}}]}',
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\\":\\"auth\\"}"}}]}}]}',
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":1,"function":{"arguments":"\\":\\"src/a.ts\\"}"}}]}}]}',
+      'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}],"usage":{"prompt_tokens":9,"completion_tokens":7,"total_tokens":16}}',
+      "data: [DONE]",
+    ])) as unknown as typeof fetch;
+    const events = await collect(adapter(fetchFn).streamChat(req));
+    const completed = events.filter((e) => e.type === "tool_call_completed") as Array<Extract<StreamEvent, { type: "tool_call_completed" }>>;
+    expect(completed).toHaveLength(2);
+    const byId = new Map(completed.map((e) => [e.toolCallId, e]));
+    expect(byId.get("call_a")?.toolName).toBe("search_files");
+    expect(byId.get("call_a")?.arguments).toBe('{"query":"auth"}');
+    expect(byId.get("call_b")?.toolName).toBe("read_file");
+    expect(byId.get("call_b")?.arguments).toBe('{"path":"src/a.ts"}');
+    expect(events.at(-1)).toMatchObject({ type: "finish", finishReason: "tool_calls" });
+  });
+
+  it("a delta that arrives without name or id still attaches to the in-flight call", async () => {
+    const fetchFn = (async () => sseResponse([
+      'data: {"choices":[{"delta":{"tool_calls":[{"id":"c1","function":{"name":"read_file"}}]}}]}',
+      'data: {"choices":[{"delta":{"tool_calls":[{"function":{"arguments":"{\\"path\\":\\"b.ts\\"}"}}]}}]}',
+      'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}',
+      "data: [DONE]",
+    ])) as unknown as typeof fetch;
+    const events = await collect(adapter(fetchFn).streamChat(req));
+    const completed = events.find((e) => e.type === "tool_call_completed") as Extract<StreamEvent, { type: "tool_call_completed" }>;
+    expect(completed.toolCallId).toBe("c1");
+    expect(completed.arguments).toBe('{"path":"b.ts"}');
+  });
+
+  it("two calls without provider indexes still separate when each carries a distinct call id", async () => {
+    const fetchFn = (async () => sseResponse([
+      'data: {"choices":[{"delta":{"tool_calls":[{"id":"first","function":{"name":"search_files","arguments":"{}"}}]}}]}',
+      'data: {"choices":[{"delta":{"tool_calls":[{"id":"second","function":{"name":"read_file","arguments":"{\\"path\\":\\"x\\"}"}}]}}]}',
+      'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}',
+      "data: [DONE]",
+    ])) as unknown as typeof fetch;
+    const events = await collect(adapter(fetchFn).streamChat(req));
+    const completed = events.filter((e) => e.type === "tool_call_completed") as Array<Extract<StreamEvent, { type: "tool_call_completed" }>>;
+    expect(completed).toHaveLength(2);
+    expect(completed.map((c) => c.toolCallId).sort()).toEqual(["first", "second"]);
+  });
+});

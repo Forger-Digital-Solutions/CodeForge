@@ -218,7 +218,12 @@ export class OpenRouterAdapter implements ProviderAdapter {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let currentToolCall: { id: string; name: string; arguments: string } | null = null;
+      // Parallel tool calls stream interleaved deltas under a shared message; the
+      // provider-supplied `index` (or call `id`) — not arrival order — is the correlation
+      // key. A single accumulator drops later calls' names and concatenates separate calls'
+      // arguments into malformed JSON (read_file {path:""} on explorer probes).
+      const toolCalls = new Map<string | number, { id: string; name: string; arguments: string; started: boolean }>();
+      let lastToolKey: string | number = 0;
       let receivedUsableOutput = false;
       let receivedDone = false;
       // The upstream's own finish reason, when it is one the stream contract can express; a
@@ -247,14 +252,18 @@ export class OpenRouterAdapter implements ProviderAdapter {
               };
               return;
             }
-            if (currentToolCall) {
+            for (const acc of toolCalls.values()) {
+              if (!acc.started) {
+                yield { type: "tool_call_started", toolCallId: acc.id, toolName: acc.name };
+              }
               yield {
                 type: "tool_call_completed",
-                toolCallId: currentToolCall.id,
-                toolName: currentToolCall.name,
-                arguments: currentToolCall.arguments,
+                toolCallId: acc.id,
+                toolName: acc.name,
+                arguments: acc.arguments,
               };
             }
+            toolCalls.clear();
             yield { type: "finish", finishReason };
             return;
           }
@@ -288,38 +297,42 @@ export class OpenRouterAdapter implements ProviderAdapter {
 
             if (delta?.tool_calls) {
               for (const tc of delta.tool_calls) {
-                if (tc.function?.name && !currentToolCall) {
-                  receivedUsableOutput = true;
-                  currentToolCall = {
-                    id: tc.id,
-                    name: tc.function.name,
-                    arguments: "",
-                  };
-                  yield {
-                    type: "tool_call_started",
-                    toolCallId: tc.id,
-                    toolName: tc.function.name,
-                  };
+                const key: string | number = typeof tc.index === "number" ? tc.index : tc.id ?? lastToolKey;
+                let acc = toolCalls.get(key);
+                if (!acc) {
+                  acc = { id: tc.id ?? `call_${toolCalls.size}`, name: "", arguments: "", started: false };
+                  toolCalls.set(key, acc);
+                  lastToolKey = key;
                 }
-                if (tc.function?.arguments && currentToolCall) {
-                  currentToolCall.arguments += tc.function.arguments;
-                  yield {
-                    type: "tool_call_delta",
-                    toolCallId: currentToolCall.id,
-                    delta: tc.function.arguments,
-                  };
+                if (tc.id) acc.id = tc.id;
+                if (tc.function?.name) acc.name += tc.function.name;
+                if (tc.function?.arguments) acc.arguments += tc.function.arguments;
+                if (acc.name.length > 0 && !acc.started) {
+                  acc.started = true;
+                  receivedUsableOutput = true;
+                  yield { type: "tool_call_started", toolCallId: acc.id, toolName: acc.name };
+                  if (acc.arguments.length > 0) {
+                    yield { type: "tool_call_delta", toolCallId: acc.id, delta: acc.arguments };
+                  }
+                } else if (acc.started && tc.function?.arguments) {
+                  yield { type: "tool_call_delta", toolCallId: acc.id, delta: tc.function.arguments };
                 }
               }
             }
 
-            if (choice.finish_reason === "tool_calls" && currentToolCall) {
-              yield {
-                type: "tool_call_completed",
-                toolCallId: currentToolCall.id,
-                toolName: currentToolCall.name,
-                arguments: currentToolCall.arguments,
-              };
-              currentToolCall = null;
+            if (choice.finish_reason === "tool_calls" && toolCalls.size > 0) {
+              for (const acc of toolCalls.values()) {
+                if (!acc.started) {
+                  yield { type: "tool_call_started", toolCallId: acc.id, toolName: acc.name };
+                }
+                yield {
+                  type: "tool_call_completed",
+                  toolCallId: acc.id,
+                  toolName: acc.name,
+                  arguments: acc.arguments,
+                };
+              }
+              toolCalls.clear();
             }
             if (choice.finish_reason === "length" || choice.finish_reason === "content_filter" || choice.finish_reason === "error" || choice.finish_reason === "tool_calls") {
               finishReason = choice.finish_reason;
@@ -676,11 +689,15 @@ interface OpenRouterChatResponse {
 interface OpenRouterStreamChunk {
   /** In-band upstream failure (sent after the HTTP 200 stream has started). */
   error?: { code?: number | string; message?: string };
+  /** The upstream's reported served-model identity, when present on stream chunks. */
+  model?: string;
   choices?: Array<{
     delta: {
       content?: string;
       tool_calls?: Array<{
-        id: string;
+        id?: string;
+        /** OpenAI-style parallel tool-call slot key; absent on single-call streams. */
+        index?: number;
         function: {
           name?: string;
           arguments?: string;

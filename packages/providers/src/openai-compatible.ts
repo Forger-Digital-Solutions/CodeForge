@@ -204,7 +204,12 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       const decoder = new TextDecoder();
       let buffer = "";
       let receivedDone = false;
-      let current: { id: string; name: string; arguments: string } | null = null;
+      // Parallel tool calls stream interleaved deltas under a shared message; the
+      // provider-supplied `index` (or call `id`) — not arrival order — is the correlation
+      // key. A single accumulator drops later calls' names and concatenates separate calls'
+      // arguments into malformed JSON (read_file {path:""} on explorer probes).
+      const toolCalls = new Map<string | number, { id: string; name: string; arguments: string; started: boolean }>();
+      let lastToolKey: string | number = 0;
       // Wire-level diagnostics (R23): a stream that ends without `[DONE]` must never be a blind
       // spot. OpenAI-compatible hosts (Groq among them) report a failure that happens after the
       // 200 response as an in-band `data: {"error":{...}}` frame; the old parser matched neither
@@ -217,10 +222,11 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       let bodyHead = "";
       const finishEvent = (): StreamEvent => ({ type: "finish", finishReason: normalizeStreamFinish(terminalFinish) });
       const finishTerminal = function* (): Generator<StreamEvent> {
-        if (current) {
-          yield { type: "tool_call_completed", toolCallId: current.id, toolName: current.name, arguments: current.arguments };
-          current = null;
+        for (const acc of toolCalls.values()) {
+          if (!acc.started) yield { type: "tool_call_started", toolCallId: acc.id, toolName: acc.name };
+          yield { type: "tool_call_completed", toolCallId: acc.id, toolName: acc.name, arguments: acc.arguments };
         }
+        toolCalls.clear();
         yield finishEvent();
       };
       const handleLine = function* (this: OpenAICompatibleAdapter, line: string): Generator<StreamEvent, "continue" | "done" | "error"> {
@@ -250,13 +256,24 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
           if (delta?.content) yield { type: "text_delta", delta: delta.content };
           if (delta?.tool_calls) {
             for (const tc of delta.tool_calls) {
-              if (tc.function?.name && !current) {
-                current = { id: tc.id ?? `call_${Date.now()}`, name: tc.function.name, arguments: "" };
-                yield { type: "tool_call_started", toolCallId: current.id, toolName: current.name };
+              const key: string | number = typeof tc.index === "number" ? tc.index : tc.id ?? lastToolKey;
+              let acc = toolCalls.get(key);
+              if (!acc) {
+                acc = { id: tc.id ?? `call_${toolCalls.size}`, name: "", arguments: "", started: false };
+                toolCalls.set(key, acc);
+                lastToolKey = key;
               }
-              if (tc.function?.arguments && current) {
-                current.arguments += tc.function.arguments;
-                yield { type: "tool_call_delta", toolCallId: current.id, delta: tc.function.arguments };
+              if (tc.id) acc.id = tc.id;
+              if (tc.function?.name) acc.name += tc.function.name;
+              if (tc.function?.arguments) acc.arguments += tc.function.arguments;
+              if (acc.name.length > 0 && !acc.started) {
+                acc.started = true;
+                yield { type: "tool_call_started", toolCallId: acc.id, toolName: acc.name };
+                if (acc.arguments.length > 0) {
+                  yield { type: "tool_call_delta", toolCallId: acc.id, delta: acc.arguments };
+                }
+              } else if (acc.started && tc.function?.arguments) {
+                yield { type: "tool_call_delta", toolCallId: acc.id, delta: tc.function.arguments };
               }
             }
           }
@@ -270,9 +287,12 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
             };
             return "error";
           }
-          if (choice.finish_reason === "tool_calls" && current) {
-            yield { type: "tool_call_completed", toolCallId: current.id, toolName: current.name, arguments: current.arguments };
-            current = null;
+          if (choice.finish_reason === "tool_calls" && toolCalls.size > 0) {
+            for (const acc of toolCalls.values()) {
+              if (!acc.started) yield { type: "tool_call_started", toolCallId: acc.id, toolName: acc.name };
+              yield { type: "tool_call_completed", toolCallId: acc.id, toolName: acc.name, arguments: acc.arguments };
+            }
+            toolCalls.clear();
           }
           if (typeof choice.finish_reason === "string" && choice.finish_reason.length > 0) terminalFinish = choice.finish_reason;
         }
@@ -542,7 +562,9 @@ interface OaiStreamError {
 }
 
 interface OaiStreamChunk {
-  choices?: Array<{ delta?: { content?: string; tool_calls?: Array<{ id?: string; function?: { name?: string; arguments?: string } }> }; finish_reason?: string }>;
+  /** The upstream's reported served-model identity, when present on stream chunks. */
+  model?: string;
+  choices?: Array<{ delta?: { content?: string; tool_calls?: Array<{ id?: string; index?: number; function?: { name?: string; arguments?: string } }> }; finish_reason?: string }>;
   usage?: OaiUsage;
   /** In-band failure after the 200 response (OpenAI-compatible hosts, Groq, Cloudflare). */
   error?: OaiStreamError;

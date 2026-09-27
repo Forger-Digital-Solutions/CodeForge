@@ -104,3 +104,37 @@ describe("Model Execution Adapter & Provider Contract (CF-07)", () => {
     expect(response.providerId).toBe("byok-openrouter");
   });
 });
+
+describe("R48 — parallel tool-call event assembly", () => {
+  it("keeps interleaved tool-call events separated by toolCallId", async () => {
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register({
+      providerId: "managed-free-provider",
+      isTestProvider: true,
+      listModels: async () => [],
+      chat: async () => { throw new Error("Use streamChat"); },
+      streamChat: async function* () {
+        yield { type: "tool_call_started", toolCallId: "call_a", toolName: "search_files" };
+        yield { type: "tool_call_started", toolCallId: "call_b", toolName: "read_file" };
+        yield { type: "tool_call_delta", toolCallId: "call_a", delta: "{\"query" };
+        yield { type: "tool_call_delta", toolCallId: "call_b", delta: "{\"path" };
+        yield { type: "tool_call_delta", toolCallId: "call_a", delta: "\":\"auth\"}" };
+        yield { type: "tool_call_delta", toolCallId: "call_b", delta: "\":\"x.ts\"}" };
+        yield { type: "tool_call_completed", toolCallId: "call_a", toolName: "search_files", arguments: "{\"query\":\"auth\"}" };
+        yield { type: "tool_call_completed", toolCallId: "call_b", toolName: "read_file", arguments: "{\"path\":\"x.ts\"}" };
+        yield { type: "finish", finishReason: "tool_calls" };
+      },
+      healthCheck: async () => ({ status: "available" }),
+    });
+    const firewall = new ForgeZero();
+    firewall.register(createGenericFreeRecord({ providerId: "managed-free-provider", modelId: "free-model" }));
+    const adapter = new ModelExecutionAdapter(catalog, firewall);
+    const response = await adapter.execute({
+      modelSelection: { providerId: "managed-free-provider", modelId: "free-model" },
+      messages: [{ role: "user", content: "explore" }],
+    });
+    expect(response.toolCalls).toHaveLength(2);
+    expect(response.toolCalls[0]).toMatchObject({ id: "call_a", name: "search_files", arguments: "{\"query\":\"auth\"}" });
+    expect(response.toolCalls[1]).toMatchObject({ id: "call_b", name: "read_file", arguments: "{\"path\":\"x.ts\"}" });
+  });
+});

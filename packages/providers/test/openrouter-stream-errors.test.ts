@@ -88,3 +88,23 @@ describe("OpenRouterAdapter — in-band stream failures are never silent", () =>
     expect(events.some((event) => event.type === "finish")).toBe(false);
   });
 });
+
+describe("R48 — parallel tool-call stream assembly", () => {
+  it("keeps interleaved parallel tool calls separated by their provider index", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(sseResponse([
+      JSON.stringify({ id: "r", choices: [{ index: 0, delta: { tool_calls: [{ index: 0, id: "call_a", function: { name: "search_files", arguments: "{\"query" } }] } }] }),
+      JSON.stringify({ id: "r", choices: [{ index: 0, delta: { tool_calls: [{ index: 1, id: "call_b", function: { name: "read_file", arguments: "{\"path" } }] } }] }),
+      JSON.stringify({ id: "r", choices: [{ index: 0, delta: { tool_calls: [{ index: 0, function: { arguments: "\":\"auth\"}" } }] } }] }),
+      JSON.stringify({ id: "r", choices: [{ index: 0, delta: { tool_calls: [{ index: 1, function: { arguments: "\":\"src/a.ts\"}" } }] } }] }),
+      JSON.stringify({ id: "r", choices: [{ index: 0, delta: {}, finish_reason: "tool_calls" }], usage: { prompt_tokens: 9, completion_tokens: 7, total_tokens: 16 } }),
+      "[DONE]",
+    ])));
+    const events = await collect(new OpenRouterAdapter({ credentialStore: fakeCredentials }));
+    const completed = events.filter((e) => e.type === "tool_call_completed") as Array<Extract<StreamEvent, { type: "tool_call_completed" }>>;
+    expect(completed).toHaveLength(2);
+    const byId = new Map(completed.map((e) => [e.toolCallId, e]));
+    expect(byId.get("call_a")?.arguments).toBe('{"query":"auth"}');
+    expect(byId.get("call_b")?.toolName).toBe("read_file");
+    expect(byId.get("call_b")?.arguments).toBe('{"path":"src/a.ts"}');
+  });
+});
