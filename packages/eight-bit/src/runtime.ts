@@ -421,8 +421,24 @@ export class EightBitRuntime {
         },
       }
       : req;
-    const outcome = await this.failover.handleFailure(reqWithFabric);
-    if (outcome.action === "no_replacement" && lastFabricDecision?.outcome === "QUEUED_FOR_CAPACITY") {
+    let outcome = await this.failover.handleFailure(reqWithFabric);
+    // R51: a no_replacement that rests only on unmeasured quota domains is a verification
+    // gap, not busy supply — measure those candidates once, then let the coordinator's
+    // fabric re-decide see the fresh windows. Bounded: capacityMeasured guards the re-entry.
+    // The retried call applies its own post-measure verdict — this frame must not re-wrap
+    // it under the stale pre-measure decision.
+    let measured = false;
+    if (outcome.action === "no_replacement" && req.measureCapacity && !req.capacityMeasured) {
+      const unmeasured = (lastFabricDecision?.explanation.candidates ?? []).filter((c) => c.status === "CAPACITY_UNMEASURED").slice(0, 4);
+      if (unmeasured.length > 0) {
+        for (const c of unmeasured) {
+          await req.measureCapacity(c.providerId, c.modelId, c.capacityPoolId !== undefined ? { capacityPoolId: c.capacityPoolId } : undefined).catch(() => false);
+        }
+        outcome = await this.handleTurnFailure({ ...req, capacityMeasured: true });
+        measured = true;
+      }
+    }
+    if (!measured && outcome.action === "no_replacement" && lastFabricDecision?.outcome === "QUEUED_FOR_CAPACITY") {
       return {
         ...outcome,
         capacityWait: {

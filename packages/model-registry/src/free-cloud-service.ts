@@ -53,6 +53,13 @@ export interface FreeCloudRoutingHooks {
    * receipt) contributes a zero role-quality adjustment, never a disqualification.
    */
   getQualificationReceipt?(providerId: string, modelId: string): ModelQualificationReceipt | undefined;
+  /**
+   * R51: measure a route's quota domain on demand when the fabric denies it as
+   * CAPACITY_UNMEASURED — a metadata quota endpoint where available, else one bounded
+   * `maxTokens: 1` ping whose headers land through the response observer. Optional so
+   * existing hosts/mocks stay valid; absent means unmeasured candidates stay denied.
+   */
+  probeRouteCapacity?(providerId: string, modelId?: string, opts?: { capacityPoolId?: string }): Promise<boolean>;
 }
 
 export interface FreeCloudServiceOptions {
@@ -723,6 +730,70 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
 
   quotaRemaining(providerId: string, modelId: string): number | undefined {
     return effectiveQuota(this.quota.get(providerId, modelId), this.now)?.remainingRequests;
+  }
+
+  /** Last on-demand capacity-measurement attempt per quota domain — bounds probe rate. */
+  private readonly capacityProbeAt = new Map<string, number>();
+
+  /** True when this route's quota domain already has an observation worth admitting on. */
+  private routeCapacityObserved(providerId: string, modelId: string | undefined, accountId?: string): boolean {
+    if (modelId !== undefined && this.quota.get(providerId, modelId, accountId) !== undefined) return true;
+    if (this.quota.hasProviderScoped(providerId, accountId)) return true;
+    // A managed-account probe stamps evidence under its account; the unscoped read misses it.
+    if (accountId === undefined) {
+      return this.managedPoolsFor(providerId).some(
+        (mp) => this.quota.hasProviderScoped(providerId, mp.accountId)
+          || (modelId !== undefined && this.quota.get(providerId, modelId, mp.accountId) !== undefined),
+      );
+    }
+    return false;
+  }
+
+  /**
+   * R51: measure a quota domain on demand. An unmeasured route denies admission as
+   * CAPACITY_UNMEASURED and can never self-measure (admission is what generates header
+   * evidence), so the runtime calls this when a denial rests on unmeasured candidates.
+   * Metadata quota endpoints (e.g. OpenRouter /key) are preferred — zero inference spend;
+   * otherwise one bounded `maxTokens:1` ping, whose rate-limit headers land through the
+   * adapter's wired onResponse observer even when the call itself 429s. Returns whether an
+   * observation now exists — a failed probe leaves nothing behind except its cooldown.
+   */
+  async probeRouteCapacity(providerId: string, modelId?: string, opts: { capacityPoolId?: string } = {}): Promise<boolean> {
+    // A managed account id is resolved through the pool table, not string-splitting: model-domain
+    // pools append `:model:<id>` and account ids are the authoritative segment in between.
+    const accountId = opts.capacityPoolId === undefined
+      ? undefined
+      : this.managedPoolsFor(providerId).find(
+          (mp) => opts.capacityPoolId === mp.poolId || opts.capacityPoolId!.startsWith(`${mp.poolId}:`),
+        )?.accountId;
+    const key = `${providerId}::${accountId ?? "-"}::${modelId ?? "*"}`;
+    const nowMs = this.now().getTime();
+    const last = this.capacityProbeAt.get(key);
+    if (last !== undefined && nowMs - last < 60_000) {
+      return this.routeCapacityObserved(providerId, modelId, accountId);
+    }
+    this.capacityProbeAt.set(key, nowMs);
+    if (this.routeCapacityObserved(providerId, modelId, accountId)) return true;
+    const adapter = this.providerCatalog.get(providerId);
+    if (!adapter) return false;
+    try {
+      if (typeof adapter.probeAccountQuota === "function" && await adapter.probeAccountQuota()) {
+        return true;
+      }
+    } catch {
+      // A metadata probe that throws leaves no evidence; fall through to the inference ping.
+    }
+    if (modelId === undefined) return this.routeCapacityObserved(providerId, modelId, accountId);
+    try {
+      await adapter.chat({
+        model: modelId,
+        messages: [{ role: "user", content: "ping" }],
+        maxTokens: 1,
+      } as import("@codeforge/providers").ChatRequest);
+    } catch {
+      // A 429 still recorded its quota headers through onResponse — measured is measured.
+    }
+    return this.routeCapacityObserved(providerId, modelId, accountId);
   }
 
   capacityRoutingAdvice(providerId: string, modelId: string): { scoreAdjustment: number; reasonCodes: string[] } {

@@ -98,6 +98,14 @@ export interface FailoverRequest {
    * transport failure would re-hit the same outage. Callers never invent one when unknown.
    */
   preferIndependentFromPoolId?: string;
+  /**
+   * R51: on-demand measurement for candidates the fabric denied as CAPACITY_UNMEASURED.
+   * Wired to FreeCloudService.probeRouteCapacity by the host; absent means the host cannot
+   * measure and the denial stays terminal. Bounded to one retry pass per failure.
+   */
+  measureCapacity?: (providerId: string, modelId: string, opts?: { capacityPoolId?: string }) => Promise<boolean>;
+  /** Internal once-guard — the runtime sets it on the measure-then-retry re-entry. */
+  capacityMeasured?: boolean;
 }
 
 export type FailoverOutcome =

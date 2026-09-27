@@ -1,8 +1,41 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { ForgeZero } from "@codeforge/forge-zero";
+import { ForgeZero, CapacityReservationLedger, type CapacityRoute, type CapacityWindow } from "@codeforge/forge-zero";
 import { createSessionPersistence, type ISessionPersistence } from "@codeforge/sessions";
 import { EightBitRuntime } from "../src/runtime.js";
+import { createFreeFabric } from "../src/free-fabric.js";
 import { makeModel } from "./fixtures.js";
+
+const OBSERVED_AT = new Date(Date.now() - 60_000).toISOString();
+const NO_RESET = "9999-12-31T23:59:59.999Z";
+
+function fabricRoute(id: string, overrides: Partial<CapacityRoute> = {}): CapacityRoute {
+  return {
+    routeId: `fabric:${id}`,
+    providerId: id,
+    modelId: `${id}-model`,
+    canonicalModelId: `${id}-model`,
+    family: id,
+    gateway: id,
+    supplyClass: "PURE_MANAGED_FREE",
+    capacityPoolId: `shared:${id}`,
+    capacityPoolScope: "SHARED_OWNER_POOL",
+    capacityScope: "ORG",
+    dataPolicyProfile: "PRIVATE_CODE_ALLOWED",
+    lifecycle: "APPROVED",
+    explicitZeroPrice: true,
+    paidFallbackDisabled: true,
+    managedMultiUserAllowed: true,
+    privacyClass: "standard",
+    // Fabric capacity routes speak product-role vocabulary: CODER maps to PRIMARY_CODING_AGENT
+    // at the runtime seam (FABRIC_MODEL_ROLE), so the fixture must declare that role.
+    roles: ["PRIMARY_CODING_AGENT"],
+    qualityScore: 70,
+    healthy: true,
+    enabled: true,
+    windows: [{ unit: "requests", limit: 100, remaining: 100, resetAt: NO_RESET, scope: "ORG", observedAt: OBSERVED_AT, authoritative: true } as CapacityWindow],
+    ...overrides,
+  };
+}
 
 let fw: ForgeZero;
 let persistence: ISessionPersistence;
@@ -77,5 +110,68 @@ describe("EightBitRuntime — end-to-end facade", () => {
     for (let i = 0; i < 10; i++) runtime.recordToolCallOutcome("openrouter", "flaky", "malformed");
     const score = runtime.reliability.score("openrouter", "flaky");
     expect(score.quarantined).toBe(true);
+  });
+
+  it("R51: failover measures an unmeasured candidate once, then the fabric re-decide admits it", async () => {
+    // The failed route leaves only an unmeasured candidate — zero quota windows, denied as
+    // CAPACITY_UNMEASURED. measureCapacity is the bounded probe seam: after it lands real
+    // windows, the coordinator's own re-decide rotates onto the now-admitted route. Without
+    // the hook the same situation stays a truthful no_replacement.
+    fw.register(makeModel({ providerId: "dead", modelId: "dead-model" }));
+    fw.register(makeModel({ providerId: "provider-b", modelId: "provider-b-model" }));
+    let measured = false;
+    const unmeasuredB = fabricRoute("provider-b", { windows: [] });
+    const measuredB = fabricRoute("provider-b");
+    const fabric = createFreeFabric({
+      managedRoutes: () => [measured ? measuredB : unmeasuredB],
+      managedPools: () => [],
+      reservations: new CapacityReservationLedger({ routes: [], now: () => Date.now() }),
+    });
+    const fabricRuntime = new EightBitRuntime({ firewall: fw, persistence, freeFabric: fabric });
+    const probes: string[] = [];
+    const outcome = await fabricRuntime.handleTurnFailure({
+      sessionId: "s1",
+      turnId: "t-fail",
+      role: "CODER",
+      current: { providerId: "dead", modelId: "dead-model" },
+      isExactPin: false,
+      policyMode: "adaptive",
+      error: new Error("quota exhausted"),
+      hasAdapter: () => true,
+      measureCapacity: async (providerId, modelId) => {
+        probes.push(`${providerId}/${modelId}`);
+        measured = true;
+        return true;
+      },
+    });
+    expect(outcome.action).toBe("rotate");
+    expect(probes).toEqual(["provider-b/provider-b-model"]);
+    if (outcome.action === "rotate") {
+      expect(outcome.replacement).toEqual({ providerId: "provider-b", modelId: "provider-b-model" });
+    }
+  });
+
+  it("R51: without a measure hook an unmeasured candidate is a truthful no_replacement — never capacity_wait", async () => {
+    fw.register(makeModel({ providerId: "dead", modelId: "dead-model" }));
+    fw.register(makeModel({ providerId: "provider-b", modelId: "provider-b-model" }));
+    const fabric = createFreeFabric({
+      managedRoutes: () => [fabricRoute("provider-b", { windows: [] })],
+      managedPools: () => [],
+      reservations: new CapacityReservationLedger({ routes: [], now: () => Date.now() }),
+    });
+    const fabricRuntime = new EightBitRuntime({ firewall: fw, persistence, freeFabric: fabric });
+    const outcome = await fabricRuntime.handleTurnFailure({
+      sessionId: "s1",
+      turnId: "t-fail2",
+      role: "CODER",
+      current: { providerId: "dead", modelId: "dead-model" },
+      isExactPin: false,
+      policyMode: "adaptive",
+      error: new Error("quota exhausted"),
+      hasAdapter: () => true,
+    });
+    expect(outcome.action).toBe("no_replacement");
+    // CAPACITY_UNMEASURED never masquerades as a capacity wait — there is no reset to wait for.
+    expect((outcome as { capacityWait?: unknown }).capacityWait).toBeUndefined();
   });
 });

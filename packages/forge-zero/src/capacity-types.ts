@@ -211,6 +211,11 @@ export interface CapacityReservationDecision {
     | "ADMITTED"
     | "NO_ELIGIBLE_ROUTE"
     | "CAPACITY_EXHAUSTED"
+    /** R51: the pool is eligible but emitted no authoritative quota-unit windows — supply
+     *  whose capacity was never measured, not supply proven empty. Never a wait state:
+     *  unmeasured routes can only become admittable by being measured, and they cannot be
+     *  measured while parked because admission is what generates the observation. */
+    | "CAPACITY_UNMEASURED"
     | "FIRST_RUN_RESERVE_PROTECTED"
     | "USER_CONCURRENCY_LIMIT"
     | "CAPACITY_POOL_IDENTITY_MISMATCH"

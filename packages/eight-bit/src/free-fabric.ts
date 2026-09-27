@@ -116,6 +116,10 @@ export type FabricCandidateStatus =
   /** Eligible and ranked, but a better route admitted first. Its health/quota facts still show. */
   | "STANDBY"
   | "CAPACITY_DENIED"
+  /** R51: eligible but never observed — its quota domain emitted no authoritative windows.
+   *  Distinct from CAPACITY_DENIED: this is a verification gap a bounded probe can close,
+   *  not proven-busy supply worth waiting on. */
+  | "CAPACITY_UNMEASURED"
   | "HEALTH_EXCLUDED"
   | "POLICY_EXCLUDED"
   | "ROLE_INELIGIBLE"
@@ -130,6 +134,9 @@ export interface FabricCandidateReport {
   supplyClass: SupplyClass;
   quotaOwner: QuotaOwnerKind;
   quotaOwnerIdentity?: string;
+  /** Physical quota domain this candidate would draw on — carried so an unmeasured
+   *  candidate can be measured under the same account the reservation would have used. */
+  capacityPoolId?: string;
   status: FabricCandidateStatus;
   reasonCodes: string[];
   healthState?: RouteHealthCondition;
@@ -401,6 +408,7 @@ export class FreeFabric {
     let selected: FabricRouteDecision["selected"];
     let queued: { nextAvailableAt?: string; reasonCodes: string[] } | undefined;
     let concurrencyLimited = false;
+    let sawUnmeasured = false;
 
     for (const candidate of ranked) {
       const { entry } = candidate;
@@ -449,11 +457,20 @@ export class FreeFabric {
         break;
       }
       const domainReason = this.quotaDomainReason(entry, decision.reason);
-      reports.set(entry.routeId, this.reportFor(entry, decision.reason === "CAPACITY_EXHAUSTED" || decision.reason === "FIRST_RUN_RESERVE_PROTECTED" ? "CAPACITY_DENIED" : "RESERVATION_DENIED", [domainReason, ...(domainReason !== decision.reason ? [decision.reason] : []), ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : []), ...candidate.roleReasons], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
+      const status = decision.reason === "CAPACITY_EXHAUSTED" || decision.reason === "FIRST_RUN_RESERVE_PROTECTED" ? "CAPACITY_DENIED"
+        : decision.reason === "CAPACITY_UNMEASURED" ? "CAPACITY_UNMEASURED"
+        : "RESERVATION_DENIED";
+      reports.set(entry.routeId, this.reportFor(entry, status, [domainReason, ...(domainReason !== decision.reason ? [decision.reason] : []), ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : []), ...candidate.roleReasons], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
       if (decision.reason === "USER_CONCURRENCY_LIMIT") {
         concurrencyLimited = true;
         queued = { reasonCodes: ["USER_CONCURRENCY_LIMIT"], nextAvailableAt: decision.nextAvailableAt };
         break;
+      }
+      if (decision.reason === "CAPACITY_UNMEASURED") {
+        // Never a wait state: an unmeasured quota domain cannot "return" on its own — it
+        // stays unadmittable until measured, and parking on it is the false-waiting bug.
+        sawUnmeasured = true;
+        continue;
       }
       queued = {
         reasonCodes: [...new Set([...(queued?.reasonCodes ?? []), domainReason, ...(domainReason !== decision.reason ? [decision.reason] : [])])],
@@ -493,7 +510,7 @@ export class FreeFabric {
         ? "QUEUED_FOR_CAPACITY"
         : "DENIED_NO_SUPPLY";
 
-    const suggestions = this.suggestionsFor(outcome, userRoutes, ranked.length);
+    const suggestions = this.suggestionsFor(outcome, userRoutes, ranked.length, sawUnmeasured);
     const summary = selected
       ? `Selected ${supplyLabel(selected.quotaOwner)} route ${selected.providerId}/${selected.modelId}: ` +
         `role-qualified${candidateHealthSuffix(ranked, selected.routeId)}; quota reserved; ` +
@@ -504,7 +521,9 @@ export class FreeFabric {
           : healthBlockedOnly && queued === undefined
             ? "Every eligible free route is temporarily unhealthy — queued until a route recovers, never a paid route."
             : "All eligible free capacity is currently reserved — queued for the next window, never a paid fallback."
-        : "No free supply can serve this request — nothing eligible, nothing paid substituted.";
+        : sawUnmeasured
+          ? "Eligible free supply exists but its capacity was never measured — CodeForge must measure it rather than wait on a window that cannot return by itself. Never a paid fallback."
+          : "No free supply can serve this request — nothing eligible, nothing paid substituted.";
 
     return {
       outcome,
@@ -517,8 +536,12 @@ export class FreeFabric {
         summary,
         reasonCodes: selected
           ? (reports.get(selected.routeId)?.reasonCodes ?? [])
-          : queued?.reasonCodes ?? (healthBlockedOnly ? ["ALL_ELIGIBLE_ROUTES_UNHEALTHY"]
-            : verdictExcluded ? ["NO_ROLE_QUALIFIED_ROUTE", "NO_ELIGIBLE_ROUTE"] : ["NO_ELIGIBLE_ROUTE"]),
+          : queued?.reasonCodes ?? [...new Set([
+              ...(healthBlockedOnly ? ["ALL_ELIGIBLE_ROUTES_UNHEALTHY"] : []),
+              ...(verdictExcluded ? ["NO_ROLE_QUALIFIED_ROUTE"] : []),
+              ...(sawUnmeasured ? ["CAPACITY_UNMEASURED"] : []),
+              "NO_ELIGIBLE_ROUTE",
+            ])],
         domainOrder: FORGEAUTO_DOMAIN_ORDER,
         isolationViolations: ledger.summary.isolationViolations,
         candidates: [...reports.values()],
@@ -533,6 +556,7 @@ export class FreeFabric {
       routeId: entry.routeId, providerId: entry.providerId, modelId: entry.modelId,
       canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
       quotaOwner: entry.quotaOwner, quotaOwnerIdentity: entry.quotaOwnerIdentity,
+      capacityPoolId: entry.capacityPoolId,
       status, reasonCodes, healthState, scoreAdjustment,
       ...(rightFitPenalty !== undefined && rightFitPenalty !== 0 ? { rightFitPenalty } : {}),
     };
@@ -544,6 +568,11 @@ export class FreeFabric {
    * dry — the pool scope/shape encodes it, so the wait-state ledger names it explicitly.
    */
   private quotaDomainReason(entry: RouteLedgerEntry, reason: string): string {
+    if (reason === "CAPACITY_UNMEASURED") {
+      if (entry.quotaPoolScope === "PER_USER_POOL") return "USER_QUOTA_UNMEASURED";
+      if (entry.capacityPoolId.includes(":model:")) return "MODEL_QUOTA_UNMEASURED";
+      return "PROVIDER_QUOTA_UNMEASURED";
+    }
     if (reason !== "CAPACITY_EXHAUSTED") return reason;
     if (entry.quotaPoolScope === "PER_USER_POOL") return "USER_QUOTA_EXHAUSTED";
     if (entry.capacityPoolId.includes(":model:")) return "MODEL_QUOTA_EXHAUSTED";
@@ -569,7 +598,7 @@ export class FreeFabric {
     return this.reportFor(entry, "POLICY_EXCLUDED", ["NOT_IN_SUPPLY_PLAN"]);
   }
 
-  private suggestionsFor(outcome: FabricOutcome, userRoutes: readonly CapacityRoute[], eligibleCount: number): string[] {
+  private suggestionsFor(outcome: FabricOutcome, userRoutes: readonly CapacityRoute[], eligibleCount: number, sawUnmeasured = false): string[] {
     const suggestions: string[] = [];
     if (outcome === "ADMITTED") return suggestions;
     if (userRoutes.length === 0) {
@@ -578,6 +607,8 @@ export class FreeFabric {
     if (outcome === "QUEUED_FOR_CAPACITY") {
       suggestions.push("Wait for the provider window reset — the request stays free; CodeForge never falls back to paid inference.");
       if (eligibleCount > 0) suggestions.push("Other work in this session already holds reservations; finishing or cancelling it frees capacity.");
+    } else if (sawUnmeasured) {
+      suggestions.push("Eligible free supply is present but unmeasured — CodeForge probes it on demand rather than guessing capacity or falling back to paid.");
     } else {
       suggestions.push("No eligible free route exists for this role — check provider connections and qualification state.");
     }

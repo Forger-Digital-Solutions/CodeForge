@@ -215,7 +215,7 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
       reservations: new CapacityReservationLedger({ routes: [], pools: [] }),
     });
 
-  const makeRuntime = (sessionId: string, fabric: FreeFabric, userId?: string) =>
+  const makeRuntime = (sessionId: string, fabric: FreeFabric, userId?: string, freeCloud?: import("@codeforge/model-registry").FreeCloudRoutingHooks) =>
     createAgentRuntime({
       sessionId,
       eventStore,
@@ -226,6 +226,7 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
       userId,
       routeHealth: authority,
       freeFabric: fabric,
+      freeCloud,
       fabricContext: ({ userId: uid }) => {
         const resolved = uid ?? "anonymous";
         return { userId: resolved, userIdentities: uid ? [`hash-${resolved}`] : [] };
@@ -747,5 +748,68 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
 
     expect(final?.status).toBe("failed");
     expect(provider.callCount).toBe(0);
+  });
+
+  it("R51: unmeasured supply without a measure hook fails closed — never parked on a window that cannot return", async () => {
+    // GitHub Models shape (R33 audit): the route is eligible but emits zero quota windows.
+    // The old semantics queued it — a durable park with no reset and no possible recovery,
+    // since admission is what produces the headers. Now the verdict is DENIED/UNMEASURED:
+    // honest failure for callers that cannot measure, never a fabricated wait.
+    const unmeasured = managedRoute("provider-a", { windows: [] });
+    registerFleet("provider-a", "provider-a-model");
+    const fabric = makeFabric([unmeasured], [poolFor(unmeasured, { windows: [] })]);
+    const provider = new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents());
+    catalog.register(provider);
+
+    const runtime = makeRuntime("sess-fabric-unmeasured", fabric);
+    await runtime.init();
+    const turnId = await runtime.startTurn("Say hello");
+    const final = await waitForTerminal(runtime, persistence, "sess-fabric-unmeasured", turnId);
+
+    expect(final?.status).toBe("failed");
+    expect(provider.callCount).toBe(0);
+    // The smoking gun for the old bug: a durable free-capacity-wait work item would have
+    // parked this turn forever. None may exist.
+    expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toBeUndefined();
+  });
+
+  it("R51: unmeasured supply with a measure hook probes on demand and then executes", async () => {
+    // The quota domain starts unmeasured (windows:[] → CAPACITY_UNMEASURED). The runtime's
+    // admission pre-step calls freeCloud.probeRouteCapacity — a bounded measurement that
+    // lands real windows — and the same turn's re-decide then admits. No park, no paid path.
+    let measured = false;
+    const unmeasured = managedRoute("provider-a", { windows: [] });
+    const measuredRoute = managedRoute("provider-a");
+    registerFleet("provider-a", "provider-a-model");
+    const fabric = createFreeFabric({
+      managedRoutes: () => [measured ? measuredRoute : unmeasured],
+      managedPools: () => [measured ? poolFor(measuredRoute) : poolFor(unmeasured, { windows: [] })],
+      userSources: [],
+      health: authority,
+      reservations: new CapacityReservationLedger({ routes: [], pools: [] }),
+    });
+    const provider = new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents());
+    catalog.register(provider);
+    let probeCalls = 0;
+    const freeCloud: import("@codeforge/model-registry").FreeCloudRoutingHooks = {
+      isForgeAutoEligible: () => true,
+      canonicalIdOf: (p: string, m: string) => `${p}/${m}`,
+      sameModelAlternates: () => [],
+      recordRouteFailure: () => undefined,
+      recordRouteSuccess: () => undefined,
+      quotaRemaining: () => undefined,
+      capacityRoutingAdvice: () => ({ scoreAdjustment: 0, reasonCodes: [] }),
+      probeRouteCapacity: async () => { probeCalls++; measured = true; return true; },
+    };
+
+    const runtime = makeRuntime("sess-fabric-probe", fabric, undefined, freeCloud);
+    await runtime.init();
+    const turnId = await runtime.startTurn("Say hello");
+    const final = await waitForTerminal(runtime, persistence, "sess-fabric-probe", turnId);
+
+    expect(final?.status).toBe("completed");
+    expect(probeCalls).toBe(1);
+    expect(provider.callCount).toBe(1);
+    expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toBeUndefined();
   });
 });

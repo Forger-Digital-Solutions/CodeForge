@@ -232,10 +232,12 @@ describe("FreeFabric — supply composition + fair admission", () => {
     expect(decision.suggestions.some((s) => /pay|purchase|credit card/i.test(s) && !/never|stays free/i.test(s))).toBe(false);
   });
 
-  it("queues an unmeasured route — absent quota windows are zero usable supply, never assumed", () => {
+  it("denies an unmeasured route as CAPACITY_UNMEASURED — a verification gap, never a wait", () => {
     // Live finding (R33 supply audit): GitHub Models serves real inference but emits no
-    // quota headers, so its fabric route arrives with windows:[]. Unmeasured capacity must
-    // behave like exhaustion — a decision to wait — never an admission on faith.
+    // quota headers, so its fabric route arrives with windows:[]. Unmeasured capacity denies
+    // as CAPACITY_UNMEASURED so the runtime can probe-and-retry — QUEUED would park on a
+    // window that can never return by itself (the R51 false-parking bug). Still never an
+    // admission on faith.
     const c = clock();
     const unmeasured = managedRoute("shared", { windows: [] });
     const fabric = createFreeFabric({
@@ -245,11 +247,14 @@ describe("FreeFabric — supply composition + fair admission", () => {
       now: c.now,
     });
     const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" });
-    expect(decision.outcome).toBe("QUEUED_FOR_CAPACITY");
+    expect(decision.outcome).toBe("DENIED_NO_SUPPLY");
     expect(decision.selected).toBeUndefined();
+    expect(decision.explanation.reasonCodes).toContain("CAPACITY_UNMEASURED");
+    expect(decision.explanation.summary).toContain("never measured");
     const report = decision.explanation.candidates.find((r) => r.routeId === "shared");
-    expect(report?.status).toBe("CAPACITY_DENIED");
-    expect(report?.reasonCodes).toContain("CAPACITY_EXHAUSTED");
+    expect(report?.status).toBe("CAPACITY_UNMEASURED");
+    expect(report?.reasonCodes).toContain("PROVIDER_QUOTA_UNMEASURED");
+    expect(decision.nextAvailableAt).toBeUndefined();
   });
 
   it("enforces the per-user concurrency cap as QUEUED_FOR_CAPACITY, not a silent extra hold", () => {

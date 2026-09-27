@@ -1906,6 +1906,11 @@ export class AgentRuntime {
           { runId: req.runId, agentId: req.agentId },
         );
         let routing = await selectRoute();
+        // R51: a denial resting on unmeasured quota domains is a verification gap, not busy
+        // supply — measure those candidates once so the re-decide sees real windows.
+        if (routing.outcome === "no_eligible_route" && await this.measureUnmeasuredFreeCapacity(routing.fabric)) {
+          routing = await selectRoute();
+        }
         if (routing.outcome === "no_eligible_route" && routing.queued?.nextAvailableAt) {
           // R48: the fabric's QUEUED verdict is "capacity returns at a provider-stated reset",
           // not "no route exists". Failing instantly on a near-term queued verdict manufactures
@@ -2209,6 +2214,12 @@ export class AgentRuntime {
                 : undefined,
               roleQualityAdjustment: this.roleQualityAdjustmentFor(eightBitRoleForAgentRole(req.role)),
               roleQualificationTierFor: this.roleQualificationTierCallback(eightBitRoleForAgentRole(req.role)),
+              // R51: mid-rotation, an unmeasured candidate is a verification gap — let the
+              // coordinator measure it once (bounded by the coordinator's once-guard) so the
+              // fabric re-decide sees real windows rather than failing the turn unmeasured.
+              measureCapacity: this.freeCloud?.probeRouteCapacity
+                ? (providerId: string, modelId: string, opts?: { capacityPoolId?: string }) => this.freeCloud!.probeRouteCapacity!(providerId, modelId, opts)
+                : undefined,
               onWait: ({ waitMs, reason }) => adapter.emitEightBitStatus(
                 "ROUTE_COOLDOWN",
                 eightBitRoleForAgentRole(req.role),
@@ -4232,11 +4243,35 @@ export class AgentRuntime {
    * the outcome; ADMITTED holds a reservation under the turn's requestId that `resumeTurn`'s
    * own re-decide replaces idempotently, so probe + resume never double-books the pool.
    */
+  /**
+   * R51: a denial that rests on CAPACITY_UNMEASURED candidates is a verification gap, not
+   * busy supply — measure those quota domains once through FreeCloudService so the next
+   * admission decision sees real windows. Returns true when at least one domain was
+   * measured (callers then re-decide on fresh evidence).
+   */
+  private async measureUnmeasuredFreeCapacity(decision: FabricRouteDecision | undefined): Promise<boolean> {
+    const probe = this.freeCloud?.probeRouteCapacity?.bind(this.freeCloud);
+    if (!probe || !decision || decision.outcome === "ADMITTED") return false;
+    const unmeasured = decision.explanation.candidates.filter((c) => c.status === "CAPACITY_UNMEASURED").slice(0, 4);
+    if (unmeasured.length === 0) return false;
+    let measured = false;
+    for (const c of unmeasured) {
+      const opts = c.capacityPoolId !== undefined ? { capacityPoolId: c.capacityPoolId } : undefined;
+      if (await probe(c.providerId, c.modelId, opts).catch(() => false)) measured = true;
+    }
+    return measured;
+  }
+
   async probeCapacityWait(turnId: string): Promise<FabricOutcome | undefined> {
     const state = this.activeTurns.get(turnId);
     if (state?.status !== "waiting_for_free_capacity" || !this.eightBit.hasFreeFabric) return undefined;
-    const decision = this.admitForTurn(turnId);
+    let decision = this.admitForTurn(turnId);
     if (!decision) return undefined;
+    if (decision.outcome !== "ADMITTED" && await this.measureUnmeasuredFreeCapacity(decision)) {
+      // Fresh quota may admit now — re-decide on the measured windows before reporting.
+      decision = this.admitForTurn(turnId);
+      if (!decision) return undefined;
+    }
     if (decision.outcome === "QUEUED_FOR_CAPACITY" && decision.nextAvailableAt) {
       const previous = await this.persistence.getWorkItem(`free-capacity-wait-${turnId}`);
       if (previous?.kind === "free_capacity_wait" && previous.state === "waiting" && previous.nextAvailableAt !== decision.nextAvailableAt) {
@@ -4303,6 +4338,13 @@ export class AgentRuntime {
     try {
       let model: FreeModelRecord | null;
       try {
+        // R51: an unmeasured quota domain denies as unverifiable, not busy — measure the
+        // blocked candidates once so this turn's admission sees real windows. An ADMITTED
+        // probe's hold is released before resolveTurnModel: selectModel re-decides under the
+        // same requestId, and pin paths that never reach it must not leak a reservation.
+        const probe = this.admitForTurn(turnId);
+        if (probe && probe.outcome !== "ADMITTED") await this.measureUnmeasuredFreeCapacity(probe);
+        if (probe?.outcome === "ADMITTED") this.eightBit.releaseFabricAdmission(`forgeauto:${turnId}`);
         model = this.resolveTurnModel(turnId);
       } catch (error) {
         // R33: a fabric QUEUED verdict means eligible free supply exists but is busy — the
@@ -5592,6 +5634,11 @@ export class AgentRuntime {
         : undefined,
       roleQualityAdjustment: this.roleQualityAdjustmentFor(role),
       roleQualificationTierFor: this.roleQualificationTierCallback(role),
+      // R51: measure unmeasured candidates once during rotation — unverifiable quota is a
+      // gap, not busy supply, so the re-decide should see real windows before failing.
+      measureCapacity: this.freeCloud?.probeRouteCapacity
+        ? (providerId: string, modelId: string, opts?: { capacityPoolId?: string }) => this.freeCloud!.probeRouteCapacity!(providerId, modelId, opts)
+        : undefined,
       // The user sees the wait as it happens, not as a silent pause in the stream.
       onWait: ({ waitMs, reason }) => adapter.emitEightBitStatus(
         "ROUTE_COOLDOWN",

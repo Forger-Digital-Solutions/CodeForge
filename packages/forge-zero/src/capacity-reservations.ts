@@ -123,6 +123,8 @@ export class CapacityReservationLedger {
 
     let sawEligibleRoute = false;
     let sawUsablePool = false;
+    let sawUnmeasured = false;
+    let sawMeasuredDenial = false;
     let protectedByFirstRunReserve = false;
     for (const routeId of request.routeIds) {
       const route = this.routes.get(routeId);
@@ -144,18 +146,27 @@ export class CapacityReservationLedger {
         continue;
       }
       sawUsablePool = true;
-      const windows = physicalRoute?.windows ?? route.windows;
+      // A pool row with no windows carries no observation at all — it must not shadow the
+      // route's own observed windows (?? would keep the empty array). Matches the ledger
+      // projection's non-empty-pool-wins rule.
+      const windows = physicalRoute && physicalRoute.windows.length > 0 ? physicalRoute.windows : route.windows;
       const requestWindow = windows.filter((window) => window.unit === "requests").sort((a, b) => a.remaining - b.remaining)[0];
       const inputWindows = windows.filter((window) => window.unit === "input_tokens");
       const outputWindows = windows.filter((window) => window.unit === "output_tokens");
       const concurrencyWindows = windows.filter((window) => window.unit === "concurrency");
       const creditWindows = windows.filter((window) => window.unit === "credits");
       const providerUnitWindows = windows.filter((window) => window.unit === "provider_units");
-      // A credit, provider-units, or observed request window proves the provider meters the
-      // account; absent dimensions are then unmetered rather than zero (OpenRouter :free
-      // publishes request counts only — treating its missing token windows as zero capacity
-      // would deny a metered route forever). A route with no windows at all stays unmeasured
-      // and is still denied.
+      // Any observed quota-dimension window proves the provider meters the account; absent
+      // dimensions are then unmetered rather than zero (OpenRouter :free publishes request
+      // counts only — treating its missing token windows as zero capacity would deny a
+      // metered route forever). R51: a route with NO windows at all is UNMEASURED — denied,
+      // but classified truthfully so callers can measure it instead of parking as if it
+      // were exhausted. Non-authoritative (documented) windows still gate by their declared
+      // numbers — they are measured-by-declaration, not unmeasured.
+      if (windows.length === 0) {
+        sawUnmeasured = true;
+        continue;
+      }
       const hasUnitAccounting = creditWindows.length > 0 || providerUnitWindows.length > 0 || requestWindow?.authoritative === true;
       const inputRemaining = inputWindows.length === 0
         ? (hasUnitAccounting ? Number.MAX_SAFE_INTEGER : 0)
@@ -190,6 +201,7 @@ export class CapacityReservationLedger {
         });
         return { admitted: true, reservationId: request.reservationId, routeId, reason: "ADMITTED" };
       }
+      sawMeasuredDenial = true;
       if (!request.isNewUser
         && (this.firstRunReserveRequests > 0 || this.firstRunReserveTokens > 0)
         && requestRemaining - active.requests >= request.requests
@@ -201,6 +213,11 @@ export class CapacityReservationLedger {
 
     if (!sawEligibleRoute) return { admitted: false, reservationId: request.reservationId, reason: "NO_ELIGIBLE_ROUTE" };
     if (!sawUsablePool) return { admitted: false, reservationId: request.reservationId, reason: "CAPACITY_POOL_IDENTITY_MISMATCH" };
+    // An unmeasured-only denial names the truth: capacity exists but was never observed —
+    // no invented reset, no fabricated "exhausted". A measured denial keeps the real reset.
+    if (sawUnmeasured && !sawMeasuredDenial) {
+      return { admitted: false, reservationId: request.reservationId, reason: "CAPACITY_UNMEASURED" };
+    }
     return {
       admitted: false,
       reservationId: request.reservationId,

@@ -93,13 +93,35 @@ function request(
 describe("capacity-transition chaos — unmeasured and malformed windows", () => {
   it("a route with zero measured windows is denied — unmeasured supply is never counted", () => {
     // Live finding: GitHub Models answers inference but emits no quota headers. Its fabric
-    // route surfaces with windows:[] and must be CAPACITY_EXHAUSTED, not treated as free.
+    // route surfaces with windows:[] and must deny — R51 names the truth CAPACITY_UNMEASURED:
+    // a verification gap the runtime can close with a bounded probe, never an admit on faith
+    // and never a fabricated "exhausted" wait state.
     const empty = route({ windows: [] });
     const ledger = new CapacityReservationLedger({ routes: [empty], pools: [pool({ windows: [] })], now: () => NOW });
     const decision = ledger.reserve(request("r1", ["r-a"], { inputTokens: 4_000 }));
     expect(decision.admitted).toBe(false);
-    expect(decision.reason).toBe("CAPACITY_EXHAUSTED");
+    expect(decision.reason).toBe("CAPACITY_UNMEASURED");
+    expect(decision.nextAvailableAt).toBeUndefined();
     expect(ledger.snapshot().activeReservations).toBe(0);
+  });
+
+  it("R51: an unmeasured route does not masquerade as measured exhaustion — a measured denial still wins the real reason", () => {
+    // routeIds reserve in order: the exhausted route denies first (measured truth), the
+    // unmeasured one adds its own flag — the verdict must still be CAPACITY_UNMEASURED only
+    // when NO measured denial exists; a mixed set reports the real exhaustion.
+    const exhausted = route({ routeId: "r-ex", capacityPoolId: "pool-ex", windows: [win({ remaining: 0 })] });
+    const unmeasured = route({ routeId: "r-un", capacityPoolId: "pool-un", windows: [] });
+    const ledger = new CapacityReservationLedger({
+      routes: [exhausted, unmeasured],
+      pools: [pool({ poolId: "pool-ex", windows: exhausted.windows }), pool({ poolId: "pool-un", windows: [] })],
+      now: () => NOW,
+    });
+    const decision = ledger.reserve(request("r1", ["r-ex", "r-un"]));
+    expect(decision.admitted).toBe(false);
+    expect(decision.reason).toBe("CAPACITY_EXHAUSTED");
+    expect(decision.nextAvailableAt).toBe(RESET);
+    const only = new CapacityReservationLedger({ routes: [unmeasured], pools: [pool({ poolId: "pool-un", windows: [] })], now: () => NOW });
+    expect(only.reserve(request("r2", ["r-un"])).reason).toBe("CAPACITY_UNMEASURED");
   });
 
   it("a credit-windowed route admits without request/token windows — credits are its accounting dimension", () => {
