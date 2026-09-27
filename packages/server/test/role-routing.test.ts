@@ -718,3 +718,123 @@ describe("R41 role-quality routing wiring", () => {
     expect(providerC.requests).toBeGreaterThan(0);
   });
 });
+
+describe("R48 — bounded capacity wait on QUEUED fabric verdicts", () => {
+  let ws: string;
+  let eventStore: EventStore;
+  let persistence: ReturnType<typeof createSessionPersistence>;
+  let firewall: ForgeZero;
+
+  beforeEach(async () => {
+    ws = await mkdtemp(join(tmpdir(), "cf-capacity-wait-"));
+    eventStore = new EventStore();
+    persistence = createSessionPersistence({ dbPath: ":memory:" });
+    firewall = new ForgeZero();
+    persistence.upsertSession({
+      id: "sess-capacity-wait",
+      title: "Capacity Wait Test Session",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: "idle",
+    });
+  });
+
+  afterEach(async () => {
+    persistence.close();
+    await rm(ws, { recursive: true, force: true });
+  });
+
+  function runtimeWithScriptedEightBit(scripted: Array<Record<string, unknown>>) {
+    firewall.register(fleetRecord("fleet-a", "model-a"));
+    const catalog = new InMemoryProviderCatalog();
+    const provider = new ScriptedFleetProvider("fleet-a");
+    catalog.register(provider);
+    const realModel = firewall.getModel("fleet-a", "model-a");
+    const eightBit = createEightBitRuntime({ firewall, persistence });
+    const selectInitialRoute = vi.spyOn(eightBit, "selectInitialRoute").mockImplementation(async () => {
+      const next = scripted.shift() ?? scripted[scripted.length - 1];
+      return (next?.outcome === "selected" ? { ...next, model: realModel } : next) as never;
+    });
+    const runtime = createAgentRuntime({
+      sessionId: "sess-capacity-wait",
+      eventStore,
+      persistence,
+      firewall,
+      providerCatalog: catalog,
+      workspacePath: ws,
+      eightBit,
+    });
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-capacity-wait", eventStore, persistence });
+    return { runtime, adapter, provider, selectInitialRoute };
+  }
+
+  const runArgs = {
+    agentId: "coder-wait",
+    role: "coder" as const,
+    goal: "Do the thing",
+    workspaceId: "ws-capacity-wait",
+    permissions: { read: true, search: true, write: false, executeCommand: false, network: false },
+    roleRouting: true,
+  };
+
+  it("a near-term QUEUED verdict waits once then re-decides — no false failure", async () => {
+    const { runtime, adapter, provider, selectInitialRoute } = runtimeWithScriptedEightBit([
+      { outcome: "no_eligible_route", reasonCodes: ["FABRIC_QUEUED_FOR_CAPACITY"], queued: { nextAvailableAt: new Date(Date.now() + 1_500).toISOString() } },
+      { outcome: "selected", model: { providerId: "fleet-a", modelId: "model-a" }, score: 80, reasons: ["ADMITTED"] },
+    ]);
+
+    const started = Date.now();
+    const result = await runtime.executeAgentRun({ runId: "run-cap-wait-1", workspacePath: ws, adapter, ...runArgs });
+
+    if (result.status !== "completed") console.log("cap-wait-1 summary:", result.summary);
+    expect(result.status).toBe("completed");
+    expect(provider.requests).toBeGreaterThan(0);
+    expect(selectInitialRoute).toHaveBeenCalledTimes(2);
+    expect(Date.now() - started).toBeGreaterThanOrEqual(800);
+    const waitEvent = eventStore.getAll().find((e) => e.type === "subagent.progress" && String((e.payload as { message?: string }).message ?? "").includes("capacity returns"));
+    expect(waitEvent).toBeDefined();
+  });
+
+  it("a QUEUED verdict beyond the horizon fails closed without waiting", async () => {
+    const { runtime, adapter, selectInitialRoute } = runtimeWithScriptedEightBit([
+      { outcome: "no_eligible_route", reasonCodes: ["FABRIC_QUEUED_FOR_CAPACITY"], queued: { nextAvailableAt: new Date(Date.now() + 3_600_000).toISOString() } },
+      { outcome: "selected", model: { providerId: "fleet-a", modelId: "model-a" }, score: 80, reasons: ["ADMITTED"] },
+    ]);
+
+    const started = Date.now();
+    const result = await runtime.executeAgentRun({ runId: "run-cap-wait-2", workspacePath: ws, adapter, ...runArgs });
+
+    expect(result.status).toBe("failed");
+    expect(result.summary).toContain("PROVIDER_UNAVAILABLE");
+    expect(selectInitialRoute).toHaveBeenCalledTimes(1);
+    expect(Date.now() - started).toBeLessThan(10_000);
+  });
+
+  it("a stale reset (nextAvailableAt already past) re-decides immediately — the queue answer aged out", async () => {
+    const { runtime, adapter, provider, selectInitialRoute } = runtimeWithScriptedEightBit([
+      { outcome: "no_eligible_route", reasonCodes: ["FABRIC_QUEUED_FOR_CAPACITY"], queued: { nextAvailableAt: new Date(Date.now() - 500).toISOString() } },
+      { outcome: "selected", model: { providerId: "fleet-a", modelId: "model-a" }, score: 80, reasons: ["ADMITTED"] },
+    ]);
+
+    const started = Date.now();
+    const result = await runtime.executeAgentRun({ runId: "run-cap-wait-4", workspacePath: ws, adapter, ...runArgs });
+
+    expect(result.status).toBe("completed");
+    expect(provider.requests).toBeGreaterThan(0);
+    expect(selectInitialRoute).toHaveBeenCalledTimes(2);
+    expect(Date.now() - started).toBeLessThan(5_000);
+  });
+
+  it("a DENIED verdict never waits — re-decide is not attempted", async () => {
+    const { runtime, adapter, selectInitialRoute } = runtimeWithScriptedEightBit([
+      { outcome: "no_eligible_route", reasonCodes: ["FABRIC_DENIED_NO_SUPPLY", "NO_ROLE_QUALIFIED_ROUTE"] },
+      { outcome: "selected", model: { providerId: "fleet-a", modelId: "model-a" }, score: 80, reasons: ["ADMITTED"] },
+    ]);
+
+    const result = await runtime.executeAgentRun({ runId: "run-cap-wait-3", workspacePath: ws, adapter, ...runArgs });
+
+    expect(result.status).toBe("failed");
+    expect(result.summary).toContain("NO_ROLE_QUALIFIED_ROUTE");
+    expect(selectInitialRoute).toHaveBeenCalledTimes(1);
+  });
+});

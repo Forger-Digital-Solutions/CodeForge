@@ -378,6 +378,10 @@ const DEFAULT_APPROVAL_TIMEOUT_MS = 5 * 60 * 1000;
 // estimate must cover the same directive text the dispatch will carry.
 const RECOVERY_DIRECTIVE = "[Recovery directive] A prior process stopped during this turn. Treat all unfinished pre-restart execution as stale. Inspect the current workspace and durable evidence, then create a new plan. Do not replay a prior command, tool call, or model continuation.";
 const CAPACITY_RESUME_DIRECTIVE = "[Capacity directive] This turn paused mid-execution waiting for verified free capacity, and is resuming on a fresh admission decision — possibly a different route and quota pool. Inspect the current workspace and durable evidence; continue the remaining work without replaying tool calls or edits that already succeeded.";
+/** R48: a QUEUED fabric verdict waits once, only when the provider-stated reset is within this
+ *  horizon. Past it the run fails closed — a far-off reset is indistinguishable from denial for
+ *  a bounded run, and parking a subagent indefinitely is the false-waiting failure mode. */
+const CAPACITY_WAIT_HORIZON_MS = 120_000;
 function truncateOutput(text: string, maxBytes: number, label: string): string {
   if (Buffer.byteLength(text, "utf-8") <= maxBytes) return text;
   const buf = Buffer.from(text, "utf-8");
@@ -1237,10 +1241,13 @@ export class AgentRuntime {
    * loop detection, budget governance, and structured result extraction.
    */
   async executeAgentRun(req: AgentRuntimeRequest): Promise<AgentRuntimeResult> {
-    let budget: AgentExecutionBudget =
-      req.executionBudget ??
-      DEFAULT_EXECUTION_BUDGETS[req.role] ??
-      DEFAULT_EXECUTION_BUDGETS.default!;
+    let budget: AgentExecutionBudget = {
+      // A caller-supplied budget is a partial override over the role's defaults, not a
+      // replacement — passing only `maxModelTurns` used to leave `maxContextTokens` undefined,
+      // which NaN'd the context-capacity gate and blocked the run before any request.
+      ...(DEFAULT_EXECUTION_BUDGETS[req.role] ?? DEFAULT_EXECUTION_BUDGETS.default!),
+      ...req.executionBudget,
+    };
 
     // FG-3E: consume the routed model's catalog-declared context window when known (never
     // fabricated when absent — see resolveContextCapacity). 8-Bit/the caller still decides
@@ -1788,7 +1795,7 @@ export class AgentRuntime {
       }
       if (!activeSelection && req.roleRouting && this.hasRoutableFleet()) {
         const role = eightBitRoleForAgentRole(req.role);
-        const routing = await this.eightBit.selectInitialRoute(
+        const selectRoute = () => this.eightBit.selectInitialRoute(
           { sessionId: this.sessionId, role, workstreamId: req.workstreamScope },
           {
             policyMode: "adaptive",
@@ -1835,9 +1842,36 @@ export class AgentRuntime {
           },
           { runId: req.runId, agentId: req.agentId },
         );
+        let routing = await selectRoute();
+        if (routing.outcome === "no_eligible_route" && routing.queued?.nextAvailableAt) {
+          // R48: the fabric's QUEUED verdict is "capacity returns at a provider-stated reset",
+          // not "no route exists". Failing instantly on a near-term queued verdict manufactures
+          // a false failure; waiting past a bounded horizon manufactures false waiting. A reset
+          // already in the past means the queue answer is stale — capacity should be back now,
+          // so re-decide immediately. Wait once (bounded), re-decide once — DENIED verdicts and
+          // resets beyond the horizon never reach this branch.
+          const waitMs = Date.parse(routing.queued.nextAvailableAt) - Date.now();
+          if (Number.isFinite(waitMs) && waitMs <= CAPACITY_WAIT_HORIZON_MS) {
+            if (waitMs > 250) {
+              adapter.emitSubagentProgress?.(req.agentId, `Free capacity returns at ${routing.queued.nextAvailableAt}; waiting ${Math.ceil(waitMs / 1000)}s before re-deciding route admission.`);
+              await new Promise((resolveWait) => setTimeout(resolveWait, waitMs));
+            }
+            routing = await selectRoute();
+          }
+        }
         if (routing.outcome === "no_eligible_route") {
+          // The denial reason codes are the evidence of WHY the floor held (verdict floor,
+          // capability contract, capacity exhaustion, health) — they must reach the run's
+          // failure summary, not only the durable receipt store. A QUEUED verdict that never
+          // waited carries its reset horizon so the denial is auditable as a bounded wait
+          // refusal, not an unexplained failure.
+          const detail = [
+            routing.reasonCodes.length > 0 ? routing.reasonCodes.join(", ") : "",
+            routing.queued?.nextAvailableAt ? `next_available=${routing.queued.nextAvailableAt}` : "",
+          ].filter(Boolean).join(", ");
+          const detailText = detail.length > 0 ? ` (${detail})` : "";
           throw new Error(
-            `[${ERROR_CODES.PROVIDER_UNAVAILABLE}] No eligible free route for role ${req.role}: 8-Bit admission found no healthy route meeting this role's capability contract. No paid or unknown-cost route was used.`,
+            `[${ERROR_CODES.PROVIDER_UNAVAILABLE}] No eligible free route for role ${req.role}: 8-Bit admission found no healthy route meeting this role's capability contract${detailText}. No paid or unknown-cost route was used.`,
           );
         }
         activeSelection = { providerId: routing.model.providerId, modelId: routing.model.modelId };
