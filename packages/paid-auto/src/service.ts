@@ -24,6 +24,8 @@ import {
   type PaidAutoRoute,
   type PaidAutoRouteId,
 } from "./registry.js";
+import { rank16Bit, type SixteenBitEvidenceMap, type SixteenBitRankOptions, type SixteenBitRanking, type SixteenBitRoleQualification, type SixteenBitTaskProfile } from "./expected-cost.js";
+import { PAID_ROLE_EVIDENCE_MAX_AGE_MS, PaidRoleEvidenceBook, type PaidRoleVerdict } from "./role-router.js";
 
 export const PAID_AUTO_PROVIDER_ID = "paid-auto";
 
@@ -71,8 +73,42 @@ export interface PaidAutoServiceOptions {
   paidExecutionEnabled?: boolean;
   openRouterFallbackEnabled?: boolean;
   routeQualifications?: Partial<Record<PaidAutoRouteId, PaidAutoRouteQualification>>;
+  /** R48: seed the per-role verdict book — e.g. from persisted qualification receipts. */
+  roleVerdicts?: readonly PaidRoleVerdict[];
+  /** R48: verdict freshness window; defaults to 30 days like the free fleet's receipts. */
+  roleEvidenceMaxAgeMs?: number;
   now?: () => number;
   onTelemetry?: (record: PaidAutoAttemptRecord) => void;
+}
+
+/** R48: one ordered admissible candidate for a role request — rank order already encodes the
+ *  qualification floor (measured QUALIFIED > PROBATION > unmeasured) and expected completion
+ *  cost; `route` is the route that would actually execute (direct, or the OpenRouter fallback
+ *  when direct is credential-absent). */
+export interface PaidRoleRouteCandidate {
+  canonicalModelId: PaidAutoCanonicalModelId;
+  route: PaidAutoRoute;
+  roleStatus: SixteenBitRoleQualification;
+  expectedCostUsd: number;
+  reasonCodes: string[];
+}
+
+export type PaidRoleRouteOutcome =
+  | "selected"
+  | "no_qualified_role_route"
+  | "no_admissible_route"
+  | "no_executable_route";
+
+export interface PaidRoleRouteSelection {
+  outcome: PaidRoleRouteOutcome;
+  role: string;
+  /** The head of `orderedCandidates` — the route this role should dispatch on now. */
+  selected?: PaidRoleRouteCandidate;
+  /** Bounded rotation order for failover — every admissible candidate with an executable
+   *  route right now, best first. Empty when the outcome carries no selection. */
+  orderedCandidates: PaidRoleRouteCandidate[];
+  ranking: SixteenBitRanking;
+  reasonCodes: string[];
 }
 
 export interface PaidAutoAttemptRecord {
@@ -249,6 +285,8 @@ export class PaidAutoService {
   private readonly onTelemetry?: (record: PaidAutoAttemptRecord) => void;
   private readonly circuits = new Map<PaidAutoRouteId, CircuitState>();
   private readonly telemetry: PaidAutoAttemptRecord[] = [];
+  private readonly roleEvidence: PaidRoleEvidenceBook;
+  private readonly roleEvidenceMaxAgeMs: number;
 
   constructor(options: PaidAutoServiceOptions = {}) {
     this.credentialStore = options.credentialStore ?? new EnvironmentCredentialStore();
@@ -262,6 +300,8 @@ export class PaidAutoService {
     this.paidExecutionEnabled = options.paidExecutionEnabled ?? false;
     this.openRouterFallbackEnabled = options.openRouterFallbackEnabled ?? false;
     this.routeQualifications = options.routeQualifications ?? {};
+    this.roleEvidence = new PaidRoleEvidenceBook(options.roleVerdicts ?? []);
+    this.roleEvidenceMaxAgeMs = options.roleEvidenceMaxAgeMs ?? PAID_ROLE_EVIDENCE_MAX_AGE_MS;
     this.now = options.now ?? Date.now;
     this.onTelemetry = options.onTelemetry;
   }
@@ -352,6 +392,84 @@ export class PaidAutoService {
 
   asProviderAdapter(): PaidAutoProviderAdapter {
     return new PaidAutoProviderAdapter(this);
+  }
+
+  /**
+   * R48: record a measured per-role verdict (qualification suite or bounded requalification).
+   * Runtime outcomes do not belong here — they are reliability telemetry, not qualification
+   * evidence; only the qualification authority may move a verdict.
+   */
+  recordRoleVerdict(verdict: PaidRoleVerdict): void {
+    this.roleEvidence.record(verdict);
+  }
+
+  /** R48: the live per-role verdict book (read-only view for evidence/receipts). */
+  roleVerdicts(): readonly PaidRoleVerdict[] {
+    return this.roleEvidence.entries();
+  }
+
+  /**
+   * R48: evidence-driven per-role route selection. rank16Bit supplies the qualification
+   * floor and expected-cost order; this layer then resolves which route would actually
+   * execute for each admissible candidate (direct, or the OpenRouter fallback when direct
+   * is credential-absent — every other gate still fails closed). The result is an ordered
+   * rotation list, never a price winner that failed this role.
+   */
+  selectRoleRoute(input: {
+    role: string;
+    inputTokens?: number;
+    outputTokens?: number;
+    requiresTools?: boolean;
+    requiredContextTokens?: number;
+    /** Additional measured economics (successRate/roleFit/toolReliability) — caller-owned. */
+    measured?: SixteenBitEvidenceMap;
+    priceOverrides?: SixteenBitRankOptions["priceOverrides"];
+  }): PaidRoleRouteSelection {
+    const task: SixteenBitTaskProfile = {
+      role: input.role,
+      inputTokens: input.inputTokens ?? 4_000,
+      outputTokens: input.outputTokens ?? 1_024,
+      requiresTools: input.requiresTools ?? ["explorer", "coder", "tool_agent", "toolagent", "subagent"].includes(input.role.toLowerCase().replace(/[\s-]/g, "_")),
+      requiredContextTokens: input.requiredContextTokens,
+    };
+    const now = this.now();
+    const evidence: SixteenBitEvidenceMap = {};
+    for (const model of PAID_AUTO_MODELS) {
+      evidence[model.canonicalModelId] = {
+        ...input.measured?.[model.canonicalModelId],
+        roleStatus: this.roleEvidence.verdictFor(model.canonicalModelId, input.role, now, this.roleEvidenceMaxAgeMs),
+      };
+    }
+    const ranking = rank16Bit(task, evidence, () => now, { priceOverrides: input.priceOverrides });
+    const orderedCandidates: PaidRoleRouteCandidate[] = [];
+    for (const candidate of ranking.candidates.filter((c) => c.excluded === undefined)) {
+      const model = paidAutoModel(candidate.canonicalModelId);
+      const route = model ? this.executableRouteFor(model) : undefined;
+      if (!route) continue;
+      orderedCandidates.push({
+        canonicalModelId: candidate.canonicalModelId,
+        route,
+        roleStatus: evidence[candidate.canonicalModelId]?.roleStatus ?? "NOT_TESTED",
+        expectedCostUsd: candidate.expectedCostUsd,
+        reasonCodes: candidate.reasonCodes,
+      });
+    }
+    const selected = orderedCandidates[0];
+    const outcome: PaidRoleRouteOutcome = selected
+      ? "selected"
+      : ranking.selected !== undefined || ranking.candidates.some((c) => c.excluded === undefined)
+        ? "no_executable_route"
+        : ranking.selectionStatus === "NO_QUALIFIED_ROLE_ROUTE"
+          ? "no_qualified_role_route"
+          : "no_admissible_route";
+    return {
+      outcome,
+      role: input.role,
+      ...(selected ? { selected } : {}),
+      orderedCandidates,
+      ranking,
+      reasonCodes: selected ? selected.reasonCodes : [ranking.selectionStatus],
+    };
   }
 
   async chat(req: ChatRequest): Promise<ChatResponse> {
@@ -501,6 +619,14 @@ export class PaidAutoService {
     const model = paidAutoModel(canonicalModelId);
     if (!model) throw new PaidAutoExecutionError({ code: "MODEL_NOT_FOUND", message: "Paid Auto accepts only its four registered canonical models.", failureClass: "invalid_request", executionCertainty: "not_started" });
     return model;
+  }
+
+  /** The route that would execute now, or undefined — mirrors routeForExecution without
+   *  throwing, so role selection can see executability per candidate. */
+  private executableRouteFor(model: PaidAutoModel): PaidAutoRoute | undefined {
+    if (this.routeCanExecute(model.direct)) return model.direct;
+    if (this.fallbackServes(model)) return model.fallback;
+    return undefined;
   }
 
   private routeForExecution(model: PaidAutoModel): PaidAutoRoute {

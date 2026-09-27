@@ -101,7 +101,7 @@ import { createModelExecutionAdapter, convertToProviderTools, normalizeProviderE
 import { roleOutputBudget, type ReasoningRouteProfile } from "./role-output-budget.js";
 import { ForgeGreenRunPolicy, type ForgeGreenPolicySnapshot } from "./forgegreen-run-policy.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
-import type { PaidAutoService } from "@codeforge/paid-auto";
+import { PAID_AUTO_AUTO_MODEL_ID, PAID_AUTO_PROVIDER_ID, PaidAutoExecutionError, type PaidAutoService } from "@codeforge/paid-auto";
 import { tryConsumeInferenceRequest, type InferenceLane, type WorkflowInferenceBudget } from "./inference-budget.js";
 
 export interface AgentRuntimeRequest {
@@ -1826,6 +1826,46 @@ export class AgentRuntime {
         adapter.emitRouterSelection(req.runId, routing.model.modelId, routing.model.providerId, Math.round(routing.score), routing.reasons);
       }
 
+      // R48/C2: `paid-auto/auto` + roleRouting asks the paid roster to choose the qualified
+      // canonical for this role. The sentinel is resolved before any dispatch; rotation on
+      // failure stays inside the paid roster — the free fleet is never consulted, and an
+      // exhausted roster fails closed rather than silently substituting a free route.
+      let paidRoleRouteInput: Parameters<PaidAutoService["selectRoleRoute"]>[0] | undefined;
+      if (req.roleRouting === true && activeSelection?.providerId === PAID_AUTO_PROVIDER_ID && activeSelection.modelId === PAID_AUTO_AUTO_MODEL_ID) {
+        if (!this.paidAuto) {
+          throw new Error(`[${ERROR_CODES.PROVIDER_UNAVAILABLE}] Paid role routing was requested (paid-auto/${PAID_AUTO_AUTO_MODEL_ID}) but no Paid Auto service is configured.`);
+        }
+        paidRoleRouteInput = {
+          role: eightBitRoleForAgentRole(req.role),
+          inputTokens: estimatePromptOnlyTokens({
+            model: "",
+            messages,
+            tools: convertToProviderTools(toolBroker.getRegistry().getForRole(req.role, req.permissions)),
+            maxTokens: 4_096,
+          }),
+          outputTokens: roleOutputBudget({
+            role: req.role,
+            maxOutputTokens: budget.maxOutputTokens,
+            profiles: this.reasoningRouteProfiles,
+          }).outputTokenDemand,
+          requiredContextTokens: estimatePromptOnlyTokens({
+            model: "",
+            messages,
+            tools: convertToProviderTools(toolBroker.getRegistry().getForRole(req.role, req.permissions)),
+            maxTokens: 4_096,
+          }),
+          requiresTools: req.role !== "planner" && req.role !== "reviewer",
+        };
+        const selection = this.paidAuto.selectRoleRoute(paidRoleRouteInput);
+        if (selection.outcome !== "selected" || !selection.selected) {
+          throw new Error(`[${ERROR_CODES.PROVIDER_UNAVAILABLE}] No qualified paid route for role ${req.role}: 16-Bit role routing reported ${selection.outcome} (${selection.reasonCodes.join(", ")}). No free route was substituted.`);
+        }
+        activeSelection = { providerId: PAID_AUTO_PROVIDER_ID, modelId: selection.selected.canonicalModelId };
+        roleRouteRotatable = true;
+        journalActiveRoute = activeSelection;
+        adapter.emitRouterSelection(req.runId, selection.selected.canonicalModelId, PAID_AUTO_PROVIDER_ID, selection.selected.expectedCostUsd, selection.reasonCodes);
+      }
+
       const requestModelTurn = async (): Promise<ModelExecutionResponse> => {
         let rotations = 0;
         let sameRouteRetries = 0;
@@ -1974,6 +2014,37 @@ export class AgentRuntime {
             if (pinned && sameRouteRetries >= PINNED_ROUTE_MAX_SAME_ROUTE_RETRIES) throw err;
             const failing = activeSelection;
             const failingModel = this.firewall.getModel(failing.providerId, failing.modelId);
+            if (paidRoleRouteInput) {
+              // R48/C2: paid rotation re-runs the role selection — the failed route's
+              // circuit is already recorded inside Paid Auto, so an honest re-rank either
+              // moves to the next admissible canonical or fails closed. The free fleet is
+              // never consulted for a paid turn. A re-selected same canonical earns one
+              // bounded retry only when the provider marked the failure retryable.
+              const reselection = this.paidAuto!.selectRoleRoute(paidRoleRouteInput);
+              const next = reselection.selected;
+              if (!next) throw err;
+              if (next.canonicalModelId === failing.modelId) {
+                const paidErr = err instanceof PaidAutoExecutionError ? err : undefined;
+                if (paidErr?.retryable !== true || sameRouteRetries >= PINNED_ROUTE_MAX_SAME_ROUTE_RETRIES) throw err;
+                sameRouteRetries++;
+                forgeGreenR0Telemetry.recordRetry(normalized.code);
+                continue;
+              }
+              adapter.emitRouterFailover(req.runId, `${failing.providerId}/${failing.modelId}`, `${PAID_AUTO_PROVIDER_ID}/${next.canonicalModelId}`, normalized.code);
+              routeFailovers.push({
+                from: `${failing.providerId}/${failing.modelId}`,
+                to: `${PAID_AUTO_PROVIDER_ID}/${next.canonicalModelId}`,
+                at: new Date().toISOString(),
+                reason: normalized.code,
+                callsBeforeFailure: routeWindowFor(failing.providerId, failing.modelId).calls,
+              });
+              // A replacement route continues a transcript it did not produce — suppressions
+              // and replays optimized for the failing route must not survive the switch.
+              greenPolicy.escalate("provider_failover", `${failing.providerId}/${failing.modelId} -> ${PAID_AUTO_PROVIDER_ID}/${next.canonicalModelId} (${normalized.code})`);
+              activeSelection = { providerId: PAID_AUTO_PROVIDER_ID, modelId: next.canonicalModelId };
+              rotations++;
+              continue;
+            }
             const outcome = await this.eightBit.handleTurnFailure({
               sessionId: this.sessionId,
               turnId: req.runId,
