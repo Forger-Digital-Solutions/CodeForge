@@ -20,9 +20,10 @@ export interface BudgetGatedAdapterOptions {
  * admitted only after the campaign ledger reserves a conservative upper bound for a registered
  * 16-Bit route with an exact CURRENT PriceCard. A successful call settles once — ACTUAL when the
  * provider reported usage, ESTIMATED_ONLY when it completed unmeasured; a call that provably did
- * no billable provider work releases its reservation. Streams cannot observe served-model
- * identity, so identity-checked execution must use chat; stream receipts record the requested
- * slug and their missing servedModelId is the audit signal.
+ * no billable provider work releases its reservation. Stream receipts carry the upstream's
+ * reported served-model identity when the protocol exposes one (finish-event `model`); a
+ * reported identity that disagrees with the requested route fails closed exactly like chat,
+ * and a missing servedModelId remains the honest "unverified" audit signal.
  */
 export class BudgetGatedProviderAdapter implements ProviderAdapter {
   readonly providerId: string;
@@ -67,15 +68,23 @@ export class BudgetGatedProviderAdapter implements ProviderAdapter {
   }
 
   async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
-    const { reservation } = await this.admit(req);
+    const { route, reservation } = await this.admit(req);
     let usage: Usage | undefined;
+    let servedModelId: string | undefined;
     let settled = false;
     try {
       for await (const event of this.upstream.streamChat(req, signal)) {
         if (event.type === "usage") usage = event.usage;
+        if (event.type === "finish" && event.model) servedModelId = event.model;
         yield event;
       }
-      const receipt = await reservation.reconcile(usage);
+      if (servedModelId !== undefined && servedModelId !== route.providerModelId) {
+        const released = await reservation.release(servedModelId);
+        settled = true;
+        this.options.onReceipt?.(released);
+        throw new PaidEvaluationBudgetError("PAID_EVALUATION_MODEL_IDENTITY_MISMATCH", "Provider served model identity did not match the exact requested route");
+      }
+      const receipt = await reservation.reconcile(usage, servedModelId);
       settled = true;
       this.options.onReceipt?.(receipt);
     } catch (error) {

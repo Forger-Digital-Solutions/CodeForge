@@ -229,6 +229,9 @@ export class OpenRouterAdapter implements ProviderAdapter {
       // The upstream's own finish reason, when it is one the stream contract can express; a
       // truncated ("length") or filtered answer must not be reported as a clean "stop".
       let finishReason: "stop" | "tool_calls" | "length" | "content_filter" | "error" = "stop";
+      // The upstream's reported served-model identity (stream-chunk `model`); the receipt
+      // can then distinguish what was requested from what actually served.
+      let servedModel: string | undefined;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -264,7 +267,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
               };
             }
             toolCalls.clear();
-            yield { type: "finish", finishReason };
+            yield { type: "finish", finishReason, ...(servedModel ? { model: servedModel } : {}) };
             return;
           }
 
@@ -286,6 +289,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
               };
               return;
             }
+            if (typeof parsed.model === "string" && parsed.model.length > 0) servedModel = parsed.model;
             const choice = parsed.choices?.[0];
             if (!choice) continue;
 
@@ -373,7 +377,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
         };
         return;
       }
-      yield { type: "finish", finishReason };
+      yield { type: "finish", finishReason, ...(servedModel ? { model: servedModel } : {}) };
     } catch (error) {
       clearTimeout(timeout);
       if (error instanceof ProviderError) throw error;

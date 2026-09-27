@@ -212,3 +212,49 @@ describe("R47 budget-gated paid adapter", () => {
     }
   });
 });
+
+describe("R48 — stream served-model provenance", () => {
+  it("binds the provider-reported stream model into the receipt", async () => {
+    const ledger = new PaidEvaluationBudgetLedger({ campaignId: "r48-stream-id", authorizedUsd: "1.00" });
+    const receipts: PaidEvaluationReceipt[] = [];
+    const streamEvents: StreamEvent[] = [
+      { type: "text_delta", delta: "ok" },
+      { type: "usage", usage: { inputTokens: 20, outputTokens: 10 } },
+      { type: "finish", finishReason: "stop", model: "openai/gpt-5.6-luna" },
+    ];
+    const gated = new BudgetGatedProviderAdapter(adapter({ streamEvents }), { ledger, priceCards: [price], onReceipt: (receipt) => receipts.push(receipt) });
+    await drain(gated.streamChat(request));
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]).toMatchObject({ reconciliation: "ACTUAL", servedModelId: "openai/gpt-5.6-luna" });
+  });
+
+  it("fails closed when the stream's reported model does not match the priced route", async () => {
+    const ledger = new PaidEvaluationBudgetLedger({ campaignId: "r48-stream-id", authorizedUsd: "1.00" });
+    const receipts: PaidEvaluationReceipt[] = [];
+    const streamEvents: StreamEvent[] = [
+      { type: "text_delta", delta: "partial" },
+      { type: "usage", usage: { inputTokens: 20, outputTokens: 10 } },
+      { type: "finish", finishReason: "stop", model: "anthropic/some-other-model" },
+    ];
+    const gated = new BudgetGatedProviderAdapter(adapter({ streamEvents }), { ledger, priceCards: [price], onReceipt: (receipt) => receipts.push(receipt) });
+    await expect(drain(gated.streamChat(request))).rejects.toMatchObject({ code: "PAID_EVALUATION_MODEL_IDENTITY_MISMATCH" });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]).toMatchObject({ reconciliation: "RELEASED", servedModelId: "anthropic/some-other-model" });
+    expect(ledger.snapshot().committedUsd).toBe("0.0");
+  });
+
+  it("leaves servedModelId absent — unverified, not fabricated — when the upstream never reports one", async () => {
+    const ledger = new PaidEvaluationBudgetLedger({ campaignId: "r48-stream-id", authorizedUsd: "1.00" });
+    const receipts: PaidEvaluationReceipt[] = [];
+    const streamEvents: StreamEvent[] = [
+      { type: "text_delta", delta: "ok" },
+      { type: "usage", usage: { inputTokens: 20, outputTokens: 10 } },
+      { type: "finish", finishReason: "stop" },
+    ];
+    const gated = new BudgetGatedProviderAdapter(adapter({ streamEvents }), { ledger, priceCards: [price], onReceipt: (receipt) => receipts.push(receipt) });
+    await drain(gated.streamChat(request));
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.reconciliation).toBe("ACTUAL");
+    expect(receipts[0]?.servedModelId).toBeUndefined();
+  });
+});

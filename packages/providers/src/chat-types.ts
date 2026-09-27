@@ -120,6 +120,11 @@ export const StreamEventSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("finish"),
     finishReason: z.enum(["stop", "tool_calls", "length", "content_filter", "error"]),
+    /** R48: the upstream's own reported served-model identity for this stream, when the
+     * provider protocol exposes one (OpenRouter/OpenAI chunk `model`). Absent = the
+     * provider never reported it — callers must treat identity as requested-only,
+     * never fabricate it. */
+    model: z.string().optional(),
   }),
   z.object({
     type: z.literal("error"),

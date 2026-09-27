@@ -43,6 +43,10 @@ export interface ModelExecutionResponse {
   finishReason: "stop" | "tool_calls" | "length" | "content_filter" | "error";
   modelId: string;
   providerId: string;
+  /** R48: the upstream's own reported served-model identity when the provider protocol
+   *  exposes one (stream-chunk `model`). Absent = identity is requested-route-known only —
+   *  never fabricate it. */
+  servedModel?: string;
   optimization?: {
     duplicateSuppressed: boolean;
     promptPrefixCacheHit: boolean;
@@ -395,6 +399,7 @@ export class ModelExecutionAdapter {
       toolCount: 0,
     };
     let usageSource: ModelExecutionResponse["usageSource"] = "UNKNOWN";
+    let servedModel: string | undefined;
 
     for await (const event of this.streamExecution(req)) {
       if (req.signal?.aborted) {
@@ -442,6 +447,7 @@ export class ModelExecutionAdapter {
           break;
         case "finish":
           finishReason = event.finishReason;
+          if (event.model) servedModel = event.model;
           break;
         case "error": {
           // Provider layers already prefix their message with "[CODE]"; re-prefixing produces
@@ -474,6 +480,7 @@ export class ModelExecutionAdapter {
       finishReason,
       modelId,
       providerId,
+      ...(servedModel ? { servedModel } : {}),
     };
   }
 }

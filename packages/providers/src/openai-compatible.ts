@@ -220,7 +220,10 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       let frames = 0;
       let terminalFinish: string | undefined;
       let bodyHead = "";
-      const finishEvent = (): StreamEvent => ({ type: "finish", finishReason: normalizeStreamFinish(terminalFinish) });
+      // The upstream's reported served-model identity (stream-chunk `model`); receipts then
+      // distinguish what was requested from what actually served. Absent stays unverified.
+      let servedModel: string | undefined;
+      const finishEvent = (): StreamEvent => ({ type: "finish", finishReason: normalizeStreamFinish(terminalFinish), ...(servedModel ? { model: servedModel } : {}) });
       const finishTerminal = function* (): Generator<StreamEvent> {
         for (const acc of toolCalls.values()) {
           if (!acc.started) yield { type: "tool_call_started", toolCallId: acc.id, toolName: acc.name };
@@ -250,6 +253,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
           yield this.inBandStreamError(inBand, res.status);
           return "error";
         }
+        if (typeof parsed.model === "string" && parsed.model.length > 0) servedModel = parsed.model;
         const choice = parsed.choices?.[0];
         if (choice) {
           const delta = choice.delta;

@@ -108,3 +108,27 @@ describe("R48 — parallel tool-call stream assembly", () => {
     expect(byId.get("call_b")?.arguments).toBe('{"path":"src/a.ts"}');
   });
 });
+
+describe("R48 — stream served-model identity", () => {
+  it("carries the upstream-reported model on the finish event", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(sseResponse([
+      JSON.stringify({ id: "r", model: "deepseek/deepseek-v4.1-flash", choices: [{ index: 0, delta: { content: "ok" } }] }),
+      JSON.stringify({ id: "r", model: "deepseek/deepseek-v4.1-flash", choices: [{ index: 0, delta: {}, finish_reason: "stop" }] }),
+      "[DONE]",
+    ])));
+    const events = await collect(new OpenRouterAdapter({ credentialStore: fakeCredentials }));
+    const finish = events.find((e) => e.type === "finish");
+    expect(finish).toMatchObject({ type: "finish", finishReason: "stop", model: "deepseek/deepseek-v4.1-flash" });
+  });
+
+  it("leaves finish.model absent — honest unverified — when the upstream never reports it", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(sseResponse([
+      JSON.stringify({ id: "r", choices: [{ index: 0, delta: { content: "ok" }, finish_reason: "stop" }] }),
+      "[DONE]",
+    ])));
+    const events = await collect(new OpenRouterAdapter({ credentialStore: fakeCredentials }));
+    const finish = events.find((e) => e.type === "finish");
+    expect(finish).toMatchObject({ type: "finish", finishReason: "stop" });
+    expect(finish && finish.type === "finish" ? finish.model : "sentinel").toBeUndefined();
+  });
+});

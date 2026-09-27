@@ -207,3 +207,16 @@ describe("R48 — parallel tool-call stream assembly", () => {
     expect(completed.map((c) => c.toolCallId).sort()).toEqual(["first", "second"]);
   });
 });
+
+describe("R48 — stream served-model identity", () => {
+  it("carries the upstream-reported model on the finish event", async () => {
+    const fetchFn = (async () => sseResponse([
+      'data: {"model":"openai/gpt-oss-120b","choices":[{"delta":{"content":"ok"}}]}',
+      'data: {"model":"openai/gpt-oss-120b","choices":[{"delta":{},"finish_reason":"stop"}]}',
+      "data: [DONE]",
+    ])) as unknown as typeof fetch;
+    const events = await collect(adapter(fetchFn).streamChat(req));
+    const finish = events.find((e) => e.type === "finish") as Extract<StreamEvent, { type: "finish" }>;
+    expect(finish.model).toBe("openai/gpt-oss-120b");
+  });
+});
