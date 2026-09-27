@@ -511,7 +511,11 @@ export class DurablePaidEvaluationBudgetLedger implements PaidEvaluationBudgetGa
       if (reservation.requestId !== requestId) throw new PaidEvaluationBudgetError("PAID_EVALUATION_LEDGER_STATE_INVALID", `Reservation ${reservationId} cannot be settled by another request`);
       assertExactCurrentPrice(reservation.route, price);
       const estimated = parseUsd(reservation.estimatedUsd);
-      const actual = usage ? estimateUsageUsd(usage, price) : 0n;
+      // A completed call whose usage the provider never reported settles at the reserved bound
+      // (ESTIMATED_ONLY), matching the in-memory ledger: money may have been spent, so the
+      // honest record commits the worst case rather than $0. RELEASED stays for calls that
+      // provably did no billable provider work.
+      const actual = usage ? estimateUsageUsd(usage, price) : requestedReconciliation === "RELEASED" ? 0n : estimated;
       if (actual > estimated) {
         throw new PaidEvaluationBudgetError("PAID_EVALUATION_SETTLEMENT_EXCEEDS_RESERVATION", `Provider-reported usage ${formatUsd(actual)} exceeds the pre-send reservation ${formatUsd(estimated)}`);
       }
@@ -524,7 +528,7 @@ export class DurablePaidEvaluationBudgetLedger implements PaidEvaluationBudgetGa
         status,
         ...(status === "RECONCILED" ? { actualUsd: formatUsd(actual) } : {}),
       };
-      const receipt = this.receipt(settled, price, usage, status === "RECONCILED" ? "ACTUAL" : "RELEASED", servedModelId);
+      const receipt = this.receipt(settled, price, usage, status === "RELEASED" ? "RELEASED" : usage === undefined ? "ESTIMATED_ONLY" : "ACTUAL", servedModelId);
       const now = receipt.createdAt;
       await tx.upsertWorkItem({
         kind: "paid_evaluation_reservation",

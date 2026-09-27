@@ -1,0 +1,352 @@
+{
+  "generatedAt": "2026-09-27T01:14:01.897Z",
+  "pricingEvidence": "R47-16BIT-PRICING.json",
+  "evidenceState": "UNMEASURED — ranker defaults apply; qualification evidence arrives in Phase B live stage",
+  "rankings": [
+    {
+      "task": "EXPLORER",
+      "priceBasis": "openrouter-fallback-live",
+      "selected": "deepseek-v4.1-flash",
+      "candidates": [
+        {
+          "canonicalModelId": "deepseek-v4.1-flash",
+          "attemptCostUsd": 0.001835,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.003945,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE",
+            "CHEAPER_EXPECTED_COMPLETION"
+          ]
+        },
+        {
+          "canonicalModelId": "glm-5.3-flash",
+          "attemptCostUsd": 0.00235,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.005053,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        },
+        {
+          "canonicalModelId": "qwen3.8-flash",
+          "attemptCostUsd": 0.006705,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.014416,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        },
+        {
+          "canonicalModelId": "gpt-5.6-luna",
+          "attemptCostUsd": 0.0098,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.02107,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        }
+      ],
+      "shadowRecommendation": {
+        "recommendationKind": "ECONOMIC_VALUE",
+        "recommendedRouteIdHash": "d23a60f97ac0372aec30746869b8cc76b23f9332f3a605770b1931e7c55dfdf7",
+        "predictedSuccess": 0.5,
+        "predictedRisk": "UNKNOWN",
+        "predictedCostUsd": "0.003945",
+        "predictedLatency": "UNKNOWN",
+        "confidence": "INSUFFICIENT_DATA",
+        "limitations": [
+          "Recommendation cannot reserve, release, or spend campaign money.",
+          "Shadow artifact unavailable: MISSING."
+        ]
+      }
+    },
+    {
+      "task": "PLANNER",
+      "priceBasis": "openrouter-fallback-live",
+      "selected": "deepseek-v4.1-flash",
+      "candidates": [
+        {
+          "canonicalModelId": "deepseek-v4.1-flash",
+          "attemptCostUsd": 0.001745,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.003752,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE",
+            "CHEAPER_EXPECTED_COMPLETION"
+          ]
+        },
+        {
+          "canonicalModelId": "glm-5.3-flash",
+          "attemptCostUsd": 0.0025,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.005375,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        },
+        {
+          "canonicalModelId": "qwen3.8-flash",
+          "attemptCostUsd": 0.00516,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.011094,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        },
+        {
+          "canonicalModelId": "gpt-5.6-luna",
+          "attemptCostUsd": 0.0086,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.01849,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        }
+      ],
+      "shadowRecommendation": {
+        "recommendationKind": "ECONOMIC_VALUE",
+        "recommendedRouteIdHash": "d23a60f97ac0372aec30746869b8cc76b23f9332f3a605770b1931e7c55dfdf7",
+        "predictedSuccess": 0.5,
+        "predictedRisk": "UNKNOWN",
+        "predictedCostUsd": "0.003752",
+        "predictedLatency": "UNKNOWN",
+        "confidence": "INSUFFICIENT_DATA",
+        "limitations": [
+          "Recommendation cannot reserve, release, or spend campaign money.",
+          "Shadow artifact unavailable: MISSING."
+        ]
+      }
+    },
+    {
+      "task": "CODER",
+      "priceBasis": "openrouter-fallback-live",
+      "selected": "deepseek-v4.1-flash",
+      "candidates": [
+        {
+          "canonicalModelId": "deepseek-v4.1-flash",
+          "attemptCostUsd": 0.00558,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.011997,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE",
+            "CHEAPER_EXPECTED_COMPLETION"
+          ]
+        },
+        {
+          "canonicalModelId": "glm-5.3-flash",
+          "attemptCostUsd": 0.0084,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.01806,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        },
+        {
+          "canonicalModelId": "qwen3.8-flash",
+          "attemptCostUsd": 0.01464,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.031476,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        },
+        {
+          "canonicalModelId": "gpt-5.6-luna",
+          "attemptCostUsd": 0.0264,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.05676,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        }
+      ],
+      "shadowRecommendation": {
+        "recommendationKind": "ECONOMIC_VALUE",
+        "recommendedRouteIdHash": "d23a60f97ac0372aec30746869b8cc76b23f9332f3a605770b1931e7c55dfdf7",
+        "predictedSuccess": 0.5,
+        "predictedRisk": "UNKNOWN",
+        "predictedCostUsd": "0.011997",
+        "predictedLatency": "UNKNOWN",
+        "confidence": "INSUFFICIENT_DATA",
+        "limitations": [
+          "Recommendation cannot reserve, release, or spend campaign money.",
+          "Shadow artifact unavailable: MISSING."
+        ]
+      }
+    },
+    {
+      "task": "REVIEWER",
+      "priceBasis": "openrouter-fallback-live",
+      "selected": "deepseek-v4.1-flash",
+      "candidates": [
+        {
+          "canonicalModelId": "deepseek-v4.1-flash",
+          "attemptCostUsd": 0.0023,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.004945,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE",
+            "CHEAPER_EXPECTED_COMPLETION"
+          ]
+        },
+        {
+          "canonicalModelId": "glm-5.3-flash",
+          "attemptCostUsd": 0.00305,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.006557,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        },
+        {
+          "canonicalModelId": "qwen3.8-flash",
+          "attemptCostUsd": 0.007925,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.017039,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        },
+        {
+          "canonicalModelId": "gpt-5.6-luna",
+          "attemptCostUsd": 0.012,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.0258,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        }
+      ],
+      "shadowRecommendation": {
+        "recommendationKind": "ECONOMIC_VALUE",
+        "recommendedRouteIdHash": "d23a60f97ac0372aec30746869b8cc76b23f9332f3a605770b1931e7c55dfdf7",
+        "predictedSuccess": 0.5,
+        "predictedRisk": "UNKNOWN",
+        "predictedCostUsd": "0.004945",
+        "predictedLatency": "UNKNOWN",
+        "confidence": "INSUFFICIENT_DATA",
+        "limitations": [
+          "Recommendation cannot reserve, release, or spend campaign money.",
+          "Shadow artifact unavailable: MISSING."
+        ]
+      }
+    },
+    {
+      "task": "MISSION_ROLLUP",
+      "priceBasis": "openrouter-fallback-live",
+      "selected": "deepseek-v4.1-flash",
+      "candidates": [
+        {
+          "canonicalModelId": "deepseek-v4.1-flash",
+          "attemptCostUsd": 0.01146,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.024639,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE",
+            "CHEAPER_EXPECTED_COMPLETION"
+          ]
+        },
+        {
+          "canonicalModelId": "glm-5.3-flash",
+          "attemptCostUsd": 0.0163,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.035045,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        },
+        {
+          "canonicalModelId": "qwen3.8-flash",
+          "attemptCostUsd": 0.03443,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.074025,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        },
+        {
+          "canonicalModelId": "gpt-5.6-luna",
+          "attemptCostUsd": 0.0568,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.12212,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        }
+      ],
+      "shadowRecommendation": {
+        "recommendationKind": "ECONOMIC_VALUE",
+        "recommendedRouteIdHash": "d23a60f97ac0372aec30746869b8cc76b23f9332f3a605770b1931e7c55dfdf7",
+        "predictedSuccess": 0.5,
+        "predictedRisk": "UNKNOWN",
+        "predictedCostUsd": "0.024639",
+        "predictedLatency": "UNKNOWN",
+        "confidence": "INSUFFICIENT_DATA",
+        "limitations": [
+          "Recommendation cannot reserve, release, or spend campaign money.",
+          "Shadow artifact unavailable: MISSING."
+        ]
+      }
+    }
+  ]
+}

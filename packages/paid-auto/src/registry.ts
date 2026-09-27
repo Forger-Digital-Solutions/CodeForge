@@ -111,6 +111,14 @@ export function paidAutoModel(canonicalModelId: string): PaidAutoModel | undefin
   return modelById.get(canonicalModelId as PaidAutoCanonicalModelId);
 }
 
+export function paidAutoRouteFor(providerId: string, providerModelId: string): PaidAutoRoute | undefined {
+  for (const model of PAID_AUTO_MODELS) {
+    if (model.direct.providerId === providerId && model.direct.providerModelId === providerModelId) return model.direct;
+    if (model.fallback.providerId === providerId && model.fallback.providerModelId === providerModelId) return model.fallback;
+  }
+  return undefined;
+}
+
 export function paidAutoRoute(routeId: string): PaidAutoRoute | undefined {
   return routeById.get(routeId as PaidAutoRouteId);
 }

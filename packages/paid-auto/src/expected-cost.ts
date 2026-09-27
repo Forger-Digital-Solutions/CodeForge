@@ -82,8 +82,23 @@ const DEFAULT_FAILED_ATTEMPT_FRACTION = 1.0;
  *  the real escalation is at least that expensive). */
 const DEFAULT_ESCALATION_PROBABILITY = 0.15;
 
-function attemptCostUsd(model: PaidAutoModel, task: SixteenBitTaskProfile): number | undefined {
-  const { inputCostPerMillion, outputCostPerMillion } = model.direct.pricing;
+/** Route-scoped price override for one canonical model. When the executing route is not the
+ *  registry's direct route (e.g. an OpenRouter fallback with its own current price card), the
+ *  ranker must price the route that would actually be dispatched, not a route it cannot use. */
+export interface SixteenBitPriceOverride {
+  inputCostPerMillion: number;
+  outputCostPerMillion: number;
+  /** Audited provenance for the override, e.g. a live catalog PriceCard source. */
+  source: string;
+}
+
+export interface SixteenBitRankOptions {
+  priceOverrides?: Partial<Record<PaidAutoCanonicalModelId, SixteenBitPriceOverride>>;
+}
+
+function attemptCostUsd(model: PaidAutoModel, task: SixteenBitTaskProfile, override?: SixteenBitPriceOverride): number | undefined {
+  const pricing = override ?? model.direct.pricing;
+  const { inputCostPerMillion, outputCostPerMillion } = pricing;
   if (inputCostPerMillion === null || outputCostPerMillion === null) return undefined;
   return (task.inputTokens / 1_000_000) * inputCostPerMillion + (task.outputTokens / 1_000_000) * outputCostPerMillion;
 }
@@ -96,9 +111,11 @@ export function rank16Bit(
   task: SixteenBitTaskProfile,
   evidence: SixteenBitEvidenceMap = {},
   now: () => number = () => Date.now(),
+  options: SixteenBitRankOptions = {},
 ): SixteenBitRanking {
   const candidates: SixteenBitCandidate[] = PAID_AUTO_MODELS.map((model) => {
     const ev = evidence[model.canonicalModelId];
+    const priceOverride = options.priceOverrides?.[model.canonicalModelId];
     const reasonCodes: string[] = [];
 
     if (task.requiredContextTokens !== undefined && model.contextWindow < task.requiredContextTokens) {
@@ -108,11 +125,12 @@ export function rank16Bit(
       return { canonicalModelId: model.canonicalModelId, attemptCostUsd: 0, expectedAttempts: 0, expectedCostUsd: Infinity, successRate: 0, fullyMeasured: false, reasonCodes: [], excluded: "TOOL_UNSUPPORTED" };
     }
 
-    const attempt = attemptCostUsd(model, task);
+    const attempt = attemptCostUsd(model, task, priceOverride);
     if (attempt === undefined) {
       // UNKNOWN pricing is not $0 — exclude rather than fabricate a price the bill could beat.
       return { canonicalModelId: model.canonicalModelId, attemptCostUsd: 0, expectedAttempts: 0, expectedCostUsd: Infinity, successRate: 0, fullyMeasured: false, reasonCodes: [], excluded: "PRICE_UNKNOWN" };
     }
+    if (priceOverride) reasonCodes.push("ROUTE_PRICED:" + priceOverride.source);
 
     const fullyMeasured = ev?.successRate !== undefined || ev?.expectedRetries !== undefined;
     const successRate = Math.max(

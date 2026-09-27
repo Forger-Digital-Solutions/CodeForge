@@ -1,0 +1,135 @@
+{
+  "generatedAt": "2026-09-27T01:12:12.909Z",
+  "catalogFindings": [
+    {
+      "routeId": "gpt-5.6-luna:openrouter",
+      "providerModelId": "openai/gpt-5.6-luna",
+      "found": true,
+      "contextLength": 1050000,
+      "toolsSupported": true,
+      "promptUsdPerMillion": "0.2",
+      "completionUsdPerMillion": "1.2"
+    },
+    {
+      "routeId": "glm-5.3-flash:openrouter",
+      "providerModelId": "z-ai/glm-5.3-flash",
+      "found": true,
+      "contextLength": 1310720,
+      "toolsSupported": true,
+      "promptUsdPerMillion": "0.04",
+      "completionUsdPerMillion": "0.5"
+    },
+    {
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerModelId": "qwen/qwen3.8-flash",
+      "found": true,
+      "contextLength": 1000000,
+      "toolsSupported": true,
+      "promptUsdPerMillion": "0.15",
+      "completionUsdPerMillion": "0.47"
+    },
+    {
+      "routeId": "deepseek-v4.1-flash:openrouter",
+      "providerModelId": "deepseek/deepseek-v4.1-flash",
+      "found": true,
+      "contextLength": 1048576,
+      "toolsSupported": true,
+      "promptUsdPerMillion": "0.035",
+      "completionUsdPerMillion": "0.29"
+    }
+  ],
+  "priceCards": [
+    {
+      "modelIdentity": {
+        "canonicalModelId": "gpt-5.6-luna",
+        "providerId": "openrouter",
+        "providerModelId": "openai/gpt-5.6-luna",
+        "gatewayModelId": "openai/gpt-5.6-luna",
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions"
+      },
+      "providerIdentity": {
+        "providerId": "openrouter",
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions"
+      },
+      "canonicalModelId": "gpt-5.6-luna",
+      "providerId": "openrouter",
+      "providerModelId": "openai/gpt-5.6-luna",
+      "uncachedInputUsdPerMillion": "0.2",
+      "outputUsdPerMillion": "1.2",
+      "currency": "USD",
+      "status": "CURRENT",
+      "source": "openrouter-catalog-live",
+      "effectiveAt": "2026-09-27T01:12:12.909Z",
+      "confidence": "HIGH"
+    },
+    {
+      "modelIdentity": {
+        "canonicalModelId": "glm-5.3-flash",
+        "providerId": "openrouter",
+        "providerModelId": "z-ai/glm-5.3-flash",
+        "gatewayModelId": "z-ai/glm-5.3-flash",
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions"
+      },
+      "providerIdentity": {
+        "providerId": "openrouter",
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions"
+      },
+      "canonicalModelId": "glm-5.3-flash",
+      "providerId": "openrouter",
+      "providerModelId": "z-ai/glm-5.3-flash",
+      "uncachedInputUsdPerMillion": "0.04",
+      "outputUsdPerMillion": "0.5",
+      "currency": "USD",
+      "status": "CURRENT",
+      "source": "openrouter-catalog-live",
+      "effectiveAt": "2026-09-27T01:12:12.909Z",
+      "confidence": "HIGH"
+    },
+    {
+      "modelIdentity": {
+        "canonicalModelId": "qwen3.8-flash",
+        "providerId": "openrouter",
+        "providerModelId": "qwen/qwen3.8-flash",
+        "gatewayModelId": "qwen/qwen3.8-flash",
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions"
+      },
+      "providerIdentity": {
+        "providerId": "openrouter",
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions"
+      },
+      "canonicalModelId": "qwen3.8-flash",
+      "providerId": "openrouter",
+      "providerModelId": "qwen/qwen3.8-flash",
+      "uncachedInputUsdPerMillion": "0.15",
+      "outputUsdPerMillion": "0.47",
+      "currency": "USD",
+      "status": "CURRENT",
+      "source": "openrouter-catalog-live",
+      "effectiveAt": "2026-09-27T01:12:12.909Z",
+      "confidence": "HIGH"
+    },
+    {
+      "modelIdentity": {
+        "canonicalModelId": "deepseek-v4.1-flash",
+        "providerId": "openrouter",
+        "providerModelId": "deepseek/deepseek-v4.1-flash",
+        "gatewayModelId": "deepseek/deepseek-v4.1-flash",
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions"
+      },
+      "providerIdentity": {
+        "providerId": "openrouter",
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions"
+      },
+      "canonicalModelId": "deepseek-v4.1-flash",
+      "providerId": "openrouter",
+      "providerModelId": "deepseek/deepseek-v4.1-flash",
+      "uncachedInputUsdPerMillion": "0.035",
+      "outputUsdPerMillion": "0.29",
+      "currency": "USD",
+      "status": "CURRENT",
+      "source": "openrouter-catalog-live",
+      "effectiveAt": "2026-09-27T01:12:12.909Z",
+      "confidence": "HIGH"
+    }
+  ]
+}
