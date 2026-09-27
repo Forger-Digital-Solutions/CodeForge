@@ -142,15 +142,20 @@ const routeHealth = createEightBitRouteHealthAuthority();
 const registry = new NormalizedModelRegistry();
 const freeCloud = createFreeCloudService({ firewall, providerCatalog: catalog, registry, routeHealth });
 
-// Each env credential IS the managed account registered below — stamp accountId on every
-// observation so quota lands in the `provider::account::model` bucket the managed routes
-// read (unscoped observations are invisible to account-scoped pool lookups, R34 B).
+// Each env credential IS a managed account — registered BEFORE adapters so the canonical
+// stamping seam (`managedAccountObserver`) can enforce the R47 §13 contract at construction:
+// an adapter may only carry an account identity that is a declared quota domain. Unstamped or
+// stranger-account observations now record capacity-evidence gaps instead of silently
+// feeding managed pools (§14).
+for (const id of ["openrouter", "groq", "mistral"]) {
+  freeCloud.registerManagedPool(id, `live-acct-${id}`);
+}
 const adapters = [createOpenRouterAdapter({
   baseUrl: "https://openrouter.ai/api/v1",
-  onResponse: (obs) => freeCloud.onProviderResponse({ ...obs, accountId: "live-acct-openrouter" }),
+  onResponse: freeCloud.managedAccountObserver("openrouter", "live-acct-openrouter"),
 })];
 for (const id of ["groq", "mistral"]) {
-  const a = createProviderAdapterById(id, { onResponse: (obs) => freeCloud.onProviderResponse({ ...obs, accountId: `live-acct-${id}` }) });
+  const a = createProviderAdapterById(id, { onResponse: freeCloud.managedAccountObserver(id, `live-acct-${id}`) });
   if (a) adapters.push(a);
 }
 for (const a of adapters) catalog.register(wrap(a, a.providerId));
@@ -168,13 +173,6 @@ console.log(`verified-free routes: ${verified.length} (${Math.round(performance.
 // providers, whose unverified spillover otherwise fails closed at FREE_VERIFIED.
 for (const a of adapters) {
   freeCloud.setConnection({ providerId: a.providerId, connected: true, credentialSource: "ENVIRONMENT", authState: "ok", planAttested: true });
-}
-// A server-held credential is declared as a managed pool — the architecture's explicit path
-// for "this account is a distinct physical quota domain we may schedule against" (R34 B).
-// Each provider key here is one real upstream account, so each is one managed pool; the
-// route projection then carries PURE_MANAGED_FREE supply on that physical domain.
-for (const a of adapters) {
-  freeCloud.registerManagedPool(a.providerId, `live-acct-${a.providerId}`);
 }
 
 // §30/§8: qualification receipts are DURABLE (same persistence seam the desktop uses) —

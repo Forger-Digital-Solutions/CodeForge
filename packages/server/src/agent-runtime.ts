@@ -94,6 +94,7 @@ import {
   type ReviewResult,
   validateStructuredAgentResult,
   formatUntrustedData,
+  STRUCTURED_OUTPUT_CONTRACTS,
 } from "@codeforge/agent";
 import { createToolBroker, type ToolDefinition as RegistryToolDefinition, type ToolExecutionRecord } from "@codeforge/tools";
 import { createModelExecutionAdapter, convertToProviderTools, normalizeProviderError, type ModelExecutionResponse } from "./model-execution-adapter.js";
@@ -244,6 +245,13 @@ export interface StructuredOutputTelemetry {
   rejections: string[];
   /** The run exhausted its repair budget and blocked with AGENT_INVALID_STRUCTURED_OUTPUT. */
   exhausted: boolean;
+  /** R47 §6/§8: distinct missing-field names and the last rejected payload's top-level keys —
+   *  schema-shape diagnostics, never content. */
+  missingFields: string[];
+  lastPresentKeys?: string[];
+  /** R47 §8: how the accepted payload met the contract — native (no repair) vs repaired
+   *  (a deterministic strategy supplied the fix). Absent when validation never succeeded. */
+  outcome?: "native" | "repaired";
 }
 
 export interface AgentRuntimeResult {
@@ -1327,7 +1335,7 @@ export class AgentRuntime {
     // (via read/write/edit). Feeds the mutation gate and per-attempt outcome records.
     const observedFileState = new Map<string, { hash: string; source: "read" | "write" | "edit" }>();
     const editAttempts: EditAttemptRecord[] = [];
-    const structuredTelemetry: StructuredOutputTelemetry = { repairs: 0, truncationRepairs: 0, repairStrategies: [], rejections: [], exhausted: false };
+    const structuredTelemetry: StructuredOutputTelemetry = { repairs: 0, truncationRepairs: 0, repairStrategies: [], rejections: [], exhausted: false, missingFields: [] };
     // R45: per-turn tool trace for exploration-efficiency forensics; scaffold coverage +
     // the adaptive budget decision land on the journal via contextMetrics getters.
     const toolTrace: ToolTurnRecord[] = [];
@@ -2359,10 +2367,16 @@ export class AgentRuntime {
               if (structuredRepairs < maxStructuredOutputRepairs && turnCount < budget.maxModelTurns) {
                 structuredRepairs++;
                 structuredTelemetry.repairs++;
+                // R47 §6: record the rejected shape (key names + missing fields only — never
+                // content) so live schema failures are diagnosable without logging output.
                 if (structuredTelemetry.rejections.length < 8) structuredTelemetry.rejections.push(validation.error.slice(0, 160));
+                if (validation.missingFields && structuredTelemetry.missingFields.length < 8) structuredTelemetry.missingFields.push(...validation.missingFields.filter((f) => !structuredTelemetry.missingFields.includes(f)));
+                if (validation.presentKeys) structuredTelemetry.lastPresentKeys = validation.presentKeys.slice(0, 16);
                 messages.push({
                   role: "user",
-                  content: `Your prior response was rejected: ${validation.error}. Return only a valid JSON object for the required ${expectedStructuredOutput} schema.`,
+                  // R47 §7: state the field-level contract on every rejection — "valid explorer
+                  // JSON" alone left weaker models guessing which fields existed.
+                  content: `Your prior response was rejected: ${validation.error}. Return only a valid JSON object for the required ${expectedStructuredOutput} schema: ${STRUCTURED_OUTPUT_CONTRACTS[expectedStructuredOutput]}`,
                 });
                 continue;
               }
@@ -2396,6 +2410,12 @@ export class AgentRuntime {
             structuredData = validation.data;
             for (const strategy of validation.repairedWith ?? []) {
               if (!structuredTelemetry.repairStrategies.includes(strategy)) structuredTelemetry.repairStrategies.push(strategy);
+            }
+            // R47 §8: one outcome per accepted payload distinguishes native-valid from
+            // deterministically repaired — both role-scoped quality evidence, neither a failure.
+            structuredTelemetry.outcome = validation.repairedWith?.length ? "repaired" : "native";
+            if (totalUsage.provider && totalUsage.model) {
+              this.eightBit.recordToolCallOutcome(totalUsage.provider, totalUsage.model, structuredTelemetry.outcome === "repaired" ? "structured_output_repaired" : "valid", { role: eightBitRoleForAgentRole(req.role), correlationId: req.runId });
             }
           }
           await persistModelTurn("agent_result_completed");

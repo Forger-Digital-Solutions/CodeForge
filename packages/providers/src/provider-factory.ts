@@ -300,7 +300,7 @@ export function createProviderAdapterFromDefinition(def: ProviderTransportDefini
         credentialStore: opts.credentialStore,
         timeoutMs: opts.timeoutMs,
         fetchFn: opts.fetchFn,
-        onResponse: opts.onResponse,
+        onResponse: composeObservers(defaultCapacityGovernor.observeResponse, opts.onResponse),
       });
     case "opencode":
       return createOpencodeAdapter({ credentialStore: opts.credentialStore, timeoutMs: opts.timeoutMs });
@@ -379,7 +379,14 @@ export function createProviderAdapterById(providerId: string, opts: ProviderFact
       return new AnthropicAdapter({ credentialStore: opts.credentialStore, apiKey: opts.apiKey, timeoutMs: opts.timeoutMs });
     case "openrouter":
       // OpenRouter gateway (dedicated adapter: OAuth-aware, attribution headers, models cache).
-      return createOpenRouterAdapter({ credentialStore: opts.credentialStore, timeoutMs: opts.timeoutMs });
+      // onResponse was silently dropped here — callers that built by id lost quota headers and
+      // the governor never saw the provider's real buckets (R47 §11).
+      return createOpenRouterAdapter({
+        credentialStore: opts.credentialStore,
+        timeoutMs: opts.timeoutMs,
+        fetchFn: opts.fetchFn,
+        onResponse: composeObservers(defaultCapacityGovernor.observeResponse, opts.onResponse),
+      });
     case "opencode":
       // OpenCode Zen gateway (dedicated adapter).
       return createOpencodeAdapter({ credentialStore: opts.credentialStore, timeoutMs: opts.timeoutMs });

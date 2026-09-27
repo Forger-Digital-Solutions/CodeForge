@@ -54,7 +54,7 @@ class FakeAdapter implements ProviderAdapter {
   }
 }
 
-function makeRegistry(adapters: Record<string, FakeAdapter>, extra: { now?: () => Date; standardTerms?: boolean } = {}) {
+function makeRegistry(adapters: Record<string, FakeAdapter>, extra: { now?: () => Date; standardTerms?: boolean; onResponse?: (obs: import("@codeforge/providers").ProviderResponseObservation) => void } = {}) {
   const firewallManager = new CloudFirewallManager(extra.standardTerms ? undefined : {
     enterpriseOverrides: {
       openrouter: {
@@ -68,15 +68,20 @@ function makeRegistry(adapters: Record<string, FakeAdapter>, extra: { now?: () =
   const store = new MapCredentialStore();
   for (const id of Object.keys(adapters)) store.set(id, "sk-fake");
   store.set("cloudflare-account-id", "acct-fake");
+  const observers: Record<string, import("@codeforge/providers").ProviderResponseObserver> = {};
   const registry = new CloudProviderRegistry({
     firewallManager,
     credentialStore: store,
     providerIds: Object.keys(adapters),
-    adapterFactory: (id) => adapters[id],
+    adapterFactory: (id, ctx) => {
+      observers[id] = ctx.onResponse;
+      return adapters[id];
+    },
+    onResponse: extra.onResponse,
     now: extra.now,
     refreshTtlMs: 60_000,
   });
-  return { firewallManager, registry };
+  return { firewallManager, registry, observers };
 }
 
 describe("CloudProviderRegistry — real capacity discovery", () => {
@@ -197,6 +202,93 @@ describe("CloudProviderRegistry — real capacity discovery", () => {
 
     const eligible = firewallManager.firewall.eligibleModels().map((m) => m.modelId);
     expect(eligible).not.toContain("x/y:free");
+  });
+
+  // R47 §12: every adapter the registry builds carries an observer that updates the
+  // gateway's authoritative health plane — even through the adapterFactory seam.
+  describe("provider response observation (R47 §11/§12)", () => {
+    const obs = (status: number, headers: Array<[string, string]> = []) => ({
+      providerId: "groq",
+      modelId: "llama-3.1-8b-instant",
+      accountId: "managed-primary",
+      status,
+      headers,
+      observedAt: Date.now(),
+    });
+
+    it("marks the provider auth_required when an in-flight request returns 401", async () => {
+      const groq = new FakeAdapter({ providerId: "groq", models: [model("llama-3.1-8b-instant", false)], probeOk: true });
+      const { firewallManager, registry, observers } = makeRegistry({ groq });
+      await registry.discover();
+      expect(firewallManager.firewall.eligibleModels().length).toBeGreaterThan(0);
+
+      observers.groq!(obs(401));
+
+      expect(firewallManager.firewall.eligibleModels()).toHaveLength(0);
+      expect(
+        firewallManager.firewall.allModels().find((m) => m.providerId === "groq")?.health?.status,
+      ).toBe("auth_required");
+    });
+
+    it("marks only the observed model rate_limited on 429 — siblings stay eligible", async () => {
+      const groq = new FakeAdapter({
+        providerId: "groq",
+        models: [model("llama-3.1-8b-instant", false), model("llama-3.3-70b-versatile", false)],
+        probeOk: true,
+      });
+      const { firewallManager, registry, observers } = makeRegistry({ groq });
+      await registry.discover();
+
+      const before = Date.now();
+      observers.groq!(obs(429, [["retry-after", "120"]]));
+
+      const limited = firewallManager.firewall.allModels().find((m) => m.modelId === "llama-3.1-8b-instant");
+      const sibling = firewallManager.firewall.allModels().find((m) => m.modelId === "llama-3.3-70b-versatile");
+      expect(limited?.health?.status).toBe("rate_limited");
+      expect(limited?.health?.retryAfter).toBeGreaterThanOrEqual(before + 120_000);
+      expect(sibling?.health?.status ?? "available").not.toBe("rate_limited");
+      expect(firewallManager.firewall.eligibleModels().map((m) => m.modelId)).toContain("llama-3.3-70b-versatile");
+      expect(firewallManager.firewall.eligibleModels().map((m) => m.modelId)).not.toContain("llama-3.1-8b-instant");
+    });
+
+    it("falls back to provider-wide marking when the adapter cannot name the model", async () => {
+      const groq = new FakeAdapter({ providerId: "groq", models: [model("llama-3.1-8b-instant", false), model("other", false)], probeOk: true });
+      const { firewallManager, registry, observers } = makeRegistry({ groq });
+      await registry.discover();
+
+      observers.groq!({ providerId: "groq", status: 429, headers: [["retry-after", "30"]], observedAt: Date.now() });
+
+      for (const m of firewallManager.firewall.allModels().filter((x) => x.providerId === "groq")) {
+        expect(m.health?.status).toBe("rate_limited");
+      }
+    });
+
+    it("does not flap provider health on a successful or 5xx observation", async () => {
+      const groq = new FakeAdapter({ providerId: "groq", models: [model("llama-3.1-8b-instant", false)], probeOk: true });
+      const { firewallManager, registry, observers } = makeRegistry({ groq });
+      await registry.discover();
+
+      observers.groq!(obs(200));
+      observers.groq!(obs(503));
+
+      const rec = firewallManager.firewall.allModels().find((m) => m.providerId === "groq");
+      expect(rec?.health?.status).not.toBe("rate_limited");
+      expect(rec?.health?.status).not.toBe("auth_required");
+      expect(firewallManager.firewall.eligibleModels().length).toBeGreaterThan(0);
+    });
+
+    it("forwards every observation to the host sink after the health bridge", async () => {
+      const received: import("@codeforge/providers").ProviderResponseObservation[] = [];
+      const groq = new FakeAdapter({ providerId: "groq", models: [model("llama-3.1-8b-instant", false)], probeOk: true });
+      const { registry, observers } = makeRegistry({ groq }, { onResponse: (o) => received.push(o) });
+      await registry.discover();
+
+      const o = obs(429, [["retry-after", "30"]]);
+      observers.groq!(o);
+
+      expect(received).toHaveLength(1);
+      expect(received[0]).toMatchObject({ providerId: "groq", modelId: "llama-3.1-8b-instant", accountId: "managed-primary", status: 429 });
+    });
   });
 
   it("respects the refresh TTL and coalesces concurrent discovery", async () => {

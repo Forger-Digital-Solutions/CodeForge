@@ -1,0 +1,398 @@
+{
+  "at": "2026-09-27T00:45:19.508Z",
+  "source": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\r46-qualification.db",
+  "receipts": 10,
+  "managedPools": 10,
+  "accounts": 3,
+  "roles": [
+    "EXPLORER",
+    "PLANNER",
+    "CODER",
+    "REVIEWER"
+  ],
+  "independence": {
+    "EXPLORER": {
+      "qualifiedPools": 1,
+      "probationPools": 1,
+      "qualifiedPoolIds": [
+        "managed:groq:live-acct-groq:model:openai/gpt-oss-20b"
+      ],
+      "probationPoolIds": [
+        "managed:groq:live-acct-groq:model:openai/gpt-oss-120b"
+      ]
+    },
+    "PLANNER": {
+      "qualifiedPools": 6,
+      "probationPools": 0,
+      "qualifiedPoolIds": [
+        "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+        "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+        "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+        "managed:mistral:live-acct-mistral:model:codestral-2508",
+        "managed:mistral:live-acct-mistral:model:codestral-latest",
+        "managed:mistral:live-acct-mistral:model:mistral-code-latest"
+      ],
+      "probationPoolIds": []
+    },
+    "CODER": {
+      "qualifiedPools": 9,
+      "probationPools": 0,
+      "qualifiedPoolIds": [
+        "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+        "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+        "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+        "managed:mistral:live-acct-mistral:model:codestral-2508",
+        "managed:mistral:live-acct-mistral:model:codestral-latest",
+        "managed:mistral:live-acct-mistral:model:ministral-3b-latest",
+        "managed:mistral:live-acct-mistral:model:ministral-8b-latest",
+        "managed:mistral:live-acct-mistral:model:mistral-code-latest",
+        "managed:openrouter:live-acct-openrouter:model:nvidia/nemotron-3.5-lightning:free"
+      ],
+      "probationPoolIds": []
+    },
+    "REVIEWER": {
+      "qualifiedPools": 3,
+      "probationPools": 3,
+      "qualifiedPoolIds": [
+        "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+        "managed:mistral:live-acct-mistral:model:ministral-3b-latest",
+        "managed:mistral:live-acct-mistral:model:ministral-8b-latest"
+      ],
+      "probationPoolIds": [
+        "managed:mistral:live-acct-mistral:model:codestral-2508",
+        "managed:mistral:live-acct-mistral:model:codestral-latest",
+        "managed:mistral:live-acct-mistral:model:mistral-code-latest"
+      ]
+    }
+  },
+  "accountIndependence": {
+    "EXPLORER": {
+      "qualifiedAccounts": 1,
+      "qualifiedAccountIds": [
+        "managed:groq:live-acct-groq"
+      ]
+    },
+    "PLANNER": {
+      "qualifiedAccounts": 2,
+      "qualifiedAccountIds": [
+        "managed:groq:live-acct-groq",
+        "managed:mistral:live-acct-mistral"
+      ]
+    },
+    "CODER": {
+      "qualifiedAccounts": 3,
+      "qualifiedAccountIds": [
+        "managed:groq:live-acct-groq",
+        "managed:mistral:live-acct-mistral",
+        "managed:openrouter:live-acct-openrouter"
+      ]
+    },
+    "REVIEWER": {
+      "qualifiedAccounts": 2,
+      "qualifiedAccountIds": [
+        "managed:groq:live-acct-groq",
+        "managed:mistral:live-acct-mistral"
+      ]
+    }
+  },
+  "accountMatrix": [
+    {
+      "accountId": "managed:groq:live-acct-groq",
+      "providerId": "groq",
+      "pools": 4,
+      "coverage": {
+        "CODER": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "models": 4
+    },
+    {
+      "accountId": "managed:mistral:live-acct-mistral",
+      "providerId": "mistral",
+      "pools": 5,
+      "coverage": {
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "models": 5
+    },
+    {
+      "accountId": "managed:openrouter:live-acct-openrouter",
+      "providerId": "openrouter",
+      "pools": 1,
+      "coverage": {
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "HARD_FAILURE"
+      },
+      "models": 1
+    }
+  ],
+  "matrix": [
+    {
+      "poolId": "managed:groq:live-acct-groq:model:allam-2-7b",
+      "providerId": "groq",
+      "models": 1,
+      "coverage": {
+        "EXPLORER": "UNTESTED",
+        "PLANNER": "UNTESTED",
+        "CODER": "HARD_FAILURE",
+        "REVIEWER": "UNTESTED"
+      },
+      "modelsDetail": {
+        "allam-2-7b": {
+          "state": "HARD_FAILURE",
+          "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+          "ageDays": 0,
+          "roles": {
+            "EXPLORER": "UNTESTED",
+            "PLANNER": "UNTESTED",
+            "CODER": "HARD_FAILURE",
+            "REVIEWER": "UNTESTED"
+          },
+          "hardFailureRoles": [
+            "CODER",
+            "TOOL_AGENT"
+          ]
+        }
+      }
+    },
+    {
+      "poolId": "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+      "providerId": "groq",
+      "models": 1,
+      "coverage": {
+        "EXPLORER": "PROBATION",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "NOT_TESTED"
+      },
+      "modelsDetail": {
+        "openai/gpt-oss-120b": {
+          "state": "QUALIFIED",
+          "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+          "ageDays": 0,
+          "roles": {
+            "EXPLORER": "PROBATION",
+            "PLANNER": "QUALIFIED",
+            "CODER": "QUALIFIED",
+            "REVIEWER": "NOT_TESTED"
+          },
+          "hardFailureRoles": []
+        }
+      }
+    },
+    {
+      "poolId": "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+      "providerId": "groq",
+      "models": 1,
+      "coverage": {
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "NOT_TESTED"
+      },
+      "modelsDetail": {
+        "openai/gpt-oss-20b": {
+          "state": "QUALIFIED",
+          "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+          "ageDays": 0,
+          "roles": {
+            "EXPLORER": "QUALIFIED",
+            "PLANNER": "QUALIFIED",
+            "CODER": "QUALIFIED",
+            "REVIEWER": "NOT_TESTED"
+          },
+          "hardFailureRoles": []
+        }
+      }
+    },
+    {
+      "poolId": "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+      "providerId": "groq",
+      "models": 1,
+      "coverage": {
+        "EXPLORER": "NOT_TESTED",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "modelsDetail": {
+        "qwen/qwen3.8-27b": {
+          "state": "QUALIFIED",
+          "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+          "ageDays": 0,
+          "roles": {
+            "EXPLORER": "NOT_TESTED",
+            "PLANNER": "QUALIFIED",
+            "CODER": "QUALIFIED",
+            "REVIEWER": "QUALIFIED"
+          },
+          "hardFailureRoles": []
+        }
+      }
+    },
+    {
+      "poolId": "managed:mistral:live-acct-mistral:model:codestral-2508",
+      "providerId": "mistral",
+      "models": 1,
+      "coverage": {
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "PROBATION"
+      },
+      "modelsDetail": {
+        "codestral-2508": {
+          "state": "QUALIFIED",
+          "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+          "ageDays": 0,
+          "roles": {
+            "EXPLORER": "NOT_QUALIFIED",
+            "PLANNER": "QUALIFIED",
+            "CODER": "QUALIFIED",
+            "REVIEWER": "PROBATION"
+          },
+          "hardFailureRoles": []
+        }
+      }
+    },
+    {
+      "poolId": "managed:mistral:live-acct-mistral:model:codestral-latest",
+      "providerId": "mistral",
+      "models": 1,
+      "coverage": {
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "PROBATION"
+      },
+      "modelsDetail": {
+        "codestral-latest": {
+          "state": "QUALIFIED",
+          "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+          "ageDays": 0,
+          "roles": {
+            "EXPLORER": "NOT_QUALIFIED",
+            "PLANNER": "QUALIFIED",
+            "CODER": "QUALIFIED",
+            "REVIEWER": "PROBATION"
+          },
+          "hardFailureRoles": []
+        }
+      }
+    },
+    {
+      "poolId": "managed:mistral:live-acct-mistral:model:ministral-3b-latest",
+      "providerId": "mistral",
+      "models": 1,
+      "coverage": {
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "modelsDetail": {
+        "ministral-3b-latest": {
+          "state": "QUALIFIED",
+          "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+          "ageDays": 0,
+          "roles": {
+            "EXPLORER": "NOT_QUALIFIED",
+            "PLANNER": "HARD_FAILURE",
+            "CODER": "QUALIFIED",
+            "REVIEWER": "QUALIFIED"
+          },
+          "hardFailureRoles": [
+            "PLANNER"
+          ]
+        }
+      }
+    },
+    {
+      "poolId": "managed:mistral:live-acct-mistral:model:ministral-8b-latest",
+      "providerId": "mistral",
+      "models": 1,
+      "coverage": {
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "modelsDetail": {
+        "ministral-8b-latest": {
+          "state": "QUALIFIED",
+          "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+          "ageDays": 0,
+          "roles": {
+            "EXPLORER": "NOT_QUALIFIED",
+            "PLANNER": "HARD_FAILURE",
+            "CODER": "QUALIFIED",
+            "REVIEWER": "QUALIFIED"
+          },
+          "hardFailureRoles": [
+            "PLANNER"
+          ]
+        }
+      }
+    },
+    {
+      "poolId": "managed:mistral:live-acct-mistral:model:mistral-code-latest",
+      "providerId": "mistral",
+      "models": 1,
+      "coverage": {
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "PROBATION"
+      },
+      "modelsDetail": {
+        "mistral-code-latest": {
+          "state": "QUALIFIED",
+          "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+          "ageDays": 0,
+          "roles": {
+            "EXPLORER": "NOT_QUALIFIED",
+            "PLANNER": "QUALIFIED",
+            "CODER": "QUALIFIED",
+            "REVIEWER": "PROBATION"
+          },
+          "hardFailureRoles": []
+        }
+      }
+    },
+    {
+      "poolId": "managed:openrouter:live-acct-openrouter:model:nvidia/nemotron-3.5-lightning:free",
+      "providerId": "openrouter",
+      "models": 1,
+      "coverage": {
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "HARD_FAILURE"
+      },
+      "modelsDetail": {
+        "nvidia/nemotron-3.5-lightning:free": {
+          "state": "QUALIFIED",
+          "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+          "ageDays": 0,
+          "roles": {
+            "EXPLORER": "NOT_QUALIFIED",
+            "PLANNER": "HARD_FAILURE",
+            "CODER": "QUALIFIED",
+            "REVIEWER": "HARD_FAILURE"
+          },
+          "hardFailureRoles": [
+            "PLANNER",
+            "REVIEWER"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import {
   type ProviderCapacityPool,
   type SupplyClass,
 } from "@codeforge/forge-zero";
-import type { ProviderAdapter, ProviderCatalog, ProviderResponseObservation } from "@codeforge/providers";
+import type { ProviderAdapter, ProviderCatalog, ProviderResponseObservation, ProviderResponseObserver } from "@codeforge/providers";
 import {
   runRoleAwareQualification,
   rateLimitObservationFromHeaders,
@@ -653,10 +653,50 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     this.emit();
   }
 
+  /** R47 §14: managed-capacity evidence that arrived stamped with no account — or an account
+   *  no registered pool owns — cannot feed a managed quota domain. Tracked as safe diagnostic
+   *  metadata (counts, timestamps, model ids) so a missing stamp is visible instead of silent. */
+  private readonly unattributedManagedEvidence = new Map<string, { count: number; lastAt: string; lastModelId?: string }>();
+
+  /** Diagnostic surface: per-provider counts of response observations that managed pools could
+   *  not attribute to a declared quota domain. Empty = every managed-bound observation landed. */
+  capacityEvidenceGaps(): Array<{ providerId: string; count: number; lastAt: string; lastModelId?: string }> {
+    return [...this.unattributedManagedEvidence.entries()].map(([providerId, g]) => ({ providerId, ...g }));
+  }
+
+  /**
+   * R47 §13 — the managed-account stamping contract as an API, not host glue. Returns the
+   * observer a managed adapter must emit through; throws when `managed:<provider>:<account>`
+   * is not registered, so an adapter can never carry an undeclared quota identity.
+   */
+  managedAccountObserver(providerId: string, accountId: string): ProviderResponseObserver {
+    if (!this.managedPools.has(`managed:${providerId}:${accountId}`)) {
+      throw new Error(`no managed pool registered for ${providerId} account "${accountId}"`);
+    }
+    return (obs) => this.onProviderResponse({ ...obs, accountId });
+  }
+
   /** Provider response observer for adapters (quota headers + 429 cooldown). */
   readonly onProviderResponse = (obs: ProviderResponseObservation): void => {
     const quota = parseRouteQuota(obs.headers, this.now);
     this.quota.record(obs.providerId, obs.modelId, quota, obs.accountId);
+    // R47 §14: unattributed evidence on a managed provider is flagged, never inherited. The
+    // observation still records to its own (unscoped or stranger) bucket — owner paths may
+    // legitimately read unscoped evidence — but managed queries no longer see it.
+    let managed = false;
+    let attributed = false;
+    for (const mp of this.managedPools.values()) {
+      if (mp.providerId !== obs.providerId) continue;
+      managed = true;
+      if (obs.accountId !== undefined && mp.accountId === obs.accountId) attributed = true;
+    }
+    if (managed && !attributed) {
+      const gap = this.unattributedManagedEvidence.get(obs.providerId) ?? { count: 0, lastAt: "" };
+      gap.count++;
+      gap.lastAt = new Date(obs.observedAt).toISOString();
+      if (obs.modelId !== undefined) gap.lastModelId = obs.modelId;
+      this.unattributedManagedEvidence.set(obs.providerId, gap);
+    }
     // R24: the same header stream is the authority's quota evidence. One observation enters
     // once — no re-parsed copy (§16-17 provenance). Provider-scoped responses (no modelId) have
     // no route to attribute to; the authority keys conditions per route.

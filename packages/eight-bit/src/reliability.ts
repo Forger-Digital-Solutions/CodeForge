@@ -6,7 +6,11 @@ export type ToolCallOutcome =
   | "unknown_tool"
   | "missing_args"
   | "schema_violation"
-  | "structured_output_failure";
+  | "structured_output_failure"
+  /** R47 §8: deterministic recovery accepted the payload — weaker than native-valid evidence
+   *  (the model did not meet the contract) but not a failure. Counted in the window, and
+   *  neither resets nor extends the quarantine streak. */
+  | "structured_output_repaired";
 
 /** Minimum attempts before a reliability score is trusted enough to gate eligibility. Below
  * this, the model is an explicit unknown and gets the benefit of the doubt (never auto-failed
@@ -44,6 +48,10 @@ export class EightBitReliabilityTracker {
     if (state.window.length > WINDOW_SIZE) state.window.shift();
     if (outcome === "valid") {
       state.consecutiveBad = 0;
+    } else if (outcome === "structured_output_repaired") {
+      // Recovered-but-valid output is reliability evidence in the window, not a failure —
+      // quarantining on it alone would punish routes that the deterministic repair layer
+      // handled correctly, while ignoring it entirely would hide systematic contract drift.
     } else {
       state.consecutiveBad += 1;
       if (state.consecutiveBad >= QUARANTINE_STREAK) state.quarantined = true;

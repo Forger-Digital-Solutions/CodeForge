@@ -113,13 +113,17 @@ export class RouteQuotaTracker {
 
   get(providerId: string, modelId: string, accountId?: string): RouteQuota | undefined {
     const account = accountId ? `${accountId}::` : "";
-    return this.byRoute.get(`${providerId}::${account}${modelId}`) ?? this.byProvider.get(`${providerId}::${account}`) ?? (accountId ? this.byProvider.get(`${providerId}::`) : undefined);
+    // R47 §14: an account-scoped query never falls back to the unscoped bucket — evidence that
+    // could not be attributed to the declared quota domain is not that domain's capacity. Two
+    // managed accounts reading one unstamped bucket would double-count the same window.
+    return this.byRoute.get(`${providerId}::${account}${modelId}`) ?? this.byProvider.get(`${providerId}::${account}`);
   }
 
   /** True when a genuinely account-scoped observation exists for this provider (optionally
-   *  for one upstream account only). */
+   *  for one upstream account only). An unscoped provider bucket is NOT evidence for a named
+   *  account — it could belong to any domain on that provider. */
   hasProviderScoped(providerId: string, accountId?: string): boolean {
-    return this.byProvider.has(`${providerId}::${accountId ? `${accountId}::` : ""}`) || (accountId !== undefined && this.byProvider.has(`${providerId}::`));
+    return this.byProvider.has(`${providerId}::${accountId ? `${accountId}::` : ""}`);
   }
 
   /** Model ids with a route-scoped quota observation for this provider (the measurable

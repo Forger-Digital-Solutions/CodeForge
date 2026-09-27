@@ -186,3 +186,77 @@ describe("validateStructuredAgentResult — adversarial extraction security", ()
     if (result.success) expect(result.repairedWith).toBeUndefined();
   });
 });
+
+/** R47 §7: mid-tier models emit explorer-shaped objects that omit the `summary` key (the live
+ * R46 corpus failure). Recovery is strictly structural — promote a known synonym verbatim or
+ * synthesize counts+paths from validated findings; never invent semantic conclusions. */
+describe("validateStructuredAgentResult — explorer summary recovery", () => {
+  const explorerPayload = {
+    findings: [
+      { id: "f1", severity: "advisory", category: "architecture", message: "normalize() filters negatives", path: "src/normalize.mjs", evidence: "normalize.mjs:2" },
+      { id: "f2", severity: "blocking", category: "correctness", message: "totals drop negative rows", path: "src/report.mjs" },
+    ],
+    evidence: [{ kind: "file", ref: "src/normalize.mjs", description: "filter site" }],
+  };
+
+  it("synthesizes a metadata-only summary when findings and evidence are valid", () => {
+    const result = validateStructuredAgentResult("explorer", JSON.stringify(explorerPayload));
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.repairedWith).toEqual(["summary_synthesis"]);
+      const data = result.data as { summary: string; findings: unknown[] };
+      expect(data.summary).toContain("2 finding(s)");
+      expect(data.summary).toContain("src/normalize.mjs");
+      expect(data.summary).toContain("1 evidence reference(s)");
+      expect(data.findings).toHaveLength(2);
+    }
+  });
+
+  it("recovers a blank/whitespace summary the same way", () => {
+    const result = validateStructuredAgentResult("explorer", JSON.stringify({ ...explorerPayload, summary: "   " }));
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.repairedWith).toContain("summary_synthesis");
+  });
+
+  it("promotes a synonymous field verbatim instead of synthesizing", () => {
+    const result = validateStructuredAgentResult("explorer", JSON.stringify({ ...explorerPayload, conclusion: "Root cause is in normalize()" }));
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.repairedWith).toEqual(["summary_synonym"]);
+      expect((result.data as { summary: string }).summary).toBe("Root cause is in normalize()");
+    }
+  });
+
+  it("fails closed with field-shape diagnostics when findings are also invalid", () => {
+    const result = validateStructuredAgentResult("explorer", JSON.stringify({ findings: [{ wrong: true }], evidence: [] }));
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain("summary");
+      expect(result.missingFields).toEqual(["summary"]);
+      expect(result.presentKeys).toEqual(["findings", "evidence"]);
+    }
+  });
+
+  it("does not recover explorer payloads lacking valid evidence", () => {
+    const result = validateStructuredAgentResult("explorer", JSON.stringify({ findings: explorerPayload.findings }));
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.missingFields).toEqual(["summary"]);
+  });
+
+  it("keeps every other role strict — no recovery outside explorer", () => {
+    for (const kind of ["reviewer", "planner", "engineering_plan", "acceptance_criteria", "mission_plan"] as const) {
+      const result = validateStructuredAgentResult(kind, JSON.stringify({ conclusion: "looks done" }));
+      expect(result.success).toBe(false);
+      if (!result.success) expect(result.missingFields).toBeUndefined();
+    }
+  });
+
+  it("never fabricates semantics — synthesis contains only counts and file names", () => {
+    const result = validateStructuredAgentResult("explorer", JSON.stringify({ findings: [], evidence: [] }));
+    expect(result.success).toBe(true);
+    if (result.success) {
+      const data = result.data as { summary: string };
+      expect(data.summary).toBe("0 finding(s); 0 evidence reference(s)");
+    }
+  });
+});

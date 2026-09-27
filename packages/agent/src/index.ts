@@ -226,11 +226,15 @@ export interface StructuredValidationSuccess<T extends StructuredAgentResult = S
 }
 
 /** Bounded, unambiguous normalization passes applied to recover a structured payload. */
-export type StructuredRepairStrategy = "fenced_block" | "brace_extraction" | "trailing_commas";
+export type StructuredRepairStrategy = "fenced_block" | "brace_extraction" | "trailing_commas" | "summary_synonym" | "summary_synthesis";
 
 export interface StructuredValidationFailure {
   success: false;
   error: string;
+  /** R47 §6: required top-level fields that were absent/blank — field names only, never content. */
+  missingFields?: string[];
+  /** R47 §6: top-level keys present in the rejected object — schema-shape evidence only. */
+  presentKeys?: string[];
 }
 
 export type StructuredValidationResult<T extends StructuredAgentResult = StructuredAgentResult> =
@@ -510,10 +514,55 @@ export function validateStructuredAgentResult(
   return result;
 }
 
+/** Wire contract per kind — the text the model must see upfront and again on rejection.
+ *  A bare "return valid explorer JSON" leaves weaker models guessing which fields exist. */
+export const STRUCTURED_OUTPUT_CONTRACTS: Record<StructuredOutputKind, string> = {
+  explorer: '{"summary":string,"findings":[{"id":string,"severity":"blocking"|"advisory","category":string,"message":string,"path"?:string,"line"?:number,"evidence"?:string}],"evidence":[{"kind":string,"ref":string,"description"?:string}]}',
+  planner: '{"protocol":"task_graph_v1","summary":string,"tasks":[{"id":string,"title":string,"objective":string,"dependencies":string[],"assignedRole":"explorer"|"planner"|"coder"|"reviewer"}]} or {"protocol":"semantic_steps_v1","summary":string,"steps":[{"id":string,"intent":string,"phase":"investigation"|"planning"|"implementation"|"verification","after":string[]}]}',
+  engineering_plan: '{"id":string,"goal":string,"summary":string,"workstreams":[{"id":string,"title":string,"objective":string,"dependencies":string[],"expectedFiles"?:string[]}],"globalVerificationCommands"?:string[]}',
+  reviewer: '{"verdict":"pass"|"revision_required","findings":[{"id":string,"severity":"blocking"|"advisory","category":string,"message":string,"evidence"?:string}],"summary":string}',
+  acceptance_criteria: '{"summary":string,"criteria":[{"id":string,"description":string,"mandatory"?:boolean}]}',
+  mission_plan: '{"id":string,"goal":string,"summary":string,"milestones":[{"id":string,"title":string,"objective":string,"dependencies":string[],"acceptanceCriteria":string[]}]}',
+};
+
+/** R47 §7: deterministic, content-free summary recovery for explorer results. Fields a model
+ *  might use instead of `summary` are promoted verbatim (never edited); absent every synonym a
+ *  strictly structural summary is synthesized from validated findings/evidence — counts and
+ *  file names only, no inferred conclusions. */
+const SUMMARY_SYNONYMS = ["conclusion", "overview", "result"] as const;
+
+function recoverExplorerSummary(value: Record<string, unknown>): { summary: string; repair: StructuredRepairStrategy } | undefined {
+  for (const synonym of SUMMARY_SYNONYMS) {
+    const candidate = value[synonym];
+    if (typeof candidate === "string" && candidate.trim() !== "") {
+      return { summary: candidate, repair: "summary_synonym" };
+    }
+  }
+  const findings = validateFindings(value.findings);
+  const evidenceOk = Array.isArray(value.evidence) && value.evidence.every((entry) => isObject(entry) && typeof entry.kind === "string" && typeof entry.ref === "string");
+  if (!Array.isArray(findings) || !evidenceOk) return undefined;
+  const paths = [...new Set(findings.map((f) => f.path).filter((p): p is string => typeof p === "string"))].slice(0, 8);
+  const locations = paths.length > 0 ? ` across ${paths.join(", ")}` : "";
+  const summary = `${findings.length} finding(s)${locations}; ${(value.evidence as unknown[]).length} evidence reference(s)`;
+  return { summary, repair: "summary_synthesis" };
+}
+
 function validateStructuredValue(kind: StructuredOutputKind, value: unknown): StructuredValidationResult {
   if (!isObject(value)) return { success: false, error: "Structured output must be a JSON object" };
+  const presentKeys = Object.keys(value);
   const summary = readString(value.summary, "summary");
-  if (typeof summary !== "string") return summary;
+  if (typeof summary !== "string") {
+    if (kind === "explorer") {
+      const recovered = recoverExplorerSummary(value);
+      if (recovered) {
+        const recoveredResult = validateExplorerPayload(value, recovered.summary);
+        if (recoveredResult.success) recoveredResult.repairedWith = [...(recoveredResult.repairedWith ?? []), recovered.repair];
+        return recoveredResult;
+      }
+      return { success: false, error: summary.error, missingFields: ["summary"], presentKeys };
+    }
+    return { ...summary, presentKeys };
+  }
 
   if (kind === "reviewer") {
     if (value.verdict !== "pass" && value.verdict !== "revision_required") {
@@ -618,10 +667,14 @@ function validateStructuredValue(kind: StructuredOutputKind, value: unknown): St
     return { success: true, data: { id: value.id, goal: value.goal, summary, workstreams, ...(value.globalVerificationCommands ? { globalVerificationCommands: [...value.globalVerificationCommands] as string[] } : {}) } satisfies EngineeringPlanResult };
   }
 
+  return validateExplorerPayload(value, summary);
+}
+
+function validateExplorerPayload(value: Record<string, unknown>, summary: string): StructuredValidationResult<ExplorerResult> {
   const findings = validateFindings(value.findings);
-  if (!Array.isArray(findings)) return findings;
+  if (!Array.isArray(findings)) return { ...findings, presentKeys: Object.keys(value) };
   if (!Array.isArray(value.evidence) || value.evidence.some((entry) => !isObject(entry) || typeof entry.kind !== "string" || typeof entry.ref !== "string" || (entry.description !== undefined && typeof entry.description !== "string"))) {
-    return { success: false, error: "explorer evidence must be an array of evidence references" };
+    return { success: false, error: "explorer evidence must be an array of evidence references", presentKeys: Object.keys(value) };
   }
   return {
     success: true,
@@ -730,7 +783,8 @@ RULES:
 3. Use repository intelligence tools (repo_symbol, repo_search, repo_references, repo_dependencies, repo_tests) to find exact references.
 4. A pre-gathered Repository Orientation packet — ranked candidate files, goal-symbol definitions, consumers, related tests, and hash-marked excerpts — precedes this task. Each excerpt carries [hash:H] proving it is the file's CURRENT content — treat it as your read_file result and never re-read a file the packet already excerpted. Answer from the packet directly when it suffices; only call tools for evidence the packet does not already contain.
 5. Batch any additional independent lookups: when several files or symbols are needed, request them in one response instead of one call per turn. Your turn budget is bounded — spend it on coverage, not serialization.
-6. Conclude with structured findings containing discovered files, symbols, and architectural evidence as soon as you can answer the goal — do not keep exploring once the implementation, its consumers, and its tests are located.`,
+6. Conclude with structured findings containing discovered files, symbols, and architectural evidence as soon as you can answer the goal — do not keep exploring once the implementation, its consumers, and its tests are located.
+7. Your final response must be ONLY a JSON object, no prose before or after: ${STRUCTURED_OUTPUT_CONTRACTS.explorer}`,
   },
   planner: {
     role: "planner",

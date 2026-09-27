@@ -1008,6 +1008,62 @@ describe("FreeCloudService — managed pools & quarantine (R34 Mission B)", () =
     expect(pools.some((p) => p.poolId.includes("acct-b") && p.windows.length > 0)).toBe(false);
   });
 
+  it("R47 §14: an UNSTAMPED observation never feeds a managed pool — the gap is recorded, not inherited", () => {
+    const { svc } = managedService();
+    svc.registerManagedPool("mistral", "acct-a");
+    svc.registerManagedPool("mistral", "acct-b");
+
+    // A host that forgot the account stamp: model-less provider-level evidence lands unscoped.
+    svc.onProviderResponse({
+      providerId: "mistral",
+      status: 200,
+      headers: [["x-ratelimit-remaining-requests", "200"], ["x-ratelimit-limit-requests", "200"]],
+      observedAt: NOW.getTime(),
+    });
+
+    // No managed pool may read the stranger domain's window — before §14 the unscoped bucket
+    // answered account-scoped queries and both pools claimed the same capacity.
+    for (const p of svc.capacityPools().filter((x) => x.poolId.startsWith("managed:mistral"))) {
+      expect(p.windows).toHaveLength(0);
+    }
+    expect(svc.capacityEvidenceGaps()).toEqual([
+      { providerId: "mistral", count: 1, lastAt: NOW.toISOString() },
+    ]);
+  });
+
+  it("R47 §14: an observation stamped with an UNREGISTERED account is flagged and feeds nothing", () => {
+    const { svc } = managedService();
+    svc.registerManagedPool("mistral", "acct-a");
+
+    svc.onProviderResponse({
+      providerId: "mistral",
+      modelId: "codestral-latest",
+      accountId: "acct-stranger",
+      status: 200,
+      headers: [["x-ratelimit-remaining-requests", "90"], ["x-ratelimit-limit-requests", "125"]],
+      observedAt: NOW.getTime(),
+    });
+
+    const pool = svc.capacityPools().find((p) => p.poolId === "managed:mistral:acct-a:model:codestral-latest");
+    expect(pool?.windows).toHaveLength(0);
+    expect(svc.capacityEvidenceGaps()).toEqual([
+      { providerId: "mistral", count: 1, lastAt: NOW.toISOString(), lastModelId: "codestral-latest" },
+    ]);
+  });
+
+  it("R47 §13: managedAccountObserver is the stamping contract — refuses undeclared accounts, stamps declared ones", () => {
+    const { svc } = managedService();
+    expect(() => svc.managedAccountObserver("mistral", "acct-unregistered")).toThrow(/no managed pool/);
+    svc.registerManagedPool("mistral", "acct-a");
+
+    const observer = svc.managedAccountObserver("mistral", "acct-a");
+    observer({ providerId: "mistral", modelId: "codestral-latest", status: 200, headers: [["x-ratelimit-remaining-requests", "77"], ["x-ratelimit-limit-requests", "125"]], observedAt: NOW.getTime() });
+
+    const pool = svc.capacityPools().find((p) => p.poolId === "managed:mistral:acct-a:model:codestral-latest");
+    expect(pool?.windows.find((w) => w.unit === "requests")?.remaining).toBe(77);
+    expect(svc.capacityEvidenceGaps()).toEqual([]);
+  });
+
   it("quarantining a pool instantly denies its routes — policy exclusion is immediate", () => {
     const { svc } = managedService();
     svc.registerManagedPool("mistral", "acct-a");

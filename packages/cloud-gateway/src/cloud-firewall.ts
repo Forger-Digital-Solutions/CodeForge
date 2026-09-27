@@ -172,6 +172,12 @@ export class CloudFirewallManager {
     this.providerState.set(providerId, status === "auth_required" ? "auth_required" : "ok");
   }
 
+  /** Per-model health marking — a single model's 429 cools its own quota window without
+   *  excluding sibling models that have independent limits (R47 §12). */
+  markModelHealth(providerId: string, modelId: string, status: ModelHealthState["status"], extra?: { retryAfter?: number; lastError?: string }): void {
+    this.firewall.markModelHealth(providerId, modelId, status, extra);
+  }
+
   listHostedModels(): Array<{
     providerId: string;
     modelId: string;

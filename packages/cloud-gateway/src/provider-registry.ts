@@ -13,6 +13,8 @@ import {
   createProviderAdapterFromDefinition,
   type ProviderAdapter,
   type CredentialStore,
+  type ProviderResponseObservation,
+  type ProviderResponseObserver,
 } from "@codeforge/providers";
 import type { CloudFirewallManager } from "./cloud-firewall.js";
 
@@ -116,8 +118,13 @@ export interface CloudProviderRegistryOptions {
   /** Optional shared normalized registry (verification-evidence overlays). */
   registry?: NormalizedModelRegistry;
   now?: () => Date;
-  /** Test seam: build an adapter for a providerId. Defaults to createProviderAdapterById(store). */
-  adapterFactory?: (providerId: string) => ProviderAdapter | undefined;
+  /** Test seam: build an adapter for a providerId. The composed observer is handed in so the
+   *  invariant "every production request updates authoritative health" holds for custom
+   *  factories too — attach it or the adapter stays unobserved (test-only choice). */
+  adapterFactory?: (providerId: string, ctx: { onResponse: ProviderResponseObserver }) => ProviderAdapter | undefined;
+  /** Additional response sink (e.g. a future hosted FreeCloudService quota feed). The
+   *  firewallManager health bridge below is always composed in — never optional here. */
+  onResponse?: ProviderResponseObserver;
   /** Minimum ms between successful full refreshes (default 5 minutes). */
   refreshTtlMs?: number;
   /** Per-probe/list network timeout hint passed to adapters (default 30s). */
@@ -141,9 +148,11 @@ export class CloudProviderRegistry {
   private readonly providerIds: string[];
   private readonly registry: NormalizedModelRegistry;
   private readonly now: () => Date;
-  private readonly adapterFactory: (providerId: string) => ProviderAdapter | undefined;
+  private readonly adapterFactory: (providerId: string, ctx: { onResponse: ProviderResponseObserver }) => ProviderAdapter | undefined;
   private readonly refreshTtlMs: number;
   private readonly timeoutMs: number;
+  /** Every adapter this registry builds reports responses into this observer. */
+  private readonly onResponse: ProviderResponseObserver;
 
   private reports = new Map<string, ProviderCapacityReport>();
   private lastFullRefreshAt = 0;
@@ -157,17 +166,65 @@ export class CloudProviderRegistry {
     this.now = options.now ?? (() => new Date());
     this.refreshTtlMs = options.refreshTtlMs ?? DEFAULT_REFRESH_TTL_MS;
     this.timeoutMs = options.timeoutMs ?? 30_000;
+    // R47 §11/§12: provider response observation is NOT optional in this host — the gateway's
+    // authoritative capacity signal is firewallManager provider health, so every adapter built
+    // here pipes responses into it (auth failures are account-wide; 429s cool the provider for
+    // the upstream-declared window) before reaching any host-supplied sink.
+    const healthBridge: ProviderResponseObserver = (obs) => this.observeProviderResponse(obs);
+    this.onResponse = options.onResponse
+      ? (obs) => {
+          healthBridge(obs);
+          try {
+            options.onResponse!(obs);
+          } catch {
+            // A host sink must never break the authoritative health update or the request.
+          }
+        }
+      : healthBridge;
     this.adapterFactory =
       options.adapterFactory ??
-      ((providerId: string) => {
+      ((providerId: string, ctx: { onResponse: ProviderResponseObserver }) => {
         // R1: every implemented provider definition (Cerebras, SambaNova, Mistral, …) gets a real
         // adapter; the legacy id switch remains the fallback for the original set.
         const def = PROVIDER_DEFINITIONS[providerId];
         const fromDefinition = def?.implemented
-          ? createProviderAdapterFromDefinition(def, { credentialStore: this.credentialStore, timeoutMs: this.timeoutMs })
+          ? createProviderAdapterFromDefinition(def, { credentialStore: this.credentialStore, timeoutMs: this.timeoutMs, onResponse: ctx.onResponse })
           : undefined;
-        return fromDefinition ?? createProviderAdapterById(providerId, { credentialStore: this.credentialStore, timeoutMs: this.timeoutMs });
+        return fromDefinition ?? createProviderAdapterById(providerId, { credentialStore: this.credentialStore, timeoutMs: this.timeoutMs, onResponse: ctx.onResponse });
       });
+  }
+
+  /**
+   * Bridge adapter response observations into the gateway's authoritative health plane. Only
+   * account-meaningful states are marked: auth failures (the key is dead for every model) and
+   * rate limits (the shared quota domain). A single 5xx is transient request noise — discovery
+   * marks provider-down; per-request 5xx must not flap health.
+   */
+  private observeProviderResponse(obs: ProviderResponseObservation): void {
+    if (obs.status === 401 || obs.status === 403) {
+      // Auth failure is account-wide: the credential is dead for every model on it.
+      this.firewallManager.markProviderHealth(obs.providerId, "auth_required", { lastError: `http_${obs.status}` });
+      return;
+    }
+    if (obs.status === 429) {
+      const retryAfterHeader = obs.headers.find(([k]) => k === "retry-after")?.[1];
+      const parsed = retryAfterHeader ? Number(retryAfterHeader) : NaN;
+      const retryAfterMs = Number.isFinite(parsed) ? Math.min(Math.max(parsed, 1), 86_400) * 1000 : 60_000;
+      // Rate limits are per-model quota windows on most providers — mark the observed model and
+      // leave siblings eligible; fall back to provider-wide only when the adapter couldn't name
+      // the model (the only honest scope left).
+      if (obs.modelId) {
+        this.firewallManager.markModelHealth(obs.providerId, obs.modelId, "rate_limited", {
+          lastError: "http_429",
+          retryAfter: Date.now() + retryAfterMs,
+        });
+      } else {
+        this.firewallManager.markProviderHealth(obs.providerId, "rate_limited", {
+          lastError: "http_429",
+          retryAfter: Date.now() + retryAfterMs,
+        });
+      }
+    }
   }
 
   /** Provider capacity reports from the most recent discovery, newest snapshot per provider. */
@@ -246,7 +303,7 @@ export class CloudProviderRegistry {
       return { ...base, status: "misconfigured", error: "Missing Cloudflare account id" };
     }
 
-    const adapter = this.adapterFactory(providerId);
+    const adapter = this.adapterFactory(providerId, { onResponse: this.onResponse });
     if (!adapter) {
       return { ...base, status: "misconfigured", error: "No adapter available for provider" };
     }
