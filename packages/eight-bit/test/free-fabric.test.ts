@@ -771,3 +771,101 @@ describe("FreeFabric — R38 catalog churn and route re-entry", () => {
     expect(reentered.selected?.routeId).toBe("churned");
   });
 });
+
+describe("R48 — per-role verdict floor inside fabric admission", () => {
+  it("routeAdmission excludes a route measured-failed for THIS role even when its coarse product role qualifies", () => {
+    const c = clock();
+    // SUBAGENT covers TOOL_AGENT and EXPLORER alike in the supply plan — a route that
+    // qualified TOOL_AGENT but measured-failed EXPLORER must not admit for an EXPLORER turn.
+    const failedExplorer = managedRoute("failed-explorer", { roles: ["SUBAGENT"], qualityScore: 95 });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [failedExplorer],
+      managedPools: () => [poolFor(failedExplorer)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decide = () => fabric.decide({
+      requestId: "r1", userId: "alice", role: "SUBAGENT",
+      routeAdmission: (providerId, modelId) => !(providerId === failedExplorer.providerId && modelId === failedExplorer.modelId),
+    });
+    const denied = decide();
+    expect(denied.outcome).toBe("DENIED_NO_SUPPLY");
+    // A role-disqualified fleet fails closed — it must never read as a capacity wait.
+    expect(denied.explanation.reasonCodes).toContain("NO_ROLE_QUALIFIED_ROUTE");
+    const report = denied.explanation.candidates.find((r) => r.routeId === "failed-explorer");
+    expect(report?.status).toBe("ROLE_INELIGIBLE");
+    expect(report?.reasonCodes).toContain("ROLE_VERDICT_EXCLUDED");
+  });
+
+  it("admission narrows to the surviving candidate — the measured-failed sibling cannot win the reservation", () => {
+    const c = clock();
+    const toolQualified = managedRoute("tool-qualified", { roles: ["SUBAGENT"], qualityScore: 95 });
+    const explorerQualified = managedRoute("explorer-qualified", { providerId: "managed-b", gateway: "managed-b", roles: ["SUBAGENT"], qualityScore: 40 });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [toolQualified, explorerQualified],
+      managedPools: () => [poolFor(toolQualified), poolFor(explorerQualified)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({
+      requestId: "r1", userId: "alice", role: "SUBAGENT",
+      routeAdmission: (providerId) => providerId !== "managed-a",
+    });
+    expect(decision.outcome).toBe("ADMITTED");
+    expect(decision.selected?.routeId).toBe("explorer-qualified");
+    const report = decision.explanation.candidates.find((r) => r.routeId === "tool-qualified");
+    expect(report?.status).toBe("ROLE_INELIGIBLE");
+    expect(report?.reasonCodes).toContain("ROLE_VERDICT_EXCLUDED");
+  });
+
+  it("an unmeasured route never outranks a measured-QUALIFIED peer for the same role on score alone", () => {
+    const c = clock();
+    const measuredQualified = managedRoute("measured-qualified", { roles: ["SUBAGENT"], qualityScore: 40 });
+    const untested = managedRoute("untested", { providerId: "managed-b", gateway: "managed-b", roles: ["SUBAGENT"], qualityScore: 95 });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [untested, measuredQualified],
+      managedPools: () => [poolFor(untested), poolFor(measuredQualified)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({
+      requestId: "r1", userId: "alice", role: "SUBAGENT",
+      roleQualificationTierFor: (_providerId, modelId) => modelId === "measured-qualified-model" ? "QUALIFIED" : "NOT_TESTED",
+    });
+    expect(decision.outcome).toBe("ADMITTED");
+    expect(decision.selected?.routeId).toBe("measured-qualified");
+  });
+
+  it("measured PROBATION outranks unmeasured supply when the tier callback is present", () => {
+    const c = clock();
+    const probation = managedRoute("probation", { roles: ["SUBAGENT"], qualityScore: 40 });
+    const untested = managedRoute("untested", { providerId: "managed-b", gateway: "managed-b", roles: ["SUBAGENT"], qualityScore: 95 });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [untested, probation],
+      managedPools: () => [poolFor(untested), poolFor(probation)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({
+      requestId: "r1", userId: "alice", role: "SUBAGENT",
+      roleQualificationTierFor: (_providerId, modelId) => modelId === "probation-model" ? "PROBATION" : "NOT_TESTED",
+    });
+    expect(decision.outcome).toBe("ADMITTED");
+    expect(decision.selected?.routeId).toBe("probation");
+  });
+
+  it("an absent tier callback preserves the legacy coarse probation-fallback ordering", () => {
+    const c = clock();
+    const qualified = managedRoute("qualified", { roles: ["SUBAGENT"], qualityScore: 50 });
+    const probation = managedRoute("probation", { roles: [], fallbackRoles: ["SUBAGENT"], qualityScore: 95 });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [probation, qualified],
+      managedPools: () => [poolFor(probation), poolFor(qualified)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "SUBAGENT" });
+    expect(decision.outcome).toBe("ADMITTED");
+    expect(decision.selected?.routeId).toBe("qualified");
+  });
+});

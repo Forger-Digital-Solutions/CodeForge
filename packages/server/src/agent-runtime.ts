@@ -4385,6 +4385,11 @@ export class AgentRuntime {
       taskKind: "interactive_turn",
       demand: this.turnDemand(turnId),
       roleQualityAdjustment: this.roleQualityAdjustmentFor(role),
+      // R48: the fabric must enforce the same per-role verdict floor the bare router does —
+      // a route measured-failed for THIS role cannot admit on coarse SUBAGENT eligibility,
+      // and a measured-QUALIFIED peer must outrank one merely untested.
+      routeAdmission: this.roleRouteFilter(role),
+      roleQualificationTierFor: this.roleQualificationTierCallback(role),
     });
     let decision = decide(hint?.role ?? "CODER");
     if (decision && decision.outcome !== "ADMITTED" && hint?.role && hint.fallbackRole && hint.role !== hint.fallbackRole) {

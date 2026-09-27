@@ -166,3 +166,107 @@ describe("16-Bit sensitivity analysis (R38 Phase 12 — Gate K)", () => {
     expect(qwen.reasonCodes).toContain("UNMEASURED_EVIDENCE");
   });
 });
+
+describe("16-Bit qualification floor (R48)", () => {
+  it("all-failed role → no price winner; typed NO_QUALIFIED_ROLE_ROUTE", () => {
+    const ranking = rank16Bit({ role: "EXPLORER", inputTokens: 8_000, outputTokens: 1_500, requiresTools: true }, {
+      "deepseek-v4.1-flash": { roleStatus: "NOT_QUALIFIED" },
+      "glm-5.3-flash": { roleStatus: "NOT_QUALIFIED" },
+      "qwen3.8-flash": { roleStatus: "NOT_QUALIFIED" },
+      "gpt-5.6-luna": { roleStatus: "NOT_QUALIFIED" },
+    });
+    expect(ranking.selected).toBeUndefined();
+    expect(ranking.selectionStatus).toBe("NO_QUALIFIED_ROLE_ROUTE");
+    for (const c of ranking.candidates) expect(c.excluded).toBe("ROLE_NOT_QUALIFIED");
+  });
+
+  it("HARD_FAILURE is a measured exclusion, not a cheap candidate", () => {
+    const ranking = rank16Bit(task, {
+      "qwen3.8-flash": { roleStatus: "HARD_FAILURE", successRate: 0.99 },
+      "glm-5.3-flash": { roleStatus: "QUALIFIED", successRate: 0.7 },
+    });
+    expect(ranking.candidates.find((c) => c.canonicalModelId === "qwen3.8-flash")?.excluded).toBe("ROLE_HARD_FAILURE");
+    expect(ranking.selected).toBe("glm-5.3-flash");
+    expect(ranking.selectionStatus).toBe("SELECTED");
+  });
+
+  it("NOT_TESTED never price-outranks a measured QUALIFIED route", () => {
+    // qwen is the cheapest attempt — but with no role evidence it sits in the unmeasured tier.
+    const ranking = rank16Bit(task, {
+      "qwen3.8-flash": { roleStatus: "NOT_TESTED" },
+      "glm-5.3-flash": { roleStatus: "QUALIFIED", successRate: 0.6 },
+    });
+    expect(ranking.selected).toBe("glm-5.3-flash");
+    expect(ranking.candidates.find((c) => c.canonicalModelId === "qwen3.8-flash")?.reasonCodes).toContain("ROLE_UNMEASURED");
+  });
+
+  it("QUALIFIED always ranks above a cheaper PROBATION peer", () => {
+    const ranking = rank16Bit(task, {
+      "qwen3.8-flash": { roleStatus: "PROBATION", successRate: 0.95 },
+      "glm-5.3-flash": { roleStatus: "QUALIFIED", successRate: 0.7 },
+    });
+    expect(ranking.selected).toBe("glm-5.3-flash");
+    expect(ranking.candidates.find((c) => c.canonicalModelId === "qwen3.8-flash")?.reasonCodes).toContain("ROLE_PROBATION");
+  });
+
+  it("an unmeasured route is admissible when every measured route failed the role floor", () => {
+    const ranking = rank16Bit(task, {
+      "qwen3.8-flash": { roleStatus: "NOT_TESTED" },
+      "glm-5.3-flash": { roleStatus: "NOT_QUALIFIED" },
+      "gpt-5.6-luna": { roleStatus: "NOT_QUALIFIED" },
+      "deepseek-v4.1-flash": { roleStatus: "NOT_QUALIFIED" },
+    });
+    // qwen is the only admissible candidate left — honest "unmeasured" selection, labeled.
+    expect(ranking.selected).toBe("qwen3.8-flash");
+    expect(ranking.selectionStatus).toBe("SELECTED");
+    expect(ranking.candidates.find((c) => c.canonicalModelId === "qwen3.8-flash")?.reasonCodes).toContain("ROLE_UNMEASURED");
+  });
+
+  it("a price-unknown unmeasured route cannot be resurrected by the floor", () => {
+    const ranking = rank16Bit(task, {
+      "deepseek-v4.1-flash": { roleStatus: "NOT_TESTED" },
+      "glm-5.3-flash": { roleStatus: "NOT_QUALIFIED" },
+      "qwen3.8-flash": { roleStatus: "NOT_QUALIFIED" },
+      "gpt-5.6-luna": { roleStatus: "NOT_QUALIFIED" },
+    });
+    // deepseek lacks direct pricing — physical exclusion stands; qualification binds the rest.
+    expect(ranking.selected).toBeUndefined();
+    expect(ranking.selectionStatus).toBe("NO_QUALIFIED_ROLE_ROUTE");
+  });
+
+  it("STALE verdict reverts to unmeasured — never keeps expired trust, never quarantines forever", () => {
+    const ranking = rank16Bit(task, {
+      "qwen3.8-flash": { roleStatus: "STALE" },
+      "glm-5.3-flash": { roleStatus: "QUALIFIED" },
+    });
+    expect(ranking.selected).toBe("glm-5.3-flash");
+    expect(ranking.candidates.find((c) => c.canonicalModelId === "qwen3.8-flash")?.reasonCodes).toContain("ROLE_UNMEASURED");
+    expect(ranking.candidates.find((c) => c.canonicalModelId === "qwen3.8-flash")?.excluded).toBeUndefined();
+  });
+
+  it("no role evidence at all → legacy price ranking applies, verdict says so", () => {
+    const ranking = rank16Bit(task, { "glm-5.3-flash": { successRate: 0.9 }, "qwen3.8-flash": { successRate: 0.9 } });
+    expect(ranking.selected).toBe("qwen3.8-flash");
+    expect(ranking.selectionStatus).toBe("UNQUALIFIED_EVIDENCE_ABSENT");
+  });
+
+  it("physical exclusions still bind when role evidence exists (price/context outrank nothing)", () => {
+    const ranking = rank16Bit({ ...task, requiredContextTokens: 1_020_000 }, {
+      "gpt-5.6-luna": { roleStatus: "QUALIFIED" },
+    });
+    // Only luna fits the context; the three role-unmeasured flashes never reached the floor.
+    expect(ranking.selected).toBe("gpt-5.6-luna");
+    expect(ranking.selectionStatus).toBe("SELECTED");
+  });
+
+  it("every route excluded on both floors → NO_QUALIFIED_ROLE_ROUTE when qualification binds", () => {
+    const ranking = rank16Bit({ role: "EXPLORER", inputTokens: 8_000, outputTokens: 1_500 }, {
+      "deepseek-v4.1-flash": { roleStatus: "HARD_FAILURE" },
+      "glm-5.3-flash": { roleStatus: "NOT_QUALIFIED" },
+      "qwen3.8-flash": { roleStatus: "NOT_QUALIFIED" },
+      "gpt-5.6-luna": { roleStatus: "NOT_QUALIFIED" },
+    });
+    expect(ranking.selected).toBeUndefined();
+    expect(ranking.selectionStatus).toBe("NO_QUALIFIED_ROLE_ROUTE");
+  });
+});

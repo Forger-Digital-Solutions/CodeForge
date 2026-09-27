@@ -13,6 +13,21 @@ import { PAID_AUTO_MODELS, type PaidAutoCanonicalModelId, type PaidAutoModel } f
 
 /** Measured evidence for one canonical model in one role. All fields optional — absent
  *  evidence yields conservative defaults, never fabricated precision. */
+/**
+ * R48: the route's measured qualification verdict for the task's role — the admission floor.
+ * `QUALIFIED`/`PROBATION` are admissible evidence; `NOT_QUALIFIED`/`HARD_FAILURE` are measured
+ * exclusions; `NOT_TESTED`/`STALE` are *absent* evidence (admissible only below measured tiers —
+ * price must never let an unmeasured route outrank a measured-qualified one). Undefined means
+ * the caller supplied no qualification evidence at all — legacy callers keep the old behavior.
+ */
+export type SixteenBitRoleQualification =
+  | "QUALIFIED"
+  | "PROBATION"
+  | "NOT_QUALIFIED"
+  | "HARD_FAILURE"
+  | "NOT_TESTED"
+  | "STALE";
+
 export interface SixteenBitModelEvidence {
   /** Measured probability the model completes the role correctly on the first attempt (0-1). */
   successRate?: number;
@@ -30,6 +45,8 @@ export interface SixteenBitModelEvidence {
   roleFit?: number;
   /** Measured tool-call reliability 0-1 when the task requires tools. */
   toolReliability?: number;
+  /** R48: the measured qualification verdict for THIS role on this route. */
+  roleStatus?: SixteenBitRoleQualification;
 }
 
 export interface SixteenBitTaskProfile {
@@ -59,12 +76,24 @@ export interface SixteenBitCandidate {
   excluded?: string;
 }
 
+/**
+ * R48: the ranking's admission verdict. `SELECTED` — an admissible candidate exists under the
+ * role floor. `NO_QUALIFIED_ROLE_ROUTE` — every physically-admissible roster model is
+ * measured-failed for this role: the caller must surface the gap honestly, never silently pick
+ * a price winner. `NO_ADMISSIBLE_ROUTE` — the binding constraint is physical (context, tools,
+ * price), not qualification. `UNQUALIFIED_EVIDENCE_ABSENT` — a selection was made but no role
+ * verdicts were supplied at all, so price ranked without a floor (legacy callers only).
+ */
+export type SixteenBitSelectionStatus = "SELECTED" | "NO_QUALIFIED_ROLE_ROUTE" | "NO_ADMISSIBLE_ROUTE" | "UNQUALIFIED_EVIDENCE_ABSENT";
+
 export interface SixteenBitRanking {
   generatedAt: string;
   task: SixteenBitTaskProfile;
   candidates: SixteenBitCandidate[];
-  /** Lowest expected-cost non-excluded candidate; undefined when the roster cannot serve. */
+  /** Lowest expected-cost admissible candidate; undefined when the roster cannot serve. */
   selected?: PaidAutoCanonicalModelId;
+  /** Why `selected` is what it is — the typed production verdict. */
+  selectionStatus: SixteenBitSelectionStatus;
 }
 
 /** Evidence is keyed by canonicalModelId and optionally per-role. */
@@ -124,6 +153,15 @@ export function rank16Bit(
     if (task.requiresTools && !model.capabilities.toolCalling) {
       return { canonicalModelId: model.canonicalModelId, attemptCostUsd: 0, expectedAttempts: 0, expectedCostUsd: Infinity, successRate: 0, fullyMeasured: false, reasonCodes: [], excluded: "TOOL_UNSUPPORTED" };
     }
+    // R48 qualification floor: a measured failure for this role is a hard exclusion — price
+    // can never resurrect it. A stale verdict is not current evidence: it reverts to
+    // unmeasured (the NOT_TESTED tier) rather than keeping its old verdict.
+    if (ev?.roleStatus === "HARD_FAILURE") {
+      return { canonicalModelId: model.canonicalModelId, attemptCostUsd: 0, expectedAttempts: 0, expectedCostUsd: Infinity, successRate: 0, fullyMeasured: false, reasonCodes: [], excluded: "ROLE_HARD_FAILURE" };
+    }
+    if (ev?.roleStatus === "NOT_QUALIFIED") {
+      return { canonicalModelId: model.canonicalModelId, attemptCostUsd: 0, expectedAttempts: 0, expectedCostUsd: Infinity, successRate: 0, fullyMeasured: false, reasonCodes: [], excluded: "ROLE_NOT_QUALIFIED" };
+    }
 
     const attempt = attemptCostUsd(model, task, priceOverride);
     if (attempt === undefined) {
@@ -156,11 +194,27 @@ export function rank16Bit(
     const expectedCost = attempt + failedAttempts * failedAttemptCost + verificationCost + escalationProbability * escalationCost;
     if (!fullyMeasured) reasonCodes.push("UNMEASURED_EVIDENCE");
     if (ev?.roleFit !== undefined) reasonCodes.push("ROLE_FIT_MEASURED");
+    if (ev?.roleStatus === "NOT_TESTED" || ev?.roleStatus === "STALE") reasonCodes.push("ROLE_UNMEASURED");
+    if (ev?.roleStatus === "PROBATION") reasonCodes.push("ROLE_PROBATION");
     return { canonicalModelId: model.canonicalModelId, attemptCostUsd: attempt, expectedAttempts, expectedCostUsd: expectedCost, successRate, fullyMeasured, reasonCodes };
   });
 
+  /** R48 admission tier: QUALIFIED/PROBATION are measured-admissible; NOT_TESTED/STALE/absent
+   *  evidence is admissible only below them — an unmeasured route must never price-outrank a
+   *  measured-qualified one. Legacy callers (no roleStatus anywhere) keep flat cost ranking. */
+  const anyRoleEvidence = PAID_AUTO_MODELS.some((m) => evidence[m.canonicalModelId]?.roleStatus !== undefined);
+  const admissibilityTier = (c: SixteenBitCandidate): number => {
+    const status = evidence[c.canonicalModelId]?.roleStatus;
+    if (!anyRoleEvidence || status === undefined) return 0;
+    if (status === "QUALIFIED") return 0;
+    if (status === "PROBATION") return 1;
+    return 2; // NOT_TESTED / STALE — unmeasured evidence
+  };
+
   const runnable = candidates.filter((c) => c.excluded === undefined);
   runnable.sort((a, b) => {
+    const tierOrder = admissibilityTier(a) - admissibilityTier(b);
+    if (tierOrder !== 0) return tierOrder;
     const costOrder = a.expectedCostUsd - b.expectedCostUsd;
     if (costOrder !== 0) return costOrder;
     // Cost tie: measured evidence beats defaults, then role fit, then a stable id order.
@@ -170,5 +224,15 @@ export function rank16Bit(
   });
   runnable[0]?.reasonCodes.push("CHEAPER_EXPECTED_COMPLETION");
   const ranked = [...runnable, ...candidates.filter((c) => c.excluded !== undefined)];
-  return { generatedAt: new Date(now()).toISOString(), task, candidates: ranked, selected: runnable[0]?.canonicalModelId };
+  const selected = runnable[0]?.canonicalModelId;
+  // The verdict names the binding constraint honestly: when role evidence exists and every
+  // candidate that survived the physical checks was rejected by the qualification floor, the
+  // failure is qualification — not capacity or price.
+  const physicallyAdmissible = candidates.filter((c) => c.excluded === undefined || c.excluded.startsWith("ROLE_"));
+  const selectionStatus: SixteenBitSelectionStatus = selected !== undefined
+    ? (anyRoleEvidence ? "SELECTED" : "UNQUALIFIED_EVIDENCE_ABSENT")
+    : anyRoleEvidence && physicallyAdmissible.length > 0 && physicallyAdmissible.every((c) => c.excluded !== undefined)
+      ? "NO_QUALIFIED_ROLE_ROUTE"
+      : "NO_ADMISSIBLE_ROUTE";
+  return { generatedAt: new Date(now()).toISOString(), task, candidates: ranked, selected, selectionStatus };
 }

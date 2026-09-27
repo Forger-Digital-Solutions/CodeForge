@@ -149,6 +149,12 @@ export class EightBitRuntime {
     /** R41: advisory per-role quality evidence forwarded into the fabric's effective
      *  score (see FabricRequest.roleQualityAdjustment). */
     roleQualityAdjustment?: FabricRequest["roleQualityAdjustment"];
+    /** R48: the per-role admission floor the bare-router path already enforces — a route
+     *  measured-failed for THIS role must not admit on its coarse product role alone. */
+    routeAdmission?: FabricRequest["routeAdmission"];
+    /** R48: the measured per-role qualification tier, forwarded so fabric ordering keeps
+     *  QUALIFIED > PROBATION > NOT_TESTED instead of only the coarse plan fallback tier. */
+    roleQualificationTierFor?: FabricRequest["roleQualificationTierFor"];
     isNewUser?: boolean;
     leaseMs?: number;
   }): FabricRouteDecision | undefined {
@@ -167,6 +173,8 @@ export class EightBitRuntime {
       ...(req.taskKind ? { taskKind: req.taskKind } : {}),
       ...(req.demand ? { demand: req.demand } : {}),
       ...(req.roleQualityAdjustment ? { roleQualityAdjustment: req.roleQualityAdjustment } : {}),
+      ...(req.routeAdmission ? { routeAdmission: req.routeAdmission } : {}),
+      ...(req.roleQualificationTierFor ? { roleQualificationTierFor: req.roleQualificationTierFor } : {}),
       isNewUser: req.isNewUser ?? ctx?.isNewUser ?? false,
       ...(req.leaseMs ?? ctx?.leaseMs ? { leaseMs: req.leaseMs ?? ctx?.leaseMs } : {}),
       ...(ctx?.dataContext ? { dataContext: ctx.dataContext } : {}),
@@ -305,6 +313,8 @@ export class EightBitRuntime {
         ? { requests: 1, estimatedPromptTokens: options.estimatedPromptTokens, outputTokens: options.outputTokenDemand ?? 2_048, outputTokensFor: options.outputTokenDemandFor }
         : { requests: 1, inputTokens: Math.min(options.estimatedContextTokens ?? 16_000, 16_000), outputTokensFor: options.outputTokenDemandFor },
       roleQualityAdjustment: options.roleQualityAdjustment,
+      routeAdmission: options.routeFilter,
+      roleQualificationTierFor: options.roleQualificationTierFor,
     });
     if (!decision) return this.router.selectRoute({ ...options, scope });
 
@@ -383,6 +393,10 @@ export class EightBitRuntime {
               ? { requests: 1, estimatedPromptTokens: req.estimatedPromptTokens, outputTokens: req.outputTokenDemand ?? 2_048, outputTokensFor: req.outputTokenDemandFor }
               : { requests: 1, inputTokens: Math.min(req.estimatedContextTokens ?? 16_000, 16_000), outputTokensFor: req.outputTokenDemandFor },
             roleQualityAdjustment: req.roleQualityAdjustment,
+            // R48: the re-decide must honor the same per-role floor the original admission
+            // did — failover cannot route a role onto a route that role measured-failed.
+            routeAdmission: req.routeFilter,
+            roleQualificationTierFor: req.roleQualificationTierFor,
           });
           lastFabricDecision = decision;
           if (decision?.outcome !== "ADMITTED" || !decision.selected) return undefined;

@@ -15,6 +15,7 @@ import {
   type RouteLedgerEntry,
 } from "./route-ledger.js";
 import type { EightBitRouteHealthAuthority, RouteHealthCondition } from "./route-health-authority.js";
+import type { RoleQualificationTier } from "./role-quality.js";
 import type { EightBitRole } from "./types.js";
 
 /**
@@ -92,6 +93,22 @@ export interface FabricRequest {
    * can never create eligibility, cross a domain boundary, or override health exclusion.
    */
   roleQualityAdjustment?: (providerId: string, modelId: string) => { scoreAdjustment: number; reasonCodes: string[] };
+  /**
+   * R48: the fine per-role admission predicate the router path already enforces
+   * (`SelectRouteOptions.routeFilter` — e.g. a measured NOT_QUALIFIED verdict for THIS role).
+   * The supply plan's `roleSuitability` is coarse — SUBAGENT covers both TOOL_AGENT and
+   * EXPLORER work — so a route that measured-failed the requested role but qualified for its
+   * sibling must not admit merely on the coarse product role. Returning false excludes the
+   * candidate for this request; it can never create eligibility the plan did not grant.
+   */
+  routeAdmission?: (providerId: string, modelId: string) => boolean;
+  /**
+   * R48: the candidate's measured qualification tier for the requested role (QUALIFIED /
+   * PROBATION / NOT_TESTED), evaluated inside the sort after the supply-plan's coarse
+   * qualified-vs-probation tier — a route with no measured verdict for this role must not
+   * outrank one measured QUALIFIED for it merely on coarse SUBAGENT eligibility.
+   */
+  roleQualificationTierFor?: (providerId: string, modelId: string) => RoleQualificationTier;
 }
 
 export type FabricCandidateStatus =
@@ -319,8 +336,16 @@ export class FreeFabric {
     // Mission A health: hard exclusions remove candidates; strong penalties demote a route
     // behind the next supply domain (saturated shared supply yields to a healthy user pool).
     const healthRole = request.healthRole ?? this.opts.healthRoleFor?.(request.role) ?? FABRIC_HEALTH_ROLE[request.role];
-    const ranked: Array<{ entry: RouteLedgerEntry; healthState?: RouteHealthCondition; scoreAdjustment: number; fitPenalty: number; roleReasons: string[]; effectiveScore: number; domainRank: number; roleFallback: boolean }> = [];
+    const ranked: Array<{ entry: RouteLedgerEntry; healthState?: RouteHealthCondition; scoreAdjustment: number; fitPenalty: number; roleReasons: string[]; effectiveScore: number; domainRank: number; roleFallback: boolean; qualificationTierRank: number }> = [];
     for (const entry of plan.routes) {
+      // R48: the fine per-role verdict floor. The plan's roleSuitability is coarse (SUBAGENT
+      // covers TOOL_AGENT and EXPLORER alike); a route measured-failed for THIS role must not
+      // admit on its sibling's qualification. This narrows eligibility only — it can never
+      // admit a route the supply plan excluded.
+      if (request.routeAdmission && !request.routeAdmission(entry.providerId, entry.modelId)) {
+        reports.set(entry.routeId, this.reportFor(entry, "ROLE_INELIGIBLE", ["ROLE_VERDICT_EXCLUDED"], undefined));
+        continue;
+      }
       const assess = this.opts.health?.assess(entry.providerId, entry.modelId, { role: healthRole });
       const adjustment = assess?.scoreAdjustment ?? 0;
       if (assess?.hardExclude) {
@@ -341,6 +366,15 @@ export class FreeFabric {
       // Probation-tier admission: the route reached the plan via fallbackRoles, not full
       // qualification — demote it within the domain so a qualified peer always wins first.
       const roleFallback = !entry.roleSuitability.includes(request.role);
+      // R48: the measured per-role verdict tier refines the coarse plan tier — a route with
+      // no measured verdict for this role (NOT_TESTED) must not outrank one measured
+      // QUALIFIED for it on coarse eligibility alone. When no tier callback is supplied the
+      // coarse probation fallback keeps its legacy meaning.
+      const measuredTier = request.roleQualificationTierFor?.(entry.providerId, entry.modelId);
+      const qualificationTierRank = Math.max(
+        roleFallback ? 1 : 0,
+        measuredTier === undefined ? 0 : measuredTier === "QUALIFIED" ? 0 : measuredTier === "PROBATION" ? 1 : 2,
+      );
       // R41: measured per-role quality (persisted qualification receipts) separates peers
       // inside the same domain+tier — it lands in effectiveScore, which the sort only
       // reaches after independence, domain demotion, and the qualified/probation tier.
@@ -349,7 +383,7 @@ export class FreeFabric {
         entry, healthState: assess?.state, scoreAdjustment: adjustment, fitPenalty: fit,
         roleReasons: roleQuality?.reasonCodes ?? [],
         effectiveScore: entry.qualityScore + adjustment + fit + (roleQuality?.scoreAdjustment ?? 0),
-        domainRank, roleFallback,
+        domainRank, roleFallback, qualificationTierRank,
       });
     }
     ranked.sort((a, b) => {
@@ -357,9 +391,10 @@ export class FreeFabric {
       const independenceOrder = priorPool === undefined ? 0
         : Number(a.entry.capacityPoolId === priorPool) - Number(b.entry.capacityPoolId === priorPool);
       return independenceOrder || a.domainRank - b.domainRank
-        // R37 G/H: qualified tier strictly before probation fallback within a domain — a
-        // measured "close enough" route never outranks a fully qualified peer on score alone.
-        || Number(a.roleFallback) - Number(b.roleFallback)
+        // R37 G/H + R48: qualified tier strictly before probation, probation strictly before
+        // unmeasured — a measured "close enough" or untested route never outranks a fully
+        // qualified peer on score alone.
+        || a.qualificationTierRank - b.qualificationTierRank
         || b.effectiveScore - a.effectiveScore || a.entry.routeId.localeCompare(b.entry.routeId);
     });
 
@@ -445,10 +480,16 @@ export class FreeFabric {
 
     const healthBlockedOnly = !selected && ranked.length === 0
       && [...reports.values()].some((r) => r.status === "HEALTH_EXCLUDED");
+    // R48: verdict exclusion is permanent for this role — waiting cannot admit it, so it
+    // must never masquerade as a capacity wait. The outcome distinguishes it honestly.
+    const verdictExcluded = !selected && [...reports.values()].some((r) => r.reasonCodes.includes("ROLE_VERDICT_EXCLUDED"));
 
+    // QUEUED requires admissible supply that is merely busy right now — a denied reservation
+    // (`queued`), the user's own concurrency cap, or floor-passing routes parked on health.
+    // Coarse `plan.hasSupply` alone cannot queue: a role-disqualified fleet waits forever.
     const outcome: FabricOutcome = selected
       ? "ADMITTED"
-      : plan.hasSupply || queued !== undefined || concurrencyLimited || healthBlockedOnly
+      : queued !== undefined || concurrencyLimited || healthBlockedOnly
         ? "QUEUED_FOR_CAPACITY"
         : "DENIED_NO_SUPPLY";
 
@@ -476,7 +517,8 @@ export class FreeFabric {
         summary,
         reasonCodes: selected
           ? (reports.get(selected.routeId)?.reasonCodes ?? [])
-          : queued?.reasonCodes ?? (healthBlockedOnly ? ["ALL_ELIGIBLE_ROUTES_UNHEALTHY"] : ["NO_ELIGIBLE_ROUTE"]),
+          : queued?.reasonCodes ?? (healthBlockedOnly ? ["ALL_ELIGIBLE_ROUTES_UNHEALTHY"]
+            : verdictExcluded ? ["NO_ROLE_QUALIFIED_ROUTE", "NO_ELIGIBLE_ROUTE"] : ["NO_ELIGIBLE_ROUTE"]),
         domainOrder: FORGEAUTO_DOMAIN_ORDER,
         isolationViolations: ledger.summary.isolationViolations,
         candidates: [...reports.values()],
