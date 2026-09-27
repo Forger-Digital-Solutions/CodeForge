@@ -101,7 +101,7 @@ import { createModelExecutionAdapter, convertToProviderTools, normalizeProviderE
 import { roleOutputBudget, type ReasoningRouteProfile } from "./role-output-budget.js";
 import { ForgeGreenRunPolicy, type ForgeGreenPolicySnapshot } from "./forgegreen-run-policy.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
-import { PAID_AUTO_AUTO_MODEL_ID, PAID_AUTO_PROVIDER_ID, PaidAutoExecutionError, type PaidAutoService } from "@codeforge/paid-auto";
+import { PAID_AUTO_AUTO_MODEL_ID, PAID_AUTO_PROVIDER_ID, type PaidAutoService } from "@codeforge/paid-auto";
 import { tryConsumeInferenceRequest, type InferenceLane, type WorkflowInferenceBudget } from "./inference-budget.js";
 
 export interface AgentRuntimeRequest {
@@ -2024,8 +2024,10 @@ export class AgentRuntime {
               const next = reselection.selected;
               if (!next) throw err;
               if (next.canonicalModelId === failing.modelId) {
-                const paidErr = err instanceof PaidAutoExecutionError ? err : undefined;
-                if (paidErr?.retryable !== true || sameRouteRetries >= PINNED_ROUTE_MAX_SAME_ROUTE_RETRIES) throw err;
+                // The execution adapter flattens thrown provider errors into error events —
+                // the surviving signal is `retryable` on whatever error object arrived.
+                const retryable = (err as { retryable?: unknown }).retryable === true;
+                if (!retryable || sameRouteRetries >= PINNED_ROUTE_MAX_SAME_ROUTE_RETRIES) throw err;
                 sameRouteRetries++;
                 forgeGreenR0Telemetry.recordRetry(normalized.code);
                 continue;

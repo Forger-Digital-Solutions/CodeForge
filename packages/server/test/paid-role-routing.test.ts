@@ -36,7 +36,7 @@ class ScriptedPaidUpstream implements ProviderAdapter {
 
   constructor(
     readonly providerId: string,
-    private readonly behavior: "serve" | "rate_limit" = "serve",
+    private readonly behavior: "serve" | "rate_limit" | "flaky" = "serve",
   ) {}
 
   async listModels(): Promise<ProviderModel[]> {
@@ -57,6 +57,12 @@ class ScriptedPaidUpstream implements ProviderAdapter {
     this.requests++;
     if (this.behavior === "rate_limit") {
       yield { type: "error", code: "RATE_LIMITED", message: "429 rate limit exceeded", retryable: true };
+      return;
+    }
+    if (this.behavior === "flaky" && this.requests === 1) {
+      // Retryable timeout — classified ambiguous_execution, so no circuit opens; the
+      // runtime's bounded same-route retry is what must absorb it.
+      yield { type: "error", code: "TIMEOUT", message: "request timed out", retryable: true };
       return;
     }
     yield { type: "text_delta", delta: "Task completed." };
@@ -227,6 +233,82 @@ describe("R48 C2 — paid per-role routing in executeAgentRun", () => {
     expect(result.summary).toContain("PROVIDER_UNAVAILABLE");
     expect(result.summary).toContain("no_qualified_role_route");
     expect(alibaba.requests).toBe(0);
+  });
+
+  it("probation fallback — a PROBATION route serves only after the QUALIFIED route dies", async () => {
+    // glm is QUALIFIED (outranks probation regardless of price); qwen is PROBATION.
+    const zai = new ScriptedPaidUpstream("zai", "rate_limit");
+    const openrouter = new ScriptedPaidUpstream("openrouter", "rate_limit");
+    const alibaba = new ScriptedPaidUpstream("alibaba");
+    const paidAuto = paidService(
+      [verdict("glm-5.3-flash", "CODER", "QUALIFIED"), verdict("qwen3.8-flash", "CODER", "PROBATION")],
+      { zai, openrouter, alibaba },
+    );
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-paid-role", eventStore, persistence });
+
+    const result = await runtime(paidAuto).executeAgentRun({
+      runId: "run-paid-role-5",
+      agentId: "agent-paid-5",
+      workspacePath: ws,
+      adapter,
+      ...ROLE_RUN,
+    });
+
+    expect(result.status).toBe("completed");
+    expect(zai.requests).toBeGreaterThan(0);
+    expect(alibaba.requests).toBeGreaterThan(0);
+    const failover = eventStore.getAll().find((event) => event.type === "router.failover");
+    expect(failover?.payload).toMatchObject({
+      fromModelId: `${PAID_AUTO_PROVIDER_ID}/glm-5.3-flash`,
+      toModelId: `${PAID_AUTO_PROVIDER_ID}/qwen3.8-flash`,
+    });
+  });
+
+  it("bounded same-route retry — a retryable non-circuit failure retries the same canonical once", async () => {
+    const alibaba = new ScriptedPaidUpstream("alibaba", "flaky");
+    const zai = new ScriptedPaidUpstream("zai");
+    const paidAuto = paidService(
+      [verdict("qwen3.8-flash", "CODER", "QUALIFIED"), verdict("glm-5.3-flash", "CODER", "QUALIFIED")],
+      { alibaba, zai },
+    );
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-paid-role", eventStore, persistence });
+
+    const result = await runtime(paidAuto).executeAgentRun({
+      runId: "run-paid-role-6",
+      agentId: "agent-paid-6",
+      workspacePath: ws,
+      adapter,
+      ...ROLE_RUN,
+    });
+
+    expect(result.status).toBe("completed");
+    expect(alibaba.requests).toBe(2);
+    // A same-route retry is not a failover — the roster was never rotated.
+    expect(zai.requests).toBe(0);
+    expect(eventStore.getAll().some((event) => event.type === "router.failover")).toBe(false);
+  });
+
+  it("roster exhausted — every canonical dead fails the run; no free route is substituted", async () => {
+    const alibaba = new ScriptedPaidUpstream("alibaba", "rate_limit");
+    const zai = new ScriptedPaidUpstream("zai", "rate_limit");
+    const openrouter = new ScriptedPaidUpstream("openrouter", "rate_limit");
+    const paidAuto = paidService(
+      [verdict("qwen3.8-flash", "CODER", "QUALIFIED"), verdict("glm-5.3-flash", "CODER", "QUALIFIED")],
+      { alibaba, zai, openrouter },
+    );
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-paid-role", eventStore, persistence });
+
+    const result = await runtime(paidAuto).executeAgentRun({
+      runId: "run-paid-role-7",
+      agentId: "agent-paid-7",
+      workspacePath: ws,
+      adapter,
+      ...ROLE_RUN,
+    });
+
+    expect(result.status).toBe("failed");
+    expect(alibaba.requests).toBeGreaterThan(0);
+    expect(zai.requests).toBeGreaterThan(0);
   });
 
   it("paid-auto/auto without a Paid Auto service fails closed instead of guessing", async () => {

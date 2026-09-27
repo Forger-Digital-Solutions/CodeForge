@@ -293,6 +293,7 @@ export class ModelExecutionAdapter {
         type: "error",
         code: norm.code,
         message: norm.message,
+        ...(typeof (err as { retryable?: unknown }).retryable === "boolean" ? { retryable: (err as { retryable: boolean }).retryable } : {}),
         ...(typeof (err as { status?: unknown }).status === "number" ? { status: (err as { status: number }).status } : {}),
         ...(typeof (err as { retryAfter?: unknown }).retryAfter === "number" ? { retryAfter: (err as { retryAfter: number }).retryAfter } : {}),
       };
