@@ -29,11 +29,21 @@ $0.25 authorization:
 - Explorer denied with `NO_QUALIFIED_ROLE_ROUTE` before spend.
 - Coder completed via `qwen3.8-flash:openrouter`.
 - Reviewer completed via `glm-5.3-flash:openrouter`, a different physical pool.
+- The exact frozen implementation artifact passed ForgeVerify (1/1 focused
+  test); the completion gate returned `completed` with no blockers; integration
+  committed the same tree ForgeVerify authorized.
 - The durable ledger committed **$0.008722** (3.49% of cap), with 12 provider
   receipts and no outstanding reservation.
 - Requested canonical, physical route, provider model, provider-reported served
   model when available, execution certainty, role decision, and journal state
   are persisted in `R48-16BIT-ROLE-MISSION.json`.
+
+The first script version captured and then removed its temporary mission
+workspace before deterministic verification. Closure therefore reconstructed
+the exact frozen `mathFile` plus the script-defined test fixture and issued
+**zero additional provider calls**. `verificationSource` records this mode.
+The mission script now performs ForgeVerify, completion gating, and
+tree-identity-checked integration inline for future runs.
 
 ### E2 — 8-Bit: machinery proven; end-to-end completion supply-blocked
 

@@ -38,6 +38,12 @@ Proofs held live:
   `servedModelId: null` where the upstream did not report identity.
 - Reviewer output refused to overclaim: static-analysis pass with an explicit
   caveat that runtime test execution remained with ForgeVerify.
+- The exact frozen `mathFile` artifact was reconstructed without another model
+  call and passed ForgeVerify (`node --test test/math.test.mjs`, 1/1). The
+  authoritative completion gate returned `completed` with no blockers, then
+  integration committed the verified tree; `verifiedTree === integratedTree`.
+- `verificationSource.providerCallsIssued=0` proves the closure step reused the
+  paid mission artifact rather than spending again or re-deriving model output.
 
 ## E2 — Live free mission (8-Bit role routing through the real Free Fabric) — MACHINERY PROVEN, full-completion blocked on provider quota timing
 

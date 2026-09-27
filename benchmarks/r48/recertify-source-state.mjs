@@ -45,7 +45,7 @@ const entry = {
   resultingSourceStateId: sourceStateId,
   resultingSurfaceVersion: version,
   changes: changes.map((change) => ({ ...change, addedToMaterialFiles: false })),
-  regressionEvidence: "docs/evidence/r48-role-routing/R48-LIVE-EVIDENCE.md; server suite 876 pass / 2 pre-existing baseline failures; touched packages 596 pass; paid role-routing 9/9, role-routing 18/18, fabric 36/36; live E3 paid mission completed end-to-end at $0.0087 of $0.25 cap with independent reviewer pool",
+  regressionEvidence: "docs/evidence/r48-role-routing/R48-LIVE-EVIDENCE.md; server suite 876 pass / 2 pre-existing baseline failures; touched packages 596 pass; paid role-routing 9/9, role-routing 18/18, fabric 36/36; live E3 paid role mission spent $0.0087 of $0.25 with independent reviewer pool, then its frozen artifact passed ForgeVerify 1/1 and the completion gate with zero additional provider calls",
   recertifiedAt: new Date().toISOString().slice(0, 10),
   sourceStateConstant: "CODEFORGE_R48_ROLE_AWARE_RUNTIME_SOURCE_STATE",
 };

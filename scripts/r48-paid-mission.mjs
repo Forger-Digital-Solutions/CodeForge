@@ -7,6 +7,8 @@
 //      implementer's served route;
 //   C) honest denial for a role with no qualified route (Explorer — all four canonicals
 //      measured NOT_QUALIFIED in R47), with ZERO spend and no free-fleet substitution.
+//   D) ForgeVerify test evidence, authoritative completion gating, and integration whose
+//      committed tree is byte-identical to the tree verified before the gate.
 //
 //   CODEFORGE_16BIT_CAMPAIGN=1 node scripts/r48-paid-mission.mjs [--cap 0.25] [--keep]
 //
@@ -27,6 +29,11 @@ import {
 } from "../packages/paid-auto/dist/index.js";
 import { createAgentRuntime } from "../packages/server/dist/agent-runtime.js";
 import { createWorkspaceEventAdapter } from "../packages/server/dist/workspace-event-adapter.js";
+import {
+  createVerificationInputStateHash,
+  evaluateCompletion,
+  runVerification,
+} from "../packages/workflow/dist/index.js";
 
 const args = process.argv.slice(2);
 const opt = (name, fallback) => {
@@ -159,9 +166,109 @@ console.log(`[r48-paid] coder: ${coder.status} pool=${coder.routePoolId ?? "-"}`
 // Phase B — reviewer must prefer a physically different paid route from the implementer's.
 let reviewer = null;
 if (coder.status === "completed" && coder.routePoolId) {
-  reviewer = await run("r48-reviewer", "reviewer", "Review math.mjs: verify multiply is correct and has no regressions. Report PASS or FAIL with reasons.", { preferIndependentFromPoolId: coder.routePoolId });
+  reviewer = await run("r48-reviewer", "reviewer", "Review math.mjs: verify multiply is correct and has no regressions. End with exactly `REVIEW_VERDICT: PASS` or `REVIEW_VERDICT: FAIL`.", {
+    permissions: { read: true, search: true, write: false, executeCommand: false, network: false },
+    preferIndependentFromPoolId: coder.routePoolId,
+  });
   phases.push({ phase: "reviewer-independence", role: "reviewer", status: reviewer.status, summary: reviewer.summary, routePoolId: reviewer.routePoolId ?? null, implementerPool: coder.routePoolId });
   console.log(`[r48-paid] reviewer: ${reviewer.status} pool=${reviewer.routePoolId ?? "-"} (implementer=${coder.routePoolId})`);
+}
+
+const diff = execFileSync("git", ["diff", "HEAD", "--", "math.mjs"], { cwd: repoDir, encoding: "utf8" });
+const numstat = execFileSync("git", ["diff", "--numstat", "HEAD", "--", "math.mjs"], { cwd: repoDir, encoding: "utf8" }).trim().split(/\s+/);
+const beforeHash = execFileSync("git", ["rev-parse", "HEAD:math.mjs"], { cwd: repoDir, encoding: "utf8" }).trim();
+const afterHash = execFileSync("git", ["hash-object", "math.mjs"], { cwd: repoDir, encoding: "utf8" }).trim();
+const reviewerPassed = reviewer?.status === "completed" && /REVIEW_VERDICT:\s*PASS/i.test(reviewer.summary);
+const independentReviewer = Boolean(coder.routePoolId && reviewer?.routePoolId && coder.routePoolId !== reviewer.routePoolId);
+const reviewFindings = [];
+if (!reviewerPassed) {
+  reviewFindings.push({
+    code: reviewer?.status === "completed" ? "goal_not_satisfied" : "goal_review_inconclusive",
+    severity: "blocking",
+    path: "math.mjs",
+    message: reviewer?.status === "completed"
+      ? "The independent reviewer did not return REVIEW_VERDICT: PASS."
+      : "The independent reviewer did not complete.",
+  });
+}
+if (!independentReviewer) {
+  reviewFindings.push({
+    code: "goal_not_satisfied",
+    severity: "blocking",
+    path: "math.mjs",
+    message: "The reviewer did not serve from a physical route independent of the implementer.",
+  });
+}
+
+// Stage exactly the proposed implementation before ForgeVerify. The verification state hash
+// therefore covers the same index tree that integration will commit after the completion gate.
+if (diff) execFileSync("git", ["add", "--", "math.mjs"], { cwd: repoDir });
+const verification = await runVerification(repoDir, [{
+  id: "r48-math-test",
+  kind: "test",
+  command: "node --test test/math.test.mjs",
+  required: true,
+  source: "configured",
+}], {
+  runId: "r48-paid-completion",
+  executionRevision: 1,
+  changedPaths: ["math.mjs"],
+});
+const plan = {
+  id: "r48-paid-plan",
+  title: "Implement and verify multiply",
+  taskId: "r48-paid-mission",
+  status: "approved",
+  revision: 1,
+  createdAt: startedAt,
+  updatedAt: new Date().toISOString(),
+  steps: [
+    { id: "edit", description: "Implement multiply", status: coder.status === "completed" ? "completed" : "failed", kind: "edit", targetPath: "math.mjs", risk: "safe", requiresApproval: false },
+    { id: "review", description: "Independent review", status: reviewerPassed && independentReviewer ? "completed" : "failed", kind: "review", targetPath: "math.mjs", risk: "safe", requiresApproval: false },
+    { id: "verify", description: "Run focused test", status: verification.requiredPassed ? "completed" : "failed", kind: "verify", command: "node --test test/math.test.mjs", risk: "safe", requiresApproval: false },
+  ],
+};
+const analysis = {
+  hasFailures: verification.hasFailures,
+  summary: verification.summary,
+  diagnostics: verification.failures.map((failure) => failure.message),
+  suggestedRepairs: [],
+  isRepairable: false,
+};
+const review = {
+  approved: reviewFindings.length === 0,
+  issues: reviewFindings.map((finding) => finding.message),
+  findings: reviewFindings,
+  diffs: diff ? [{
+    path: "math.mjs",
+    changeType: "modified",
+    additions: Number(numstat[0] ?? 0),
+    deletions: Number(numstat[1] ?? 0),
+    diff,
+    beforeHash,
+    afterHash,
+  }] : [],
+  summary: reviewFindings.length === 0 ? "Independent reviewer passed on a distinct physical route." : "Independent review requirements were not satisfied.",
+};
+const completion = evaluateCompletion({
+  plan,
+  verification,
+  analysis,
+  review,
+  currentExecutionRevision: 1,
+  verifiedExecutionRevision: 1,
+  currentVerificationInputStateHash: createVerificationInputStateHash(repoDir),
+});
+console.log(`[r48-paid] verification=${verification.overallStatus} completion=${completion.outcome}`);
+
+let integration = { status: "retained", reason: completion.rationale };
+if (completion.outcome === "completed") {
+  const verifiedTree = execFileSync("git", ["write-tree"], { cwd: repoDir, encoding: "utf8" }).trim();
+  execFileSync("git", ["commit", "-m", "implement multiply"], { cwd: repoDir });
+  const revision = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoDir, encoding: "utf8" }).trim();
+  const integratedTree = execFileSync("git", ["rev-parse", "HEAD^{tree}"], { cwd: repoDir, encoding: "utf8" }).trim();
+  if (integratedTree !== verifiedTree) throw new Error("Integration changed the tree authorized by the completion gate.");
+  integration = { status: "committed", revision, verifiedTree, integratedTree };
 }
 
 const snapshot = await ledger.snapshot();
@@ -188,6 +295,24 @@ const evidence = {
   telemetry,
   routerEvents,
   journals,
+  verification: {
+    overallStatus: verification.overallStatus,
+    requiredPassed: verification.requiredPassed,
+    passed: verification.passed,
+    failed: verification.failed,
+    skipped: verification.skipped,
+    durationMs: verification.durationMs,
+    inputStateHash: verification.inputStateHash,
+    verifiers: verification.verifiers,
+    forgeVerify: {
+      planId: verification.forgeVerify?.plan.planId ?? null,
+      verificationComplete: verification.forgeVerify?.summary.verificationComplete ?? false,
+      evidenceIds: verification.forgeVerify?.evidence.map((item) => item.evidenceId) ?? [],
+    },
+  },
+  completion,
+  integration,
+  finalStatus: completion.outcome,
   mathFile: readFileSync(path.join(repoDir, "math.mjs"), "utf8"),
 };
 mkdirSync(EVIDENCE_DIR, { recursive: true });
@@ -203,5 +328,9 @@ if (explorer.status === "completed") {
 }
 if (coder.status === "completed" && coder.routePoolId && reviewer && reviewer.routePoolId === coder.routePoolId) {
   console.error("[r48-paid] WARNING: reviewer served on the implementer's route — independence preference did not hold");
+  process.exitCode = 1;
+}
+if (completion.outcome !== "completed" || integration.status !== "committed") {
+  console.error(`[r48-paid] completion gate refused success: ${completion.rationale}`);
   process.exitCode = 1;
 }

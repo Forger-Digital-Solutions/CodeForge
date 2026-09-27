@@ -41,6 +41,7 @@ campaign gate and durable ledger.
 | E3 paid Explorer denial | DONE (live) | no paid Explorer qualified; denied before provider/spend, no free substitution |
 | E3 paid Coder selection | DONE (live) | `qwen3.8-flash:openrouter`, cheapest qualified route, completed implementation |
 | E3 independent Reviewer | DONE (live) | `glm-5.3-flash:openrouter`, distinct from implementer, `INDEPENDENT_POOL_PREFERRED` |
+| E3 ForgeVerify + completion gate | DONE | frozen paid artifact verified 1/1 with zero additional provider calls; gate `completed`; integrated tree equals verified tree |
 | E3 durable spend/provenance | DONE (live) | $0.008722 committed, 12 receipts, route/canonical/served model/telemetry/journals persisted |
 
 ## Regression and certification

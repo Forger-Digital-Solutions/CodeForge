@@ -477,5 +477,63 @@
       }
     }
   ],
-  "mathFile": "export function multiply(a, b) { return a * b; }\n"
+  "mathFile": "export function multiply(a, b) { return a * b; }\n",
+  "finalizedAt": "2026-09-27T12:40:12.890Z",
+  "verificationSource": {
+    "mode": "reconstructed_from_frozen_mission_artifact",
+    "sourceGeneratedAt": "2026-09-27T04:59:18.840Z",
+    "providerCallsIssued": 0,
+    "artifact": "mathFile",
+    "testFixture": "scripts/r48-paid-mission.mjs"
+  },
+  "verification": {
+    "overallStatus": "passed",
+    "requiredPassed": true,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 1248,
+    "inputStateHash": "2e66559245142b3b715c2cdf07544da59bab86a986379b30a9a9a80d963c53d2",
+    "verifiers": [
+      {
+        "id": "r48-math-test",
+        "kind": "test",
+        "command": "node --test test/math.test.mjs",
+        "required": true,
+        "status": "passed",
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "durationMs": 1248,
+        "output": "✔ multiply (0.7791ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 83.3611\n",
+        "failures": [],
+        "timedOut": false,
+        "cancelled": false,
+        "testSignal": "counts",
+        "inputStateHash": "2e66559245142b3b715c2cdf07544da59bab86a986379b30a9a9a80d963c53d2",
+        "evidenceId": "53b7440b-b057-4bd5-b164-40a35f96bfb2"
+      }
+    ],
+    "forgeVerify": {
+      "planId": "6dc19fe9-da8a-4fcd-9a0b-fad52cb22d16",
+      "verificationComplete": true,
+      "evidenceIds": [
+        "53b7440b-b057-4bd5-b164-40a35f96bfb2"
+      ]
+    }
+  },
+  "completion": {
+    "outcome": "completed",
+    "blockers": [],
+    "advisories": [],
+    "rationale": "All required completion checks passed."
+  },
+  "integration": {
+    "status": "committed",
+    "revision": "85bfc8390cc1434188194d15c03b4292ae46623c",
+    "verifiedTree": "743b561b8b62e55741b2ea8ce2cf51c1511a7874",
+    "integratedTree": "743b561b8b62e55741b2ea8ce2cf51c1511a7874"
+  },
+  "finalStatus": "completed"
 }
