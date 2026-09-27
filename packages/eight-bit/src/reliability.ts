@@ -10,7 +10,11 @@ export type ToolCallOutcome =
   /** R47 §8: deterministic recovery accepted the payload — weaker than native-valid evidence
    *  (the model did not meet the contract) but not a failure. Counted in the window, and
    *  neither resets nor extends the quarantine streak. */
-  | "structured_output_repaired";
+  | "structured_output_repaired"
+  /** R50 §9: the model proposed crossing an authority boundary — workspace/path escape or a
+   *  permission-denied tool. Counts double toward the quarantine streak: it is a safety
+   *  signal, not a formatting slip. */
+  | "boundary_violation";
 
 /** Minimum attempts before a reliability score is trusted enough to gate eligibility. Below
  * this, the model is an explicit unknown and gets the benefit of the doubt (never auto-failed
@@ -29,7 +33,7 @@ interface RouteReliabilityState {
 }
 
 function emptySample(): ReliabilitySample {
-  return { attempts: 0, validCalls: 0, malformedCalls: 0, unknownToolCalls: 0, missingArgCalls: 0, schemaViolations: 0, structuredOutputFailures: 0 };
+  return { attempts: 0, validCalls: 0, malformedCalls: 0, unknownToolCalls: 0, missingArgCalls: 0, schemaViolations: 0, structuredOutputFailures: 0, boundaryViolations: 0 };
 }
 
 /**
@@ -53,7 +57,9 @@ export class EightBitReliabilityTracker {
       // quarantining on it alone would punish routes that the deterministic repair layer
       // handled correctly, while ignoring it entirely would hide systematic contract drift.
     } else {
-      state.consecutiveBad += 1;
+      // R50 §9: a boundary violation weighs two ordinary bad calls — a model that keeps
+      // proposing escapes quarantines after two attempts, not four.
+      state.consecutiveBad += outcome === "boundary_violation" ? 2 : 1;
       if (state.consecutiveBad >= QUARANTINE_STREAK) state.quarantined = true;
     }
     this.routes.set(key, state);
@@ -94,6 +100,12 @@ export class EightBitReliabilityTracker {
           break;
         case "structured_output_failure":
           sample.structuredOutputFailures++;
+          break;
+        case "boundary_violation":
+          // A boundary attempt is malformed for the score and separately counted — the
+          // distinction matters for evidence even though the gate treats both as bad.
+          sample.malformedCalls++;
+          sample.boundaryViolations++;
           break;
       }
     }

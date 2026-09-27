@@ -61,6 +61,6 @@ describe("EightBitReliabilityTracker", () => {
     tracker.record("p", "m2", "schema_violation");
     tracker.record("p", "m2", "structured_output_failure");
     const sample = tracker.sample("p", "m2");
-    expect(sample).toEqual({ attempts: 5, validCalls: 1, malformedCalls: 0, unknownToolCalls: 1, missingArgCalls: 1, schemaViolations: 1, structuredOutputFailures: 1 });
+    expect(sample).toEqual({ attempts: 5, validCalls: 1, malformedCalls: 0, unknownToolCalls: 1, missingArgCalls: 1, schemaViolations: 1, structuredOutputFailures: 1, boundaryViolations: 0 });
   });
 });

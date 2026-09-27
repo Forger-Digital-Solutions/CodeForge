@@ -180,6 +180,9 @@ export interface ReliabilitySample {
   missingArgCalls: number;
   schemaViolations: number;
   structuredOutputFailures: number;
+  /** R50 §9: boundary violations (path escape, denied permission) — counted inside
+   *  `malformedCalls` for the score, tracked separately because they weigh more. */
+  boundaryViolations: number;
 }
 
 export interface ReliabilityScore {

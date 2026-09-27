@@ -119,13 +119,46 @@ export type NormalizedObservation =
     })
   | (ObservationBase & { kind: "daily_allowance"; unit: "requests" | "tokens"; limit: number; remaining: number; resetAt: string })
   | (ObservationBase & { kind: "tool_outcome"; outcome: ToolCallOutcome })
-  | (ObservationBase & { kind: "role_outcome"; outcome: "verified_complete" | "verification_failed" | "role_failed" | "security_blocked" | "budget_exhausted" })
+  | (ObservationBase & { kind: "role_outcome"; outcome: RoleOutcomeKind; failureClass?: RoleFailureClass })
   | (ObservationBase & { kind: "catalog"; fact: "retired" | "not_found" | "access_restricted" | "billing_unverifiable" | "billing_verified" | "present" })
   | (ObservationBase & { kind: "entitlement"; fact: "connected" | "connection_required" | "auth_required" | "quota_exhausted" | "overage_blocked"; resetAt?: string })
   | (ObservationBase & { kind: "governor_pressure"; pacingWaitMs: number; inFlight: number; bucketRemainingTokens?: number })
   | (ObservationBase & { kind: "quarantine"; action: "set" | "clear"; reason: string });
 
 export type ObservationKind = NormalizedObservation["kind"];
+
+/**
+ * R50 §4: the role-level verdict vocabulary. Capacity/transport failures NEVER arrive here —
+ * they are `call_failure` with a `FailureReason`. `role_outcome` only carries what the served
+ * model itself did or failed to do for this role.
+ *
+ *   verified_complete    independent verification accepted the role's work (gate + integration)
+ *   converged            the role finished within budget (weaker than verified — no gate yet)
+ *   verification_failed  the work failed verification (ForgeVerify/tests rejected it)
+ *   role_failed          the run ended on a model-quality failure (unusable output, loop)
+ *   security_blocked     the role attempted a boundary violation (path escape, denied permission)
+ *   budget_exhausted     the role consumed its working budget without converging
+ */
+export type RoleOutcomeKind =
+  | "verified_complete"
+  | "converged"
+  | "verification_failed"
+  | "role_failed"
+  | "security_blocked"
+  | "budget_exhausted";
+
+/** R50 §4: why a role-level outcome happened — model/tool quality classes only, never supply. */
+export type RoleFailureClass =
+  | "NON_CONVERGENCE"
+  | "EMPTY_COMPLETION"
+  | "MALFORMED_STRUCTURED_OUTPUT"
+  | "REPETITION_LOOP"
+  | "INVALID_TOOL_CALL"
+  | "WORKSPACE_ESCAPE_ATTEMPT"
+  | "TOOL_PERMISSION_VIOLATION"
+  | "ROLE_BUDGET_EXHAUSTED"
+  | "VERIFIER_REJECTED_OUTPUT"
+  | "CAPABILITY_DROPPED";
 
 // --- Conditions and assessments ------------------------------------------------------------------
 
@@ -308,11 +341,31 @@ interface ToolSample {
   role?: EightBitRole;
 }
 
+/**
+ * R50 §6/§8: one graded per-role evidence sample. Weight is assigned at ingest from the
+ * outcome/failure class, then linearly decayed over the rolling window at read time — one
+ * unlucky run can never permanently blacklist a route, and later verified work restores it.
+ * `correlationId` keys the dedup set so replayed or double-emitted outcomes count once.
+ */
+export interface RoleOutcomeSample {
+  at: number;
+  role: EightBitRole;
+  outcome: RoleOutcomeKind;
+  failureClass?: RoleFailureClass;
+  weight: number;
+  correlationId?: string;
+}
+
 interface RouteState {
   providerId: string;
   modelId: string;
   calls: CallSample[];
   tools: ToolSample[];
+  /** R50: bounded per-role graded outcome evidence (windowMs + windowSize scoped). */
+  roleEvidence: RoleOutcomeSample[];
+  /** R50 §29: `${correlationId}|${role}|${outcome}|${failureClass}` keys already ingested —
+   *  a double-emitted or replayed outcome for the same run counts exactly once. */
+  roleEvidenceKeys: Set<string>;
   conditions: Map<RouteHealthCondition, RouteCondition>;
   consecutiveFailures: number;
   consecutiveAuthFailures: number;
@@ -337,6 +390,8 @@ export interface RouteHealthSnapshot {
   providerId: string;
   modelId: string;
   conditions: RouteCondition[];
+  /** R50 §27: durable per-role graded evidence (timestamps serialized ISO). */
+  roleEvidence?: Array<Omit<RoleOutcomeSample, "at"> & { at: string }>;
   window: RouteWindowStats;
   consecutiveFailures: number;
   consecutiveAuthFailures: number;
@@ -363,6 +418,47 @@ function clamp01(value: number): number {
 function isCapacityReason(reason: FailureReason): boolean {
   return reason === "TEMPORARY_CAPACITY" || reason === "PROVIDER_OUTAGE";
 }
+
+/**
+ * R50 §8: ingest-time weights for graded role evidence. Bounded and asymmetric — a boundary
+ * violation counts more than an ordinary failure, and recovery requires MORE than one success
+ * because positives are individually weaker than the failures they must outweigh.
+ */
+const ROLE_OUTCOME_WEIGHT: Readonly<Record<RoleOutcomeKind, number>> = {
+  verified_complete: 1,
+  converged: 0.5,
+  role_failed: -0.75,
+  verification_failed: -1,
+  budget_exhausted: -0.75,
+  security_blocked: -1.5,
+};
+
+/** R50 §9: severity multipliers inside the negative outcomes (clamped to [-2, +2] overall). */
+const ROLE_FAILURE_CLASS_FACTOR: Partial<Record<RoleFailureClass, number>> = {
+  WORKSPACE_ESCAPE_ATTEMPT: 1.5,
+  TOOL_PERMISSION_VIOLATION: 1.25,
+  REPETITION_LOOP: 1.25,
+  MALFORMED_STRUCTURED_OUTPUT: 1,
+  NON_CONVERGENCE: 1,
+  ROLE_BUDGET_EXHAUSTED: 1,
+  VERIFIER_REJECTED_OUTPUT: 1,
+  EMPTY_COMPLETION: 0.75,
+  INVALID_TOOL_CALL: 0.75,
+  CAPABILITY_DROPPED: 1,
+};
+
+function roleOutcomeWeight(outcome: RoleOutcomeKind, failureClass: RoleFailureClass | undefined): number {
+  const base = ROLE_OUTCOME_WEIGHT[outcome];
+  if (base <= 0 && failureClass !== undefined) {
+    return Math.max(-2, base * (ROLE_FAILURE_CLASS_FACTOR[failureClass] ?? 1));
+  }
+  return base;
+}
+
+/** R50: bounds for the graded per-role delta (subordinate to the ±12 receipt quality). */
+const MAX_ROLE_EVIDENCE_ADJUSTMENT = 16;
+const ROLE_EVIDENCE_SCALE = 6;
+const ROLE_EVIDENCE_FULL_CONFIDENCE_SAMPLES = 4;
 
 function isDailyQuotaMessage(message: string | undefined): boolean {
   return message !== undefined && /per[\s-]?day|daily|free-models-per-day|tokens per day|\btpd\b|\brpd\b|quota/i.test(message);
@@ -393,7 +489,7 @@ export class EightBitRouteHealthAuthority {
     const key = routeKeyOf(providerId, modelId);
     let state = this.routes.get(key);
     if (!state) {
-      state = { providerId, modelId, calls: [], tools: [], conditions: new Map(), consecutiveFailures: 0, consecutiveAuthFailures: 0, consecutiveMalformed: 0, quota: {} };
+      state = { providerId, modelId, calls: [], tools: [], roleEvidence: [], roleEvidenceKeys: new Set(), conditions: new Map(), consecutiveFailures: 0, consecutiveAuthFailures: 0, consecutiveMalformed: 0, quota: {} };
       this.routes.set(key, state);
     }
     return state;
@@ -425,6 +521,16 @@ export class EightBitRouteHealthAuthority {
     const horizon = now - this.policy.windowMs;
     state.calls = state.calls.filter((c) => c.at >= horizon).slice(-this.policy.windowSize);
     state.tools = state.tools.filter((t) => t.at >= horizon).slice(-this.policy.windowSize);
+    state.roleEvidence = state.roleEvidence.filter((s) => s.at >= horizon).slice(-this.policy.windowSize);
+    // Evicted samples can no longer dedup — rebuild the key set from what survived so a stale
+    // key cannot suppress a legitimately new observation forever.
+    if (state.roleEvidenceKeys.size > 0) {
+      const live = new Set<string>();
+      for (const s of state.roleEvidence) {
+        if (s.correlationId) live.add(`${s.correlationId}|${s.role}|${s.outcome}|${s.failureClass ?? "-"}`);
+      }
+      state.roleEvidenceKeys = live;
+    }
     for (const [name, condition] of state.conditions) {
       if (condition.expiresAt !== null && condition.expiresAt <= now) state.conditions.delete(name);
     }
@@ -501,7 +607,9 @@ export class EightBitRouteHealthAuthority {
         if (observation.outcome === "valid") {
           state.consecutiveMalformed = 0;
         } else {
-          state.consecutiveMalformed += 1;
+          // R50 §9: a boundary violation weighs double in the streak — two consecutive
+          // escape attempts quarantine where four formatting slips would.
+          state.consecutiveMalformed += observation.outcome === "boundary_violation" ? 2 : 1;
           if (state.consecutiveMalformed >= this.policy.quarantineStreak) {
             this.setCondition(state, { state: "QUARANTINED", since: iso, expiresAt: null, confidence: 1, sampleSize: state.consecutiveMalformed, reasonCode: "MALFORMED_TOOL_CALL_STREAK", source: observation.source });
           }
@@ -510,21 +618,52 @@ export class EightBitRouteHealthAuthority {
         break;
       }
       case "role_outcome": {
-        if (observation.role) {
-          const role = observation.role;
-          if (observation.outcome === "role_failed" || observation.outcome === "verification_failed") {
-            const prior = state.conditions.get("CAPABILITY_LIMITED");
-            const roles = new Set(prior?.roles ?? []);
-            roles.add(role);
-            this.setCondition(state, { state: "CAPABILITY_LIMITED", since: iso, expiresAt: now + this.policy.healthyTtlMs * 4, confidence: 0.5, sampleSize: 1, reasonCode: `ROLE_${observation.outcome.toUpperCase()}`, source: observation.source, roles: [...roles] });
-          } else if (observation.outcome === "verified_complete") {
-            const prior = state.conditions.get("CAPABILITY_LIMITED");
-            if (prior?.roles) {
-              const roles = prior.roles.filter((r) => r !== role);
-              if (roles.length === 0) this.clearCondition(state, "CAPABILITY_LIMITED");
-              else state.conditions.set("CAPABILITY_LIMITED", { ...prior, roles });
-            }
+        if (!observation.role) break;
+        const role = observation.role;
+        // R50 §29: idempotent ingest — a re-emitted or replayed outcome for the same
+        // correlation (run) must not double-penalize or double-reward the route.
+        const dedupKey = observation.correlationId
+          ? `${observation.correlationId}|${role}|${observation.outcome}|${observation.failureClass ?? "-"}`
+          : undefined;
+        if (dedupKey !== undefined && state.roleEvidenceKeys.has(dedupKey)) break;
+        state.roleEvidence.push({
+          at: now,
+          role,
+          outcome: observation.outcome,
+          failureClass: observation.failureClass,
+          weight: roleOutcomeWeight(observation.outcome, observation.failureClass),
+          correlationId: observation.correlationId,
+        });
+        if (dedupKey !== undefined) state.roleEvidenceKeys.add(dedupKey);
+        if (observation.outcome === "verified_complete") {
+          const prior = state.conditions.get("CAPABILITY_LIMITED");
+          if (prior?.roles) {
+            const roles = prior.roles.filter((r) => r !== role);
+            if (roles.length === 0) this.clearCondition(state, "CAPABILITY_LIMITED");
+            else state.conditions.set("CAPABILITY_LIMITED", { ...prior, roles });
           }
+        } else if (observation.outcome === "converged") {
+          // Weaker than verified: worth positive evidence, never a condition mutation — a
+          // converged-but-unverified run does not clear a security or capability verdict.
+          break;
+        } else {
+          // Negative role outcomes are model-quality evidence. A boundary/security failure
+          // weighs more than an ordinary non-convergence: the model did not merely fail to
+          // finish, it proposed an action the authority boundary had to refuse.
+          const severe = observation.outcome === "security_blocked";
+          const prior = state.conditions.get("CAPABILITY_LIMITED");
+          const roles = new Set(prior?.roles ?? []);
+          roles.add(role);
+          this.setCondition(state, {
+            state: "CAPABILITY_LIMITED",
+            since: iso,
+            expiresAt: now + this.policy.healthyTtlMs * (severe ? 8 : 4),
+            confidence: severe ? 0.85 : 0.5,
+            sampleSize: 1,
+            reasonCode: observation.failureClass ? `ROLE_${observation.failureClass}` : `ROLE_${observation.outcome.toUpperCase()}`,
+            source: observation.source,
+            roles: [...roles],
+          });
         }
         break;
       }
@@ -829,6 +968,46 @@ export class EightBitRouteHealthAuthority {
   }
 
   /**
+   * R50 §6: the route's graded runtime evidence for ONE role — the decayed, deduplicated sum of
+   * observed outcomes in the rolling window, scaled by sample confidence and bounded to
+   * ±MAX_ROLE_EVIDENCE_ADJUSTMENT. Zero evidence is neutral (cold-start §28: a qualified route
+   * with no runtime history must not lose by default); a single failure is small; repeated
+   * failures saturate the bound; verified work gradually outweighs failures. This is advisory
+   * ranking input only — it can never create eligibility or overturn a verdict floor.
+   */
+  roleQualityDelta(providerId: string, modelId: string, role: EightBitRole, now: number = this.now()): { scoreAdjustment: number; reasonCodes: string[]; samples: number; netEvidence: number } {
+    const state = this.routes.get(routeKeyOf(providerId, modelId));
+    if (!state) return { scoreAdjustment: 0, reasonCodes: ["ROLE_RUNTIME_EVIDENCE_ABSENT"], samples: 0, netEvidence: 0 };
+    this.prune(state, now);
+    const samples = state.roleEvidence.filter((s) => s.role === role);
+    if (samples.length === 0) return { scoreAdjustment: 0, reasonCodes: ["ROLE_RUNTIME_EVIDENCE_ABSENT"], samples: 0, netEvidence: 0 };
+    let net = 0;
+    const classes = new Map<string, number>();
+    for (const s of samples) {
+      const decay = Math.max(0, 1 - (now - s.at) / this.policy.windowMs);
+      net += s.weight * decay;
+      const key = s.failureClass ?? s.outcome.toUpperCase();
+      classes.set(key, (classes.get(key) ?? 0) + 1);
+    }
+    const confidence = Math.min(1, samples.length / ROLE_EVIDENCE_FULL_CONFIDENCE_SAMPLES);
+    const scoreAdjustment = Math.max(-MAX_ROLE_EVIDENCE_ADJUSTMENT, Math.min(MAX_ROLE_EVIDENCE_ADJUSTMENT, Math.round(net * ROLE_EVIDENCE_SCALE * confidence)));
+    const dominant = [...classes.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+    const reasonCodes = [
+      net > 0 ? "ROLE_RUNTIME_POSITIVE" : net < 0 ? "ROLE_RUNTIME_NEGATIVE" : "ROLE_RUNTIME_NEUTRAL",
+      ...(dominant !== undefined ? [`ROLE_RUNTIME_DOMINANT_${dominant}`] : []),
+    ];
+    return { scoreAdjustment, reasonCodes, samples: samples.length, netEvidence: Number(net.toFixed(3)) };
+  }
+
+  /** R50: the graded per-role evidence behind a routing/explainer surface (bounded copy). */
+  roleEvidenceFor(providerId: string, modelId: string, role: EightBitRole, now: number = this.now()): RoleOutcomeSample[] {
+    const state = this.routes.get(routeKeyOf(providerId, modelId));
+    if (!state) return [];
+    this.prune(state, now);
+    return state.roleEvidence.filter((s) => s.role === role);
+  }
+
+  /**
    * Probe budgeting (§9): is a live production-shaped probe worth spending now? Weighs the
    * information gain (how uncertain routing is about this route), the probability the state has
    * changed since the last observation, the route's importance, and the remaining allowance.
@@ -927,6 +1106,7 @@ export class EightBitRouteHealthAuthority {
       providerId: state.providerId,
       modelId: state.modelId,
       conditions: [...state.conditions.values()].map((c) => ({ ...c, roles: c.roles ? [...c.roles] : undefined })),
+      roleEvidence: state.roleEvidence.map((s) => ({ ...s, at: new Date(s.at).toISOString() })),
       window: this.windowStats(state, now),
       consecutiveFailures: state.consecutiveFailures,
       consecutiveAuthFailures: state.consecutiveAuthFailures,
@@ -964,6 +1144,16 @@ export class EightBitRouteHealthAuthority {
     state.consecutiveFailures = snapshot.consecutiveFailures;
     state.consecutiveAuthFailures = snapshot.consecutiveAuthFailures;
     state.consecutiveMalformed = snapshot.consecutiveMalformed;
+    // R50: restore the graded per-role evidence (window pruning applies at first use) and
+    // rebuild dedup keys so replayed observations cannot re-count after a restart.
+    for (const sample of snapshot.roleEvidence ?? []) {
+      const at = Date.parse(sample.at);
+      if (!Number.isFinite(at)) continue;
+      state.roleEvidence.push({ ...sample, at });
+      if (sample.correlationId) {
+        state.roleEvidenceKeys.add(`${sample.correlationId}|${sample.role}|${sample.outcome}|${sample.failureClass ?? "-"}`);
+      }
+    }
     state.lastObservedAt = snapshot.lastObservedAt ? Date.parse(snapshot.lastObservedAt) : state.lastObservedAt;
     state.lastSuccessAt = snapshot.lastSuccessAt ? Date.parse(snapshot.lastSuccessAt) : state.lastSuccessAt;
     state.lastProbeAt = snapshot.lastProbeAt ? Date.parse(snapshot.lastProbeAt) : state.lastProbeAt;

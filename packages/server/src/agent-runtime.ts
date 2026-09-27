@@ -72,7 +72,7 @@ import {
   type NormalizedIdentity,
 } from "@codeforge/forge-green";
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
-import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, roleQualityAdvice, roleQualificationStatusFor, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider, type FabricOutcome, type FabricRouteDecision, type ModelQualificationReceipt, type RoleQualificationStatus, type RoleQualificationTier } from "@codeforge/eight-bit";
+import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, roleQualityAdvice, roleQualificationStatusFor, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider, type FabricOutcome, type FabricRouteDecision, type ModelQualificationReceipt, type RoleQualificationStatus, type RoleQualificationTier, type RoleOutcomeKind, type RoleFailureClass, type ToolCallOutcome } from "@codeforge/eight-bit";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
@@ -689,6 +689,13 @@ class RoleContextOverflowError extends Error {
 /** Bounded rotation budget for a single agent run: initial route + this many provider failures. */
 export const ROLE_ROUTE_MAX_FAILOVERS = 2;
 /**
+ * R50 §11: bounded productive-turn headroom granted to a run for each route failover it
+ * survived — the replacement route deserves its own chance to converge instead of inheriting
+ * only the failing route's leftover budget. Hard-capped so failover can never manufacture
+ * unlimited work (still ≤ maxModelTurns + CAP total).
+ */
+export const FAILOVER_TURN_GRANT_CAP = 2;
+/**
  * Same-route retries a pinned selection may take within ONE model turn before the failure is
  * surfaced. Matches 8-Bit's bounded-retry escalation threshold; 8-Bit's consecutive-failure
  * streak (reset by every successful call) bounds it across turns.
@@ -1104,17 +1111,25 @@ export class AgentRuntime {
    * canonical seam for callers that know whether the served route's work actually verified —
    * it never rewrites qualification receipts and never creates eligibility, and paid routes
    * are ignored outright (8-Bit evidence is free-fleet only).
+   * R50 §5: the full outcome vocabulary is admissible; `failureClass` names the model-quality
+   * cause (never a supply/transport reason — those arrive through `call_failure`).
    */
+  /** RunIds that already carry a failure-kind role outcome — the terminal budget check
+   *  must not stack a second verdict on a run whose dominant cause is already recorded. */
+  private readonly dominantRoleFailureRuns = new Set<string>();
+
   recordRoleOutcome(
     route: AgentModelSelection | undefined,
     role: AgentRoleType | string,
-    outcome: "verified_complete" | "verification_failed" | "role_failed",
+    outcome: RoleOutcomeKind,
     correlationId: string,
+    failureClass?: RoleFailureClass,
   ): void {
     if (!route || route.providerId === PAID_AUTO_PROVIDER_ID) return;
     this.eightBit.observe({
       kind: "role_outcome",
       outcome,
+      ...(failureClass ? { failureClass } : {}),
       providerId: route.providerId,
       modelId: route.modelId,
       observedAt: new Date().toISOString(),
@@ -1123,6 +1138,26 @@ export class AgentRuntime {
       requestShape: "production",
       correlationId,
     });
+    if (outcome !== "converged" && outcome !== "verified_complete") {
+      this.dominantRoleFailureRuns.add(correlationId);
+    }
+  }
+
+  /**
+   * R50 §5/§9: one locally-detected tool/protocol rejection becomes reliability + health
+   * evidence on the route that proposed it. Runtime execution errors (timeouts, no-effect
+   * writes, environment failures) are NOT model-quality signals and emit nothing.
+   */
+  private recordLocalToolOutcome(providerId: string | undefined, modelId: string | undefined, errorCode: string | undefined, role: EightBitRole, correlationId: string): void {
+    if (!providerId || !modelId || !errorCode) return;
+    const outcome: ToolCallOutcome | undefined =
+      errorCode === ERROR_CODES.TOOL_UNKNOWN ? "unknown_tool"
+        : errorCode === ERROR_CODES.TOOL_ARGUMENT_INVALID ? "malformed"
+          : errorCode === ERROR_CODES.TOOL_PATH_ESCAPE || errorCode === ERROR_CODES.TOOL_WORKSPACE_ESCAPE || errorCode === ERROR_CODES.TOOL_SENSITIVE_PATH_DENIED || errorCode === ERROR_CODES.TOOL_PERMISSION_DENIED
+            ? "boundary_violation"
+            : undefined;
+    if (outcome === undefined) return;
+    this.eightBit.recordToolCallOutcome(providerId, modelId, outcome, { role, correlationId });
   }
 
   /**
@@ -2053,17 +2088,7 @@ export class AgentRuntime {
                 // may have hidden context the model needed, so the policy steps down and a
                 // completed-response replay can never serve the identical retry.
                 greenPolicy.escalate("model_response_unusable", `finishReason=${response.finishReason} textBytes=${response.text.length} toolCalls=${response.toolCalls.length}`);
-                this.eightBit.observe({
-                  kind: "role_outcome",
-                  outcome: "role_failed",
-                  providerId: activeSelection.providerId,
-                  modelId: activeSelection.modelId,
-                  observedAt: new Date().toISOString(),
-                  source: "runtime",
-                  role: eightBitRoleForAgentRole(req.role),
-                  requestShape: "production",
-                  correlationId: req.runId,
-                });
+                this.recordRoleOutcome(activeSelection, req.role, "role_failed", req.runId, "EMPTY_COMPLETION");
               }
             }
             return response;
@@ -2397,7 +2422,12 @@ export class AgentRuntime {
       // context window — carried into the blocked summary so the reason stays inspectable.
       let contextOverflowBlockedReason: string | undefined;
 
-      while (turnCount < budget.maxModelTurns) {
+      // R50 §11: a route that failed before doing useful work must not spend the REPLACEMENT
+      // route's productive budget — each failover grants bounded extra headroom so the
+      // substitute route gets a fair chance to converge. The grant is hard-capped: failovers
+      // can never manufacture unlimited work.
+      const effectiveMaxModelTurns = () => budget.maxModelTurns + Math.min(routeFailovers.length, FAILOVER_TURN_GRANT_CAP);
+      while (turnCount < effectiveMaxModelTurns()) {
         if (req.signal?.aborted) {
           throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
         }
@@ -2516,7 +2546,7 @@ export class AgentRuntime {
           // verified anything.
           const turnTruncated = response.finishReason === "length";
           if (turnTruncated) {
-            if (structuredRepairs < maxStructuredOutputRepairs && turnCount < budget.maxModelTurns) {
+            if (structuredRepairs < maxStructuredOutputRepairs && turnCount < effectiveMaxModelTurns()) {
               structuredRepairs++;
               structuredTelemetry.truncationRepairs++;
               messages.push({
@@ -2531,7 +2561,7 @@ export class AgentRuntime {
           if (expectedStructuredOutput) {
             const validation = validateStructuredAgentResult(expectedStructuredOutput, finalSummary);
             if (!validation.success) {
-              if (structuredRepairs < maxStructuredOutputRepairs && turnCount < budget.maxModelTurns) {
+              if (structuredRepairs < maxStructuredOutputRepairs && turnCount < effectiveMaxModelTurns()) {
                 structuredRepairs++;
                 structuredTelemetry.repairs++;
                 // R47 §6: record the rejected shape (key names + missing fields only — never
@@ -2558,6 +2588,7 @@ export class AgentRuntime {
               // cannot emit the schema after a corrective re-ask is unreliable for this role.
               if (totalUsage.provider && totalUsage.model) {
                 this.eightBit.recordToolCallOutcome(totalUsage.provider, totalUsage.model, "structured_output_failure", { role: eightBitRoleForAgentRole(req.role), correlationId: req.runId });
+                this.recordRoleOutcome({ providerId: totalUsage.provider, modelId: totalUsage.model }, req.role, "role_failed", req.runId, "MALFORMED_STRUCTURED_OUTPUT");
               }
               adapter.emitTurnFailed(req.runId, validation.error, describeRunFailure(new Error(error)));
               forgeGreenR0RunStatus = "blocked";
@@ -2708,6 +2739,9 @@ export class AgentRuntime {
               duplicateSupervisor.recordNoProgressInterruption();
               ledger.recordNoProgressInterruption(err);
               adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.AGENT_TOOL_LOOP_DETECTED);
+              // R50: a deterministic repetition loop is model-quality evidence for this role
+              // — the served route kept proposing identical work; capacity had no part in it.
+              this.recordRoleOutcome(journalActiveRoute ?? activeSelection, req.role, "role_failed", req.runId, "REPETITION_LOOP");
               stopReason = "tool_loop_detected";
               forgeGreenR0RunStatus = "blocked";
               contextMetrics.efficiencyReceipt = createRunReceipt();
@@ -2734,6 +2768,7 @@ export class AgentRuntime {
               duplicateSupervisor.recordNoProgressInterruption();
               ledger.recordNoProgressInterruption(err);
               adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.AGENT_TOOL_LOOP_DETECTED);
+              this.recordRoleOutcome(journalActiveRoute ?? activeSelection, req.role, "role_failed", req.runId, "REPETITION_LOOP");
               stopReason = "tool_loop_detected";
               forgeGreenR0RunStatus = "blocked";
               contextMetrics.efficiencyReceipt = createRunReceipt();
@@ -2808,6 +2843,9 @@ export class AgentRuntime {
             const certifiedShape = threeRepeat || oscillation;
             const loopCode = certifiedShape ? ERROR_CODES.AGENT_TOOL_LOOP_DETECTED : ERROR_CODES.AGENT_NO_PROGRESS_DETECTED;
             adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, loopCode);
+            // R50: a loop/no-progress escalation is the model repeatedly failing to advance —
+            // role-quality evidence on the serving route, distinct from supply failures.
+            this.recordRoleOutcome(journalActiveRoute ?? activeSelection, req.role, "role_failed", req.runId, certifiedShape ? "REPETITION_LOOP" : "NON_CONVERGENCE");
             stopReason = certifiedShape ? "tool_loop_detected" : "no_progress_detected";
             forgeGreenR0RunStatus = "blocked";
             contextMetrics.efficiencyReceipt = createRunReceipt();
@@ -2874,6 +2912,8 @@ export class AgentRuntime {
               traceCall(tc.name, tc.arguments, "denied", denyRecord);
               ledger.recordNoProgressInterruption(`run_command denied: ${why}`);
               adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.TOOL_PERMISSION_DENIED);
+              // R50 §9: the model proposed a denied action — boundary evidence on the route.
+              this.recordLocalToolOutcome(journalActiveRoute?.providerId ?? activeSelection?.providerId, journalActiveRoute?.modelId ?? activeSelection?.modelId, ERROR_CODES.TOOL_PERMISSION_DENIED, eightBitRoleForAgentRole(req.role), req.runId);
               messages.push({ role: "tool", content: denyRecord.output, toolCallId: tc.id });
               toolCallCount++;
               totalUsage.toolCount++;
@@ -2909,6 +2949,7 @@ export class AgentRuntime {
             traceCall(tc.name, tc.arguments, "denied", denyRecord);
             ledger.recordNoProgressInterruption(`${tc.name} denied: ${why}`);
             adapter.emitToolExecutionBlocked(req.runId, tc.id, tc.name, ERROR_CODES.TOOL_PERMISSION_DENIED);
+            this.recordLocalToolOutcome(journalActiveRoute?.providerId ?? activeSelection?.providerId, journalActiveRoute?.modelId ?? activeSelection?.modelId, ERROR_CODES.TOOL_PERMISSION_DENIED, eightBitRoleForAgentRole(req.role), req.runId);
             messages.push({ role: "tool", content: denyRecord.output, toolCallId: tc.id });
             toolCallCount++;
             totalUsage.toolCount++;
@@ -3039,6 +3080,12 @@ export class AgentRuntime {
 
           toolExecutions.push(toolExec);
           traceCall(tc.name, tc.arguments, toolExec.success ? "success" : "failed", toolExec);
+          // R50 §5: a locally-rejected call is tool-protocol evidence on the serving route —
+          // malformed args, unknown tools and boundary proposals all teach the role-quality
+          // ledgers. Runtime execution failures emit nothing (they are not the model's fault).
+          if (!toolExec.success) {
+            this.recordLocalToolOutcome(journalActiveRoute?.providerId ?? activeSelection?.providerId, journalActiveRoute?.modelId ?? activeSelection?.modelId, toolExec.error, eightBitRoleForAgentRole(req.role), req.runId);
+          }
           if (pendingEditAttempt) {
             pendingEditAttempt.outcome = toolExec.success ? "success" : "failed";
             if (!toolExec.success) {
@@ -3173,6 +3220,16 @@ export class AgentRuntime {
             toolExec.error === ERROR_CODES.TOOL_WORKSPACE_ESCAPE ||
             toolExec.error === ERROR_CODES.TOOL_SENSITIVE_PATH_DENIED
           )) {
+            // R50 §9: a boundary violation is a hard role-quality signal on the served route —
+            // security_blocked weighs far more than an ordinary role failure and survives to
+            // demote this route for this role across restarts.
+            this.recordRoleOutcome(
+              journalActiveRoute ?? activeSelection,
+              req.role,
+              "security_blocked",
+              req.runId,
+              toolExec.error === ERROR_CODES.TOOL_PATH_ESCAPE || toolExec.error === ERROR_CODES.TOOL_WORKSPACE_ESCAPE ? "WORKSPACE_ESCAPE_ATTEMPT" : "TOOL_PERMISSION_VIOLATION",
+            );
             stopReason = "error";
             forgeGreenR0RunStatus = "blocked";
             return {
@@ -3193,6 +3250,7 @@ export class AgentRuntime {
             const reason = "Four consecutive file writes made no change. The remaining plan needs replanning or a different coding route.";
             duplicateSupervisor.recordNoProgressInterruption();
             ledger.recordNoProgressInterruption(reason);
+            this.recordRoleOutcome(journalActiveRoute ?? activeSelection, req.role, "role_failed", req.runId, "NON_CONVERGENCE");
             stopReason = "no_progress_detected";
             forgeGreenR0RunStatus = "blocked";
             contextMetrics.efficiencyReceipt = createRunReceipt();
@@ -3218,13 +3276,13 @@ export class AgentRuntime {
         }
       }
 
-      if (turnCount >= budget.maxModelTurns && (stopReason !== "completed" || !completedExplicitly)) {
+      if (turnCount >= effectiveMaxModelTurns() && (stopReason !== "completed" || !completedExplicitly)) {
         // Exhausting the model-turn budget is never success (the work was not finished, only
         // stopped). Before R21 the placeholder "completed" leaked through here and an agent that
         // ran out of turns mid-investigation was reported completed with a canned summary.
         stopReason = "budget_exhausted";
       }
-      const exhaustedModelTurns = stopReason === "budget_exhausted" && !completedExplicitly && turnCount >= budget.maxModelTurns;
+      const exhaustedModelTurns = stopReason === "budget_exhausted" && !completedExplicitly && turnCount >= effectiveMaxModelTurns();
       // R21: the receipt is rebuilt after the last turn's tool processing so suppressions and
       // compressions from the final turn are counted (the per-response snapshot above ran first).
       contextMetrics.efficiencyReceipt = createRunReceipt();
@@ -3258,7 +3316,7 @@ export class AgentRuntime {
         : contextOverflowBlockedReason !== undefined
           ? contextOverflowBlockedReason
           : exhaustedModelTurns
-            ? `[${ERROR_CODES.AGENT_MODEL_TURN_LIMIT}] The ${req.role} agent used all ${budget.maxModelTurns} model turns without finishing; the work is unfinished, not complete.`
+            ? `[${ERROR_CODES.AGENT_MODEL_TURN_LIMIT}] The ${req.role} agent used all ${effectiveMaxModelTurns()} model turns${routeFailovers.length > 0 ? ` (including ${Math.min(routeFailovers.length, FAILOVER_TURN_GRANT_CAP)} failover grant${Math.min(routeFailovers.length, FAILOVER_TURN_GRANT_CAP) === 1 ? "" : "s"})` : ""} without finishing; the work is unfinished, not complete.`
             : stopReason === "budget_exhausted"
               ? `[${ERROR_CODES.AGENT_TOOL_LIMIT}] The ${req.role} agent reached its tool-call budget without finishing; the work is unfinished, not complete.`
               : (hadModelFinalResponse ? finalSummary : `Agent ${req.role} stopped (${stopReason}) without finishing.`);
@@ -3287,20 +3345,21 @@ export class AgentRuntime {
         // R45 §32: budget exhaustion is model-quality evidence — a route that burns its turn
         // budget serializing work the packet already covered is weak for this role. Kept
         // distinct from availability signals: 429s never reach this path (they rotate or wait).
-        if (exhaustedModelTurns && journalActiveRoute) {
-          this.eightBit.observe({
-            kind: "role_outcome",
-            outcome: "role_failed",
-            providerId: journalActiveRoute.providerId,
-            modelId: journalActiveRoute.modelId,
-            observedAt: new Date().toISOString(),
-            source: "runtime",
-            role: eightBitRoleForAgentRole(req.role),
-            requestShape: "production",
-            correlationId: req.runId,
-          });
+        // R50: the canonical outcome is `budget_exhausted` — model-turn and tool-call budget
+        // exhaustion are the same verdict class with different failure classes. It fires only
+        // when the run has no already-recorded dominant failure: a budget number consumed by
+        // retrying unusable replies is bookkeeping, not a second verdict on the same run.
+        if (stopReason === "budget_exhausted" && journalActiveRoute && !this.dominantRoleFailureRuns.has(req.runId)) {
+          this.recordRoleOutcome(journalActiveRoute, req.role, "budget_exhausted", req.runId, exhaustedModelTurns ? "NON_CONVERGENCE" : "ROLE_BUDGET_EXHAUSTED");
         }
         adapter.emitTurnFailed(req.runId, result.summary);
+      }
+      // R50 §18: positive evidence must flow too — a role that converged (finished within its
+      // contract, including a reviewer's valid revision_required verdict) earns weaker-but-real
+      // quality evidence on the route that served it. Verification acceptance stays a separate
+      // stronger signal from the orchestrator's `verified_complete`.
+      if (stopReason === "completed" && journalActiveRoute) {
+        this.recordRoleOutcome(journalActiveRoute, req.role, "converged", req.runId);
       }
 
       return result;
@@ -4494,11 +4553,21 @@ export class AgentRuntime {
    */
   private roleQualityAdjustmentFor(role: EightBitRole): ((providerId: string, modelId: string) => { scoreAdjustment: number; reasonCodes: string[] }) | undefined {
     const freeCloud = this.freeCloud;
-    if (!freeCloud?.getQualificationReceipt) return undefined;
-    const receiptOf = freeCloud.getQualificationReceipt.bind(freeCloud);
+    const routeHealth = this.eightBit.routeHealth;
+    if (!freeCloud?.getQualificationReceipt && !routeHealth) return undefined;
+    const receiptOf = freeCloud?.getQualificationReceipt?.bind(freeCloud);
     return (providerId, modelId) => {
-      const advice = roleQualityAdvice(receiptOf(providerId, modelId), role);
-      return { scoreAdjustment: advice.scoreAdjustment, reasonCodes: advice.reasonCodes };
+      // R50 §12: qualification-receipt quality and live runtime evidence merge into ONE
+      // bounded adjustment. The receipt term stays authoritative for measured quality; the
+      // runtime term adds graded per-role production outcomes (deduplicated, decayed,
+      // ±16 bound inside the authority). Neither can bypass admission — both land after
+      // eligibility, health, capacity and the verdict floor have already filtered.
+      const advice = receiptOf ? roleQualityAdvice(receiptOf(providerId, modelId), role) : { scoreAdjustment: 0, reasonCodes: [] };
+      const runtime = routeHealth?.roleQualityDelta(providerId, modelId, role);
+      return {
+        scoreAdjustment: Math.max(-24, Math.min(24, advice.scoreAdjustment + (runtime?.scoreAdjustment ?? 0))),
+        reasonCodes: [...advice.reasonCodes, ...(runtime?.reasonCodes ?? [])],
+      };
     };
   }
 
