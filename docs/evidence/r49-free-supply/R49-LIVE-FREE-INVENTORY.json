@@ -1,0 +1,1875 @@
+{
+  "schemaVersion": 1,
+  "round": "R49",
+  "generatedAt": "2026-09-27T13:54:35.790Z",
+  "provenance": {
+    "catalogs": "live zero-cost metadata",
+    "qualification": "durable replay plus R49 live zero-cost qualification",
+    "health": "live probes where present; otherwise unknown",
+    "exclusions": "deterministic policy"
+  },
+  "paidSpendUsd": 0,
+  "summary": {
+    "liveCatalogModels": {
+      "groq": 11,
+      "mistral": 44,
+      "openrouter": 458
+    },
+    "explicitZeroUnitOpenRouterModels": 21,
+    "currentlyProvenZeroCostCandidates": 27,
+    "productionQualifiedRoutes": 5,
+    "productionProviders": 2,
+    "independentCredentialDomains": 2,
+    "physicalCapacityPools": 4,
+    "healthyProductionRoutes": 2,
+    "degradedProductionRoutes": 0,
+    "exhaustedProductionRoutes": 0
+  },
+  "openRouterAccount": {
+    "observedAt": "2026-09-27T13:54:35.790Z",
+    "isFreeTier": false,
+    "freeModelDailyRequests": {
+      "used": 61,
+      "limit": 1000,
+      "remaining": 939
+    },
+    "poolCount": 1
+  },
+  "roleCoverage": {
+    "EXPLORER": {
+      "qualifiedRoutes": 2,
+      "probationRoutes": 1,
+      "independentCredentialDomains": 2,
+      "availableNow": 2
+    },
+    "PLANNER": {
+      "qualifiedRoutes": 4,
+      "probationRoutes": 0,
+      "independentCredentialDomains": 2,
+      "availableNow": 2
+    },
+    "CODER": {
+      "qualifiedRoutes": 5,
+      "probationRoutes": 0,
+      "independentCredentialDomains": 2,
+      "availableNow": 2
+    },
+    "REVIEWER": {
+      "qualifiedRoutes": 2,
+      "probationRoutes": 0,
+      "independentCredentialDomains": 2,
+      "availableNow": 1
+    },
+    "TOOL_AGENT": {
+      "qualifiedRoutes": 3,
+      "probationRoutes": 2,
+      "independentCredentialDomains": 2,
+      "availableNow": 2
+    },
+    "ANALYST": {
+      "qualifiedRoutes": 3,
+      "probationRoutes": 0,
+      "independentCredentialDomains": 2,
+      "availableNow": 2
+    }
+  },
+  "routes": [
+    {
+      "providerId": "openrouter",
+      "modelId": "stealth/space-bunny-alpha",
+      "routeId": "openrouter/stealth/space-bunny-alpha",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": true
+      },
+      "contextWindow": 1000000,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-sante:free",
+      "routeId": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": false,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 262144,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-fin:free",
+      "routeId": "openrouter/inclusionai/ling-3.0-flash-fin:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": false,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 262144,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "qwen/qwen3.8-27b:free",
+      "routeId": "openrouter/qwen/qwen3.8-27b:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": true
+      },
+      "contextWindow": 262144,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "routeId": "openrouter/dots-studio/dots-3-note-preview:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": true
+      },
+      "contextWindow": 512000,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "routeId": "openrouter/liquid/lfm-2.5-2.6b:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 65536,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "routeId": "openrouter/nvidia/nemotron-3.5-lightning:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": false,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 1000000,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": true,
+        "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+        "completedAt": "2026-09-27T00:03:21.287Z",
+        "qualificationState": "QUALIFIED",
+        "roles": {
+          "EXPLORER": "NOT_QUALIFIED",
+          "PLANNER": "HARD_FAILURE",
+          "CODER": "QUALIFIED",
+          "REVIEWER": "HARD_FAILURE",
+          "TOOL_AGENT": "PROBATION",
+          "ANALYST": "NOT_QUALIFIED"
+        },
+        "caseCounts": {
+          "CODER": {
+            "passed": 2,
+            "total": 2,
+            "transient": 0
+          },
+          "TOOL_AGENT": {
+            "passed": 2,
+            "total": 3,
+            "transient": 0
+          },
+          "ANALYST": {
+            "passed": 0,
+            "total": 1,
+            "transient": 0
+          },
+          "EXPLORER": {
+            "passed": 0,
+            "total": 2,
+            "transient": 0
+          },
+          "PLANNER": {
+            "passed": 0,
+            "total": 2,
+            "transient": 0
+          },
+          "REVIEWER": {
+            "passed": 2,
+            "total": 6,
+            "transient": 0
+          }
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": true,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling-small:free",
+      "routeId": "openrouter/thinkingmachines/inkling-small:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": false,
+        "coding": true,
+        "vision": true
+      },
+      "contextWindow": 1048576,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-s-2.1:free",
+      "routeId": "openrouter/poolside/laguna-s-2.1:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": false,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 262144,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling:free",
+      "routeId": "openrouter/thinkingmachines/inkling:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": false,
+        "coding": true,
+        "vision": true
+      },
+      "contextWindow": 1048576,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "routeId": "openrouter/poolside/laguna-xs-2.1:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": false,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 262144,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "routeId": "openrouter/cohere/north-mini-code:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": false,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 256000,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-content-safety:free",
+      "routeId": "openrouter/nvidia/nemotron-3.5-content-safety:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": false,
+        "streaming": true,
+        "structuredOutput": false,
+        "coding": true,
+        "vision": true
+      },
+      "contextWindow": 128000,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "routeId": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": false,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 1000000,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "routeId": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": false,
+        "coding": true,
+        "vision": true
+      },
+      "contextWindow": 256000,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-26b-a4b-it:free",
+      "routeId": "openrouter/google/gemma-4-26b-a4b-it:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": true
+      },
+      "contextWindow": 262144,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-31b-it:free",
+      "routeId": "openrouter/google/gemma-4-31b-it:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": true
+      },
+      "contextWindow": 262144,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/lyria-3-pro-preview",
+      "routeId": "openrouter/google/lyria-3-pro-preview",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": false,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": true
+      },
+      "contextWindow": 1048576,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/lyria-3-clip-preview",
+      "routeId": "openrouter/google/lyria-3-clip-preview",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": false,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": true
+      },
+      "contextWindow": 1048576,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "routeId": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 262144,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "HEALTHY",
+        "lastSuccessfulInvocation": "2026-09-27T13:52:29.676Z",
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": true,
+        "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+        "completedAt": "2026-09-27T13:51:10.419Z",
+        "qualificationState": "QUALIFIED",
+        "roles": {
+          "EXPLORER": "QUALIFIED",
+          "PLANNER": "QUALIFIED",
+          "CODER": "QUALIFIED",
+          "REVIEWER": "QUALIFIED",
+          "TOOL_AGENT": "QUALIFIED",
+          "ANALYST": "QUALIFIED"
+        },
+        "caseCounts": {
+          "CODER": {
+            "passed": 2,
+            "total": 2,
+            "transient": 0
+          },
+          "TOOL_AGENT": {
+            "passed": 3,
+            "total": 3,
+            "transient": 0
+          },
+          "ANALYST": {
+            "passed": 1,
+            "total": 1,
+            "transient": 0
+          },
+          "EXPLORER": {
+            "passed": 1,
+            "total": 2,
+            "transient": 1
+          },
+          "PLANNER": {
+            "passed": 2,
+            "total": 2,
+            "transient": 0
+          },
+          "REVIEWER": {
+            "passed": 5,
+            "total": 6,
+            "transient": 1
+          }
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": true,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "openrouter/free",
+      "routeId": "openrouter/openrouter/free",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "ALWAYS_FREE",
+        "accessClass": "FREE_ROUTED",
+        "source": "live OpenRouter /api/v1/models prompt/completion price = 0",
+        "observedAt": "2026-09-27T13:54:35.790Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "OPENROUTER_API_KEY",
+      "accountId": "live-acct-openrouter",
+      "capacityPoolId": "managed:openrouter:live-acct-openrouter",
+      "correlationGroup": "openrouter-account-free-model-daily-requests",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": true
+      },
+      "contextWindow": 200000,
+      "knownLimits": {
+        "accountFreeModelDailyRequests": {
+          "used": 61,
+          "limit": 1000,
+          "remaining": 939
+        },
+        "modelAvailability": "volatile upstream capacity"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard; upstream free-model provider may vary"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "canopylabs/orpheus-v1-english",
+      "routeId": "groq/canopylabs/orpheus-v1-english",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "LIMITED_FREE_ALLOWANCE",
+        "accessClass": "FREE_ALLOWANCE",
+        "source": "provider free-plan definition + bounded live allowance probe",
+        "observedAt": "2026-09-27T12:57:41.180Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "GROQ_API_KEY",
+      "accountId": "live-acct-groq",
+      "capacityPoolId": "managed:groq:live-acct-groq:model:canopylabs/orpheus-v1-english",
+      "correlationGroup": "groq-account:model:canopylabs/orpheus-v1-english",
+      "correlationCaveat": "one credential; documented/observed model-scoped rate windows are not account independence",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 4000,
+      "knownLimits": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-remaining-requests": "999",
+        "x-ratelimit-reset-requests": "1m26.4s",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-tokens": "7921",
+        "x-ratelimit-reset-tokens": "592ms"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "routeId": "groq/openai/gpt-oss-20b",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "LIMITED_FREE_ALLOWANCE",
+        "accessClass": "FREE_ALLOWANCE",
+        "source": "provider free-plan definition + bounded live allowance probe",
+        "observedAt": "2026-09-27T12:57:41.180Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "GROQ_API_KEY",
+      "accountId": "live-acct-groq",
+      "capacityPoolId": "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+      "correlationGroup": "groq-account:model:openai/gpt-oss-20b",
+      "correlationCaveat": "one credential; documented/observed model-scoped rate windows are not account independence",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 131072,
+      "knownLimits": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-remaining-requests": "999",
+        "x-ratelimit-reset-requests": "1m26.4s",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-tokens": "7921",
+        "x-ratelimit-reset-tokens": "592ms"
+      },
+      "health": {
+        "status": "HEALTHY",
+        "lastSuccessfulInvocation": "2026-09-27T12:57:41.180Z",
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": true,
+        "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+        "completedAt": "2026-09-26T23:51:24.989Z",
+        "qualificationState": "QUALIFIED",
+        "roles": {
+          "EXPLORER": "QUALIFIED",
+          "PLANNER": "QUALIFIED",
+          "CODER": "QUALIFIED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "QUALIFIED",
+          "ANALYST": "QUALIFIED"
+        },
+        "caseCounts": {
+          "CODER": {
+            "passed": 2,
+            "total": 2,
+            "transient": 0
+          },
+          "TOOL_AGENT": {
+            "passed": 3,
+            "total": 3,
+            "transient": 0
+          },
+          "ANALYST": {
+            "passed": 1,
+            "total": 1,
+            "transient": 0
+          },
+          "EXPLORER": {
+            "passed": 1,
+            "total": 2,
+            "transient": 1
+          },
+          "PLANNER": {
+            "passed": 1,
+            "total": 2,
+            "transient": 1
+          },
+          "REVIEWER": {
+            "passed": 0,
+            "total": 6,
+            "transient": 6
+          }
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": true,
+      "providerDataPolicy": "standard"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "canopylabs/orpheus-arabic-saudi",
+      "routeId": "groq/canopylabs/orpheus-arabic-saudi",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "LIMITED_FREE_ALLOWANCE",
+        "accessClass": "FREE_ALLOWANCE",
+        "source": "provider free-plan definition + bounded live allowance probe",
+        "observedAt": "2026-09-27T12:57:41.180Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "GROQ_API_KEY",
+      "accountId": "live-acct-groq",
+      "capacityPoolId": "managed:groq:live-acct-groq:model:canopylabs/orpheus-arabic-saudi",
+      "correlationGroup": "groq-account:model:canopylabs/orpheus-arabic-saudi",
+      "correlationCaveat": "one credential; documented/observed model-scoped rate windows are not account independence",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 4000,
+      "knownLimits": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-remaining-requests": "999",
+        "x-ratelimit-reset-requests": "1m26.4s",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-tokens": "7921",
+        "x-ratelimit-reset-tokens": "592ms"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": false,
+        "suiteVersion": null,
+        "completedAt": null,
+        "qualificationState": "NOT_TESTED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "NOT_TESTED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "NOT_TESTED",
+          "ANALYST": "NOT_TESTED"
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "qwen/qwen3.8-27b",
+      "routeId": "groq/qwen/qwen3.8-27b",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "LIMITED_FREE_ALLOWANCE",
+        "accessClass": "FREE_ALLOWANCE",
+        "source": "provider free-plan definition + bounded live allowance probe",
+        "observedAt": "2026-09-27T12:57:41.180Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "GROQ_API_KEY",
+      "accountId": "live-acct-groq",
+      "capacityPoolId": "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+      "correlationGroup": "groq-account:model:qwen/qwen3.8-27b",
+      "correlationCaveat": "one credential; documented/observed model-scoped rate windows are not account independence",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 131072,
+      "knownLimits": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-remaining-requests": "999",
+        "x-ratelimit-reset-requests": "1m26.4s",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-tokens": "7921",
+        "x-ratelimit-reset-tokens": "592ms"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": true,
+        "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+        "completedAt": "2026-09-26T23:54:56.523Z",
+        "qualificationState": "QUALIFIED",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "QUALIFIED",
+          "CODER": "QUALIFIED",
+          "REVIEWER": "QUALIFIED",
+          "TOOL_AGENT": "QUALIFIED",
+          "ANALYST": "QUALIFIED"
+        },
+        "caseCounts": {
+          "CODER": {
+            "passed": 2,
+            "total": 2,
+            "transient": 0
+          },
+          "TOOL_AGENT": {
+            "passed": 3,
+            "total": 3,
+            "transient": 0
+          },
+          "ANALYST": {
+            "passed": 1,
+            "total": 1,
+            "transient": 0
+          },
+          "EXPLORER": {
+            "passed": 0,
+            "total": 2,
+            "transient": 2
+          },
+          "PLANNER": {
+            "passed": 1,
+            "total": 2,
+            "transient": 1
+          },
+          "REVIEWER": {
+            "passed": 1,
+            "total": 6,
+            "transient": 5
+          }
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": true,
+      "providerDataPolicy": "standard"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "allam-2-7b",
+      "routeId": "groq/allam-2-7b",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "LIMITED_FREE_ALLOWANCE",
+        "accessClass": "FREE_ALLOWANCE",
+        "source": "provider free-plan definition + bounded live allowance probe",
+        "observedAt": "2026-09-27T12:57:41.180Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "GROQ_API_KEY",
+      "accountId": "live-acct-groq",
+      "capacityPoolId": "managed:groq:live-acct-groq:model:allam-2-7b",
+      "correlationGroup": "groq-account:model:allam-2-7b",
+      "correlationCaveat": "one credential; documented/observed model-scoped rate windows are not account independence",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 4096,
+      "knownLimits": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-remaining-requests": "999",
+        "x-ratelimit-reset-requests": "1m26.4s",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-tokens": "7921",
+        "x-ratelimit-reset-tokens": "592ms"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": true,
+        "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+        "completedAt": "2026-09-27T00:10:15.678Z",
+        "qualificationState": "HARD_FAILURE",
+        "roles": {
+          "EXPLORER": "NOT_TESTED",
+          "PLANNER": "NOT_TESTED",
+          "CODER": "HARD_FAILURE",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "HARD_FAILURE",
+          "ANALYST": "NOT_QUALIFIED"
+        },
+        "caseCounts": {
+          "CODER": {
+            "passed": 0,
+            "total": 2,
+            "transient": 0
+          },
+          "TOOL_AGENT": {
+            "passed": 0,
+            "total": 3,
+            "transient": 0
+          },
+          "ANALYST": {
+            "passed": 0,
+            "total": 1,
+            "transient": 0
+          }
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": false,
+      "providerDataPolicy": "standard"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "routeId": "groq/openai/gpt-oss-120b",
+      "catalogPresent": true,
+      "zeroCost": {
+        "proven": true,
+        "classification": "LIMITED_FREE_ALLOWANCE",
+        "accessClass": "FREE_ALLOWANCE",
+        "source": "provider free-plan definition + bounded live allowance probe",
+        "observedAt": "2026-09-27T12:57:41.180Z",
+        "paidFallbackDisabled": true
+      },
+      "credentialDomain": "GROQ_API_KEY",
+      "accountId": "live-acct-groq",
+      "capacityPoolId": "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+      "correlationGroup": "groq-account:model:openai/gpt-oss-120b",
+      "correlationCaveat": "one credential; documented/observed model-scoped rate windows are not account independence",
+      "capabilities": {
+        "toolCalling": true,
+        "streaming": true,
+        "structuredOutput": true,
+        "coding": true,
+        "vision": false
+      },
+      "contextWindow": 131072,
+      "knownLimits": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-remaining-requests": "999",
+        "x-ratelimit-reset-requests": "1m26.4s",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-tokens": "7921",
+        "x-ratelimit-reset-tokens": "592ms"
+      },
+      "health": {
+        "status": "UNKNOWN",
+        "lastSuccessfulInvocation": null,
+        "lastRateLimitEvent": null,
+        "cooldownUntil": null,
+        "durableAuthorityState": "not persisted"
+      },
+      "qualification": {
+        "current": true,
+        "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+        "completedAt": "2026-09-26T23:43:41.154Z",
+        "qualificationState": "QUALIFIED",
+        "roles": {
+          "EXPLORER": "PROBATION",
+          "PLANNER": "QUALIFIED",
+          "CODER": "QUALIFIED",
+          "REVIEWER": "NOT_TESTED",
+          "TOOL_AGENT": "PROBATION",
+          "ANALYST": "NOT_QUALIFIED"
+        },
+        "caseCounts": {
+          "CODER": {
+            "passed": 2,
+            "total": 2,
+            "transient": 0
+          },
+          "TOOL_AGENT": {
+            "passed": 2,
+            "total": 3,
+            "transient": 0
+          },
+          "ANALYST": {
+            "passed": 0,
+            "total": 1,
+            "transient": 0
+          },
+          "EXPLORER": {
+            "passed": 1,
+            "total": 2,
+            "transient": 0
+          },
+          "PLANNER": {
+            "passed": 1,
+            "total": 2,
+            "transient": 1
+          },
+          "REVIEWER": {
+            "passed": 0,
+            "total": 6,
+            "transient": 6
+          }
+        }
+      },
+      "lifecycle": "active",
+      "productAdmission": true,
+      "providerDataPolicy": "standard"
+    }
+  ],
+  "excludedProviders": [
+    {
+      "providerId": "mistral",
+      "credentialPresent": true,
+      "catalogModels": 44,
+      "economicClassification": "LIMITED_FREE_ALLOWANCE",
+      "reason": "DATA_POLICY_USER_CONSENT_REQUIRED",
+      "independence": "one credential domain, excluded from product traffic without explicit consent"
+    },
+    {
+      "providerId": "cloudflare-workers-ai",
+      "credentialPresent": true,
+      "catalogModels": 11,
+      "economicClassification": "INCLUDED_FREE",
+      "reason": "CLOUDFLARE_USAGE_SCOPE_REQUIRED",
+      "independence": "one account; fail-closed budget guard cannot read current neuron usage"
+    },
+    {
+      "providerId": "google",
+      "credentialPresent": true,
+      "economicClassification": "LIMITED_FREE_ALLOWANCE",
+      "reason": "USER_POLICY_ACCEPTANCE_REQUIRED_AND_TRAINING_POSSIBLE"
+    },
+    {
+      "providerId": "cerebras",
+      "credentialPresent": true,
+      "economicClassification": "TRIAL_CREDIT",
+      "reason": "PROMOTIONAL_CREDIT_NOT_MANAGED_FREE"
+    },
+    {
+      "providerId": "github-models",
+      "credentialPresent": true,
+      "economicClassification": "LIMITED_FREE_ALLOWANCE",
+      "reason": "LEGAL_REVIEW_REQUIRED_FOR_PRODUCTION"
+    },
+    {
+      "providerId": "openai",
+      "credentialPresent": true,
+      "economicClassification": "PAID",
+      "reason": "PAID_ONLY_FORBIDDEN_TO_8BIT"
+    },
+    {
+      "providerId": "anthropic",
+      "credentialPresent": true,
+      "economicClassification": "PAID",
+      "reason": "PAID_ONLY_FORBIDDEN_TO_8BIT"
+    }
+  ]
+}

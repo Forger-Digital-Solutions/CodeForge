@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "round": "R49",
+  "generatedAt": "2026-09-27T13:54:35.790Z",
+  "provenance": "derived from R49-LIVE-FREE-INVENTORY.json; no additional provider calls",
+  "statusVocabulary": [
+    "QUALIFIED",
+    "PROBATION",
+    "NOT_QUALIFIED",
+    "NOT_TESTED",
+    "HARD_FAILURE",
+    "EXPIRED"
+  ],
+  "independentCredentialDomains": [
+    {
+      "id": "openrouter:live-acct-openrouter",
+      "providerId": "openrouter",
+      "physicalPools": [
+        "managed:openrouter:live-acct-openrouter"
+      ],
+      "capacityCorrelation": "all OpenRouter free routes share one account-wide daily free-request envelope",
+      "roles": {
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED"
+      },
+      "availableNow": true,
+      "evidenceRoute": "nvidia/nemotron-3-super-120b-a12b:free",
+      "remainingAccountFreeRequests": 939
+    },
+    {
+      "id": "groq:live-acct-groq",
+      "providerId": "groq",
+      "physicalPools": [
+        "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+        "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+        "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b"
+      ],
+      "capacityCorrelation": "one credential domain with provider-documented and observed model-scoped windows; not account independence",
+      "roles": {
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED"
+      },
+      "availableNow": "PARTIAL",
+      "evidenceRoute": "openai/gpt-oss-20b",
+      "notes": [
+        "gpt-oss-20b has a fresh healthy probe but no Reviewer verdict.",
+        "qwen/qwen3.8-27b supplies the qualified Reviewer verdict but has no fresh R49 health observation."
+      ]
+    }
+  ],
+  "physicalPools": [
+    {
+      "poolId": "managed:openrouter:live-acct-openrouter",
+      "providerId": "openrouter",
+      "health": "HEALTHY",
+      "roles": {
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED"
+      }
+    },
+    {
+      "poolId": "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+      "providerId": "groq",
+      "health": "HEALTHY",
+      "roles": {
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "NOT_TESTED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED"
+      }
+    },
+    {
+      "poolId": "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+      "providerId": "groq",
+      "health": "UNKNOWN",
+      "roles": {
+        "EXPLORER": "PROBATION",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "NOT_TESTED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED"
+      }
+    },
+    {
+      "poolId": "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+      "providerId": "groq",
+      "health": "UNKNOWN",
+      "roles": {
+        "EXPLORER": "NOT_TESTED",
+        "PLANNER": "QUALIFIED",
+        "CODER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED"
+      }
+    }
+  ],
+  "coverage": {
+    "EXPLORER": {
+      "qualifiedRoutes": 2,
+      "probationRoutes": 1,
+      "independentCredentialDomains": 2,
+      "availableNow": 2
+    },
+    "PLANNER": {
+      "qualifiedRoutes": 4,
+      "probationRoutes": 0,
+      "independentCredentialDomains": 2,
+      "availableNow": 2
+    },
+    "CODER": {
+      "qualifiedRoutes": 5,
+      "probationRoutes": 0,
+      "independentCredentialDomains": 2,
+      "availableNow": 2
+    },
+    "REVIEWER": {
+      "qualifiedRoutes": 2,
+      "probationRoutes": 0,
+      "independentCredentialDomains": 2,
+      "availableNow": 1
+    },
+    "TOOL_AGENT": {
+      "qualifiedRoutes": 3,
+      "probationRoutes": 2,
+      "independentCredentialDomains": 2,
+      "availableNow": 2
+    },
+    "ANALYST": {
+      "qualifiedRoutes": 3,
+      "probationRoutes": 0,
+      "independentCredentialDomains": 2,
+      "availableNow": 2
+    }
+  },
+  "completeRolePathRedundancy": {
+    "qualifiedCredentialDomains": 2,
+    "availableNowCredentialDomains": 1,
+    "availableNowDomain": "openrouter:live-acct-openrouter",
+    "risk": "Reviewer available-now redundancy remains one; Groq Reviewer health needs fresh validation."
+  }
+}

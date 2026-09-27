@@ -1,0 +1,725 @@
+{
+  "schemaVersion": 1,
+  "round": "R49",
+  "generatedAt": "2026-09-27T13:52:47.036Z",
+  "provenance": "live zero-cost",
+  "target": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "costProfile": {
+      "inputCostPerMillion": 0,
+      "outputCostPerMillion": 0,
+      "isFree": true,
+      "freeTierVerifiedAt": "2026-09-27T13:51:02.453Z",
+      "paidFallbackPossible": false,
+      "paidFallbackDisabled": true,
+      "source": "models.dev"
+    },
+    "contextWindow": 262144,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": true,
+      "longContext": true
+    }
+  },
+  "stagedPreflight": {
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "observedAt": "2026-09-27T13:09:53.374Z",
+    "purpose": "one-call staged tool-protocol preflight before role qualification",
+    "request": {
+      "maxTokens": 256,
+      "requiredTool": "read_file",
+      "path": "package.json"
+    },
+    "response": {
+      "status": 200,
+      "finishReason": "tool_calls",
+      "servedModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "toolCall": {
+        "name": "read_file",
+        "arguments": {
+          "path": "package.json"
+        },
+        "valid": true
+      },
+      "usage": {
+        "inputTokens": 288,
+        "outputTokens": 45,
+        "reasoningTokens": 21,
+        "totalTokens": 333,
+        "costUsd": 0
+      }
+    },
+    "classification": "protocol_preflight_pass",
+    "notes": [
+      "Provider-reported cost was exactly zero.",
+      "This preflight justifies one bounded role-qualification campaign; it is not itself qualification."
+    ]
+  },
+  "catalog": {
+    "source": "live",
+    "modelCount": 1799,
+    "registered": 21,
+    "errors": [],
+    "allowanceProbeBudget": 0
+  },
+  "accountCapacity": {
+    "before": {
+      "observedAt": "2026-09-27T13:51:01.799Z",
+      "isFreeTier": false,
+      "freeModelDailyRequests": {
+        "used": 37,
+        "limit": 1000,
+        "remaining": 963
+      }
+    },
+    "after": {
+      "observedAt": "2026-09-27T13:52:47.036Z",
+      "isFreeTier": false,
+      "freeModelDailyRequests": {
+        "used": 53,
+        "limit": 1000,
+        "remaining": 947
+      }
+    }
+  },
+  "exactHttpResponseCount": 27,
+  "responseObservations": [
+    {
+      "providerId": "openrouter",
+      "modelId": null,
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:02.400Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:02.729Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:06.836Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:07.580Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:09.004Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:10.655Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:12.191Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:13.159Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:14.816Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:16.220Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:26.526Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:27.589Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:47.341Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:50.459Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:52.668Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:54.478Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:55.702Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:57.486Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:51:57.721Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:52:08.951Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:52:18.662Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:52:19.831Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:52:21.008Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:52:22.044Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:52:25.674Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:52:29.405Z"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": "2026-09-27T13:52:29.676Z"
+    }
+  ],
+  "priorReceiptCount": 10,
+  "receipt": {
+    "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+    "providerId": "openrouter",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "modelDisplayName": "Nemotron 3 Super (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4062,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2232,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 71
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 105
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-09-27T13:51:02.477Z",
+        "completedAt": "2026-09-27T13:51:10.419Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4062,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2232,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 71
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 105
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1645,
+            "retries": 0,
+            "details": {
+              "textLength": 64,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-09-27T13:51:02.477Z",
+        "completedAt": "2026-09-27T13:51:10.419Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1645,
+            "retries": 0,
+            "details": {
+              "textLength": 64,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-09-27T13:51:02.477Z",
+        "completedAt": "2026-09-27T13:51:10.419Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "explorer.route_execution",
+            "category": "explore",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 26931,
+            "retries": 1,
+            "details": {
+              "modelCalls": 4,
+              "filesRead": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "relevantFilesRead": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "searches": 0,
+              "totalToolCalls": 3,
+              "validCalls": 3,
+              "validToolCallRate": 1,
+              "readPrecision": 1,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "answerFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "recall": 1,
+              "reasoningRetries": 0,
+              "reasoningTokens": 85,
+              "firstAttempt": {
+                "modelCalls": 6,
+                "filesRead": [
+                  "src/router.ts",
+                  "src/provider/client.ts"
+                ],
+                "relevantFilesRead": [
+                  "src/router.ts",
+                  "src/provider/client.ts"
+                ],
+                "searches": 1,
+                "totalToolCalls": 6,
+                "validCalls": 6,
+                "validToolCallRate": 1,
+                "readPrecision": 1,
+                "hallucinatedPaths": [],
+                "mutationAttempts": 0,
+                "reportedFiles": [],
+                "answerFiles": [
+                  "src/router.ts",
+                  "src/provider/client.ts"
+                ],
+                "recall": 0,
+                "reasoningRetries": 0,
+                "reasoningTokens": 79
+              }
+            }
+          },
+          {
+            "caseId": "explorer.reservation_release",
+            "category": "explore",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 3245,
+            "retries": 0,
+            "error": "OpenRouter stream error (503): Upstream error from Nvidia: Service temporarily overloaded"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-09-27T13:51:10.419Z",
+        "completedAt": "2026-09-27T13:52:46.961Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "planner.release_callsite",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 11196,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 2,
+              "roles": [
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": false,
+              "reasoningTokens": 446
+            }
+          },
+          {
+            "caseId": "planner.schema",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 9650,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 2,
+              "roles": [
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": false,
+              "reasoningTokens": 976
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-09-27T13:51:10.419Z",
+        "completedAt": "2026-09-27T13:52:46.962Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1267,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The change replaces subtraction with multiplication, but the intent is to return the sum of arguments."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 96
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1112,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 82
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1081,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 92
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3628,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The recordFailure function only sends telemetry and does not store or increment any failure count locally, which is needed to demote the route based on provider failures."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 253
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 258,
+            "retries": 1,
+            "details": {
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "approve",
+                "expectedApproved": false,
+                "verdictCorrect": false,
+                "findingLocalized": false,
+                "findings": [],
+                "reasoningRetried": false,
+                "reasoningTokens": 377
+              }
+            },
+            "error": "OpenRouter stream error (503): Upstream error from Nvidia: Service temporarily overloaded"
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 17525,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The test no longer calls run() and does not test the router; it just asserts a constant, which does not address the flakiness and removes the test's purpose."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 263
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-09-27T13:51:10.419Z",
+        "completedAt": "2026-09-27T13:52:46.962Z"
+      }
+    },
+    "startedAt": "2026-09-27T13:51:02.477Z",
+    "completedAt": "2026-09-27T13:51:10.419Z",
+    "totalLatencyMs": 7942,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 15,
+      "transient": false,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R41_ROLE_QUALIFICATION_V3",
+      "roleTransientCases": 2
+    }
+  },
+  "paidSpendUsd": 0
+}
