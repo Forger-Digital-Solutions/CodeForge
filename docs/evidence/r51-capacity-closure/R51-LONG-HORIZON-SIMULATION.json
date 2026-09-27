@@ -1,0 +1,1110 @@
+{
+  "schemaVersion": 1,
+  "round": "R51",
+  "generatedAt": "2026-09-27T22:45:37.461Z",
+  "simulatedWindow": {
+    "assignments": 240,
+    "tickMs": 60000,
+    "seed": "0x51ca51"
+  },
+  "purpose": "Deterministic long-horizon proof of the CAPACITY_UNMEASURED seam: unmeasured supply is never parked, never admitted on faith, and is always recoverable through one bounded measurement.",
+  "invariants": [
+    "I1: zero authoritative windows => never ADMITTED without measurement",
+    "I2: unmeasured-only denial => DENIED_NO_SUPPLY, never QUEUED_FOR_CAPACITY, never nextAvailableAt",
+    "I3: measured-zero exhaustion => QUEUED_FOR_CAPACITY with provider reset evidence",
+    "I4: after measurement the same requestId re-decides — admitted or truthfully denied",
+    "I5: probes are bounded — one per denied domain per decide pass"
+  ],
+  "stats": {
+    "decisions": 241,
+    "admitted": 210,
+    "queuedMeasured": 30,
+    "unmeasuredDenials": 1,
+    "probes": 5,
+    "violations": []
+  },
+  "probeLogLength": 5,
+  "traceSample": [
+    {
+      "tick": 0,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:ok",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 1,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 2,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:ok",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 3,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:ok",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 4,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:ok",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 5,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 6,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 7,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 8,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "mistral/beta-model",
+      "candidates": [
+        "CAPACITY_DENIED",
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": "2026-09-28T00:00:00.000Z",
+      "fleet": [
+        "alpha:empty",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 9,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "mistral/beta-model",
+      "candidates": [
+        "CAPACITY_DENIED",
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": "2026-09-28T00:00:00.000Z",
+      "fleet": [
+        "alpha:empty",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 10,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "mistral/beta-model",
+      "candidates": [
+        "CAPACITY_DENIED",
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": "2026-09-28T00:00:00.000Z",
+      "fleet": [
+        "alpha:empty",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 11,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "mistral/beta-model",
+      "candidates": [
+        "CAPACITY_DENIED",
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": "2026-09-28T00:00:00.000Z",
+      "fleet": [
+        "alpha:empty",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 12,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 13,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 14,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 15,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 16,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:unmeasured"
+      ]
+    },
+    {
+      "tick": 17,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "mistral/beta-model",
+      "candidates": [
+        "CAPACITY_DENIED",
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": "2026-09-28T00:00:00.000Z",
+      "fleet": [
+        "alpha:empty",
+        "beta:ok",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:unmeasured"
+      ]
+    },
+    {
+      "tick": 18,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "cerebras/delta-model",
+      "candidates": [
+        "CAPACITY_DENIED",
+        "CAPACITY_UNMEASURED",
+        "SELECTED",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": "2026-09-28T00:00:00.000Z",
+      "fleet": [
+        "alpha:empty",
+        "beta:unmeasured",
+        "gamma:unmeasured",
+        "delta:ok",
+        "epsilon:unmeasured"
+      ]
+    },
+    {
+      "tick": 19,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "cerebras/delta-model",
+      "candidates": [
+        "CAPACITY_DENIED",
+        "CAPACITY_UNMEASURED",
+        "SELECTED",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": "2026-09-28T00:00:00.000Z",
+      "fleet": [
+        "alpha:empty",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:unmeasured"
+      ]
+    },
+    {
+      "tick": 20,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "cerebras/delta-model",
+      "candidates": [
+        "CAPACITY_DENIED",
+        "CAPACITY_UNMEASURED",
+        "SELECTED",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": "2026-09-28T00:00:00.000Z",
+      "fleet": [
+        "alpha:empty",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:unmeasured"
+      ]
+    },
+    {
+      "tick": 21,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "cerebras/delta-model",
+      "candidates": [
+        "CAPACITY_UNMEASURED",
+        "CAPACITY_UNMEASURED",
+        "SELECTED",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:unmeasured",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:unmeasured"
+      ]
+    },
+    {
+      "tick": 22,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "cerebras/delta-model",
+      "candidates": [
+        "CAPACITY_UNMEASURED",
+        "CAPACITY_UNMEASURED",
+        "SELECTED",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:unmeasured",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 23,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 24,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 25,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:empty",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 26,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:empty",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 27,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:empty",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 28,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:ok"
+      ]
+    },
+    {
+      "tick": 29,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 30,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 31,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:empty",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 32,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 33,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 34,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:empty",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 35,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 36,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 37,
+      "role": "SUBAGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:ok",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 38,
+      "role": "REVIEWER",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:empty",
+        "epsilon:empty"
+      ]
+    },
+    {
+      "tick": 39,
+      "role": "PRIMARY_CODING_AGENT",
+      "outcome": "ADMITTED",
+      "selected": "groq/alpha-model",
+      "candidates": [
+        "SELECTED",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY",
+        "STANDBY"
+      ],
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "nextAvailableAt": null,
+      "fleet": [
+        "alpha:ok",
+        "beta:unmeasured",
+        "gamma:ok",
+        "delta:empty",
+        "epsilon:ok"
+      ]
+    }
+  ],
+  "verdict": "ALL_INVARIANTS_HELD"
+}
