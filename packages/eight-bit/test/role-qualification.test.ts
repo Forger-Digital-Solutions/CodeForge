@@ -238,3 +238,68 @@ describe("R27 — composed runner emits one receipt with all role evidence", () 
     expect(receipt.qualificationState).toBe("QUALIFIED");
   });
 });
+
+describe("R48 — reasoning-starvation headroom", () => {
+  const starved = (reasoningTokens: number): StreamEvent[] => [
+    { type: "usage", usage: { inputTokens: 200, outputTokens: 800, reasoningTokens } },
+    { type: "finish", finishReason: "length" },
+  ];
+
+  it("re-issues a starved probe call once with measured headroom and scores the second answer", async () => {
+    const adapter = new ScriptedAdapter((req) => {
+      const t = body(req);
+      if (t.includes("task planner")) {
+        // Reasoning burn at the flat budget: 600 hidden tokens + truncation. The headroom
+        // retry (baseline + max(observed, reserve)) is what finally yields the plan.
+        if ((req.maxTokens ?? 0) <= 1_200) return starved(600);
+        return text(plannerJsonFor(req));
+      }
+      return goodScript(req);
+    });
+    const receipt = await runRoleAwareQualification(MODEL, adapter);
+    const planner = receipt.roleResults.PLANNER;
+    const plannerCalls = adapter.requests.filter((r) => body(r).includes("task planner"));
+    // Each case starves at the flat budget once, then re-issues with measured headroom.
+    expect(plannerCalls.map((r) => r.maxTokens)).toEqual([1_200, 1_200 + 1_024, 1_200, 1_200 + 1_024]);
+    expect(planner).toBeDefined();
+    const details = planner!.testCases[0]?.details as { reasoningRetried?: boolean; reasoningTokens?: number } | undefined;
+    expect(details?.reasoningRetried).toBe(true);
+    expect(planner!.status).toBe("QUALIFIED");
+  });
+
+  it("retries an EMPTY_COMPLETION only when the provider reported reasoning spend", async () => {
+    const emptyWithReasoning = new ScriptedAdapter((req) => {
+      const t = body(req);
+      if (t.includes("task planner")) {
+        if ((req.maxTokens ?? 0) <= 1_200) {
+          return [
+            { type: "usage", usage: { inputTokens: 200, outputTokens: 1_200, reasoningTokens: 1_050 } },
+            { type: "error", code: "EMPTY_COMPLETION", message: "no usable completion choices", retryable: true },
+          ];
+        }
+        return text(plannerJsonFor(req));
+      }
+      return goodScript(req);
+    });
+    const receipt = await runRoleAwareQualification(MODEL, emptyWithReasoning);
+    const plannerCalls = emptyWithReasoning.requests.filter((r) => body(r).includes("task planner"));
+    expect(plannerCalls.length).toBe(4); // two cases × (starved + headroom retry)
+    expect(receipt.roleResults.PLANNER?.status).toBe("QUALIFIED");
+
+    const emptySilent = new ScriptedAdapter((req) => {
+      const t = body(req);
+      if (t.includes("task planner")) {
+        return [
+          { type: "usage", usage: { inputTokens: 200, outputTokens: 10 } },
+          { type: "error", code: "EMPTY_COMPLETION", message: "no usable completion choices", retryable: true },
+        ];
+      }
+      return goodScript(req);
+    });
+    await runRoleAwareQualification(MODEL, emptySilent);
+    const silentPlannerCalls = emptySilent.requests.filter((r) => body(r).includes("task planner"));
+    // No reasoning evidence → the error is a genuine upstream failure; one call per case,
+    // never a paid retry against silence.
+    expect(silentPlannerCalls.length).toBe(2);
+  });
+});

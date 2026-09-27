@@ -46,16 +46,34 @@ export interface RoleQualificationOutput {
 
 const TRANSIENT_RE = /\b429\b|rate.?limit|quota|\b401\b|\b403\b|\b5\d\d\b|timed? ?out|econnreset|fetch failed|no usable completion choices|R41_BOUND/i;
 
+/**
+ * R48: reasoning-token headroom for qualification probes — mirrors the production
+ * role-output-budget reserve (packages/server/src/role-output-budget.ts) the probes
+ * previously lacked. A reasoning model that burns the whole flat probe budget on hidden
+ * reasoning returns an empty/truncated answer and reads as a capability failure it never
+ * earned. Headroom is earned by the starvation signature, not assumed: an observed
+ * reasoning spend (or an empty answer after a clean full-budget burn) re-issues THAT call
+ * once with measured reserve, bounded by the production hard cap.
+ */
+const QUALIFICATION_REASONING_RESERVE_TOKENS = 1_024;
+const QUALIFICATION_OUTPUT_HARD_CAP_TOKENS = 4_096;
+
 interface ObserveResult {
   text: string;
   toolCalls: Array<{ name: string; args: Record<string, unknown>; malformed: boolean }>;
   finishReason?: string;
   inputTokens?: number;
   outputTokens?: number;
+  /** Provider-reported reasoning tokens (`completion_tokens_details.reasoning_tokens`). */
+  reasoningTokens?: number;
+  /** The observation is the bounded reasoning-headroom retry; the starved first attempt's
+   *  size signature is preserved in the case details. */
+  reasoningRetried?: boolean;
+  starvedAttempt?: { maxTokens?: number; reasoningTokens?: number; finishReason?: string };
   error?: string;
 }
 
-async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number): Promise<ObserveResult> {
+async function observeOnce(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number): Promise<ObserveResult> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   const calls: ObserveResult["toolCalls"] = [];
@@ -63,12 +81,17 @@ async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, t
   let finishReason: string | undefined;
   let inputTokens: number | undefined;
   let outputTokens: number | undefined;
+  let reasoningTokens: number | undefined;
   try {
     if (!adapter.streamChat) return { text, toolCalls: calls, error: "provider exposes no streamChat" };
     for await (const ev of adapter.streamChat(req, controller.signal)) {
       if (ev.type === "text_delta") text += ev.delta;
       if (ev.type === "finish") finishReason = ev.finishReason;
-      if (ev.type === "usage") { inputTokens = ev.usage.inputTokens; outputTokens = ev.usage.outputTokens; }
+      if (ev.type === "usage") {
+        inputTokens = ev.usage.inputTokens;
+        outputTokens = ev.usage.outputTokens;
+        reasoningTokens = ev.usage.reasoningTokens;
+      }
       if (ev.type === "tool_call_completed") {
         let args: Record<string, unknown> = {};
         let malformed = false;
@@ -79,14 +102,37 @@ async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, t
         }
         calls.push({ name: ev.toolName ?? "", args, malformed });
       }
-      if (ev.type === "error") return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, error: ev.message };
+      if (ev.type === "error") return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: ev.message };
     }
-    return { text, toolCalls: calls, finishReason, inputTokens, outputTokens };
+    return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens };
   } catch (e) {
-    return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, error: e instanceof Error ? e.message : String(e) };
+    return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: e instanceof Error ? e.message : String(e) };
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number): Promise<ObserveResult> {
+  const first = await observeOnce(adapter, req, timeoutMs);
+  // Starvation signature: the call returned without error yet delivered no usable payload —
+  // either the provider truncated at the cap (length) or the answer never arrived (empty
+  // text, no tool calls). A reasoning-only burn surfaces as an EMPTY_COMPLETION error — a
+  // retry there is justified only by measured reasoning spend; without it the error is
+  // genuine upstream failure and retrying just re-pays for silence.
+  const starved = first.error === undefined
+    ? first.finishReason === "length" || (first.text.trim().length === 0 && first.toolCalls.length === 0)
+    : /EMPTY_COMPLETION|no usable completion/i.test(first.error) && (first.reasoningTokens ?? 0) > 0;
+  if (!starved) return first;
+  const baseline = req.maxTokens ?? 0;
+  const headroom = Math.max(first.reasoningTokens ?? 0, QUALIFICATION_REASONING_RESERVE_TOKENS);
+  const retryMax = Math.min(QUALIFICATION_OUTPUT_HARD_CAP_TOKENS, baseline + headroom);
+  if (retryMax <= baseline) return first;
+  const second = await observeOnce(adapter, { ...req, maxTokens: retryMax }, timeoutMs);
+  return {
+    ...second,
+    reasoningRetried: true,
+    starvedAttempt: { maxTokens: baseline, reasoningTokens: first.reasoningTokens, finishReason: first.finishReason },
+  };
 }
 
 function toolDef(name: string, description: string, properties: Record<string, unknown>, required: string[]): ToolDefinition {
@@ -170,12 +216,14 @@ async function runExplorerCase(adapter: CompactQualificationAdapter, modelId: st
   let modelCalls = 0;
   let validCalls = 0;
   let totalToolCalls = 0;
+  let reasoningRetries = 0;
   let lastObs: ObserveResult | undefined;
   let reportedFiles: string[] = [];
 
   while (modelCalls < caze.maxModelCalls) {
     modelCalls++;
     lastObs = await observe(adapter, { model: modelId, messages, tools: EXPLORER_TOOLS, toolChoice: "auto", temperature: 0, maxTokens: 800 }, timeoutMs);
+    if (lastObs.reasoningRetried) reasoningRetries++;
     if (lastObs.error) return caseResult(caze.caseId, "explore", false, started, { error: lastObs.error.slice(0, 200) });
     totalToolCalls += lastObs.toolCalls.length;
     let executed = 0;
@@ -218,6 +266,8 @@ async function runExplorerCase(adapter: CompactQualificationAdapter, modelId: st
     reportedFiles,
     answerFiles: [...answerSet],
     recall,
+    reasoningRetries,
+    reasoningTokens: lastObs?.reasoningTokens,
   };
   const passed =
     recall >= caze.minRecall &&
@@ -300,7 +350,7 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
   const inventedPaths = [...new Set(tasks.flatMap((t) => plannerTaskText(t).match(pathToken) ?? []).filter((p) => !knownPaths.has(p) && !p.startsWith("http")))];
   const verificationStepPresent = tasks.some((t) => /verif|test|review/i.test(plannerTaskText(t)) || String(t.assignedRole).toLowerCase() === "reviewer");
   const scopeWithinBudget = tasks.length <= caze.maxTasks;
-  const details = { protocol: plan?.sourceProtocol ?? plan?.protocol, tasks: tasks.length, roles, requiredRolesPresent, dependencyOrderValid, inventedPaths, verificationStepPresent, scopeWithinBudget, schemaValid };
+  const details = { protocol: plan?.sourceProtocol ?? plan?.protocol, tasks: tasks.length, roles, requiredRolesPresent, dependencyOrderValid, inventedPaths, verificationStepPresent, scopeWithinBudget, schemaValid, reasoningRetried: obs.reasoningRetried === true, reasoningTokens: obs.reasoningTokens, starvedAttempt: obs.starvedAttempt };
   const passed = schemaValid && requiredRolesPresent && dependencyOrderValid && inventedPaths.length === 0 && verificationStepPresent && scopeWithinBudget;
   return caseResult(caze.caseId, "plan", passed, started, { details, hardFailure: !schemaValid });
 }
@@ -346,6 +396,8 @@ async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: st
     verdictCorrect,
     findingLocalized,
     findings: (parsed?.findings ?? []).map((f) => f.message).slice(0, 5),
+    reasoningRetried: obs.reasoningRetried === true,
+    reasoningTokens: obs.reasoningTokens,
   };
   // A buggy diff approved, or an approved-without-localization, is a fail. For the clean diff,
   // rejection is the false positive this case exists to measure.
