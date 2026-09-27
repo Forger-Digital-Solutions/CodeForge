@@ -1,0 +1,6663 @@
+{
+  "at": "2026-09-27T00:19:47.740Z",
+  "topology": "adaptive",
+  "providers": [
+    "openrouter",
+    "groq",
+    "mistral"
+  ],
+  "verifiedRoutes": 64,
+  "independentPools": [
+    "owner:mistral:model:codestral-latest",
+    "managed:mistral:live-acct-mistral:model:codestral-latest",
+    "owner:groq:model:openai/gpt-oss-120b",
+    "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+    "cloudflare-workers-ai:user:localconn:cloudflare-workers-ai",
+    "owner:groq:model:openai/gpt-oss-20b",
+    "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+    "owner:mistral:model:ministral-3b-latest",
+    "managed:mistral:live-acct-mistral:model:ministral-3b-latest",
+    "owner:mistral:model:ministral-8b-latest",
+    "managed:mistral:live-acct-mistral:model:ministral-8b-latest",
+    "owner:openrouter",
+    "managed:openrouter:live-acct-openrouter",
+    "opencode:user:localconn:opencode",
+    "owner:groq:model:qwen/qwen3.8-27b",
+    "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+    "owner:mistral:model:mistral-code-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-code-latest",
+    "owner:mistral:model:mistral-code-fim-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-code-fim-latest",
+    "owner:mistral:model:magistral-medium-latest",
+    "managed:mistral:live-acct-mistral:model:magistral-medium-latest",
+    "owner:mistral:model:ministral-14b-2512",
+    "managed:mistral:live-acct-mistral:model:ministral-14b-2512",
+    "owner:mistral:model:ministral-3b-2512",
+    "managed:mistral:live-acct-mistral:model:ministral-3b-2512",
+    "owner:mistral:model:ministral-8b-2512",
+    "managed:mistral:live-acct-mistral:model:ministral-8b-2512",
+    "owner:mistral:model:ministral-14b-latest",
+    "managed:mistral:live-acct-mistral:model:ministral-14b-latest",
+    "owner:mistral:model:mistral-medium-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-latest",
+    "owner:mistral:model:mistral-medium-2604",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-2604",
+    "owner:mistral:model:mistral-ocr-2512",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-2512",
+    "owner:mistral:model:mistral-ocr-4-0",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-4-0",
+    "owner:mistral:model:mistral-ocr-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-latest",
+    "owner:mistral:model:mistral-small-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-small-latest",
+    "owner:mistral:model:mistral-small-2603",
+    "managed:mistral:live-acct-mistral:model:mistral-small-2603",
+    "owner:mistral:model:mistral-medium",
+    "managed:mistral:live-acct-mistral:model:mistral-medium",
+    "owner:mistral:model:mistral-medium-3-5",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-3-5",
+    "owner:mistral:model:mistral-medium-3.5",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-3.5",
+    "owner:mistral:model:mistral-medium-3",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-3",
+    "owner:mistral:model:mistral-vibe-cli-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-vibe-cli-latest",
+    "owner:mistral:model:mistral-vibe-cli-with-tools",
+    "managed:mistral:live-acct-mistral:model:mistral-vibe-cli-with-tools",
+    "owner:mistral:model:mistral-ocr-3-0",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-3-0",
+    "owner:mistral:model:mistral-ocr-3",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-3",
+    "owner:mistral:model:mistral-ocr-4",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-4",
+    "owner:mistral:model:mistral-ocr-4-1",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-4-1",
+    "owner:mistral:model:mistral-vibe-cli-fast",
+    "managed:mistral:live-acct-mistral:model:mistral-vibe-cli-fast",
+    "owner:mistral:model:magistral-small-latest",
+    "managed:mistral:live-acct-mistral:model:magistral-small-latest",
+    "owner:mistral:model:voxtral-mini-latest",
+    "managed:mistral:live-acct-mistral:model:voxtral-mini-latest",
+    "owner:mistral:model:voxtral-mini-2602",
+    "managed:mistral:live-acct-mistral:model:voxtral-mini-2602",
+    "owner:mistral:model:voxtral-mini-transcribe-realtime-2602",
+    "managed:mistral:live-acct-mistral:model:voxtral-mini-transcribe-realtime-2602",
+    "owner:mistral:model:voxtral-small-latest",
+    "managed:mistral:live-acct-mistral:model:voxtral-small-latest",
+    "owner:mistral:model:voxtral-small-2507",
+    "managed:mistral:live-acct-mistral:model:voxtral-small-2507",
+    "owner:mistral:model:voxtral-mini-realtime-2602",
+    "managed:mistral:live-acct-mistral:model:voxtral-mini-realtime-2602",
+    "owner:mistral:model:voxtral-mini-realtime-latest",
+    "managed:mistral:live-acct-mistral:model:voxtral-mini-realtime-latest",
+    "owner:groq:model:allam-2-7b",
+    "managed:groq:live-acct-groq:model:allam-2-7b",
+    "owner:mistral:model:codestral-2508",
+    "managed:mistral:live-acct-mistral:model:codestral-2508",
+    "owner:mistral:model:devstral-medium-latest",
+    "managed:mistral:live-acct-mistral:model:devstral-medium-latest",
+    "owner:mistral:model:devstral-2512",
+    "managed:mistral:live-acct-mistral:model:devstral-2512",
+    "owner:mistral:model:devstral-latest",
+    "managed:mistral:live-acct-mistral:model:devstral-latest",
+    "owner:mistral:model:devstral-medium-2507",
+    "managed:mistral:live-acct-mistral:model:devstral-medium-2507",
+    "owner:mistral:model:devstral-small-2507",
+    "managed:mistral:live-acct-mistral:model:devstral-small-2507",
+    "owner:mistral:model:labs-devstral-small-2512",
+    "managed:mistral:live-acct-mistral:model:labs-devstral-small-2512",
+    "owner:mistral:model:devstral-small-2505",
+    "managed:mistral:live-acct-mistral:model:devstral-small-2505",
+    "owner:mistral:model:zai-glm-5-2",
+    "managed:mistral:live-acct-mistral:model:zai-glm-5-2",
+    "owner:mistral:model:zai-glm-5-3",
+    "managed:mistral:live-acct-mistral:model:zai-glm-5-3",
+    "owner:groq:model:llama-3.1-8b-instant",
+    "managed:groq:live-acct-groq:model:llama-3.1-8b-instant",
+    "owner:groq:model:llama-3.3-70b-versatile",
+    "managed:groq:live-acct-groq:model:llama-3.3-70b-versatile",
+    "owner:mistral:model:magistral-small",
+    "managed:mistral:live-acct-mistral:model:magistral-small",
+    "owner:mistral:model:open-mistral-7b",
+    "managed:mistral:live-acct-mistral:model:open-mistral-7b",
+    "owner:mistral:model:mistral-large-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-large-latest",
+    "owner:mistral:model:mistral-large-2411",
+    "managed:mistral:live-acct-mistral:model:mistral-large-2411",
+    "owner:mistral:model:mistral-large-2512",
+    "managed:mistral:live-acct-mistral:model:mistral-large-2512",
+    "owner:mistral:model:mistral-medium-2505",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-2505",
+    "owner:mistral:model:mistral-medium-2508",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-2508",
+    "owner:mistral:model:mistral-nemo",
+    "managed:mistral:live-acct-mistral:model:mistral-nemo",
+    "owner:mistral:model:mistral-small-2506",
+    "managed:mistral:live-acct-mistral:model:mistral-small-2506",
+    "owner:mistral:model:open-mixtral-8x22b",
+    "managed:mistral:live-acct-mistral:model:open-mixtral-8x22b",
+    "owner:mistral:model:open-mixtral-8x7b",
+    "managed:mistral:live-acct-mistral:model:open-mixtral-8x7b",
+    "owner:mistral:model:open-mistral-nemo",
+    "managed:mistral:live-acct-mistral:model:open-mistral-nemo",
+    "owner:mistral:model:pixtral-12b",
+    "managed:mistral:live-acct-mistral:model:pixtral-12b",
+    "owner:mistral:model:pixtral-large-latest",
+    "managed:mistral:live-acct-mistral:model:pixtral-large-latest",
+    "owner:groq:model:qwen/qwen3.6-27b",
+    "managed:groq:live-acct-groq:model:qwen/qwen3.6-27b",
+    "google:user:localconn:google",
+    "zai:user:localconn:zai"
+  ],
+  "probeEconomics": {
+    "qualificationCycles": 1,
+    "qualificationCalls": 85
+  },
+  "missions": [
+    {
+      "task": "r46-distributed-bug",
+      "kind": "distributed-bug",
+      "topology": "normal",
+      "topologyPolicy": "adaptive",
+      "missionAdmission": {
+        "verdict": "ADMIT",
+        "reason": "126 usable pool(s); capacity unmeasured — fabric enforces per-turn admission",
+        "provableCalls": 1110,
+        "requiredCalls": 6
+      },
+      "status": "blocked",
+      "blockedReason": "SUBAGENT_WRITER_BLOCKED",
+      "counters": {
+        "childrenSpawned": 3,
+        "reviewRounds": 2,
+        "taskAttempts": 1,
+        "verificationAttempts": 0
+      },
+      "changedFiles": [
+        "src/normalize.mjs",
+        "src/report.mjs",
+        "tests/report.test.mjs"
+      ],
+      "verification": [],
+      "review": {
+        "passed": false,
+        "findings": 0
+      },
+      "wallMs": 217622,
+      "calls": 45,
+      "inTokens": 220089,
+      "outTokens": 6300,
+      "errors": 0,
+      "providers": [
+        "groq",
+        "mistral"
+      ],
+      "models": [
+        "openai/gpt-oss-20b",
+        "codestral-2508"
+      ],
+      "errorKinds": [],
+      "rateLimitClasses": [],
+      "rateLimited": false,
+      "supplyBlocked": false,
+      "roleDiversity": 2,
+      "failovers": 0,
+      "harvested": {
+        "duplicatesSuppressed": 0,
+        "turnFailures": [
+          {
+            "turnId": "child-f512af93-6cf9-4a07-9036-35c21bdb766b",
+            "error": "Expected non-empty string for summary"
+          },
+          {
+            "turnId": "child-b5e72f11-aa6a-4c9b-bc23-5fb04ea9a949",
+            "error": "The test `report.test.mjs` fails due to discrepancies in the expected and actual values of `r.count` and `r.sum`. The issue is caused by the `normalize` functio"
+          },
+          {
+            "turnId": "child-07201edc-5a29-4747-afc3-76282630d12e",
+            "error": "The `normalize` function is causing the test to fail by filtering out negative amounts and rounding the amounts to the nearest integer, which affects the calcul"
+          }
+        ],
+        "receipts": {
+          "sustainability": [
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            }
+          ]
+        },
+        "journals": [
+          {
+            "runId": "child-f512af93-6cf9-4a07-9036-35c21bdb766b",
+            "agentId": "explorer",
+            "role": "explorer",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 0,
+            "route": {
+              "providerId": "groq",
+              "modelId": "openai/gpt-oss-20b"
+            },
+            "toolTrace": [],
+            "explorationBrief": {
+              "bytes": 1160,
+              "candidateFiles": 3,
+              "candidatePaths": [
+                "tests/report.test.mjs",
+                "src/report.mjs",
+                "src/normalize.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 3
+            },
+            "adaptiveTurnBudget": {
+              "original": 10,
+              "applied": 4,
+              "reason": "orientation packet covered 3 candidate files and resolved 1/12 goal symbols"
+            },
+            "routeWindows": [
+              {
+                "providerId": "groq",
+                "modelId": "openai/gpt-oss-20b",
+                "calls": 1,
+                "firstCallAt": "2026-09-27T00:10:18.703Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [],
+            "stopReason": "error"
+          },
+          {
+            "runId": "child-1f8da2ed-6774-49d9-afc9-4846687ef2e9",
+            "agentId": "coder",
+            "role": "coder",
+            "state": "completed",
+            "turnCount": 8,
+            "toolCallCount": 7,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "tests/report.test.mjs",
+                    "outcome": "success",
+                    "bytes": 314
+                  }
+                ]
+              },
+              {
+                "turn": 2,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/report.mjs",
+                    "outcome": "success",
+                    "bytes": 268
+                  }
+                ]
+              },
+              {
+                "turn": 3,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "success",
+                    "bytes": 208
+                  }
+                ]
+              },
+              {
+                "turn": 4,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "tests/report.test.mjs",
+                    "outcome": "success",
+                    "bytes": 113
+                  }
+                ]
+              },
+              {
+                "turn": 5,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "run_command",
+                    "target": "node tests/report.test.mjs",
+                    "outcome": "failed",
+                    "bytes": 668
+                  }
+                ]
+              },
+              {
+                "turn": 6,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "tests/report.test.mjs",
+                    "outcome": "success",
+                    "bytes": 113
+                  }
+                ]
+              },
+              {
+                "turn": 7,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "run_command",
+                    "target": "node tests/report.test.mjs",
+                    "outcome": "success",
+                    "bytes": 23
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 8,
+                "firstCallAt": "2026-09-27T00:10:22.912Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [
+              {
+                "seq": 1,
+                "turn": 4,
+                "tool": "edit_file",
+                "path": "tests/report.test.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "success"
+              },
+              {
+                "seq": 2,
+                "turn": 6,
+                "tool": "edit_file",
+                "path": "tests/report.test.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "edit",
+                "outcome": "success"
+              }
+            ],
+            "stopReason": "completed"
+          },
+          {
+            "runId": "child-b5e72f11-aa6a-4c9b-bc23-5fb04ea9a949",
+            "agentId": "reviewer",
+            "role": "reviewer",
+            "state": "completed",
+            "turnCount": 3,
+            "toolCallCount": 2,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/report.mjs",
+                    "outcome": "success",
+                    "bytes": 268
+                  }
+                ]
+              },
+              {
+                "turn": 2,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "success",
+                    "bytes": 208
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 3,
+                "firstCallAt": "2026-09-27T00:10:38.878Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [],
+            "stopReason": "completed"
+          },
+          {
+            "runId": "child-6c2bcb4f-43e6-4e9b-ba52-43f5a3a85e4f",
+            "agentId": "coder",
+            "role": "coder",
+            "state": "completed",
+            "turnCount": 22,
+            "toolCallCount": 21,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "tests/report.test.mjs",
+                    "outcome": "success",
+                    "bytes": 314
+                  }
+                ]
+              },
+              {
+                "turn": 2,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/report.mjs",
+                    "outcome": "success",
+                    "bytes": 268
+                  }
+                ]
+              },
+              {
+                "turn": 3,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "success",
+                    "bytes": 208
+                  }
+                ]
+              },
+              {
+                "turn": 4,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "failed",
+                    "bytes": 212
+                  }
+                ]
+              },
+              {
+                "turn": 5,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "failed",
+                    "bytes": 212
+                  }
+                ]
+              },
+              {
+                "turn": 6,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "success",
+                    "bytes": 208
+                  }
+                ]
+              },
+              {
+                "turn": 7,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "failed",
+                    "bytes": 212
+                  }
+                ]
+              },
+              {
+                "turn": 8,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "failed",
+                    "bytes": 212
+                  }
+                ]
+              },
+              {
+                "turn": 9,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "success",
+                    "bytes": 109
+                  }
+                ]
+              },
+              {
+                "turn": 10,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "run_command",
+                    "target": "node tests/report.test.mjs",
+                    "outcome": "failed",
+                    "bytes": 668
+                  }
+                ]
+              },
+              {
+                "turn": 11,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/report.mjs",
+                    "outcome": "success",
+                    "bytes": 268
+                  }
+                ]
+              },
+              {
+                "turn": 12,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "failed",
+                    "bytes": 144
+                  }
+                ]
+              },
+              {
+                "turn": 13,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "tests/report.test.mjs",
+                    "outcome": "success",
+                    "bytes": 314
+                  }
+                ]
+              },
+              {
+                "turn": 14,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/report.mjs",
+                    "outcome": "success",
+                    "bytes": 106
+                  }
+                ]
+              },
+              {
+                "turn": 15,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "run_command",
+                    "target": "node tests/report.test.mjs",
+                    "outcome": "failed",
+                    "bytes": 668
+                  }
+                ]
+              },
+              {
+                "turn": 16,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/report.mjs",
+                    "outcome": "success",
+                    "bytes": 267
+                  }
+                ]
+              },
+              {
+                "turn": 17,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "tests/report.test.mjs",
+                    "outcome": "success",
+                    "bytes": 113
+                  }
+                ]
+              },
+              {
+                "turn": 18,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "run_command",
+                    "target": "node tests/report.test.mjs",
+                    "outcome": "failed",
+                    "bytes": 676
+                  }
+                ]
+              },
+              {
+                "turn": 19,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "failed",
+                    "bytes": 144
+                  }
+                ]
+              },
+              {
+                "turn": 20,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "tests/report.test.mjs",
+                    "outcome": "success",
+                    "bytes": 113
+                  }
+                ]
+              },
+              {
+                "turn": 21,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "run_command",
+                    "target": "node tests/report.test.mjs",
+                    "outcome": "success",
+                    "bytes": 23
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 22,
+                "firstCallAt": "2026-09-27T00:10:46.704Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [
+              {
+                "seq": 1,
+                "turn": 4,
+                "tool": "edit_file",
+                "path": "src/normalize.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 2,
+                "turn": 5,
+                "tool": "edit_file",
+                "path": "src/normalize.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 3,
+                "turn": 7,
+                "tool": "edit_file",
+                "path": "src/normalize.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 4,
+                "turn": 8,
+                "tool": "edit_file",
+                "path": "src/normalize.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 5,
+                "turn": 9,
+                "tool": "edit_file",
+                "path": "src/normalize.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "success"
+              },
+              {
+                "seq": 6,
+                "turn": 12,
+                "tool": "edit_file",
+                "path": "src/normalize.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "edit",
+                "outcome": "failed",
+                "errorCode": "TOOL_NO_EFFECT",
+                "failureClass": "no_effect"
+              },
+              {
+                "seq": 7,
+                "turn": 14,
+                "tool": "edit_file",
+                "path": "src/report.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "success"
+              },
+              {
+                "seq": 8,
+                "turn": 17,
+                "tool": "edit_file",
+                "path": "tests/report.test.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "success"
+              },
+              {
+                "seq": 9,
+                "turn": 19,
+                "tool": "edit_file",
+                "path": "src/normalize.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "edit",
+                "outcome": "failed",
+                "errorCode": "TOOL_NO_EFFECT",
+                "failureClass": "no_effect"
+              },
+              {
+                "seq": 10,
+                "turn": 20,
+                "tool": "edit_file",
+                "path": "tests/report.test.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "edit",
+                "outcome": "success"
+              }
+            ],
+            "stopReason": "completed"
+          },
+          {
+            "runId": "child-07201edc-5a29-4747-afc3-76282630d12e",
+            "agentId": "reviewer",
+            "role": "reviewer",
+            "state": "completed",
+            "turnCount": 4,
+            "toolCallCount": 3,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "repo_file_summary",
+                    "target": "src/normalize.mjs",
+                    "outcome": "success",
+                    "bytes": 724
+                  }
+                ]
+              },
+              {
+                "turn": 2,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "repo_file_summary",
+                    "target": "src/report.mjs",
+                    "outcome": "success",
+                    "bytes": 1038
+                  }
+                ]
+              },
+              {
+                "turn": 3,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "repo_file_summary",
+                    "target": "tests/report.test.mjs",
+                    "outcome": "success",
+                    "bytes": 476
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 4,
+                "firstCallAt": "2026-09-27T00:13:33.637Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [],
+            "stopReason": "completed"
+          },
+          {
+            "runId": "child-67d4e917-6415-48d2-866b-9aa74e13a8ee",
+            "agentId": "coder",
+            "role": "coder",
+            "state": "converged_failed",
+            "turnCount": 6,
+            "toolCallCount": 5,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "success",
+                    "bytes": 167
+                  }
+                ]
+              },
+              {
+                "turn": 2,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "failed",
+                    "bytes": 212
+                  }
+                ]
+              },
+              {
+                "turn": 3,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "success",
+                    "bytes": 167
+                  }
+                ]
+              },
+              {
+                "turn": 4,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "failed",
+                    "bytes": 212
+                  }
+                ]
+              },
+              {
+                "turn": 5,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/normalize.mjs",
+                    "outcome": "success",
+                    "bytes": 167
+                  }
+                ]
+              },
+              {
+                "turn": 6,
+                "batchSize": 1,
+                "calls": []
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 6,
+                "firstCallAt": "2026-09-27T00:13:40.914Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [
+              {
+                "seq": 1,
+                "turn": 2,
+                "tool": "edit_file",
+                "path": "src/normalize.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 2,
+                "turn": 4,
+                "tool": "edit_file",
+                "path": "src/normalize.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              }
+            ],
+            "stopReason": "tool_loop_detected"
+          }
+        ],
+        "explorer": {
+          "turns": [
+            2
+          ],
+          "brief": [
+            {
+              "bytes": 1160,
+              "candidateFiles": 3,
+              "candidatePaths": [
+                "tests/report.test.mjs",
+                "src/report.mjs",
+                "src/normalize.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 3
+            }
+          ],
+          "adaptiveBudget": [
+            {
+              "original": 10,
+              "applied": 4,
+              "reason": "orientation packet covered 3 candidate files and resolved 1/12 goal symbols"
+            }
+          ]
+        },
+        "failovers": [],
+        "roleRoutes": [
+          {
+            "role": "explorer",
+            "provider": "groq",
+            "model": "openai/gpt-oss-20b",
+            "state": "converged_failed"
+          },
+          {
+            "role": "coder",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "completed"
+          },
+          {
+            "role": "reviewer",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "completed"
+          },
+          {
+            "role": "coder",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "completed"
+          },
+          {
+            "role": "reviewer",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "completed"
+          },
+          {
+            "role": "coder",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "converged_failed"
+          }
+        ],
+        "firstEditQuality": {
+          "runsWithEdits": 3,
+          "firstEditSucceeded": 1
+        },
+        "eventCount": 192
+      }
+    },
+    {
+      "task": "r46-rename",
+      "kind": "rename",
+      "topology": "normal",
+      "topologyPolicy": "adaptive",
+      "missionAdmission": {
+        "verdict": "ADMIT",
+        "reason": "131 usable pool(s); capacity unmeasured — fabric enforces per-turn admission",
+        "provableCalls": 1113,
+        "requiredCalls": 6
+      },
+      "status": "blocked",
+      "blockedReason": "SUBAGENT_WRITER_BLOCKED",
+      "counters": {
+        "childrenSpawned": 1,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "verificationAttempts": 0
+      },
+      "changedFiles": [],
+      "verification": [],
+      "review": {
+        "passed": false,
+        "findings": 0
+      },
+      "wallMs": 92446,
+      "calls": 10,
+      "inTokens": 43497,
+      "outTokens": 6924,
+      "errors": 0,
+      "providers": [
+        "mistral"
+      ],
+      "models": [
+        "codestral-2508"
+      ],
+      "errorKinds": [],
+      "rateLimitClasses": [],
+      "rateLimited": false,
+      "supplyBlocked": false,
+      "roleDiversity": 1,
+      "failovers": 0,
+      "harvested": {
+        "duplicatesSuppressed": 0,
+        "turnFailures": [
+          {
+            "turnId": "child-80a43926-ca98-4527-a87c-6c7b74d53dbe",
+            "error": "Expected non-empty string for summary"
+          }
+        ],
+        "receipts": {
+          "sustainability": [
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            }
+          ]
+        },
+        "journals": [
+          {
+            "runId": "child-80a43926-ca98-4527-a87c-6c7b74d53dbe",
+            "agentId": "explorer",
+            "role": "explorer",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 0,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [],
+            "explorationBrief": {
+              "bytes": 1536,
+              "candidateFiles": 5,
+              "candidatePaths": [
+                "src/auth.mjs",
+                "src/meta.mjs",
+                "src/admin.mjs",
+                "src/index.mjs",
+                "src/login.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 5
+            },
+            "adaptiveTurnBudget": {
+              "original": 10,
+              "applied": 5,
+              "reason": "orientation packet covered 5 candidate files and resolved 1/12 goal symbols"
+            },
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 2,
+                "firstCallAt": "2026-09-27T00:14:01.281Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [],
+            "stopReason": "error"
+          },
+          {
+            "runId": "child-cfc7068e-ce96-41ba-8a53-5c4afe2ec098",
+            "agentId": "coder",
+            "role": "coder",
+            "state": "converged_failed",
+            "turnCount": 8,
+            "toolCallCount": 7,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/auth.mjs",
+                    "outcome": "success",
+                    "bytes": 200
+                  }
+                ]
+              },
+              {
+                "turn": 2,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/index.mjs",
+                    "outcome": "success",
+                    "bytes": 160
+                  }
+                ]
+              },
+              {
+                "turn": 3,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/meta.mjs",
+                    "outcome": "success",
+                    "bytes": 135
+                  }
+                ]
+              },
+              {
+                "turn": 4,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/admin.mjs",
+                    "outcome": "success",
+                    "bytes": 220
+                  }
+                ]
+              },
+              {
+                "turn": 5,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/login.mjs",
+                    "outcome": "success",
+                    "bytes": 197
+                  }
+                ]
+              },
+              {
+                "turn": 6,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/auth.mjs",
+                    "outcome": "failed",
+                    "bytes": 207
+                  }
+                ]
+              },
+              {
+                "turn": 7,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/auth.mjs",
+                    "outcome": "failed",
+                    "bytes": 207
+                  }
+                ]
+              },
+              {
+                "turn": 8,
+                "batchSize": 1,
+                "calls": []
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 7,
+                "firstCallAt": "2026-09-27T00:14:33.614Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [
+              {
+                "seq": 1,
+                "turn": 6,
+                "tool": "edit_file",
+                "path": "src/auth.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 2,
+                "turn": 7,
+                "tool": "edit_file",
+                "path": "src/auth.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              }
+            ],
+            "stopReason": "tool_loop_detected"
+          }
+        ],
+        "explorer": {
+          "turns": [
+            2
+          ],
+          "brief": [
+            {
+              "bytes": 1536,
+              "candidateFiles": 5,
+              "candidatePaths": [
+                "src/auth.mjs",
+                "src/meta.mjs",
+                "src/admin.mjs",
+                "src/index.mjs",
+                "src/login.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 5
+            }
+          ],
+          "adaptiveBudget": [
+            {
+              "original": 10,
+              "applied": 5,
+              "reason": "orientation packet covered 5 candidate files and resolved 1/12 goal symbols"
+            }
+          ]
+        },
+        "failovers": [],
+        "roleRoutes": [
+          {
+            "role": "explorer",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "converged_failed"
+          },
+          {
+            "role": "coder",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "converged_failed"
+          }
+        ],
+        "firstEditQuality": {
+          "runsWithEdits": 1,
+          "firstEditSucceeded": 0
+        },
+        "eventCount": 47
+      }
+    },
+    {
+      "task": "r46-feature",
+      "kind": "feature",
+      "topology": "normal",
+      "topologyPolicy": "adaptive",
+      "missionAdmission": {
+        "verdict": "ADMIT",
+        "reason": "131 usable pool(s); capacity unmeasured — fabric enforces per-turn admission",
+        "provableCalls": 1113,
+        "requiredCalls": 6
+      },
+      "status": "completed",
+      "blockedReason": null,
+      "counters": {
+        "childrenSpawned": 2,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "verificationAttempts": 1
+      },
+      "changedFiles": [
+        "src/api.mjs",
+        "src/limiter.mjs"
+      ],
+      "verification": [
+        {
+          "command": "node tests/api.test.mjs",
+          "exitCode": 0,
+          "passed": true
+        },
+        {
+          "command": "node -e \"const l=await import('./src/limiter.mjs');if(typeof l.createLimiter!=='function')process.exit(1);const x=l.createLimiter(2);if(!(x.allow('a')&&x.allow('a'))||x.allow('a'))process.exit(2)\"",
+          "exitCode": 0,
+          "passed": true
+        }
+      ],
+      "review": {
+        "passed": true,
+        "findings": 2
+      },
+      "wallMs": 79630,
+      "calls": 17,
+      "inTokens": 68634,
+      "outTokens": 2717,
+      "errors": 0,
+      "providers": [
+        "mistral"
+      ],
+      "models": [
+        "codestral-2508"
+      ],
+      "errorKinds": [],
+      "rateLimitClasses": [],
+      "rateLimited": false,
+      "supplyBlocked": false,
+      "roleDiversity": 1,
+      "failovers": 0,
+      "harvested": {
+        "duplicatesSuppressed": 0,
+        "turnFailures": [
+          {
+            "turnId": "child-0cfa8652-ce3d-430c-9bf5-7bc2e36cffe5",
+            "error": "Expected non-empty string for summary"
+          }
+        ],
+        "receipts": {
+          "sustainability": [
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            }
+          ]
+        },
+        "journals": [
+          {
+            "runId": "child-0cfa8652-ce3d-430c-9bf5-7bc2e36cffe5",
+            "agentId": "explorer",
+            "role": "explorer",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 0,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [],
+            "explorationBrief": {
+              "bytes": 983,
+              "candidateFiles": 3,
+              "candidatePaths": [
+                "tests/api.test.mjs",
+                "src/api.mjs",
+                "src/limiter.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 0,
+                "total": 12
+              },
+              "excerptedFiles": 2
+            },
+            "adaptiveTurnBudget": {
+              "original": 10,
+              "applied": 10,
+              "reason": "orientation packet weak — 3 candidates, 0/12 symbols resolved; full budget kept"
+            },
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 2,
+                "firstCallAt": "2026-09-27T00:15:30.694Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [],
+            "stopReason": "error"
+          },
+          {
+            "runId": "child-09939985-78c9-40e1-aede-38a0803c3f57",
+            "agentId": "coder",
+            "role": "coder",
+            "state": "completed",
+            "turnCount": 12,
+            "toolCallCount": 11,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/api.mjs",
+                    "outcome": "success",
+                    "bytes": 127
+                  }
+                ]
+              },
+              {
+                "turn": 2,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/api.mjs",
+                    "outcome": "failed",
+                    "bytes": 206
+                  }
+                ]
+              },
+              {
+                "turn": 3,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "write_file",
+                    "target": "src/limiter.mjs",
+                    "outcome": "success",
+                    "bytes": 124
+                  }
+                ]
+              },
+              {
+                "turn": 4,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/api.mjs",
+                    "outcome": "success",
+                    "bytes": 127
+                  }
+                ]
+              },
+              {
+                "turn": 5,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/api.mjs",
+                    "outcome": "failed",
+                    "bytes": 206
+                  }
+                ]
+              },
+              {
+                "turn": 6,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/api.mjs",
+                    "outcome": "failed",
+                    "bytes": 206
+                  }
+                ]
+              },
+              {
+                "turn": 7,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/api.mjs",
+                    "outcome": "success",
+                    "bytes": 127
+                  }
+                ]
+              },
+              {
+                "turn": 8,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/api.mjs",
+                    "outcome": "failed",
+                    "bytes": 206
+                  }
+                ]
+              },
+              {
+                "turn": 9,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "write_file",
+                    "target": "src/api.mjs",
+                    "outcome": "success",
+                    "bytes": 120
+                  }
+                ]
+              },
+              {
+                "turn": 10,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "run_command",
+                    "target": "npm test",
+                    "outcome": "failed",
+                    "bytes": 544
+                  }
+                ]
+              },
+              {
+                "turn": 11,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "run_command",
+                    "target": "npm test",
+                    "outcome": "failed",
+                    "bytes": 544
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 12,
+                "firstCallAt": "2026-09-27T00:15:38.262Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [
+              {
+                "seq": 1,
+                "turn": 2,
+                "tool": "edit_file",
+                "path": "src/api.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 2,
+                "turn": 3,
+                "tool": "write_file",
+                "path": "src/limiter.mjs",
+                "expectedHashSupplied": false,
+                "hashAutoAttached": false,
+                "priorObservation": "none",
+                "outcome": "success"
+              },
+              {
+                "seq": 3,
+                "turn": 5,
+                "tool": "edit_file",
+                "path": "src/api.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 4,
+                "turn": 6,
+                "tool": "edit_file",
+                "path": "src/api.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 5,
+                "turn": 8,
+                "tool": "edit_file",
+                "path": "src/api.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 6,
+                "turn": 9,
+                "tool": "write_file",
+                "path": "src/api.mjs",
+                "expectedHashSupplied": false,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "success"
+              }
+            ],
+            "stopReason": "completed"
+          },
+          {
+            "runId": "child-1a719aaa-33d7-43f1-8467-13185e447bb5",
+            "agentId": "reviewer",
+            "role": "reviewer",
+            "state": "completed",
+            "turnCount": 3,
+            "toolCallCount": 2,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/limiter.mjs",
+                    "outcome": "success",
+                    "bytes": 539
+                  }
+                ]
+              },
+              {
+                "turn": 2,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "repo_tests",
+                    "target": "src/api.mjs",
+                    "outcome": "success",
+                    "bytes": 156
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 3,
+                "firstCallAt": "2026-09-27T00:16:39.719Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [],
+            "stopReason": "completed"
+          }
+        ],
+        "explorer": {
+          "turns": [
+            2
+          ],
+          "brief": [
+            {
+              "bytes": 983,
+              "candidateFiles": 3,
+              "candidatePaths": [
+                "tests/api.test.mjs",
+                "src/api.mjs",
+                "src/limiter.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 0,
+                "total": 12
+              },
+              "excerptedFiles": 2
+            }
+          ],
+          "adaptiveBudget": [
+            {
+              "original": 10,
+              "applied": 10,
+              "reason": "orientation packet weak — 3 candidates, 0/12 symbols resolved; full budget kept"
+            }
+          ]
+        },
+        "failovers": [],
+        "roleRoutes": [
+          {
+            "role": "explorer",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "converged_failed"
+          },
+          {
+            "role": "coder",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "completed"
+          },
+          {
+            "role": "reviewer",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "completed"
+          }
+        ],
+        "firstEditQuality": {
+          "runsWithEdits": 1,
+          "firstEditSucceeded": 0
+        },
+        "eventCount": 78
+      }
+    },
+    {
+      "task": "r46-schema",
+      "kind": "schema",
+      "topology": "normal",
+      "topologyPolicy": "adaptive",
+      "missionAdmission": {
+        "verdict": "ADMIT",
+        "reason": "131 usable pool(s); capacity unmeasured — fabric enforces per-turn admission",
+        "provableCalls": 1113,
+        "requiredCalls": 6
+      },
+      "status": "blocked",
+      "blockedReason": "VERIFICATION_FAILED",
+      "counters": {
+        "childrenSpawned": 2,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "verificationAttempts": 1
+      },
+      "changedFiles": [
+        "src/schema.mjs",
+        "src/handler.mjs",
+        "src/client.mjs",
+        "tests/jobs.test.mjs"
+      ],
+      "verification": [
+        {
+          "command": "node tests/jobs.test.mjs",
+          "exitCode": 1,
+          "passed": false
+        }
+      ],
+      "review": {
+        "passed": true,
+        "findings": 1
+      },
+      "wallMs": 163668,
+      "calls": 26,
+      "inTokens": 138765,
+      "outTokens": 5614,
+      "errors": 0,
+      "providers": [
+        "mistral"
+      ],
+      "models": [
+        "codestral-2508"
+      ],
+      "errorKinds": [],
+      "rateLimitClasses": [],
+      "rateLimited": false,
+      "supplyBlocked": false,
+      "roleDiversity": 1,
+      "failovers": 0,
+      "harvested": {
+        "duplicatesSuppressed": 0,
+        "turnFailures": [
+          {
+            "turnId": "child-9d0d8fe4-30a5-4fd1-82ca-52edc6e9acba",
+            "error": "Expected non-empty string for summary"
+          }
+        ],
+        "receipts": {
+          "sustainability": [
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            }
+          ]
+        },
+        "journals": [
+          {
+            "runId": "child-9d0d8fe4-30a5-4fd1-82ca-52edc6e9acba",
+            "agentId": "explorer",
+            "role": "explorer",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 0,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [],
+            "explorationBrief": {
+              "bytes": 1798,
+              "candidateFiles": 4,
+              "candidatePaths": [
+                "src/schema.mjs",
+                "tests/jobs.test.mjs",
+                "src/handler.mjs",
+                "src/client.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 4
+            },
+            "adaptiveTurnBudget": {
+              "original": 10,
+              "applied": 4,
+              "reason": "orientation packet covered 4 candidate files and resolved 1/12 goal symbols"
+            },
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 2,
+                "firstCallAt": "2026-09-27T00:16:55.255Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [],
+            "stopReason": "error"
+          },
+          {
+            "runId": "child-a24f5423-ffd8-477c-acef-001647e52b9a",
+            "agentId": "coder",
+            "role": "coder",
+            "state": "completed",
+            "turnCount": 19,
+            "toolCallCount": 18,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/schema.mjs",
+                    "outcome": "success",
+                    "bytes": 221
+                  }
+                ]
+              },
+              {
+                "turn": 2,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/handler.mjs",
+                    "outcome": "success",
+                    "bytes": 260
+                  }
+                ]
+              },
+              {
+                "turn": 3,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/client.mjs",
+                    "outcome": "success",
+                    "bytes": 183
+                  }
+                ]
+              },
+              {
+                "turn": 4,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "tests/jobs.test.mjs",
+                    "outcome": "success",
+                    "bytes": 648
+                  }
+                ]
+              },
+              {
+                "turn": 5,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/schema.mjs",
+                    "outcome": "failed",
+                    "bytes": 209
+                  }
+                ]
+              },
+              {
+                "turn": 6,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/schema.mjs",
+                    "outcome": "failed",
+                    "bytes": 209
+                  }
+                ]
+              },
+              {
+                "turn": 7,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/schema.mjs",
+                    "outcome": "success",
+                    "bytes": 221
+                  }
+                ]
+              },
+              {
+                "turn": 8,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/schema.mjs",
+                    "outcome": "failed",
+                    "bytes": 209
+                  }
+                ]
+              },
+              {
+                "turn": 9,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/schema.mjs",
+                    "outcome": "failed",
+                    "bytes": 209
+                  }
+                ]
+              },
+              {
+                "turn": 10,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/schema.mjs",
+                    "outcome": "success",
+                    "bytes": 221
+                  }
+                ]
+              },
+              {
+                "turn": 11,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/schema.mjs",
+                    "outcome": "failed",
+                    "bytes": 209
+                  }
+                ]
+              },
+              {
+                "turn": 12,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "write_file",
+                    "target": "src/schema.mjs",
+                    "outcome": "success",
+                    "bytes": 123
+                  }
+                ]
+              },
+              {
+                "turn": 13,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/handler.mjs",
+                    "outcome": "failed",
+                    "bytes": 210
+                  }
+                ]
+              },
+              {
+                "turn": 14,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "write_file",
+                    "target": "src/handler.mjs",
+                    "outcome": "success",
+                    "bytes": 124
+                  }
+                ]
+              },
+              {
+                "turn": 15,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "src/client.mjs",
+                    "outcome": "failed",
+                    "bytes": 209
+                  }
+                ]
+              },
+              {
+                "turn": 16,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "write_file",
+                    "target": "src/client.mjs",
+                    "outcome": "success",
+                    "bytes": 123
+                  }
+                ]
+              },
+              {
+                "turn": 17,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "edit_file",
+                    "target": "tests/jobs.test.mjs",
+                    "outcome": "failed",
+                    "bytes": 214
+                  }
+                ]
+              },
+              {
+                "turn": 18,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "write_file",
+                    "target": "tests/jobs.test.mjs",
+                    "outcome": "success",
+                    "bytes": 128
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 19,
+                "firstCallAt": "2026-09-27T00:17:06.367Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [
+              {
+                "seq": 1,
+                "turn": 5,
+                "tool": "edit_file",
+                "path": "src/schema.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 2,
+                "turn": 6,
+                "tool": "edit_file",
+                "path": "src/schema.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 3,
+                "turn": 8,
+                "tool": "edit_file",
+                "path": "src/schema.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 4,
+                "turn": 9,
+                "tool": "edit_file",
+                "path": "src/schema.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 5,
+                "turn": 11,
+                "tool": "edit_file",
+                "path": "src/schema.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 6,
+                "turn": 12,
+                "tool": "write_file",
+                "path": "src/schema.mjs",
+                "expectedHashSupplied": false,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "success"
+              },
+              {
+                "seq": 7,
+                "turn": 13,
+                "tool": "edit_file",
+                "path": "src/handler.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 8,
+                "turn": 14,
+                "tool": "write_file",
+                "path": "src/handler.mjs",
+                "expectedHashSupplied": false,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "success"
+              },
+              {
+                "seq": 9,
+                "turn": 15,
+                "tool": "edit_file",
+                "path": "src/client.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 10,
+                "turn": 16,
+                "tool": "write_file",
+                "path": "src/client.mjs",
+                "expectedHashSupplied": false,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "success"
+              },
+              {
+                "seq": 11,
+                "turn": 17,
+                "tool": "edit_file",
+                "path": "tests/jobs.test.mjs",
+                "expectedHashSupplied": true,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "failed",
+                "errorCode": "TOOL_EXECUTION_FAILED",
+                "failureClass": "target_not_found"
+              },
+              {
+                "seq": 12,
+                "turn": 18,
+                "tool": "write_file",
+                "path": "tests/jobs.test.mjs",
+                "expectedHashSupplied": false,
+                "hashAutoAttached": false,
+                "priorObservation": "read",
+                "outcome": "success"
+              }
+            ],
+            "stopReason": "completed"
+          },
+          {
+            "runId": "child-80fb1664-500c-488e-be53-cdcff2d64c8d",
+            "agentId": "reviewer",
+            "role": "reviewer",
+            "state": "completed",
+            "turnCount": 5,
+            "toolCallCount": 4,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [
+              {
+                "turn": 1,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/schema.mjs",
+                    "outcome": "success",
+                    "bytes": 287
+                  }
+                ]
+              },
+              {
+                "turn": 2,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/handler.mjs",
+                    "outcome": "success",
+                    "bytes": 361
+                  }
+                ]
+              },
+              {
+                "turn": 3,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "src/client.mjs",
+                    "outcome": "success",
+                    "bytes": 198
+                  }
+                ]
+              },
+              {
+                "turn": 4,
+                "batchSize": 1,
+                "calls": [
+                  {
+                    "tool": "read_file",
+                    "target": "tests/jobs.test.mjs",
+                    "outcome": "success",
+                    "bytes": 655
+                  }
+                ]
+              }
+            ],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 5,
+                "firstCallAt": "2026-09-27T00:19:09.423Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [],
+            "stopReason": "completed"
+          }
+        ],
+        "explorer": {
+          "turns": [
+            2
+          ],
+          "brief": [
+            {
+              "bytes": 1798,
+              "candidateFiles": 4,
+              "candidatePaths": [
+                "src/schema.mjs",
+                "tests/jobs.test.mjs",
+                "src/handler.mjs",
+                "src/client.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 4
+            }
+          ],
+          "adaptiveBudget": [
+            {
+              "original": 10,
+              "applied": 4,
+              "reason": "orientation packet covered 4 candidate files and resolved 1/12 goal symbols"
+            }
+          ]
+        },
+        "failovers": [],
+        "roleRoutes": [
+          {
+            "role": "explorer",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "converged_failed"
+          },
+          {
+            "role": "coder",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "completed"
+          },
+          {
+            "role": "reviewer",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "completed"
+          }
+        ],
+        "firstEditQuality": {
+          "runsWithEdits": 1,
+          "firstEditSucceeded": 0
+        },
+        "eventCount": 105
+      }
+    },
+    {
+      "task": "r46-fail-repair",
+      "kind": "fail-repair",
+      "topology": "normal",
+      "topologyPolicy": "adaptive",
+      "missionAdmission": {
+        "verdict": "ADMIT",
+        "reason": "131 usable pool(s); capacity unmeasured — fabric enforces per-turn admission",
+        "provableCalls": 1113,
+        "requiredCalls": 6
+      },
+      "status": "blocked",
+      "blockedReason": "SUBAGENT_WRITER_BLOCKED",
+      "counters": {
+        "childrenSpawned": 1,
+        "reviewRounds": 0,
+        "taskAttempts": 1,
+        "verificationAttempts": 0
+      },
+      "changedFiles": [],
+      "verification": [],
+      "review": {
+        "passed": false,
+        "findings": 0
+      },
+      "wallMs": 16810,
+      "calls": 2,
+      "inTokens": 6282,
+      "outTokens": 954,
+      "errors": 0,
+      "providers": [
+        "mistral"
+      ],
+      "models": [
+        "codestral-2508"
+      ],
+      "errorKinds": [],
+      "rateLimitClasses": [],
+      "rateLimited": true,
+      "supplyBlocked": false,
+      "roleDiversity": 1,
+      "failovers": 0,
+      "harvested": {
+        "duplicatesSuppressed": 0,
+        "turnFailures": [
+          {
+            "turnId": "child-4b2a34f4-620e-4de2-ad52-d97ca2462685",
+            "error": "Expected non-empty string for summary"
+          },
+          {
+            "turnId": "child-f1941c0e-be1b-4638-9ad1-7e287fb327b4",
+            "error": "[PROVIDER_UNAVAILABLE] No eligible free route for role coder: 8-Bit admission found no healthy route meeting this role's capability contract. No paid or unknown"
+          }
+        ],
+        "receipts": {
+          "sustainability": [
+            {
+              "suppressionEvidenceInvalidations": 0
+            },
+            {
+              "suppressionEvidenceInvalidations": 0
+            }
+          ]
+        },
+        "journals": [
+          {
+            "runId": "child-4b2a34f4-620e-4de2-ad52-d97ca2462685",
+            "agentId": "explorer",
+            "role": "explorer",
+            "state": "converged_failed",
+            "turnCount": 2,
+            "toolCallCount": 0,
+            "route": {
+              "providerId": "mistral",
+              "modelId": "codestral-2508"
+            },
+            "toolTrace": [],
+            "explorationBrief": {
+              "bytes": 724,
+              "candidateFiles": 2,
+              "candidatePaths": [
+                "src/stats.mjs",
+                "tests/stats.test.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 2
+            },
+            "adaptiveTurnBudget": {
+              "original": 10,
+              "applied": 4,
+              "reason": "orientation packet covered 2 candidate files and resolved 1/12 goal symbols"
+            },
+            "routeWindows": [
+              {
+                "providerId": "mistral",
+                "modelId": "codestral-2508",
+                "calls": 2,
+                "firstCallAt": "2026-09-27T00:19:42.042Z"
+              }
+            ],
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [],
+            "stopReason": "error"
+          },
+          {
+            "runId": "child-f1941c0e-be1b-4638-9ad1-7e287fb327b4",
+            "agentId": "coder",
+            "role": "coder",
+            "state": "converged_failed",
+            "turnCount": 0,
+            "toolCallCount": 0,
+            "route": null,
+            "toolTrace": [],
+            "explorationBrief": null,
+            "adaptiveTurnBudget": null,
+            "routeWindows": null,
+            "routeFailovers": null,
+            "fabricAdmission": null,
+            "editAttempts": [],
+            "stopReason": "error"
+          }
+        ],
+        "explorer": {
+          "turns": [
+            2
+          ],
+          "brief": [
+            {
+              "bytes": 724,
+              "candidateFiles": 2,
+              "candidatePaths": [
+                "src/stats.mjs",
+                "tests/stats.test.mjs"
+              ],
+              "symbolRecall": {
+                "resolved": 1,
+                "total": 12
+              },
+              "excerptedFiles": 2
+            }
+          ],
+          "adaptiveBudget": [
+            {
+              "original": 10,
+              "applied": 4,
+              "reason": "orientation packet covered 2 candidate files and resolved 1/12 goal symbols"
+            }
+          ]
+        },
+        "failovers": [],
+        "roleRoutes": [
+          {
+            "role": "explorer",
+            "provider": "mistral",
+            "model": "codestral-2508",
+            "state": "converged_failed"
+          },
+          {
+            "role": "coder",
+            "provider": null,
+            "model": null,
+            "state": "converged_failed"
+          }
+        ],
+        "firstEditQuality": {
+          "runsWithEdits": 0,
+          "firstEditSucceeded": 0
+        },
+        "eventCount": 25
+      }
+    }
+  ],
+  "callLog": [
+    {
+      "tag": "groq",
+      "provider": "groq",
+      "model": "openai/gpt-oss-20b",
+      "ms": 57.93730000000005,
+      "usage": {
+        "inputTokens": 72,
+        "outputTokens": 1,
+        "totalTokens": 73
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 276.33989999999994,
+      "usage": {
+        "inputTokens": 4,
+        "outputTokens": 1,
+        "totalTokens": 5,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "poolside/laguna-s-2.1:free",
+      "ms": 141.66620000000012,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "poolside/laguna-xs-2.1:free",
+      "ms": 177.04449999999997,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "qwen/qwen3.8-27b:free",
+      "ms": 89.19420000000036,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 2100.3419999999996,
+      "usage": {
+        "inputTokens": 446,
+        "outputTokens": 76,
+        "totalTokens": 522,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 46,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 53923.9867,
+      "usage": {
+        "inputTokens": 470,
+        "outputTokens": 37,
+        "totalTokens": 507,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 11,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 6235.701700000005,
+      "usage": {
+        "inputTokens": 529,
+        "outputTokens": 259,
+        "totalTokens": 788,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 200,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 10350.700699999994,
+      "usage": {
+        "inputTokens": 66,
+        "outputTokens": 120,
+        "totalTokens": 186,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 108,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 20614.190700000006,
+      "usage": {
+        "inputTokens": 586,
+        "outputTokens": 120,
+        "totalTokens": 706,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 120,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 1872.091100000005,
+      "usage": {
+        "inputTokens": 683,
+        "outputTokens": 72,
+        "totalTokens": 755,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 51,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 694.7997000000032,
+      "usage": {
+        "inputTokens": 730,
+        "outputTokens": 33,
+        "totalTokens": 763,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 8,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 1151.978999999992,
+      "usage": {
+        "inputTokens": 776,
+        "outputTokens": 42,
+        "totalTokens": 818,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 19,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 48122.77949999999,
+      "usage": {
+        "inputTokens": 841,
+        "outputTokens": 48,
+        "totalTokens": 889,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 28,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 1524.0486000000092,
+      "usage": {
+        "inputTokens": 1028,
+        "outputTokens": 65,
+        "totalTokens": 1093,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 44,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 2270.4268000000156,
+      "usage": {
+        "inputTokens": 586,
+        "outputTokens": 80,
+        "totalTokens": 666,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 57,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 1104.450199999992,
+      "usage": {
+        "inputTokens": 638,
+        "outputTokens": 49,
+        "totalTokens": 687,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 31,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 3906.002600000007,
+      "usage": {
+        "inputTokens": 684,
+        "outputTokens": 131,
+        "totalTokens": 815,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 124,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 3247.9101000000082,
+      "usage": {
+        "inputTokens": 731,
+        "outputTokens": 118,
+        "totalTokens": 849,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 118,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 5693.623599999992,
+      "usage": {
+        "inputTokens": 828,
+        "outputTokens": 71,
+        "totalTokens": 899,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 52,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 1018.5033999999869,
+      "usage": {
+        "inputTokens": 1015,
+        "outputTokens": 92,
+        "totalTokens": 1107,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 69,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 1995.1609999999928,
+      "usage": {
+        "inputTokens": 581,
+        "outputTokens": 79,
+        "totalTokens": 660,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 65,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 3346.5918999999994,
+      "usage": {
+        "inputTokens": 628,
+        "outputTokens": 75,
+        "totalTokens": 703,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 58,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 1370.7374999999884,
+      "usage": {
+        "inputTokens": 674,
+        "outputTokens": 44,
+        "totalTokens": 718,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 29,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 1995.6283999999869,
+      "usage": {
+        "inputTokens": 771,
+        "outputTokens": 84,
+        "totalTokens": 855,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 66,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 2255.4188999999897,
+      "usage": {
+        "inputTokens": 832,
+        "outputTokens": 82,
+        "totalTokens": 914,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 57,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 1207.4670000000042,
+      "usage": {
+        "inputTokens": 988,
+        "outputTokens": 38,
+        "totalTokens": 1026,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 5,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 10461.081600000005,
+      "usage": {
+        "inputTokens": 581,
+        "outputTokens": 81,
+        "totalTokens": 662,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 65,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 1022.3171999999904,
+      "usage": {
+        "inputTokens": 628,
+        "outputTokens": 37,
+        "totalTokens": 665,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 10,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 3521.2908999999927,
+      "usage": {
+        "inputTokens": 676,
+        "outputTokens": 46,
+        "totalTokens": 722,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 22,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 815.5973999999987,
+      "usage": {
+        "inputTokens": 723,
+        "outputTokens": 36,
+        "totalTokens": 759,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 29,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 2239.5211000000127,
+      "usage": {
+        "inputTokens": 812,
+        "outputTokens": 79,
+        "totalTokens": 891,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 67,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 885.6358999999939,
+      "usage": {
+        "inputTokens": 873,
+        "outputTokens": 88,
+        "totalTokens": 961,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 69,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 31789.029700000014,
+      "usage": {
+        "inputTokens": 376,
+        "outputTokens": 1200,
+        "totalTokens": 1576,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 1270,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 38113.38539999997,
+      "usage": {
+        "inputTokens": 272,
+        "outputTokens": 1200,
+        "totalTokens": 1472,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 1247,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 12754.645699999994,
+      "usage": {
+        "inputTokens": 139,
+        "outputTokens": 535,
+        "totalTokens": 674,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 464,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 6530.239899999986,
+      "usage": {
+        "inputTokens": 145,
+        "outputTokens": 809,
+        "totalTokens": 954,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 745,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 20988.25279999996,
+      "usage": {
+        "inputTokens": 166,
+        "outputTokens": 900,
+        "totalTokens": 1066,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 979,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 21799.325300000026,
+      "usage": {
+        "inputTokens": 143,
+        "outputTokens": 900,
+        "totalTokens": 1043,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 966,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 105774.02100000001,
+      "usage": {
+        "inputTokens": 155,
+        "outputTokens": 900,
+        "totalTokens": 1055,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 144,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "openrouter",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "ms": 25474.508299999987,
+      "usage": {
+        "inputTokens": 150,
+        "outputTokens": 900,
+        "totalTokens": 1050,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 906,
+        "costUsd": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "mistral-medium-latest",
+      "ms": 245.61119999998482,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "mistral-medium-2604",
+      "ms": 234.03859999997076,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "mistral-small-latest",
+      "ms": 169.84700000000885,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "mistral-small-2603",
+      "ms": 190.8347000000067,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "magistral-medium-latest",
+      "ms": 158.03080000000773,
+      "error": "RATE_LIMITED",
+      "ok": false
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 403.718200000003,
+      "usage": {
+        "inputTokens": 217,
+        "outputTokens": 14,
+        "totalTokens": 231,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 372.6912000000011,
+      "usage": {
+        "inputTokens": 241,
+        "outputTokens": 14,
+        "totalTokens": 255,
+        "cachedInputTokens": 128
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1039.1500999999698,
+      "usage": {
+        "inputTokens": 277,
+        "outputTokens": 69,
+        "totalTokens": 346,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 590.6618000000017,
+      "usage": {
+        "inputTokens": 55,
+        "outputTokens": 30,
+        "totalTokens": 85,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 526.1802000000025,
+      "usage": {
+        "inputTokens": 350,
+        "outputTokens": 16,
+        "totalTokens": 366,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 542.6365000000224,
+      "usage": {
+        "inputTokens": 373,
+        "outputTokens": 16,
+        "totalTokens": 389,
+        "cachedInputTokens": 256
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 491.62859999999637,
+      "usage": {
+        "inputTokens": 396,
+        "outputTokens": 16,
+        "totalTokens": 412,
+        "cachedInputTokens": 384
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 460.81770000001416,
+      "usage": {
+        "inputTokens": 419,
+        "outputTokens": 16,
+        "totalTokens": 435,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 438.76800000004005,
+      "usage": {
+        "inputTokens": 442,
+        "outputTokens": 16,
+        "totalTokens": 458,
+        "cachedInputTokens": 384
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 522.4028999999864,
+      "usage": {
+        "inputTokens": 465,
+        "outputTokens": 16,
+        "totalTokens": 481,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 531.7109000000055,
+      "usage": {
+        "inputTokens": 350,
+        "outputTokens": 16,
+        "totalTokens": 366,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 586.041600000055,
+      "usage": {
+        "inputTokens": 373,
+        "outputTokens": 16,
+        "totalTokens": 389,
+        "cachedInputTokens": 256
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 522.1024000000325,
+      "usage": {
+        "inputTokens": 396,
+        "outputTokens": 16,
+        "totalTokens": 412,
+        "cachedInputTokens": 256
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 660.0365000000456,
+      "usage": {
+        "inputTokens": 419,
+        "outputTokens": 16,
+        "totalTokens": 435,
+        "cachedInputTokens": 384
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 491.615599999961,
+      "usage": {
+        "inputTokens": 442,
+        "outputTokens": 16,
+        "totalTokens": 458,
+        "cachedInputTokens": 384
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 391.6231999999727,
+      "usage": {
+        "inputTokens": 465,
+        "outputTokens": 16,
+        "totalTokens": 481,
+        "cachedInputTokens": 384
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 490.69410000002244,
+      "usage": {
+        "inputTokens": 345,
+        "outputTokens": 12,
+        "totalTokens": 357,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 376.8005000000121,
+      "usage": {
+        "inputTokens": 364,
+        "outputTokens": 13,
+        "totalTokens": 377,
+        "cachedInputTokens": 256
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 398.638799999957,
+      "usage": {
+        "inputTokens": 384,
+        "outputTokens": 12,
+        "totalTokens": 396,
+        "cachedInputTokens": 256
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 449.3255000000354,
+      "usage": {
+        "inputTokens": 403,
+        "outputTokens": 13,
+        "totalTokens": 416,
+        "cachedInputTokens": 384
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 802.5119000000414,
+      "usage": {
+        "inputTokens": 423,
+        "outputTokens": 13,
+        "totalTokens": 436,
+        "cachedInputTokens": 384
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 447.8489999999874,
+      "usage": {
+        "inputTokens": 443,
+        "outputTokens": 12,
+        "totalTokens": 455,
+        "cachedInputTokens": 256
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 436.2432999999728,
+      "usage": {
+        "inputTokens": 345,
+        "outputTokens": 12,
+        "totalTokens": 357,
+        "cachedInputTokens": 256
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 420.5988999999827,
+      "usage": {
+        "inputTokens": 364,
+        "outputTokens": 13,
+        "totalTokens": 377,
+        "cachedInputTokens": 256
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 399.7604000000283,
+      "usage": {
+        "inputTokens": 384,
+        "outputTokens": 12,
+        "totalTokens": 396,
+        "cachedInputTokens": 256
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 554.2999000000418,
+      "usage": {
+        "inputTokens": 403,
+        "outputTokens": 12,
+        "totalTokens": 415,
+        "cachedInputTokens": 256
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 492.2601999999606,
+      "usage": {
+        "inputTokens": 422,
+        "outputTokens": 13,
+        "totalTokens": 435,
+        "cachedInputTokens": 256
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 429.2179999999935,
+      "usage": {
+        "inputTokens": 442,
+        "outputTokens": 12,
+        "totalTokens": 454,
+        "cachedInputTokens": 256
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2587.507099999988,
+      "usage": {
+        "inputTokens": 365,
+        "outputTokens": 154,
+        "totalTokens": 519,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2124.863000000012,
+      "usage": {
+        "inputTokens": 261,
+        "outputTokens": 176,
+        "totalTokens": 437,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 941.0195999999996,
+      "usage": {
+        "inputTokens": 128,
+        "outputTokens": 68,
+        "totalTokens": 196,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2156.77509999997,
+      "usage": {
+        "inputTokens": 134,
+        "outputTokens": 55,
+        "totalTokens": 189,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 811.5026999999536,
+      "usage": {
+        "inputTokens": 155,
+        "outputTokens": 53,
+        "totalTokens": 208,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 813.391399999964,
+      "usage": {
+        "inputTokens": 132,
+        "outputTokens": 53,
+        "totalTokens": 185,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 815.4885000000359,
+      "usage": {
+        "inputTokens": 132,
+        "outputTokens": 44,
+        "totalTokens": 176,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1064.6543999999994,
+      "usage": {
+        "inputTokens": 144,
+        "outputTokens": 71,
+        "totalTokens": 215,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 935.3870000000461,
+      "usage": {
+        "inputTokens": 139,
+        "outputTokens": 58,
+        "totalTokens": 197,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 873.7889999999898,
+      "usage": {
+        "inputTokens": 139,
+        "outputTokens": 58,
+        "totalTokens": 197,
+        "cachedInputTokens": 128
+      },
+      "ok": true
+    },
+    {
+      "tag": "groq",
+      "provider": "groq",
+      "model": "allam-2-7b",
+      "ms": 217.01469999999972,
+      "error": "PROVIDER_ERROR",
+      "ok": false
+    },
+    {
+      "tag": "groq",
+      "provider": "groq",
+      "model": "allam-2-7b",
+      "ms": 110.63829999999143,
+      "error": "PROVIDER_ERROR",
+      "ok": false
+    },
+    {
+      "tag": "groq",
+      "provider": "groq",
+      "model": "allam-2-7b",
+      "ms": 77.10590000002412,
+      "error": "PROVIDER_ERROR",
+      "ok": false
+    },
+    {
+      "tag": "groq",
+      "provider": "groq",
+      "model": "openai/gpt-oss-20b",
+      "ms": 1338.3751000000047,
+      "usage": {
+        "inputTokens": 2176,
+        "outputTokens": 1024,
+        "totalTokens": 3200,
+        "reasoningTokens": 559
+      },
+      "ok": true
+    },
+    {
+      "tag": "groq",
+      "provider": "groq",
+      "model": "openai/gpt-oss-20b",
+      "ms": 647.0663999999524,
+      "usage": {
+        "inputTokens": 2665,
+        "outputTokens": 210,
+        "totalTokens": 2875,
+        "reasoningTokens": 50
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2371.064699999988,
+      "usage": {
+        "inputTokens": 3886,
+        "outputTokens": 210,
+        "totalTokens": 4096,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1940.929300000018,
+      "usage": {
+        "inputTokens": 4250,
+        "outputTokens": 109,
+        "totalTokens": 4359,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1419.3250000000116,
+      "usage": {
+        "inputTokens": 4484,
+        "outputTokens": 83,
+        "totalTokens": 4567,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 3238.8352000000305,
+      "usage": {
+        "inputTokens": 4672,
+        "outputTokens": 269,
+        "totalTokens": 4941,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1295.5077000000165,
+      "usage": {
+        "inputTokens": 3919,
+        "outputTokens": 52,
+        "totalTokens": 3971,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2836.7761000000173,
+      "usage": {
+        "inputTokens": 4214,
+        "outputTokens": 199,
+        "totalTokens": 4413,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 893.3125,
+      "usage": {
+        "inputTokens": 4489,
+        "outputTokens": 51,
+        "totalTokens": 4540,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1863.377199999988,
+      "usage": {
+        "inputTokens": 4381,
+        "outputTokens": 162,
+        "totalTokens": 4543,
+        "cachedInputTokens": 3200
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 689.0485999999801,
+      "usage": {
+        "inputTokens": 2705,
+        "outputTokens": 15,
+        "totalTokens": 2720,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 479.858499999973,
+      "usage": {
+        "inputTokens": 2845,
+        "outputTokens": 15,
+        "totalTokens": 2860,
+        "cachedInputTokens": 2688
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 5279.000700000033,
+      "usage": {
+        "inputTokens": 2965,
+        "outputTokens": 442,
+        "totalTokens": 3407,
+        "cachedInputTokens": 2816
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1353.8976999999722,
+      "usage": {
+        "inputTokens": 4307,
+        "outputTokens": 63,
+        "totalTokens": 4370,
+        "cachedInputTokens": 2816
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2600.9500000000116,
+      "usage": {
+        "inputTokens": 4496,
+        "outputTokens": 15,
+        "totalTokens": 4511,
+        "cachedInputTokens": 2816
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 596.5113999999594,
+      "usage": {
+        "inputTokens": 4636,
+        "outputTokens": 15,
+        "totalTokens": 4651,
+        "cachedInputTokens": 4480
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 3557.366700000013,
+      "usage": {
+        "inputTokens": 4756,
+        "outputTokens": 301,
+        "totalTokens": 5057,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1972.639400000102,
+      "usage": {
+        "inputTokens": 5109,
+        "outputTokens": 171,
+        "totalTokens": 5280,
+        "cachedInputTokens": 4992
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 866.7445000000298,
+      "usage": {
+        "inputTokens": 5332,
+        "outputTokens": 49,
+        "totalTokens": 5381,
+        "cachedInputTokens": 2816
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2046.924699999974,
+      "usage": {
+        "inputTokens": 5486,
+        "outputTokens": 180,
+        "totalTokens": 5666,
+        "cachedInputTokens": 5376
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2639.786300000036,
+      "usage": {
+        "inputTokens": 5718,
+        "outputTokens": 180,
+        "totalTokens": 5898,
+        "cachedInputTokens": 4608
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2117.801700000069,
+      "usage": {
+        "inputTokens": 5950,
+        "outputTokens": 191,
+        "totalTokens": 6141,
+        "cachedInputTokens": 2816
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 982.2033999999985,
+      "usage": {
+        "inputTokens": 5089,
+        "outputTokens": 61,
+        "totalTokens": 5150,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 872.484800000093,
+      "usage": {
+        "inputTokens": 5393,
+        "outputTokens": 67,
+        "totalTokens": 5460,
+        "cachedInputTokens": 2816
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2979.653200000059,
+      "usage": {
+        "inputTokens": 5487,
+        "outputTokens": 225,
+        "totalTokens": 5712,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1028.1534000000684,
+      "usage": {
+        "inputTokens": 5849,
+        "outputTokens": 51,
+        "totalTokens": 5900,
+        "cachedInputTokens": 3456
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2434.402000000002,
+      "usage": {
+        "inputTokens": 6054,
+        "outputTokens": 221,
+        "totalTokens": 6275,
+        "cachedInputTokens": 5120
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 967.6319999999832,
+      "usage": {
+        "inputTokens": 6158,
+        "outputTokens": 50,
+        "totalTokens": 6208,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 876.5478000000585,
+      "usage": {
+        "inputTokens": 6451,
+        "outputTokens": 49,
+        "totalTokens": 6500,
+        "cachedInputTokens": 3456
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1764.1829999999609,
+      "usage": {
+        "inputTokens": 6626,
+        "outputTokens": 163,
+        "totalTokens": 6789,
+        "cachedInputTokens": 3456
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 920.7634000000544,
+      "usage": {
+        "inputTokens": 6614,
+        "outputTokens": 40,
+        "totalTokens": 6654,
+        "cachedInputTokens": 3328
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1991.0756999999285,
+      "usage": {
+        "inputTokens": 6905,
+        "outputTokens": 189,
+        "totalTokens": 7094,
+        "cachedInputTokens": 3328
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2020.6760999999242,
+      "usage": {
+        "inputTokens": 7133,
+        "outputTokens": 147,
+        "totalTokens": 7280,
+        "cachedInputTokens": 3328
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 822.2175000000279,
+      "usage": {
+        "inputTokens": 7352,
+        "outputTokens": 40,
+        "totalTokens": 7392,
+        "cachedInputTokens": 2816
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 911.0820000000531,
+      "usage": {
+        "inputTokens": 7307,
+        "outputTokens": 39,
+        "totalTokens": 7346,
+        "cachedInputTokens": 3328
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1176.0211999999592,
+      "usage": {
+        "inputTokens": 3429,
+        "outputTokens": 47,
+        "totalTokens": 3476,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 621.4659999998985,
+      "usage": {
+        "inputTokens": 3762,
+        "outputTokens": 16,
+        "totalTokens": 3778,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 814.6618000000017,
+      "usage": {
+        "inputTokens": 4288,
+        "outputTokens": 17,
+        "totalTokens": 4305,
+        "cachedInputTokens": 3328
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2601.389199999976,
+      "usage": {
+        "inputTokens": 4532,
+        "outputTokens": 243,
+        "totalTokens": 4775,
+        "cachedInputTokens": 3712
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1198.5699000000022,
+      "usage": {
+        "inputTokens": 4246,
+        "outputTokens": 114,
+        "totalTokens": 4360,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1451.3969999999972,
+      "usage": {
+        "inputTokens": 4452,
+        "outputTokens": 142,
+        "totalTokens": 4594,
+        "cachedInputTokens": 2816
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 686.6570000000065,
+      "usage": {
+        "inputTokens": 4646,
+        "outputTokens": 46,
+        "totalTokens": 4692,
+        "cachedInputTokens": 4352
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1402.0576000000583,
+      "usage": {
+        "inputTokens": 4784,
+        "outputTokens": 142,
+        "totalTokens": 4926,
+        "cachedInputTokens": 4608
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 647.2771000000648,
+      "usage": {
+        "inputTokens": 4978,
+        "outputTokens": 43,
+        "totalTokens": 5021,
+        "cachedInputTokens": 4864
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1639.046399999992,
+      "usage": {
+        "inputTokens": 5113,
+        "outputTokens": 142,
+        "totalTokens": 5255,
+        "cachedInputTokens": 2816
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 6586.791100000031,
+      "usage": {
+        "inputTokens": 3217,
+        "outputTokens": 719,
+        "totalTokens": 3936,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 5707.843300000066,
+      "usage": {
+        "inputTokens": 3964,
+        "outputTokens": 601,
+        "totalTokens": 4565,
+        "cachedInputTokens": 3840
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1775.0117999999784,
+      "usage": {
+        "inputTokens": 4047,
+        "outputTokens": 123,
+        "totalTokens": 4170,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 539.6983999999939,
+      "usage": {
+        "inputTokens": 4220,
+        "outputTokens": 14,
+        "totalTokens": 4234,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2324.4419999999227,
+      "usage": {
+        "inputTokens": 4323,
+        "outputTokens": 237,
+        "totalTokens": 4560,
+        "cachedInputTokens": 4224
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 36853.9608,
+      "usage": {
+        "inputTokens": 4423,
+        "outputTokens": 4096,
+        "totalTokens": 8519,
+        "cachedInputTokens": 4096
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 520.3481000000611,
+      "usage": {
+        "inputTokens": 4551,
+        "outputTokens": 14,
+        "totalTokens": 4565,
+        "cachedInputTokens": 4224
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 6916.758499999996,
+      "usage": {
+        "inputTokens": 4670,
+        "outputTokens": 792,
+        "totalTokens": 5462,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1906.0722000000533,
+      "usage": {
+        "inputTokens": 4932,
+        "outputTokens": 167,
+        "totalTokens": 5099,
+        "cachedInputTokens": 4480
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1639.8551000000443,
+      "usage": {
+        "inputTokens": 5150,
+        "outputTokens": 161,
+        "totalTokens": 5311,
+        "cachedInputTokens": 4864
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 3262.207400000072,
+      "usage": {
+        "inputTokens": 2990,
+        "outputTokens": 344,
+        "totalTokens": 3334,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 4329.824699999997,
+      "usage": {
+        "inputTokens": 3362,
+        "outputTokens": 477,
+        "totalTokens": 3839,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1405.486900000018,
+      "usage": {
+        "inputTokens": 3976,
+        "outputTokens": 132,
+        "totalTokens": 4108,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1906.1935999999987,
+      "usage": {
+        "inputTokens": 4179,
+        "outputTokens": 176,
+        "totalTokens": 4355,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1898.1354999999749,
+      "usage": {
+        "inputTokens": 4406,
+        "outputTokens": 183,
+        "totalTokens": 4589,
+        "cachedInputTokens": 4352
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 751.6944000000367,
+      "usage": {
+        "inputTokens": 3801,
+        "outputTokens": 34,
+        "totalTokens": 3835,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2399.8973000000697,
+      "usage": {
+        "inputTokens": 3920,
+        "outputTokens": 176,
+        "totalTokens": 4096,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2072.0699000000022,
+      "usage": {
+        "inputTokens": 4147,
+        "outputTokens": 209,
+        "totalTokens": 4356,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 754.3738000000594,
+      "usage": {
+        "inputTokens": 4407,
+        "outputTokens": 37,
+        "totalTokens": 4444,
+        "cachedInputTokens": 3712
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1769.5503999999491,
+      "usage": {
+        "inputTokens": 4529,
+        "outputTokens": 209,
+        "totalTokens": 4738,
+        "cachedInputTokens": 4352
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1401.4268000000156,
+      "usage": {
+        "inputTokens": 4789,
+        "outputTokens": 124,
+        "totalTokens": 4913,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 703.6461000000127,
+      "usage": {
+        "inputTokens": 4818,
+        "outputTokens": 49,
+        "totalTokens": 4867,
+        "cachedInputTokens": 3200
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1197.4568000000436,
+      "usage": {
+        "inputTokens": 5061,
+        "outputTokens": 86,
+        "totalTokens": 5147,
+        "cachedInputTokens": 3200
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1972.7778999999864,
+      "usage": {
+        "inputTokens": 5341,
+        "outputTokens": 176,
+        "totalTokens": 5517,
+        "cachedInputTokens": 5120
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 539.0744000000414,
+      "usage": {
+        "inputTokens": 2817,
+        "outputTokens": 16,
+        "totalTokens": 2833,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 643.8144999999786,
+      "usage": {
+        "inputTokens": 3011,
+        "outputTokens": 21,
+        "totalTokens": 3032,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2195.1361000000034,
+      "usage": {
+        "inputTokens": 3080,
+        "outputTokens": 268,
+        "totalTokens": 3348,
+        "cachedInputTokens": 2816
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 7833.239900000044,
+      "usage": {
+        "inputTokens": 3368,
+        "outputTokens": 1006,
+        "totalTokens": 4374,
+        "cachedInputTokens": 1920
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 7262.371499999892,
+      "usage": {
+        "inputTokens": 4402,
+        "outputTokens": 957,
+        "totalTokens": 5359,
+        "cachedInputTokens": 4352
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2034.4604999999283,
+      "usage": {
+        "inputTokens": 4368,
+        "outputTokens": 192,
+        "totalTokens": 4560,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 535.5546000000322,
+      "usage": {
+        "inputTokens": 4625,
+        "outputTokens": 15,
+        "totalTokens": 4640,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 603.2714000000851,
+      "usage": {
+        "inputTokens": 4759,
+        "outputTokens": 14,
+        "totalTokens": 4773,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 467.6628999999957,
+      "usage": {
+        "inputTokens": 4869,
+        "outputTokens": 16,
+        "totalTokens": 4885,
+        "cachedInputTokens": 4736
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 3108.1981999999844,
+      "usage": {
+        "inputTokens": 5125,
+        "outputTokens": 239,
+        "totalTokens": 5364,
+        "cachedInputTokens": 4864
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2061.095100000035,
+      "usage": {
+        "inputTokens": 5415,
+        "outputTokens": 214,
+        "totalTokens": 5629,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 861.7141999999294,
+      "usage": {
+        "inputTokens": 5680,
+        "outputTokens": 35,
+        "totalTokens": 5715,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2038.0595999999205,
+      "usage": {
+        "inputTokens": 5822,
+        "outputTokens": 206,
+        "totalTokens": 6028,
+        "cachedInputTokens": 5248
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2003.7767000000458,
+      "usage": {
+        "inputTokens": 6079,
+        "outputTokens": 214,
+        "totalTokens": 6293,
+        "cachedInputTokens": 6016
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 756.0818000000436,
+      "usage": {
+        "inputTokens": 6344,
+        "outputTokens": 50,
+        "totalTokens": 6394,
+        "cachedInputTokens": 6272
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2120.361900000018,
+      "usage": {
+        "inputTokens": 6501,
+        "outputTokens": 208,
+        "totalTokens": 6709,
+        "cachedInputTokens": 4608
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1539.5875000000233,
+      "usage": {
+        "inputTokens": 6760,
+        "outputTokens": 118,
+        "totalTokens": 6878,
+        "cachedInputTokens": 5632
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 2081.144100000034,
+      "usage": {
+        "inputTokens": 5470,
+        "outputTokens": 229,
+        "totalTokens": 5699,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 8596.583400000003,
+      "usage": {
+        "inputTokens": 5751,
+        "outputTokens": 132,
+        "totalTokens": 5883,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1695.2559999999357,
+      "usage": {
+        "inputTokens": 5873,
+        "outputTokens": 206,
+        "totalTokens": 6079,
+        "cachedInputTokens": 3200
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 819.7933000000194,
+      "usage": {
+        "inputTokens": 6130,
+        "outputTokens": 79,
+        "totalTokens": 6209,
+        "cachedInputTokens": 6016
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 3039.5387000000337,
+      "usage": {
+        "inputTokens": 6217,
+        "outputTokens": 371,
+        "totalTokens": 6588,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1798.5843999999342,
+      "usage": {
+        "inputTokens": 6641,
+        "outputTokens": 231,
+        "totalTokens": 6872,
+        "cachedInputTokens": 3328
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 765.2357999999076,
+      "usage": {
+        "inputTokens": 6740,
+        "outputTokens": 34,
+        "totalTokens": 6774,
+        "cachedInputTokens": 2432
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 910.4814999999944,
+      "usage": {
+        "inputTokens": 4077,
+        "outputTokens": 56,
+        "totalTokens": 4133,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 606.9649999999674,
+      "usage": {
+        "inputTokens": 4210,
+        "outputTokens": 15,
+        "totalTokens": 4225,
+        "cachedInputTokens": 0
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 5595.121099999989,
+      "usage": {
+        "inputTokens": 4361,
+        "outputTokens": 636,
+        "totalTokens": 4997,
+        "cachedInputTokens": 3968
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 586.591599999927,
+      "usage": {
+        "inputTokens": 4468,
+        "outputTokens": 16,
+        "totalTokens": 4484,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 1434.4629000000423,
+      "usage": {
+        "inputTokens": 4710,
+        "outputTokens": 125,
+        "totalTokens": 4835,
+        "cachedInputTokens": 1792
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 4885.622500000056,
+      "usage": {
+        "inputTokens": 2847,
+        "outputTokens": 560,
+        "totalTokens": 3407,
+        "cachedInputTokens": 1920
+      },
+      "ok": true
+    },
+    {
+      "tag": "mistral",
+      "provider": "mistral",
+      "model": "codestral-2508",
+      "ms": 3897.8567000001203,
+      "usage": {
+        "inputTokens": 3435,
+        "outputTokens": 394,
+        "totalTokens": 3829,
+        "cachedInputTokens": 3328
+      },
+      "ok": true
+    }
+  ],
+  "routeHealthSnapshot": [
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "conditions": [
+        {
+          "state": "CAPABILITY_LIMITED",
+          "since": "2026-09-27T00:10:18.043Z",
+          "expiresAt": 1790475018043,
+          "confidence": 0.5,
+          "sampleSize": 1,
+          "reasonCode": "ROLE_ROLE_FAILED",
+          "source": "runtime",
+          "roles": [
+            "EXPLORER"
+          ]
+        },
+        {
+          "state": "HEALTHY",
+          "since": "2026-09-27T00:10:18.703Z",
+          "expiresAt": 1790469618703,
+          "confidence": 0.5,
+          "sampleSize": 1,
+          "reasonCode": "SERVED_PRODUCTION_SHAPE",
+          "source": "runtime"
+        }
+      ],
+      "window": {
+        "calls": 1,
+        "successes": 1,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 1,
+        "toolCalls": 1,
+        "latencyP50Ms": 648,
+        "latencyP95Ms": 648,
+        "from": "2026-09-27T00:10:18.703Z",
+        "to": "2026-09-27T00:10:18.703Z"
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 1,
+      "lastObservedAt": "2026-09-27T00:10:18.709Z",
+      "lastSuccessAt": "2026-09-27T00:10:18.703Z",
+      "quota": {
+        "requestsRemaining": 989,
+        "requestsLimit": 1000,
+        "tokensRemaining": 1300,
+        "tokensLimit": 8000,
+        "resetAt": "2026-09-27T00:11:08.550Z",
+        "observedAt": "2026-09-27T00:10:18.300Z"
+      },
+      "governor": {
+        "pacingWaitMs": 0,
+        "inFlight": 0,
+        "observedAt": "2026-09-27T00:10:18.704Z"
+      },
+      "state": "CAPABILITY_LIMITED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-2508",
+      "conditions": [
+        {
+          "state": "HEALTHY",
+          "since": "2026-09-27T00:10:22.912Z",
+          "expiresAt": 1790470185959,
+          "confidence": 1,
+          "sampleSize": 97,
+          "reasonCode": "SERVED_PRODUCTION_SHAPE",
+          "source": "runtime"
+        },
+        {
+          "state": "CAPABILITY_LIMITED",
+          "since": "2026-09-27T00:15:15.257Z",
+          "expiresAt": 1790475315257,
+          "confidence": 0.5,
+          "sampleSize": 1,
+          "reasonCode": "ROLE_ROLE_FAILED",
+          "source": "runtime",
+          "roles": [
+            "CODER"
+          ]
+        },
+        {
+          "state": "QUARANTINED",
+          "since": "2026-09-27T00:19:45.965Z",
+          "expiresAt": null,
+          "confidence": 1,
+          "sampleSize": 4,
+          "reasonCode": "MALFORMED_TOOL_CALL_STREAK",
+          "source": "runtime"
+        }
+      ],
+      "window": {
+        "calls": 97,
+        "successes": 97,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 4,
+        "toolCalls": 4,
+        "latencyP50Ms": 2282,
+        "latencyP95Ms": 24856,
+        "from": "2026-09-27T00:10:22.912Z",
+        "to": "2026-09-27T00:19:45.959Z"
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 4,
+      "lastObservedAt": "2026-09-27T00:19:45.965Z",
+      "lastSuccessAt": "2026-09-27T00:19:45.959Z",
+      "quota": {
+        "requestsRemaining": 124,
+        "requestsLimit": 125,
+        "tokensRemaining": 624990,
+        "tokensLimit": 625000,
+        "observedAt": "2026-09-27T00:02:08.211Z"
+      },
+      "governor": {
+        "pacingWaitMs": 0,
+        "inFlight": 0,
+        "observedAt": "2026-09-27T00:19:45.959Z"
+      },
+      "state": "QUARANTINED"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "stealth/space-bunny-alpha",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.213Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-sante:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.214Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-fin:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.214Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "qwen/qwen3.8-27b:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.675Z",
+      "quota": {
+        "observedAt": "2026-09-27T00:02:08.675Z"
+      },
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.214Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.214Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.214Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling-small:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.214Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-s-2.1:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.408Z",
+      "quota": {
+        "observedAt": "2026-09-27T00:02:08.408Z"
+      },
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.586Z",
+      "quota": {
+        "observedAt": "2026-09-27T00:02:08.586Z"
+      },
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-content-safety:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-26b-a4b-it:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-31b-it:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/lyria-3-pro-preview",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/lyria-3-clip-preview",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "openrouter/free",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "qwen/qwen3.8-27b",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "allam-2-7b",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "canopylabs/orpheus-arabic-saudi",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "canopylabs/orpheus-v1-english",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-code-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-code-fim-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-2603",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:09:47.708Z",
+      "quota": {
+        "requestsRemaining": 0,
+        "requestsLimit": 0,
+        "observedAt": "2026-09-27T00:09:47.708Z"
+      },
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:09:47.517Z",
+      "quota": {
+        "requestsRemaining": 0,
+        "requestsLimit": 0,
+        "observedAt": "2026-09-27T00:09:47.517Z"
+      },
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-vibe-cli-fast",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "magistral-small-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-small-2507",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-small-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-3b-2512",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-3b-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-8b-2512",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-8b-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-14b-2512",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-14b-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:09:47.112Z",
+      "quota": {
+        "requestsRemaining": 0,
+        "requestsLimit": 0,
+        "observedAt": "2026-09-27T00:09:47.112Z"
+      },
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-3-5",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-3.5",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-3",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2604",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:09:47.347Z",
+      "quota": {
+        "requestsRemaining": 0,
+        "requestsLimit": 0,
+        "observedAt": "2026-09-27T00:09:47.347Z"
+      },
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-vibe-cli-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.215Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-vibe-cli-with-tools",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "magistral-medium-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:09:47.866Z",
+      "quota": {
+        "requestsRemaining": 0,
+        "requestsLimit": 0,
+        "observedAt": "2026-09-27T00:09:47.866Z"
+      },
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-2512",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-3-0",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-3",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-4-0",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-4",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-4-1",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-2602",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-transcribe-realtime-2602",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-realtime-2602",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-realtime-latest",
+      "conditions": [],
+      "window": {
+        "calls": 0,
+        "successes": 0,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-09-27T00:02:08.216Z",
+      "quota": {},
+      "state": "UNKNOWN"
+    }
+  ]
+}

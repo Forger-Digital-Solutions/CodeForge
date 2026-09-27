@@ -3185,6 +3185,8 @@ export * from "./parallel-state.js";
 export * from "./parallel-orchestrator.js";
 export * from "./mission-state.js";
 export * from "./mission-supervisor.js";
+export * from "./provider-topology-capacity.js";
+export * from "./capacity-confidence.js";
 export * from "./task-capsule.js";
 export * from "./publication-artifact.js";
 export * from "./cloud-publication-client.js";
