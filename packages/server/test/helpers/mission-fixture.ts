@@ -71,7 +71,14 @@ export class MissionProvider implements ProviderAdapter {
     const reply = await this.script({ request, role, all, tag, goalHint: tag.split("|")[1] ?? "", call });
     if (reply === undefined) { yield { type: "text_delta", delta: "{}" }; yield { type: "finish", finishReason: "stop" }; return; }
     if (typeof reply === "string") { yield { type: "text_delta", delta: reply }; yield { type: "finish", finishReason: "stop" }; return; }
-    const scripted = reply as { text?: string; write?: { path: string; content: string }; toolCallId?: string };
+    const scripted = reply as { text?: string; write?: { path: string; content: string }; read?: string; toolCallId?: string };
+    if (scripted.read) {
+      const id = scripted.toolCallId ?? `read-${call}`;
+      yield { type: "tool_call_started", toolCallId: id, toolName: "read_file" };
+      yield { type: "tool_call_completed", toolCallId: id, toolName: "read_file", arguments: JSON.stringify({ path: scripted.read }) };
+      yield { type: "finish", finishReason: "tool_calls" };
+      return;
+    }
     if (scripted.write) {
       if (scripted.text) yield { type: "text_delta", delta: scripted.text };
       const id = scripted.toolCallId ?? `write-${call}`;
@@ -228,9 +235,14 @@ export function scriptFromSpec(options: {
     if (role === "coder") {
       const workstream = allMilestones().flatMap((milestone) => milestone.workstreams).find((candidate) => all.includes(`"workstream":"${candidate.id}"`));
       if (!workstream) return { text: "no change" };
-      if (context.request.messages.some((message) => message.role === "tool")) return { text: `${workstream.id} complete` };
+      // The observed-state gate (R44) refuses a write to a file this run has never read —
+      // the scripted coder reads its target first, like a real model is instructed to.
+      const toolReplies = context.request.messages.filter((message) => message.role === "tool").length;
       const override = options.onCoder?.(workstream.id, context.call);
-      return { write: override ?? workstream.write };
+      const target = override ?? workstream.write;
+      if (toolReplies === 0) return { read: target.path };
+      if (toolReplies === 1) return { write: target };
+      return { text: `${workstream.id} complete` };
     }
     return { text: "done" };
   };

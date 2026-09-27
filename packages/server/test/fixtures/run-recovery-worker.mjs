@@ -60,7 +60,13 @@ class RecoveryScriptedProvider {
       return;
     }
 
-    if (isCoder && !hasToolResult) {
+    // R44's observed-state gate refuses writes to files the run never read — every write
+    // path reads math.mjs on the first turn and writes on the second. `hasToolResult` is
+    // kept for the resume-side provider's transcript shape; crash timing keys off the
+    // tool-reply count so each case still dies at the same logical point.
+    const toolReplies = req.messages.filter((m) => m.role === "tool").length;
+
+    if (isCoder && toolReplies === 0) {
       if (testCase === "kill-before-first-call") crash();
 
       if (testCase === "kill-readonly-unobserved") {
@@ -70,14 +76,30 @@ class RecoveryScriptedProvider {
         return;
       }
 
-      if (testCase === "kill-write-unobserved" || testCase === "kill-command-unobserved") {
-        const tool = testCase === "kill-write-unobserved" ? "write_file" : "run_command";
-        const args = tool === "write_file"
-          ? JSON.stringify({ path: "math.mjs", content: "RECOVERY_MUST_NOT_WRITE_THIS" })
-          : JSON.stringify({ command: "echo RECOVERY_MUST_NOT_RUN_THIS" });
-        yield { type: "tool_call_started", toolCallId: "tc-act", toolName: tool };
-        yield { type: "tool_call_completed", toolCallId: "tc-act", toolName: tool, arguments: args };
+      if (testCase === "kill-command-unobserved") {
+        yield { type: "tool_call_started", toolCallId: "tc-act", toolName: "run_command" };
+        yield { type: "tool_call_completed", toolCallId: "tc-act", toolName: "run_command", arguments: JSON.stringify({ command: "echo RECOVERY_MUST_NOT_RUN_THIS" }) };
         yield { type: "finish", finishReason: "tool_calls" };
+        return;
+      }
+
+      yield { type: "tool_call_started", toolCallId: "tc-read", toolName: "read_file" };
+      yield { type: "tool_call_completed", toolCallId: "tc-read", toolName: "read_file", arguments: JSON.stringify({ path: "math.mjs" }) };
+      yield { type: "finish", finishReason: "tool_calls" };
+      return;
+    }
+
+    if (isCoder && toolReplies === 1) {
+      if (testCase === "kill-write-unobserved") {
+        yield { type: "tool_call_started", toolCallId: "tc-act", toolName: "write_file" };
+        yield { type: "tool_call_completed", toolCallId: "tc-act", toolName: "write_file", arguments: JSON.stringify({ path: "math.mjs", content: "RECOVERY_MUST_NOT_WRITE_THIS" }) };
+        yield { type: "finish", finishReason: "tool_calls" };
+        return;
+      }
+
+      if (testCase === "kill-readonly-unobserved" || testCase === "kill-command-unobserved") {
+        yield { type: "text_delta", delta: "Fixed multiply." };
+        yield { type: "finish", finishReason: "stop" };
         return;
       }
 

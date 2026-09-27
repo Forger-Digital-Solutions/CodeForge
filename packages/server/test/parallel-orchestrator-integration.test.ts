@@ -44,9 +44,15 @@ class ParallelProvider implements ProviderAdapter {
     if (system.includes("CodeForge Reviewer")) { yield { type: "text_delta", delta: JSON.stringify({ verdict: "pass", findings: [], summary: "isolated change approved" }) }; yield { type: "finish", finishReason: "stop" }; return; }
     if (system.includes("CodeForge Coder")) {
       const stringTask = all.includes("slugify") || all.includes('"string"'); const upperTask = all.includes("uppercase"); const nullableTask = all.includes("nullable"); const id = this.scenario === "textual" ? upperTask ? "upper" : "lower" : this.scenario === "semantic" ? nullableTask ? "nullable" : "caller" : stringTask ? "string" : "math";
-      if (!request.messages.some((message) => message.role === "tool")) {
+      const target = this.scenario === "textual" ? { path: "src/format.mjs", content: upperTask ? "export function formatName(value) { return value.toUpperCase(); }\n" : "export function formatName(value) { return value.toLowerCase(); }\n" } : this.scenario === "semantic" ? nullableTask ? { path: "src/user.mjs", content: "export function getUser() { return null; }\n" } : { path: "src/caller.mjs", content: "import { getUser } from './user.mjs'; export const userName = () => getUser().name;\n" } : stringTask ? { path: "src/string.mjs", content: "export function slugify(value) { return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }\n" } : { path: "src/math.mjs", content: "export function multiply(a, b) { return a * b; }\n" };
+      // The observed-state gate (R44) refuses writes to files this run has never read —
+      // the scripted coder reads its target on the first turn, writes on the second.
+      const toolReplies = request.messages.filter((message) => message.role === "tool").length;
+      if (toolReplies === 0) {
         if (this.latch) await this.latch.enter(id);
-        const target = this.scenario === "textual" ? { path: "src/format.mjs", content: upperTask ? "export function formatName(value) { return value.toUpperCase(); }\n" : "export function formatName(value) { return value.toLowerCase(); }\n" } : this.scenario === "semantic" ? nullableTask ? { path: "src/user.mjs", content: "export function getUser() { return null; }\n" } : { path: "src/caller.mjs", content: "import { getUser } from './user.mjs'; export const userName = () => getUser().name;\n" } : stringTask ? { path: "src/string.mjs", content: "export function slugify(value) { return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }\n" } : { path: "src/math.mjs", content: "export function multiply(a, b) { return a * b; }\n" };
+        yield { type: "tool_call_started", toolCallId: `read-${id}`, toolName: "read_file" }; yield { type: "tool_call_completed", toolCallId: `read-${id}`, toolName: "read_file", arguments: JSON.stringify({ path: target.path }) }; yield { type: "finish", finishReason: "tool_calls" }; return;
+      }
+      if (toolReplies === 1) {
         yield { type: "tool_call_started", toolCallId: `write-${id}`, toolName: "write_file" }; yield { type: "tool_call_completed", toolCallId: `write-${id}`, toolName: "write_file", arguments: JSON.stringify(target) }; yield { type: "finish", finishReason: "tool_calls" }; return;
       }
       yield { type: "text_delta", delta: `${id} complete` }; yield { type: "finish", finishReason: "stop" }; return;
