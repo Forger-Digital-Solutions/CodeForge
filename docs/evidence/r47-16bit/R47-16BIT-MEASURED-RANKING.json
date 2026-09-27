@@ -1,0 +1,316 @@
+{
+  "generatedAt": "2026-09-27T01:50:34.492Z",
+  "basis": "live qualification receipts (R47-16BIT-QUALIFY-*.json) + live OpenRouter price cards",
+  "evidenceState": "MEASURED where roleResults exist; conservative defaults where NOT_TESTED",
+  "rankings": [
+    {
+      "task": "EXPLORER",
+      "evidenceSummary": {
+        "deepseek-v4.1-flash": "NOT_QUALIFIED",
+        "glm-5.3-flash": "NOT_QUALIFIED",
+        "qwen3.8-flash": "NOT_QUALIFIED",
+        "gpt-5.6-luna": "NOT_QUALIFIED"
+      },
+      "selected": "glm-5.3-flash",
+      "candidates": [
+        {
+          "canonicalModelId": "glm-5.3-flash",
+          "attemptCostUsd": 0.00235,
+          "expectedAttempts": 80,
+          "expectedCostUsd": 0.188353,
+          "successRate": 0.05,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "TOOL_RELIABILITY_ADJUSTED",
+            "ROLE_FIT_MEASURED",
+            "CHEAPER_EXPECTED_COMPLETION"
+          ]
+        },
+        {
+          "canonicalModelId": "deepseek-v4.1-flash",
+          "attemptCostUsd": 0.001835,
+          "expectedAttempts": 120,
+          "expectedCostUsd": 0.220475,
+          "successRate": 0.05,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "TOOL_RELIABILITY_ADJUSTED",
+            "ROLE_FIT_MEASURED"
+          ]
+        },
+        {
+          "canonicalModelId": "qwen3.8-flash",
+          "attemptCostUsd": 0.006705,
+          "expectedAttempts": 48,
+          "expectedCostUsd": 0.322846,
+          "successRate": 0.05,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "TOOL_RELIABILITY_ADJUSTED",
+            "ROLE_FIT_MEASURED"
+          ]
+        },
+        {
+          "canonicalModelId": "gpt-5.6-luna",
+          "attemptCostUsd": 0.0098,
+          "expectedAttempts": 120,
+          "expectedCostUsd": 1.17747,
+          "successRate": 0.05,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "TOOL_RELIABILITY_ADJUSTED",
+            "ROLE_FIT_MEASURED"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "PLANNER",
+      "evidenceSummary": {
+        "deepseek-v4.1-flash": "NOT_TESTED",
+        "glm-5.3-flash": "QUALIFIED",
+        "qwen3.8-flash": "NOT_TESTED",
+        "gpt-5.6-luna": "QUALIFIED"
+      },
+      "selected": "glm-5.3-flash",
+      "candidates": [
+        {
+          "canonicalModelId": "glm-5.3-flash",
+          "attemptCostUsd": 0.0025,
+          "expectedAttempts": 1,
+          "expectedCostUsd": 0.002875,
+          "successRate": 1,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED",
+            "CHEAPER_EXPECTED_COMPLETION"
+          ]
+        },
+        {
+          "canonicalModelId": "deepseek-v4.1-flash",
+          "attemptCostUsd": 0.001745,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.003752,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        },
+        {
+          "canonicalModelId": "gpt-5.6-luna",
+          "attemptCostUsd": 0.0086,
+          "expectedAttempts": 1,
+          "expectedCostUsd": 0.00989,
+          "successRate": 1,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED"
+          ]
+        },
+        {
+          "canonicalModelId": "qwen3.8-flash",
+          "attemptCostUsd": 0.00516,
+          "expectedAttempts": 2,
+          "expectedCostUsd": 0.011094,
+          "successRate": 0.5,
+          "fullyMeasured": false,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "UNMEASURED_EVIDENCE"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "CODER",
+      "evidenceSummary": {
+        "deepseek-v4.1-flash": "QUALIFIED",
+        "glm-5.3-flash": "QUALIFIED",
+        "qwen3.8-flash": "QUALIFIED",
+        "gpt-5.6-luna": "QUALIFIED"
+      },
+      "selected": "deepseek-v4.1-flash",
+      "candidates": [
+        {
+          "canonicalModelId": "deepseek-v4.1-flash",
+          "attemptCostUsd": 0.00558,
+          "expectedAttempts": 1,
+          "expectedCostUsd": 0.006417,
+          "successRate": 1,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED",
+            "CHEAPER_EXPECTED_COMPLETION"
+          ]
+        },
+        {
+          "canonicalModelId": "glm-5.3-flash",
+          "attemptCostUsd": 0.0084,
+          "expectedAttempts": 1,
+          "expectedCostUsd": 0.00966,
+          "successRate": 1,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED"
+          ]
+        },
+        {
+          "canonicalModelId": "qwen3.8-flash",
+          "attemptCostUsd": 0.01464,
+          "expectedAttempts": 1,
+          "expectedCostUsd": 0.016836,
+          "successRate": 1,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED"
+          ]
+        },
+        {
+          "canonicalModelId": "gpt-5.6-luna",
+          "attemptCostUsd": 0.0264,
+          "expectedAttempts": 1,
+          "expectedCostUsd": 0.03036,
+          "successRate": 1,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "REVIEWER",
+      "evidenceSummary": {
+        "deepseek-v4.1-flash": "HARD_FAILURE",
+        "glm-5.3-flash": "QUALIFIED",
+        "qwen3.8-flash": "QUALIFIED",
+        "gpt-5.6-luna": "PROBATION"
+      },
+      "selected": "glm-5.3-flash",
+      "candidates": [
+        {
+          "canonicalModelId": "glm-5.3-flash",
+          "attemptCostUsd": 0.00305,
+          "expectedAttempts": 1,
+          "expectedCostUsd": 0.003507,
+          "successRate": 1,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED",
+            "CHEAPER_EXPECTED_COMPLETION"
+          ]
+        },
+        {
+          "canonicalModelId": "qwen3.8-flash",
+          "attemptCostUsd": 0.007925,
+          "expectedAttempts": 1,
+          "expectedCostUsd": 0.009114,
+          "successRate": 1,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED"
+          ]
+        },
+        {
+          "canonicalModelId": "deepseek-v4.1-flash",
+          "attemptCostUsd": 0.0023,
+          "expectedAttempts": 5,
+          "expectedCostUsd": 0.011845,
+          "successRate": 0.2,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED"
+          ]
+        },
+        {
+          "canonicalModelId": "gpt-5.6-luna",
+          "attemptCostUsd": 0.012,
+          "expectedAttempts": 1.5,
+          "expectedCostUsd": 0.0198,
+          "successRate": 0.6666666666666666,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "MISSION_ROLLUP",
+      "evidenceSummary": {
+        "deepseek-v4.1-flash": "QUALIFIED",
+        "glm-5.3-flash": "QUALIFIED",
+        "qwen3.8-flash": "QUALIFIED",
+        "gpt-5.6-luna": "QUALIFIED"
+      },
+      "selected": "deepseek-v4.1-flash",
+      "candidates": [
+        {
+          "canonicalModelId": "deepseek-v4.1-flash",
+          "attemptCostUsd": 0.01146,
+          "expectedAttempts": 1,
+          "expectedCostUsd": 0.013179,
+          "successRate": 1,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED",
+            "CHEAPER_EXPECTED_COMPLETION"
+          ]
+        },
+        {
+          "canonicalModelId": "glm-5.3-flash",
+          "attemptCostUsd": 0.0163,
+          "expectedAttempts": 1,
+          "expectedCostUsd": 0.018745,
+          "successRate": 1,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED"
+          ]
+        },
+        {
+          "canonicalModelId": "qwen3.8-flash",
+          "attemptCostUsd": 0.03443,
+          "expectedAttempts": 1,
+          "expectedCostUsd": 0.039595,
+          "successRate": 1,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED"
+          ]
+        },
+        {
+          "canonicalModelId": "gpt-5.6-luna",
+          "attemptCostUsd": 0.0568,
+          "expectedAttempts": 1,
+          "expectedCostUsd": 0.06532,
+          "successRate": 1,
+          "fullyMeasured": true,
+          "reasonCodes": [
+            "ROUTE_PRICED:openrouter-catalog-live@2026-09-27T01:12:12.909Z",
+            "ROLE_FIT_MEASURED"
+          ]
+        }
+      ]
+    }
+  ]
+}

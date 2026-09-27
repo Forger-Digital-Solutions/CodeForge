@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "92534354261ed024d151f4a4e1a151a25336bbcb1f58406551a178d16ff532d1",
-  "surfaceVersion": "r46-free-supply-resilience-v1",
+  "sourceStateId": "499bc26c2afd7784c12b9ae8e432b9add24f97ff233c4b660dfadb6f2b34ada5",
+  "surfaceVersion": "r47-16bit-first-light-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -48,7 +48,7 @@
     "packages/workflow/src/verification-service.ts"
   ],
   "materialFileHashes": {
-    "packages/agent/src/index.ts": "cc3c9d8e66a121c25b79c4866ec92e254a08c3a7",
+    "packages/agent/src/index.ts": "aa573e39d9f43c9462b41b8412d44eb27f1d2e83",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
     "packages/benchmark/src/index.ts": "615c02c9d77491a17e8b6a80a82cb619efd6be02",
@@ -64,13 +64,13 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "2082acf28af4e3d5f76a6b77889e9bece4cf1a4f",
+    "packages/server/src/agent-runtime.ts": "954f3088b3b831dadb7f67e2da27c435d2193f0a",
     "packages/server/src/autonomous-orchestrator.ts": "04857cabc3f736e3ce9b8513b92ea95a9e01f595",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
     "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
-    "packages/server/src/model-execution-adapter.ts": "99de10243812f348420cc5b6f9abbeebf02a2653",
+    "packages/server/src/model-execution-adapter.ts": "5e47f372c649bea2c7641c3afaf1dae8b3468280",
     "packages/server/src/role-output-budget.ts": "f2560f9ee66fe33d5cf9f0bb6b1d1f3bd7a441dc",
     "packages/server/src/turn-state-machine.ts": "bd79b984c832d8ad7020b58b2f4991c747abafd6",
     "packages/server/src/workflow-service.ts": "a6fa8ae76d908fe503ba6050d8afdf9d2e239b23",
@@ -1708,20 +1708,47 @@
       "regressionEvidence": "docs/evidence/r46-free-supply-resilience/R46-LIVE-CORPUS.json and the R46 suite runs (r46-capacity-confidence 10/10, role-qualification 12/12, health-classify 17/17, route-health-authority 27/27, fabric+ledger+contention 97/97, server wiring+topology+orchestrator 65/65)",
       "recertifiedAt": "2026-09-27",
       "sourceStateConstant": "CODEFORGE_R46_FREE_SUPPLY_RESILIENCE_SOURCE_STATE"
+    },
+    {
+      "label": "R47 shared-runtime closure and 16-Bit first light",
+      "reason": "Recertify the reviewed R47 changes: shared-runtime closure (Explorer output contract, deterministic recovery, role-scoped outcome telemetry, account-identity fail-closed, observer wiring, data-policy contract tests) plus 16-Bit first light — budget-gated paid adapter, route-priced expected-cost ranking, credential-absent direct→fallback dispatch, and one live budget-capped mission completed under the completion gate. ForgeZero free-route eligibility, provider routing policy, and completion-gate authority are unchanged.",
+      "priorSourceStateId": "92534354261ed024d151f4a4e1a151a25336bbcb1f58406551a178d16ff532d1",
+      "priorSurfaceVersion": "r46-free-supply-resilience-v1",
+      "resultingSourceStateId": "499bc26c2afd7784c12b9ae8e432b9add24f97ff233c4b660dfadb6f2b34ada5",
+      "resultingSurfaceVersion": "r47-16bit-first-light-v1",
+      "changes": [
+        {
+          "file": "packages/agent/src/index.ts",
+          "change": "R47: explicit structured-output wire contracts (Explorer contract declared up front + repeated in repair prompts), bounded deterministic Explorer summary recovery, and content-free shape diagnostics. No completion-policy change.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "R47: role-scoped structured-output outcome telemetry wired to 8-Bit reliability/route health; paidAuto handed to the model execution adapter. Completion gate unchanged.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/model-execution-adapter.ts",
+          "change": "R47: paid-auto canonical-model branch for exact selections (runtimeModel via the paid service, fail-closed when unregistered); ForgeZero eligibility still gates every non-paid exact route. No free-route semantics change.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r47-16bit/R47-16BIT-CAMPAIGN.md + R47-CLOSURE-MATRIX.md; Phase A 635 focused tests; Phase B paid-auto 50/50, server pipeline 75/75, regression sweep 152/152",
+      "recertifiedAt": "2026-09-27",
+      "sourceStateConstant": "CODEFORGE_R47_16BIT_FIRST_LIGHT_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-27T00:22:20.089Z",
+  "recertifiedAt": "2026-09-27T01:53:51.635Z",
   "recertification": {
-    "phase": "R46 free-supply resilience and live production-fabric proof",
-    "reason": "Recertify the reviewed R45/R46 changes: deterministic repository intelligence and handoff economics (R45), plus free-supply resilience — mission-aware admission, staged/durable qualification, 429 classification, and production-fabric live proof including one completed normal-topology mission on free-only supply (R46). ForgeZero, provider routing policy, and completion-gate authority are unchanged.",
+    "phase": "R47 shared-runtime closure and 16-Bit first light",
+    "reason": "Recertify the reviewed R47 changes: shared-runtime closure (Explorer output contract, deterministic recovery, role-scoped outcome telemetry, account-identity fail-closed, observer wiring, data-policy contract tests) plus 16-Bit first light — budget-gated paid adapter, route-priced expected-cost ranking, credential-absent direct→fallback dispatch, and one live budget-capped mission completed under the completion gate. ForgeZero free-route eligibility, provider routing policy, and completion-gate authority are unchanged.",
     "changedFiles": [
       "packages/agent/src/index.ts",
-      "packages/context/src/index.ts",
       "packages/server/src/agent-runtime.ts",
-      "packages/server/src/autonomous-orchestrator.ts"
+      "packages/server/src/model-execution-adapter.ts"
     ],
-    "priorSourceStateId": "d863c424d5d4a750a83340837e34946e124f1ebfde968273530226dd1c43f6d3",
+    "priorSourceStateId": "92534354261ed024d151f4a4e1a151a25336bbcb1f58406551a178d16ff532d1",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

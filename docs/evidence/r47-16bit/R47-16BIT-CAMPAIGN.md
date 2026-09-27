@@ -80,7 +80,26 @@ reasoning-only completions within the probe's output bound).
 - Durable `ESTIMATED_ONLY` now commits the reservation bound when a completed
   call reports no usage — aligned with the in-memory ledger (was $0).
 
-## 5. Honest caveats
+## 5. Measured decision surface
+
+`R47-16BIT-MEASURED-RANKING.json` re-ranks with receipted qualification evidence
+(`scripts/r47-16bit-measured.mjs`):
+
+| Task profile | Selected | Basis |
+|---|---|---|
+| EXPLORER | glm-5.3-flash | all four NOT_QUALIFIED — see caveat below |
+| PLANNER | glm-5.3-flash | QUALIFIED + cheapest measured route |
+| CODER | deepseek-v4.1-flash | QUALIFIED at $0.035/$0.29 — lowest verified cost |
+| REVIEWER | glm-5.3-flash | QUALIFIED (deepseek HARD_FAILURE, gpt PROBATION) |
+| MISSION_ROLLUP | deepseek-v4.1-flash | QUALIFIED + cheapest |
+
+**Caveat — ranker does not fail closed on exhausted evidence:** when every candidate
+is NOT_QUALIFIED (EXPLORER), `rank16Bit` still selects the cheapest route on price +
+floor success-rate. Role-fit discounts but does not exclude. Callers must treat an
+all-NOT_QUALIFIED ranking as "no qualified route exists" — the tier gate lives
+upstream, in qualification, not in the ranker.
+
+## 6. Honest caveats
 
 - Stream receipts cannot observe `servedModelId` (the StreamEvent contract has no
   model field). Identity verification is ACTUAL-grade only on `chat` probes;
