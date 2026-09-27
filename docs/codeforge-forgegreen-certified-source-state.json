@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "cd2dbd78320bcce5ede07f9f56f5f79c24d77afcacc2eebf71b57f5aa8ad0fd3",
-  "surfaceVersion": "r50-runtime-quality-closure-v1",
+  "sourceStateId": "f24481030f350a69de885b9b73f8394adb50b4c23bfc47067a3754c5be2fce19",
+  "surfaceVersion": "r51-capacity-closure-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -64,7 +64,7 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "10c74b731ff4b757b2274c0d72363f2e351d1c7d",
+    "packages/server/src/agent-runtime.ts": "9ea16d0a3bb810ca991bf25927721c36203bfc55",
     "packages/server/src/autonomous-orchestrator.ts": "f2f4d3727a5a0d2fd6f49109a2ac30775ac7b3a6",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
@@ -1820,17 +1820,35 @@
       "regressionEvidence": "docs/evidence/r50-runtime-quality/R50-FINAL-REPORT.md; live 8-Bit mission on managed zero-cost routes completed end-to-end (gate completed, integration integrated, verified tree == integrated tree, cross-provider-account reviewer independence, $0 paid spend) with a live before/after decide() winner flip on replayed production evidence; 27 new R50 tests (role-quality 15, replay 6, failover 3, tool-safety 3); eight-bit 330 pass / 2 skip; server 893 pass with one R50 regression found and fixed (dominant-verdict dedup) and 2 pre-existing baseline failures unchanged since d4769e8 (agent-certification-r, fg3-model-aware-budget); 16-Bit boundary family 233/233; long-horizon simulation 120/120 admissions across 3 evidence phases with transientSupplyNeverScores=true; full monorepo build clean",
       "recertifiedAt": "2026-09-27",
       "sourceStateConstant": "CODEFORGE_R50_RUNTIME_QUALITY_SOURCE_STATE"
+    },
+    {
+      "label": "R51 free-capacity closure: unmeasured supply is measured, not parked",
+      "reason": "Recertify the reviewed R51 changes: unmeasured quota domains are now denied as CAPACITY_UNMEASURED (unverifiable, never exhausted, never parked) instead of a self-sealing permanent capacity wait; demand-driven measurement via probeRouteCapacity runs at every non-admitted decision point — initial admission, capacity-wait re-evaluation, and mid-turn failover — bounded once per path under the same reservation identity; measured exhaustion still queues with real provider resets; ForgeZero free-route eligibility, paid/free isolation, qualification floors, reviewer independence, and completion-gate authority are unchanged.",
+      "priorSourceStateId": "cd2dbd78320bcce5ede07f9f56f5f79c24d77afcacc2eebf71b57f5aa8ad0fd3",
+      "priorSurfaceVersion": "r50-runtime-quality-closure-v1",
+      "resultingSourceStateId": "f24481030f350a69de885b9b73f8394adb50b4c23bfc47067a3754c5be2fce19",
+      "resultingSurfaceVersion": "r51-capacity-closure-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "R51: demand-driven measurement of CAPACITY_UNMEASURED free supply — measureUnmeasuredFreeCapacity probes denied candidates through FreeCloudService.probeRouteCapacity (metadata quota endpoint preferred, else one bounded maxTokens:1 ping whose headers land via onResponse even on 429, 60s per-domain cooldown); wired at initial executeTurn admission (probe hold released before exact-pin resolve under the same requestId), probeCapacityWait sweeper/workflow re-evaluation, runAgentTurn admission, and both handleTurnFailure failover sites via FailoverRequest.measureCapacity with a once-guard; no measurement hook leaves an honest denial, never a fabricated capacity wait. Completion gate, paid/free isolation, and qualification floors unchanged.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r51-capacity-closure/R51-FINAL-REPORT.md; three live $0 missions completed through the production stack (unmeasured 112-domain fleet recovered via demand probes; healthy run on independent pools; reviewer-scarcity failover onto the surviving route) — all ForgeAuto-eligible, verified tree == integrated tree; seeded long-horizon simulation 241 decides / 0 invariant violations; forge-zero 152, model-registry 138 (6 new probe tests), eight-bit 332/2sk, server 896/3sk with the same 2 documented baseline failures (agent-certification-r, fg3-model-aware-budget, failing since d4769e8); full monorepo build clean; Cloudflare Workers AI analytics scope re-checked — still unauthorized, neuron guard correctly stays fail-closed",
+      "recertifiedAt": "2026-09-27",
+      "sourceStateConstant": "CODEFORGE_R51_CAPACITY_CLOSURE_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-27T19:48:41.529Z",
+  "recertifiedAt": "2026-09-27T22:48:28.770Z",
   "recertification": {
-    "phase": "R50 runtime quality authority and adaptive role routing",
-    "reason": "Recertify the reviewed R50 changes: runtime production outcomes now feed bounded, role-specific routing intelligence — graded role_outcome evidence (weighted, per-correlation deduplicated, decayed, ±16-bounded inside the authority) merges with qualification-receipt advice into one ±24 adjustment that only reorders candidates after eligibility, policy, health, safety, and capacity gates; capacity/transport failures stay in call_failure evidence and never enter the quality lane; boundary violations weigh double toward tool quarantine and emit security_blocked role evidence; failover grants ≤2 bounded productive turns; one run records one dominant verdict. ForgeZero free-route eligibility, paid/free isolation, qualification floors, reviewer independence, and completion-gate authority are unchanged.",
+    "phase": "R51 free-capacity closure: unmeasured supply is measured, not parked",
+    "reason": "Recertify the reviewed R51 changes: unmeasured quota domains are now denied as CAPACITY_UNMEASURED (unverifiable, never exhausted, never parked) instead of a self-sealing permanent capacity wait; demand-driven measurement via probeRouteCapacity runs at every non-admitted decision point — initial admission, capacity-wait re-evaluation, and mid-turn failover — bounded once per path under the same reservation identity; measured exhaustion still queues with real provider resets; ForgeZero free-route eligibility, paid/free isolation, qualification floors, reviewer independence, and completion-gate authority are unchanged.",
     "changedFiles": [
       "packages/server/src/agent-runtime.ts"
     ],
-    "priorSourceStateId": "029807c8b24637554f788eceaf45db13edfc7e9052b0731f75eb2ae63560f30e",
+    "priorSourceStateId": "cd2dbd78320bcce5ede07f9f56f5f79c24d77afcacc2eebf71b57f5aa8ad0fd3",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
