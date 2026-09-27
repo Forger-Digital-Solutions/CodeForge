@@ -16,7 +16,15 @@ const BOUNDED_RETRY_ESCALATION_THRESHOLD = 3;
  * task to a blip the route recovered from seconds later (observed in R5). Rate limits, quota,
  * auth and eligibility failures are never retried this way.
  */
-const NO_TARGET_TRANSIENT_RETRY_REASONS: ReadonlySet<FailureReason> = new Set(["TEMPORARY_CAPACITY", "PROVIDER_OUTAGE"]);
+const NO_TARGET_TRANSIENT_RETRY_REASONS: ReadonlySet<FailureReason> = new Set(["TEMPORARY_CAPACITY", "PROVIDER_OUTAGE", "TRANSIENT_NETWORK", "TIMEOUT"]);
+/**
+ * Auto-mode failure classes whose evidence is the route's own transport path, not the model:
+ * an independent pool is tried FIRST instead of spending the bounded same-route retries on a
+ * connection that just dropped. With nothing else admissible, the shared same-route fallback
+ * (NO_TARGET_TRANSIENT_RETRY_REASONS) still bounds the retry — exact/model pins keep the old
+ * same-route-first semantics.
+ */
+const AUTO_ROTATE_FIRST_REASONS: ReadonlySet<FailureReason> = new Set(["TRANSIENT_NETWORK", "TIMEOUT"]);
 /** Upper bound on the wait before such a retry; the route's own cooldown is honoured up to it. */
 const NO_TARGET_RETRY_MAX_WAIT_MS = 8_000;
 
@@ -84,6 +92,12 @@ export interface FailoverRequest {
    * identity truthful across a migration.
    */
   fabricReplacement?: (exclude: RouteKey) => { route: RouteKey; reasonCodes: string[]; capacityPoolId?: string } | undefined;
+  /**
+   * The physical capacity pool that served the failed call. Forwarded into the fabric re-decide
+   * so an auto-mode rotation prefers a different pool — retrying the same pool after a
+   * transport failure would re-hit the same outage. Callers never invent one when unknown.
+   */
+  preferIndependentFromPoolId?: string;
 }
 
 export type FailoverOutcome =
@@ -165,11 +179,12 @@ export class EightBitFailoverCoordinator {
       return { action: "surface", reason };
     }
 
-    if (policy === "bounded_retry" && health.consecutiveFailures < BOUNDED_RETRY_ESCALATION_THRESHOLD) {
+    const pinMode = req.pinMode ?? (req.isExactPin ? "route" : "auto");
+    const rotateFirst = pinMode === "auto" && AUTO_ROTATE_FIRST_REASONS.has(reason);
+    if (policy === "bounded_retry" && health.consecutiveFailures < BOUNDED_RETRY_ESCALATION_THRESHOLD && !rotateFirst) {
       return { action: "retry_same", reason };
     }
 
-    const pinMode = req.pinMode ?? (req.isExactPin ? "route" : "auto");
     if (pinMode === "route") {
       const retry = await this.retrySameAfterCapacityBlip(req, reason, health.consecutiveFailures, health.cooldownUntil);
       if (retry) return retry;

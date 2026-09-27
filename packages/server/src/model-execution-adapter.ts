@@ -61,10 +61,24 @@ export interface ModelExecutionResponse {
   };
 }
 
+const SAFE_TRANSPORT_CAUSE_CODE = /^(?:EAI_AGAIN|ENOTFOUND|ECONNRESET|ECONNREFUSED|ETIMEDOUT|UND_ERR_[A-Z0-9_]+|CERT_[A-Z0-9_]+)$/;
+
+/** Whitelisted transport cause *codes* are stable machine tokens — safe to persist. The cause's
+ *  message is dropped entirely: it can carry hostnames, paths, or env details. */
+function safeTransportCauseCode(err: unknown): string | undefined {
+  if (!(err instanceof Error)) return undefined;
+  const code = (err.cause as { code?: unknown } | undefined)?.code;
+  return typeof code === "string" && SAFE_TRANSPORT_CAUSE_CODE.test(code) ? code : undefined;
+}
+
 export function normalizeProviderError(err: unknown): { code: string; message: string } {
   const raw = err instanceof Error ? err.message : String(err);
-  const msg = redactSecrets(raw);
-  const lower = msg.toLowerCase();
+  const redacted = redactSecrets(raw);
+  const lower = redacted.toLowerCase();
+  // The cause marker rides on the message after classification, so 8-Bit's classifier can
+  // derive TRANSIENT_NETWORK from it without the marker re-routing the error code here.
+  const causeCode = safeTransportCauseCode(err);
+  const msg = causeCode ? `${redacted} [cause=${causeCode}]` : redacted;
 
   if (lower.includes("401") || lower.includes("unauthorized") || lower.includes("invalid api key") || lower.includes("auth_failed") || lower.includes("missing_api_key")) {
     return { code: ERROR_CODES.PROVIDER_AUTH_FAILED, message: `Authentication failed with provider: ${msg}` };

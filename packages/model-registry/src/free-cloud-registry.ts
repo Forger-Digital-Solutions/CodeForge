@@ -14,6 +14,7 @@ import {
   type TermsStatus,
 } from "./provider-definitions.js";
 import type { NormalizedModelRegistry } from "./registry.js";
+import { exhaustedQuotaResetAt } from "./quota.js";
 
 /**
  * 8-Bit Free Cloud Registry (R1 §7-§9, §128-§130).
@@ -139,6 +140,11 @@ export interface RouteQuota {
   limitRequests?: number;
   remainingTokens?: number;
   limitTokens?: number;
+  /** Provider reset for the request-count window. */
+  requestResetAt?: string;
+  /** Provider reset for the token window. */
+  tokenResetAt?: string;
+  /** Compatibility aggregate: earliest currently-active reset. */
   resetAt?: string;
   retryAfterMs?: number;
   observedAt: string;
@@ -368,9 +374,9 @@ function healthWithObservedQuota(
   now: Date,
 ): { health: RouteHealth; cooldownUntil?: number } {
   if (health.health !== "HEALTHY" && health.health !== "DEGRADED" && health.health !== "UNKNOWN") return health;
-  const resetAt = quota?.resetAt === undefined ? Number.NaN : Date.parse(quota.resetAt);
-  const exhausted = quota?.remainingRequests === 0 || quota?.remainingTokens === 0;
-  if (exhausted && Number.isFinite(resetAt) && resetAt > now.getTime()) {
+  const exhaustedReset = exhaustedQuotaResetAt(quota);
+  const resetAt = exhaustedReset === undefined ? Number.NaN : Date.parse(exhaustedReset);
+  if (Number.isFinite(resetAt) && resetAt > now.getTime()) {
     return { health: "QUOTA_EXHAUSTED", cooldownUntil: resetAt };
   }
   return health;

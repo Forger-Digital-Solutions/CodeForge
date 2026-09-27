@@ -6,6 +6,7 @@ import { EightBitReliabilityTracker } from "../src/reliability.js";
 import { EightBitRouter } from "../src/router.js";
 import { EightBitDecisionStore } from "../src/persistence.js";
 import { EightBitFailoverCoordinator, type FailoverRequest } from "../src/failover.js";
+import type { FailureReason } from "../src/types.js";
 import { makeModel } from "./fixtures.js";
 
 let fw: ForgeZero;
@@ -77,10 +78,62 @@ describe("EightBitFailoverCoordinator — safe active-run handoff decision", () 
     expect(outcome.action).toBe("no_replacement");
   });
 
-  it("[PASS] a single TIMEOUT does not rotate (bounded retry first — never demote on one transient blip)", async () => {
+  it("[PASS] a single TIMEOUT with a healthy alternative rotates to it — auto mode prefers an independent route over re-hitting the dropped path", async () => {
     fw.register(makeModel({ providerId: "openrouter", modelId: "primary" }));
     fw.register(makeModel({ providerId: "groq", modelId: "secondary" }));
     const outcome = await coordinator.handleFailure({ ...baseReq, current: { providerId: "openrouter", modelId: "primary" }, error: new Error("request timed out") });
+    expect(outcome.action).toBe("rotate");
+    if (outcome.action === "rotate") {
+      expect(outcome.reason).toBe("TIMEOUT");
+      expect(outcome.replacement).toEqual({ providerId: "groq", modelId: "secondary" });
+    }
+  });
+
+  it("[PASS] a transport failure (fetch failed) rotates first in auto mode via the fabric re-decide", async () => {
+    fw.register(makeModel({ providerId: "openrouter", modelId: "primary" }));
+    fw.register(makeModel({ providerId: "groq", modelId: "secondary" }));
+    const outcome = await coordinator.handleFailure({
+      ...baseReq,
+      current: { providerId: "openrouter", modelId: "primary" },
+      error: new TypeError("fetch failed"),
+      fabricReplacement: () => ({ route: { providerId: "groq", modelId: "secondary" }, reasonCodes: ["FABRIC_ADMITTED_REPLACEMENT"], capacityPoolId: "groq:pool" }),
+    });
+    expect(outcome.action).toBe("rotate");
+    if (outcome.action === "rotate") {
+      expect(outcome.reason).toBe("TRANSIENT_NETWORK");
+      expect(outcome.replacement).toEqual({ providerId: "groq", modelId: "secondary" });
+      expect(outcome.capacityPoolId).toBe("groq:pool");
+    }
+  });
+
+  it("[PASS] a transport failure with nothing to rotate to still gets the bounded same-route fallback", async () => {
+    fw.register(makeModel({ providerId: "openrouter", modelId: "only-route" }));
+    // TRANSIENT_NETWORK carries no cooldown on first failure — the fallback retries immediately,
+    // so the wait notification (not a sleep) is the observable signal that the bounded
+    // same-route path ran instead of a blind retry.
+    const waits: Array<{ waitMs: number; reason: FailureReason }> = [];
+    const outcome = await coordinator.handleFailure({
+      ...baseReq,
+      current: { providerId: "openrouter", modelId: "only-route" },
+      error: new TypeError("fetch failed"),
+      onWait: (info) => waits.push(info),
+    });
+    expect(outcome.action).toBe("retry_same");
+    expect(outcome.reason).toBe("TRANSIENT_NETWORK");
+    expect(waits).toEqual([{ waitMs: 0, reason: "TRANSIENT_NETWORK" }]);
+    const receipts = await store.listReceipts("s1");
+    expect(receipts.filter((r) => r.action === "COOLDOWN" && r.reasonCodes.includes("BOUNDED_SAME_ROUTE_RETRY")).length).toBe(1);
+  });
+
+  it("[PASS] an exact pin never rotates even on a transport failure — bounded same-route semantics hold", async () => {
+    fw.register(makeModel({ providerId: "openrouter", modelId: "primary" }));
+    fw.register(makeModel({ providerId: "groq", modelId: "secondary" }));
+    const outcome = await coordinator.handleFailure({
+      ...baseReq,
+      isExactPin: true,
+      current: { providerId: "openrouter", modelId: "primary" },
+      error: new TypeError("fetch failed"),
+    });
     expect(outcome.action).toBe("retry_same");
   });
 

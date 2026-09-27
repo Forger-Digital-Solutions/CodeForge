@@ -398,6 +398,9 @@ export class EightBitRuntime {
             // did — failover cannot route a role onto a route that role measured-failed.
             routeAdmission: req.routeFilter,
             roleQualificationTierFor: req.roleQualificationTierFor,
+            // R49: a transport failure is evidence about the served physical pool — prefer an
+            // independent pool so the rotation does not re-admit the same outage.
+            preferIndependentFromPoolId: req.preferIndependentFromPoolId,
           });
           lastFabricDecision = decision;
           if (decision?.outcome !== "ADMITTED" || !decision.selected) return undefined;

@@ -25,7 +25,11 @@ export function parseRouteQuota(headers: Iterable<[string, string]>, now: () => 
   const remainingTokens = num("x-ratelimit-remaining-tokens", "x-ratelimit-remaining-tokens-minute");
   const limitTokens = num("x-ratelimit-limit-tokens", "x-ratelimit-limit-tokens-minute");
   const retryAfterMs = parseRetryAfterMs(h.get("retry-after"), now);
-  const resetAt = parseResetAt(h.get("x-ratelimit-reset-requests") ?? h.get("x-ratelimit-reset"), now);
+  // Request and token windows reset independently — providers publish separate reset headers.
+  // A generic `x-ratelimit-reset` is the provider's request-window reset.
+  const requestResetAt = parseResetAt(h.get("x-ratelimit-reset-requests") ?? h.get("x-ratelimit-reset"), now);
+  const tokenResetAt = parseResetAt(h.get("x-ratelimit-reset-tokens"), now);
+  const resetAt = earliestReset(requestResetAt, tokenResetAt);
   if (remainingRequests === undefined && limitRequests === undefined && remainingTokens === undefined && retryAfterMs === undefined && resetAt === undefined) {
     return undefined;
   }
@@ -34,10 +38,27 @@ export function parseRouteQuota(headers: Iterable<[string, string]>, now: () => 
     limitRequests,
     remainingTokens,
     limitTokens,
+    requestResetAt,
+    tokenResetAt,
     resetAt,
     retryAfterMs,
     observedAt: now().toISOString(),
   };
+}
+
+/** Earliest parseable timestamp among the given resets — the compatibility aggregate. */
+function earliestReset(...values: Array<string | undefined>): string | undefined {
+  let best: string | undefined;
+  let bestMs = Number.POSITIVE_INFINITY;
+  for (const value of values) {
+    if (value === undefined) continue;
+    const parsed = Date.parse(value);
+    if (Number.isFinite(parsed) && parsed < bestMs) {
+      bestMs = parsed;
+      best = value;
+    }
+  }
+  return best;
 }
 
 function parseRetryAfterMs(value: string | undefined, now: () => Date): number | undefined {
@@ -74,15 +95,52 @@ function parseResetAt(value: string | undefined, now: () => Date): string | unde
  * stale remainder is kept rather than claimed as refilled.
  */
 export function effectiveQuota(quota: RouteQuota | undefined, now: () => Date = () => new Date()): RouteQuota | undefined {
-  if (!quota?.resetAt) return quota;
-  const reset = Date.parse(quota.resetAt);
-  if (!Number.isFinite(reset) || reset > now().getTime()) return quota;
+  if (!quota) return quota;
+  const nowMs = now().getTime();
+  const elapsed = (iso: string | undefined): boolean => {
+    if (iso === undefined) return false;
+    const reset = Date.parse(iso);
+    return Number.isFinite(reset) && reset <= nowMs;
+  };
+  // resetAt on a dimension-aware observation is the aggregate (earliest active reset) — it is
+  // not a second, independent reset. Only a legacy observation carrying resetAt alone may use
+  // it as a per-dimension reset; otherwise one window's reset would invent the other's.
+  const legacyAggregate = quota.requestResetAt === undefined && quota.tokenResetAt === undefined;
+  const requestElapsed = elapsed(quota.requestResetAt ?? (legacyAggregate ? quota.resetAt : undefined));
+  const tokenElapsed = elapsed(quota.tokenResetAt ?? (legacyAggregate ? quota.resetAt : undefined));
+  if (!requestElapsed && !tokenElapsed) return quota;
+  const requestResetAt = requestElapsed ? undefined : quota.requestResetAt;
+  const tokenResetAt = tokenElapsed ? undefined : quota.tokenResetAt;
   return {
     ...quota,
-    remainingRequests: quota.limitRequests ?? quota.remainingRequests,
-    remainingTokens: quota.limitTokens ?? quota.remainingTokens,
-    resetAt: undefined,
+    remainingRequests: requestElapsed ? quota.limitRequests ?? quota.remainingRequests : quota.remainingRequests,
+    remainingTokens: tokenElapsed ? quota.limitTokens ?? quota.remainingTokens : quota.remainingTokens,
+    requestResetAt,
+    tokenResetAt,
+    resetAt: earliestReset(requestResetAt, tokenResetAt),
   };
+}
+
+/**
+ * When an exhausted route's quota recovers: the LATEST parseable reset among dimensions observed
+ * at `<= 0` — request reset for request exhaustion, token reset for token exhaustion, `resetAt`
+ * as the legacy fallback. A route stays unavailable until every exhausted dimension refills, so
+ * the earlier reset alone must never advertise recovery.
+ */
+export function exhaustedQuotaResetAt(quota: RouteQuota | undefined): string | undefined {
+  if (!quota) return undefined;
+  let latest: string | undefined;
+  let latestMs = Number.NEGATIVE_INFINITY;
+  const consider = (remaining: number | undefined, reset: string | undefined): void => {
+    if (remaining === undefined || remaining > 0 || reset === undefined) return;
+    const parsed = Date.parse(reset);
+    if (!Number.isFinite(parsed) || parsed <= latestMs) return;
+    latestMs = parsed;
+    latest = reset;
+  };
+  consider(quota.remainingRequests, quota.requestResetAt ?? quota.resetAt);
+  consider(quota.remainingTokens, quota.tokenResetAt ?? quota.resetAt);
+  return latest;
 }
 
 /** In-memory per-route quota observations, keyed `${providerId}::${modelId}` — or

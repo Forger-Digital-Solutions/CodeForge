@@ -30,7 +30,7 @@ import {
 } from "./free-cloud-registry.js";
 import { PROVIDER_DEFINITIONS, type ProviderDefinition } from "./provider-definitions.js";
 import type { NormalizedModelRegistry } from "./registry.js";
-import { RouteQuotaTracker, parseRouteQuota, effectiveQuota } from "./quota.js";
+import { RouteQuotaTracker, parseRouteQuota, effectiveQuota, exhaustedQuotaResetAt } from "./quota.js";
 import { createFreeModelCatalogRefresh, type FreeModelCatalogRefresh, type RefreshOptions } from "./catalog-refresh.js";
 
 /**
@@ -167,10 +167,10 @@ function quotaWindows(quota: RouteQuota | undefined, scope: "ORG" | "USER_ACCOUN
   const effective = effectiveQuota(quota, now);
   const windows: CapacityWindow[] = [];
   if (effective?.remainingRequests !== undefined || effective?.limitRequests !== undefined) {
-    windows.push({ unit: "requests", limit: effective.limitRequests ?? effective.remainingRequests ?? 0, remaining: effective.remainingRequests ?? 0, resetAt: effective.resetAt ?? NO_RESET, scope, observedAt: effective.observedAt, authoritative: true });
+    windows.push({ unit: "requests", limit: effective.limitRequests ?? effective.remainingRequests ?? 0, remaining: effective.remainingRequests ?? 0, resetAt: effective.requestResetAt ?? effective.resetAt ?? NO_RESET, scope, observedAt: effective.observedAt, authoritative: true });
   }
   if (effective?.remainingTokens !== undefined || effective?.limitTokens !== undefined) {
-    windows.push({ unit: "input_tokens", limit: effective.limitTokens ?? effective.remainingTokens ?? 0, remaining: effective.remainingTokens ?? 0, resetAt: effective.resetAt ?? NO_RESET, scope, observedAt: effective.observedAt, authoritative: true });
+    windows.push({ unit: "input_tokens", limit: effective.limitTokens ?? effective.remainingTokens ?? 0, remaining: effective.remainingTokens ?? 0, resetAt: effective.tokenResetAt ?? effective.resetAt ?? NO_RESET, scope, observedAt: effective.observedAt, authoritative: true });
   }
   return windows;
 }
@@ -715,7 +715,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       // Providers commonly omit Retry-After but expose an absolute X-RateLimit-Reset value.
       // The reset is equally authoritative; discarding it caused R12 to retry an OpenRouter
       // route after a short synthetic cooldown even though its daily free allowance was gone.
-      this.recordRouteFailure(obs.providerId, obs.modelId, "RATE_LIMITED", retryDelayMs(quota?.retryAfterMs, quota?.resetAt, this.now()));
+      this.recordRouteFailure(obs.providerId, obs.modelId, "RATE_LIMITED", retryDelayMs(quota?.retryAfterMs, exhaustedQuotaResetAt(quota), this.now()));
     } else if (obs.status === 402 && obs.modelId) {
       this.recordRouteFailure(obs.providerId, obs.modelId, "PAID_PLAN_REQUIRED");
     }
@@ -731,9 +731,12 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
 
     const reasons: string[] = [];
     let scoreAdjustment = 0;
-    const resetAt = quota.resetAt === undefined ? Number.NaN : Date.parse(quota.resetAt);
+    // Exhaustion is per-dimension and recovery needs every exhausted window — the LATEST reset
+    // among zero-remaining dimensions, not the aggregate's earliest.
+    const exhaustedReset = exhaustedQuotaResetAt(quota);
+    const resetAt = exhaustedReset === undefined ? Number.NaN : Date.parse(exhaustedReset);
     const resetsInFuture = Number.isFinite(resetAt) && resetAt > this.now().getTime();
-    if ((quota.remainingRequests === 0 || quota.remainingTokens === 0) && resetsInFuture) {
+    if (resetsInFuture) {
       return { scoreAdjustment: -100, reasonCodes: ["KNOWN_CAPACITY_EXHAUSTED"] };
     }
     if (quota.remainingRequests !== undefined && quota.limitRequests !== undefined && quota.limitRequests > 0) {

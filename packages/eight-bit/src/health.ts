@@ -91,6 +91,10 @@ export function classifyFailure(error: unknown): FailureReason {
   if (/context.?length|context.?limit|too many tokens|maximum context/.test(msg)) return "CONTEXT_LIMIT";
   if (/timed? ?out|timeout/.test(msg)) return "TIMEOUT";
   if (/\b5\d\d\b|upstream|bad gateway|service unavailable|provider (error|outage)/.test(msg)) return "PROVIDER_OUTAGE";
+  // The sanitized `[cause=…]` marker normalizeProviderError appends is an observed transport
+  // code — it names the socket/DNS/undici/cert failure class even when the message text is a
+  // bare "fetch failed". Only the whitelist pattern matches; arbitrary cause text never does.
+  if (/\bcause=(eai_again|enotfound|econnreset|econnrefused|etimedout|und_err_[a-z0-9_]+|cert_[a-z0-9_]+)\b/.test(msg)) return "TRANSIENT_NETWORK";
   if (/econnreset|econnrefused|enotfound|network|fetch failed/.test(msg)) return "TRANSIENT_NETWORK";
   if (/structured output|schema validation failed|json parse/.test(msg)) return "STRUCTURED_OUTPUT_FAILURE";
   if (status === 400 || /\b400\b|bad request|invalid_request_error|unsupported parameter/.test(msg)) return "BAD_REQUEST";

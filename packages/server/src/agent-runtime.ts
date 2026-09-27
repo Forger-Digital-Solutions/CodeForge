@@ -2115,6 +2115,9 @@ export class AgentRuntime {
               userId: req.userId ?? this.userId,
               fabricRequestId: req.runId,
               current: { providerId: failing.providerId, modelId: failing.modelId },
+              // The pool that served this failed call — lets the fabric re-decide prefer an
+              // independent pool; stays undefined when admission never recorded one.
+              preferIndependentFromPoolId: servedPoolId,
               isExactPin: pinned,
               pinMode: pinned ? "route" : "auto",
               sameModelAlternates: pinned ? [] : this.freeCloud?.sameModelAlternates(failing.providerId, failing.modelId),
@@ -5467,6 +5470,9 @@ export class AgentRuntime {
       // failover re-decide must replace that hold, not book a second reservation.
       fabricRequestId: `forgeauto:${turnId}`,
       current: { providerId: state.providerId, modelId: state.modelId },
+      // The pool the interactive turn's admission recorded — the fabric re-decide prefers an
+      // independent pool after a transport failure; undefined when the route never held one.
+      preferIndependentFromPoolId: state.capacityPoolId,
       isExactPin,
       pinMode,
       sameModelAlternates,

@@ -18,6 +18,7 @@ import {
   evaluateAdmission,
   parseRouteQuota,
   effectiveQuota,
+  exhaustedQuotaResetAt,
   supplyClassFor,
   FreeCloudService,
   NormalizedModelRegistry,
@@ -491,6 +492,65 @@ describe("quota capture", () => {
       )?.remainingRequests,
     ).toBe(0);
   });
+
+  it("keeps request and token resets independent — each window refills only on its own reset", () => {
+    const q = parseRouteQuota(
+      [
+        ["x-ratelimit-limit-requests", "1000"],
+        ["x-ratelimit-remaining-requests", "999"],
+        ["x-ratelimit-reset-requests", "2m"],
+        ["x-ratelimit-limit-tokens", "8000"],
+        ["x-ratelimit-remaining-tokens", "0"],
+        ["x-ratelimit-reset-tokens", "7.5s"],
+      ],
+      () => NOW,
+    )!;
+    expect(new Date(q.requestResetAt!).getTime() - NOW.getTime()).toBeCloseTo(120_000, -2);
+    expect(new Date(q.tokenResetAt!).getTime() - NOW.getTime()).toBeCloseTo(7_500, -2);
+    // Compatibility aggregate is the earliest active reset — never an invented horizon.
+    expect(q.resetAt).toBe(q.tokenResetAt);
+
+    // At NOW+8s only the token window has reset: it refills to its declared limit while the
+    // request window keeps its stale remainder and its still-future reset.
+    const afterTokenReset = effectiveQuota(q, () => new Date(NOW.getTime() + 8_000))!;
+    expect(afterTokenReset.remainingTokens).toBe(8000);
+    expect(afterTokenReset.remainingRequests).toBe(999);
+    expect(afterTokenReset.tokenResetAt).toBeUndefined();
+    expect(afterTokenReset.requestResetAt).toBe(q.requestResetAt);
+    expect(afterTokenReset.resetAt).toBe(q.requestResetAt);
+  });
+
+  it("exhaustedQuotaResetAt returns the latest reset among exhausted dimensions", () => {
+    const requestReset = new Date(NOW.getTime() + 120_000).toISOString();
+    const tokenReset = new Date(NOW.getTime() + 7_500).toISOString();
+    // Both dimensions exhausted — the route is unavailable until every exhausted window
+    // recovers, so the later request reset is the honest horizon, not the earlier token one.
+    expect(
+      exhaustedQuotaResetAt({
+        remainingRequests: 0,
+        remainingTokens: 0,
+        requestResetAt: requestReset,
+        tokenResetAt: tokenReset,
+        observedAt: NOW.toISOString(),
+      }),
+    ).toBe(requestReset);
+    expect(
+      exhaustedQuotaResetAt({
+        remainingRequests: 5,
+        remainingTokens: 0,
+        tokenResetAt: tokenReset,
+        observedAt: NOW.toISOString(),
+      }),
+    ).toBe(tokenReset);
+    // Legacy aggregate-only observations still resolve through resetAt.
+    expect(
+      exhaustedQuotaResetAt({ remainingRequests: 0, resetAt: requestReset, observedAt: NOW.toISOString() }),
+    ).toBe(requestReset);
+    expect(
+      exhaustedQuotaResetAt({ remainingRequests: 5, remainingTokens: 5, requestResetAt: requestReset, observedAt: NOW.toISOString() }),
+    ).toBeUndefined();
+    expect(exhaustedQuotaResetAt(undefined)).toBeUndefined();
+  });
 });
 
 describe("FreeCloudService", () => {
@@ -807,6 +867,32 @@ describe("FreeCloudService — Free Fabric capacity projection", () => {
     expect(requests?.scope).toBe("USER_ACCOUNT");
     expect(tokens?.remaining).toBe(45000);
     expect(svc.capacityRoutes().every((r) => r.supplyClass !== "PAID")).toBe(true);
+  });
+
+  it("projects per-dimension resets — request and token windows carry their own resetAt", () => {
+    const { svc } = service();
+    svc.onProviderResponse({
+      providerId: "groq",
+      modelId: "openai/gpt-oss-120b",
+      status: 200,
+      headers: [
+        ["x-ratelimit-limit-requests", "1000"],
+        ["x-ratelimit-remaining-requests", "999"],
+        ["x-ratelimit-reset-requests", "2m"],
+        ["x-ratelimit-limit-tokens", "8000"],
+        ["x-ratelimit-remaining-tokens", "0"],
+        ["x-ratelimit-reset-tokens", "7.5s"],
+      ],
+      observedAt: NOW.getTime(),
+    });
+    const groq = svc.capacityRoutes().find((r) => r.providerId === "groq");
+    const requests = groq?.windows.find((w) => w.unit === "requests");
+    const tokens = groq?.windows.find((w) => w.unit === "input_tokens");
+    // One aggregate reset would pin the still-exhausted token window to the request horizon
+    // (or strand the request window at the token one) — the windows must stay distinct.
+    expect(new Date(requests!.resetAt).getTime() - NOW.getTime()).toBeCloseTo(120_000, -2);
+    expect(new Date(tokens!.resetAt).getTime() - NOW.getTime()).toBeCloseTo(7_500, -2);
+    expect(requests?.resetAt).not.toBe(tokens?.resetAt);
   });
 
   it("builds one physical pool per account and keeps provider-scoped quota at pool level", () => {

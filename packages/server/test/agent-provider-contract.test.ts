@@ -14,6 +14,25 @@ describe("Model Execution Adapter & Provider Contract (CF-07)", () => {
     expect(normalizeProviderError(new Error("stream interrupted by server")).code).toBe(ERROR_CODES.PROVIDER_STREAM_INTERRUPTED);
   });
 
+  it("preserves whitelisted transport cause codes — never the cause's message", () => {
+    const reset = Object.assign(new TypeError("fetch failed"), {
+      cause: { code: "ECONNRESET", message: "secret internal detail" },
+    });
+    const norm = normalizeProviderError(reset);
+    expect(norm.message).toContain("ECONNRESET");
+    expect(norm.message).not.toContain("secret internal detail");
+    expect(norm.code).toBe(ERROR_CODES.PROVIDER_UNAVAILABLE);
+
+    const undici = Object.assign(new TypeError("fetch failed"), { cause: { code: "UND_ERR_CONNECT_TIMEOUT" } });
+    expect(normalizeProviderError(undici).message).toContain("UND_ERR_CONNECT_TIMEOUT");
+
+    // Codes outside the safe whitelist and non-object causes are dropped entirely.
+    const unsafe = Object.assign(new TypeError("fetch failed"), { cause: { code: "NOT_WHITELISTED" } });
+    expect(normalizeProviderError(unsafe).message).toBe("fetch failed");
+    const stringCause = Object.assign(new TypeError("fetch failed"), { cause: "ECONNRESET" });
+    expect(normalizeProviderError(stringCause).message).toBe("fetch failed");
+  });
+
   it("fails closed without silent model substitution when exact model is requested but unavailable", async () => {
     const catalog = new InMemoryProviderCatalog();
     const firewall = new ForgeZero();

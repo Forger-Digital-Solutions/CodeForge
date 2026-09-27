@@ -24,7 +24,8 @@ export interface RefreshOptions {
   persistence?: ISessionPersistence;
   providerCatalog: ProviderCatalog;
   now?: () => Date;
-  /** Max models to probe for allowance verification per provider. Default 1. */
+  /** Total allowance probe calls this refresh cycle may issue across all providers. Each probe
+   *  is a real provider request; the budget is shared, not per-provider. Default 1. */
   maxAllowanceProbes?: number;
   /** Skip providers without credentials. Default true. */
   requireCredentials?: boolean;
@@ -117,6 +118,9 @@ export class FreeModelCatalogRefresh {
     const allowanceResults: DiscoverResult[] = [];
     const refreshedProviders = new Set<string>();
     const refreshedRecords: FreeModelRecord[] = [];
+    // Total refresh-cycle probe budget — allowance probes are real provider requests, so one
+    // shared counter bounds the cycle rather than letting every provider probe independently.
+    let allowanceProbesRemaining = this.maxAllowanceProbes;
 
     for (const adapter of adapters) {
       if (this.requireCredentials && !this.hasCredentials(adapter.providerId)) {
@@ -135,7 +139,8 @@ export class FreeModelCatalogRefresh {
         // 4. Allowance free verification (FREE_ALLOWANCE) - probe if provider supports it
         let allowanceResult: DiscoverResult | undefined;
         const policy = await this.getProviderPolicy(adapter.providerId);
-        if (policy?.hasAllowanceFree) {
+        if (policy?.hasAllowanceFree && allowanceProbesRemaining > 0) {
+          allowanceProbesRemaining--;
           allowanceResult = await this.verifyAllowanceWithProbe(adapter, liveModelInfos);
           allowanceResults.push(allowanceResult);
         }
@@ -182,6 +187,11 @@ export class FreeModelCatalogRefresh {
         const declared = PROVIDER_DEFINITIONS[adapter.providerId]?.freeAccess?.allowanceModels ?? [];
         const policy = await this.getProviderPolicy(adapter.providerId).catch(() => undefined);
         if (declared.length > 0 && policy?.hasAllowanceFree) {
+          if (allowanceProbesRemaining <= 0) {
+            errors.push(`${adapter.providerId}: catalog listing unsupported (${err.slice(0, 120)}) — allowance verification skipped because the refresh probe budget is exhausted`);
+            continue;
+          }
+          allowanceProbesRemaining--;
           const declaredInfos: LiveModelInfo[] = declared.map((modelId) => ({ modelId, isFree: false }));
           const allowanceResult = await this.verifyAllowanceWithProbe(adapter, declaredInfos);
           allowanceResults.push(allowanceResult);
