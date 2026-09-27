@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-09-27T01:22:51.331Z",
+  "campaignId": "r47-16bit",
+  "model": "glm-5.3-flash",
+  "route": "glm-5.3-flash:openrouter",
+  "command": "probe",
+  "priceCardSource": "openrouter-catalog-live",
+  "result": {
+    "servedModel": "z-ai/glm-5.3-flash",
+    "content": "",
+    "usage": {
+      "inputTokens": 17,
+      "outputTokens": 8,
+      "totalTokens": 25,
+      "cachedInputTokens": 0,
+      "reasoningTokens": 10,
+      "costUsd": 0.00000468
+    }
+  },
+  "budget": {
+    "campaignId": "r47-16bit",
+    "authorizedUsd": "0.5",
+    "committedUsd": "0.000005",
+    "reservedUsd": "0.0",
+    "availableUsd": "0.499995",
+    "reservations": [
+      {
+        "reservationId": "6f00f8cf-77f5-4f4f-a1fa-d64d709d28e6",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000016",
+        "status": "RECONCILED",
+        "actualUsd": "0.000005"
+      }
+    ]
+  },
+  "receipts": [
+    {
+      "receiptId": "11db944d-423d-4c26-b10c-58e13d39fe5a",
+      "campaignId": "r47-16bit",
+      "reservationId": "6f00f8cf-77f5-4f4f-a1fa-d64d709d28e6",
+      "requestId": "paid:20d2adb6-d1f4-443d-a899-fb58ff235b20",
+      "canonicalModelId": "glm-5.3-flash",
+      "routeId": "glm-5.3-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "z-ai/glm-5.3-flash",
+      "servedModelId": "z-ai/glm-5.3-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000016",
+      "actualUsd": "0.000005",
+      "usage": {
+        "inputTokens": 17,
+        "outputTokens": 8,
+        "totalTokens": 25,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 10,
+        "costUsd": 0.00000468
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "glm-5.3-flash",
+        "routeId": "glm-5.3-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "z-ai/glm-5.3-flash",
+        "servedModelId": "z-ai/glm-5.3-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000016",
+        "actualUsd": "0.000005",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:22:51.323Z"
+    }
+  ]
+}

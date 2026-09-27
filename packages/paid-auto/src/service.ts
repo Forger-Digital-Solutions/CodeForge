@@ -298,7 +298,7 @@ export class PaidAutoService {
         freeStatus: "paid",
         accessClass: "PAID",
         state,
-        available: this.routeCanExecute(model.direct),
+        available: this.routeCanExecute(model.direct) || this.fallbackServes(model),
         ...(state !== "READY" ? { unavailableReason: this.stateReason(state) } : {}),
         directProviderId: model.direct.providerId,
         directModelId: model.direct.providerModelId,
@@ -357,7 +357,7 @@ export class PaidAutoService {
   async chat(req: ChatRequest): Promise<ChatResponse> {
     const model = this.requireModel(req.model);
     const logicalRequestId = this.logicalRequestId(req);
-    const direct = this.requireDirectRoute(model);
+    const direct = this.routeForExecution(model);
     try {
       const response = await this.callChat(direct, req, logicalRequestId);
       this.recordSuccess(logicalRequestId, direct);
@@ -376,7 +376,7 @@ export class PaidAutoService {
   async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
     const model = this.requireModel(req.model);
     const logicalRequestId = this.logicalRequestId(req);
-    const direct = this.requireDirectRoute(model);
+    const direct = this.routeForExecution(model);
     let emittedOutput = false;
     let usableOutput = false;
     let finishEvent: Extract<StreamEvent, { type: "finish" }> | undefined;
@@ -503,13 +503,19 @@ export class PaidAutoService {
     return model;
   }
 
-  private requireDirectRoute(model: PaidAutoModel): PaidAutoRoute {
-    if (!this.routeCanExecute(model.direct)) {
-      const state = this.stateFor(model.direct);
-      const failureClass = state === "BILLING_REQUIRED" ? "billing_required" : state === "AUTHORIZATION_REQUIRED" || state === "POLICY_REVIEW_REQUIRED" ? "policy_rejection" : "unknown_failure";
-      throw new PaidAutoExecutionError({ code: `PAID_AUTO_${state}`, message: this.stateReason(state), failureClass, executionCertainty: "not_started", routeId: model.direct.routeId });
-    }
-    return model.direct;
+  private routeForExecution(model: PaidAutoModel): PaidAutoRoute {
+    if (this.routeCanExecute(model.direct)) return model.direct;
+    // A direct route that cannot execute *only* because its credential is absent must not block
+    // the OpenRouter fallback — the fallback exists to serve the same canonical model. Every
+    // other gate (kill switch, policy review, certification, open circuit) still fails closed.
+    if (this.fallbackServes(model)) return this.requireFallbackRoute(model);
+    const state = this.stateFor(model.direct);
+    const failureClass = state === "BILLING_REQUIRED" ? "billing_required" : state === "AUTHORIZATION_REQUIRED" || state === "POLICY_REVIEW_REQUIRED" ? "policy_rejection" : "unknown_failure";
+    throw new PaidAutoExecutionError({ code: `PAID_AUTO_${state}`, message: this.stateReason(state), failureClass, executionCertainty: "not_started", routeId: model.direct.routeId });
+  }
+
+  private fallbackServes(model: PaidAutoModel): boolean {
+    return this.openRouterFallbackEnabled && this.stateFor(model.direct) === "NOT_CONFIGURED" && this.routeCanExecute(model.fallback);
   }
 
   private requireFallbackRoute(model: PaidAutoModel): PaidAutoRoute {

@@ -52,6 +52,24 @@ describe("Model Execution Adapter & Provider Contract (CF-07)", () => {
     expect(calls).toBe(0);
   });
 
+  it("resolves paid-auto selections through the paid service, bypassing ForgeZero registration", () => {
+    const catalog = new InMemoryProviderCatalog();
+    const firewall = new ForgeZero();
+    const paidAuto = {
+      runtimeModel: (canonicalModelId: string) => canonicalModelId === "glm-5.3-flash"
+        ? { providerId: "paid-auto", modelId: "glm-5.3-flash" }
+        : undefined,
+    };
+    const adapter = new ModelExecutionAdapter(catalog, firewall, undefined, undefined, undefined, paidAuto as never);
+    expect(adapter.resolveModel({ providerId: "paid-auto", modelId: "glm-5.3-flash" }))
+      .toEqual({ providerId: "paid-auto", modelId: "glm-5.3-flash" });
+    expect(() => adapter.resolveModel({ providerId: "paid-auto", modelId: "unknown-paid" }))
+      .toThrow(/Exact Paid Auto model .* not registered/);
+    const unconfigured = new ModelExecutionAdapter(catalog, firewall);
+    expect(() => unconfigured.resolveModel({ providerId: "paid-auto", modelId: "glm-5.3-flash" }))
+      .toThrow(/PROVIDER_MODEL_UNAVAILABLE/);
+  });
+
   it("executes through direct BYOK adapter independently", async () => {
     const catalog = new InMemoryProviderCatalog();
     const mockDirectProvider: ProviderAdapter = {

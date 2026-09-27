@@ -241,6 +241,58 @@ describe("Paid Auto R1", () => {
     expect(fallbackCalls).toBe(0);
   });
 
+  it("dispatches the OpenRouter fallback when the direct credential is absent", async () => {
+    const noZai = {
+      get: (id: string) => id === "zai" ? undefined : "test-key",
+      set: () => undefined,
+      delete: () => true,
+      has: (id: string) => id !== "zai",
+    };
+    let directCalls = 0;
+    const fallback = fakeAdapter("openrouter", async function* () {
+      yield { type: "text_delta", delta: "fallback-served" };
+      yield { type: "usage", usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 } };
+      yield { type: "finish", finishReason: "stop" };
+    });
+    const service = new PaidAutoService({
+      credentialStore: noZai,
+      adapters: {
+        zai: fakeAdapter("zai", async function* () { directCalls++; yield { type: "finish", finishReason: "stop" }; }),
+        openrouter: fallback,
+      },
+      paidExecutionEnabled: true,
+      openRouterFallbackEnabled: true,
+      routeQualifications: {
+        ...qualifiedRoutes(),
+        "glm-5.3-flash:direct": { state: "NOT_CONFIGURED" },
+      },
+    });
+    const events = await collect(service.streamChat({ model: "glm-5.3-flash", messages: [{ role: "user", content: "x" }] }));
+    expect(directCalls).toBe(0);
+    expect(events.some((event) => event.type === "text_delta" && event.delta === "fallback-served")).toBe(true);
+    expect(service.attempts().map((attempt) => attempt.routeId)).toEqual(["glm-5.3-flash:openrouter"]);
+    expect(service.modelViews().find((view) => view.id === "glm-5.3-flash")?.available).toBe(true);
+  });
+
+  it("fails closed on a policy-gated direct route even when the fallback is qualified", async () => {
+    let fallbackCalls = 0;
+    const service = new PaidAutoService({
+      credentialStore: credentials,
+      adapters: {
+        openai: fakeAdapter("openai", async function* () { yield { type: "finish", finishReason: "stop" }; }),
+        openrouter: fakeAdapter("openrouter", async function* () { fallbackCalls++; yield { type: "finish", finishReason: "stop" }; }),
+      },
+      paidExecutionEnabled: true,
+      openRouterFallbackEnabled: true,
+      routeQualifications: {
+        ...qualifiedRoutes(),
+        "gpt-5.6-luna:direct": { state: "POLICY_REVIEW_REQUIRED" },
+      },
+    });
+    await expect(service.chat({ model: "gpt-5.6-luna", messages: [{ role: "user", content: "x" }] })).rejects.toMatchObject({ code: "PAID_AUTO_POLICY_REVIEW_REQUIRED" });
+    expect(fallbackCalls).toBe(0);
+  });
+
   it("classifies only the documented fallback failure classes as fallback-eligible", () => {
     expect(classifyPaidAutoFailure(new ProviderError("busy", "RATE_LIMITED", true))).toBe("capacity");
     expect(classifyPaidAutoFailure(new ProviderError("down", "PROVIDER_ERROR", true, { status: 503 }))).toBe("provider_outage");

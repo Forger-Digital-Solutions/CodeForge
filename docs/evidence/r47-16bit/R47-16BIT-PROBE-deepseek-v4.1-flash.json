@@ -1,0 +1,84 @@
+{
+  "generatedAt": "2026-09-27T01:23:08.712Z",
+  "campaignId": "r47-16bit",
+  "model": "deepseek-v4.1-flash",
+  "route": "deepseek-v4.1-flash:openrouter",
+  "command": "probe",
+  "priceCardSource": "openrouter-catalog-live",
+  "result": {
+    "servedModel": "deepseek/deepseek-v4.1-flash",
+    "content": "",
+    "usage": {
+      "inputTokens": 35,
+      "outputTokens": 8,
+      "totalTokens": 43,
+      "cachedInputTokens": 0,
+      "reasoningTokens": 8,
+      "costUsd": 0.0000201
+    }
+  },
+  "budget": {
+    "campaignId": "r47-16bit",
+    "authorizedUsd": "0.5",
+    "committedUsd": "0.00001",
+    "reservedUsd": "0.0",
+    "availableUsd": "0.49999",
+    "reservations": [
+      {
+        "reservationId": "23731e64-56a0-4a30-b45b-5aba35cc1ec9",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000014",
+        "status": "RECONCILED",
+        "actualUsd": "0.000005"
+      },
+      {
+        "reservationId": "6f00f8cf-77f5-4f4f-a1fa-d64d709d28e6",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000016",
+        "status": "RECONCILED",
+        "actualUsd": "0.000005"
+      }
+    ]
+  },
+  "receipts": [
+    {
+      "receiptId": "bb0987c7-8776-4837-a26c-a8b6d7447a32",
+      "campaignId": "r47-16bit",
+      "reservationId": "23731e64-56a0-4a30-b45b-5aba35cc1ec9",
+      "requestId": "paid:1a30cc7e-0cbb-4f9d-b3d1-d351c2eb8796",
+      "canonicalModelId": "deepseek-v4.1-flash",
+      "routeId": "deepseek-v4.1-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "deepseek/deepseek-v4.1-flash",
+      "servedModelId": "deepseek/deepseek-v4.1-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000014",
+      "actualUsd": "0.000005",
+      "usage": {
+        "inputTokens": 35,
+        "outputTokens": 8,
+        "totalTokens": 43,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 8,
+        "costUsd": 0.0000201
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "deepseek-v4.1-flash",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "deepseek/deepseek-v4.1-flash",
+        "servedModelId": "deepseek/deepseek-v4.1-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000014",
+        "actualUsd": "0.000005",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:23:08.667Z"
+    }
+  ]
+}

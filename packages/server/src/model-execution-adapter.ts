@@ -15,6 +15,7 @@ import type { ForgeZero } from "@codeforge/forge-zero";
 import { ForgeRouter } from "@codeforge/router";
 import { ERROR_CODES, type AgentModelSelection, type AgentUsage } from "@codeforge/agent";
 import type { ToolDefinition } from "@codeforge/tools";
+import type { PaidAutoService } from "@codeforge/paid-auto";
 import { redactSecrets } from "@codeforge/secrets";
 import { fingerprint, type ForgeGreenAdvisor } from "@codeforge/forge-green";
 import type { ForgeGreenRunPolicy } from "./forgegreen-run-policy.js";
@@ -111,6 +112,7 @@ export class ModelExecutionAdapter {
     forgeGreen?: ForgeGreenAdvisor,
     governor?: ProviderCapacityGovernor,
     private readonly greenPolicy?: ForgeGreenRunPolicy,
+    private readonly paidAuto?: PaidAutoService,
   ) {
     this.providerCatalog = providerCatalog;
     this.firewall = firewall;
@@ -140,6 +142,17 @@ export class ModelExecutionAdapter {
    */
   resolveModel(selection?: AgentModelSelection): { providerId: string; modelId: string } {
     if (selection && selection.providerId && selection.modelId) {
+      // Paid Auto is a canonical-model surface, not a ForgeZero free route: eligibility,
+      // pricing, and spend authorization live in the paid service and its budget ledger.
+      if (selection.providerId === "paid-auto") {
+        const paidModel = this.paidAuto?.runtimeModel(selection.modelId);
+        if (!paidModel) {
+          throw new Error(
+            `[${ERROR_CODES.PROVIDER_MODEL_UNAVAILABLE}] Exact Paid Auto model "${selection.modelId}" is not registered. Exact model execution failed closed.`,
+          );
+        }
+        return { providerId: "paid-auto", modelId: paidModel.modelId };
+      }
       const provider = this.providerCatalog.get(selection.providerId);
       if (!provider) {
         throw new Error(
@@ -467,6 +480,7 @@ export function createModelExecutionAdapter(
   forgeGreen?: ForgeGreenAdvisor,
   governor?: ProviderCapacityGovernor,
   greenPolicy?: ForgeGreenRunPolicy,
+  paidAuto?: PaidAutoService,
 ): ModelExecutionAdapter {
-  return new ModelExecutionAdapter(providerCatalog, firewall, forgeGreen, governor, greenPolicy);
+  return new ModelExecutionAdapter(providerCatalog, firewall, forgeGreen, governor, greenPolicy, paidAuto);
 }

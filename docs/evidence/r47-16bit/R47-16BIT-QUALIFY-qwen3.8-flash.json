@@ -1,0 +1,2569 @@
+{
+  "generatedAt": "2026-09-27T01:32:03.625Z",
+  "campaignId": "r47-16bit",
+  "model": "qwen3.8-flash",
+  "route": "qwen3.8-flash:openrouter",
+  "command": "qualify",
+  "priceCardSource": "openrouter-catalog-live",
+  "result": {
+    "qualificationState": "QUALIFIED",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1736,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3751,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 37
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 83
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-09-27T01:29:25.839Z",
+        "completedAt": "2026-09-27T01:29:33.837Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1736,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3751,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 37
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 83
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2509,
+            "retries": 0,
+            "details": {
+              "textLength": 83,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-09-27T01:29:25.839Z",
+        "completedAt": "2026-09-27T01:29:33.837Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2509,
+            "retries": 0,
+            "details": {
+              "textLength": 83,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-09-27T01:29:25.839Z",
+        "completedAt": "2026-09-27T01:29:33.837Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "explorer.route_execution",
+            "category": "explore",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 14443,
+            "retries": 1,
+            "details": {
+              "modelCalls": 6,
+              "filesRead": [],
+              "relevantFilesRead": [],
+              "searches": 0,
+              "totalToolCalls": 6,
+              "validCalls": 1,
+              "validToolCallRate": 0.16666666666666666,
+              "readPrecision": 0,
+              "hallucinatedPaths": [
+                ""
+              ],
+              "mutationAttempts": 0,
+              "reportedFiles": [],
+              "answerFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "recall": 0,
+              "firstAttempt": {
+                "modelCalls": 6,
+                "filesRead": [
+                  "src/router.ts",
+                  "src/provider/client.ts"
+                ],
+                "relevantFilesRead": [
+                  "src/router.ts",
+                  "src/provider/client.ts"
+                ],
+                "searches": 0,
+                "totalToolCalls": 6,
+                "validCalls": 3,
+                "validToolCallRate": 0.5,
+                "readPrecision": 1,
+                "hallucinatedPaths": [
+                  ""
+                ],
+                "mutationAttempts": 0,
+                "reportedFiles": [],
+                "answerFiles": [
+                  "src/router.ts",
+                  "src/provider/client.ts"
+                ],
+                "recall": 0
+              }
+            }
+          },
+          {
+            "caseId": "explorer.reservation_release",
+            "category": "explore",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 15114,
+            "retries": 1,
+            "details": {
+              "modelCalls": 6,
+              "filesRead": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "relevantFilesRead": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "searches": 3,
+              "totalToolCalls": 6,
+              "validCalls": 4,
+              "validToolCallRate": 0.6666666666666666,
+              "readPrecision": 1,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [],
+              "answerFiles": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "recall": 0,
+              "firstAttempt": {
+                "modelCalls": 6,
+                "filesRead": [
+                  "src/fabric/admission.ts",
+                  "src/router.ts"
+                ],
+                "relevantFilesRead": [
+                  "src/fabric/admission.ts"
+                ],
+                "searches": 2,
+                "totalToolCalls": 6,
+                "validCalls": 3,
+                "validToolCallRate": 0.5,
+                "readPrecision": 0.5,
+                "hallucinatedPaths": [
+                  ""
+                ],
+                "mutationAttempts": 0,
+                "reportedFiles": [],
+                "answerFiles": [
+                  "src/fabric/admission.ts",
+                  "src/fabric/ledger.ts"
+                ],
+                "recall": 0
+              }
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-09-27T01:29:33.837Z",
+        "completedAt": "2026-09-27T01:32:03.587Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "planner.release_callsite",
+            "category": "plan",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 24712,
+            "retries": 0,
+            "error": "OpenRouter returned HTTP 200 but no usable completion choices."
+          },
+          {
+            "caseId": "planner.schema",
+            "category": "plan",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 18980,
+            "retries": 0,
+            "error": "OpenRouter returned HTTP 200 but no usable completion choices."
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-09-27T01:29:33.837Z",
+        "completedAt": "2026-09-27T01:32:03.587Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2330,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The change returns the product of the arguments, not their sum. It should return a + b."
+              ]
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 9833,
+            "retries": 1,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "reject",
+                "expectedApproved": true,
+                "verdictCorrect": false,
+                "findingLocalized": true,
+                "findings": [
+                  "Renaming the exported `log` symbol to `writeLog` changes the module's public API and may break call sites unless all imports/usages are updated; the diff does not show those updates or a compatibility alias."
+                ]
+              }
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1945,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": []
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5891,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "recordFailure only sends telemetry and does not record provider failure state or trigger route demotion, so it does not implement the stated intent.",
+                "sendTelemetry is used without an import or visible definition in the diff; if it is not already in scope, this will fail to compile."
+              ]
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 21210,
+            "retries": 0,
+            "error": "OpenRouter returned HTTP 200 but no usable completion choices."
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5245,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The test no longer exercises the router or run(), replacing a meaningful assertion with a trivially true one. This masks the flakiness instead of fixing it and removes coverage of the intended behavior."
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-09-27T01:29:33.837Z",
+        "completedAt": "2026-09-27T01:32:03.588Z"
+      }
+    },
+    "requestCount": 16,
+    "transientCases": 3
+  },
+  "budget": {
+    "campaignId": "r47-16bit",
+    "authorizedUsd": "0.5",
+    "committedUsd": "0.009665",
+    "reservedUsd": "0.0",
+    "availableUsd": "0.490335",
+    "reservations": [
+      {
+        "reservationId": "01a428ab-e4a1-4414-a180-442b5ca6729c",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000473",
+        "status": "RECONCILED",
+        "actualUsd": "0.000051"
+      },
+      {
+        "reservationId": "01aa8f69-6bc6-4ade-a76b-6fc267dc4f66",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000287",
+        "status": "RECONCILED",
+        "actualUsd": "0.000029"
+      },
+      {
+        "reservationId": "02754299-3be1-424c-85f2-209261e44d87",
+        "routeId": "gpt-5.6-luna:openrouter",
+        "estimatedUsd": "0.00007",
+        "status": "RECONCILED",
+        "actualUsd": "0.000009"
+      },
+      {
+        "reservationId": "0301a487-af68-4c13-a37d-8a083d1b6e79",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000732",
+        "status": "RECONCILED",
+        "actualUsd": "0.000174"
+      },
+      {
+        "reservationId": "04b2a7a7-e2af-4fec-8406-0e188eb6ea31",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000466",
+        "status": "RECONCILED",
+        "actualUsd": "0.000024"
+      },
+      {
+        "reservationId": "06854d01-0f54-46ad-9228-e406d62b4c04",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000475",
+        "status": "RECONCILED",
+        "actualUsd": "0.000034"
+      },
+      {
+        "reservationId": "0a1afc09-04c3-4c57-84cb-80ae70e02b38",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000298",
+        "status": "RECONCILED",
+        "actualUsd": "0.000066"
+      },
+      {
+        "reservationId": "0cc3c99b-8fd9-45b5-aad2-118280725b68",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000156",
+        "status": "RECONCILED",
+        "actualUsd": "0.000031"
+      },
+      {
+        "reservationId": "10b636fe-3643-4973-91d8-b5b1b84eb068",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000298",
+        "status": "RECONCILED",
+        "actualUsd": "0.000065"
+      },
+      {
+        "reservationId": "124df9f9-0d6d-4f4c-aefa-a2a8db8f4f47",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000561",
+        "status": "RECONCILED",
+        "actualUsd": "0.000083"
+      },
+      {
+        "reservationId": "1398b448-753e-43cd-b424-ea252b6fc7b8",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000737",
+        "status": "RECONCILED",
+        "actualUsd": "0.0002"
+      },
+      {
+        "reservationId": "139dff04-c8a6-4069-8e77-a46f93cad1b1",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000371",
+        "status": "RECONCILED",
+        "actualUsd": "0.000123"
+      },
+      {
+        "reservationId": "15771dd6-274d-46ea-b800-de16912a280d",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000249",
+        "status": "RECONCILED",
+        "actualUsd": "0.000094"
+      },
+      {
+        "reservationId": "17278e31-055f-4f8c-b258-bac80a7bdf5c",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.0003",
+        "status": "RECONCILED",
+        "actualUsd": "0.000051"
+      },
+      {
+        "reservationId": "18e234c7-b74d-417b-8837-f17d568f177b",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000675",
+        "status": "RELEASED"
+      },
+      {
+        "reservationId": "1f202e20-eb05-4a8e-bc3a-448632b492eb",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000297",
+        "status": "RECONCILED",
+        "actualUsd": "0.000049"
+      },
+      {
+        "reservationId": "2369cfe5-c936-42b9-bd91-394ea01f5a60",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000397",
+        "status": "RELEASED"
+      },
+      {
+        "reservationId": "23731e64-56a0-4a30-b45b-5aba35cc1ec9",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000014",
+        "status": "RECONCILED",
+        "actualUsd": "0.000005"
+      },
+      {
+        "reservationId": "256ca7e2-060c-4d7b-ba2d-5fc2e5473215",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000464",
+        "status": "RECONCILED",
+        "actualUsd": "0.00004"
+      },
+      {
+        "reservationId": "26b02f0f-5e79-48c9-94f9-869096a3a168",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000287",
+        "status": "RECONCILED",
+        "actualUsd": "0.000043"
+      },
+      {
+        "reservationId": "286291d9-0da6-475a-8c0b-eac82bb2743b",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000159",
+        "status": "RECONCILED",
+        "actualUsd": "0.000045"
+      },
+      {
+        "reservationId": "2ed07044-1d2f-4643-af43-dff8113909f8",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000413",
+        "status": "RELEASED"
+      },
+      {
+        "reservationId": "32025cdb-fc7f-41a1-980c-66e7d6212a05",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.00048",
+        "status": "RECONCILED",
+        "actualUsd": "0.000036"
+      },
+      {
+        "reservationId": "3326591d-b3ea-4173-981c-cb8865f1d259",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000667",
+        "status": "RECONCILED",
+        "actualUsd": "0.000139"
+      },
+      {
+        "reservationId": "33a826fc-7136-476b-b50d-06c3f8dd914b",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.00008",
+        "status": "RECONCILED",
+        "actualUsd": "0.000026"
+      },
+      {
+        "reservationId": "34b78541-645b-4285-8232-b6520760dc61",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000288",
+        "status": "RECONCILED",
+        "actualUsd": "0.000034"
+      },
+      {
+        "reservationId": "35163b43-cd6c-4e83-84f3-a51035b84bad",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000304",
+        "status": "RECONCILED",
+        "actualUsd": "0.000072"
+      },
+      {
+        "reservationId": "3d826ad7-fa45-4655-b7e6-c86104369960",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000475",
+        "status": "RECONCILED",
+        "actualUsd": "0.000034"
+      },
+      {
+        "reservationId": "3f1506d8-01a8-427a-99cd-f418484cb99a",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000483",
+        "status": "RECONCILED",
+        "actualUsd": "0.000199"
+      },
+      {
+        "reservationId": "43cabea1-59a0-44ab-a9fa-76f2b638697d",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000463",
+        "status": "RECONCILED",
+        "actualUsd": "0.000047"
+      },
+      {
+        "reservationId": "44e70221-218a-4a14-b759-6e1cecda779a",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000658",
+        "status": "RECONCILED",
+        "actualUsd": "0.000131"
+      },
+      {
+        "reservationId": "467896c0-80bf-478f-9178-02844eeb857d",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000288",
+        "status": "RECONCILED",
+        "actualUsd": "0.000031"
+      },
+      {
+        "reservationId": "4aee0cd2-5b48-4d9a-9479-dc09a014c86d",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000289",
+        "status": "RECONCILED",
+        "actualUsd": "0.000237"
+      },
+      {
+        "reservationId": "4b6fd8fa-e18f-4274-b9f8-b0d9e82c946e",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.0003",
+        "status": "RECONCILED",
+        "actualUsd": "0.000051"
+      },
+      {
+        "reservationId": "4be318ba-bcad-4127-9657-3877220e4690",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000657",
+        "status": "RECONCILED",
+        "actualUsd": "0.000141"
+      },
+      {
+        "reservationId": "4ca585c4-69bd-4a5e-8ed6-3dd6d8bb9ad3",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000474",
+        "status": "RECONCILED",
+        "actualUsd": "0.000037"
+      },
+      {
+        "reservationId": "5460997b-0246-45bd-a73c-e659d4445807",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000296",
+        "status": "RECONCILED",
+        "actualUsd": "0.000064"
+      },
+      {
+        "reservationId": "54da0f0a-0557-4d55-afd4-f67a1ceba629",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000542",
+        "status": "RECONCILED",
+        "actualUsd": "0.000285"
+      },
+      {
+        "reservationId": "56493f88-87d7-4631-a103-2d98921dff3e",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000842",
+        "status": "RELEASED"
+      },
+      {
+        "reservationId": "596a49d0-2b4c-47e4-9618-f3af0e796ede",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000474",
+        "status": "RECONCILED",
+        "actualUsd": "0.000043"
+      },
+      {
+        "reservationId": "5b173ad4-ffb7-44cf-bcb1-08a0fddb151a",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000645",
+        "status": "RECONCILED",
+        "actualUsd": "0.000132"
+      },
+      {
+        "reservationId": "6095a7d3-9368-49eb-8df1-e793191d6a13",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000462",
+        "status": "RECONCILED",
+        "actualUsd": "0.000038"
+      },
+      {
+        "reservationId": "619495ff-89c2-4fa2-b7d1-9d75be7d4159",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000536",
+        "status": "RECONCILED",
+        "actualUsd": "0.000079"
+      },
+      {
+        "reservationId": "655cb063-3e50-4028-9724-f04c05de4e7a",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000658",
+        "status": "RECONCILED",
+        "actualUsd": "0.000148"
+      },
+      {
+        "reservationId": "66f7e181-c211-4ad3-a509-71d209bf5e02",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000049",
+        "status": "RECONCILED",
+        "actualUsd": "0.000014"
+      },
+      {
+        "reservationId": "68141718-62d7-4f9f-bc29-8576b1ac52f3",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000301",
+        "status": "RECONCILED",
+        "actualUsd": "0.000053"
+      },
+      {
+        "reservationId": "68b65df5-6e60-4e2d-8692-3dbf2af92a8b",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.00048",
+        "status": "RECONCILED",
+        "actualUsd": "0.000036"
+      },
+      {
+        "reservationId": "69e4f327-0f2d-43f7-948e-e9294054c3f8",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000608",
+        "status": "RECONCILED",
+        "actualUsd": "0.000107"
+      },
+      {
+        "reservationId": "6b127c60-3ff4-41d3-9a74-8842fbbb2c93",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.00047",
+        "status": "RECONCILED",
+        "actualUsd": "0.000036"
+      },
+      {
+        "reservationId": "6c65efc7-3555-46a2-8d92-4fcfa6fce858",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.0005",
+        "status": "RECONCILED",
+        "actualUsd": "0.000035"
+      },
+      {
+        "reservationId": "6d772103-7033-4f1d-9f17-ee46290881b1",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000249",
+        "status": "RECONCILED",
+        "actualUsd": "0.000035"
+      },
+      {
+        "reservationId": "6e2d5563-8765-49f0-9c75-bd6712abab6d",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000674",
+        "status": "RECONCILED",
+        "actualUsd": "0.000141"
+      },
+      {
+        "reservationId": "6f00f8cf-77f5-4f4f-a1fa-d64d709d28e6",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000016",
+        "status": "RECONCILED",
+        "actualUsd": "0.000005"
+      },
+      {
+        "reservationId": "70858e37-8d74-495e-93f3-1eaa5d18b557",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000665",
+        "status": "RECONCILED",
+        "actualUsd": "0.000148"
+      },
+      {
+        "reservationId": "7388b8df-1736-4bd5-8c6f-5def4e7979e3",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000245",
+        "status": "RECONCILED",
+        "actualUsd": "0.000034"
+      },
+      {
+        "reservationId": "75c8bd8c-3cc8-4ab0-bfd9-84e4f2df392d",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000483",
+        "status": "RECONCILED",
+        "actualUsd": "0.000032"
+      },
+      {
+        "reservationId": "774f4c2a-7ba1-46b1-bdf9-d992be6e7de6",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000473",
+        "status": "RECONCILED",
+        "actualUsd": "0.000044"
+      },
+      {
+        "reservationId": "7d8e8e60-c1f4-4351-b581-77740030deed",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000129",
+        "status": "RECONCILED",
+        "actualUsd": "0.000073"
+      },
+      {
+        "reservationId": "7eada254-57a7-4035-9608-078bfe20ac18",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000723",
+        "status": "RECONCILED",
+        "actualUsd": "0.000156"
+      },
+      {
+        "reservationId": "7f1ec823-eb17-4997-9ee7-378cc4f3d291",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000287",
+        "status": "RECONCILED",
+        "actualUsd": "0.000041"
+      },
+      {
+        "reservationId": "83337350-a3cc-4608-8da1-b0c0fbb5ba6b",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000478",
+        "status": "RECONCILED",
+        "actualUsd": "0.000035"
+      },
+      {
+        "reservationId": "84066de4-9df8-4f51-ae16-54cb8c4ea7f1",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.00029",
+        "status": "RECONCILED",
+        "actualUsd": "0.000069"
+      },
+      {
+        "reservationId": "874cbd22-1473-4202-a5aa-dcdf545800b7",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000656",
+        "status": "RECONCILED",
+        "actualUsd": "0.000308"
+      },
+      {
+        "reservationId": "8af5a001-a086-45c3-9498-9070df448502",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.00048",
+        "status": "RECONCILED",
+        "actualUsd": "0.000071"
+      },
+      {
+        "reservationId": "8e2b9f24-f871-4a47-8982-52a573a02093",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000612",
+        "status": "RECONCILED",
+        "actualUsd": "0.000104"
+      },
+      {
+        "reservationId": "907f6bdf-07aa-467a-8767-82ef20a7d2d6",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000645",
+        "status": "RECONCILED",
+        "actualUsd": "0.000133"
+      },
+      {
+        "reservationId": "92252b89-b1a5-4ad8-a526-e29ba6954061",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000356",
+        "status": "RECONCILED",
+        "actualUsd": "0.000091"
+      },
+      {
+        "reservationId": "9576c8f5-dd2c-41b5-a81c-0aaf1835b7e6",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000472",
+        "status": "RECONCILED",
+        "actualUsd": "0.000036"
+      },
+      {
+        "reservationId": "967da0d3-b154-4bf5-830b-7ebf386e5719",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000648",
+        "status": "RECONCILED",
+        "actualUsd": "0.000137"
+      },
+      {
+        "reservationId": "9b0cf93e-a96e-4fcd-b2ee-3af484c72c18",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000648",
+        "status": "RECONCILED",
+        "actualUsd": "0.000159"
+      },
+      {
+        "reservationId": "9c6b5f07-763e-4c56-9060-d8b96becf549",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.0003",
+        "status": "RECONCILED",
+        "actualUsd": "0.000067"
+      },
+      {
+        "reservationId": "9ea0f418-775f-4b21-b4c9-ffa56a912f95",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000759",
+        "status": "RECONCILED",
+        "actualUsd": "0.000181"
+      },
+      {
+        "reservationId": "9ec4c64a-b7bb-4fbd-88d1-490fc81311f9",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000545",
+        "status": "RECONCILED",
+        "actualUsd": "0.000151"
+      },
+      {
+        "reservationId": "9f19b75d-0bd5-4a89-b4aa-3de068a38d93",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000542",
+        "status": "RECONCILED",
+        "actualUsd": "0.000281"
+      },
+      {
+        "reservationId": "a16c40aa-1c43-407e-8f9d-e639fed51570",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000095",
+        "status": "RECONCILED",
+        "actualUsd": "0.000029"
+      },
+      {
+        "reservationId": "a35dace6-714e-4cf1-a8e2-a9d495e92c41",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000297",
+        "status": "RECONCILED",
+        "actualUsd": "0.000048"
+      },
+      {
+        "reservationId": "a9992a22-5dd8-4a4f-99f9-5204e0251039",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000052",
+        "status": "RECONCILED",
+        "actualUsd": "0.00002"
+      },
+      {
+        "reservationId": "a9b93a80-ad47-4a60-9810-8a2b1c07088a",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000612",
+        "status": "RECONCILED",
+        "actualUsd": "0.000104"
+      },
+      {
+        "reservationId": "ab954704-702c-4053-9c34-6a1cecc9a9f5",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000294",
+        "status": "RECONCILED",
+        "actualUsd": "0.000026"
+      },
+      {
+        "reservationId": "ac0364c2-fc25-428a-acdc-978e39f06333",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000674",
+        "status": "RECONCILED",
+        "actualUsd": "0.000155"
+      },
+      {
+        "reservationId": "ac55332d-989d-440e-aab9-9b3d11601dd9",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000301",
+        "status": "RECONCILED",
+        "actualUsd": "0.000053"
+      },
+      {
+        "reservationId": "ac5aec37-72ff-4f2d-986f-535b79a76c8b",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000142",
+        "status": "RECONCILED",
+        "actualUsd": "0.000032"
+      },
+      {
+        "reservationId": "ae9dcbb4-cac1-41d1-864c-d45e79b4770b",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000476",
+        "status": "RECONCILED",
+        "actualUsd": "0.00003"
+      },
+      {
+        "reservationId": "af2f77a4-6b48-4587-a10a-d9efc7d381cc",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000296",
+        "status": "RECONCILED",
+        "actualUsd": "0.000064"
+      },
+      {
+        "reservationId": "af43598d-5764-49ad-a17d-6d1e85068f3a",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000665",
+        "status": "RECONCILED",
+        "actualUsd": "0.000178"
+      },
+      {
+        "reservationId": "b107a0e4-cd00-4163-a46e-cbc2cf6c324d",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000543",
+        "status": "RECONCILED",
+        "actualUsd": "0.000195"
+      },
+      {
+        "reservationId": "b3dc20fe-dc67-4d86-91f3-fc0c763e61f5",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000482",
+        "status": "RECONCILED",
+        "actualUsd": "0.000035"
+      },
+      {
+        "reservationId": "bb57d3e0-bfab-4509-988f-184b953d03a3",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000289",
+        "status": "RECONCILED",
+        "actualUsd": "0.000289"
+      },
+      {
+        "reservationId": "be6c23a1-0c7c-42ee-8a9a-3f3dbaaf75f7",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000482",
+        "status": "RECONCILED",
+        "actualUsd": "0.000025"
+      },
+      {
+        "reservationId": "c072e08a-a88e-4e48-93d9-3cb275bf5172",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000657",
+        "status": "RECONCILED",
+        "actualUsd": "0.000143"
+      },
+      {
+        "reservationId": "c09ec157-5585-4c33-b08f-8cbf66afbdb0",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.00055",
+        "status": "RELEASED"
+      },
+      {
+        "reservationId": "c375a60a-3559-49e9-a5fe-23e8cd08d914",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000482",
+        "status": "RECONCILED",
+        "actualUsd": "0.000183"
+      },
+      {
+        "reservationId": "c70ce25b-197a-4cc2-906b-0789d34f6c0f",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000302",
+        "status": "RECONCILED",
+        "actualUsd": "0.00007"
+      },
+      {
+        "reservationId": "c7c56184-2bdf-461a-9fe6-689c0da4357e",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.0003",
+        "status": "RECONCILED",
+        "actualUsd": "0.000067"
+      },
+      {
+        "reservationId": "d04b646b-c0de-4cbd-94c2-fcfee4de0382",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000304",
+        "status": "RECONCILED",
+        "actualUsd": "0.000071"
+      },
+      {
+        "reservationId": "d6481a7a-f547-4a1d-88f0-21cfc514e761",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000302",
+        "status": "RECONCILED",
+        "actualUsd": "0.00007"
+      },
+      {
+        "reservationId": "d7459fb7-e39d-41ec-80fe-b30cb5958c69",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000291",
+        "status": "RECONCILED",
+        "actualUsd": "0.000204"
+      },
+      {
+        "reservationId": "da491cc8-64ef-4f2e-aec4-559237ee4e55",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000651",
+        "status": "RECONCILED",
+        "actualUsd": "0.000136"
+      },
+      {
+        "reservationId": "db64e1b9-c894-4676-b7ad-d16f79cbe01d",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000298",
+        "status": "RECONCILED",
+        "actualUsd": "0.00005"
+      },
+      {
+        "reservationId": "dd93df8e-5ef4-4850-b52e-8f86d718301d",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000608",
+        "status": "RECONCILED",
+        "actualUsd": "0.000106"
+      },
+      {
+        "reservationId": "e19ca074-cf1c-48f2-b9cd-408cb04e1853",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000462",
+        "status": "RECONCILED",
+        "actualUsd": "0.000052"
+      },
+      {
+        "reservationId": "e1cfaf4d-8285-494a-aef6-477fd62b519f",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000683",
+        "status": "RECONCILED",
+        "actualUsd": "0.000182"
+      },
+      {
+        "reservationId": "e2c6f1a9-2ce6-41a6-9429-5c4f0963ad05",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000478",
+        "status": "RECONCILED",
+        "actualUsd": "0.000035"
+      },
+      {
+        "reservationId": "e5bbb436-d846-431a-9bd2-f82547f60677",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000484",
+        "status": "RELEASED"
+      },
+      {
+        "reservationId": "e7857db7-4f20-4fbe-ace7-8fa058d2f9fd",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000287",
+        "status": "RECONCILED",
+        "actualUsd": "0.000029"
+      },
+      {
+        "reservationId": "e7c2b192-d043-4227-82f6-b9ec1e826ff7",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000288",
+        "status": "RECONCILED",
+        "actualUsd": "0.000031"
+      },
+      {
+        "reservationId": "e84fb41c-3e27-48c0-9be4-70737ccc8310",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000482",
+        "status": "RECONCILED",
+        "actualUsd": "0.000317"
+      },
+      {
+        "reservationId": "eb37f477-3921-4537-8cf0-aba88c0fff3d",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000291",
+        "status": "RECONCILED",
+        "actualUsd": "0.000117"
+      },
+      {
+        "reservationId": "f2eb5bf0-a51c-4b1f-8833-c936684c2913",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000651",
+        "status": "RECONCILED",
+        "actualUsd": "0.000137"
+      },
+      {
+        "reservationId": "f34ae2b8-d0cd-4cc2-be08-fd1882f78baa",
+        "routeId": "deepseek-v4.1-flash:openrouter",
+        "estimatedUsd": "0.000298",
+        "status": "RECONCILED",
+        "actualUsd": "0.000049"
+      },
+      {
+        "reservationId": "f3ad3994-e8fc-4c34-af6c-3f0fd45df33b",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000472",
+        "status": "RECONCILED",
+        "actualUsd": "0.000036"
+      },
+      {
+        "reservationId": "f4ae94eb-97bb-49e6-9dd1-2cbda3c444c3",
+        "routeId": "qwen3.8-flash:openrouter",
+        "estimatedUsd": "0.000774",
+        "status": "RELEASED"
+      },
+      {
+        "reservationId": "faf1ae8b-9952-4ad5-9a62-344788b963bd",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000487",
+        "status": "RECONCILED",
+        "actualUsd": "0.000203"
+      },
+      {
+        "reservationId": "fccab5e5-5fb4-44cf-bf0b-d448ce62a097",
+        "routeId": "glm-5.3-flash:openrouter",
+        "estimatedUsd": "0.000463",
+        "status": "RECONCILED",
+        "actualUsd": "0.000061"
+      }
+    ]
+  },
+  "receipts": [
+    {
+      "receiptId": "f5a542b2-ec8a-4e26-9f3f-82d3384415dd",
+      "campaignId": "r47-16bit",
+      "reservationId": "15771dd6-274d-46ea-b800-de16912a280d",
+      "requestId": "paid:8b72bb6c-caff-4599-bcbd-e4c4c3b4ea81",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000249",
+      "actualUsd": "0.000094",
+      "usage": {
+        "inputTokens": 457,
+        "outputTokens": 52,
+        "totalTokens": 509,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 22,
+        "costUsd": 0.00009299
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000249",
+        "actualUsd": "0.000094",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:27.573Z"
+    },
+    {
+      "receiptId": "6da1048e-3c86-46f2-a956-8029b5d845e7",
+      "campaignId": "r47-16bit",
+      "reservationId": "92252b89-b1a5-4ad8-a526-e29ba6954061",
+      "requestId": "paid:047bedff-ccc1-44d9-b604-27d0fbb19200",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000356",
+      "actualUsd": "0.000091",
+      "usage": {
+        "inputTokens": 481,
+        "outputTokens": 37,
+        "totalTokens": 518,
+        "cachedInputTokens": 256,
+        "reasoningTokens": 7,
+        "costUsd": 0.000055236
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000356",
+        "actualUsd": "0.000091",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:29.362Z"
+    },
+    {
+      "receiptId": "7d974bec-c17c-4887-a03e-c2a948eb613f",
+      "campaignId": "r47-16bit",
+      "reservationId": "139dff04-c8a6-4069-8e77-a46f93cad1b1",
+      "requestId": "paid:c9e98a8c-6580-40e2-a772-8e9523cd9e71",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000371",
+      "actualUsd": "0.000123",
+      "usage": {
+        "inputTokens": 548,
+        "outputTokens": 83,
+        "totalTokens": 631,
+        "cachedInputTokens": 256,
+        "reasoningTokens": 17,
+        "costUsd": 0.000086906
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000371",
+        "actualUsd": "0.000123",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:31.321Z"
+    },
+    {
+      "receiptId": "75e86e01-97ea-4c11-bf6b-dda98508b05a",
+      "campaignId": "r47-16bit",
+      "reservationId": "7d8e8e60-c1f4-4351-b581-77740030deed",
+      "requestId": "paid:0872ad17-bbb8-467a-bfd0-0c80f41a445c",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000129",
+      "actualUsd": "0.000073",
+      "usage": {
+        "inputTokens": 101,
+        "outputTokens": 120,
+        "totalTokens": 221,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 82,
+        "costUsd": 0.00007155
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000129",
+        "actualUsd": "0.000073",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:33.830Z"
+    },
+    {
+      "receiptId": "800299ea-e7a1-47d7-9d8f-798feec48815",
+      "campaignId": "r47-16bit",
+      "reservationId": "a9b93a80-ad47-4a60-9810-8a2b1c07088a",
+      "requestId": "paid:62e7b8f5-f562-4d0c-b428-a1bcb655986c",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000612",
+      "actualUsd": "0.000104",
+      "usage": {
+        "inputTokens": 591,
+        "outputTokens": 31,
+        "totalTokens": 622,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 6,
+        "costUsd": 0.00010322
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000612",
+        "actualUsd": "0.000104",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:35.181Z"
+    },
+    {
+      "receiptId": "3bab4a42-6125-4d97-b572-067b1621e590",
+      "campaignId": "r47-16bit",
+      "reservationId": "967da0d3-b154-4bf5-830b-7ebf386e5719",
+      "requestId": "paid:bfbe5332-d75d-4ee0-96ad-a197d822734a",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000648",
+      "actualUsd": "0.000137",
+      "usage": {
+        "inputTokens": 687,
+        "outputTokens": 70,
+        "totalTokens": 757,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 13,
+        "costUsd": 0.000067342
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000648",
+        "actualUsd": "0.000137",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:37.020Z"
+    },
+    {
+      "receiptId": "5f726945-b4cd-427e-aa58-3cf79031d4c5",
+      "campaignId": "r47-16bit",
+      "reservationId": "4be318ba-bcad-4127-9657-3877220e4690",
+      "requestId": "paid:715c64c4-02b3-43e7-9067-4a82b49eb01d",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000657",
+      "actualUsd": "0.000141",
+      "usage": {
+        "inputTokens": 726,
+        "outputTokens": 64,
+        "totalTokens": 790,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 7,
+        "costUsd": 0.000070372
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000657",
+        "actualUsd": "0.000141",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:38.646Z"
+    },
+    {
+      "receiptId": "da805862-4942-4feb-abd2-c97ca44a16bb",
+      "campaignId": "r47-16bit",
+      "reservationId": "70858e37-8d74-495e-93f3-1eaa5d18b557",
+      "requestId": "paid:4c6a7244-5f40-4098-a6ac-a4434011e86b",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000665",
+      "actualUsd": "0.000148",
+      "usage": {
+        "inputTokens": 765,
+        "outputTokens": 69,
+        "totalTokens": 834,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 13,
+        "costUsd": 0.000078572
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000665",
+        "actualUsd": "0.000148",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:40.372Z"
+    },
+    {
+      "receiptId": "061c9c97-f4f4-4175-a312-4c9ef8077156",
+      "campaignId": "r47-16bit",
+      "reservationId": "6e2d5563-8765-49f0-9c75-bd6712abab6d",
+      "requestId": "paid:8aaf4857-835f-43f7-9ee6-3eeae26a6adf",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000674",
+      "actualUsd": "0.000141",
+      "usage": {
+        "inputTokens": 804,
+        "outputTokens": 41,
+        "totalTokens": 845,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 12,
+        "costUsd": 0.000071262
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000674",
+        "actualUsd": "0.000141",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:41.822Z"
+    },
+    {
+      "receiptId": "d6cbf690-f5f6-4f33-ab3d-5468f09fa774",
+      "campaignId": "r47-16bit",
+      "reservationId": "9ea0f418-775f-4b21-b4c9-ffa56a912f95",
+      "requestId": "paid:f825f1be-9b40-4d1a-a781-1ecf4fae04fe",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000759",
+      "actualUsd": "0.000181",
+      "usage": {
+        "inputTokens": 984,
+        "outputTokens": 67,
+        "totalTokens": 1051,
+        "cachedInputTokens": 768,
+        "reasoningTokens": 37,
+        "costUsd": 0.000076178
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000759",
+        "actualUsd": "0.000181",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:43.411Z"
+    },
+    {
+      "receiptId": "dfeb9497-e184-4ad3-ac1e-9a398f5b84e0",
+      "campaignId": "r47-16bit",
+      "reservationId": "8e2b9f24-f871-4a47-8982-52a573a02093",
+      "requestId": "paid:a87e8956-a09b-4b82-a22d-80d5fc417b68",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000612",
+      "actualUsd": "0.000104",
+      "usage": {
+        "inputTokens": 591,
+        "outputTokens": 31,
+        "totalTokens": 622,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 6,
+        "costUsd": 0.000034612
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000612",
+        "actualUsd": "0.000104",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:45.973Z"
+    },
+    {
+      "receiptId": "b65670bd-7a1d-4602-8410-df4e3317f904",
+      "campaignId": "r47-16bit",
+      "reservationId": "9b0cf93e-a96e-4fcd-b2ee-3af484c72c18",
+      "requestId": "paid:fc91fc25-4276-4848-9774-c8391fc93bc7",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000648",
+      "actualUsd": "0.000159",
+      "usage": {
+        "inputTokens": 687,
+        "outputTokens": 117,
+        "totalTokens": 804,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 60,
+        "costUsd": 0.000089432
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000648",
+        "actualUsd": "0.000159",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:48.567Z"
+    },
+    {
+      "receiptId": "6029bd0d-1013-4a56-b234-acbfbf59c7aa",
+      "campaignId": "r47-16bit",
+      "reservationId": "c072e08a-a88e-4e48-93d9-3cb275bf5172",
+      "requestId": "paid:6e6d5090-09b1-41cd-bd3d-07e0c406f2e5",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000657",
+      "actualUsd": "0.000143",
+      "usage": {
+        "inputTokens": 726,
+        "outputTokens": 70,
+        "totalTokens": 796,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 14,
+        "costUsd": 0.000073192
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000657",
+        "actualUsd": "0.000143",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:50.417Z"
+    },
+    {
+      "receiptId": "e46dfed8-54ca-4296-8b1f-1f0645a6d2a6",
+      "campaignId": "r47-16bit",
+      "reservationId": "af43598d-5764-49ad-a17d-6d1e85068f3a",
+      "requestId": "paid:ed745810-a9ed-46cc-a59a-b0342f265b4a",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000665",
+      "actualUsd": "0.000178",
+      "usage": {
+        "inputTokens": 765,
+        "outputTokens": 134,
+        "totalTokens": 899,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 78,
+        "costUsd": 0.000109122
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000665",
+        "actualUsd": "0.000178",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:53.270Z"
+    },
+    {
+      "receiptId": "c03d7a05-751e-4ccc-9239-545c349e77b0",
+      "campaignId": "r47-16bit",
+      "reservationId": "ac0364c2-fc25-428a-acdc-978e39f06333",
+      "requestId": "paid:5de48c64-c1bb-4964-898a-f1c8af00adad",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000674",
+      "actualUsd": "0.000155",
+      "usage": {
+        "inputTokens": 804,
+        "outputTokens": 69,
+        "totalTokens": 873,
+        "cachedInputTokens": 768,
+        "reasoningTokens": 12,
+        "costUsd": 0.000050118
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000674",
+        "actualUsd": "0.000155",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:55.066Z"
+    },
+    {
+      "receiptId": "1826dd94-b7ba-4f5e-81b9-0915e6b465c3",
+      "campaignId": "r47-16bit",
+      "reservationId": "e1cfaf4d-8285-494a-aef6-477fd62b519f",
+      "requestId": "paid:83192858-6320-4f3e-a2ab-fb6adee0ce7c",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000683",
+      "actualUsd": "0.000182",
+      "usage": {
+        "inputTokens": 887,
+        "outputTokens": 102,
+        "totalTokens": 989,
+        "cachedInputTokens": 768,
+        "reasoningTokens": 46,
+        "costUsd": 0.000078078
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000683",
+        "actualUsd": "0.000182",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:57.855Z"
+    },
+    {
+      "receiptId": "cc131cb3-1870-48e6-a1ce-383bbb3330ba",
+      "campaignId": "r47-16bit",
+      "reservationId": "69e4f327-0f2d-43f7-948e-e9294054c3f8",
+      "requestId": "paid:60c7fd8f-d7f1-49c4-8e5c-0e01735382dc",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000608",
+      "actualUsd": "0.000107",
+      "usage": {
+        "inputTokens": 586,
+        "outputTokens": 37,
+        "totalTokens": 623,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 12,
+        "costUsd": 0.000036682
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000608",
+        "actualUsd": "0.000107",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:29:59.378Z"
+    },
+    {
+      "receiptId": "3b7a5f25-3c3f-4345-8642-87f3a61ea2e5",
+      "campaignId": "r47-16bit",
+      "reservationId": "907f6bdf-07aa-467a-8767-82ef20a7d2d6",
+      "requestId": "paid:16d6566c-d6e3-40da-8c4b-dd4f9aa03c68",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000645",
+      "actualUsd": "0.000133",
+      "usage": {
+        "inputTokens": 682,
+        "outputTokens": 63,
+        "totalTokens": 745,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 11,
+        "costUsd": 0.000063302
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000645",
+        "actualUsd": "0.000133",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:30:00.999Z"
+    },
+    {
+      "receiptId": "1766d6c1-0117-448a-9912-7e223c1a1e56",
+      "campaignId": "r47-16bit",
+      "reservationId": "da491cc8-64ef-4f2e-aec4-559237ee4e55",
+      "requestId": "paid:8578d2eb-390d-4564-957b-1d4390be5bdf",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000651",
+      "actualUsd": "0.000136",
+      "usage": {
+        "inputTokens": 717,
+        "outputTokens": 59,
+        "totalTokens": 776,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 7,
+        "costUsd": 0.000066672
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000651",
+        "actualUsd": "0.000136",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:30:03.329Z"
+    },
+    {
+      "receiptId": "2c2977b5-6573-4a47-9d8b-6c1d7a00ad25",
+      "campaignId": "r47-16bit",
+      "reservationId": "655cb063-3e50-4028-9724-f04c05de4e7a",
+      "requestId": "paid:f9e722c0-9e54-49be-9da2-4aa15e42bee0",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000658",
+      "actualUsd": "0.000148",
+      "usage": {
+        "inputTokens": 752,
+        "outputTokens": 73,
+        "totalTokens": 825,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 11,
+        "costUsd": 0.000078502
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000658",
+        "actualUsd": "0.000148",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:30:05.100Z"
+    },
+    {
+      "receiptId": "36b70675-0f56-45a5-8921-452a6a6d4eca",
+      "campaignId": "r47-16bit",
+      "reservationId": "3326591d-b3ea-4173-981c-cb8865f1d259",
+      "requestId": "paid:c297a1f1-3ac3-4f95-8ed8-0645f2720b59",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000667",
+      "actualUsd": "0.000139",
+      "usage": {
+        "inputTokens": 791,
+        "outputTokens": 41,
+        "totalTokens": 832,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 9,
+        "costUsd": 0.000069312
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000667",
+        "actualUsd": "0.000139",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:30:06.913Z"
+    },
+    {
+      "receiptId": "07aaadfe-8229-47e9-b716-d6a5f2322fff",
+      "campaignId": "r47-16bit",
+      "reservationId": "0301a487-af68-4c13-a37d-8a083d1b6e79",
+      "requestId": "paid:3ed3e058-9133-4bfd-b62b-e1ea68915e13",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000732",
+      "actualUsd": "0.000174",
+      "usage": {
+        "inputTokens": 946,
+        "outputTokens": 65,
+        "totalTokens": 1011,
+        "cachedInputTokens": 768,
+        "reasoningTokens": 36,
+        "costUsd": 0.000069538
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000732",
+        "actualUsd": "0.000174",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:30:08.313Z"
+    },
+    {
+      "receiptId": "8a36894e-6df3-42a4-adc9-ee5de3c18351",
+      "campaignId": "r47-16bit",
+      "reservationId": "dd93df8e-5ef4-4850-b52e-8f86d718301d",
+      "requestId": "paid:6b8f060f-80e4-42cb-bf65-225c2d38d508",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000608",
+      "actualUsd": "0.000106",
+      "usage": {
+        "inputTokens": 586,
+        "outputTokens": 36,
+        "totalTokens": 622,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 20,
+        "costUsd": 0.000036212
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000608",
+        "actualUsd": "0.000106",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:30:09.594Z"
+    },
+    {
+      "receiptId": "a296ab31-725b-4ac1-a467-2edf6cf47fbb",
+      "campaignId": "r47-16bit",
+      "reservationId": "5b173ad4-ffb7-44cf-bcb1-08a0fddb151a",
+      "requestId": "paid:0cb5e310-31a3-4c61-8269-b0440daeae39",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000645",
+      "actualUsd": "0.000132",
+      "usage": {
+        "inputTokens": 673,
+        "outputTokens": 63,
+        "totalTokens": 736,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 11,
+        "costUsd": 0.000061952
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000645",
+        "actualUsd": "0.000132",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:30:12.160Z"
+    },
+    {
+      "receiptId": "d197bff9-e17a-4f03-88a7-1565da7279ac",
+      "campaignId": "r47-16bit",
+      "reservationId": "f2eb5bf0-a51c-4b1f-8833-c936684c2913",
+      "requestId": "paid:46ff501f-f493-40ba-ba1c-2dc810bbe38a",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000651",
+      "actualUsd": "0.000137",
+      "usage": {
+        "inputTokens": 708,
+        "outputTokens": 62,
+        "totalTokens": 770,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 10,
+        "costUsd": 0.000066732
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000651",
+        "actualUsd": "0.000137",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:30:16.785Z"
+    },
+    {
+      "receiptId": "c70c2e3f-9372-4171-a583-17e0396f9d5a",
+      "campaignId": "r47-16bit",
+      "reservationId": "44e70221-218a-4a14-b759-6e1cecda779a",
+      "requestId": "paid:f040c9b7-027d-4801-b89f-461e3fdb923b",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000658",
+      "actualUsd": "0.000131",
+      "usage": {
+        "inputTokens": 743,
+        "outputTokens": 39,
+        "totalTokens": 782,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 7,
+        "costUsd": 0.000061172
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000658",
+        "actualUsd": "0.000131",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:30:18.664Z"
+    },
+    {
+      "receiptId": "fbef0b64-f104-4c8b-992e-cdbd4a7a35a3",
+      "campaignId": "r47-16bit",
+      "reservationId": "7eada254-57a7-4035-9608-078bfe20ac18",
+      "requestId": "paid:7cf6118b-75cc-485d-b6bc-51fc66dc29ae",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000723",
+      "actualUsd": "0.000156",
+      "usage": {
+        "inputTokens": 898,
+        "outputTokens": 43,
+        "totalTokens": 941,
+        "cachedInputTokens": 512,
+        "reasoningTokens": 16,
+        "costUsd": 0.000086302
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000723",
+        "actualUsd": "0.000156",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:30:19.957Z"
+    },
+    {
+      "receiptId": "3880427c-54e6-4656-a17b-eb36f23be5f1",
+      "campaignId": "r47-16bit",
+      "reservationId": "1398b448-753e-43cd-b424-ea252b6fc7b8",
+      "requestId": "paid:695ffb69-5d67-4c1b-9422-f31d812ac820",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000737",
+      "actualUsd": "0.0002",
+      "usage": {
+        "inputTokens": 957,
+        "outputTokens": 117,
+        "totalTokens": 1074,
+        "cachedInputTokens": 768,
+        "reasoningTokens": 85,
+        "costUsd": 0.000095628
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000737",
+        "actualUsd": "0.0002",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:30:23.429Z"
+    },
+    {
+      "receiptId": "d7644d87-fd46-4097-83c8-96b46be51b76",
+      "campaignId": "r47-16bit",
+      "reservationId": "56493f88-87d7-4631-a103-2d98921dff3e",
+      "requestId": "paid:65a3d3b4-12c5-4e53-9a01-cc0d06016a40",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000842",
+      "reconciliation": "RELEASED",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000842",
+        "reconciliation": "RELEASED"
+      },
+      "createdAt": "2026-09-27T01:30:48.141Z"
+    },
+    {
+      "receiptId": "6598bddd-f226-441d-844e-29047d07b4fa",
+      "campaignId": "r47-16bit",
+      "reservationId": "f4ae94eb-97bb-49e6-9dd1-2cbda3c444c3",
+      "requestId": "paid:ce2c8d9b-0617-4648-85a8-3b3734fcd00c",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000774",
+      "reconciliation": "RELEASED",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000774",
+        "reconciliation": "RELEASED"
+      },
+      "createdAt": "2026-09-27T01:31:07.121Z"
+    },
+    {
+      "receiptId": "6305b53f-c1da-4161-959a-3682c4954893",
+      "campaignId": "r47-16bit",
+      "reservationId": "619495ff-89c2-4fa2-b7d1-9d75be7d4159",
+      "requestId": "paid:051a8058-5117-421e-9717-3f831dd0ff6d",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000536",
+      "actualUsd": "0.000079",
+      "usage": {
+        "inputTokens": 177,
+        "outputTokens": 109,
+        "totalTokens": 286,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 67,
+        "costUsd": 0.00007778
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000536",
+        "actualUsd": "0.000079",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:31:09.452Z"
+    },
+    {
+      "receiptId": "d98fcd44-2290-4d5d-99a3-d215d5104202",
+      "campaignId": "r47-16bit",
+      "reservationId": "9f19b75d-0bd5-4a89-b4aa-3de068a38d93",
+      "requestId": "paid:d9998bf9-436f-4310-8934-3a865ba67a32",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000542",
+      "actualUsd": "0.000281",
+      "usage": {
+        "inputTokens": 179,
+        "outputTokens": 540,
+        "totalTokens": 719,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 448,
+        "costUsd": 0.00028065
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000542",
+        "actualUsd": "0.000281",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:31:19.455Z"
+    },
+    {
+      "receiptId": "c9d61bf5-e8d5-4607-923e-6628a13960ad",
+      "campaignId": "r47-16bit",
+      "reservationId": "54da0f0a-0557-4d55-afd4-f67a1ceba629",
+      "requestId": "paid:e1803373-6da2-474b-8397-ed4857984f87",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000542",
+      "actualUsd": "0.000285",
+      "usage": {
+        "inputTokens": 179,
+        "outputTokens": 548,
+        "totalTokens": 727,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 532,
+        "costUsd": 0.00028441
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000542",
+        "actualUsd": "0.000285",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:31:29.287Z"
+    },
+    {
+      "receiptId": "e6ddc16d-299f-400d-ba85-83d3cd4a1e0a",
+      "campaignId": "r47-16bit",
+      "reservationId": "124df9f9-0d6d-4f4c-aefa-a2a8db8f4f47",
+      "requestId": "paid:fb548b0f-bd79-4a94-97a4-f30a6c01167f",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000561",
+      "actualUsd": "0.000083",
+      "usage": {
+        "inputTokens": 202,
+        "outputTokens": 109,
+        "totalTokens": 311,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 93,
+        "costUsd": 0.00008153
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000561",
+        "actualUsd": "0.000083",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:31:31.230Z"
+    },
+    {
+      "receiptId": "017f0802-ba56-40db-8749-76bea1fa9823",
+      "campaignId": "r47-16bit",
+      "reservationId": "b107a0e4-cd00-4163-a46e-cbc2cf6c324d",
+      "requestId": "paid:b56fa9d9-9049-4e79-b263-966dcc0c9560",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000543",
+      "actualUsd": "0.000195",
+      "usage": {
+        "inputTokens": 183,
+        "outputTokens": 354,
+        "totalTokens": 537,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 227,
+        "costUsd": 0.00019383
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000543",
+        "actualUsd": "0.000195",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:31:37.122Z"
+    },
+    {
+      "receiptId": "856db2f4-92d5-49ac-83c6-e44a4a051853",
+      "campaignId": "r47-16bit",
+      "reservationId": "c09ec157-5585-4c33-b08f-8cbf66afbdb0",
+      "requestId": "paid:ac522f2e-906d-43d8-a0fe-1fae0e7e04d5",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.00055",
+      "reconciliation": "RELEASED",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.00055",
+        "reconciliation": "RELEASED"
+      },
+      "createdAt": "2026-09-27T01:31:58.334Z"
+    },
+    {
+      "receiptId": "f07a9226-fc8b-421d-9ea2-f442e1f1ce79",
+      "campaignId": "r47-16bit",
+      "reservationId": "9ec4c64a-b7bb-4fbd-88d1-490fc81311f9",
+      "requestId": "paid:7788dbb9-7abf-49fe-bdf3-3f4793faf720",
+      "canonicalModelId": "qwen3.8-flash",
+      "routeId": "qwen3.8-flash:openrouter",
+      "providerId": "openrouter",
+      "requestedProviderModelId": "qwen/qwen3.8-flash",
+      "priceCardSource": "openrouter-catalog-live",
+      "estimatedUsd": "0.000545",
+      "actualUsd": "0.000151",
+      "usage": {
+        "inputTokens": 185,
+        "outputTokens": 261,
+        "totalTokens": 446,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 200,
+        "costUsd": 0.00015042
+      },
+      "reconciliation": "ACTUAL",
+      "routeReceipt": {
+        "canonicalModelId": "qwen3.8-flash",
+        "routeId": "qwen3.8-flash:openrouter",
+        "providerId": "openrouter",
+        "requestedProviderModelId": "qwen/qwen3.8-flash"
+      },
+      "financialReceipt": {
+        "currency": "USD",
+        "priceCardSource": "openrouter-catalog-live",
+        "priceEffectiveAt": "2026-09-27T01:12:12.909Z",
+        "estimatedUsd": "0.000545",
+        "actualUsd": "0.000151",
+        "reconciliation": "ACTUAL"
+      },
+      "createdAt": "2026-09-27T01:32:03.579Z"
+    }
+  ]
+}

@@ -1295,7 +1295,7 @@ export class AgentRuntime {
       Object.defineProperty(metrics, "routeFailovers", { enumerable: true, configurable: true, get: () => (routeFailovers.length > 0 ? routeFailovers : undefined) });
       return metrics;
     };
-    const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen, this.capacityGovernorIsExplicit ? this.capacityGovernor : undefined, greenPolicy);
+    const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen, this.capacityGovernorIsExplicit ? this.capacityGovernor : undefined, greenPolicy, this.paidAuto);
     const contextAssembler = createContextAssembler(resolvedMaxContextTokens, this.forgeGreen);
     const contextPageStore = this.forgeGreenCacheStore ? createContextPageStore(this.forgeGreenCacheStore) : undefined;
     const adapter = req.adapter ?? this.createAdapter();
