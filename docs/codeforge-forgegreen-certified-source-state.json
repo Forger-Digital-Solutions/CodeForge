@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "d863c424d5d4a750a83340837e34946e124f1ebfde968273530226dd1c43f6d3",
-  "surfaceVersion": "r44-multifile-intelligence-v1",
+  "sourceStateId": "92534354261ed024d151f4a4e1a151a25336bbcb1f58406551a178d16ff532d1",
+  "surfaceVersion": "r46-free-supply-resilience-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -48,12 +48,12 @@
     "packages/workflow/src/verification-service.ts"
   ],
   "materialFileHashes": {
-    "packages/agent/src/index.ts": "53723a9b25ae0443910e8ddd0dff6954832b82cf",
+    "packages/agent/src/index.ts": "cc3c9d8e66a121c25b79c4866ec92e254a08c3a7",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
     "packages/benchmark/src/index.ts": "615c02c9d77491a17e8b6a80a82cb619efd6be02",
     "packages/benchmark/src/protected-acceptance.ts": "0c1538833083910b74c98e8261e02b212753721e",
-    "packages/context/src/index.ts": "4c2569d6f73f15b6224fb1f931fde8976358e04e",
+    "packages/context/src/index.ts": "4f6c960147de5ddd69e6a73ddb53327d4a8bd3fc",
     "packages/context/src/planner.ts": "5cab4794355d06008e044ddd80ac1b560ec0f793",
     "packages/forge-green/src/optimization-candidate-a.ts": "67af82aaf7b9d20aac76238752c0532798a975a4",
     "packages/forge-green/src/optimization-candidates-shadow.ts": "a3d1f7b3a5a28d46eb127ce83770d1c292053507",
@@ -64,8 +64,8 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "4b3a2320f82a54e355b0bafdfb0e7778ecde2997",
-    "packages/server/src/autonomous-orchestrator.ts": "c21f2288c38fc7b78b5382c22722ca2985aa3ec8",
+    "packages/server/src/agent-runtime.ts": "2082acf28af4e3d5f76a6b77889e9bece4cf1a4f",
+    "packages/server/src/autonomous-orchestrator.ts": "04857cabc3f736e3ce9b8513b92ea95a9e01f595",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
@@ -1675,21 +1675,53 @@
       "regressionEvidence": "R44 targeted suites green: r44-edit-discipline 6/6, r44-reviewer-visibility 3/3, r44-compression-formats 9/9, fg1-compression 9/9, structured-output-security 19/19, agent-orchestrator-integration 8/8, fg1-runtime-efficiency 8/8, role benchmark 15/15, provider-saturation sim 28/28. Full canonical recorded in docs/evidence/r44-multifile/R44-REGRESSION.md.",
       "recertifiedAt": "2026-09-26",
       "sourceStateConstant": "R44_MULTIFILE_INTELLIGENCE_SOURCE_STATE"
+    },
+    {
+      "label": "R46 free-supply resilience and live production-fabric proof",
+      "reason": "Recertify the reviewed R45/R46 changes: deterministic repository intelligence and handoff economics (R45), plus free-supply resilience — mission-aware admission, staged/durable qualification, 429 classification, and production-fabric live proof including one completed normal-topology mission on free-only supply (R46). ForgeZero, provider routing policy, and completion-gate authority are unchanged.",
+      "priorSourceStateId": "d863c424d5d4a750a83340837e34946e124f1ebfde968273530226dd1c43f6d3",
+      "priorSurfaceVersion": "r44-multifile-intelligence-v1",
+      "resultingSourceStateId": "92534354261ed024d151f4a4e1a151a25336bbcb1f58406551a178d16ff532d1",
+      "resultingSurfaceVersion": "r46-free-supply-resilience-v1",
+      "changes": [
+        {
+          "file": "packages/agent/src/index.ts",
+          "change": "R45: deterministic read-plan scaffold, per-turn explorer forensics, direct explorer-to-coder evidence handoff, and adaptive turn budgets on the orchestrated path. No completion-policy change.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/context/src/index.ts",
+          "change": "R45: exploration-brief and deterministic packet surface kept inside the untrusted-data boundary. Presentation only; no gate policy change.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "R45/R46: adaptive explorer budgets wired to the orchestrated path, route-window/failover journal telemetry, and role_failed reported to 8-Bit only on model-turn exhaustion (provider availability never reaches this path). No completion-policy change.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "R45/R46: capacity+coverage-aware topology selection and the R46 mission-admission gate — run records persist before a TEMPORARILY_PARKED/NO_FREE_CAPACITY verdict returns blocked; the completion gate remains the sole path to completed.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r46-free-supply-resilience/R46-LIVE-CORPUS.json and the R46 suite runs (r46-capacity-confidence 10/10, role-qualification 12/12, health-classify 17/17, route-health-authority 27/27, fabric+ledger+contention 97/97, server wiring+topology+orchestrator 65/65)",
+      "recertifiedAt": "2026-09-27",
+      "sourceStateConstant": "CODEFORGE_R46_FREE_SUPPLY_RESILIENCE_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-26",
+  "recertifiedAt": "2026-09-27T00:22:20.089Z",
   "recertification": {
-    "phase": "R44 multi-file intelligence reconciliation",
-    "reason": "Re-issue the frozen ForgeGreen source-state over the reviewed R44 surface so the fg11/fg12e provenance canaries certify the current tree.",
+    "phase": "R46 free-supply resilience and live production-fabric proof",
+    "reason": "Recertify the reviewed R45/R46 changes: deterministic repository intelligence and handoff economics (R45), plus free-supply resilience — mission-aware admission, staged/durable qualification, 429 classification, and production-fabric live proof including one completed normal-topology mission on free-only supply (R46). ForgeZero, provider routing policy, and completion-gate authority are unchanged.",
     "changedFiles": [
       "packages/agent/src/index.ts",
+      "packages/context/src/index.ts",
       "packages/server/src/agent-runtime.ts",
-      "packages/server/src/autonomous-orchestrator.ts",
-      "packages/tools/src/compress.ts",
-      "packages/tools/src/index.ts"
+      "packages/server/src/autonomous-orchestrator.ts"
     ],
-    "priorSourceStateId": "09afc53fd6157105e68a49bcc1d5a4c01f31005bff3d4fe5b04e8a949e4c41df",
+    "priorSourceStateId": "d863c424d5d4a750a83340837e34946e124f1ebfde968273530226dd1c43f6d3",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
