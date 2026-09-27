@@ -2129,6 +2129,7 @@ export class AgentRuntime {
               // and replays optimized for the failing route must not survive the switch.
               greenPolicy.escalate("provider_failover", `${failing.providerId}/${failing.modelId} -> ${PAID_AUTO_PROVIDER_ID}/${next.canonicalModelId} (${normalized.code})`);
               activeSelection = { providerId: PAID_AUTO_PROVIDER_ID, modelId: next.canonicalModelId };
+              journalActiveRoute = activeSelection;
               servedPoolId = next.route.routeId;
               rotations++;
               continue;
@@ -2218,6 +2219,9 @@ export class AgentRuntime {
             // and replays optimized for the failing route must not survive the switch.
             greenPolicy.escalate("provider_failover", `${failing.providerId}/${failing.modelId} -> ${outcome.replacement.providerId}/${outcome.replacement.modelId} (${outcome.reason})`);
             activeSelection = { providerId: outcome.replacement.providerId, modelId: outcome.replacement.modelId };
+            // The journal's route must name what actually served the run — leaving the
+            // pre-failover selection makes role evidence attribute work to a dead route.
+            journalActiveRoute = activeSelection;
             servedPoolId = outcome.capacityPoolId ?? servedPoolId;
             rotations++;
           }

@@ -408,6 +408,48 @@ export class OpenRouterAdapter implements ProviderAdapter {
     }
   }
 
+  async probeAccountQuota(): Promise<boolean> {
+    // OpenRouter reports the account's free-model daily allowance on /key, not in response
+    // headers — chat responses carry none. The real figures are translated into the shared
+    // quota-observation vocabulary so managed-account attribution lands wherever the host
+    // wired `onResponse`.
+    if (!this.onResponse) return false;
+    let apiKey: string;
+    try {
+      apiKey = this.getApiKey();
+    } catch {
+      return false;
+    }
+    try {
+      const response = await this.fetchFn(`${this.baseUrl}/key`, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
+      if (!response.ok) return false;
+      const body = (await response.json()) as {
+        data?: { free_model_daily_requests?: { remaining?: unknown; limit?: unknown } };
+      };
+      const free = body.data?.free_model_daily_requests;
+      if (typeof free?.remaining !== "number" || typeof free.limit !== "number") return false;
+      // OpenRouter documents the free-model daily window resetting at 00:00 UTC.
+      const reset = new Date();
+      reset.setUTCHours(24, 0, 0, 0);
+      this.onResponse({
+        providerId: this.providerId,
+        modelId: undefined,
+        status: 200,
+        headers: [
+          ["x-ratelimit-remaining-requests", String(free.remaining)],
+          ["x-ratelimit-limit-requests", String(free.limit)],
+          ["x-ratelimit-reset-requests", reset.toISOString()],
+        ],
+        observedAt: Date.now(),
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   private getApiKey(): string {
     const apiKey = this.credentialStore.get("openrouter");
     if (!apiKey) {

@@ -53,6 +53,14 @@ export interface ProviderAdapter {
   readonly supportsDispatchIdentity?: boolean;
   /** FG-1A: optional so existing adapters stay valid. Absent is equivalent to unsupported. */
   getPromptCacheCapability?(modelId: string): PromptCacheCapability;
+  /**
+   * Optional account-scoped quota probe for providers that publish free-tier allowance on an
+   * account endpoint rather than response headers. Implementations emit the observation through
+   * their wired `onResponse` channel — never fabricated numbers — and resolve true only when real
+   * evidence reached the observer. Absent means the provider has no such endpoint; callers fall
+   * back to a bounded inference probe.
+   */
+  probeAccountQuota?(): Promise<boolean>;
 }
 
 /**

@@ -145,6 +145,47 @@ export class FreeModelCatalogRefresh {
           allowanceResults.push(allowanceResult);
         }
 
+        // 4b. Quota bootstrap: explicit-zero supply only exposes its real windows in response
+        // headers — a never-probed provider projects zero measured capacity, which the
+        // reservation ledger correctly denies forever, so it can never serve the call that
+        // would teach it. One bounded probe against a verified-free model records the real
+        // limits; the shared budget bounds the cycle.
+        if (!policy?.hasAllowanceFree && this.service && zeroUnitResult.records.length > 0) {
+          const probeModelId =
+            zeroUnitResult.records.find((r) => this.service?.getQualificationReceipt(adapter.providerId, r.modelId)?.qualificationState === "QUALIFIED")?.modelId
+            ?? zeroUnitResult.records[0]!.modelId;
+          const accounts = this.service.managedPoolsFor(adapter.providerId);
+          const observed = accounts.length === 0
+            ? this.service.quota.get(adapter.providerId, probeModelId) !== undefined
+            : accounts.some((pool) => this.service?.quota.get(adapter.providerId, probeModelId, pool.accountId) !== undefined);
+          if (!observed) {
+            if (allowanceProbesRemaining <= 0) {
+              errors.push(`${adapter.providerId}: quota bootstrap skipped — the refresh probe budget is exhausted`);
+            } else {
+              allowanceProbesRemaining--;
+              // Prefer a metadata quota endpoint (OpenRouter /key) over an inference ping:
+              // it reports real account allowance without spending a free-model request.
+              const accountProbed = typeof adapter.probeAccountQuota === "function"
+                ? await adapter.probeAccountQuota().catch(() => false)
+                : false;
+              if (accountProbed) {
+                errors.push(`${adapter.providerId}: quota bootstrap observed account-level free allowance`);
+              } else {
+                try {
+                  await adapter.chat({
+                    model: probeModelId,
+                    messages: [{ role: "user", content: "ping" }],
+                    maxTokens: 1,
+                  } as import("@codeforge/providers").ChatRequest);
+                  errors.push(`${adapter.providerId}: quota bootstrap probe observed explicit-zero supply headers via ${probeModelId}`);
+                } catch (probeErr) {
+                  errors.push(`${adapter.providerId}: quota bootstrap probe failed — ${(probeErr instanceof Error ? probeErr.message : String(probeErr)).slice(0, 120)}`);
+                }
+              }
+            }
+          }
+        }
+
         const allowanceRecords = allowanceResult?.records ?? [];
         const allowanceModelIds = new Set(allowanceRecords.map((r) => r.modelId));
         for (const rec of zeroUnitResult.records) {

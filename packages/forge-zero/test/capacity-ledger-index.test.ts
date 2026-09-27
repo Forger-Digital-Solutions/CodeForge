@@ -161,6 +161,23 @@ describe("CapacityReservationLedger indexed accounting", () => {
     expect(ledger.reserve(request("c", "u2", ["r-a"])).admitted).toBe(true);
   });
 
+  it("treats an observed requests-only meter as bounded capacity — absent token windows are unmetered, not zero", () => {
+    // OpenRouter :free publishes an account request allowance (/key) and no token headers.
+    // Denying on inputTokens would strand a route that is observably metered; the requests
+    // window itself is what bounds admission.
+    const requestsOnly = route({ windows: [
+      { unit: "requests", limit: 1_000, remaining: 900, resetAt: RESET, scope: "ORG", observedAt: new Date(NOW).toISOString(), authoritative: true },
+    ] });
+    const ledger = new CapacityReservationLedger({ routes: [requestsOnly], pools: [pool({ windows: requestsOnly.windows })], now: () => NOW });
+    expect(ledger.reserve(request("a", "u", ["r-a"], { inputTokens: 4_096, outputTokens: 512 })).admitted).toBe(true);
+    // The request window still bounds: once its remaining is leased out, no further admits.
+    const exhausted = route({ routeId: "r-empty", capacityPoolId: "pool-empty", windows: [
+      { unit: "requests", limit: 1_000, remaining: 0, resetAt: RESET, scope: "ORG", observedAt: new Date(NOW).toISOString(), authoritative: true },
+    ] });
+    const emptyLedger = new CapacityReservationLedger({ routes: [exhausted], pools: [pool({ poolId: "pool-empty", windows: exhausted.windows })], now: () => NOW });
+    expect(emptyLedger.reserve(request("b", "u", ["r-empty"], { inputTokens: 4_096 })).reason).toBe("CAPACITY_EXHAUSTED");
+  });
+
   it("stays flat as the reservation table grows", () => {
     const wide = route({ windows: [
       { unit: "requests", limit: 1_000_000, remaining: 1_000_000, resetAt: RESET, scope: "ORG", observedAt: new Date(NOW).toISOString(), authoritative: true },

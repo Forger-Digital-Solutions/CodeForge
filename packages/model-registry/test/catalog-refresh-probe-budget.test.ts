@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ForgeZero, createGenericFreeRecord } from "@codeforge/forge-zero";
 import { EightBitRouteHealthAuthority, type NormalizedObservation } from "@codeforge/eight-bit";
+import { createFreeCloudService } from "../src/index.js";
 import {
   InMemoryProviderCatalog,
   type ChatRequest,
@@ -160,5 +161,190 @@ describe("maxAllowanceProbes is a total refresh-cycle budget", () => {
     ).toBe(true);
     expect(observations.some((o) => o.kind === "call_failure")).toBe(false);
     expect(observations.some((o) => "reason" in o && o.reason === "PROVIDER_OUTAGE")).toBe(false);
+  });
+});
+
+/** An explicit-zero provider (the OpenRouter `:free` shape): routes verify from live $0
+ *  catalog pricing, never via allowance probe — so quota windows only exist after a real
+ *  response's headers are observed. The bootstrap probe is what breaks that deadlock. */
+function zeroUnitAdapter(providerId: string, modelId: string): { adapter: ProviderAdapter; chatCalls: () => number } {
+  let calls = 0;
+  const adapter: ProviderAdapter = {
+    providerId,
+    isTestProvider: true,
+    async listModels(): Promise<ProviderModel[]> {
+      return [{
+        modelId,
+        displayName: modelId,
+        contextWindow: 131072,
+        capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
+        isFree: true,
+        freeStatus: "free",
+      }];
+    },
+    async chat(req: ChatRequest): Promise<ChatResponse> {
+      calls++;
+      return {
+        id: `probe-${calls}`,
+        model: req.model,
+        choices: [{ index: 0, message: { role: "assistant", content: "ok" }, finishReason: "stop" }],
+      };
+    },
+    async *streamChat(): AsyncIterable<StreamEvent> {},
+    async healthCheck(): Promise<ProviderHealthResponse> {
+      return { status: "available" };
+    },
+  };
+  return { adapter, chatCalls: () => calls };
+}
+
+describe("quota bootstrap probe for explicit-zero supply", () => {
+  const serviceFor = (providerId: string, providerCatalog: InMemoryProviderCatalog, registry: NormalizedModelRegistry) => {
+    const service = createFreeCloudService({ firewall: new ForgeZero(), providerCatalog, registry });
+    service.registerManagedPool(providerId, `live-acct-${providerId}`);
+    return service;
+  };
+
+  it("issues exactly one probe when an explicit-zero provider's quota is unobserved", async () => {
+    const providerCatalog = new InMemoryProviderCatalog();
+    const openrouter = zeroUnitAdapter("openrouter", "testfree/alpha:free");
+    providerCatalog.register(openrouter.adapter);
+    const registry = new OfflineRegistry();
+    const service = serviceFor("openrouter", providerCatalog, registry);
+
+    const result = await new FreeModelCatalogRefresh({
+      providerCatalog, registry, service, requireCredentials: false, maxAllowanceProbes: 4, now: () => NOW,
+    }).refresh();
+
+    expect(openrouter.chatCalls()).toBe(1);
+    expect(result.errors.some((e) => e.includes("quota bootstrap probe observed") && e.includes("openrouter"))).toBe(true);
+  });
+
+  it("skips the probe when quota evidence is already observed for the managed account", async () => {
+    const providerCatalog = new InMemoryProviderCatalog();
+    const openrouter = zeroUnitAdapter("openrouter", "testfree/alpha:free");
+    providerCatalog.register(openrouter.adapter);
+    const registry = new OfflineRegistry();
+    const service = serviceFor("openrouter", providerCatalog, registry);
+    service.quota.record("openrouter", "testfree/alpha:free", {
+      remainingRequests: 900,
+      limitRequests: 1000,
+      observedAt: NOW.toISOString(),
+    }, "live-acct-openrouter");
+
+    await new FreeModelCatalogRefresh({
+      providerCatalog, registry, service, requireCredentials: false, maxAllowanceProbes: 4, now: () => NOW,
+    }).refresh();
+
+    expect(openrouter.chatCalls()).toBe(0);
+  });
+
+  it("shares the cycle budget with allowance probes — a consumed budget skips the bootstrap honestly", async () => {
+    const providerCatalog = new InMemoryProviderCatalog();
+    const groq = allowanceAdapter("groq", "llama-3.3-70b-versatile");
+    const openrouter = zeroUnitAdapter("openrouter", "testfree/alpha:free");
+    providerCatalog.register(groq.adapter);
+    providerCatalog.register(openrouter.adapter);
+    const registry = new OfflineRegistry();
+    const service = serviceFor("openrouter", providerCatalog, registry);
+
+    const result = await new FreeModelCatalogRefresh({
+      providerCatalog, registry, service, requireCredentials: false, maxAllowanceProbes: 1, now: () => NOW,
+    }).refresh();
+
+    expect(groq.chatCalls()).toBe(1);
+    expect(openrouter.chatCalls()).toBe(0);
+    expect(result.errors.some((e) => e.includes("openrouter") && e.includes("quota bootstrap skipped"))).toBe(true);
+  });
+
+  it("prefers an account-quota endpoint over an inference ping when the adapter offers one", async () => {
+    // OpenRouter's real shape: /key reports free_model_daily_requests; chat responses carry no
+    // quota headers at all, so an inference ping could never teach the fabric anything.
+    const providerCatalog = new InMemoryProviderCatalog();
+    const registry = new OfflineRegistry();
+    const service = serviceFor("openrouter", providerCatalog, registry);
+    const observer = service.managedAccountObserver("openrouter", "live-acct-openrouter");
+    let accountProbes = 0;
+    let calls = 0;
+    const adapter: ProviderAdapter = {
+      providerId: "openrouter",
+      isTestProvider: true,
+      async listModels(): Promise<ProviderModel[]> {
+        return [{
+          modelId: "testfree/alpha:free",
+          displayName: "testfree/alpha:free",
+          contextWindow: 131072,
+          capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
+          isFree: true,
+          freeStatus: "free",
+        }];
+      },
+      async chat(req: ChatRequest): Promise<ChatResponse> {
+        calls++;
+        return {
+          id: `probe-${calls}`,
+          model: req.model,
+          choices: [{ index: 0, message: { role: "assistant", content: "ok" }, finishReason: "stop" }],
+        };
+      },
+      async probeAccountQuota(): Promise<boolean> {
+        accountProbes++;
+        observer({
+          providerId: "openrouter",
+          modelId: undefined,
+          status: 200,
+          headers: [
+            ["x-ratelimit-remaining-requests", "900"],
+            ["x-ratelimit-limit-requests", "1000"],
+            ["x-ratelimit-reset-requests", "2030-01-01T00:00:00.000Z"],
+          ],
+          observedAt: Date.now(),
+        });
+        return true;
+      },
+      async *streamChat(): AsyncIterable<StreamEvent> {},
+      async healthCheck(): Promise<ProviderHealthResponse> {
+        return { status: "available" };
+      },
+    };
+    providerCatalog.register(adapter);
+
+    const result = await new FreeModelCatalogRefresh({
+      providerCatalog, registry, service, requireCredentials: false, maxAllowanceProbes: 4, now: () => NOW,
+    }).refresh();
+
+    expect(accountProbes).toBe(1);
+    expect(calls).toBe(0);
+    expect(result.errors.some((e) => e.includes("quota bootstrap observed account-level free allowance"))).toBe(true);
+    const quota = service.quota.get("openrouter", "testfree/alpha:free", "live-acct-openrouter");
+    expect(quota?.remainingRequests).toBe(900);
+  });
+
+  it("does not probe a provider whose catalog verified no zero-unit models", async () => {
+    const providerCatalog = new InMemoryProviderCatalog();
+    const openrouter = zeroUnitAdapter("openrouter", "paid/only-model");
+    // Overwrite the listing with a non-free model so zeroUnitResult.records is empty.
+    const paidOnly: ProviderAdapter = {
+      ...openrouter.adapter,
+      async listModels(): Promise<ProviderModel[]> {
+        return [{
+          modelId: "paid/only-model",
+          displayName: "paid/only-model",
+          contextWindow: 131072,
+          capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
+          isFree: false,
+          freeStatus: "paid",
+        }];
+      },
+    };
+    providerCatalog.register(paidOnly);
+    const registry = new OfflineRegistry();
+    const service = serviceFor("openrouter", providerCatalog, registry);
+
+    await new FreeModelCatalogRefresh({
+      providerCatalog, registry, service, requireCredentials: false, maxAllowanceProbes: 4, now: () => NOW,
+    }).refresh();
+
+    expect(openrouter.chatCalls()).toBe(0);
   });
 });

@@ -1,0 +1,2327 @@
+{
+  "schemaVersion": 1,
+  "round": "R49",
+  "generatedAt": "2026-09-27T15:31:44.549Z",
+  "startedAt": "2026-09-27T15:28:15.596Z",
+  "elapsedMs": 208953,
+  "provenance": "live zero-cost",
+  "purpose": "Single coherent live 8-Bit mission: Explorer → Coder → Reviewer → ForgeVerify → completion gate → integration on CodeForge-managed zero-cost routes only.",
+  "providersPresent": [
+    "groq",
+    "mistral",
+    "openrouter"
+  ],
+  "allowanceProbeBudget": 8,
+  "catalogRefresh": {
+    "registered": 64,
+    "failed": 0,
+    "errors": [
+      "openrouter: quota bootstrap observed account-level free allowance"
+    ]
+  },
+  "missionAdmission": null,
+  "topology": {
+    "policy": "adaptive",
+    "plan": {
+      "topology": "normal",
+      "explorers": 1,
+      "hasPlanner": false,
+      "hasReviewer": true,
+      "hasVision": false,
+      "requiresForgeVerify": true,
+      "reason": "Normal task: Explorer -> Coder -> Reviewer -> ForgeVerify; ForgeGreen capacity advice: PROVIDER_CAPACITY_UNOBSERVED",
+      "stages": [
+        "Explorer",
+        "Coder",
+        "Reviewer",
+        "ForgeVerify"
+      ]
+    }
+  },
+  "capacityRoutesPreMission": [
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "pool": "owner:mistral:model:codestral-latest",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "PROBATION"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:codestral-latest",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "PROBATION"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-2508",
+      "pool": "owner:mistral:model:codestral-2508",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "PROBATION"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-2508",
+      "pool": "managed:mistral:live-acct-mistral:model:codestral-2508",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "PROBATION"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-code-latest",
+      "pool": "owner:mistral:model:mistral-code-latest",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "PROBATION"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-code-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-code-latest",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "PROBATION"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "pool": "owner:groq:model:openai/gpt-oss-120b",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "PROBATION",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "NOT_TESTED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "pool": "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "PROBATION",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "NOT_TESTED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "pool": "owner:groq:model:openai/gpt-oss-20b",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "NOT_TESTED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "pool": "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "NOT_TESTED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-3b-latest",
+      "pool": "owner:mistral:model:ministral-3b-latest",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-3b-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:ministral-3b-latest",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-8b-latest",
+      "pool": "owner:mistral:model:ministral-8b-latest",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-8b-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:ministral-8b-latest",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "owner:openrouter",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "pool": "owner:openrouter",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "HARD_FAILURE"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "HARD_FAILURE"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "qwen/qwen3.8-27b",
+      "pool": "owner:groq:model:qwen/qwen3.8-27b",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_TESTED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "qwen/qwen3.8-27b",
+      "pool": "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_TESTED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "qwen/qwen3.8-27b:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "qwen/qwen3.8-27b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-code-fim-latest",
+      "pool": "owner:mistral:model:mistral-code-fim-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-code-fim-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-code-fim-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "openrouter/free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "openrouter/free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-26b-a4b-it:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-26b-a4b-it:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-31b-it:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-31b-it:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling-small:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling-small:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-s-2.1:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-s-2.1:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-fin:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-fin:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-sante:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-sante:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "magistral-medium-latest",
+      "pool": "owner:mistral:model:magistral-medium-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "magistral-medium-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:magistral-medium-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-14b-2512",
+      "pool": "owner:mistral:model:ministral-14b-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-14b-2512",
+      "pool": "managed:mistral:live-acct-mistral:model:ministral-14b-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-3b-2512",
+      "pool": "owner:mistral:model:ministral-3b-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-3b-2512",
+      "pool": "managed:mistral:live-acct-mistral:model:ministral-3b-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-8b-2512",
+      "pool": "owner:mistral:model:ministral-8b-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-8b-2512",
+      "pool": "managed:mistral:live-acct-mistral:model:ministral-8b-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-14b-latest",
+      "pool": "owner:mistral:model:ministral-14b-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-14b-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:ministral-14b-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-latest",
+      "pool": "owner:mistral:model:mistral-medium-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2604",
+      "pool": "owner:mistral:model:mistral-medium-2604",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2604",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2604",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-2512",
+      "pool": "owner:mistral:model:mistral-ocr-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-2512",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-ocr-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-4-0",
+      "pool": "owner:mistral:model:mistral-ocr-4-0",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-4-0",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-ocr-4-0",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-latest",
+      "pool": "owner:mistral:model:mistral-ocr-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-ocr-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-latest",
+      "pool": "owner:mistral:model:mistral-small-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-small-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-2603",
+      "pool": "owner:mistral:model:mistral-small-2603",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-2603",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-small-2603",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium",
+      "pool": "owner:mistral:model:mistral-medium",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-medium",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-3-5",
+      "pool": "owner:mistral:model:mistral-medium-3-5",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-3-5",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-3-5",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-3.5",
+      "pool": "owner:mistral:model:mistral-medium-3.5",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-3.5",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-3.5",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-3",
+      "pool": "owner:mistral:model:mistral-medium-3",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-3",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-3",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-vibe-cli-latest",
+      "pool": "owner:mistral:model:mistral-vibe-cli-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-vibe-cli-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-vibe-cli-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-vibe-cli-with-tools",
+      "pool": "owner:mistral:model:mistral-vibe-cli-with-tools",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-vibe-cli-with-tools",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-vibe-cli-with-tools",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-3-0",
+      "pool": "owner:mistral:model:mistral-ocr-3-0",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-3-0",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-ocr-3-0",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-3",
+      "pool": "owner:mistral:model:mistral-ocr-3",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-3",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-ocr-3",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-4",
+      "pool": "owner:mistral:model:mistral-ocr-4",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-4",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-ocr-4",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-4-1",
+      "pool": "owner:mistral:model:mistral-ocr-4-1",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-ocr-4-1",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-ocr-4-1",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-vibe-cli-fast",
+      "pool": "owner:mistral:model:mistral-vibe-cli-fast",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-vibe-cli-fast",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-vibe-cli-fast",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "magistral-small-latest",
+      "pool": "owner:mistral:model:magistral-small-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "magistral-small-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:magistral-small-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "stealth/space-bunny-alpha",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "stealth/space-bunny-alpha",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-latest",
+      "pool": "owner:mistral:model:voxtral-mini-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:voxtral-mini-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-2602",
+      "pool": "owner:mistral:model:voxtral-mini-2602",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-2602",
+      "pool": "managed:mistral:live-acct-mistral:model:voxtral-mini-2602",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-transcribe-realtime-2602",
+      "pool": "owner:mistral:model:voxtral-mini-transcribe-realtime-2602",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-transcribe-realtime-2602",
+      "pool": "managed:mistral:live-acct-mistral:model:voxtral-mini-transcribe-realtime-2602",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-small-latest",
+      "pool": "owner:mistral:model:voxtral-small-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-small-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:voxtral-small-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-small-2507",
+      "pool": "owner:mistral:model:voxtral-small-2507",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-small-2507",
+      "pool": "managed:mistral:live-acct-mistral:model:voxtral-small-2507",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-realtime-2602",
+      "pool": "owner:mistral:model:voxtral-mini-realtime-2602",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-realtime-2602",
+      "pool": "managed:mistral:live-acct-mistral:model:voxtral-mini-realtime-2602",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-realtime-latest",
+      "pool": "owner:mistral:model:voxtral-mini-realtime-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-mini-realtime-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:voxtral-mini-realtime-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "allam-2-7b",
+      "pool": "owner:groq:model:allam-2-7b",
+      "eligible": false,
+      "qualification": "HARD_FAILURE",
+      "roles": {
+        "CODER": "HARD_FAILURE",
+        "TOOL_AGENT": "HARD_FAILURE",
+        "ANALYST": "NOT_QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "allam-2-7b",
+      "pool": "managed:groq:live-acct-groq:model:allam-2-7b",
+      "eligible": false,
+      "qualification": "HARD_FAILURE",
+      "roles": {
+        "CODER": "HARD_FAILURE",
+        "TOOL_AGENT": "HARD_FAILURE",
+        "ANALYST": "NOT_QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-medium-latest",
+      "pool": "owner:mistral:model:devstral-medium-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-medium-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:devstral-medium-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-2512",
+      "pool": "owner:mistral:model:devstral-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-2512",
+      "pool": "managed:mistral:live-acct-mistral:model:devstral-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-latest",
+      "pool": "owner:mistral:model:devstral-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:devstral-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-medium-2507",
+      "pool": "owner:mistral:model:devstral-medium-2507",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-medium-2507",
+      "pool": "managed:mistral:live-acct-mistral:model:devstral-medium-2507",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-small-2507",
+      "pool": "owner:mistral:model:devstral-small-2507",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-small-2507",
+      "pool": "managed:mistral:live-acct-mistral:model:devstral-small-2507",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "labs-devstral-small-2512",
+      "pool": "owner:mistral:model:labs-devstral-small-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "labs-devstral-small-2512",
+      "pool": "managed:mistral:live-acct-mistral:model:labs-devstral-small-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-small-2505",
+      "pool": "owner:mistral:model:devstral-small-2505",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-small-2505",
+      "pool": "managed:mistral:live-acct-mistral:model:devstral-small-2505",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "zai-glm-5-2",
+      "pool": "owner:mistral:model:zai-glm-5-2",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "zai-glm-5-2",
+      "pool": "managed:mistral:live-acct-mistral:model:zai-glm-5-2",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "zai-glm-5-3",
+      "pool": "owner:mistral:model:zai-glm-5-3",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "zai-glm-5-3",
+      "pool": "managed:mistral:live-acct-mistral:model:zai-glm-5-3",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "llama-3.1-8b-instant",
+      "pool": "owner:groq:model:llama-3.1-8b-instant",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "llama-3.1-8b-instant",
+      "pool": "managed:groq:live-acct-groq:model:llama-3.1-8b-instant",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "llama-3.3-70b-versatile",
+      "pool": "owner:groq:model:llama-3.3-70b-versatile",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "llama-3.3-70b-versatile",
+      "pool": "managed:groq:live-acct-groq:model:llama-3.3-70b-versatile",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "magistral-small",
+      "pool": "owner:mistral:model:magistral-small",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "magistral-small",
+      "pool": "managed:mistral:live-acct-mistral:model:magistral-small",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mistral-7b",
+      "pool": "owner:mistral:model:open-mistral-7b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mistral-7b",
+      "pool": "managed:mistral:live-acct-mistral:model:open-mistral-7b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-large-latest",
+      "pool": "owner:mistral:model:mistral-large-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-large-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-large-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-large-2411",
+      "pool": "owner:mistral:model:mistral-large-2411",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-large-2411",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-large-2411",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-large-2512",
+      "pool": "owner:mistral:model:mistral-large-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-large-2512",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-large-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2505",
+      "pool": "owner:mistral:model:mistral-medium-2505",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2505",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2505",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2508",
+      "pool": "owner:mistral:model:mistral-medium-2508",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2508",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2508",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-nemo",
+      "pool": "owner:mistral:model:mistral-nemo",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-nemo",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-nemo",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-2506",
+      "pool": "owner:mistral:model:mistral-small-2506",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-2506",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-small-2506",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mixtral-8x22b",
+      "pool": "owner:mistral:model:open-mixtral-8x22b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mixtral-8x22b",
+      "pool": "managed:mistral:live-acct-mistral:model:open-mixtral-8x22b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mixtral-8x7b",
+      "pool": "owner:mistral:model:open-mixtral-8x7b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mixtral-8x7b",
+      "pool": "managed:mistral:live-acct-mistral:model:open-mixtral-8x7b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mistral-nemo",
+      "pool": "owner:mistral:model:open-mistral-nemo",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mistral-nemo",
+      "pool": "managed:mistral:live-acct-mistral:model:open-mistral-nemo",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "pixtral-12b",
+      "pool": "owner:mistral:model:pixtral-12b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "pixtral-12b",
+      "pool": "managed:mistral:live-acct-mistral:model:pixtral-12b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "pixtral-large-latest",
+      "pool": "owner:mistral:model:pixtral-large-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "pixtral-large-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:pixtral-large-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "qwen/qwen3.6-27b",
+      "pool": "owner:groq:model:qwen/qwen3.6-27b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "qwen/qwen3.6-27b",
+      "pool": "managed:groq:live-acct-groq:model:qwen/qwen3.6-27b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    }
+  ],
+  "independentPools": [
+    "shared:openrouter",
+    "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+    "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+    "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+    "managed:groq:live-acct-groq:model:allam-2-7b",
+    "managed:groq:live-acct-groq:model:llama-3.1-8b-instant",
+    "managed:groq:live-acct-groq:model:llama-3.3-70b-versatile",
+    "managed:groq:live-acct-groq:model:qwen/qwen3.6-27b",
+    "managed:mistral:live-acct-mistral:model:codestral-latest",
+    "managed:mistral:live-acct-mistral:model:codestral-2508",
+    "managed:mistral:live-acct-mistral:model:mistral-code-latest",
+    "managed:mistral:live-acct-mistral:model:ministral-3b-latest",
+    "managed:mistral:live-acct-mistral:model:ministral-8b-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-code-fim-latest",
+    "managed:mistral:live-acct-mistral:model:magistral-medium-latest",
+    "managed:mistral:live-acct-mistral:model:ministral-14b-2512",
+    "managed:mistral:live-acct-mistral:model:ministral-3b-2512",
+    "managed:mistral:live-acct-mistral:model:ministral-8b-2512",
+    "managed:mistral:live-acct-mistral:model:ministral-14b-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-2604",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-2512",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-4-0",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-small-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-small-2603",
+    "managed:mistral:live-acct-mistral:model:mistral-medium",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-3-5",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-3.5",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-3",
+    "managed:mistral:live-acct-mistral:model:mistral-vibe-cli-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-vibe-cli-with-tools",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-3-0",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-3",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-4",
+    "managed:mistral:live-acct-mistral:model:mistral-ocr-4-1",
+    "managed:mistral:live-acct-mistral:model:mistral-vibe-cli-fast",
+    "managed:mistral:live-acct-mistral:model:magistral-small-latest",
+    "managed:mistral:live-acct-mistral:model:voxtral-mini-latest",
+    "managed:mistral:live-acct-mistral:model:voxtral-mini-2602",
+    "managed:mistral:live-acct-mistral:model:voxtral-mini-transcribe-realtime-2602",
+    "managed:mistral:live-acct-mistral:model:voxtral-small-latest",
+    "managed:mistral:live-acct-mistral:model:voxtral-small-2507",
+    "managed:mistral:live-acct-mistral:model:voxtral-mini-realtime-2602",
+    "managed:mistral:live-acct-mistral:model:voxtral-mini-realtime-latest",
+    "managed:mistral:live-acct-mistral:model:devstral-medium-latest",
+    "managed:mistral:live-acct-mistral:model:devstral-2512",
+    "managed:mistral:live-acct-mistral:model:devstral-latest",
+    "managed:mistral:live-acct-mistral:model:devstral-medium-2507",
+    "managed:mistral:live-acct-mistral:model:devstral-small-2507",
+    "managed:mistral:live-acct-mistral:model:labs-devstral-small-2512",
+    "managed:mistral:live-acct-mistral:model:devstral-small-2505",
+    "managed:mistral:live-acct-mistral:model:zai-glm-5-2",
+    "managed:mistral:live-acct-mistral:model:zai-glm-5-3",
+    "managed:mistral:live-acct-mistral:model:magistral-small",
+    "managed:mistral:live-acct-mistral:model:open-mistral-7b",
+    "managed:mistral:live-acct-mistral:model:mistral-large-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-large-2411",
+    "managed:mistral:live-acct-mistral:model:mistral-large-2512",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-2505",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-2508",
+    "managed:mistral:live-acct-mistral:model:mistral-nemo",
+    "managed:mistral:live-acct-mistral:model:mistral-small-2506",
+    "managed:mistral:live-acct-mistral:model:open-mixtral-8x22b",
+    "managed:mistral:live-acct-mistral:model:open-mixtral-8x7b",
+    "managed:mistral:live-acct-mistral:model:open-mistral-nemo",
+    "managed:mistral:live-acct-mistral:model:pixtral-12b",
+    "managed:mistral:live-acct-mistral:model:pixtral-large-latest",
+    "managed:openrouter:live-acct-openrouter",
+    "owner:mistral:model:codestral-latest",
+    "owner:mistral:model:codestral-2508",
+    "owner:mistral:model:mistral-code-latest",
+    "owner:groq:model:openai/gpt-oss-120b",
+    "owner:groq:model:openai/gpt-oss-20b",
+    "owner:mistral:model:ministral-3b-latest",
+    "owner:mistral:model:ministral-8b-latest",
+    "owner:groq:model:qwen/qwen3.8-27b",
+    "owner:mistral:model:mistral-code-fim-latest",
+    "owner:mistral:model:magistral-medium-latest",
+    "owner:mistral:model:ministral-14b-2512",
+    "owner:mistral:model:ministral-3b-2512",
+    "owner:mistral:model:ministral-8b-2512",
+    "owner:mistral:model:ministral-14b-latest",
+    "owner:mistral:model:mistral-medium-latest",
+    "owner:mistral:model:mistral-medium-2604",
+    "owner:mistral:model:mistral-ocr-2512",
+    "owner:mistral:model:mistral-ocr-4-0",
+    "owner:mistral:model:mistral-ocr-latest",
+    "owner:mistral:model:mistral-small-latest",
+    "owner:mistral:model:mistral-small-2603",
+    "owner:mistral:model:mistral-medium",
+    "owner:mistral:model:mistral-medium-3-5",
+    "owner:mistral:model:mistral-medium-3.5",
+    "owner:mistral:model:mistral-medium-3",
+    "owner:mistral:model:mistral-vibe-cli-latest",
+    "owner:mistral:model:mistral-vibe-cli-with-tools",
+    "owner:mistral:model:mistral-ocr-3-0",
+    "owner:mistral:model:mistral-ocr-3",
+    "owner:mistral:model:mistral-ocr-4",
+    "owner:mistral:model:mistral-ocr-4-1",
+    "owner:mistral:model:mistral-vibe-cli-fast",
+    "owner:mistral:model:magistral-small-latest",
+    "owner:mistral:model:voxtral-mini-latest",
+    "owner:mistral:model:voxtral-mini-2602",
+    "owner:mistral:model:voxtral-mini-transcribe-realtime-2602",
+    "owner:mistral:model:voxtral-small-latest",
+    "owner:mistral:model:voxtral-small-2507",
+    "owner:mistral:model:voxtral-mini-realtime-2602",
+    "owner:mistral:model:voxtral-mini-realtime-latest",
+    "owner:groq:model:allam-2-7b",
+    "owner:mistral:model:devstral-medium-latest",
+    "owner:mistral:model:devstral-2512",
+    "owner:mistral:model:devstral-latest",
+    "owner:mistral:model:devstral-medium-2507",
+    "owner:mistral:model:devstral-small-2507",
+    "owner:mistral:model:labs-devstral-small-2512",
+    "owner:mistral:model:devstral-small-2505",
+    "owner:mistral:model:zai-glm-5-2",
+    "owner:mistral:model:zai-glm-5-3",
+    "owner:groq:model:llama-3.1-8b-instant",
+    "owner:groq:model:llama-3.3-70b-versatile",
+    "owner:mistral:model:magistral-small",
+    "owner:mistral:model:open-mistral-7b",
+    "owner:mistral:model:mistral-large-latest",
+    "owner:mistral:model:mistral-large-2411",
+    "owner:mistral:model:mistral-large-2512",
+    "owner:mistral:model:mistral-medium-2505",
+    "owner:mistral:model:mistral-medium-2508",
+    "owner:mistral:model:mistral-nemo",
+    "owner:mistral:model:mistral-small-2506",
+    "owner:mistral:model:open-mixtral-8x22b",
+    "owner:mistral:model:open-mixtral-8x7b",
+    "owner:mistral:model:open-mistral-nemo",
+    "owner:mistral:model:pixtral-12b",
+    "owner:mistral:model:pixtral-large-latest",
+    "owner:groq:model:qwen/qwen3.6-27b"
+  ],
+  "runStatus": "completed",
+  "runSummary": "Successfully implemented, reviewed, verified, and integrated \"Inspect the repository and make both failing tests pass by fixing multiply in src/math.mjs and the public output format in src/format.mjs. Do not modify the tests.\"",
+  "changedFiles": [
+    "src/format.mjs",
+    "src/math.mjs"
+  ],
+  "review": {
+    "passed": true,
+    "findings": []
+  },
+  "verification": [
+    {
+      "command": "node --test test/math.test.mjs test/format.test.mjs",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "durationMs": 1731,
+      "outputSample": "✔ format (2.4184ms)\n✔ multiply (1.9238ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 355.6573\n"
+    }
+  ],
+  "completionGate": {
+    "outcome": "completed",
+    "blockers": [],
+    "advisories": [],
+    "rationale": "All required completion checks passed."
+  },
+  "integration": {
+    "status": "integrated",
+    "branch": "codeforge/worktree/run-61023f7b-5a75-4f3e-ac0b-ffd898501c51-b15bc155",
+    "worktreeId": "wt-b15bc155"
+  },
+  "counters": {
+    "childrenSpawned": 2,
+    "reviewRounds": 0,
+    "taskAttempts": 1,
+    "verificationAttempts": 1
+  },
+  "roleReport": [
+    {
+      "role": "explorer",
+      "outcome": "converged_failed",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "qualification": "QUALIFIED",
+      "roleVerdict": "QUALIFIED",
+      "healthAfterRun": "CAPABILITY_LIMITED",
+      "requests": 5,
+      "toolCalls": 3,
+      "inputTokens": 15346,
+      "outputTokens": 2629,
+      "failovers": [
+        {
+          "from": "groq/openai/gpt-oss-20b",
+          "to": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "at": "2026-09-27T15:29:17.487Z",
+          "reason": "RATE_LIMITED",
+          "callsBeforeFailure": 3
+        }
+      ],
+      "recoveryOutcome": "replan",
+      "recoveryDetail": "Run ended with stopReason: budget_exhausted"
+    },
+    {
+      "role": "coder",
+      "outcome": "completed",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "qualification": "QUALIFIED",
+      "roleVerdict": "QUALIFIED",
+      "healthAfterRun": "CAPABILITY_LIMITED",
+      "requests": 9,
+      "toolCalls": 8,
+      "inputTokens": 40989,
+      "outputTokens": 1867,
+      "failovers": [],
+      "recoveryOutcome": "none",
+      "recoveryDetail": "Run ended with stopReason: completed"
+    },
+    {
+      "role": "reviewer",
+      "outcome": "completed",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "qualification": "QUALIFIED",
+      "roleVerdict": "QUALIFIED",
+      "healthAfterRun": "CAPABILITY_LIMITED",
+      "requests": 8,
+      "toolCalls": 6,
+      "inputTokens": 31136,
+      "outputTokens": 3237,
+      "failovers": [],
+      "recoveryOutcome": "none",
+      "recoveryDetail": "Run ended with stopReason: completed"
+    }
+  ],
+  "workers": [
+    {
+      "role": "Repository Explorer",
+      "agentId": "explorer",
+      "status": "blocked",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+      },
+      "route": null,
+      "routePoolId": null,
+      "resultSummary": "[AGENT_MODEL_TURN_LIMIT] The explorer agent used all 5 model turns without finishing; the work is unfinished, not complete.",
+      "telemetry": {
+        "wallTimeMs": 75400,
+        "modelRequests": 5,
+        "inputTokens": 15346,
+        "outputTokens": 2629,
+        "toolCalls": 3,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 0
+      }
+    },
+    {
+      "role": "Autonomous Builder",
+      "agentId": "coder",
+      "status": "completed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+      },
+      "route": null,
+      "routePoolId": null,
+      "resultSummary": "Summary:\n- Fixed multiply function in src/math.mjs to return a * b instead of 0.\n- Fixed format function in src/format.mjs to return `result: ${value}` instead of `value: ${value}`.\n- All tests pass after changes (3/3).\n- No remaining risks identified; changes are limited to the two specified files.\n\nChanged files:\n- src/math.mjs\n- src/format.mjs\n\nTests run: `node --test` exited with code 0, all tests passed.",
+      "telemetry": {
+        "wallTimeMs": 50499,
+        "modelRequests": 9,
+        "inputTokens": 40989,
+        "outputTokens": 1867,
+        "toolCalls": 8,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 0
+      }
+    },
+    {
+      "role": "Independent Code Reviewer",
+      "agentId": "reviewer",
+      "status": "completed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+      },
+      "route": null,
+      "routePoolId": null,
+      "resultSummary": "The changes made to src/math.mjs and src/format.mjs correctly address the failing tests. The multiply function now returns the product, and the format function returns the expected string format. All tests should pass.",
+      "telemetry": {
+        "wallTimeMs": 67339,
+        "modelRequests": 8,
+        "inputTokens": 31136,
+        "outputTokens": 3237,
+        "toolCalls": 6,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 0
+      }
+    }
+  ],
+  "journals": [
+    {
+      "runId": "child-cda46d3c-75a6-49df-b00b-386b3fecfe9c",
+      "role": "explorer",
+      "state": "converged_failed",
+      "route": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "capacityPoolId": "managed:openrouter:live-acct-openrouter"
+      },
+      "turnCount": 5,
+      "toolCallCount": 3,
+      "requests": 5,
+      "inputTokens": 15346,
+      "outputTokens": 2629,
+      "routeFailovers": [
+        {
+          "from": "groq/openai/gpt-oss-20b",
+          "to": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "at": "2026-09-27T15:29:17.487Z",
+          "reason": "RATE_LIMITED",
+          "callsBeforeFailure": 3
+        }
+      ],
+      "recoveryOutcome": "replan",
+      "recoveryDetail": "Run ended with stopReason: budget_exhausted"
+    },
+    {
+      "runId": "child-83ca66ae-92d2-47a0-abf2-20529eecebdd",
+      "role": "coder",
+      "state": "completed",
+      "route": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "capacityPoolId": "managed:openrouter:live-acct-openrouter"
+      },
+      "turnCount": 9,
+      "toolCallCount": 8,
+      "requests": 9,
+      "inputTokens": 40989,
+      "outputTokens": 1867,
+      "routeFailovers": [],
+      "recoveryOutcome": "none",
+      "recoveryDetail": "Run ended with stopReason: completed"
+    },
+    {
+      "runId": "child-976a5f85-e4a3-4ad8-81c2-a6d3a28f480e",
+      "role": "reviewer",
+      "state": "completed",
+      "route": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "capacityPoolId": "managed:openrouter:live-acct-openrouter"
+      },
+      "turnCount": 8,
+      "toolCallCount": 6,
+      "requests": 8,
+      "inputTokens": 31136,
+      "outputTokens": 3237,
+      "routeFailovers": [],
+      "recoveryOutcome": "none",
+      "recoveryDetail": "Run ended with stopReason: completed"
+    }
+  ],
+  "routerEvents": [
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-cda46d3c-75a6-49df-b00b-386b3fecfe9c",
+        "modelId": "openai/gpt-oss-20b",
+        "providerId": "groq",
+        "score": 85,
+        "reasons": [
+          "FABRIC_ADMITTED",
+          "SUPPLY_PURE_MANAGED_FREE",
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED",
+          "ROLE_QUALIFIED_EVIDENCE"
+        ]
+      }
+    },
+    {
+      "type": "router.failover",
+      "payload": {
+        "taskId": "child-cda46d3c-75a6-49df-b00b-386b3fecfe9c",
+        "fromModelId": "groq/openai/gpt-oss-20b",
+        "toModelId": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+        "reason": "RATE_LIMITED"
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-83ca66ae-92d2-47a0-abf2-20529eecebdd",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "providerId": "openrouter",
+        "score": 85,
+        "reasons": [
+          "FABRIC_ADMITTED",
+          "SUPPLY_PURE_MANAGED_FREE",
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED",
+          "ROLE_QUALIFIED_EVIDENCE"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-976a5f85-e4a3-4ad8-81c2-a6d3a28f480e",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "providerId": "openrouter",
+        "score": 98,
+        "reasons": [
+          "FABRIC_ADMITTED",
+          "SUPPLY_PURE_MANAGED_FREE",
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED",
+          "SAME_POOL_FALLBACK",
+          "ROLE_QUALIFIED_EVIDENCE"
+        ]
+      }
+    }
+  ],
+  "poolByRole": {
+    "explorer": [
+      "managed:openrouter:live-acct-openrouter"
+    ],
+    "coder": [
+      "managed:openrouter:live-acct-openrouter"
+    ],
+    "reviewer": [
+      "managed:openrouter:live-acct-openrouter"
+    ]
+  },
+  "reviewerIndependent": false,
+  "forgeVerifyRecords": [
+    {
+      "recordType": "plan",
+      "status": null,
+      "payload": {
+        "planId": "6a399aa6-65f5-4d3e-a6a6-2caf6acc37c4",
+        "runId": "run-61023f7b-5a75-4f3e-ac0b-ffd898501c51",
+        "policyVersion": "legacy-workflow-policy-v1",
+        "workspacePath": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\r49-free-wt-9B6Oxb\\r49-free-repo-ZIiRd1\\wt-b15bc155",
+        "inputStateHash": "4c094a3c746d3ce9648020394819fa630e3cad8c280d9b802cb4c3ef08c9df5e",
+        "scope": "workspace",
+        "verifiers": [
+          {
+            "verifierId": "legacy.test.902b21a9cd520f8a",
+            "verifierVersion": "legacy-902b21a9cd520f8a",
+            "definitionDigest": "8af15df059b6d2bc3a4829cccc1baf5fa9dca1689c72e7949315e9f5d4c8d77e",
+            "requirement": "required"
+          }
+        ],
+        "createdAt": "2026-09-27T15:31:38.204Z"
+      }
+    },
+    {
+      "recordType": "attempt",
+      "status": "passed",
+      "payload": {
+        "attemptId": "d40139ef-e6fc-449b-a664-3ca87c4f90d1",
+        "planId": "6a399aa6-65f5-4d3e-a6a6-2caf6acc37c4",
+        "verifierId": "legacy.test.902b21a9cd520f8a",
+        "verifierVersion": "legacy-902b21a9cd520f8a",
+        "runId": "run-61023f7b-5a75-4f3e-ac0b-ffd898501c51",
+        "startedAt": "2026-09-27T15:31:38.207Z",
+        "status": "passed",
+        "exitCode": 0,
+        "elapsedMs": 1731,
+        "finishedAt": "2026-09-27T15:31:39.939Z"
+      }
+    },
+    {
+      "recordType": "evidence",
+      "status": "passed",
+      "payload": {
+        "evidenceId": "cece450d-cd6f-4a3f-8c7f-437f21f5b0ed",
+        "attemptId": "d40139ef-e6fc-449b-a664-3ca87c4f90d1",
+        "planId": "6a399aa6-65f5-4d3e-a6a6-2caf6acc37c4",
+        "verifierId": "legacy.test.902b21a9cd520f8a",
+        "verifierVersion": "legacy-902b21a9cd520f8a",
+        "definitionDigest": "8af15df059b6d2bc3a4829cccc1baf5fa9dca1689c72e7949315e9f5d4c8d77e",
+        "runId": "run-61023f7b-5a75-4f3e-ac0b-ffd898501c51",
+        "workspacePath": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\r49-free-wt-9B6Oxb\\r49-free-repo-ZIiRd1\\wt-b15bc155",
+        "inputStateHash": "4c094a3c746d3ce9648020394819fa630e3cad8c280d9b802cb4c3ef08c9df5e",
+        "status": "passed",
+        "exitCode": 0,
+        "elapsedMs": 1731,
+        "commandDigest": "f7a1f48d8b29eb791bda8aa866fe601ddf790ec81374dc216520d5abd2d4021b",
+        "outputDigest": "99af57cdfe78d812077cb46f55a4106277cb8e3ae6b19a4c6149fd8d7d7e1ce8",
+        "outputExcerpt": "✔ format (2.4184ms)\n✔ multiply (1.9238ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 355.6573\n",
+        "outputTruncated": false,
+        "outputBytes": 159,
+        "createdAt": "2026-09-27T15:31:39.939Z",
+        "evidenceHash": "55bc535137ccafb6a72a6fcc020cad1426272309304963fd0ff6ed7c5574ecc0"
+      }
+    },
+    {
+      "recordType": "coverage_receipt",
+      "status": "SUFFICIENT",
+      "payload": {
+        "kind": "verification_coverage_receipt",
+        "coverageId": "eb44182e6cd08b5e496f074b244babe759dceb80323ae15bbb97003186aa0f8d",
+        "policyVersion": "fg5-verification-policy-1",
+        "coveragePolicyVersion": "fg7-verification-coverage-1",
+        "workspacePath": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\r49-free-wt-9B6Oxb\\r49-free-repo-ZIiRd1\\wt-b15bc155",
+        "inputStateHash": "4c094a3c746d3ce9648020394819fa630e3cad8c280d9b802cb4c3ef08c9df5e",
+        "obligationCount": 1,
+        "requiredObligationCount": 1,
+        "coveredObligationCount": 1,
+        "coveredRequiredObligationCount": 1,
+        "missingRequiredObligationIds": [],
+        "coveredEvidenceIds": [
+          "cece450d-cd6f-4a3f-8c7f-437f21f5b0ed"
+        ],
+        "entries": [
+          {
+            "obligationId": "legacy.test.902b21a9cd520f8a",
+            "status": "covered",
+            "evidenceIds": [
+              "cece450d-cd6f-4a3f-8c7f-437f21f5b0ed"
+            ],
+            "reasonCodes": [
+              "ALL_REQUIRED_OBLIGATIONS_COVERED"
+            ]
+          }
+        ],
+        "outcome": "SUFFICIENT",
+        "reasonCodes": [
+          "ALL_REQUIRED_OBLIGATIONS_COVERED"
+        ],
+        "metrics": {
+          "totalRequired": 1,
+          "alreadyCovered": 1,
+          "executed": 1,
+          "skippedValid": 0,
+          "staleReruns": 0,
+          "duplicateObservations": 0,
+          "partialCoverageCount": 0,
+          "restartReuseCount": 0,
+          "avoidedVerifierCalls": 0,
+          "avoidedToolCalls": 0,
+          "invalidationReasons": []
+        },
+        "createdAt": "2026-09-27T15:31:40.701Z"
+      }
+    }
+  ],
+  "treeEquality": {
+    "verifiedTree": "f439e6debce5516997b3b44bac76717d89589b40",
+    "integratedTree": "f439e6debce5516997b3b44bac76717d89589b40",
+    "worktreeHead": "da6b1c927d03e9831c5d871b17684815aef3b27f",
+    "equal": true
+  },
+  "baseRevision": "6ce361feb5ed585bf307fff651f2c44bba29b2c4",
+  "finalRevision": "da6b1c927d03e9831c5d871b17684815aef3b27f",
+  "finalMathContents": "export function multiply(a, b) { return a * b; }\r\n\r\nexport function add(a, b) { return a + b; }\r\n",
+  "finalFormatContents": "export function format(value) { return `result: ${value}`; }\r\n",
+  "postIntegrationProbe": {
+    "ok": true,
+    "output": "✔ format (1.4792ms)\n✔ multiply (1.1169ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 358.1194\n"
+  },
+  "servedModels": [
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "freeStatus": "verified_free",
+      "isFree": true,
+      "paidFallbackPossible": false
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "freeStatus": "verified_free",
+      "isFree": true,
+      "paidFallbackPossible": false
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "freeStatus": "verified_free",
+      "isFree": true,
+      "paidFallbackPossible": false
+    }
+  ],
+  "allServedRoutesForgeAutoEligible": true,
+  "paidSpendUsd": 0,
+  "paidBoundary": "8-Bit managed free only: no Paid Auto route, no BYOK route, no paid receipts possible — every served route is asserted ForgeAuto-eligible with verified_free status.",
+  "credentialsUsed": [
+    "GROQ_API_KEY (present)",
+    "MISTRAL_API_KEY (present)",
+    "OPENROUTER_API_KEY (present)"
+  ]
+}

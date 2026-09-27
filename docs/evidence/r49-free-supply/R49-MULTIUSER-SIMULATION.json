@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "round": "R49",
-  "generatedAt": "2026-09-27T14:38:32.011Z",
+  "generatedAt": "2026-09-27T15:37:17.141Z",
   "provenance": "simulated; production CapacityReservationLedger cross-validated against independent synthetic counters",
   "paidSpendUsd": 0,
   "scenarios": {

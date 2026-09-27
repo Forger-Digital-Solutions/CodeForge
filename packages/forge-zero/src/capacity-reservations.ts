@@ -151,11 +151,12 @@ export class CapacityReservationLedger {
       const concurrencyWindows = windows.filter((window) => window.unit === "concurrency");
       const creditWindows = windows.filter((window) => window.unit === "credits");
       const providerUnitWindows = windows.filter((window) => window.unit === "provider_units");
-      // A credit or provider-units window is the authoritative accounting dimension for
-      // user-connected Free pools and metered pools (e.g. Workers AI neurons); absent
-      // token/request headers should not turn an otherwise admitted reservation into a
-      // false denial on a dimension the provider does not meter.
-      const hasUnitAccounting = creditWindows.length > 0 || providerUnitWindows.length > 0;
+      // A credit, provider-units, or observed request window proves the provider meters the
+      // account; absent dimensions are then unmetered rather than zero (OpenRouter :free
+      // publishes request counts only — treating its missing token windows as zero capacity
+      // would deny a metered route forever). A route with no windows at all stays unmeasured
+      // and is still denied.
+      const hasUnitAccounting = creditWindows.length > 0 || providerUnitWindows.length > 0 || requestWindow?.authoritative === true;
       const inputRemaining = inputWindows.length === 0
         ? (hasUnitAccounting ? Number.MAX_SAFE_INTEGER : 0)
         : Math.min(...inputWindows.map((window) => window.remaining));
