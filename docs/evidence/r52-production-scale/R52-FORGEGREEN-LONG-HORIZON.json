@@ -1,0 +1,467 @@
+{
+  "schemaVersion": 1,
+  "round": "R52",
+  "generatedAt": "2026-09-28T00:03:54.459Z",
+  "simulatedWindow": {
+    "decisions": 4796,
+    "ticks": 3000,
+    "tickMs": 30000,
+    "users": 41,
+    "seed": "0x52cc52"
+  },
+  "purpose": "Production-shaped long-horizon proof that the fabric turns churning free supply into reliable fair admission — no false parking, no unmeasured admission, bounded probes, no leaked leases.",
+  "invariants": [
+    "I1: falseParking == 0 whenever oracle says a measured healthy route can serve",
+    "I2: unmeasured windows never admit",
+    "I3: QUEUED requires measured denial evidence — unmeasured-only never waits",
+    "I4: post-measure re-decide is honest",
+    "I5: ≤4 probes per denied decide pass",
+    "I6: capacity churn never mutates qualityScore; quality demotion only via quality channel",
+    "I7: per-user concurrency cap binds; zero leaked leases at horizon end",
+    "I8: retired routes exit, discovered routes enter — no restart"
+  ],
+  "stats": {
+    "decisions": 4796,
+    "admitted": 4685,
+    "queuedMeasured": 51,
+    "unmeasuredDenials": 12,
+    "denials": 60,
+    "probes": 21,
+    "failovers": 0,
+    "oracleServableDenied": 0,
+    "violations": [],
+    "byProvider": {
+      "cerebras": 395,
+      "groq": 899,
+      "mistral": 2674,
+      "openrouter": 717
+    },
+    "byRole": {
+      "PRIMARY_CODING_AGENT": 1567,
+      "SUBAGENT": 1554,
+      "REVIEWER": 1564
+    },
+    "byOutcome": {
+      "DENIED_NO_SUPPLY": 60,
+      "ADMITTED": 4685,
+      "QUEUED_FOR_CAPACITY": 51
+    },
+    "userAdmissions": {
+      "heavy-user": 72,
+      "user-30": 107,
+      "user-28": 123,
+      "user-18": 125,
+      "user-14": 118,
+      "user-15": 110,
+      "user-37": 122,
+      "user-17": 136,
+      "user-16": 107,
+      "user-35": 103,
+      "user-12": 115,
+      "user-3": 124,
+      "user-22": 127,
+      "user-39": 120,
+      "user-27": 116,
+      "user-2": 101,
+      "user-21": 115,
+      "user-10": 124,
+      "user-1": 104,
+      "user-24": 91,
+      "user-0": 107,
+      "user-4": 109,
+      "user-6": 130,
+      "user-32": 119,
+      "user-31": 123,
+      "user-33": 108,
+      "user-34": 108,
+      "user-19": 116,
+      "user-38": 118,
+      "user-11": 113,
+      "user-23": 101,
+      "user-20": 103,
+      "user-36": 117,
+      "user-25": 130,
+      "user-9": 104,
+      "user-5": 135,
+      "user-13": 123,
+      "user-26": 115,
+      "user-8": 125,
+      "user-29": 116,
+      "user-7": 105
+    },
+    "userQueued": {
+      "heavy-user": 6,
+      "user-32": 2,
+      "user-10": 2,
+      "user-24": 1,
+      "user-12": 4,
+      "user-33": 3,
+      "user-27": 1,
+      "user-34": 2,
+      "user-3": 1,
+      "user-0": 1,
+      "user-4": 1,
+      "user-8": 2,
+      "user-31": 1,
+      "user-11": 1,
+      "user-14": 1,
+      "user-39": 1,
+      "user-13": 1,
+      "user-17": 2,
+      "user-29": 2,
+      "user-36": 2,
+      "user-38": 1,
+      "user-23": 1,
+      "user-30": 1,
+      "user-26": 1,
+      "user-1": 2,
+      "user-18": 1,
+      "user-28": 1,
+      "user-19": 1,
+      "user-7": 2,
+      "user-15": 1,
+      "user-6": 1,
+      "user-16": 1
+    },
+    "calmDecisions": 1116,
+    "calmAdmitted": 1116,
+    "events": {
+      "outages": 139,
+      "recoveries": 76,
+      "arrivals": 133,
+      "removals": 129,
+      "quotaChanges": 144,
+      "qualityDemotions": 128,
+      "expiries": 0,
+      "bursts": 1456
+    },
+    "denialSamples": [
+      {
+        "tick": 0,
+        "userId": "heavy-user",
+        "role": "PRIMARY_CODING_AGENT",
+        "candidates": [
+          "r3:POLICY_EXCLUDED:UNHEALTHY",
+          "r4:CAPACITY_UNMEASURED:PROVIDER_QUOTA_UNMEASURED+CAPACITY_UNMEASURED",
+          "r1:CAPACITY_UNMEASURED:PROVIDER_QUOTA_UNMEASURED+CAPACITY_UNMEASURED",
+          "r2:CAPACITY_UNMEASURED:PROVIDER_QUOTA_UNMEASURED+CAPACITY_UNMEASURED",
+          "r5:CAPACITY_UNMEASURED:PROVIDER_QUOTA_UNMEASURED+CAPACITY_UNMEASURED",
+          "r6:CAPACITY_UNMEASURED:PROVIDER_QUOTA_UNMEASURED+CAPACITY_UNMEASURED"
+        ],
+        "reasonCodes": [
+          "CAPACITY_UNMEASURED",
+          "NO_ELIGIBLE_ROUTE"
+        ]
+      },
+      {
+        "tick": 118,
+        "userId": "user-31",
+        "role": "SUBAGENT",
+        "candidates": [
+          "r1:POLICY_EXCLUDED:UNHEALTHY",
+          "r2:POLICY_EXCLUDED:UNHEALTHY",
+          "r3:POLICY_EXCLUDED:UNHEALTHY",
+          "r5:POLICY_EXCLUDED:UNHEALTHY",
+          "r6:POLICY_EXCLUDED:UNHEALTHY",
+          "r10:POLICY_EXCLUDED:UNHEALTHY",
+          "r11:POLICY_EXCLUDED:UNHEALTHY",
+          "r12:POLICY_EXCLUDED:UNHEALTHY",
+          "r13:POLICY_EXCLUDED:UNHEALTHY",
+          "r15:POLICY_EXCLUDED:UNHEALTHY"
+        ],
+        "reasonCodes": [
+          "NO_ELIGIBLE_ROUTE"
+        ]
+      },
+      {
+        "tick": 119,
+        "userId": "user-29",
+        "role": "REVIEWER",
+        "candidates": [
+          "r1:POLICY_EXCLUDED:UNHEALTHY",
+          "r2:POLICY_EXCLUDED:UNHEALTHY",
+          "r3:POLICY_EXCLUDED:UNHEALTHY",
+          "r5:POLICY_EXCLUDED:UNHEALTHY",
+          "r6:POLICY_EXCLUDED:UNHEALTHY",
+          "r10:POLICY_EXCLUDED:UNHEALTHY",
+          "r11:POLICY_EXCLUDED:UNHEALTHY",
+          "r12:POLICY_EXCLUDED:UNHEALTHY",
+          "r13:POLICY_EXCLUDED:UNHEALTHY",
+          "r15:POLICY_EXCLUDED:UNHEALTHY"
+        ],
+        "reasonCodes": [
+          "NO_ELIGIBLE_ROUTE"
+        ]
+      },
+      {
+        "tick": 120,
+        "userId": "user-23",
+        "role": "PRIMARY_CODING_AGENT",
+        "candidates": [
+          "r1:POLICY_EXCLUDED:UNHEALTHY",
+          "r2:POLICY_EXCLUDED:UNHEALTHY",
+          "r3:POLICY_EXCLUDED:UNHEALTHY",
+          "r5:POLICY_EXCLUDED:UNHEALTHY",
+          "r6:POLICY_EXCLUDED:UNHEALTHY",
+          "r10:POLICY_EXCLUDED:UNHEALTHY",
+          "r11:POLICY_EXCLUDED:UNHEALTHY",
+          "r12:POLICY_EXCLUDED:UNHEALTHY",
+          "r13:POLICY_EXCLUDED:UNHEALTHY",
+          "r15:POLICY_EXCLUDED:UNHEALTHY"
+        ],
+        "reasonCodes": [
+          "NO_ELIGIBLE_ROUTE"
+        ]
+      },
+      {
+        "tick": 120,
+        "userId": "user-12",
+        "role": "SUBAGENT",
+        "candidates": [
+          "r1:POLICY_EXCLUDED:UNHEALTHY",
+          "r2:POLICY_EXCLUDED:UNHEALTHY",
+          "r3:POLICY_EXCLUDED:UNHEALTHY",
+          "r5:POLICY_EXCLUDED:UNHEALTHY",
+          "r6:POLICY_EXCLUDED:UNHEALTHY",
+          "r10:POLICY_EXCLUDED:UNHEALTHY",
+          "r11:POLICY_EXCLUDED:UNHEALTHY",
+          "r12:POLICY_EXCLUDED:UNHEALTHY",
+          "r13:POLICY_EXCLUDED:UNHEALTHY",
+          "r15:POLICY_EXCLUDED:UNHEALTHY"
+        ],
+        "reasonCodes": [
+          "NO_ELIGIBLE_ROUTE"
+        ]
+      },
+      {
+        "tick": 121,
+        "userId": "user-3",
+        "role": "SUBAGENT",
+        "candidates": [
+          "r1:POLICY_EXCLUDED:UNHEALTHY",
+          "r2:POLICY_EXCLUDED:UNHEALTHY",
+          "r3:POLICY_EXCLUDED:UNHEALTHY",
+          "r5:POLICY_EXCLUDED:UNHEALTHY",
+          "r6:POLICY_EXCLUDED:UNHEALTHY",
+          "r10:POLICY_EXCLUDED:UNHEALTHY",
+          "r11:POLICY_EXCLUDED:UNHEALTHY",
+          "r12:POLICY_EXCLUDED:UNHEALTHY",
+          "r13:POLICY_EXCLUDED:UNHEALTHY",
+          "r15:POLICY_EXCLUDED:UNHEALTHY"
+        ],
+        "reasonCodes": [
+          "NO_ELIGIBLE_ROUTE"
+        ]
+      }
+    ],
+    "violationsTotal": 0
+  },
+  "probeLogLength": 21,
+  "userAdmissionFloor": 72,
+  "userAdmissionCeiling": 136,
+  "starvationUsers": 0,
+  "finalActiveReservations": 0,
+  "traceCheckpoints": [
+    {
+      "tick": 0,
+      "active": 3,
+      "admitted": 3,
+      "queued": 3,
+      "denials": 1,
+      "probes": 4,
+      "violations": 0,
+      "fleet": "r1:ok,r2:ok,r3:out,r4:ok,r5:ok,r6:unm"
+    },
+    {
+      "tick": 150,
+      "active": 2,
+      "admitted": 240,
+      "queued": 7,
+      "denials": 7,
+      "probes": 4,
+      "violations": 0,
+      "fleet": "r1:out,r2:dead,r3:ok,r4:dead,r5:out,r6:ok,r7:dead,r8:dead,r9:dead,r10:out,r11:exh,r12:ok,r13:unm,r14:dead,r15:dead,r16:unm,r17:unm"
+    },
+    {
+      "tick": 300,
+      "active": 1,
+      "admitted": 476,
+      "queued": 7,
+      "denials": 8,
+      "probes": 6,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:ok,r11:dead,r12:exh,r13:dead,r14:dead,r15:dead,r16:dead,r17:ok,r18:dead,r19:ok,r20:dead,r21:unm,r22:dead,r23:dead,r24:exh,r25:unm,r26:ok,r27:out,r28:ok,r29:ok,r30:ok"
+    },
+    {
+      "tick": 450,
+      "active": 1,
+      "admitted": 715,
+      "queued": 10,
+      "denials": 8,
+      "probes": 6,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:ok,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:ok,r22:dead,r23:dead,r24:dead,r25:ok,r26:dead,r27:ok,r28:dead,r29:dead,r30:ok,r31:ok,r32:dead,r33:dead,r34:ok,r35:ok,r36:ok,r37:ok,r38:unm"
+    },
+    {
+      "tick": 600,
+      "active": 1,
+      "admitted": 959,
+      "queued": 10,
+      "denials": 8,
+      "probes": 6,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:out,r32:dead,r33:dead,r34:out,r35:dead,r36:ok,r37:out,r38:out,r39:dead,r40:out,r41:out,r42:out,r43:dead,r44:exh,r45:out,r46:out,r47:out"
+    },
+    {
+      "tick": 750,
+      "active": 2,
+      "admitted": 1191,
+      "queued": 16,
+      "denials": 8,
+      "probes": 6,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:out,r35:dead,r36:unm,r37:ok,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:out,r46:dead,r47:dead,r48:out,r49:dead,r50:unm,r51:unm,r52:ok,r53:unm"
+    },
+    {
+      "tick": 900,
+      "active": 1,
+      "admitted": 1434,
+      "queued": 16,
+      "denials": 8,
+      "probes": 6,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:unm,r35:dead,r36:out,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:ok,r46:dead,r47:dead,r48:ok,r49:dead,r50:exh,r51:dead,r52:dead,r53:dead,r54:unm,r55:dead,r56:dead,r57:ok,r58:ok,r59:out,r60:exh,r61:dead,r62:unm"
+    },
+    {
+      "tick": 1050,
+      "active": 1,
+      "admitted": 1673,
+      "queued": 16,
+      "denials": 8,
+      "probes": 6,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:out,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:out,r46:dead,r47:dead,r48:out,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:ok,r58:ok,r59:dead,r60:exh,r61:dead,r62:dead,r63:dead,r64:out,r65:dead,r66:dead,r67:out,r68:out,r69:unm,r70:ok"
+    },
+    {
+      "tick": 1200,
+      "active": 2,
+      "admitted": 1903,
+      "queued": 26,
+      "denials": 9,
+      "probes": 8,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:dead,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:dead,r46:dead,r47:dead,r48:dead,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:dead,r58:out,r59:dead,r60:dead,r61:dead,r62:dead,r63:dead,r64:dead,r65:dead,r66:dead,r67:dead,r68:out,r69:dead,r70:dead,r71:exh,r72:dead,r73:ok,r74:dead,r75:out,r76:ok,r77:exh,r78:ok,r79:unm"
+    },
+    {
+      "tick": 1350,
+      "active": 0,
+      "admitted": 2125,
+      "queued": 26,
+      "denials": 18,
+      "probes": 8,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:dead,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:dead,r46:dead,r47:dead,r48:dead,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:dead,r58:dead,r59:dead,r60:dead,r61:dead,r62:dead,r63:dead,r64:dead,r65:dead,r66:dead,r67:dead,r68:out,r69:dead,r70:dead,r71:out,r72:dead,r73:dead,r74:dead,r75:dead,r76:dead,r77:out,r78:dead,r79:out,r80:dead,r81:out,r82:out,r83:dead,r84:dead,r85:out,r86:dead,r87:out,r88:out,r89:out,r90:out"
+    },
+    {
+      "tick": 1500,
+      "active": 1,
+      "admitted": 2360,
+      "queued": 26,
+      "denials": 26,
+      "probes": 11,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:dead,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:dead,r46:dead,r47:dead,r48:dead,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:dead,r58:dead,r59:dead,r60:dead,r61:dead,r62:dead,r63:dead,r64:dead,r65:dead,r66:dead,r67:dead,r68:out,r69:dead,r70:dead,r71:ok,r72:dead,r73:dead,r74:dead,r75:dead,r76:dead,r77:dead,r78:dead,r79:ok,r80:dead,r81:dead,r82:dead,r83:dead,r84:dead,r85:ok,r86:dead,r87:dead,r88:out,r89:out,r90:dead,r91:dead,r92:dead,r93:ok,r94:ok,r95:unm,r96:unm"
+    },
+    {
+      "tick": 1650,
+      "active": 2,
+      "admitted": 2597,
+      "queued": 26,
+      "denials": 26,
+      "probes": 11,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:dead,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:dead,r46:dead,r47:dead,r48:dead,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:dead,r58:dead,r59:dead,r60:dead,r61:dead,r62:dead,r63:dead,r64:dead,r65:dead,r66:dead,r67:dead,r68:out,r69:dead,r70:dead,r71:ok,r72:dead,r73:dead,r74:dead,r75:dead,r76:dead,r77:dead,r78:dead,r79:ok,r80:dead,r81:dead,r82:dead,r83:dead,r84:dead,r85:ok,r86:dead,r87:dead,r88:out,r89:out,r90:dead,r91:dead,r92:dead,r93:ok,r94:ok,r95:unm,r96:unm"
+    },
+    {
+      "tick": 1800,
+      "active": 2,
+      "admitted": 2835,
+      "queued": 26,
+      "denials": 26,
+      "probes": 11,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:dead,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:dead,r46:dead,r47:dead,r48:dead,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:dead,r58:dead,r59:dead,r60:dead,r61:dead,r62:dead,r63:dead,r64:dead,r65:dead,r66:dead,r67:dead,r68:out,r69:dead,r70:dead,r71:ok,r72:dead,r73:dead,r74:dead,r75:dead,r76:dead,r77:dead,r78:dead,r79:ok,r80:dead,r81:dead,r82:dead,r83:dead,r84:dead,r85:ok,r86:dead,r87:dead,r88:out,r89:out,r90:dead,r91:dead,r92:dead,r93:ok,r94:ok,r95:unm,r96:unm"
+    },
+    {
+      "tick": 1950,
+      "active": 1,
+      "admitted": 3064,
+      "queued": 26,
+      "denials": 26,
+      "probes": 11,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:dead,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:dead,r46:dead,r47:dead,r48:dead,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:dead,r58:dead,r59:dead,r60:dead,r61:dead,r62:dead,r63:dead,r64:dead,r65:dead,r66:dead,r67:dead,r68:out,r69:dead,r70:dead,r71:ok,r72:dead,r73:dead,r74:dead,r75:dead,r76:dead,r77:dead,r78:dead,r79:ok,r80:dead,r81:dead,r82:dead,r83:dead,r84:dead,r85:ok,r86:dead,r87:dead,r88:out,r89:out,r90:dead,r91:dead,r92:dead,r93:ok,r94:ok,r95:unm,r96:unm"
+    },
+    {
+      "tick": 2100,
+      "active": 2,
+      "admitted": 3313,
+      "queued": 26,
+      "denials": 26,
+      "probes": 11,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:dead,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:dead,r46:dead,r47:dead,r48:dead,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:dead,r58:dead,r59:dead,r60:dead,r61:dead,r62:dead,r63:dead,r64:dead,r65:dead,r66:dead,r67:dead,r68:out,r69:dead,r70:dead,r71:ok,r72:dead,r73:dead,r74:dead,r75:dead,r76:dead,r77:dead,r78:dead,r79:ok,r80:dead,r81:dead,r82:dead,r83:dead,r84:dead,r85:ok,r86:dead,r87:dead,r88:out,r89:out,r90:dead,r91:dead,r92:dead,r93:ok,r94:ok,r95:unm,r96:unm"
+    },
+    {
+      "tick": 2250,
+      "active": 2,
+      "admitted": 3556,
+      "queued": 26,
+      "denials": 26,
+      "probes": 11,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:dead,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:dead,r46:dead,r47:dead,r48:dead,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:dead,r58:dead,r59:dead,r60:dead,r61:dead,r62:dead,r63:dead,r64:dead,r65:dead,r66:dead,r67:dead,r68:dead,r69:dead,r70:dead,r71:exh,r72:dead,r73:dead,r74:dead,r75:dead,r76:dead,r77:dead,r78:dead,r79:exh,r80:dead,r81:dead,r82:dead,r83:dead,r84:dead,r85:dead,r86:dead,r87:dead,r88:dead,r89:ok,r90:dead,r91:dead,r92:dead,r93:dead,r94:ok,r95:ok,r96:ok,r97:dead,r98:unm,r99:ok,r100:unm"
+    },
+    {
+      "tick": 2400,
+      "active": 1,
+      "admitted": 3747,
+      "queued": 29,
+      "denials": 54,
+      "probes": 12,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:dead,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:dead,r46:dead,r47:dead,r48:dead,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:dead,r58:dead,r59:dead,r60:dead,r61:dead,r62:dead,r63:dead,r64:dead,r65:dead,r66:dead,r67:dead,r68:dead,r69:dead,r70:dead,r71:out,r72:dead,r73:dead,r74:dead,r75:dead,r76:dead,r77:dead,r78:dead,r79:ok,r80:dead,r81:dead,r82:dead,r83:dead,r84:dead,r85:dead,r86:dead,r87:dead,r88:dead,r89:dead,r90:dead,r91:dead,r92:dead,r93:dead,r94:out,r95:dead,r96:out,r97:dead,r98:dead,r99:ok,r100:ok,r101:out,r102:ok,r103:ok,r104:dead,r105:exh,r106:dead,r107:unm"
+    },
+    {
+      "tick": 2550,
+      "active": 2,
+      "admitted": 3991,
+      "queued": 29,
+      "denials": 54,
+      "probes": 12,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:dead,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:dead,r46:dead,r47:dead,r48:dead,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:dead,r58:dead,r59:dead,r60:dead,r61:dead,r62:dead,r63:dead,r64:dead,r65:dead,r66:dead,r67:dead,r68:dead,r69:dead,r70:dead,r71:dead,r72:dead,r73:dead,r74:dead,r75:dead,r76:dead,r77:dead,r78:dead,r79:dead,r80:dead,r81:dead,r82:dead,r83:dead,r84:dead,r85:dead,r86:dead,r87:dead,r88:dead,r89:dead,r90:dead,r91:dead,r92:dead,r93:dead,r94:dead,r95:dead,r96:unm,r97:dead,r98:dead,r99:exh,r100:dead,r101:dead,r102:dead,r103:ok,r104:dead,r105:dead,r106:dead,r107:out,r108:unm,r109:unm,r110:out,r111:ok,r112:dead,r113:out,r114:out,r115:unm,r116:unm"
+    },
+    {
+      "tick": 2700,
+      "active": 1,
+      "admitted": 4233,
+      "queued": 29,
+      "denials": 58,
+      "probes": 17,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:dead,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:dead,r46:dead,r47:dead,r48:dead,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:dead,r58:dead,r59:dead,r60:dead,r61:dead,r62:dead,r63:dead,r64:dead,r65:dead,r66:dead,r67:dead,r68:dead,r69:dead,r70:dead,r71:dead,r72:dead,r73:dead,r74:dead,r75:dead,r76:dead,r77:dead,r78:dead,r79:dead,r80:dead,r81:dead,r82:dead,r83:dead,r84:dead,r85:dead,r86:dead,r87:dead,r88:dead,r89:dead,r90:dead,r91:dead,r92:dead,r93:dead,r94:dead,r95:dead,r96:dead,r97:dead,r98:dead,r99:dead,r100:dead,r101:dead,r102:dead,r103:dead,r104:dead,r105:dead,r106:dead,r107:dead,r108:ok,r109:exh,r110:dead,r111:ok,r112:dead,r113:dead,r114:dead,r115:dead,r116:ok,r117:dead,r118:unm,r119:out,r120:out,r121:out,r122:out"
+    },
+    {
+      "tick": 2850,
+      "active": 1,
+      "admitted": 4479,
+      "queued": 29,
+      "denials": 59,
+      "probes": 18,
+      "violations": 0,
+      "fleet": "r1:dead,r2:dead,r3:dead,r4:dead,r5:dead,r6:dead,r7:dead,r8:dead,r9:dead,r10:dead,r11:dead,r12:dead,r13:dead,r14:dead,r15:dead,r16:dead,r17:dead,r18:dead,r19:dead,r20:dead,r21:dead,r22:dead,r23:dead,r24:dead,r25:dead,r26:dead,r27:dead,r28:dead,r29:dead,r30:dead,r31:dead,r32:dead,r33:dead,r34:dead,r35:dead,r36:dead,r37:dead,r38:dead,r39:dead,r40:dead,r41:dead,r42:dead,r43:dead,r44:dead,r45:dead,r46:dead,r47:dead,r48:dead,r49:dead,r50:dead,r51:dead,r52:dead,r53:dead,r54:dead,r55:dead,r56:dead,r57:dead,r58:dead,r59:dead,r60:dead,r61:dead,r62:dead,r63:dead,r64:dead,r65:dead,r66:dead,r67:dead,r68:dead,r69:dead,r70:dead,r71:dead,r72:dead,r73:dead,r74:dead,r75:dead,r76:dead,r77:dead,r78:dead,r79:dead,r80:dead,r81:dead,r82:dead,r83:dead,r84:dead,r85:dead,r86:dead,r87:dead,r88:dead,r89:dead,r90:dead,r91:dead,r92:dead,r93:dead,r94:dead,r95:dead,r96:dead,r97:dead,r98:dead,r99:dead,r100:dead,r101:dead,r102:dead,r103:dead,r104:dead,r105:dead,r106:dead,r107:dead,r108:dead,r109:dead,r110:dead,r111:dead,r112:dead,r113:dead,r114:dead,r115:dead,r116:out,r117:dead,r118:out,r119:out,r120:dead,r121:dead,r122:out,r123:dead,r124:ok,r125:out,r126:out,r127:out,r128:ok,r129:unm,r130:dead,r131:ok,r132:out"
+    }
+  ],
+  "verdict": "ALL_INVARIANTS_HELD"
+}

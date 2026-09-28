@@ -1,6 +1,6 @@
 {
   "sourceStateId": "f24481030f350a69de885b9b73f8394adb50b4c23bfc47067a3754c5be2fce19",
-  "surfaceVersion": "r51-capacity-closure-v1",
+  "surfaceVersion": "r52-production-scale-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -1838,17 +1838,38 @@
       "regressionEvidence": "docs/evidence/r51-capacity-closure/R51-FINAL-REPORT.md; three live $0 missions completed through the production stack (unmeasured 112-domain fleet recovered via demand probes; healthy run on independent pools; reviewer-scarcity failover onto the surviving route) — all ForgeAuto-eligible, verified tree == integrated tree; seeded long-horizon simulation 241 decides / 0 invariant violations; forge-zero 152, model-registry 138 (6 new probe tests), eight-bit 332/2sk, server 896/3sk with the same 2 documented baseline failures (agent-certification-r, fg3-model-aware-budget, failing since d4769e8); full monorepo build clean; Cloudflare Workers AI analytics scope re-checked — still unauthorized, neuron guard correctly stays fail-closed",
       "recertifiedAt": "2026-09-27",
       "sourceStateConstant": "CODEFORGE_R51_CAPACITY_CLOSURE_SOURCE_STATE"
+    },
+    {
+      "label": "R52 production-scale closure: honest inventory, storm-controlled measurement, no false waiting",
+      "reason": "Recertify the reviewed R52 changes: capacity measurement is storm-controlled (in-flight coalescing + domain cooldown + bounded per-decision probes), unreached unmeasured candidates report CAPACITY_UNMEASURED truthfully rather than STANDBY, and health-excluded reports carry pool identity. Live inventory proves three verified usable free domains (groq, mistral, openrouter — 18 independent pools); Cloudflare Workers AI stays fail-closed on blocked telemetry; stale qualification receipts reopen measurement instead of quarantining; restart re-measures quota on demand. Completion gate, paid/free isolation, reviewer independence semantics, and fairness are unchanged.",
+      "priorSourceStateId": "f24481030f350a69de885b9b73f8394adb50b4c23bfc47067a3754c5be2fce19",
+      "priorSurfaceVersion": "r51-capacity-closure-v1",
+      "resultingSourceStateId": "f24481030f350a69de885b9b73f8394adb50b4c23bfc47067a3754c5be2fce19",
+      "resultingSurfaceVersion": "r52-production-scale-v1",
+      "changes": [
+        {
+          "file": "packages/model-registry/src/free-cloud-service.ts",
+          "change": "R52: probe storm control — in-flight coalescing map for probeRouteCapacity so N concurrent demands on the same unmeasured quota domain measure it once, never N times; the entry is removed on completion including failure paths, so a failed probe can never poison the domain. Existing 60s per-domain cooldown and the runtime's ≤4-candidates-per-decision bound are unchanged.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/eight-bit/src/free-fabric.ts",
+          "change": "R52: capacity observability truth — unreached candidates whose effective quota windows are empty now report CAPACITY_UNMEASURED instead of generic STANDBY, mirroring the reservation ledger's pool-wins rule and keeping measureUnmeasuredFreeCapacity honest about which domains were never measured; HEALTH_EXCLUDED reports now carry capacityPoolId like every other candidate report. Admission semantics, quota windows, fairness, and paid/free isolation unchanged.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r52-production-scale/R52-FINAL-REPORT.md; live inventory 64 models / 244 routes / 142 pools / 3 verified usable free domains; five live $0 missions through the production stack — 4 completed (unmeasured-demand-recovery, provider-outage absorbed at admission, reviewer-scarcity demand-probe recovery, multi-step with two real mid-run failovers and 4/4 post-integration tests) and 1 honest block (reviewer turn-budget exhaustion on nemotron — gate refused completion); seeded long-horizon simulation 4,796 decisions / 41 users / 0 invariant violations / 0 starvation / 0 leaked leases; model-registry 145, eight-bit 347/2sk (8 no-false-waiting scenarios + 7 multi-user fairness), server 902/3sk with the two R51 baseline failures now fixed (stale fixtures, not relaxed gates), paid-auto 71, cloud-billing 3, full monorepo build clean; Cloudflare Workers AI re-probed on the exact production analytics queries — still unauthorized on the env token, guard correctly stays fail-closed",
+      "recertifiedAt": "2026-09-28",
+      "sourceStateConstant": "CODEFORGE_R52_PRODUCTION_SCALE_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-27T22:48:28.770Z",
+  "recertifiedAt": "2026-09-28T00:32:34.556Z",
   "recertification": {
-    "phase": "R51 free-capacity closure: unmeasured supply is measured, not parked",
-    "reason": "Recertify the reviewed R51 changes: unmeasured quota domains are now denied as CAPACITY_UNMEASURED (unverifiable, never exhausted, never parked) instead of a self-sealing permanent capacity wait; demand-driven measurement via probeRouteCapacity runs at every non-admitted decision point — initial admission, capacity-wait re-evaluation, and mid-turn failover — bounded once per path under the same reservation identity; measured exhaustion still queues with real provider resets; ForgeZero free-route eligibility, paid/free isolation, qualification floors, reviewer independence, and completion-gate authority are unchanged.",
-    "changedFiles": [
-      "packages/server/src/agent-runtime.ts"
-    ],
-    "priorSourceStateId": "cd2dbd78320bcce5ede07f9f56f5f79c24d77afcacc2eebf71b57f5aa8ad0fd3",
+    "phase": "R52 production-scale closure: honest inventory, storm-controlled measurement, no false waiting",
+    "reason": "Recertify the reviewed R52 changes: capacity measurement is storm-controlled (in-flight coalescing + domain cooldown + bounded per-decision probes), unreached unmeasured candidates report CAPACITY_UNMEASURED truthfully rather than STANDBY, and health-excluded reports carry pool identity. Live inventory proves three verified usable free domains (groq, mistral, openrouter — 18 independent pools); Cloudflare Workers AI stays fail-closed on blocked telemetry; stale qualification receipts reopen measurement instead of quarantining; restart re-measures quota on demand. Completion gate, paid/free isolation, reviewer independence semantics, and fairness are unchanged.",
+    "changedFiles": [],
+    "priorSourceStateId": "f24481030f350a69de885b9b73f8394adb50b4c23bfc47067a3754c5be2fce19",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
