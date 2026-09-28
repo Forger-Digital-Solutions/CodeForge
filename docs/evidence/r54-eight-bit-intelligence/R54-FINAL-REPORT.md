@@ -257,3 +257,23 @@ The historical statement above applied before the three live closure receipts in
 - Material audit before recertification: 39 files checked against `r53-role-intelligence-v1`; exact drift was only `packages/server/src/agent-runtime.ts` and `packages/server/src/autonomous-orchestrator.ts`. The unrelated R34 benchmark artifact remained modified and unstaged.
 
 R54 recertification uses the repository-authoritative `benchmarks/r54/recertify-source-state.mjs` identity `r54-eight-bit-intelligence-v1`. The final post-certification root regression, source-state ID, commit hashes, and remaining limitations are recorded in the certification continuation below.
+
+## Certification continuation and final verdict
+
+`CODEFORGE_R54_CLOSED`
+
+- Branch: `codex/r29-release-closure`. The live closure/report/handoff commit is `3201e95`; the separate guarded certification commit is `60841e5`.
+- Certification: `r54-eight-bit-intelligence-v1`; source-state ID `998609d11f148822ae0d7dbd811ded7a7b27017965d1450cc15c07548f919706`.
+- Certified material surface: 39/39 hashes match, zero mismatches. The exact R53-to-R54 material change set is `packages/server/src/agent-runtime.ts` and `packages/server/src/autonomous-orchestrator.ts`.
+- Post-certification provenance rerun: `fg11-source-state.test.ts` and `fg12e-harness-provenance.test.ts`, 2/2 files and 8/8 tests passed.
+- Final root Vitest regression: 494 files passed, 8 skipped; 4,111 tests passed, 48 skipped, 0 failed. The two pre-certification source-state failures disappeared after guarded recertification, with no other failures.
+- Full monorepo build and server typecheck passed. ForgeVerify false completion count: 0.
+- Working tree: only the preserved unrelated R34 context-efficiency benchmark artifact remains modified after the certification and report commits.
+
+### Remaining limitations
+
+The alternate semantic proof used a controlled A failure after real A inference; it is labeled as such and does not claim a naturally occurring A failure. B's real pass was consumed by ForgeVerify, which blocked that particular fixture on a real fractional-cent test failure. Free provider 429/503 and role-quality variability remain operational constraints, not reasons to weaken routing or verification. Mistral consent in these receipts applied only to generated synthetic fixtures. R55 roster, Lead, paid-family rotation, user-owned source, and Shilling requirements are recorded in `R55-ARCHITECTURE-HANDOFF.md` and remain unimplemented.
+
+### Continuation commits
+
+The starting R54 chain is `b108aa9d`, `f5fdb164`, `cd6a9196`, `ef93b138`, `354091f4`, `90907e68`, `26d05a49`, and `7c92a86e`. This continuation added `3201e95` (live closure evidence, controlled semantic harness, R55 handoff, and stale benchmark expectation) and `60841e5` (guarded R54 source-state certification). The final report-only commit follows these.
