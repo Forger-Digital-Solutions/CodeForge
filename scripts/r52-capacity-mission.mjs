@@ -63,10 +63,12 @@ const option = (name, fallback) => {
 const scenario = option("scenario", "unmeasured");
 const out = option("out", `docs/evidence/r52-production-scale/R52-LIVE-MISSION-${scenario.toUpperCase()}.json`);
 const keep = args.includes("--keep");
+const syntheticConsent = args.includes("--synthetic-consent");
 const qualDbPath = option("qual-db", join(tmpdir(), "r46-qualification.db"));
 const timeoutMs = Number(option("timeout-ms", "600000"));
 const allowanceProbes = Number(option("allowance-probes", scenario === "unmeasured" ? "0" : "8"));
 const roleEvidenceFrom = option("role-evidence-from", "");
+const capacityEvidenceFrom = option("capacity-evidence-from", "");
 const complexityHint = option("complexity-hint", "");
 const evidenceRound = option("round", scenario === "feature" || scenario === "refactor" ? "R53" : "R52");
 
@@ -125,27 +127,93 @@ async function main() {
 
   let replayedRoleEvidence = null;
   if (roleEvidenceFrom) {
-    const prior = JSON.parse(await readFile(resolve(roleEvidenceFrom), "utf-8"));
-    const coder = prior.roleReport?.find((item) => item.role === "coder" && item.provider && item.model);
-    const workspaceEscape = prior.runSummary?.includes("TOOL_WORKSPACE_ESCAPE");
-    const nonConvergence = prior.runSummary?.includes("AGENT_MODEL_TURN_LIMIT") && coder?.outcome === "converged_failed";
-    if (prior.runStatus !== "blocked" || !coder || (!workspaceEscape && !nonConvergence)) {
-      throw new Error("Role-evidence replay requires a blocked mission with a witnessed Coder workspace escape or model-turn exhaustion.");
+    replayedRoleEvidence = [];
+    for (const source of roleEvidenceFrom.split(",").filter(Boolean)) {
+      const prior = JSON.parse(await readFile(resolve(source), "utf-8"));
+      const coders = (prior.roleReport ?? []).filter((item) =>
+        item.role === "coder"
+        && item.provider
+        && item.model
+        && item.outcome === "converged_failed"
+        && /(?:budget_exhausted|no_progress_detected|tool_loop_detected)/.test(item.recoveryDetail ?? "")
+      );
+      if (prior.runStatus !== "blocked" || coders.length === 0) {
+        throw new Error("Role-evidence replay requires a blocked mission with a witnessed Coder non-convergence.");
+      }
+      for (const coder of coders) {
+        routeHealth.observe({
+          kind: "role_outcome",
+          providerId: coder.provider,
+          modelId: coder.model,
+          role: "CODER",
+          outcome: "budget_exhausted",
+          failureClass: "NON_CONVERGENCE",
+          source: "runtime",
+          observedAt: new Date().toISOString(),
+          correlationId: `replay:${prior.baseRevision}:${prior.scenario}:${coder.model}`,
+        });
+        replayedRoleEvidence.push({
+          source,
+          providerId: coder.provider,
+          modelId: coder.model,
+          role: "CODER",
+          outcome: "budget_exhausted",
+          failureClass: "NON_CONVERGENCE",
+        });
+      }
     }
-    const outcome = workspaceEscape ? "security_blocked" : "budget_exhausted";
-    const failureClass = workspaceEscape ? "WORKSPACE_ESCAPE_ATTEMPT" : "NON_CONVERGENCE";
-    routeHealth.observe({
-      kind: "role_outcome",
-      providerId: coder.provider,
-      modelId: coder.model,
-      role: "CODER",
-      outcome,
-      failureClass,
-      source: "runtime",
-      observedAt: new Date().toISOString(),
-      correlationId: `replay:${prior.baseRevision}:${prior.scenario}`,
-    });
-    replayedRoleEvidence = { source: roleEvidenceFrom, providerId: coder.provider, modelId: coder.model, role: "CODER", outcome, failureClass };
+  }
+  let replayedCapacityEvidence = [];
+  if (capacityEvidenceFrom) {
+    for (const source of capacityEvidenceFrom.split(",").filter(Boolean)) {
+      const prior = JSON.parse(await readFile(resolve(source), "utf-8"));
+      const witnessed = new Map();
+      for (const row of prior.rows ?? []) {
+        if (row.providerId && row.modelId && Object.values(row.receipt?.roleResults ?? {}).some((role) =>
+          (role.cases ?? []).some((testCase) => testCase.errorKind === "RATE_LIMITED")
+        )) {
+          witnessed.set(`${row.providerId}/${row.modelId}`, { providerId: row.providerId, modelId: row.modelId, reason: "RATE_LIMITED" });
+        }
+      }
+      for (const report of prior.roleReport ?? []) {
+        for (const failover of report.failovers ?? []) {
+          if (failover.reason !== "RATE_LIMITED" && failover.reason !== "TEMPORARY_CAPACITY") continue;
+          const separator = failover.from.indexOf("/");
+          if (separator < 1) continue;
+          const providerId = failover.from.slice(0, separator);
+          const modelId = failover.from.slice(separator + 1);
+          witnessed.set(`${providerId}/${modelId}`, { providerId, modelId, reason: failover.reason });
+        }
+      }
+      for (const worker of prior.workers ?? []) {
+        if (!worker.model?.providerId || !worker.model?.modelId) continue;
+        const reason = /RATE_LIMITED|429/.test(worker.resultSummary ?? "")
+          ? "RATE_LIMITED"
+          : /PROVIDER_UNAVAILABLE|503|overload/i.test(worker.resultSummary ?? "")
+            ? "TEMPORARY_CAPACITY"
+            : null;
+        if (reason) witnessed.set(`${worker.model.providerId}/${worker.model.modelId}`, {
+          providerId: worker.model.providerId,
+          modelId: worker.model.modelId,
+          reason,
+        });
+      }
+      if (witnessed.size === 0) {
+        throw new Error(`Capacity-evidence replay found no witnessed provider capacity failure in ${source}.`);
+      }
+      for (const item of witnessed.values()) {
+        routeHealth.observe({
+          kind: "call_failure",
+          providerId: item.providerId,
+          modelId: item.modelId,
+          reason: item.reason,
+          observedAt: new Date().toISOString(),
+          source: "runtime",
+          correlationId: `capacity-replay:${prior.generatedAt}:${item.modelId}`,
+        });
+        replayedCapacityEvidence.push({ source, ...item });
+      }
+    }
   }
 
   const routes = freeCloud.capacityRoutes().filter((route) => route.capacityPoolScope !== "PER_USER_POOL");
@@ -196,7 +264,11 @@ async function main() {
   });
   const fabricContext = ({ userId }) => {
     const uid = userId ?? "r52-live-operator";
-    return { userId: uid, userIdentities: freeCloud.capacityIdentitiesFor(uid) };
+    return {
+      userId: uid,
+      userIdentities: freeCloud.capacityIdentitiesFor(uid),
+      ...(syntheticConsent ? { dataContext: { dataClass: "SYNTHETIC", userConsented: true } } : {}),
+    };
   };
 
   // ---- R52 scenario seeding ------------------------------------------------
@@ -581,9 +653,11 @@ async function main() {
             : "R52 healthy mission: bootstrap probes measure supply normally; the mission completes through the standard fabric.",
     providersPresent: present,
     allowanceProbeBudget: allowanceProbes,
+    dataContext: syntheticConsent ? { dataClass: "SYNTHETIC", userConsented: true } : { dataClass: "PRIVATE_CODE", userConsented: false },
     catalogRefresh: { registered: refreshResult.registered ?? null, failed: refreshResult.failed ?? null, errors: refreshResult.errors ?? [] },
     quotaDomains: { beforeMission: quotaBefore, afterMission: quotaAfter },
     replayedRoleEvidence,
+    replayedCapacityEvidence,
     missionAdmission: result.topology?.missionAdmission ?? null,
     topology: result.topology ? { policy: result.topology.policy, plan: result.topology.plan ?? null } : null,
     capacityRoutesPreMission: preMissionRoutes,
