@@ -241,7 +241,7 @@ const scenarios: Scenario[] = [
   { id: "tiny", goal: "Fix the incorrect multiplication return in src/math.ts", expectedAdaptiveTopology: "tiny", reviewerRepair: false },
   { id: "normal_healthy", goal: "Investigate and fix the checkout calculation in src/math.ts", expectedAdaptiveTopology: "normal", reviewerRepair: false },
   { id: "normal_reviewer_repair", goal: "Investigate and fix the checkout calculation in src/math.ts", expectedAdaptiveTopology: "normal", reviewerRepair: true },
-  { id: "complex_healthy", goal: "Migrate the database schema and API across multiple packages", expectedAdaptiveTopology: "complex", reviewerRepair: false },
+  { id: "complex_healthy", goal: "Migrate the database schema and API across multiple packages", expectedAdaptiveTopology: "normal", reviewerRepair: false },
 ];
 
 afterEach(async () => {
@@ -293,7 +293,7 @@ describe("R27 deterministic subagent real-value crossover", () => {
       schema: "r27-subagent-runtime-deterministic-1",
       recordedAt: new Date().toISOString(),
       status: "R27_SUBAGENT_DETERMINISTIC_VALUE_PARTIALLY_PROVEN_LIVE_VALUE_NOT_PROVEN",
-      method: "Equivalent temporary repositories, coder executor, semantic verifier, and completion gate; the adaptive arm alone invokes the production Explorer/Planner/Reviewer path through a deterministic scripted free provider.",
+      method: "Equivalent temporary repositories, coder executor, semantic verifier, and completion gate; the adaptive arm alone invokes the production Explorer/Reviewer path through a deterministic scripted free provider. Automatic Planner use remains gated by R54 evidence.",
       measurements: "Provider-call counts and request bytes are observed from AgentRuntime. Token counts are scripted provider usage values. Wall time is measured but not used for assertions. No tool calls are emitted by this focused role-protocol fixture.",
       limitations: ["Scripted responses cannot establish live-model relevance, planning quality, reviewer precision/recall, or crossover economics.", "The single-agent arm uses the production tiny topology with the same deterministic coder executor; it does not call a model for coding.", "The reviewer-repair scenario proves a controlled correction path, not general reviewer effectiveness."],
       comparisons: evidence,

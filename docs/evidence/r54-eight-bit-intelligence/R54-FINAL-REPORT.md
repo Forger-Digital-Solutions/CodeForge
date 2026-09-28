@@ -1,4 +1,43 @@
-# CODEFORGE_R54_BLOCKED
+# CODEFORGE_R54_CLOSED
+
+The live closure evidence below supersedes the blocked checkpoint narrative retained later in this report. Final regression and certification results are recorded after the live evidence.
+
+## Live closure, 2026-09-28
+
+| Gap | Final status | Evidence |
+|---|---|---|
+| substantial refactor reliability | CLOSED | `R54-LIVE-REFACTOR-RETRY-20260928.json`: three source files, 8/8 tests, live Reviewer pass, ForgeVerify sufficient coverage, completed gate, integrated tree `4005f37a74a48438adb241dbb8ca0d2774135c74`, `$0` paid spend. |
+| cross-package integration | CLOSED | `R54-LIVE-CROSS-PACKAGE-20260928.json`: 2 pass/5 fail baseline, two package sources repaired, 9/9 verification and post-integration tests, live Reviewer pass, ForgeVerify sufficient coverage, completed gate, integrated tree `b1357168edb6e2da4f644435fe54f052717b22df`, `$0` paid spend. |
+| Planner value | CLOSED: NO VALUE FOR TESTED CLASS | Automatic complex tasks retain Explorer -> Coder -> Reviewer -> ForgeVerify. Explicit topology remains available. |
+| quality-driven role switch | CLOSED LIVE | `REPEATED_EDIT_FAILURE` produced a live `QUALITY_DRIVEN_ROLE_SWITCH`; the final refactor also switched after `AGENT_NO_PROGRESS_DETECTED`. |
+| preserved handoff | CLOSED LIVE | The final refactor retained `src/report.mjs` and `src/stats.mjs`, exact goal and verification command, then Lightning completed in the same worktree. Excluded-old-route failover regression remains green. |
+| alternate semantic verifier | CLOSED LIVE, CONTROLLED-A FAILURE + LIVE-B VERDICT | `R54-LIVE-CONTROLLED-A-REVIEWER-B-20260928.json`: A Codestral's real verdict was deliberately discarded by the harness; production routing admitted qualified Ministral 3B as B. B made two live requests and returned a usable verdict consumed by ForgeVerify, which correctly failed one fractional-cent test. |
+
+### Substantial refactor
+
+The unchanged task required shared `sum`, preserved `mean`, a `summarize` composition, and a public export across `src/stats.mjs`, `src/report.mjs`, and `src/index.mjs`. Codestral stalled after preserving two files. A serial quality handoff excluded Codestral and admitted Nemotron Lightning, which completed all three files without raising the 25-turn role budget. The exact focused and broader fixture command passed 8/8. The live Mistral Codestral Reviewer passed. ForgeVerify recorded a passed attempt and sufficient coverage; the completion gate completed, integration succeeded, and verified/integrated trees matched. The 386-second elapsed time was inside the 1,200-second overall harness ceiling. No BYOK, 16-Bit, paid inference, or workspace escape occurred.
+
+### Cross-package integration
+
+The unchanged fixture began with 2 passing and 5 failing tests. The Coder repaired both `packages/contracts/src/index.mjs` and `packages/checkout/src/index.mjs`, without editing tests. The combined contract, checkout, math, and format command passed 9/9 before integration and 9/9 after. A live Codestral Reviewer returned a pass. ForgeVerify passed with sufficient coverage; the gate completed and integrated tree equaled verified tree. Automatic topology remained Explorer -> Coder -> Reviewer -> ForgeVerify, with no Planner. Paid spend was `$0`.
+
+### Alternate semantic Reviewer
+
+The controlled harness first allowed Reviewer A to select a production route and perform real inference. A was Mistral Codestral 2508 on a consented synthetic fixture. It returned a verdict; the harness discarded only that verdict to trigger replacement, recording `CONTROLLED_A_FAILURE`. Production semantic fallback excluded A and admitted role-qualified Ministral 3B. B made two real requests, returned a usable pass with advisory findings, and ForgeVerify consumed the result. ForgeVerify then ran the unchanged nine-test command, found 8 pass/1 fail on fractional-cent validation, and blocked completion. This is a successful alternate semantic verdict proof, not a naturally occurring A failure or a successful mission integration. False completion count remains zero.
+
+### Closure raw usage
+
+These are provider-reported role totals from the three decisive receipts; request and tool counts are observed. Unknown per-request values remain `UNKNOWN` in the underlying journals. R54 does not define Shillings.
+
+| Receipt | Requests | Tools | Input tokens | Output tokens | Failovers | Paid spend |
+|---|---:|---:|---:|---:|---:|---:|
+| cross-package closure | 9 | 9 | 41,657 | 2,985 | 1 | $0 |
+| controlled-A/live-B | 11 | 12 | 48,196 | 3,964 | 2 | $0 |
+| substantial refactor closure | 37 | 40 | 192,554 | 8,709 | 2 | $0 |
+
+The detailed receipts contain provider, model, route/pool, role, request hashes, observation hashes, capacity and quality events, and per-turn usage provenance. No normalized or estimated token values were substituted for unknowns. The R55 product requirements are captured separately in `R55-ARCHITECTURE-HANDOFF.md`; no R55 features were implemented here.
+
+## Historical blocked checkpoint (superseded by live closure above)
 
 ## Repository
 
@@ -202,4 +241,19 @@ Canonical paid-role routing, Paid Auto, and cloud billing tests passed. No live 
 - `354091f` — closure harness support for replaying witnessed capacity/role evidence and explicit synthetic-fixture consent.
 - `26d05a4` — keep the replaced role route excluded across replacement-child provider failover.
 
-R54 must remain blocked until the substantial-refactor, cross-package, and live semantic-verifier gates complete through Reviewer and ForgeVerify.
+The historical statement above applied before the three live closure receipts in this continuation.
+
+## Final regression and source audit
+
+- Focused R54/failover gate: 3 files, 33 tests passed, 0 failed, 0 skipped.
+- Full server regression: 138 files passed, 3 skipped; 917 tests passed, 3 skipped. One older R27 benchmark expectation for automatic complex topology was corrected to `normal` after the same failure reproduced in the full file alone; that matches the already proven R54 Planner policy. The full file then passed 5/5, and the complete server suite passed on rerun.
+- Initial root regression before R54 recertification: 492 files passed, 2 source-state files failed, 8 skipped; 4,109 tests passed, 2 failed, 48 skipped. Both failures were the expected predecessor-hash checks while R54 material drift remained uncertified: `fg11-source-state.test.ts` and `fg12e-harness-provenance.test.ts`. No other failure was observed. These files and the complete root suite require a post-certification rerun.
+- ForgeVerify adversarial gate: 7 files passed; 57 tests passed, 1 skipped. False completion count: 0.
+- ForgeGreen regression: 33 files, 212 tests passed.
+- 8-Bit regression: 33 files passed, 1 skipped; 352 tests passed, 2 skipped.
+- 16-Bit/paid-role regression: 7 files, 80 tests passed.
+- Multi-user and ownership/isolation regression: 5 files, 44 tests passed, 6 skipped.
+- Server typecheck: passed. Full monorepo build, including desktop and web renderers: passed.
+- Material audit before recertification: 39 files checked against `r53-role-intelligence-v1`; exact drift was only `packages/server/src/agent-runtime.ts` and `packages/server/src/autonomous-orchestrator.ts`. The unrelated R34 benchmark artifact remained modified and unstaged.
+
+R54 recertification uses the repository-authoritative `benchmarks/r54/recertify-source-state.mjs` identity `r54-eight-bit-intelligence-v1`. The final post-certification root regression, source-state ID, commit hashes, and remaining limitations are recorded in the certification continuation below.

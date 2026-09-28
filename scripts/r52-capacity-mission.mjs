@@ -64,6 +64,7 @@ const scenario = option("scenario", "unmeasured");
 const out = option("out", `docs/evidence/r52-production-scale/R52-LIVE-MISSION-${scenario.toUpperCase()}.json`);
 const keep = args.includes("--keep");
 const syntheticConsent = args.includes("--synthetic-consent");
+const controlledReviewerAFailure = args.includes("--controlled-reviewer-a-failure");
 const qualDbPath = option("qual-db", join(tmpdir(), "r46-qualification.db"));
 const timeoutMs = Number(option("timeout-ms", "600000"));
 const allowanceProbes = Number(option("allowance-probes", scenario === "unmeasured" ? "0" : "8"));
@@ -408,7 +409,26 @@ async function main() {
     workspacePath: repoDir, freeCloud, freeFabric, fabricContext, routeHealth,
     userId: "r52-live-operator",
   });
-  const subagentManager = createSubagentManager({ persistence, workspaceService, agentRuntime: runtime, r1Enabled: true });
+  const productionSubagentManager = createSubagentManager({ persistence, workspaceService, agentRuntime: runtime, r1Enabled: true });
+  let controlledReviewerAFailureReceipt = null;
+  const subagentManager = controlledReviewerAFailure
+    ? Object.assign(Object.create(productionSubagentManager), {
+      async spawnChildAgent(options) {
+        const result = await productionSubagentManager.spawnChildAgent(options);
+        if (options.agentId !== "reviewer" || options.routeReplacementReason || controlledReviewerAFailureReceipt
+          || !result.route || !/^(?:managed|owner):/.test(result.routePoolId ?? "")
+          || !result.structuredData?.verdict) return result;
+        controlledReviewerAFailureReceipt = {
+          trigger: "CONTROLLED_A_FAILURE",
+          actualRoute: result.route,
+          actualPool: result.routePoolId,
+          actualVerdictDiscarded: true,
+          productionRoutingAndInferenceUsed: true,
+        };
+        return { ...result, status: "blocked", summary: "CONTROLLED_A_FAILURE: first Reviewer verdict discarded to exercise production replacement routing", structuredData: undefined };
+      },
+    })
+    : productionSubagentManager;
   const orchestrator = createAutonomousRunOrchestrator({
     workspaceService, persistence, agentRuntime: runtime, subagentManager, subagentsR1Enabled: true,
   });
@@ -658,6 +678,7 @@ async function main() {
     quotaDomains: { beforeMission: quotaBefore, afterMission: quotaAfter },
     replayedRoleEvidence,
     replayedCapacityEvidence,
+    controlledReviewerAFailure: controlledReviewerAFailureReceipt,
     missionAdmission: result.topology?.missionAdmission ?? null,
     topology: result.topology ? { policy: result.topology.policy, plan: result.topology.plan ?? null } : null,
     capacityRoutesPreMission: preMissionRoutes,
