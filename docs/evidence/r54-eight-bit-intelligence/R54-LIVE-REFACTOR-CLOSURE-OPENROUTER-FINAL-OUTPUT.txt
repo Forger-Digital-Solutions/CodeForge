@@ -1,0 +1,48 @@
+[r52] scenario=refactor providers with credentials: openrouter, cerebras
+[r52] adapters: openrouter, cerebras
+[r52] catalog refresh: 1 notices (allowance probe budget=4)
+[r52] qualification receipts restored: 11
+[r52] capacity routes: 34 across 4 pools
+[r52] quota domains observed=17 unmeasured=17
+[r52]   openrouter/nvidia/nemotron-3-super-120b-a12b:free pool=owner:openrouter eligible=true qual=QUALIFIED health=UNKNOWN
+[r52]   openrouter/nvidia/nemotron-3-super-120b-a12b:free pool=managed:openrouter:live-acct-openrouter eligible=true qual=QUALIFIED health=UNKNOWN
+[r52]   openrouter/nvidia/nemotron-3.5-lightning:free pool=owner:openrouter eligible=true qual=QUALIFIED health=UNKNOWN
+[r52]   openrouter/nvidia/nemotron-3.5-lightning:free pool=managed:openrouter:live-acct-openrouter eligible=true qual=QUALIFIED health=UNKNOWN
+[r52]   openrouter/qwen/qwen3.8-27b:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/qwen/qwen3.8-27b:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/dots-studio/dots-3-note-preview:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/dots-studio/dots-3-note-preview:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/openrouter/free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/openrouter/free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/google/gemma-4-26b-a4b-it:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/google/gemma-4-26b-a4b-it:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/google/gemma-4-31b-it:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/google/gemma-4-31b-it:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/thinkingmachines/inkling:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/thinkingmachines/inkling:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/thinkingmachines/inkling-small:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/thinkingmachines/inkling-small:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/poolside/laguna-s-2.1:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/poolside/laguna-s-2.1:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/poolside/laguna-xs-2.1:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/poolside/laguna-xs-2.1:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/liquid/lfm-2.5-2.6b:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/liquid/lfm-2.5-2.6b:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/inclusionai/ling-3.0-flash-sante:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/inclusionai/ling-3.0-flash-sante:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/nvidia/nemotron-3-ultra-550b-a55b:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/nvidia/nemotron-3-ultra-550b-a55b:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/cohere/north-mini-code:free pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/cohere/north-mini-code:free pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/stealth/space-bunny-alpha pool=owner:openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52]   openrouter/stealth/space-bunny-alpha pool=managed:openrouter:live-acct-openrouter eligible=false qual=NOT_TESTED health=UNKNOWN
+[r52] pre-decide EXPLORER: outcome=ADMITTED selected=openrouter/nvidia/nemotron-3-super-120b-a12b:free unmeasured=0
+[r52] pre-decide CODER: outcome=ADMITTED selected=openrouter/nvidia/nemotron-3-super-120b-a12b:free unmeasured=0
+[r52] pre-decide REVIEWER: outcome=ADMITTED selected=openrouter/nvidia/nemotron-3-super-120b-a12b:free unmeasured=0
+[r52] status=blocked elapsed=115.2s workers=2 quota after: observed=17 unmeasured=17
+[r52]   explorer: converged_failed via openrouter/nvidia/nemotron-3-super-120b-a12b:free pool=managed:openrouter:live-acct-openrouter qual=QUALIFIED req=3 tools=2
+[r52]   coder: converged_failed via openrouter/nvidia/nemotron-3-super-120b-a12b:free pool=managed:openrouter:live-acct-openrouter qual=QUALIFIED req=1 tools=0
+[r52] gate=n/a integration=blocked treeEqual=true reviewerIndependent=false
+[r52] evidence=G:\CodeForge\docs\evidence\r54-eight-bit-intelligence\R54-LIVE-REFACTOR-CLOSURE-OPENROUTER-FINAL.json

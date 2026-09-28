@@ -1,0 +1,1686 @@
+{
+  "schemaVersion": 1,
+  "round": "R54",
+  "scenario": "refactor",
+  "complexityHint": null,
+  "generatedAt": "2026-09-28T16:48:23.250Z",
+  "startedAt": "2026-09-28T16:46:28.092Z",
+  "elapsedMs": 115157,
+  "provenance": "live zero-cost mission over the R52 capacity fabric",
+  "purpose": "R53 refactor mission: shared aggregation, public summary composition, behavioral preservation, and independent tests.",
+  "providersPresent": [
+    "openrouter",
+    "cerebras"
+  ],
+  "allowanceProbeBudget": 4,
+  "dataContext": {
+    "dataClass": "PRIVATE_CODE",
+    "userConsented": false
+  },
+  "catalogRefresh": {
+    "registered": 20,
+    "failed": 0,
+    "errors": [
+      "openrouter: quota bootstrap observed account-level free allowance"
+    ]
+  },
+  "quotaDomains": {
+    "beforeMission": {
+      "observed": [
+        "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+        "openrouter/nvidia/nemotron-3.5-lightning:free",
+        "openrouter/qwen/qwen3.8-27b:free",
+        "openrouter/dots-studio/dots-3-note-preview:free",
+        "openrouter/openrouter/free",
+        "openrouter/google/gemma-4-26b-a4b-it:free",
+        "openrouter/google/gemma-4-31b-it:free",
+        "openrouter/thinkingmachines/inkling:free",
+        "openrouter/thinkingmachines/inkling-small:free",
+        "openrouter/poolside/laguna-s-2.1:free",
+        "openrouter/poolside/laguna-xs-2.1:free",
+        "openrouter/liquid/lfm-2.5-2.6b:free",
+        "openrouter/inclusionai/ling-3.0-flash-sante:free",
+        "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "openrouter/cohere/north-mini-code:free",
+        "openrouter/stealth/space-bunny-alpha"
+      ],
+      "unmeasured": [
+        "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+        "openrouter/nvidia/nemotron-3.5-lightning:free",
+        "openrouter/qwen/qwen3.8-27b:free",
+        "openrouter/dots-studio/dots-3-note-preview:free",
+        "openrouter/openrouter/free",
+        "openrouter/google/gemma-4-26b-a4b-it:free",
+        "openrouter/google/gemma-4-31b-it:free",
+        "openrouter/thinkingmachines/inkling:free",
+        "openrouter/thinkingmachines/inkling-small:free",
+        "openrouter/poolside/laguna-s-2.1:free",
+        "openrouter/poolside/laguna-xs-2.1:free",
+        "openrouter/liquid/lfm-2.5-2.6b:free",
+        "openrouter/inclusionai/ling-3.0-flash-sante:free",
+        "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "openrouter/cohere/north-mini-code:free",
+        "openrouter/stealth/space-bunny-alpha"
+      ]
+    },
+    "afterMission": {
+      "observed": [
+        "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+        "openrouter/nvidia/nemotron-3.5-lightning:free",
+        "openrouter/qwen/qwen3.8-27b:free",
+        "openrouter/dots-studio/dots-3-note-preview:free",
+        "openrouter/openrouter/free",
+        "openrouter/google/gemma-4-26b-a4b-it:free",
+        "openrouter/google/gemma-4-31b-it:free",
+        "openrouter/thinkingmachines/inkling:free",
+        "openrouter/thinkingmachines/inkling-small:free",
+        "openrouter/poolside/laguna-s-2.1:free",
+        "openrouter/poolside/laguna-xs-2.1:free",
+        "openrouter/liquid/lfm-2.5-2.6b:free",
+        "openrouter/inclusionai/ling-3.0-flash-sante:free",
+        "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "openrouter/cohere/north-mini-code:free",
+        "openrouter/stealth/space-bunny-alpha"
+      ],
+      "unmeasured": [
+        "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+        "openrouter/nvidia/nemotron-3.5-lightning:free",
+        "openrouter/qwen/qwen3.8-27b:free",
+        "openrouter/dots-studio/dots-3-note-preview:free",
+        "openrouter/openrouter/free",
+        "openrouter/google/gemma-4-26b-a4b-it:free",
+        "openrouter/google/gemma-4-31b-it:free",
+        "openrouter/thinkingmachines/inkling:free",
+        "openrouter/thinkingmachines/inkling-small:free",
+        "openrouter/poolside/laguna-s-2.1:free",
+        "openrouter/poolside/laguna-xs-2.1:free",
+        "openrouter/liquid/lfm-2.5-2.6b:free",
+        "openrouter/inclusionai/ling-3.0-flash-sante:free",
+        "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "openrouter/cohere/north-mini-code:free",
+        "openrouter/stealth/space-bunny-alpha"
+      ]
+    }
+  },
+  "replayedRoleEvidence": null,
+  "replayedCapacityEvidence": [],
+  "missionAdmission": null,
+  "topology": null,
+  "capacityRoutesPreMission": [
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "owner:openrouter",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "pool": "owner:openrouter",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "HARD_FAILURE"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "HARD_FAILURE"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "qwen/qwen3.8-27b:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "qwen/qwen3.8-27b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "openrouter/free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "openrouter/free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-26b-a4b-it:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-26b-a4b-it:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-31b-it:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-31b-it:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling-small:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling-small:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-s-2.1:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-s-2.1:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-sante:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-sante:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "stealth/space-bunny-alpha",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "stealth/space-bunny-alpha",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    }
+  ],
+  "preMissionDecisions": {
+    "EXPLORER": {
+      "outcome": "ADMITTED",
+      "nextAvailableAt": null,
+      "selected": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "candidates": [
+        {
+          "route": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/qwen/qwen3.8-27b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/qwen/qwen3.8-27b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/dots-studio/dots-3-note-preview:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/dots-studio/dots-3-note-preview:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/openrouter/free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/openrouter/free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-26b-a4b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-26b-a4b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-31b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-31b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling-small:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling-small:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-s-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-s-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-xs-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-xs-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/liquid/lfm-2.5-2.6b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/liquid/lfm-2.5-2.6b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/cohere/north-mini-code:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/cohere/north-mini-code:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/stealth/space-bunny-alpha",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/stealth/space-bunny-alpha",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "status": "ROLE_INELIGIBLE",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "ROLE_VERDICT_EXCLUDED"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "status": "SELECTED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "AUTHORIZED",
+            "ROLE_QUALIFIED",
+            "QUOTA_RESERVED",
+            "ADMITTED"
+          ]
+        }
+      ]
+    },
+    "CODER": {
+      "outcome": "ADMITTED",
+      "nextAvailableAt": null,
+      "selected": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "candidates": [
+        {
+          "route": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/qwen/qwen3.8-27b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/qwen/qwen3.8-27b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/dots-studio/dots-3-note-preview:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/dots-studio/dots-3-note-preview:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/openrouter/free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/openrouter/free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-26b-a4b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-26b-a4b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-31b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-31b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling-small:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling-small:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-s-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-s-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-xs-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-xs-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/liquid/lfm-2.5-2.6b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/liquid/lfm-2.5-2.6b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/cohere/north-mini-code:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/cohere/north-mini-code:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/stealth/space-bunny-alpha",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/stealth/space-bunny-alpha",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "status": "SELECTED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "AUTHORIZED",
+            "ROLE_QUALIFIED",
+            "QUOTA_RESERVED",
+            "ADMITTED"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "status": "STANDBY",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "RANKED_BEHIND_SELECTED",
+            "RIGHT_SIZE_PRESERVED"
+          ]
+        }
+      ]
+    },
+    "REVIEWER": {
+      "outcome": "ADMITTED",
+      "nextAvailableAt": null,
+      "selected": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "candidates": [
+        {
+          "route": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "status": "ROLE_INELIGIBLE",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "ROLE_NOT_QUALIFIED"
+          ]
+        },
+        {
+          "route": "openrouter/qwen/qwen3.8-27b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/qwen/qwen3.8-27b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/dots-studio/dots-3-note-preview:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/dots-studio/dots-3-note-preview:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/openrouter/free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/openrouter/free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-26b-a4b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-26b-a4b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-31b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-31b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling-small:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling-small:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-s-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-s-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-xs-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-xs-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/liquid/lfm-2.5-2.6b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/liquid/lfm-2.5-2.6b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/cohere/north-mini-code:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/cohere/north-mini-code:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/stealth/space-bunny-alpha",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/stealth/space-bunny-alpha",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "status": "SELECTED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "AUTHORIZED",
+            "ROLE_QUALIFIED",
+            "QUOTA_RESERVED",
+            "ADMITTED"
+          ]
+        }
+      ]
+    }
+  },
+  "independentPools": [
+    "shared:openrouter",
+    "shared:cerebras",
+    "managed:openrouter:live-acct-openrouter",
+    "managed:cerebras:live-acct-cerebras"
+  ],
+  "runStatus": "blocked",
+  "preMissionIntegration": null,
+  "runSummary": "Writer did not complete: Agent coder failed: [PROVIDER_UNAVAILABLE] [PROVIDER_UNAVAILABLE] OpenRouter stream error (503): Upstream error from Nvidia: Service temporarily overloaded",
+  "changedFiles": [],
+  "review": {
+    "passed": false,
+    "findings": []
+  },
+  "verification": [],
+  "completionGate": null,
+  "integration": {
+    "status": "blocked",
+    "branch": "codeforge/worktree/run-92ade001-56be-48e3-b84f-fbdddee602d3-d4a0c040",
+    "worktreeId": "wt-d4a0c040",
+    "reason": "SUBAGENT_WRITER_BLOCKED"
+  },
+  "counters": {
+    "childrenSpawned": 1,
+    "reviewRounds": 0,
+    "taskAttempts": 1,
+    "verificationAttempts": 0
+  },
+  "roleReport": [
+    {
+      "role": "explorer",
+      "outcome": "converged_failed",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "qualification": "QUALIFIED",
+      "roleVerdict": "QUALIFIED",
+      "healthAfterRun": "TEMPORARY_CAPACITY",
+      "requests": 3,
+      "toolCalls": 2,
+      "inputTokens": 9197,
+      "outputTokens": 1621,
+      "failovers": [],
+      "recoveryOutcome": "fail",
+      "recoveryDetail": "Run ended with stopReason: cancelled"
+    },
+    {
+      "role": "coder",
+      "outcome": "converged_failed",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "qualification": "QUALIFIED",
+      "roleVerdict": "QUALIFIED",
+      "healthAfterRun": "TEMPORARY_CAPACITY",
+      "requests": 1,
+      "toolCalls": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "failovers": [],
+      "recoveryOutcome": "replan",
+      "recoveryDetail": "Run ended with stopReason: error"
+    }
+  ],
+  "workers": [
+    {
+      "role": "Repository Explorer",
+      "agentId": "explorer",
+      "status": "blocked",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+      },
+      "route": null,
+      "routePoolId": null,
+      "resultSummary": "Agent explorer cancelled: [AGENT_CANCELLED] Model execution cancelled: [AGENT_CANCELLED] Model execution was cancelled",
+      "telemetry": {
+        "wallTimeMs": 90052,
+        "modelRequests": 3,
+        "inputTokens": 9197,
+        "outputTokens": 1621,
+        "toolCalls": 2,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 0
+      }
+    },
+    {
+      "role": "Autonomous Builder",
+      "agentId": "coder",
+      "status": "failed",
+      "model": null,
+      "route": null,
+      "routePoolId": null,
+      "resultSummary": "Agent coder failed: [PROVIDER_UNAVAILABLE] [PROVIDER_UNAVAILABLE] OpenRouter stream error (503): Upstream error from Nvidia: Service temporarily overloaded",
+      "telemetry": {
+        "wallTimeMs": 20421,
+        "modelRequests": 1,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "toolCalls": 0,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 1
+      }
+    }
+  ],
+  "journals": [
+    {
+      "runId": "child-04955652-b499-44c6-b0bc-03c0311f906a",
+      "role": "explorer",
+      "state": "converged_failed",
+      "route": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "capacityPoolId": "managed:openrouter:live-acct-openrouter"
+      },
+      "turnCount": 3,
+      "toolCallCount": 2,
+      "requests": 3,
+      "inputTokens": 9197,
+      "outputTokens": 1621,
+      "routeFailovers": [],
+      "recoveryOutcome": "fail",
+      "recoveryDetail": "Run ended with stopReason: cancelled",
+      "stopReason": "cancelled",
+      "turnTrace": [
+        {
+          "turn": 2,
+          "batchSize": 2,
+          "calls": [
+            {
+              "tool": "read_file",
+              "targetHash": "bc03763018cc8638",
+              "requestHash": "c53392fb46f91cd440af9fcc6d1494f2d2360acd38b2bcb23556b39425c1153d",
+              "outcome": "success",
+              "bytes": 166,
+              "observationHash": "0d8155a1c6bcba986cf20f03766909945dbef78624f1c0b02ec8e80ed9137d7d"
+            },
+            {
+              "tool": "read_file",
+              "targetHash": "8e39757b6619e56f",
+              "requestHash": "8c04ee37f47603710adadf89ff27e4512c3b27c3358716490c75d2acce48d792",
+              "outcome": "success",
+              "bytes": 491,
+              "observationHash": "6c11eda6dd2a48b9be90b89512d6365685677367267fd9c8594800c5a89fcbfc"
+            }
+          ]
+        }
+      ],
+      "editAttempts": [],
+      "roleProgress": null
+    },
+    {
+      "runId": "child-656f5183-add6-4b38-aa67-1f947dc4a534",
+      "role": "coder",
+      "state": "converged_failed",
+      "route": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "capacityPoolId": "managed:openrouter:live-acct-openrouter"
+      },
+      "turnCount": 1,
+      "toolCallCount": 0,
+      "requests": 1,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "routeFailovers": [],
+      "recoveryOutcome": "replan",
+      "recoveryDetail": "Run ended with stopReason: error",
+      "stopReason": "error",
+      "turnTrace": [],
+      "editAttempts": [],
+      "roleProgress": {
+        "stalled": false,
+        "reason": null,
+        "quietTurns": 0,
+        "threshold": 6,
+        "novelObservations": 0,
+        "successfulMutations": 0,
+        "repeatedEditFailures": 0
+      }
+    }
+  ],
+  "modelTurns": [
+    {
+      "runId": "child-04955652-b499-44c6-b0bc-03c0311f906a",
+      "agentId": "explorer",
+      "turnId": "child-04955652-b499-44c6-b0bc-03c0311f906a:explorer:1",
+      "state": "provider_response_completed",
+      "transcriptBytes": 7824,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 4069,
+      "outputTokens": 1024,
+      "finishReason": "length",
+      "toolRequests": 0
+    },
+    {
+      "runId": "child-04955652-b499-44c6-b0bc-03c0311f906a",
+      "agentId": "explorer",
+      "turnId": "child-04955652-b499-44c6-b0bc-03c0311f906a:explorer:2",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 12167,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 5128,
+      "outputTokens": 597,
+      "finishReason": "tool_calls",
+      "toolRequests": 2
+    },
+    {
+      "runId": "child-04955652-b499-44c6-b0bc-03c0311f906a",
+      "agentId": "explorer",
+      "turnId": "child-04955652-b499-44c6-b0bc-03c0311f906a:explorer:3",
+      "state": "provider_request_started",
+      "transcriptBytes": 12824,
+      "provider": null,
+      "model": null,
+      "usageSource": "UNKNOWN",
+      "inputTokens": null,
+      "outputTokens": null,
+      "finishReason": null,
+      "toolRequests": null
+    },
+    {
+      "runId": "child-656f5183-add6-4b38-aa67-1f947dc4a534",
+      "agentId": "coder",
+      "turnId": "child-656f5183-add6-4b38-aa67-1f947dc4a534:coder:1",
+      "state": "provider_request_started",
+      "transcriptBytes": 10860,
+      "provider": null,
+      "model": null,
+      "usageSource": "UNKNOWN",
+      "inputTokens": null,
+      "outputTokens": null,
+      "finishReason": null,
+      "toolRequests": null
+    }
+  ],
+  "roleQualityHandoffs": [],
+  "semanticVerifierHandoffs": [],
+  "routerEvents": [
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-04955652-b499-44c6-b0bc-03c0311f906a",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "providerId": "openrouter",
+        "score": 85,
+        "reasons": [
+          "FABRIC_ADMITTED",
+          "SUPPLY_PURE_MANAGED_FREE",
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED",
+          "ROLE_QUALIFIED_EVIDENCE",
+          "ROLE_RUNTIME_EVIDENCE_ABSENT"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-656f5183-add6-4b38-aa67-1f947dc4a534",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "providerId": "openrouter",
+        "score": 94,
+        "reasons": [
+          "FABRIC_ADMITTED",
+          "SUPPLY_PURE_MANAGED_FREE",
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED",
+          "ROLE_QUALIFIED_EVIDENCE",
+          "ROLE_RUNTIME_EVIDENCE_ABSENT"
+        ]
+      }
+    }
+  ],
+  "toolTrace": [
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-04955652-b499-44c6-b0bc-03c0311f906a",
+      "toolCallId": "call-beaa7dd4-b7d8-4ae7-92c4-dd5932bfd293",
+      "toolName": "read_file",
+      "argsHash": "c53392fb46f91cd4",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-04955652-b499-44c6-b0bc-03c0311f906a",
+      "toolCallId": "call-beaa7dd4-b7d8-4ae7-92c4-dd5932bfd293",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 166,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-04955652-b499-44c6-b0bc-03c0311f906a",
+      "toolCallId": "call-c2d33ceb-d8c0-49a4-ba1b-63d4faea3a75",
+      "toolName": "read_file",
+      "argsHash": "8c04ee37f4760371",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-04955652-b499-44c6-b0bc-03c0311f906a",
+      "toolCallId": "call-c2d33ceb-d8c0-49a4-ba1b-63d4faea3a75",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 491,
+      "errorKind": null
+    }
+  ],
+  "poolByRole": {
+    "explorer": [
+      "managed:openrouter:live-acct-openrouter"
+    ],
+    "coder": [
+      "managed:openrouter:live-acct-openrouter"
+    ]
+  },
+  "reviewerIndependent": false,
+  "forgeVerifyRecords": [],
+  "treeEquality": {
+    "verifiedTree": "46ede984dae573ffe2b74882dc066ca5a02fd9ca",
+    "integratedTree": "46ede984dae573ffe2b74882dc066ca5a02fd9ca",
+    "worktreeHead": "2970b6c9743701072312b34d335df2e562474014",
+    "equal": true
+  },
+  "baseRevision": "2970b6c9743701072312b34d335df2e562474014",
+  "finalRevision": null,
+  "finalMathContents": "export function multiply(a, b) { return a * b; }\n\nexport function add(a, b) { return a + b; }\n",
+  "finalFormatContents": "export function format(value) { return `result: ${value}`; }\n",
+  "postIntegrationProbe": {
+    "ok": false,
+    "output": "✔ format (2.4739ms)\n✔ multiply (3.0726ms)\nfile:///C:/Users/DADDY_%7E1/AppData/Local/Temp/r51-repo-2iGOsW/test/report.test.mjs:3\nimport { summarize } from '../src/index.mjs';\n         ^^^^^^^^^\nSyntaxError: The requested module '../src/index.mjs' does not provide an export named 'summarize'\n    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)\n    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\n\nNode.js v24.19.0\n✖ test\\report.test.mjs (244.6016ms)\nfile:///C:/Users/DADDY_%7E1/AppData/Local/Temp/r51-repo-2iGOsW/test/stats-refactor.test.mjs:3\nimport { sum, mean } from '../src/stats.mjs';\n         ^^^\nSyntaxError: The requested module '../src/stats.mjs' does not provide an export named 'sum'\n    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)\n    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\n\nNode.js v24.19.0\n✖ test\\stats-refactor.test.mjs (238.3249ms)\n✔ mean (4.345ms)\nℹ tests 5\nℹ suites 0\nℹ pass 3\nℹ fail 2\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 471.6733\n\n✖ failing tests:\n\ntest at test\\report.test.mjs:1:1\n✖ test\\report.test.mjs (244.6016ms)\n  'test failed'\n\ntest at test\\stats-refactor.test.mjs:1:1\n✖ test\\stats-refactor.test.mjs (238.3249ms)\n  'test failed'\n"
+  },
+  "servedModels": [
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "freeStatus": "verified_free",
+      "isFree": true,
+      "paidFallbackPossible": false
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "freeStatus": "verified_free",
+      "isFree": true,
+      "paidFallbackPossible": false
+    }
+  ],
+  "allServedRoutesForgeAutoEligibleAtEvidenceAssembly": false,
+  "allServedRoutesVerifiedFree": true,
+  "paidSpendUsd": 0,
+  "paidBoundary": "8-Bit managed free only: no Paid Auto route, no BYOK route, and no paid receipt path. Served-route cost provenance is reported separately; UNKNOWN does not count as verified free.",
+  "credentialsUsed": [
+    "OPENROUTER_API_KEY (present)",
+    "CEREBRAS_API_KEY (present)"
+  ]
+}
