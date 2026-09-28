@@ -243,6 +243,72 @@ describe("R27 8-Bit Production Catalog Refresh & Route Health Integration", () =
     expect(svc.isForgeAutoEligible("groq", "openai/gpt-oss-120b")).toBe(true);
   });
 
+  it("reopens a fresh role receipt after three independent quality failures, then closes it on requalification", async () => {
+    const modelId = "openai/gpt-oss-120b";
+    const { svc, authority, clock } = setupTest({ initialFirewall: [freeModelRecord("groq", modelId)] });
+    svc.registerManagedPool("groq", "test-account");
+    await svc.recordReceipt(mockReceipt("groq", modelId));
+
+    const observeFailure = (run: string) => authority.observe({
+      kind: "role_outcome", providerId: "groq", modelId, observedAt: clock.now().toISOString(),
+      source: "runtime", role: "CODER", outcome: "role_failed", failureClass: "NON_CONVERGENCE", correlationId: run,
+    });
+    clock.advance(1000);
+    observeFailure("run-1");
+    expect(svc.runtimeRequalificationRoles("groq", modelId)).toEqual([]);
+    observeFailure("run-1");
+    observeFailure("run-2");
+    expect(svc.runtimeRequalificationRoles("groq", modelId)).toEqual([]);
+    observeFailure("run-3");
+    expect(svc.runtimeRequalificationRoles("groq", modelId)).toEqual(["CODER"]);
+    expect(svc.pendingQualification().filter((route) => route.providerModelId === modelId)).toHaveLength(1);
+
+    clock.advance(1000);
+    const fresh = mockReceipt("groq", modelId);
+    fresh.completedAt = clock.now().toISOString();
+    await svc.recordReceipt(fresh);
+    expect(svc.runtimeRequalificationRoles("groq", modelId)).toEqual([]);
+    expect(svc.pendingQualification().some((route) => route.providerModelId === modelId)).toBe(false);
+  });
+
+  it("provider capacity failures never trigger role requalification", async () => {
+    const modelId = "openai/gpt-oss-120b";
+    const { svc, authority, clock } = setupTest({ initialFirewall: [freeModelRecord("groq", modelId)] });
+    svc.registerManagedPool("groq", "test-account");
+    await svc.recordReceipt(mockReceipt("groq", modelId));
+    for (let i = 0; i < 3; i++) {
+      clock.advance(1000);
+      authority.observe({ kind: "call_failure", providerId: "groq", modelId, observedAt: clock.now().toISOString(), source: "runtime", reason: "RATE_LIMITED", status: 429, role: "CODER" });
+    }
+    expect(svc.runtimeRequalificationRoles("groq", modelId)).toEqual([]);
+  });
+
+  it("verified role recovery removes the urgent requalification trigger", async () => {
+    const modelId = "openai/gpt-oss-120b";
+    const { svc, authority, clock } = setupTest({ initialFirewall: [freeModelRecord("groq", modelId)] });
+    svc.registerManagedPool("groq", "test-account");
+    await svc.recordReceipt(mockReceipt("groq", modelId));
+    clock.advance(1000);
+    for (let i = 0; i < 3; i++) {
+      authority.observe({ kind: "role_outcome", providerId: "groq", modelId, observedAt: clock.now().toISOString(), source: "runtime", role: "CODER", outcome: "role_failed", failureClass: "NON_CONVERGENCE", correlationId: `failure-${i}` });
+    }
+    expect(svc.runtimeRequalificationRoles("groq", modelId)).toEqual(["CODER"]);
+    authority.observe({ kind: "role_outcome", providerId: "groq", modelId, observedAt: clock.now().toISOString(), source: "runtime", role: "CODER", outcome: "verified_complete", correlationId: "recovery" });
+    expect(svc.runtimeRequalificationRoles("groq", modelId)).toEqual([]);
+  });
+
+  it("urgent requalification respects the data consent boundary", async () => {
+    const modelId = "openai/gpt-oss-120b";
+    const { svc, authority, clock } = setupTest({ initialFirewall: [freeModelRecord("groq", modelId, { privacyClass: "permissive" })] });
+    await svc.recordReceipt(mockReceipt("groq", modelId));
+    clock.advance(1000);
+    for (let i = 0; i < 3; i++) {
+      authority.observe({ kind: "role_outcome", providerId: "groq", modelId, observedAt: clock.now().toISOString(), source: "runtime", role: "CODER", outcome: "role_failed", correlationId: `failure-${i}` });
+    }
+    expect(svc.runtimeRequalificationRoles("groq", modelId)).toEqual(["CODER"]);
+    expect(svc.pendingQualification().some((route) => route.providerModelId === modelId)).toBe(false);
+  });
+
   it("scenario 2: route disappears upstream → detected drift → authority MODEL_RETIRED → ForgeAuto excluded", async () => {
     const initialRec = freeModelRecord("groq", "openai/gpt-oss-120b");
     const { svc, refresh, authority, groqAdapter, firewall } = setupTest({ initialFirewall: [initialRec] });

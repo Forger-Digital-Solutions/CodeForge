@@ -906,7 +906,8 @@ RULES:
 4. Categorize findings into:
    - "blocking": regressions, syntax errors, failing tests, security risks, or missing requirements.
    - "advisory": non-critical style or minor documentation notes.
-5. Return only JSON: {"verdict":"pass"|"revision_required","findings":[{"id":string,"severity":"blocking"|"advisory","category":string,"message":string,"evidence"?:string}],"summary":string}. A revision_required verdict requires at least one blocking finding.`,
+5. Return only JSON: {"verdict":"pass"|"revision_required","findings":[{"id":string,"severity":"blocking"|"advisory","category":string,"message":string,"evidence"?:string}],"summary":string}. A revision_required verdict requires at least one blocking finding.
+6. Start with the supplied diff and task. Inspect additional files only when a concrete uncertainty prevents a verdict. When the available evidence is sufficient, return the verdict promptly; do not keep searching for hypothetical defects. A passing review may have an empty findings array.`,
   },
   "mission-planner": {
     role: "mission-planner",

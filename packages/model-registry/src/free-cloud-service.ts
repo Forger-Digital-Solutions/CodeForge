@@ -11,6 +11,7 @@ import {
   runRoleAwareQualification,
   rateLimitObservationFromHeaders,
   type EightBitRouteHealthAuthority,
+  type EightBitRole,
   type ModelQualificationReceipt,
   type QualificationPersistence,
   InMemoryQualificationPersistence,
@@ -465,6 +466,23 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     return this.getReceipt(providerId, modelId);
   }
 
+  /** Current, independent runtime failures can reopen a still-fresh role receipt. */
+  runtimeRequalificationRoles(providerId: string, modelId: string): string[] {
+    const receipt = this.getReceipt(providerId, modelId);
+    if (!receipt || !this.routeHealth) return [];
+    const qualifiedAt = Date.parse(receipt.completedAt);
+    if (!Number.isFinite(qualifiedAt)) return [];
+    return Object.entries(receipt.roleResults)
+      .filter(([, result]) => result.status === "QUALIFIED" || result.status === "PROBATION")
+      .filter(([role]) => {
+        const samples = this.routeHealth!.roleEvidenceFor(providerId, modelId, role as EightBitRole);
+        const recentFailures = samples.filter((sample) => sample.at > qualifiedAt && sample.weight < 0);
+        const distinctRuns = new Set(recentFailures.map((sample) => sample.correlationId).filter(Boolean));
+        return distinctRuns.size >= 3 && this.routeHealth!.roleQualityDelta(providerId, modelId, role as EightBitRole).netEvidence <= -1.5;
+      })
+      .map(([role]) => role);
+  }
+
   /** Test/certification seam: record an externally produced receipt. */
   async recordReceipt(receipt: ModelQualificationReceipt): Promise<void> {
     this.receipts.set(`${receipt.providerId}::${receipt.modelId}`, receipt);
@@ -492,12 +510,29 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     // A route whose last probe failed transiently (upstream 429/5xx → DEGRADED after its cooldown)
     // is tested after the never-tested ones: re-probing the same rate-limited upstream first in
     // every cycle starved untested candidates of the bounded per-cycle slots (observed in R5).
+    // Distinct current role failures take priority: this route is still serving tasks under an
+    // old qualification, so delaying requalification behind unrelated discovery would retain
+    // the known mismatch. Capacity failures never create this priority.
     const penalty = (r: ProviderRouteView): number => (r.health === "DEGRADED" ? 1 : 0);
+    const urgentRoleFailure = (r: ProviderRouteView): number => this.runtimeRequalificationRoles(r.providerId, r.providerModelId).length > 0 ? 1 : 0;
+    const seen = new Set<string>();
     return snap.models
       .flatMap((m) => m.routes)
-      .filter((r) => r.admission.failedGate === "CODEFORGE_QUALIFIED" && (r.qualificationState === "NOT_TESTED" || r.qualificationState === "STALE"))
+      .filter((r) => {
+        const ordinaryPending = r.admission.failedGate === "CODEFORGE_QUALIFIED" && (r.qualificationState === "NOT_TESTED" || r.qualificationState === "STALE");
+        const degradedRole = r.supplyClass !== undefined && supplyClassIsZeroCash(r.supplyClass) && r.verifiedFree && r.connected && r.toolSupport
+          && r.privacyClass !== "permissive" && r.termsStatus === "CLEARED"
+          && this.runtimeRequalificationRoles(r.providerId, r.providerModelId).length > 0;
+        return ordinaryPending || degradedRole;
+      })
       .filter((r) => r.health !== "COOLDOWN" && r.health !== "QUOTA_EXHAUSTED" && r.health !== "AUTH_REQUIRED")
-      .sort((a, b) => penalty(a) - penalty(b) || score(b) - score(a));
+      .filter((r) => {
+        const key = `${r.providerId}::${r.providerModelId}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .sort((a, b) => urgentRoleFailure(b) - urgentRoleFailure(a) || penalty(a) - penalty(b) || score(b) - score(a));
   }
 
   private spendFor(providerId: string): { day: string; requests: number; lastCycleAt: number } {

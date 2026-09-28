@@ -145,6 +145,35 @@ describe("R27 — versioned role protocols", () => {
     }
   });
 
+  it("stops role probes after a planner 429 and leaves later roles untested", async () => {
+    const adapter = new ScriptedAdapter((req) => body(req).includes("task planner")
+      ? ev([{ type: "error", code: "RATE_LIMITED", message: "429 rate limit", retryable: true }])
+      : goodScript(req));
+    const out = await runRoleQualification(MODEL, adapter);
+    expect(out.roleResults.EXPLORER!.status).toBe("QUALIFIED");
+    expect(out.roleResults.PLANNER!.status).toBe("NOT_TESTED");
+    expect(out.roleResults.REVIEWER!.status).toBe("NOT_TESTED");
+    expect(out.roleResults.PLANNER!.hardFailures).toEqual([]);
+    expect(out.transientCases).toBe(1);
+    expect(adapter.requests.filter((req) => body(req).includes("task planner"))).toHaveLength(1);
+    expect(adapter.requests.some((req) => body(req).includes("independent change reviewer"))).toBe(false);
+  });
+
+  it("does not promote a partially passing reviewer suite after a 429", async () => {
+    let reviewerCalls = 0;
+    const adapter = new ScriptedAdapter((req) => {
+      if (body(req).includes("independent change reviewer") && ++reviewerCalls === 2) {
+        return ev([{ type: "error", code: "RATE_LIMITED", message: "429 rate limit", retryable: true }]);
+      }
+      return goodScript(req);
+    });
+    const out = await runRoleQualification(MODEL, adapter);
+    expect(out.roleResults.REVIEWER!.status).toBe("NOT_TESTED");
+    expect(out.roleResults.REVIEWER!.testCases).toHaveLength(2);
+    expect(out.transientCases).toBe(1);
+    expect(reviewerCalls).toBe(2);
+  });
+
   it("PLANNER: semantic steps qualify only after canonical graph validation", async () => {
     const semantic = new ScriptedAdapter((req) => {
       if (!body(req).includes("task planner")) return goodScript(req);
@@ -214,6 +243,17 @@ describe("R27 — composed runner emits one receipt with all role evidence", () 
     expect(receipt.metadata?.transient).toBe(true);
     expect(receipt.roleResults.EXPLORER).toBeUndefined();
     expect(calls).toBeLessThan(4); // compact's bounded probes only, no role spend
+  });
+
+  it("marks a mid-suite provider interruption transient so the receipt is retried", async () => {
+    const adapter = new ScriptedAdapter((req) => body(req).includes("task planner")
+      ? ev([{ type: "error", code: "RATE_LIMITED", message: "429 rate limit", retryable: true }])
+      : goodScript(req));
+    const receipt = await runRoleAwareQualification(MODEL, adapter);
+    expect(receipt.metadata?.transient).toBe(true);
+    expect(receipt.roleResults.PLANNER?.status).toBe("NOT_TESTED");
+    expect(receipt.roleResults.REVIEWER?.status).toBe("NOT_TESTED");
+    expect(adapter.requests.filter((req) => body(req).includes("task planner"))).toHaveLength(1);
   });
 
   it("R46 §30: a compact HARD_FAILURE skips the role suite — no quota spent re-proving stage 1", async () => {
@@ -298,9 +338,8 @@ describe("R48 — reasoning-starvation headroom", () => {
     });
     await runRoleAwareQualification(MODEL, emptySilent);
     const silentPlannerCalls = emptySilent.requests.filter((r) => body(r).includes("task planner"));
-    // No reasoning evidence → the error is a genuine upstream failure; one call per case,
-    // never a paid retry against silence.
-    expect(silentPlannerCalls.length).toBe(2);
+    // No reasoning evidence means an upstream interruption; later cases stay pending.
+    expect(silentPlannerCalls.length).toBe(1);
   });
 });
 

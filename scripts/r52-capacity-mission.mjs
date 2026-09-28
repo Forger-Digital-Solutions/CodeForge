@@ -65,6 +65,7 @@ const keep = args.includes("--keep");
 const qualDbPath = option("qual-db", join(tmpdir(), "r46-qualification.db"));
 const timeoutMs = Number(option("timeout-ms", "600000"));
 const allowanceProbes = Number(option("allowance-probes", scenario === "unmeasured" ? "0" : "8"));
+const roleEvidenceFrom = option("role-evidence-from", "");
 
 const PROVIDERS = ["groq", "mistral", "openrouter", "cerebras"];
 const ENV_KEY = { groq: "GROQ_API_KEY", mistral: "MISTRAL_API_KEY", openrouter: "OPENROUTER_API_KEY", cerebras: "CEREBRAS_API_KEY" };
@@ -118,6 +119,27 @@ async function main() {
   freeCloud.attachQualificationStore(new SqliteQualificationPersistence(qualDb));
   const restored = await freeCloud.loadQualification();
   console.log(`[r52] qualification receipts restored: ${restored}`);
+
+  let replayedRoleEvidence = null;
+  if (roleEvidenceFrom) {
+    const prior = JSON.parse(await readFile(resolve(roleEvidenceFrom), "utf-8"));
+    const coder = prior.roleReport?.find((item) => item.role === "coder" && item.provider && item.model);
+    if (prior.runStatus !== "blocked" || !prior.runSummary?.includes("TOOL_WORKSPACE_ESCAPE") || !coder) {
+      throw new Error("Role-evidence replay requires a blocked mission with a witnessed Coder workspace-escape verdict.");
+    }
+    routeHealth.observe({
+      kind: "role_outcome",
+      providerId: coder.provider,
+      modelId: coder.model,
+      role: "CODER",
+      outcome: "security_blocked",
+      failureClass: "WORKSPACE_ESCAPE_ATTEMPT",
+      source: "runtime",
+      observedAt: new Date().toISOString(),
+      correlationId: `replay:${prior.baseRevision}:${prior.scenario}`,
+    });
+    replayedRoleEvidence = { source: roleEvidenceFrom, providerId: coder.provider, modelId: coder.model, role: "CODER", outcome: "security_blocked", failureClass: "WORKSPACE_ESCAPE_ATTEMPT" };
+  }
 
   const routes = freeCloud.capacityRoutes().filter((route) => route.capacityPoolScope !== "PER_USER_POOL");
   const pools = freeCloud.capacityPools().filter((pool) => pool.scope !== "PER_USER_POOL");
@@ -251,8 +273,8 @@ async function main() {
   await writeFile(join(repoDir, "README.md"), "# math-lib\n\nTiny math utilities. Run `npm test`.\n", "utf-8");
   await mkdir(join(repoDir, "src"), { recursive: true });
   await mkdir(join(repoDir, "test"), { recursive: true });
-  await writeFile(join(repoDir, "src", "math.mjs"), "export function multiply(a, b) { return 0; }\n\nexport function add(a, b) { return a + b; }\n", "utf-8");
-  await writeFile(join(repoDir, "src", "format.mjs"), "export function format(value) { return `value: ${value}`; }\n", "utf-8");
+  await writeFile(join(repoDir, "src", "math.mjs"), scenario === "feature" ? "export function multiply(a, b) { return a * b; }\n\nexport function add(a, b) { return a + b; }\n" : "export function multiply(a, b) { return 0; }\n\nexport function add(a, b) { return a + b; }\n", "utf-8");
+  await writeFile(join(repoDir, "src", "format.mjs"), scenario === "feature" ? "export function format(value) { return `result: ${value}`; }\n" : "export function format(value) { return `value: ${value}`; }\n", "utf-8");
   await writeFile(join(repoDir, "src", "stats.mjs"), "export function mean(values) { if (values.length === 0) return 0; return values.reduce((a, b) => a + b, 0) / values.length; }\n", "utf-8");
   await writeFile(join(repoDir, "src", "index.mjs"), "export { multiply, add } from './math.mjs';\nexport { format } from './format.mjs';\nexport { mean } from './stats.mjs';\n", "utf-8");
   await writeFile(join(repoDir, "test", "math.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { multiply } from '../src/math.mjs';\ntest('multiply', () => assert.equal(multiply(6, 7), 42));\n", "utf-8");
@@ -263,6 +285,13 @@ async function main() {
     // must edit three files, the reviewer must verify all of it: more turns, more roles.
     await writeFile(join(repoDir, "src", "median.mjs"), "export function median(values) { const sorted = [...values].sort((a, b) => a - b); return sorted[0]; }\n", "utf-8");
     await writeFile(join(repoDir, "test", "median.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { median } from '../src/median.mjs';\ntest('median odd', () => assert.equal(median([3, 1, 2]), 2));\ntest('median even', () => assert.equal(median([4, 1, 3, 2]), 2.5));\n", "utf-8");
+  }
+  if (scenario === "feature") {
+    await writeFile(join(repoDir, "src", "cart.mjs"), "export function subtotalCents(items) { return 0; }\n", "utf-8");
+    await writeFile(join(repoDir, "src", "coupons.mjs"), "export function applyCoupon(totalCents, coupon) { return totalCents; }\n", "utf-8");
+    await writeFile(join(repoDir, "test", "cart.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { subtotalCents } from '../src/cart.mjs';\ntest('quantity-aware subtotal', () => assert.equal(subtotalCents([{ unitCents: 199, quantity: 2 }, { unitCents: 50, quantity: 1 }]), 448));\ntest('empty cart', () => assert.equal(subtotalCents([]), 0));\ntest('negative quantity is rejected', () => assert.throws(() => subtotalCents([{ unitCents: 100, quantity: -1 }])));\n", "utf-8");
+    await writeFile(join(repoDir, "test", "coupons.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { applyCoupon } from '../src/coupons.mjs';\ntest('SAVE10 rounds to cents', () => assert.equal(applyCoupon(448, 'SAVE10'), 403));\ntest('unknown coupon is rejected', () => assert.throws(() => applyCoupon(448, 'UNKNOWN')));\n", "utf-8");
+    await writeFile(join(repoDir, "test", "checkout.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { checkoutTotal } from '../src/index.mjs';\ntest('public checkout composes cart and coupon', () => assert.equal(checkoutTotal([{ unitCents: 199, quantity: 2 }, { unitCents: 50, quantity: 1 }], 'SAVE10'), 403));\ntest('checkout without coupon', () => assert.equal(checkoutTotal([{ unitCents: 199, quantity: 2 }]), 398));\n", "utf-8");
   }
   await execFile("git", ["add", "."], { cwd: repoDir });
   await execFile("git", ["commit", "-m", "Initial commit"], { cwd: repoDir });
@@ -294,10 +323,14 @@ async function main() {
       workspacePath: repoDir,
       goal: scenario === "multi-step"
         ? "Inspect the repository and make all failing tests pass: fix multiply in src/math.mjs, the public output format in src/format.mjs, and median (both odd- and even-length inputs) in src/median.mjs. Do not modify the tests."
-        : "Inspect the repository and make both failing tests pass by fixing multiply in src/math.mjs and the public output format in src/format.mjs. Do not modify the tests.",
+        : scenario === "feature"
+          ? "Add a quantity-aware checkout feature using integer cents. Implement subtotalCents in src/cart.mjs, coupon policy in src/coupons.mjs (SAVE10 is 10% off rounded to cents; reject unknown coupons), and a public checkoutTotal composition exported from src/index.mjs. Reject invalid negative quantities. Preserve existing math and format behavior. Inspect the tests but do not edit them."
+          : "Inspect the repository and make both failing tests pass by fixing multiply in src/math.mjs and the public output format in src/format.mjs. Do not modify the tests.",
       verificationCommands: scenario === "multi-step"
         ? ["node --test test/math.test.mjs test/format.test.mjs test/median.test.mjs"]
-        : ["node --test test/math.test.mjs test/format.test.mjs"],
+        : scenario === "feature"
+          ? ["node --test test/cart.test.mjs test/coupons.test.mjs test/checkout.test.mjs test/math.test.mjs test/format.test.mjs"]
+          : ["node --test test/math.test.mjs test/format.test.mjs"],
       adapter,
       signal: runController.signal,
     });
@@ -383,7 +416,7 @@ async function main() {
   const finalFormat = await readFile(join(repoDir, "src", "format.mjs"), "utf-8").catch(() => null);
   let postIntegrationProbe = null;
   try {
-    const probe = await execFile("node", ["--test", ...(scenario === "multi-step" ? ["test/math.test.mjs", "test/format.test.mjs", "test/median.test.mjs"] : ["test/math.test.mjs", "test/format.test.mjs"])], { cwd: repoDir });
+    const probe = await execFile("node", ["--test", ...(scenario === "multi-step" ? ["test/math.test.mjs", "test/format.test.mjs", "test/median.test.mjs"] : scenario === "feature" ? ["test/cart.test.mjs", "test/coupons.test.mjs", "test/checkout.test.mjs", "test/math.test.mjs", "test/format.test.mjs"] : ["test/math.test.mjs", "test/format.test.mjs"])], { cwd: repoDir });
     postIntegrationProbe = { ok: true, output: `${probe.stdout}`.slice(0, 2_000) };
   } catch (err) {
     postIntegrationProbe = { ok: false, output: `${err.stdout ?? ""}${err.stderr ?? ""}`.slice(0, 2_000) };
@@ -412,7 +445,7 @@ async function main() {
 
   const evidence = {
     schemaVersion: 1,
-    round: "R52",
+    round: scenario === "feature" ? "R53" : "R52",
     scenario,
     generatedAt: completedAt,
     startedAt,
@@ -426,11 +459,14 @@ async function main() {
           ? "R52 provider-outage mission: the provider holding the most eligible routes loses every route to 429s; the mission must complete on a different provider."
           : scenario === "multi-step"
             ? "R52 multi-step mission: a three-file task exercising explorer + coder + reviewer through more turns on the live free fabric."
+            : scenario === "feature"
+              ? "R53 feature mission: quantity-aware integer-cents checkout across cart, coupon, composition, public export, and independent tests."
             : "R52 healthy mission: bootstrap probes measure supply normally; the mission completes through the standard fabric.",
     providersPresent: present,
     allowanceProbeBudget: allowanceProbes,
     catalogRefresh: { registered: refreshResult.registered ?? null, failed: refreshResult.failed ?? null, errors: refreshResult.errors ?? [] },
     quotaDomains: { beforeMission: quotaBefore, afterMission: quotaAfter },
+    replayedRoleEvidence,
     missionAdmission: result.topology?.missionAdmission ?? null,
     topology: result.topology ? { policy: result.topology.policy, plan: result.topology.plan ?? null } : null,
     capacityRoutesPreMission: preMissionRoutes,

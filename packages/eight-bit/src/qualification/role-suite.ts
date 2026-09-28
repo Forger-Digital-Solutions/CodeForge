@@ -421,11 +421,12 @@ async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: st
 
 function assemble(role: EightBitRole, cases: TestCaseResult[], protocol: RoleProtocol, startedAt: string): RoleQualificationResult {
   const scored = cases.filter((c) => !c.error || !TRANSIENT_RE.test(c.error));
+  const interrupted = cases.some((c) => !!c.error && TRANSIENT_RE.test(c.error));
   const hardFailures = [...new Set(scored.filter((c) => c.hardFailure || protocol.disqualifyingFailures.includes(c.caseId) && !c.passed).map((c) => c.caseId))];
   const passedCount = scored.filter((c) => c.passed).length;
   const score = scored.length === 0 ? 0 : passedCount / scored.length;
   const status: RoleQualificationResult["status"] =
-    scored.length === 0 && cases.length > 0 ? "NOT_TESTED"
+    cases.length === 0 || interrupted ? "NOT_TESTED"
     : hardFailures.length > 0 ? "HARD_FAILURE"
     : score >= protocol.acceptance ? "QUALIFIED"
     : score >= 0.5 ? "PROBATION"
@@ -446,18 +447,25 @@ export async function runRoleQualification(
   const timeoutMs = options.caseTimeoutMs ?? EXPLORER_PROTOCOL.caseTimeoutMs;
   const startedAt = (options.now ?? (() => new Date()))().toISOString();
   const counter = { count: 0 };
+  let interrupted = false;
 
   const explorerCases: TestCaseResult[] = [];
   for (const caze of EXPLORER_CASES) {
-    explorerCases.push(await withRetry(() => runExplorerCase(adapter, model.modelId, caze, timeoutMs, counter)));
+    const result = await withRetry(() => runExplorerCase(adapter, model.modelId, caze, timeoutMs, counter));
+    explorerCases.push(result);
+    if (result.error && TRANSIENT_RE.test(result.error)) { interrupted = true; break; }
   }
   const plannerCases: TestCaseResult[] = [];
-  for (const caze of PLANNER_CASES) {
-    plannerCases.push(await withRetry(() => runPlannerCase(adapter, model.modelId, caze, timeoutMs, counter)));
+  if (!interrupted) for (const caze of PLANNER_CASES) {
+    const result = await withRetry(() => runPlannerCase(adapter, model.modelId, caze, timeoutMs, counter));
+    plannerCases.push(result);
+    if (result.error && TRANSIENT_RE.test(result.error)) { interrupted = true; break; }
   }
   const reviewerCases: TestCaseResult[] = [];
-  for (const caze of REVIEWER_CASES) {
-    reviewerCases.push(await withRetry(() => runReviewerCase(adapter, model.modelId, caze, timeoutMs, counter)));
+  if (!interrupted) for (const caze of REVIEWER_CASES) {
+    const result = await withRetry(() => runReviewerCase(adapter, model.modelId, caze, timeoutMs, counter));
+    reviewerCases.push(result);
+    if (result.error && TRANSIENT_RE.test(result.error)) break;
   }
 
   const all = [...explorerCases, ...plannerCases, ...reviewerCases];
@@ -521,6 +529,7 @@ export async function runRoleAwareQualification(
       roleSuiteVersion: ROLE_QUALIFICATION_SUITE_VERSION,
       requests: (typeof receipt.metadata?.requests === "number" ? receipt.metadata.requests : 0) + role.requestCount,
       roleTransientCases: role.transientCases,
+      transient: role.transientCases > 0,
     },
   };
 }
