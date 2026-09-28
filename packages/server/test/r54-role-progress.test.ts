@@ -30,4 +30,43 @@ describe("R54 role progress", () => {
     const turns: ProgressTurn[] = [turn(1, "read_file", "known"), ...Array.from({ length: 5 }, (_, i) => ({ turn: i + 2, calls: [{ tool: "read_file", observationHash: `fake-${i}`, outcome: "suppressed" }] }))];
     expect(assessCoderProgress(turns).stalled).toBe(true);
   });
+
+  it("detects repeated failed edits on an unchanged target despite intervening diagnostics", () => {
+    const target = "src/report.mjs";
+    const read = (turn: number, hash: string): ProgressTurn => ({ turn, calls: [{ tool: "read_file", target, outcome: "success", observationHash: hash }] });
+    const failedEdit = (turn: number): ProgressTurn => ({ turn, calls: [{ tool: "edit_file", target, outcome: "failed", requestHash: "edit-request-a", observationHash: "target-not-found" }] });
+    const diagnostic = (turn: number): ProgressTurn => ({ turn, calls: [{ tool: "run_command", outcome: "failed", observationHash: `diagnostic-${turn}` }] });
+    const stalled = [read(1, "original"), failedEdit(2), diagnostic(3), failedEdit(4), diagnostic(5), failedEdit(6)];
+    expect(assessCoderProgress(stalled, 3)).toMatchObject({ stalled: true, reason: "REPEATED_EDIT_FAILURE", repeatedEditFailures: 3 });
+    expect(assessCoderProgress([...stalled.slice(0, 4), read(5, "revised"), failedEdit(6)], 3).stalled).toBe(false);
+    expect(assessCoderProgress([...stalled, { turn: 7, calls: [{ tool: "write_file", target, outcome: "success" }] }], 3).stalled).toBe(false);
+  });
+
+  it("does not stall on distinct edit requests that share a target_not_found observation", () => {
+    const target = "src/report.mjs";
+    const failedEdit = (turn: number, requestHash: string): ProgressTurn => ({ turn, calls: [{ tool: "edit_file", target, outcome: "failed", requestHash, observationHash: "target-not-found" }] });
+    const turns = [failedEdit(1, "edit-request-a"), failedEdit(2, "edit-request-b"), failedEdit(3, "edit-request-c")];
+    expect(assessCoderProgress(turns)).toMatchObject({ stalled: false, repeatedEditFailures: 1 });
+  });
+
+  it("keeps failed edit streaks separate per target path", () => {
+    const failedEdit = (turn: number, target: string): ProgressTurn => ({ turn, calls: [{ tool: "edit_file", target, outcome: "failed", requestHash: "edit-request-a", observationHash: "target-not-found" }] });
+    const turns = [
+      failedEdit(1, "src/alpha/file-a.ts"),
+      failedEdit(2, "src/beta/file-b.ts"),
+      failedEdit(3, "src/alpha/file-a.ts"),
+      failedEdit(4, "src/beta/file-b.ts"),
+    ];
+    expect(assessCoderProgress(turns)).toMatchObject({ stalled: false, repeatedEditFailures: 2 });
+  });
+
+  it("does not count provider or capacity command failures as failed edits", () => {
+    const turns: ProgressTurn[] = Array.from({ length: 3 }, (_, i) => ({ turn: i + 1, calls: [{ tool: "run_command", outcome: "failed", observationHash: "capacity-exhausted" }] }));
+    expect(assessCoderProgress(turns)).toMatchObject({ stalled: false, reason: null, repeatedEditFailures: 0 });
+  });
+
+  it("ignores failed edits recorded without a request hash", () => {
+    const turns: ProgressTurn[] = Array.from({ length: 3 }, (_, i) => ({ turn: i + 1, calls: [{ tool: "edit_file", target: "src/report.mjs", outcome: "failed", observationHash: "target-not-found" }] }));
+    expect(assessCoderProgress(turns)).toMatchObject({ stalled: false, repeatedEditFailures: 0 });
+  });
 });

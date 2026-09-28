@@ -2,6 +2,7 @@ export interface ProgressToolCall {
   tool: string;
   target?: string;
   outcome: "success" | "failed" | "denied" | "suppressed";
+  requestHash?: string;
   observationHash?: string;
 }
 
@@ -12,11 +13,12 @@ export interface ProgressTurn {
 
 export interface RoleProgressAssessment {
   stalled: boolean;
-  reason: "REPEATED_EVIDENCE" | null;
+  reason: "REPEATED_EVIDENCE" | "REPEATED_EDIT_FAILURE" | null;
   quietTurns: number;
   threshold: number;
   novelObservations: number;
   successfulMutations: number;
+  repeatedEditFailures: number;
 }
 
 const MUTATIONS = new Set(["edit_file", "write_file"]);
@@ -40,12 +42,25 @@ export function assessCoderProgress(turns: readonly ProgressTurn[], taskSteps = 
   let novelObservations = 0;
   let successfulMutations = 0;
   let trailingCalls = 0;
+  const failedEdits = new Map<string, { key: string; count: number }>();
+  const readStates = new Map<string, string>();
   for (const turn of turns) {
     let advanced = false;
     for (const call of turn.calls) {
+      if (call.tool === "read_file" && call.target && call.outcome === "success" && call.observationHash) {
+        const previous = readStates.get(call.target);
+        if (previous && previous !== call.observationHash) failedEdits.delete(call.target);
+        readStates.set(call.target, call.observationHash);
+      }
       if (MUTATIONS.has(call.tool) && call.outcome === "success") {
         successfulMutations++;
         advanced = true;
+        if (call.target) failedEdits.delete(call.target);
+      } else if (MUTATIONS.has(call.tool) && call.outcome === "failed" && call.target && call.requestHash && call.observationHash) {
+        const key = `${call.tool}:${call.requestHash}:${call.observationHash}`;
+        const current = failedEdits.get(call.target);
+        const count = current?.key === key ? current.count + 1 : 1;
+        failedEdits.set(call.target, { key, count });
       }
       const key = evidenceKey(call);
       if (key && !seen.has(key)) {
@@ -62,12 +77,14 @@ export function assessCoderProgress(turns: readonly ProgressTurn[], taskSteps = 
       trailingCalls += turn.calls.length;
     }
   }
+  const repeatedEditFailures = Math.max(0, ...Array.from(failedEdits.values(), (entry) => entry.count));
   return {
-    stalled: quietTurns >= threshold && trailingCalls >= threshold && novelObservations > 0,
-    reason: quietTurns >= threshold && trailingCalls >= threshold && novelObservations > 0 ? "REPEATED_EVIDENCE" : null,
+    stalled: repeatedEditFailures >= 3 || (quietTurns >= threshold && trailingCalls >= threshold && novelObservations > 0),
+    reason: repeatedEditFailures >= 3 ? "REPEATED_EDIT_FAILURE" : quietTurns >= threshold && trailingCalls >= threshold && novelObservations > 0 ? "REPEATED_EVIDENCE" : null,
     quietTurns,
     threshold,
     novelObservations,
     successfulMutations,
+    repeatedEditFailures,
   };
 }

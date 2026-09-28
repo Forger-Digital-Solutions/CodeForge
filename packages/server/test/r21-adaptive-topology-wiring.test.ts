@@ -106,11 +106,13 @@ describe("R21 adaptive topology wiring in the autonomous orchestrator", () => {
     expect(spawned).toEqual(["explorer", "reviewer"]);
   });
 
-  it("complex goal → two explorers (+ planner when a runtime exists) + reviewer", async () => {
+  it("complex goal stays on normal topology while Planner value is unproven", async () => {
     const result = await run("Migrate the database from SQLite to PostgreSQL across the api and the frontend");
     expect(result.status).toBe("completed");
-    expect(result.topology?.plan.topology).toBe("complex");
-    expect(spawned.filter((id) => id === "explorer")).toHaveLength(2);
+    expect(result.topology?.plan.topology).toBe("normal");
+    expect(result.topology?.plan.hasPlanner).toBe(false);
+    expect(result.topology?.plan.reason).toContain("Planner value is not established");
+    expect(spawned.filter((id) => id === "explorer")).toHaveLength(1);
     expect(spawned).toContain("reviewer");
   });
 
@@ -151,7 +153,7 @@ describe("R21 adaptive topology wiring in the autonomous orchestrator", () => {
     expect(result.status).toBe("completed");
   });
 
-  it("R24: ForgeGreen capacity advice reduces an adaptive parallel plan under constrained capacity and records it", async () => {
+  it("R24: the Planner-value gate keeps the adaptive plan serial under constrained capacity", async () => {
     const result = await run(
       "Migrate the database from SQLite to PostgreSQL across the api and the frontend",
       {},
@@ -160,9 +162,10 @@ describe("R21 adaptive topology wiring in the autonomous orchestrator", () => {
     );
     expect(result.status).toBe("completed");
     expect(result.topology?.policy).toBe("adaptive");
-    // Planned 2 explorers; capacity proved only one concurrent stream — serialized, not spawned.
+    // Planner value unproven — the automatic complex goal resolves to the serial plan before
+    // capacity advice could ever reduce a parallel one.
     expect(result.topology?.plan.topology).toBe("normal");
-    expect(result.topology?.plan.reason).toContain("CAPACITY_CONCURRENCY_LIMIT");
+    expect(result.topology?.plan.reason).toContain("Planner value is not established");
     expect(result.topology?.providerCapacity).toEqual({ distinctHealthyProviders: 1, minimumRouteConcurrency: 1, saturatedRoutes: 0 });
     expect(spawned.filter((id) => id === "explorer")).toHaveLength(1);
   });

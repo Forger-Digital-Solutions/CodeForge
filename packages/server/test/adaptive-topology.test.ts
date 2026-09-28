@@ -62,8 +62,13 @@ describe("Adaptive Topology — Deterministic Topology Selection & Baseline Pres
     expect(normal.stages).toEqual(["Explorer", "Coder", "Reviewer", "ForgeVerify"]);
 
     const complex = resolveAdaptiveTopology({ goal: "Fix something", complexityHint: "complex" });
-    expect(complex.topology).toBe("complex");
-    expect(complex.stages).toEqual(["Explorer A", "Explorer B", "Planner", "Coder", "Reviewer", "ForgeVerify"]);
+    expect(complex.topology).toBe("normal");
+    expect(complex.hasPlanner).toBe(false);
+    expect(complex.reason).toContain("Planner value is not established");
+
+    const provenComplex = resolveAdaptiveTopology({ goal: "Fix something", complexityHint: "complex", plannerValueProven: true });
+    expect(provenComplex.topology).toBe("complex");
+    expect(provenComplex.stages).toEqual(["Explorer A", "Explorer B", "Planner", "Coder", "Reviewer", "ForgeVerify"]);
   });
 
   it("matches deterministic keywords in goals", () => {
@@ -71,16 +76,22 @@ describe("Adaptive Topology — Deterministic Topology Selection & Baseline Pres
     expect(typo.topology).toBe("tiny");
 
     const refactor = resolveAdaptiveTopology({ goal: "Refactor architecture across packages" });
-    expect(refactor.topology).toBe("complex");
+    expect(refactor.topology).toBe("normal");
+    expect(refactor.hasPlanner).toBe(false);
+    expect(refactor.reason).toContain("Planner value is not established");
+
+    const provenRefactor = resolveAdaptiveTopology({ goal: "Refactor architecture across packages", plannerValueProven: true });
+    expect(provenRefactor.topology).toBe("complex");
+    expect(provenRefactor.hasPlanner).toBe(true);
   });
 
-  it("reduces automatic two-explorer topology when 8-Bit observes only one constrained provider", () => {
+  it("keeps automatic cross-cutting goals serial when Planner value is unproven and capacity is constrained", () => {
     const plan = resolveAdaptiveTopology({
       goal: "Refactor architecture across packages",
       providerCapacity: { distinctHealthyProviders: 1, minimumRouteConcurrency: 1, saturatedRoutes: 1 },
     });
     expect(plan.topology).toBe("normal");
-    expect(plan.reason).toContain("CAPACITY_CONCURRENCY_LIMIT");
+    expect(plan.reason).toContain("Planner value is not established");
     expect(plan.requiresForgeVerify).toBe(true);
   });
 

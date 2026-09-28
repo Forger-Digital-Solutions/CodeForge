@@ -41,12 +41,14 @@ describe("R54 quality-driven Coder handoff", () => {
 
   it("keeps the first edit, excludes its healthy but stalled route, and completes through verification", async () => {
     const coderRoutes: Array<SpawnChildOptions["excludeRoleRoute"]> = [];
+    const coderContexts: Array<SpawnChildOptions["contextSummary"]> = [];
     let secondSawPartial = false;
     const manager = {
       spawnChildAgent: async (options: SpawnChildOptions) => {
         if (options.agentId === "explorer") return { status: "completed", summary: "explored", findings: [], evidence: [], files: [], risks: [], recommendations: [] };
         if (options.agentId === "reviewer") return { status: "completed", summary: "pass", findings: [], evidence: [], files: [], risks: [], recommendations: [], structuredData: { verdict: "pass", summary: "pass", findings: [] } };
         coderRoutes.push(options.excludeRoleRoute);
+        coderContexts.push(options.contextSummary);
         const file = join(options.workspacePath, "src", "math.mjs");
         if (coderRoutes.length === 1) {
           await writeFile(file, "export const base = 1;\nexport function partial() { return 2; }\n");
@@ -69,6 +71,12 @@ describe("R54 quality-driven Coder handoff", () => {
     expect(result.completion?.outcome).toBe("completed");
     expect(secondSawPartial).toBe(true);
     expect(coderRoutes).toEqual([undefined, { providerId: "groq", modelId: "coder-a" }]);
+    expect(coderContexts).toHaveLength(2);
+    for (const context of coderContexts) {
+      expect(context).toContain("network:false");
+      expect(context).toContain("node --test test/integration.test.mjs");
+    }
+    expect(coderContexts[1]).toContain("same isolated worktree is preserved");
     expect((await readFile(join(repo, "src", "math.mjs"), "utf8"))).toContain("function partial()");
     const handoffs = await persistence.getWorkItemsByKind("role_quality_handoff");
     expect(handoffs).toHaveLength(1);

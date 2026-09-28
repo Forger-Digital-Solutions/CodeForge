@@ -726,6 +726,7 @@ export class AutonomousRunOrchestrator {
       counters.taskAttempts++;
       let reviewFeedback: string | undefined;
       const taskPlan = JSON.stringify(run.taskGraph.tasks.map(({ id, title, objective, dependencies, assignedRole }) => ({ id, title, objective, dependencies, assignedRole })));
+      const executionContext = `Execution constraints: this autonomous workspace lease has network:false. Use repository-local tools only; do not invoke package installers or network/external commands. Required verification commands: ${verificationCommands.length > 0 ? verificationCommands.map((command) => `\`${command}\``).join(", ") : "none supplied; inspect repository-local test configuration."}`;
 
       // ==========================================
       // PHASE 4: REVIEW & BOUNDED REVISION LOOP
@@ -766,6 +767,7 @@ export class AutonomousRunOrchestrator {
             explorerEvidence,
             findings: explorerFindings,
             reviewFeedback,
+            contextSummary: executionContext,
             workspaceKind: "git-worktree",
             workspaceBranch: worktreeWs.branch,
           });
@@ -798,7 +800,7 @@ export class AutonomousRunOrchestrator {
               updatedAt: new Date().toISOString(),
             };
             await this.persistence?.upsertWorkItem(handoff as unknown as import("@codeforge/sessions").WorkItem);
-            const contextSummary = `A preceding Coder stopped after observable repeated non-progress. Its route was ${oldRoute.providerId}/${oldRoute.modelId}; that route is excluded from this continuation. The same isolated worktree is preserved. Existing changed files: ${JSON.stringify(preservedFiles)}. Continue the original goal from those files; inspect existing edits before changing them, finish pending requirements, and run the required tests. Do not assume the prior Coder completed verification.`;
+            const contextSummary = `A preceding Coder stopped after observable repeated non-progress. Its route was ${oldRoute.providerId}/${oldRoute.modelId}; that route is excluded from this continuation. The same isolated worktree is preserved. Existing changed files: ${JSON.stringify(preservedFiles)}. Continue the original goal from those files; inspect existing edits before changing them, finish pending requirements, and run the required tests. Do not assume the prior Coder completed verification.\n${executionContext}`;
             codeResult = await this.subagentManager.spawnChildAgent({
               parentRunId: runId,
               sessionId,

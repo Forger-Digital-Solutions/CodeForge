@@ -223,6 +223,8 @@ export interface ToolTurnRecord {
     bytes?: number;
     /** Hash of observed tool output, never its raw contents. */
     observationHash?: string;
+    /** Hash of the raw tool arguments, never the arguments themselves. */
+    requestHash?: string;
   }>;
 }
 
@@ -2473,7 +2475,9 @@ export class AgentRuntime {
         if (req.role === "coder") {
           const progress = assessCoderProgress(toolTrace, plannedTaskSteps);
           if (progress.stalled) {
-            const reason = `${progress.quietTurns} tool-using turns yielded no new tool evidence or successful edit after ${progress.novelObservations} earlier observations.`;
+            const reason = progress.reason === "REPEATED_EDIT_FAILURE"
+              ? `${progress.repeatedEditFailures} identical failed edits targeted an unchanged file; the Coder did not resolve the edit precondition.`
+              : `${progress.quietTurns} tool-using turns yielded no new tool evidence or successful edit after ${progress.novelObservations} earlier observations.`;
             duplicateSupervisor.recordNoProgressInterruption();
             ledger.recordNoProgressInterruption(reason);
             this.recordRoleOutcome(journalActiveRoute ?? activeSelection, req.role, "role_failed", req.runId, "NON_CONVERGENCE");
@@ -2714,6 +2718,7 @@ export class AgentRuntime {
             : undefined;
           turnRecord.calls.push({
             tool: name,
+            requestHash: sha256(args),
             ...(target !== undefined ? { target } : {}),
             outcome,
             ...(record ? { bytes: record.rawOutputBytes ?? Buffer.byteLength(record.output ?? "", "utf8") } : {}),

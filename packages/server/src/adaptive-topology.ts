@@ -19,6 +19,8 @@ export interface ResolveAdaptiveTopologyInput {
    * the coder directly at context-assembly time. Never applied to explicit requests, never
    * removes ForgeVerify. */
   orientationCoverage?: { covered: boolean; candidateFiles: number };
+  /** Enables automatic Planner topology only after controlled evidence proves value for the task class. */
+  plannerValueProven?: boolean;
 }
 
 /**
@@ -30,7 +32,9 @@ export interface ResolveAdaptiveTopologyInput {
  * 2. Adaptive options are deterministic and bounded:
  *    - tiny: Coder -> ForgeVerify
  *    - normal: Explorer -> Coder -> Reviewer -> ForgeVerify
- *    - complex: Explorer A + Explorer B -> Planner -> Writer -> Reviewer -> ForgeVerify
+ *    - complex: Explorer A + Explorer B -> Planner -> Writer -> Reviewer -> ForgeVerify —
+ *      automatic complex selection uses the Planner only when plannerValueProven is set;
+ *      an explicit complex/fixed_r1 request always preserves the Planner baseline.
  *    - vision: Vision worker + repository Explorer -> Coder -> Reviewer -> ForgeVerify
  * 3. ForgeVerify remains the non-negotiable final authority across all topologies
  *    (`requiresForgeVerify: true` is strictly enforced).
@@ -65,7 +69,10 @@ export function resolveAdaptiveTopology(input: ResolveAdaptiveTopologyInput): Ad
     return capacityAwarePlan("normal", "Normal task: Explorer -> Coder -> Reviewer -> ForgeVerify", input.providerCapacity);
   }
   if (input.complexityHint === "complex") {
-    return capacityAwarePlan("complex", "Complex task: 2 Explorers -> Planner -> Coder -> Reviewer -> ForgeVerify", input.providerCapacity);
+    if (input.plannerValueProven === true) {
+      return capacityAwarePlan("complex", "Complex task: 2 Explorers -> Planner -> Coder -> Reviewer -> ForgeVerify", input.providerCapacity);
+    }
+    return capacityAwarePlan("normal", "Complex task, but Planner value is not established for this task class; using Explorer -> Coder -> Reviewer -> ForgeVerify", input.providerCapacity);
   }
 
   // Heuristic / deterministic goal analysis if no explicit hint:
@@ -74,7 +81,10 @@ export function resolveAdaptiveTopology(input: ResolveAdaptiveTopologyInput): Ad
     return capacityAwarePlan("tiny", "Deterministic goal match: targeted typo/one-line mutation", input.providerCapacity);
   }
   if (/\b(refactor architecture|migrate database|multi-package|system redesign)\b/.test(lowerGoal)) {
-    return capacityAwarePlan("complex", "Deterministic goal match: cross-cutting architectural change", input.providerCapacity);
+    if (input.plannerValueProven === true) {
+      return capacityAwarePlan("complex", "Deterministic goal match: cross-cutting architectural change", input.providerCapacity);
+    }
+    return capacityAwarePlan("normal", "Cross-cutting task, but Planner value is not established for this task class; using Explorer -> Coder -> Reviewer -> ForgeVerify", input.providerCapacity);
   }
 
   // Certified baseline: R1 fixed topology

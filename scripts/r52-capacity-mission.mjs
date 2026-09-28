@@ -401,6 +401,7 @@ async function main() {
       calls: (turn.calls ?? []).map((call) => ({
         tool: call.tool,
         targetHash: typeof call.target === "string" ? createHash("sha256").update(call.target).digest("hex").slice(0, 16) : null,
+        requestHash: call.requestHash ?? null,
         outcome: call.outcome,
         bytes: call.bytes ?? null,
         observationHash: call.observationHash ?? null,
@@ -438,6 +439,26 @@ async function main() {
     routePoolId: item.routePoolId ?? null,
     resultSummary: item.resultSummary ?? null,
     telemetry: item.telemetry ?? null,
+  }));
+  const roleQualityHandoffs = (await persistence.getWorkItemsByKind("role_quality_handoff")).map((item) => ({
+    runId: item.runId,
+    role: item.role,
+    reason: item.reason,
+    oldOwner: item.oldOwner ?? null,
+    newOwner: item.newOwner ?? null,
+    changedFiles: item.changedFiles ?? [],
+    pendingGoal: item.pendingGoal ?? null,
+    requiredVerificationCommands: item.requiredVerificationCommands ?? [],
+    priorFailure: item.priorFailure ?? null,
+    outcome: item.outcome ?? null,
+  }));
+  const semanticVerifierHandoffs = (await persistence.getWorkItemsByKind("semantic_verifier_handoff")).map((item) => ({
+    runId: item.runId,
+    reason: item.reason ?? null,
+    oldOwner: item.oldOwner ?? null,
+    newOwner: item.newOwner ?? null,
+    priorVerdict: item.priorVerdict ?? null,
+    outcome: item.outcome ?? null,
   }));
 
   const postHealth = routeHealth.snapshot();
@@ -530,6 +551,9 @@ async function main() {
       paidFallbackPossible: record?.costProfile?.paidFallbackPossible ?? null,
     };
   });
+  const allServedRoutesVerifiedFree = servedModels.every((model) =>
+    model.freeStatus === "verified_free" && model.paidFallbackPossible === false
+  );
 
   const evidence = {
     schemaVersion: 1,
@@ -578,6 +602,8 @@ async function main() {
     workers,
     journals,
     modelTurns,
+    roleQualityHandoffs,
+    semanticVerifierHandoffs,
     routerEvents,
     toolTrace,
     poolByRole,
@@ -590,9 +616,10 @@ async function main() {
     finalFormatContents: finalFormat,
     postIntegrationProbe,
     servedModels,
-    allServedRoutesForgeAutoEligible: allServedFree,
+    allServedRoutesForgeAutoEligibleAtEvidenceAssembly: allServedFree,
+    allServedRoutesVerifiedFree,
     paidSpendUsd: 0,
-    paidBoundary: "8-Bit managed free only: no Paid Auto route, no BYOK route, no paid receipts possible — every served route is asserted ForgeAuto-eligible with verified_free status.",
+    paidBoundary: "8-Bit managed free only: no Paid Auto route, no BYOK route, and no paid receipt path. Served-route cost provenance is reported separately; UNKNOWN does not count as verified free.",
     credentialsUsed: present.map((id) => `${ENV_KEY[id]} (present)`),
   };
 

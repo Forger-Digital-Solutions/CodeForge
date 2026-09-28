@@ -232,10 +232,10 @@ describe("R33 — workflow-owned turns wait for free capacity and review stays p
 
   it("implement parks on QUEUED, the workflow poll resumes it, and review runs on an independent pool", async () => {
     // Implementation pool: one slot, already held by another user's reservation. Review pool:
-    // REVIEWER-only so the implement turn can never steal it, and lower-scored than A so that
-    // without the independence hint the review would land back on A's pool.
-    const routeA = managedRoute("provider-a", { qualityScore: 95, windows: [quotaWindow({ limit: 1, remaining: 1 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
-    const routeB = managedRoute("provider-b", { qualityScore: 60, roles: ["REVIEWER"] });
+    // REVIEWER-only so the implement turn can never steal it; near quality parity lets the
+    // bounded independence preference win even after the implement route earns healthy evidence.
+    const routeA = managedRoute("provider-a", { qualityScore: 70, windows: [quotaWindow({ limit: 1, remaining: 1 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
+    const routeB = managedRoute("provider-b", { qualityScore: 75, roles: ["REVIEWER"] });
     registerFleet("provider-a", "provider-a-model");
     registerFleet("provider-b", "provider-b-model");
     const fabric = makeFabric([routeA, routeB], [poolFor(routeA), poolFor(routeB)]);
