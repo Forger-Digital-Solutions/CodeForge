@@ -741,6 +741,7 @@ export class AutonomousRunOrchestrator {
       // R49: the exact route that served the most recent implementation attempt, forwarded
       // to 8-Bit as role-scoped verification evidence (see recordRoleOutcome call sites).
       let implementerRoute: AgentModelSelection | undefined;
+      let qualitySwitches = 0;
 
       while (!reviewPassed) {
         if (controller.signal.aborted) throw new Error("Run cancelled during execution/revision");
@@ -750,7 +751,7 @@ export class AutonomousRunOrchestrator {
           const codeExecResult = await coderExecutor(worktreeWs.rootPath, goal, reviewFeedback);
           changedFiles = codeExecResult.filesChanged;
         } else if (this.subagentsR1Enabled) {
-          const codeResult = await this.subagentManager.spawnChildAgent({
+          let codeResult = await this.subagentManager.spawnChildAgent({
             parentRunId: runId,
             sessionId,
             agentId: "coder",
@@ -768,6 +769,61 @@ export class AutonomousRunOrchestrator {
             workspaceKind: "git-worktree",
             workspaceBranch: worktreeWs.branch,
           });
+          const qualityStall = codeResult.status === "blocked"
+            && /\[(?:AGENT_NO_PROGRESS_DETECTED|AGENT_TOOL_LOOP_DETECTED)\]/.test(codeResult.summary)
+            && codeResult.route !== undefined
+            && /^(?:managed|owner):/.test(codeResult.routePoolId ?? "")
+            && !controller.signal.aborted;
+          if (qualityStall && qualitySwitches === 0) {
+            qualitySwitches++;
+            const oldRoute = codeResult.route!;
+            const { stdout: modified } = await this.git(worktreeWs.rootPath, ["diff", "--name-only", baseRevision]);
+            const { stdout: untracked } = await this.git(worktreeWs.rootPath, ["ls-files", "--others", "--exclude-standard"]);
+            const preservedFiles = [...new Set([...modified.split(/\r?\n/), ...untracked.split(/\r?\n/)].filter(Boolean))];
+            const handoffId = `role-quality-handoff-${runId}-${counters.taskAttempts}`;
+            const handoff = {
+              kind: "role_quality_handoff",
+              id: handoffId,
+              sessionId,
+              runId,
+              role: "coder",
+              reason: "QUALITY_DRIVEN_ROLE_SWITCH",
+              oldOwner: oldRoute,
+              newOwner: null,
+              changedFiles: preservedFiles,
+              pendingGoal: goal,
+              requiredVerificationCommands: verificationCommands,
+              priorFailure: codeResult.summary.includes("AGENT_TOOL_LOOP_DETECTED") ? "AGENT_TOOL_LOOP_DETECTED" : "AGENT_NO_PROGRESS_DETECTED",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+            await this.persistence?.upsertWorkItem(handoff as unknown as import("@codeforge/sessions").WorkItem);
+            const contextSummary = `A preceding Coder stopped after observable repeated non-progress. Its route was ${oldRoute.providerId}/${oldRoute.modelId}; that route is excluded from this continuation. The same isolated worktree is preserved. Existing changed files: ${JSON.stringify(preservedFiles)}. Continue the original goal from those files; inspect existing edits before changing them, finish pending requirements, and run the required tests. Do not assume the prior Coder completed verification.`;
+            codeResult = await this.subagentManager.spawnChildAgent({
+              parentRunId: runId,
+              sessionId,
+              agentId: "coder",
+              task: goal,
+              workspacePath: worktreeWs.rootPath,
+              parentPermissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+              adapter,
+              signal: controller.signal,
+              taskPlan,
+              explorerEvidence,
+              findings: explorerFindings,
+              reviewFeedback,
+              contextSummary,
+              workspaceKind: "git-worktree",
+              workspaceBranch: worktreeWs.branch,
+              excludeRoleRoute: oldRoute,
+            });
+            await this.persistence?.upsertWorkItem({
+              ...handoff,
+              newOwner: codeResult.route ?? null,
+              outcome: codeResult.status,
+              updatedAt: new Date().toISOString(),
+            } as unknown as import("@codeforge/sessions").WorkItem);
+          }
           if (codeResult.status !== "completed") {
             if (codeResult.status === "cancelled") throw new Error(codeResult.summary);
             const reason = "SUBAGENT_WRITER_BLOCKED";
@@ -853,15 +909,16 @@ export class AutonomousRunOrchestrator {
         const { stdout: diffOut } = await this.git(worktreeWs.rootPath, ["diff", baseRevision]).catch(() => ({ stdout: "" }));
 
         // Spawn independent Reviewer child agent with private context
-        const reviewResult = await this.subagentManager.spawnChildAgent({
+        const reviewerContext = diffOut
+          ? buildReviewerDiffContext(diffStat, diffOut, baseRevision)
+          : `Changes verified for task: ${goal}`;
+        let reviewResult = await this.subagentManager.spawnChildAgent({
           parentRunId: runId,
           sessionId,
           agentId: "reviewer",
           task: `Review implementation for goal: ${goal}`,
           workspacePath: worktreeWs.rootPath,
-          contextSummary: diffOut
-            ? buildReviewerDiffContext(diffStat, diffOut, baseRevision)
-            : `Changes verified for task: ${goal}`,
+          contextSummary: reviewerContext,
           findings: reviewFindings,
           adapter,
           signal: controller.signal,
@@ -873,6 +930,55 @@ export class AutonomousRunOrchestrator {
           ...(implementerPoolId ? { preferIndependentFromPoolId: implementerPoolId } : {}),
         });
 
+        const firstReviewerVerdict = Boolean((reviewResult.structuredData as { verdict?: string } | undefined)?.verdict)
+          || (!this.subagentsR1Enabled && (reviewResult.findings?.length ?? 0) > 0);
+        if (!firstReviewerVerdict
+          && reviewResult.route && /^(?:managed|owner):/.test(reviewResult.routePoolId ?? "")
+          && !controller.signal.aborted) {
+          const oldRoute = reviewResult.route;
+          const handoffId = `semantic-verifier-handoff-${runId}-${run.reviewRounds}`;
+          const handoff = {
+            kind: "semantic_verifier_handoff",
+            id: handoffId,
+            sessionId,
+            runId,
+            role: "reviewer",
+            reason: "SEMANTIC_VERIFIER_FALLBACK",
+            oldOwner: oldRoute,
+            newOwner: null,
+            reviewedBaseRevision: baseRevision,
+            diffHash: crypto.createHash("sha256").update(diffOut).digest("hex"),
+            priorVerdict: "NONE",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          await this.persistence?.upsertWorkItem(handoff as unknown as import("@codeforge/sessions").WorkItem);
+          counters.childrenSpawned++;
+          reviewResult = await this.subagentManager.spawnChildAgent({
+            parentRunId: runId,
+            sessionId,
+            agentId: "reviewer",
+            task: `Review implementation for goal: ${goal}`,
+            workspacePath: worktreeWs.rootPath,
+            contextSummary: `${reviewerContext}\n\nThe prior Reviewer returned no valid verdict. You are the replacement Reviewer. Inspect the same worktree and return an independent verdict.`,
+            findings: reviewFindings,
+            adapter,
+            signal: controller.signal,
+            structuredOutput: "reviewer",
+            workspaceKind: "git-worktree",
+            workspaceBranch: worktreeWs.branch,
+            ...(implementerPoolId ? { preferIndependentFromPoolId: implementerPoolId } : {}),
+            excludeRoleRoute: oldRoute,
+            routeReplacementReason: "SEMANTIC_VERIFIER_FALLBACK",
+          });
+          await this.persistence?.upsertWorkItem({
+            ...handoff,
+            newOwner: reviewResult.route ?? null,
+            outcome: reviewResult.status,
+            updatedAt: new Date().toISOString(),
+          } as unknown as import("@codeforge/sessions").WorkItem);
+        }
+
         reviewFindings = [...deterministicFindings, ...(reviewResult.findings || [])];
         allFindings.push(...reviewFindings);
         if (reviewResult.evidence) allEvidence.push(...reviewResult.evidence);
@@ -883,12 +989,12 @@ export class AutonomousRunOrchestrator {
         // findings below.
         // R21: a reviewer that ran out of turns (blocked without a structured verdict) delivered no
         // review either; the absence of findings from an exhausted reviewer is not approval.
-        // A verdict is either a structured reviewer result or at least one finding; an exhausted
-        // reviewer produces neither (the runtime attaches reviewer findings only from a validated
-        // structured result).
-        const reviewerDeliveredVerdict = Boolean((reviewResult.structuredData as { verdict?: string } | undefined)?.verdict) || (reviewResult.findings?.length ?? 0) > 0;
-        if (reviewResult.status === "cancelled" || reviewResult.status === "failed" || (reviewResult.status === "blocked" && !reviewerDeliveredVerdict)) {
-          const reason = reviewResult.status === "cancelled" ? "REVIEWER_CANCELLED" : reviewResult.status === "blocked" ? "REVIEWER_BUDGET_EXHAUSTED" : "REVIEWER_FAILED";
+        // R1 requires the validated structured verdict; legacy non-R1 reviewers may still
+        // provide a finding. Advisory text without a verdict cannot approve an R1 patch.
+        const reviewerDeliveredVerdict = Boolean((reviewResult.structuredData as { verdict?: string } | undefined)?.verdict)
+          || (!this.subagentsR1Enabled && (reviewResult.findings?.length ?? 0) > 0);
+        if (reviewResult.status === "cancelled" || reviewResult.status === "failed" || !reviewerDeliveredVerdict) {
+          const reason = reviewResult.status === "cancelled" ? "REVIEWER_CANCELLED" : reviewResult.status === "failed" ? "REVIEWER_FAILED" : reviewResult.status === "blocked" ? "REVIEWER_BUDGET_EXHAUSTED" : "REVIEWER_NO_VERDICT";
           const summary = `Independent review did not complete (${reason}): ${reviewResult.summary}`;
           this.transitionRun(run, "blocked", adapter);
           run.error = reason;

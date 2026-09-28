@@ -336,6 +336,38 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(selection?.payload).toMatchObject({ providerId: "provider-a", modelId: "provider-a-model" });
   });
 
+  it("excludes a stalled free role owner and admits an alternate without marking the provider unhealthy", async () => {
+    const first = managedRoute("provider-a", { qualityScore: 95 });
+    const second = managedRoute("provider-b", { qualityScore: 90 });
+    registerFleet("provider-a", "provider-a-model");
+    registerFleet("provider-b", "provider-b-model");
+    const fabric = makeFabric([first, second], [poolFor(first), poolFor(second)]);
+    const a = new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents());
+    const b = new ScriptedRouteProvider("provider-b", "provider-b-model", () => okEvents());
+    catalog.register(a);
+    catalog.register(b);
+    const runtime = makeRuntime("sess-quality-handoff", fabric);
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-quality-handoff", eventStore, persistence });
+    const result = await runtime.executeAgentRun({
+      runId: "run-quality-handoff",
+      agentId: "coder",
+      role: "coder",
+      goal: "Continue the existing work",
+      workspaceId: "ws-quality-handoff",
+      workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+      roleRouting: true,
+      excludeRoleRoute: { providerId: "provider-a", modelId: "provider-a-model" },
+      adapter,
+    });
+    expect(result.route).toMatchObject({ providerId: "provider-b", modelId: "provider-b-model" });
+    expect(a.callCount).toBe(0);
+    expect(b.callCount).toBe(1);
+    expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+    expect(eventStore.getAll().find((event) => event.type === "router.failover")?.payload).toMatchObject({ reason: "QUALITY_DRIVEN_ROLE_SWITCH" });
+    expect(authority.assess("provider-a", "provider-a-model", { role: "CODER" }).hardExclude).toBe(false);
+  });
+
   it("a queued role-routed run fails closed with no provider call and no reservation", async () => {
     const route = managedRoute("provider-a", { windows: [quotaWindow({ limit: 1, remaining: 1 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
     registerFleet("provider-a", "provider-a-model");

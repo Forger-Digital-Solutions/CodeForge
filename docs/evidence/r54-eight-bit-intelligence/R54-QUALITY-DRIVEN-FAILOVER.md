@@ -1,0 +1,7 @@
+# R54 bounded quality-driven Coder handoff
+
+After a Coder blocks on observed `AGENT_NO_PROGRESS_DETECTED` or `AGENT_TOOL_LOOP_DETECTED`, the production orchestrator may start one replacement Coder on the same isolated worktree. This applies only to a served managed-free or owner-free role route, with an active parent run. The first Coder has already stopped; the replacement route excludes that exact provider/model during fresh 8-Bit admission. The provider is not marked unavailable. A 429, timeout, policy exclusion, or unrelated block does not enter this branch.
+
+The handoff records the old route, current changed files, pending goal, required verification commands, and eventual replacement route/status. The new worker receives the prior worktree and a bounded context note telling it to inspect existing edits. A route-selection event uses `QUALITY_DRIVEN_ROLE_SWITCH`. No extra model-turn grant is made. If the alternate cannot be admitted or does not finish, the run remains blocked and ForgeVerify cannot complete it.
+
+Deterministic orchestrator tests show the first Coder's edit surviving to the second Coder, exclusion of the first route, one ownership transfer, independent verification and completion, and no switch on a provider 429. A real Free Fabric/runtime test shows alternate admission and a quality-switch event while the old provider remains healthy. Live proof remains pending.

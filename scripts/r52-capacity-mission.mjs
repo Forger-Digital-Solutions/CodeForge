@@ -67,6 +67,8 @@ const qualDbPath = option("qual-db", join(tmpdir(), "r46-qualification.db"));
 const timeoutMs = Number(option("timeout-ms", "600000"));
 const allowanceProbes = Number(option("allowance-probes", scenario === "unmeasured" ? "0" : "8"));
 const roleEvidenceFrom = option("role-evidence-from", "");
+const complexityHint = option("complexity-hint", "");
+const evidenceRound = option("round", scenario === "feature" || scenario === "refactor" ? "R53" : "R52");
 
 const PROVIDERS = ["groq", "mistral", "openrouter", "cerebras"];
 const ENV_KEY = { groq: "GROQ_API_KEY", mistral: "MISTRAL_API_KEY", openrouter: "OPENROUTER_API_KEY", cerebras: "CEREBRAS_API_KEY" };
@@ -347,6 +349,7 @@ async function main() {
           : ["node --test test/math.test.mjs test/format.test.mjs"],
       adapter,
       signal: runController.signal,
+      ...(complexityHint ? { complexityHint } : {}),
     });
   } finally {
     clearTimeout(timeout);
@@ -369,6 +372,40 @@ async function main() {
     routeFailovers: item.telemetry?.routeFailovers ?? item.routing?.routeFailovers ?? [],
     recoveryOutcome: item.recoveryOutcome ?? null,
     recoveryDetail: item.recoveryDetail ?? null,
+    stopReason: item.telemetry?.stopReason ?? null,
+    turnTrace: (item.telemetry?.toolTrace ?? []).map((turn) => ({
+      turn: turn.turn,
+      batchSize: turn.batchSize,
+      calls: (turn.calls ?? []).map((call) => ({
+        tool: call.tool,
+        targetHash: typeof call.target === "string" ? createHash("sha256").update(call.target).digest("hex").slice(0, 16) : null,
+        outcome: call.outcome,
+        bytes: call.bytes ?? null,
+        observationHash: call.observationHash ?? null,
+      })),
+    })),
+    editAttempts: (item.telemetry?.editAttempts ?? []).map((edit) => ({
+      turn: edit.turn,
+      tool: edit.tool,
+      pathHash: typeof edit.path === "string" ? createHash("sha256").update(edit.path).digest("hex").slice(0, 16) : null,
+      outcome: edit.outcome,
+      failureClass: edit.failureClass ?? null,
+    })),
+    roleProgress: item.telemetry?.roleProgress ?? null,
+  }));
+  const modelTurns = (await persistence.getWorkItemsByKind("agent_model_turn")).map((item) => ({
+    runId: item.runId,
+    agentId: item.agentId,
+    turnId: item.turnId,
+    state: item.state,
+    transcriptBytes: item.transcriptBytes ?? null,
+    provider: item.servedProviderId ?? null,
+    model: item.servedModelId ?? null,
+    usageSource: item.usageSource ?? "UNKNOWN",
+    inputTokens: item.usageSource === "PROVIDER_REPORTED" ? item.inputTokens ?? null : null,
+    outputTokens: item.usageSource === "PROVIDER_REPORTED" ? item.outputTokens ?? null : null,
+    finishReason: item.finishReason ?? null,
+    toolRequests: item.toolRequests ?? null,
   }));
   const workers = (await persistence.getWorkItemsByKind("subagent_run")).map((item) => ({
     role: item.role,
@@ -474,8 +511,9 @@ async function main() {
 
   const evidence = {
     schemaVersion: 1,
-    round: scenario === "feature" || scenario === "refactor" ? "R53" : "R52",
+    round: evidenceRound,
     scenario,
+    complexityHint: complexityHint || null,
     generatedAt: completedAt,
     startedAt,
     elapsedMs,
@@ -514,6 +552,7 @@ async function main() {
     roleReport,
     workers,
     journals,
+    modelTurns,
     routerEvents,
     toolTrace,
     poolByRole,

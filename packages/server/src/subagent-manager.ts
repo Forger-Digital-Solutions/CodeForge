@@ -34,7 +34,9 @@ import type { DurableToolExecutionState, ToolExecutionClass } from "./agent-runt
 import type { AgentRuntime } from "./agent-runtime.js";
 
 export const MAX_SUBAGENT_DEPTH = 1;
-export const MAX_CHILDREN_PER_PARENT = 5;
+// Complex topology uses five sequential/parallel children; one bounded Coder handoff and
+// one bounded Reviewer replacement must fit without permitting unbounded fan-out.
+export const MAX_CHILDREN_PER_PARENT = 7;
 
 export interface SpawnChildOptions {
   parentRunId: string;
@@ -66,6 +68,9 @@ export interface SpawnChildOptions {
   /** R48: reviewer independence — the implementing run's quota-pool identity. Routing
    *  prefers a different pool; the same pool still serves when nothing independent can. */
   preferIndependentFromPoolId?: string;
+  /** Exclude a preceding role owner after a witnessed quality stall; never excludes on 429. */
+  excludeRoleRoute?: { providerId: string; modelId: string };
+  routeReplacementReason?: "QUALITY_DRIVEN_ROLE_SWITCH" | "SEMANTIC_VERIFIER_FALLBACK";
 }
 
 export interface ChildRun {
@@ -480,6 +485,8 @@ export class SubagentManager {
           customToolExecutor: options.customToolExecutor,
           roleRouting: this.r1Enabled,
           ...(options.preferIndependentFromPoolId ? { preferIndependentFromPoolId: options.preferIndependentFromPoolId } : {}),
+          ...(options.excludeRoleRoute ? { excludeRoleRoute: options.excludeRoleRoute } : {}),
+          ...(options.routeReplacementReason ? { routeReplacementReason: options.routeReplacementReason } : {}),
         });
         usage = runtimeRes.usage;
         const runtimeStatus = childRun.watchdogAbortReason === "watchdog_budget_ceiling" && runtimeRes.status === "cancelled"

@@ -103,6 +103,7 @@ import { ForgeGreenRunPolicy, type ForgeGreenPolicySnapshot } from "./forgegreen
 import type { UserIntentHoldController } from "./user-intent-hold.js";
 import { PAID_AUTO_AUTO_MODEL_ID, PAID_AUTO_PROVIDER_ID, type PaidAutoRouteId, type PaidAutoService } from "@codeforge/paid-auto";
 import { tryConsumeInferenceRequest, type InferenceLane, type WorkflowInferenceBudget } from "./inference-budget.js";
+import { assessCoderProgress, type RoleProgressAssessment } from "./role-progress.js";
 
 export interface AgentRuntimeRequest {
   runId: string;
@@ -150,6 +151,10 @@ export interface AgentRuntimeRequest {
    * independent can, and the decision evidence says so honestly.
    */
   preferIndependentFromPoolId?: string;
+  /** A prior healthy route was stopped for observed role non-convergence. Fresh role
+   * admission must exclude it for this handoff without marking its provider unavailable. */
+  excludeRoleRoute?: AgentModelSelection;
+  routeReplacementReason?: "QUALITY_DRIVEN_ROLE_SWITCH" | "SEMANTIC_VERIFIER_FALLBACK";
   /**
    * R2 durable recovery: when present, this run continues a crashed run from its recorded
    * conversation instead of starting fresh. The caller must have classified the journal as
@@ -203,6 +208,7 @@ export interface AgentContextMetrics {
    * availability is measurable separately from agent efficiency. */
   routeWindows?: Array<{ providerId: string; modelId: string; calls: number; firstCallAt: string; firstFailureAt?: string; failureCode?: string }>;
   routeFailovers?: Array<{ from: string; to: string; at: string; reason: string; callsBeforeFailure: number }>;
+  roleProgress?: RoleProgressAssessment;
 }
 
 export interface ToolTurnRecord {
@@ -215,6 +221,8 @@ export interface ToolTurnRecord {
     target?: string;
     outcome: "success" | "failed" | "denied" | "suppressed";
     bytes?: number;
+    /** Hash of observed tool output, never its raw contents. */
+    observationHash?: string;
   }>;
 }
 
@@ -1378,6 +1386,7 @@ export class AgentRuntime {
       Object.defineProperty(metrics, "adaptiveTurnBudget", { enumerable: true, configurable: true, get: () => adaptiveTurnBudget });
       Object.defineProperty(metrics, "routeWindows", { enumerable: true, configurable: true, get: () => (routeWindows.size > 0 ? [...routeWindows.values()] : undefined) });
       Object.defineProperty(metrics, "routeFailovers", { enumerable: true, configurable: true, get: () => (routeFailovers.length > 0 ? routeFailovers : undefined) });
+      Object.defineProperty(metrics, "roleProgress", { enumerable: true, configurable: true, get: () => req.role === "coder" ? assessCoderProgress(toolTrace, plannedTaskSteps) : undefined });
       return metrics;
     };
     const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen, this.capacityGovernorIsExplicit ? this.capacityGovernor : undefined, greenPolicy, this.paidAuto);
@@ -1424,6 +1433,13 @@ export class AgentRuntime {
     // R45: per-turn tool trace for exploration-efficiency forensics; scaffold coverage +
     // the adaptive budget decision land on the journal via contextMetrics getters.
     const toolTrace: ToolTurnRecord[] = [];
+    let plannedTaskSteps = 1;
+    try {
+      const parsedPlan: unknown = JSON.parse(req.taskPlan ?? "null");
+      if (Array.isArray(parsedPlan)) plannedTaskSteps = parsedPlan.length;
+    } catch {
+      // An invalid optional plan cannot change tool authority or suppress a role run.
+    }
     // R45 §18: per-route window telemetry — calls served on each route, when the first failure
     // arrived, and failover edges. This is what lets provider availability be separated from
     // agent efficiency in the corpus evidence instead of one undifferentiated call count.
@@ -1491,6 +1507,7 @@ export class AgentRuntime {
           editAttempts,
           structuredOutput: structuredTelemetry,
           toolTrace,
+          roleProgress: req.role === "coder" ? assessCoderProgress(toolTrace, plannedTaskSteps) : undefined,
           explorationBrief: explorationBriefMeta,
           adaptiveTurnBudget,
           // R45 §18: route-window telemetry — calls-to-first-failure per route and failover
@@ -1858,6 +1875,7 @@ export class AgentRuntime {
       }
       if (!activeSelection && req.roleRouting && this.hasRoutableFleet()) {
         const role = eightBitRoleForAgentRole(req.role);
+        const qualifiedForRole = this.roleRouteFilter(role);
         const selectRoute = () => this.eightBit.selectInitialRoute(
           { sessionId: this.sessionId, role, workstreamId: req.workstreamScope },
           {
@@ -1896,7 +1914,9 @@ export class AgentRuntime {
             requiredCapabilities: req.role === "coder" ? ["coding", "toolCalling"] : req.role === "explorer" ? ["toolCalling"] : [],
             taskType: req.role,
             hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
-            routeFilter: this.roleRouteFilter(role),
+            routeFilter: (providerId, modelId) =>
+              (!qualifiedForRole || qualifiedForRole(providerId, modelId))
+              && (req.excludeRoleRoute?.providerId !== providerId || req.excludeRoleRoute.modelId !== modelId),
             capacityScoreAdjustment: this.freeCloud
               ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
               : undefined,
@@ -1947,6 +1967,14 @@ export class AgentRuntime {
         journalActiveRoute = activeSelection;
         servedPoolId = routing.fabric?.selected?.capacityPoolId;
         adapter.emitRouterSelection(req.runId, routing.model.modelId, routing.model.providerId, Math.round(routing.score), routing.reasons);
+        if (req.excludeRoleRoute) {
+          adapter.emitRouterFailover(
+            req.runId,
+            `${req.excludeRoleRoute.providerId}/${req.excludeRoleRoute.modelId}`,
+            `${activeSelection.providerId}/${activeSelection.modelId}`,
+            req.routeReplacementReason ?? "QUALITY_DRIVEN_ROLE_SWITCH",
+          );
+        }
       }
 
       // R48/C2: `paid-auto/auto` + roleRouting asks the paid roster to choose the qualified
@@ -2442,6 +2470,27 @@ export class AgentRuntime {
         if (req.signal?.aborted) {
           throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
         }
+        if (req.role === "coder") {
+          const progress = assessCoderProgress(toolTrace, plannedTaskSteps);
+          if (progress.stalled) {
+            const reason = `${progress.quietTurns} tool-using turns yielded no new tool evidence or successful edit after ${progress.novelObservations} earlier observations.`;
+            duplicateSupervisor.recordNoProgressInterruption();
+            ledger.recordNoProgressInterruption(reason);
+            this.recordRoleOutcome(journalActiveRoute ?? activeSelection, req.role, "role_failed", req.runId, "NON_CONVERGENCE");
+            stopReason = "no_progress_detected";
+            forgeGreenR0RunStatus = "blocked";
+            contextMetrics.efficiencyReceipt = createRunReceipt();
+            return {
+              status: "blocked",
+              summary: `[${ERROR_CODES.AGENT_NO_PROGRESS_DETECTED}] ${reason}`,
+              findings, evidence, toolExecutions, usage: totalUsage, stopReason,
+              filesChanged: Array.from(changedFiles), contextMetrics,
+              error: ERROR_CODES.AGENT_NO_PROGRESS_DETECTED,
+              ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
+              ...(journalActiveRoute ? { route: { ...journalActiveRoute } } : {}),
+            };
+          }
+        }
 
         turnCount++;
         totalUsage.requestCount++;
@@ -2454,6 +2503,7 @@ export class AgentRuntime {
         await writeRunJournal("active");
         await this.userIntentHold?.waitForDispatch(this.sessionId, "model");
         const modelTurnCreatedAt = new Date().toISOString();
+        let turnResponse: ModelExecutionResponse | undefined;
         const persistModelTurn = async (state: "created" | "provider_request_started" | "provider_response_completed" | "tool_requests_decoded" | "agent_result_completed" | "failed" | "cancelled"): Promise<void> => {
           await this.persistence.upsertWorkItem({
             kind: "agent_model_turn",
@@ -2463,6 +2513,16 @@ export class AgentRuntime {
             agentId: req.agentId,
             turnId: modelTurnId,
             state,
+            transcriptBytes: messages.reduce((total, message) => total + Buffer.byteLength(message.content ?? "", "utf8"), 0),
+            ...(turnResponse ? {
+              servedProviderId: turnResponse.providerId,
+              servedModelId: turnResponse.modelId,
+              usageSource: turnResponse.usageSource,
+              inputTokens: turnResponse.usage.inputTokens,
+              outputTokens: turnResponse.usage.outputTokens,
+              finishReason: turnResponse.finishReason,
+              toolRequests: turnResponse.toolCalls.length,
+            } : {}),
             createdAt: modelTurnCreatedAt,
             updatedAt: new Date().toISOString(),
           } as unknown as WorkItem);
@@ -2474,6 +2534,7 @@ export class AgentRuntime {
         try {
           await persistModelTurn("provider_request_started");
           response = await requestModelTurn();
+          turnResponse = response;
           await persistModelTurn("provider_response_completed");
         } catch (err: unknown) {
           if (err instanceof RoleContextOverflowError) {
@@ -2656,6 +2717,7 @@ export class AgentRuntime {
             ...(target !== undefined ? { target } : {}),
             outcome,
             ...(record ? { bytes: record.rawOutputBytes ?? Buffer.byteLength(record.output ?? "", "utf8") } : {}),
+            ...(record ? { observationHash: sha256(record.output || record.error || "") } : {}),
           });
         };
 
@@ -2767,6 +2829,8 @@ export class AgentRuntime {
                 filesChanged: Array.from(changedFiles),
                 error: ERROR_CODES.AGENT_TOOL_LOOP_DETECTED,
                 contextMetrics,
+                ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
+                ...(journalActiveRoute ? { route: { ...journalActiveRoute } } : {}),
               };
             }
           }
@@ -2794,6 +2858,8 @@ export class AgentRuntime {
                 filesChanged: Array.from(changedFiles),
                 error: ERROR_CODES.AGENT_TOOL_LOOP_DETECTED,
                 contextMetrics,
+                ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
+                ...(journalActiveRoute ? { route: { ...journalActiveRoute } } : {}),
               };
             }
           }
@@ -2871,6 +2937,8 @@ export class AgentRuntime {
               filesChanged: Array.from(changedFiles),
               error: loopCode,
               contextMetrics,
+              ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
+              ...(journalActiveRoute ? { route: { ...journalActiveRoute } } : {}),
             };
           }
           if (duplicateDecision.action === "suppress") {
