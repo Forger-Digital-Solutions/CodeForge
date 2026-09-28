@@ -280,8 +280,8 @@ async function main() {
   await writeFile(join(repoDir, "README.md"), "# math-lib\n\nTiny math utilities. Run `npm test`.\n", "utf-8");
   await mkdir(join(repoDir, "src"), { recursive: true });
   await mkdir(join(repoDir, "test"), { recursive: true });
-  await writeFile(join(repoDir, "src", "math.mjs"), scenario === "feature" || scenario === "refactor" ? "export function multiply(a, b) { return a * b; }\n\nexport function add(a, b) { return a + b; }\n" : "export function multiply(a, b) { return 0; }\n\nexport function add(a, b) { return a + b; }\n", "utf-8");
-  await writeFile(join(repoDir, "src", "format.mjs"), scenario === "feature" || scenario === "refactor" ? "export function format(value) { return `result: ${value}`; }\n" : "export function format(value) { return `value: ${value}`; }\n", "utf-8");
+  await writeFile(join(repoDir, "src", "math.mjs"), ["feature", "refactor", "cross-package"].includes(scenario) ? "export function multiply(a, b) { return a * b; }\n\nexport function add(a, b) { return a + b; }\n" : "export function multiply(a, b) { return 0; }\n\nexport function add(a, b) { return a + b; }\n", "utf-8");
+  await writeFile(join(repoDir, "src", "format.mjs"), ["feature", "refactor", "cross-package"].includes(scenario) ? "export function format(value) { return `result: ${value}`; }\n" : "export function format(value) { return `value: ${value}`; }\n", "utf-8");
   await writeFile(join(repoDir, "src", "stats.mjs"), "export function mean(values) { if (values.length === 0) return 0; return values.reduce((a, b) => a + b, 0) / values.length; }\n", "utf-8");
   await writeFile(join(repoDir, "src", "index.mjs"), "export { multiply, add } from './math.mjs';\nexport { format } from './format.mjs';\nexport { mean } from './stats.mjs';\n", "utf-8");
   await writeFile(join(repoDir, "test", "math.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { multiply } from '../src/math.mjs';\ntest('multiply', () => assert.equal(multiply(6, 7), 42));\n", "utf-8");
@@ -305,9 +305,27 @@ async function main() {
     await writeFile(join(repoDir, "test", "stats-refactor.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { sum, mean } from '../src/stats.mjs';\ntest('sum of several values', () => assert.equal(sum([2, 4, 6]), 12));\ntest('empty sum', () => assert.equal(sum([]), 0));\ntest('mean preserves behavior', () => assert.equal(mean([2, 4, 6]), 4));\n", "utf-8");
     await writeFile(join(repoDir, "test", "report.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { summarize } from '../src/index.mjs';\ntest('summary composes shared aggregation and formatter', () => assert.deepEqual(summarize([2, 4, 6]), { count: 3, total: 12, mean: 4, label: 'result: 12' }));\ntest('empty summary preserves zero conventions', () => assert.deepEqual(summarize([]), { count: 0, total: 0, mean: 0, label: 'result: 0' }));\n", "utf-8");
   }
+  if (scenario === "cross-package") {
+    await mkdir(join(repoDir, "packages", "contracts", "src"), { recursive: true });
+    await mkdir(join(repoDir, "packages", "checkout", "src"), { recursive: true });
+    await writeFile(join(repoDir, "packages", "contracts", "src", "index.mjs"), "export function priceLine(line) { return { amountCents: line.unitCents * line.quantity, currency: 'USD' }; }\n", "utf-8");
+    await writeFile(join(repoDir, "packages", "checkout", "src", "index.mjs"), "import { priceLine } from '../../contracts/src/index.mjs';\nexport function checkoutTotal(lines, discountPercent = 0) { const subtotal = lines.reduce((sum, line) => sum + priceLine(line), 0); return Math.round(subtotal * (100 - discountPercent) / 100); }\n", "utf-8");
+    await writeFile(join(repoDir, "test", "contracts.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { priceLine } from '../packages/contracts/src/index.mjs';\ntest('contract returns integer cents and currency', () => assert.deepEqual(priceLine({ unitCents: 199, quantity: 2 }), { amountCents: 398, currency: 'USD' }));\ntest('contract rejects negative quantity', () => assert.throws(() => priceLine({ unitCents: 199, quantity: -1 })));\ntest('contract rejects fractional cents', () => assert.throws(() => priceLine({ unitCents: 1.5, quantity: 2 })));\n", "utf-8");
+    await writeFile(join(repoDir, "test", "checkout-integration.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { checkoutTotal } from '../packages/checkout/src/index.mjs';\ntest('checkout composes line contracts', () => assert.equal(checkoutTotal([{ unitCents: 199, quantity: 2 }, { unitCents: 50, quantity: 1 }]), 448));\ntest('checkout applies discount at aggregate boundary', () => assert.equal(checkoutTotal([{ unitCents: 199, quantity: 2 }, { unitCents: 50, quantity: 1 }], 10), 403));\ntest('empty checkout is zero', () => assert.equal(checkoutTotal([]), 0));\ntest('invalid discount is rejected', () => assert.throws(() => checkoutTotal([{ unitCents: 100, quantity: 1 }], 110)));\n", "utf-8");
+  }
   await execFile("git", ["add", "."], { cwd: repoDir });
   await execFile("git", ["commit", "-m", "Initial commit"], { cwd: repoDir });
   const baseRevision = await git(repoDir, ["rev-parse", "HEAD"]);
+  let preMissionIntegration = null;
+  if (scenario === "cross-package") {
+    try {
+      await execFile("node", ["--test", "test/contracts.test.mjs", "test/checkout-integration.test.mjs"], { cwd: repoDir });
+      preMissionIntegration = { failed: false, exitCode: 0 };
+    } catch (error) {
+      preMissionIntegration = { failed: true, exitCode: error.code ?? null, output: `${error.stdout ?? ""}\n${error.stderr ?? ""}`.slice(0, 6000) };
+    }
+    if (!preMissionIntegration.failed) throw new Error("Cross-package mission fixture unexpectedly passes before repair.");
+  }
 
   const sessionId = `session-r52-${scenario}`;
   persistence.upsertSession({ id: sessionId, title: `R52 Capacity Mission (${scenario})`, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "idle" });
@@ -339,6 +357,8 @@ async function main() {
           ? "Add a quantity-aware checkout feature using integer cents. Implement subtotalCents in src/cart.mjs, coupon policy in src/coupons.mjs (SAVE10 is 10% off rounded to cents; reject unknown coupons), and a public checkoutTotal composition exported from src/index.mjs. Reject invalid negative quantities. Preserve existing math and format behavior. Inspect the tests but do not edit them."
           : scenario === "refactor"
             ? "Refactor shared aggregation: export sum(values) from src/stats.mjs, make mean reuse it while preserving empty-array behavior, implement summarize(values) in src/report.mjs using sum, mean, and format, and export summarize publicly from src/index.mjs. Preserve existing math, format, and stats behavior. Inspect the tests but do not edit them."
+            : scenario === "cross-package"
+              ? "Diagnose and repair the failing checkout integration across packages/contracts and packages/checkout. Keep the priceLine public contract as an object with integer amountCents and USD currency. Validate invalid quantities and fractional cents at the contract boundary; make checkoutTotal compose contract outputs, apply percentage discount to the aggregate rounded to cents, and reject invalid discount percentages. Preserve unrelated math/format behavior. Inspect the tests but do not edit them."
           : "Inspect the repository and make both failing tests pass by fixing multiply in src/math.mjs and the public output format in src/format.mjs. Do not modify the tests.",
       verificationCommands: scenario === "multi-step"
         ? ["node --test test/math.test.mjs test/format.test.mjs test/median.test.mjs"]
@@ -346,6 +366,8 @@ async function main() {
           ? ["node --test test/cart.test.mjs test/coupons.test.mjs test/checkout.test.mjs test/math.test.mjs test/format.test.mjs"]
           : scenario === "refactor"
             ? ["node --test test/stats.test.mjs test/stats-refactor.test.mjs test/report.test.mjs test/math.test.mjs test/format.test.mjs"]
+            : scenario === "cross-package"
+              ? ["node --test test/contracts.test.mjs test/checkout-integration.test.mjs test/math.test.mjs test/format.test.mjs"]
           : ["node --test test/math.test.mjs test/format.test.mjs"],
       adapter,
       signal: runController.signal,
@@ -482,7 +504,7 @@ async function main() {
   const finalFormat = await readFile(join(repoDir, "src", "format.mjs"), "utf-8").catch(() => null);
   let postIntegrationProbe = null;
   try {
-    const probe = await execFile("node", ["--test", ...(scenario === "multi-step" ? ["test/math.test.mjs", "test/format.test.mjs", "test/median.test.mjs"] : scenario === "feature" ? ["test/cart.test.mjs", "test/coupons.test.mjs", "test/checkout.test.mjs", "test/math.test.mjs", "test/format.test.mjs"] : scenario === "refactor" ? ["test/stats.test.mjs", "test/stats-refactor.test.mjs", "test/report.test.mjs", "test/math.test.mjs", "test/format.test.mjs"] : ["test/math.test.mjs", "test/format.test.mjs"])], { cwd: repoDir });
+    const probe = await execFile("node", ["--test", ...(scenario === "multi-step" ? ["test/math.test.mjs", "test/format.test.mjs", "test/median.test.mjs"] : scenario === "feature" ? ["test/cart.test.mjs", "test/coupons.test.mjs", "test/checkout.test.mjs", "test/math.test.mjs", "test/format.test.mjs"] : scenario === "refactor" ? ["test/stats.test.mjs", "test/stats-refactor.test.mjs", "test/report.test.mjs", "test/math.test.mjs", "test/format.test.mjs"] : scenario === "cross-package" ? ["test/contracts.test.mjs", "test/checkout-integration.test.mjs", "test/math.test.mjs", "test/format.test.mjs"] : ["test/math.test.mjs", "test/format.test.mjs"])], { cwd: repoDir });
     postIntegrationProbe = { ok: true, output: `${probe.stdout}`.slice(0, 2_000) };
   } catch (err) {
     postIntegrationProbe = { ok: false, output: `${err.stdout ?? ""}${err.stderr ?? ""}`.slice(0, 2_000) };
@@ -530,6 +552,8 @@ async function main() {
               ? "R53 feature mission: quantity-aware integer-cents checkout across cart, coupon, composition, public export, and independent tests."
               : scenario === "refactor"
                 ? "R53 refactor mission: shared aggregation, public summary composition, behavioral preservation, and independent tests."
+                : scenario === "cross-package"
+                  ? "R54 cross-package integration: failing contract and checkout tests require diagnosis and source edits in both packages."
             : "R52 healthy mission: bootstrap probes measure supply normally; the mission completes through the standard fabric.",
     providersPresent: present,
     allowanceProbeBudget: allowanceProbes,
@@ -542,6 +566,7 @@ async function main() {
     preMissionDecisions,
     independentPools: [...new Set(pools.map((pool) => pool.poolId))],
     runStatus: result.status,
+    preMissionIntegration,
     runSummary: result.summary ?? null,
     changedFiles: result.changedFiles ?? [],
     review: result.review ?? null,
