@@ -124,21 +124,25 @@ async function main() {
   if (roleEvidenceFrom) {
     const prior = JSON.parse(await readFile(resolve(roleEvidenceFrom), "utf-8"));
     const coder = prior.roleReport?.find((item) => item.role === "coder" && item.provider && item.model);
-    if (prior.runStatus !== "blocked" || !prior.runSummary?.includes("TOOL_WORKSPACE_ESCAPE") || !coder) {
-      throw new Error("Role-evidence replay requires a blocked mission with a witnessed Coder workspace-escape verdict.");
+    const workspaceEscape = prior.runSummary?.includes("TOOL_WORKSPACE_ESCAPE");
+    const nonConvergence = prior.runSummary?.includes("AGENT_MODEL_TURN_LIMIT") && coder?.outcome === "converged_failed";
+    if (prior.runStatus !== "blocked" || !coder || (!workspaceEscape && !nonConvergence)) {
+      throw new Error("Role-evidence replay requires a blocked mission with a witnessed Coder workspace escape or model-turn exhaustion.");
     }
+    const outcome = workspaceEscape ? "security_blocked" : "budget_exhausted";
+    const failureClass = workspaceEscape ? "WORKSPACE_ESCAPE_ATTEMPT" : "NON_CONVERGENCE";
     routeHealth.observe({
       kind: "role_outcome",
       providerId: coder.provider,
       modelId: coder.model,
       role: "CODER",
-      outcome: "security_blocked",
-      failureClass: "WORKSPACE_ESCAPE_ATTEMPT",
+      outcome,
+      failureClass,
       source: "runtime",
       observedAt: new Date().toISOString(),
       correlationId: `replay:${prior.baseRevision}:${prior.scenario}`,
     });
-    replayedRoleEvidence = { source: roleEvidenceFrom, providerId: coder.provider, modelId: coder.model, role: "CODER", outcome: "security_blocked", failureClass: "WORKSPACE_ESCAPE_ATTEMPT" };
+    replayedRoleEvidence = { source: roleEvidenceFrom, providerId: coder.provider, modelId: coder.model, role: "CODER", outcome, failureClass };
   }
 
   const routes = freeCloud.capacityRoutes().filter((route) => route.capacityPoolScope !== "PER_USER_POOL");
