@@ -14,8 +14,8 @@
 
 | R53 gap | R54 status | Evidence |
 |---|---|---|
-| substantial refactor reliability | BLOCKED_EXTERNAL_SUPPLY | A final live Coder handoff preserved two files and the replacement completed. Reviewer A then hit OpenRouter/Nvidia 503 and no eligible B remained. A capacity-evidence replay produced a completed three-file Coder and exercised Qwen as an alternate Reviewer for six live calls, but Qwen hit 429 and Super hit 503. A Mistral Reviewer later passed a separate partial implementation, after which ForgeVerify correctly blocked the missing public export. No single refactor reached Reviewer pass plus ForgeVerify. |
-| cross-package integration | BLOCKED_EXTERNAL_SUPPLY | The contained baseline still failed 5/7 contract/checkout tests as intended. The closure attempt used normal topology and replayed only witnessed Groq rate limits, but current supply exhausted before Coder admission. |
+| substantial refactor reliability | BLOCKED_LIVE_SUPPLY_QUALITY | A bounded refresh later found four measured Coder routes across three pools and two measured Reviewer routes across two pools. The first ready-window run exposed one real invariant defect: an excluded old Coder could re-enter through the replacement child's provider failover. That was fixed and covered. Post-fix, Codestral switched to Lightning without re-entry, but Lightning exhausted its governed turn budget; an evidence replay switched Codestral to Mistral Code and both also failed to converge. No single refactor reached Reviewer pass plus ForgeVerify. |
+| cross-package integration | BLOCKED_EXTERNAL_SUPPLY | The contained baseline still failed 5/7 contract/checkout tests as intended. The prior closure attempt used normal topology and exhausted Coder supply. It was not relaunched after the post-fix refactor consumed the newly measured window without a completing Coder, in accordance with the supply-readiness policy. |
 | Planner value | CLOSED: NO VALUE FOR TESTED CLASS | Planner topology blocked before Coder in both the refactor and cross-package missions. Normal topology reached Coder and produced implementation. Automatic complex tasks now use normal topology unless Planner value is explicitly proven; explicit operator topology remains authoritative. |
 | quality-driven role switch | CLOSED | `R54-LIVE-REFACTOR-VERIFICATION-WINDOW.json` records `REPEATED_EDIT_FAILURE` at count 3 and a `QUALITY_DRIVEN_ROLE_SWITCH` from Nemotron Lightning to Nemotron Super. The prior route had made two successful edits. |
 | preserved handoff | CLOSED LIVE | `R54-LIVE-REFACTOR-OPENROUTER.json` exports one durable handoff in the same run/worktree: Super -> Lightning, preserved `src/report.mjs` and `src/stats.mjs`, exact pending goal and verification command, serial replacement, outcome `completed`. The receipt does not contain a separate pre-switch Git tree hash. |
@@ -38,6 +38,20 @@ The generated mission repositories contain synthetic fixture code. Later control
 
 No role turn budget was raised. The overall harness window increased from 600 seconds to 1,200 seconds only for closure attempts because prior evidence showed a completed Coder followed by Reviewer cancellation. None of the final attempts consumed the full window.
 
+## Supply-aware recheck and exclusion fix
+
+A later bounded four-probe refresh found a genuinely viable operational window:
+
+- Coder: four measured qualified routes across three pools — Mistral Codestral 2508, Groq GPT-OSS 20B, Nemotron Super, and Nemotron Lightning.
+- Reviewer: two measured routes across two pools — qualified Nemotron Super and probationary Mistral Codestral 2508 under explicit synthetic-fixture consent.
+- Static role coverage remained twenty Coder-eligible routes and fourteen qualified/probationary Reviewer routes before capacity and data-policy filtering.
+
+The mission was therefore launched. Its durable handoff unexpectedly recorded Codestral as both `oldOwner` and `newOwner`: initial replacement admission correctly excluded Codestral and selected Nemotron Super, but Super's 503 entered the mid-run failover path whose route filter enforced role qualification but omitted `excludeRoleRoute`. That allowed the excluded route to re-enter. This contradicted the established handoff invariant and justified the only production change in the continuation.
+
+`agent-runtime.ts` now composes old-route exclusion into every free mid-run failover for a replacement child. The focused regression uses routes A/B/C, excludes A, forces B to return 503, and proves failover selects C while A receives zero calls. The focused gate passed 36/36 tests and server typecheck passed.
+
+The post-fix live receipt proves the correction: old owner Codestral, new owner Nemotron Lightning, with no return to Codestral. The preserved two-file patch and exact verification command remained intact. Lightning then used all 25 governed turns without completing. One bounded evidence replay tried the next legitimate qualified route; Codestral and Mistral Code both produced observable non-convergence. No additional long mission was launched after that window.
+
 ## Production changes
 
 - Role progress now requires three failed mutations with the same full target, tool, raw-argument hash, and observation hash before emitting `REPEATED_EDIT_FAILURE`.
@@ -45,6 +59,7 @@ No role turn budget was raised. The overall harness window increased from 600 se
 - Tool traces retain only request and observation hashes; raw tool arguments remain absent.
 - Initial and replacement Coders receive the authoritative verification commands and the `network:false` execution constraint.
 - Automatic complex topology avoids Planner until controlled evidence proves value for that task class. Explicit `complex` and `fixed_r1` requests are unchanged.
+- A quality-replacement child's excluded old route now remains excluded during every free mid-run provider failover, not only initial admission.
 - Bounded Coder and semantic-verifier replacement, raw request usage provenance, serial worktree ownership, completion-gate authority, and free-only route exclusion from `b108aa9` remain intact.
 
 ## Refactor forensics
@@ -163,6 +178,7 @@ Canonical paid-role routing, Paid Auto, and cloud billing tests passed. No live 
 
 - Final root-config regression gate: 35/35 files, 312/312 tests passed, 0 failed, 0 skipped.
 - Focused R54 gate: 3/3 files, 32/32 tests passed.
+- Post-fix exclusion/failover gate: 3/3 files, 36/36 tests passed.
 - Adaptive topology/wiring follow-up: 2/2 files, 21/21 tests passed.
 - Server package typecheck: passed.
 
@@ -172,7 +188,7 @@ Canonical paid-role routing, Paid Auto, and cloud billing tests passed. No live 
 
 ## Remaining limitations
 
-1. No substantial refactor has completed independent Reviewer plus ForgeVerify.
+1. No substantial refactor has completed independent Reviewer plus ForgeVerify; the final measured-capacity window ended in bounded Coder non-convergence across legitimate alternates.
 2. No live cross-package mission has progressed from the known-failing baseline through verified integration.
 3. Live Reviewer B executed but did not return a usable verdict before 429; a separate live Mistral Reviewer passed as Reviewer A. Alternate semantic success remains unavailable.
 4. GPT-OSS 20B/120B Reviewer qualification remains `NOT_TESTED` after current Groq 429 supply.
@@ -184,5 +200,6 @@ Canonical paid-role routing, Paid Auto, and cloud billing tests passed. No live 
 - `f5fdb164` — cross-package mission fixture and guarded R54 recertifier.
 - `cd6a919` — hardened identical-edit identity, Coder execution context, measured Planner gate, evidence plumbing, and regressions.
 - `354091f` — closure harness support for replaying witnessed capacity/role evidence and explicit synthetic-fixture consent.
+- `26d05a4` — keep the replaced role route excluded across replacement-child provider failover.
 
 R54 must remain blocked until the substantial-refactor, cross-package, and live semantic-verifier gates complete through Reviewer and ForgeVerify.
