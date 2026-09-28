@@ -86,12 +86,24 @@ describe("FG-3E model-aware context budget — end to end through executeAgentRu
     expect(result.contextMetrics?.contextMaximum).toBe(20_000);
   });
 
-  it("[exact-pin insufficient capacity] a real, tiny exact-pinned context window still completes safely rather than crashing", async () => {
-    // Small enough that the coder-role planner's narrow budget calc is tight, but the explorer
-    // role (used here) does not route through the planner and has a genuinely small kernel, so
-    // this proves graceful handling rather than a crash — not that every role fits every size.
-    const result = await run("provider-tiny", "tiny-model", 2_000);
-    expect(result.contextMetrics?.contextMaximum).toBe(2_000);
+  it("[exact-pin small capacity] a real, small exact-pinned context window still completes safely", async () => {
+    // 4,000 clamps well below the explorer role default yet still holds the assembled kernel —
+    // the pin is honoured AND the run completes, not gratuitously widened.
+    const result = await run("provider-tiny", "tiny-model", 4_000);
+    expect(result.contextMetrics?.contextMaximum).toBe(4_000);
     expect(result.status).toBe("completed");
+  });
+
+  it("[exact-pin insufficient capacity] a context window that cannot hold the transcript blocks before the wire", async () => {
+    // 2,000 is smaller than the explorer's assembled prompt+tools. The context-capacity gate
+    // must fail closed: blocked with AGENT_CONTEXT_BUDGET_EXCEEDED and zero provider requests —
+    // never a truncated crash on the wire.
+    const result = await run("provider-micro", "micro-model", 2_000);
+    expect(result.contextMetrics?.contextMaximum).toBe(2_000);
+    expect(result.status).toBe("blocked");
+    expect(result.summary + (result as { error?: string }).error).toContain("AGENT_CONTEXT_BUDGET_EXCEEDED");
+    // The first turn's kernel fit and was served; the follow-up transcript overflowed and the
+    // gate refused to dispatch. Bounded at one wire call — no retry storm against the pin.
+    expect(result.usage.requestCount).toBeLessThanOrEqual(1);
   });
 });

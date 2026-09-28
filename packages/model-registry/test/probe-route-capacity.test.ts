@@ -292,4 +292,97 @@ describe("probeRouteCapacity — demand-driven quota measurement (R51)", () => {
     const admitted = ledger.reserve({ ...request(), routeIds: project().map((r) => r.routeId) });
     expect(admitted.admitted).toBe(true);
   });
+
+  /**
+   * R52 Phase D — probe storm control. Concurrent demand for the same unmeasured domain
+   * coalesces onto one in-flight probe; per-domain cooldown bounds retries; separate
+   * domains stay independent.
+   */
+  it("coalesces concurrent probes — N simultaneous callers on one domain trigger exactly one ping", async () => {
+    const catalog = new InMemoryProviderCatalog();
+    const fw = new ForgeZero();
+    fw.register(freeRecord("groq", "model-b"));
+    const svc = new FreeCloudService({ firewall: fw, providerCatalog: catalog, registry: new NormalizedModelRegistry() });
+    svc.setConnection(connected("groq"));
+    svc.registerManagedPool("groq", "acct-a");
+    const observer = svc.managedAccountObserver("groq", "acct-a");
+
+    let release!: () => void;
+    const gate = new Promise<void>((resolveGate) => { release = resolveGate; });
+    let calls = 0;
+    const adapter: ProviderAdapter = {
+      providerId: "groq",
+      isTestProvider: true,
+      async listModels(): Promise<ProviderModel[]> { return []; },
+      async chat(req: ChatRequest): Promise<ChatResponse> {
+        calls++;
+        await gate;
+        observer({ providerId: "groq", modelId: req.model, status: 200, headers: QUOTA_HEADERS, observedAt: Date.now() });
+        return { id: `probe-${calls}`, model: req.model, choices: [{ index: 0, message: { role: "assistant", content: "ok" }, finishReason: "stop" }] };
+      },
+      async *streamChat(): AsyncIterable<StreamEvent> {},
+      async healthCheck(): Promise<ProviderHealthResponse> { return { status: "available" }; },
+    };
+    catalog.register(adapter);
+
+    const pending = Array.from({ length: 8 }, () =>
+      svc.probeRouteCapacity("groq", "model-b", { capacityPoolId: "managed:groq:acct-a" }));
+    // All eight callers are in flight before the ping resolves.
+    expect(calls).toBe(1);
+    release();
+    const results = await Promise.all(pending);
+    expect(results).toEqual(Array(8).fill(true));
+    expect(calls).toBe(1);
+    expect(svc.quota.get("groq", "model-b", "acct-a")?.remainingRequests).toBe(900);
+  });
+
+  it("coalesces a failing probe too — concurrent callers share the failure, no retry pile-on", async () => {
+    const catalog = new InMemoryProviderCatalog();
+    const fw = new ForgeZero();
+    fw.register(freeRecord("groq", "model-a"));
+    const svc = new FreeCloudService({ firewall: fw, providerCatalog: catalog, registry: new NormalizedModelRegistry() });
+    svc.setConnection(connected("groq"));
+
+    let release!: () => void;
+    const gate = new Promise<void>((resolveGate) => { release = resolveGate; });
+    let calls = 0;
+    const adapter: ProviderAdapter = {
+      providerId: "groq",
+      isTestProvider: true,
+      async listModels(): Promise<ProviderModel[]> { return []; },
+      async chat(): Promise<ChatResponse> { calls++; await gate; throw new Error("network unreachable"); },
+      async *streamChat(): AsyncIterable<StreamEvent> {},
+      async healthCheck(): Promise<ProviderHealthResponse> { return { status: "offline" }; },
+    };
+    catalog.register(adapter);
+
+    const pending = Array.from({ length: 4 }, () => svc.probeRouteCapacity("groq", "model-a"));
+    expect(calls).toBe(1);
+    release();
+    const results = await Promise.all(pending);
+    expect(results).toEqual(Array(4).fill(false));
+    expect(calls).toBe(1);
+    // Cooldown still applies after the shared failure — no tight retry loop.
+    expect(await svc.probeRouteCapacity("groq", "model-a")).toBe(false);
+    expect(calls).toBe(1);
+  });
+
+  it("distinct quota domains probe independently — no false global coalescing", async () => {
+    const catalog = new InMemoryProviderCatalog();
+    const fw = new ForgeZero();
+    fw.register(freeRecord("groq", "model-a"));
+    fw.register(freeRecord("groq", "model-b"));
+    const svc = new FreeCloudService({ firewall: fw, providerCatalog: catalog, registry: new NormalizedModelRegistry() });
+    svc.setConnection(connected("groq"));
+    svc.registerManagedPool("groq", "acct-a");
+    const observer = svc.managedAccountObserver("groq", "acct-a");
+    const groq = quotaAdapter("groq", ["model-a", "model-b"], { emit: observer });
+    catalog.register(groq.adapter);
+
+    await Promise.all([
+      svc.probeRouteCapacity("groq", "model-a", { capacityPoolId: "managed:groq:acct-a:model:model-a" }),
+      svc.probeRouteCapacity("groq", "model-b", { capacityPoolId: "managed:groq:acct-a:model:model-b" }),
+    ]);
+    expect(groq.chatCalls()).toBe(2);
+  });
 });

@@ -32,8 +32,19 @@ function largeRepositoryIntelligence(root: string): RepositoryIntelligence {
     openWorkspace: async () => ({ id: "synthetic-large", root }), indexWorkspace: async () => status(), refresh: async () => ({ added: [], changed: [], deleted: [], unchanged: 100_000, durationMs: 0 }), status,
     findRelevantContext: async () => ({ items: candidates, total: 100_000, truncated: true }),
     lastRefreshMetrics: () => undefined,
-    searchFiles: empty, listFiles: empty, getFile: async () => undefined, searchText: empty, searchSymbols: empty, getSymbol: async () => undefined,
-    findReferences: empty, findDependencies: empty, findDependents: empty, findRelatedTests: empty, startWatching: () => undefined, stopWatching: () => undefined, closeWorkspace: async () => undefined,
+    searchFiles: empty, listFiles: empty, getFile: async () => undefined, getFileSummary: async () => undefined, searchText: empty, searchSymbols: empty, getSymbol: async () => undefined,
+    findDefinitions: empty, getDefinition: async () => undefined,
+    findReferences: empty, findDependencies: empty, findDependents: empty, findRelatedTests: empty,
+    getModuleSummary: async () => ({ pathPrefix: "", fileCount: 0, symbols: [], exports: [], imports: [], byteSize: 0 }),
+    getImpactCandidates: async () => ({ items: [], total: 0, truncated: false }),
+    estimateBlastRadius: async () => ({ changedPaths: [], impacted: [], total: 0, depth: 0 }),
+    getCallGraph: async () => ({ path: "", callees: [], callers: [] }),
+    findCallers: async () => ({ items: [], total: 0, truncated: false }),
+    getCompleteness: async () => ({ status: "complete", missing: [], generatedAt: new Date().toISOString() }),
+    recordRuntimeObservation: async (observation: never) => observation,
+    listRuntimeObservations: empty,
+    getRepositorySummary: async () => ({ fileCount: 100_000, symbolCount: 1_000_000, languages: [], modules: [] }),
+    startWatching: () => undefined, stopWatching: () => undefined, closeWorkspace: async () => undefined,
   } as unknown as RepositoryIntelligence;
 }
 
@@ -65,7 +76,7 @@ describe("CF-07R large repository and pre-provider secret boundaries", () => {
     });
     const providerPayload = provider.requests.flatMap((request) => request.messages.map((message) => message.content)).join("\n");
     expect(result.status).toBe("completed");
-    expect(result.contextMetrics).toMatchObject({ candidateFileCount: 100_000, candidateSymbolCount: 1_000_000, selectedEvidenceCount: 14, contextMaximum: 64_000 });
+    expect(result.contextMetrics).toMatchObject({ candidateFileCount: 100_000, candidateSymbolCount: 1_000_000, selectedEvidenceCount: 6, contextMaximum: 64_000 });
     expect(result.contextMetrics!.contextBytes).toBeLessThan(result.contextMetrics!.contextMaximum * 3);
     expect(providerPayload).not.toContain(secret);
     expect(providerPayload).not.toContain(".env");

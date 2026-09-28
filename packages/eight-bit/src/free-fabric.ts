@@ -360,6 +360,7 @@ export class FreeFabric {
           routeId: entry.routeId, providerId: entry.providerId, modelId: entry.modelId,
           canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
           quotaOwner: entry.quotaOwner, quotaOwnerIdentity: entry.quotaOwnerIdentity,
+          capacityPoolId: entry.capacityPoolId,
           status: "HEALTH_EXCLUDED", reasonCodes: ["HEALTH_HARD_EXCLUDED", ...assess.reasonCodes],
           healthState: assess.state, scoreAdjustment: adjustment,
         });
@@ -480,8 +481,29 @@ export class FreeFabric {
 
     // Ranked candidates the admission loop never reached still get a row — an explanation
     // that silently drops a demoted route hides the very failover evidence it exists to show.
+    // R52: a never-attempted candidate whose quota domain is unmeasured must say so — the
+    // same pool-wins effective-window rule the reservation ledger applies — rather than
+    // masquerading as merely ranked behind the selected route.
+    const poolById = new Map(pools.map((pool) => [pool.poolId, pool]));
+    const effectiveWindowCount = (entry: RouteLedgerEntry): number => {
+      const pool = poolById.get(entry.capacityPoolId);
+      if (pool && pool.windows.length > 0) return pool.windows.length;
+      return routes.find((route) => route.routeId === entry.routeId)?.windows.length ?? 0;
+    };
     for (const candidate of ranked) {
       if (reports.has(candidate.entry.routeId)) continue;
+      if (effectiveWindowCount(candidate.entry) === 0) {
+        const domainReason = this.quotaDomainReason(candidate.entry, "CAPACITY_UNMEASURED");
+        reports.set(candidate.entry.routeId, this.reportFor(
+          candidate.entry,
+          "CAPACITY_UNMEASURED",
+          [domainReason, "RANKED_BEHIND_SELECTED", ...(candidate.roleFallback ? ["ROLE_PROBATION_FALLBACK"] : []), ...(candidate.fitPenalty < 0 ? ["RIGHT_SIZE_PRESERVED"] : []), ...candidate.roleReasons],
+          candidate.healthState,
+          candidate.scoreAdjustment,
+          candidate.fitPenalty,
+        ));
+        continue;
+      }
       const demoted = candidate.scoreAdjustment <= this.opts.domainDemotionScore;
       reports.set(candidate.entry.routeId, this.reportFor(
         candidate.entry,

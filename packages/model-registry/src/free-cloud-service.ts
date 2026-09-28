@@ -734,6 +734,8 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
 
   /** Last on-demand capacity-measurement attempt per quota domain — bounds probe rate. */
   private readonly capacityProbeAt = new Map<string, number>();
+  /** In-flight measurement per quota domain — concurrent demand coalesces onto one probe. */
+  private readonly capacityProbeInFlight = new Map<string, Promise<boolean>>();
 
   /** True when this route's quota domain already has an observation worth admitting on. */
   private routeCapacityObserved(providerId: string, modelId: string | undefined, accountId?: string): boolean {
@@ -767,6 +769,10 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
           (mp) => opts.capacityPoolId === mp.poolId || opts.capacityPoolId!.startsWith(`${mp.poolId}:`),
         )?.accountId;
     const key = `${providerId}::${accountId ?? "-"}::${modelId ?? "*"}`;
+    // R52: concurrent demand for the same unmeasured domain coalesces onto the in-flight
+    // probe — N simultaneous turns measure it once, never N times.
+    const inFlight = this.capacityProbeInFlight.get(key);
+    if (inFlight !== undefined) return inFlight;
     const nowMs = this.now().getTime();
     const last = this.capacityProbeAt.get(key);
     if (last !== undefined && nowMs - last < 60_000) {
@@ -776,24 +782,32 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     if (this.routeCapacityObserved(providerId, modelId, accountId)) return true;
     const adapter = this.providerCatalog.get(providerId);
     if (!adapter) return false;
-    try {
-      if (typeof adapter.probeAccountQuota === "function" && await adapter.probeAccountQuota()) {
-        return true;
+    const probe = (async (): Promise<boolean> => {
+      try {
+        if (typeof adapter.probeAccountQuota === "function" && await adapter.probeAccountQuota()) {
+          return true;
+        }
+      } catch {
+        // A metadata probe that throws leaves no evidence; fall through to the inference ping.
       }
-    } catch {
-      // A metadata probe that throws leaves no evidence; fall through to the inference ping.
-    }
-    if (modelId === undefined) return this.routeCapacityObserved(providerId, modelId, accountId);
+      if (modelId === undefined) return this.routeCapacityObserved(providerId, modelId, accountId);
+      try {
+        await adapter.chat({
+          model: modelId,
+          messages: [{ role: "user", content: "ping" }],
+          maxTokens: 1,
+        } as import("@codeforge/providers").ChatRequest);
+      } catch {
+        // A 429 still recorded its quota headers through onResponse — measured is measured.
+      }
+      return this.routeCapacityObserved(providerId, modelId, accountId);
+    })();
+    this.capacityProbeInFlight.set(key, probe);
     try {
-      await adapter.chat({
-        model: modelId,
-        messages: [{ role: "user", content: "ping" }],
-        maxTokens: 1,
-      } as import("@codeforge/providers").ChatRequest);
-    } catch {
-      // A 429 still recorded its quota headers through onResponse — measured is measured.
+      return await probe;
+    } finally {
+      this.capacityProbeInFlight.delete(key);
     }
-    return this.routeCapacityObserved(providerId, modelId, accountId);
   }
 
   capacityRoutingAdvice(providerId: string, modelId: string): { scoreAdjustment: number; reasonCodes: string[] } {
