@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "d122e0cce57f80a5c81612a2fe120cc1223db585f5df9eb91dd6e751e6791593",
-  "surfaceVersion": "r53-role-intelligence-v1",
+  "sourceStateId": "998609d11f148822ae0d7dbd811ded7a7b27017965d1450cc15c07548f919706",
+  "surfaceVersion": "r54-eight-bit-intelligence-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -64,8 +64,8 @@
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/src/agent-runtime.ts": "9ea16d0a3bb810ca991bf25927721c36203bfc55",
-    "packages/server/src/autonomous-orchestrator.ts": "f2f4d3727a5a0d2fd6f49109a2ac30775ac7b3a6",
+    "packages/server/src/agent-runtime.ts": "a85918c4ba6a16c70beb4b7f98807988fe21c006",
+    "packages/server/src/autonomous-orchestrator.ts": "fa1cce2399d432288030e9990446a092f3d77a5c",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
@@ -1889,17 +1889,51 @@
       "regressionEvidence": "docs/evidence/r53-role-intelligence/R53-FINAL-REPORT.md",
       "recertifiedAt": "2026-09-28",
       "sourceStateConstant": "CODEFORGE_R53_ROLE_INTELLIGENCE_SOURCE_STATE"
+    },
+    {
+      "label": "R54 8-Bit intelligence source recertification",
+      "reason": "Observable role-progress receipts now stop repeatedly unproductive Coder execution, and the autonomous orchestrator can hand the same isolated worktree to one alternate free qualified Coder. A Reviewer without a valid verdict can be replaced once by an alternate free semantic verifier. Per-request provider usage is journaled with unknown values preserved. The completion gate and paid routing remain unchanged.",
+      "priorSourceStateId": "d122e0cce57f80a5c81612a2fe120cc1223db585f5df9eb91dd6e751e6791593",
+      "priorSurfaceVersion": "r53-role-intelligence-v1",
+      "resultingSourceStateId": "998609d11f148822ae0d7dbd811ded7a7b27017965d1450cc15c07548f919706",
+      "resultingSurfaceVersion": "r54-eight-bit-intelligence-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "change": "Role-progress stall detection, role-route replacement exclusion, and raw provider usage journaling.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "Bounded quality-driven Coder handoff and alternate semantic Reviewer routing with preserved worktree.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/subagent-manager.ts",
+          "change": "Serial replacement children and route exclusion forwarding; outside certified 39-file surface.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/role-progress.ts",
+          "change": "Pure observable role-progress classifier; outside certified 39-file surface.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r54-eight-bit-intelligence/R54-FINAL-REPORT.md",
+      "recertifiedAt": "2026-09-28",
+      "sourceStateConstant": "CODEFORGE_R54_EIGHT_BIT_INTELLIGENCE_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-28T01:43:01.735Z",
+  "recertifiedAt": "2026-09-28T19:33:51.360Z",
   "recertification": {
-    "phase": "R53 role-intelligence source recertification",
-    "reason": "Reviewer instruction now asks for a verdict once the supplied diff resolves the concrete task, avoiding unnecessary read-only exploration while retaining blocking findings and the existing structured review contract. Three distinct current role failures reopen a fresh qualification through the governed free-only queue. Role probes stop at the first upstream transient and retain the prior receipt. ForgeVerify and paid routing are unchanged.",
+    "phase": "R54 8-Bit intelligence source recertification",
+    "reason": "Observable role-progress receipts now stop repeatedly unproductive Coder execution, and the autonomous orchestrator can hand the same isolated worktree to one alternate free qualified Coder. A Reviewer without a valid verdict can be replaced once by an alternate free semantic verifier. Per-request provider usage is journaled with unknown values preserved. The completion gate and paid routing remain unchanged.",
     "changedFiles": [
-      "packages/agent/src/index.ts"
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/autonomous-orchestrator.ts"
     ],
-    "priorSourceStateId": "f24481030f350a69de885b9b73f8394adb50b4c23bfc47067a3754c5be2fce19",
+    "priorSourceStateId": "d122e0cce57f80a5c81612a2fe120cc1223db585f5df9eb91dd6e751e6791593",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
