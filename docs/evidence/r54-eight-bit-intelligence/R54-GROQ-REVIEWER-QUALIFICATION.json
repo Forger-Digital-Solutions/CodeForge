@@ -1,0 +1,804 @@
+{
+  "schemaVersion": 1,
+  "round": "R54",
+  "generatedAt": "2026-09-28T14:27:39.368Z",
+  "protocol": "production runRoleAwareQualification suite",
+  "sourceInventory": "docs/evidence/r53-role-intelligence/R53-FREE-ROUTE-INVENTORY.json",
+  "sourceInventoryGeneratedAt": "2026-09-28T00:47:25.928Z",
+  "paidSpendUsd": 0,
+  "normalizedShillings": "NOT_DEFINED_IN_R54",
+  "rows": [
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "status": "EXECUTED",
+      "startedAt": "2026-09-28T14:27:13.239Z",
+      "completedAt": "2026-09-28T14:27:21.857Z",
+      "requests": 20,
+      "maxRequests": 28,
+      "halted": false,
+      "paidSpendUsd": 0,
+      "usage": [
+        {
+          "request": 1,
+          "inputTokens": 216,
+          "outputTokens": 36,
+          "totalTokens": 252,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 2,
+          "inputTokens": 240,
+          "outputTokens": 36,
+          "totalTokens": 276,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 3,
+          "inputTokens": 288,
+          "outputTokens": 73,
+          "totalTokens": 361,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 4,
+          "inputTokens": 122,
+          "outputTokens": 120,
+          "totalTokens": 242,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 5,
+          "inputTokens": 286,
+          "outputTokens": 54,
+          "totalTokens": 340,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 6,
+          "inputTokens": 367,
+          "outputTokens": 50,
+          "totalTokens": 417,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 7,
+          "inputTokens": 530,
+          "outputTokens": 70,
+          "totalTokens": 600,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 8,
+          "inputTokens": 604,
+          "outputTokens": 112,
+          "totalTokens": 716,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 9,
+          "inputTokens": 280,
+          "outputTokens": 68,
+          "totalTokens": 348,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 10,
+          "inputTokens": 361,
+          "outputTokens": 52,
+          "totalTokens": 413,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 11,
+          "inputTokens": 404,
+          "outputTokens": 50,
+          "totalTokens": 454,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 12,
+          "inputTokens": 542,
+          "outputTokens": 63,
+          "totalTokens": 605,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 13,
+          "inputTokens": 579,
+          "outputTokens": 90,
+          "totalTokens": 669,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 14,
+          "inputTokens": 616,
+          "outputTokens": 143,
+          "totalTokens": 759,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 15,
+          "inputTokens": 280,
+          "outputTokens": 68,
+          "totalTokens": 348,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 16,
+          "inputTokens": 361,
+          "outputTokens": 52,
+          "totalTokens": 413,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 17,
+          "inputTokens": 404,
+          "outputTokens": 50,
+          "totalTokens": 454,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 18,
+          "inputTokens": 542,
+          "outputTokens": 63,
+          "totalTokens": 605,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 19,
+          "inputTokens": 579,
+          "outputTokens": 139,
+          "totalTokens": 718,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 20,
+          "inputTokens": null,
+          "outputTokens": null,
+          "totalTokens": null,
+          "source": "UNKNOWN",
+          "errorCode": null
+        }
+      ],
+      "errorCode": null,
+      "receipt": {
+        "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+        "qualificationState": "QUALIFIED",
+        "hardFailureRoles": [],
+        "roleResults": {
+          "CODER": {
+            "status": "QUALIFIED",
+            "overallScore": 1,
+            "cases": [
+              {
+                "caseId": "compact.tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 735,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                },
+                "errorKind": null
+              },
+              {
+                "caseId": "compact.edit",
+                "passed": true,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 1081,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 36
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 73
+                    }
+                  ]
+                },
+                "errorKind": null
+              }
+            ]
+          },
+          "TOOL_AGENT": {
+            "status": "QUALIFIED",
+            "overallScore": 1,
+            "cases": [
+              {
+                "caseId": "compact.tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 735,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                },
+                "errorKind": null
+              },
+              {
+                "caseId": "compact.edit",
+                "passed": true,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 1081,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 36
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 73
+                    }
+                  ]
+                },
+                "errorKind": null
+              },
+              {
+                "caseId": "compact.structured",
+                "passed": true,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 298,
+                "details": {
+                  "textLength": 61,
+                  "parsed": true
+                },
+                "errorKind": null
+              }
+            ]
+          },
+          "ANALYST": {
+            "status": "QUALIFIED",
+            "overallScore": 1,
+            "cases": [
+              {
+                "caseId": "compact.structured",
+                "passed": true,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 298,
+                "details": {
+                  "textLength": 61,
+                  "parsed": true
+                },
+                "errorKind": null
+              }
+            ]
+          },
+          "EXPLORER": {
+            "status": "NOT_TESTED",
+            "overallScore": 1,
+            "cases": [
+              {
+                "caseId": "explorer.route_execution",
+                "passed": true,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 1912,
+                "details": {
+                  "modelCalls": 4,
+                  "filesRead": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "relevantFilesRead": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "searches": 0,
+                  "totalToolCalls": 3,
+                  "validCalls": 3,
+                  "validToolCallRate": 1,
+                  "readPrecision": 1,
+                  "hallucinatedPaths": [],
+                  "mutationAttempts": 0,
+                  "reportedFiles": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "answerFiles": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "recall": 1,
+                  "reasoningRetries": 0,
+                  "reasoningTokens": 90
+                },
+                "errorKind": null
+              },
+              {
+                "caseId": "explorer.reservation_release",
+                "passed": false,
+                "hardFailure": false,
+                "retries": 1,
+                "latencyMs": 1617,
+                "details": {
+                  "firstAttempt": {
+                    "modelCalls": 6,
+                    "filesRead": [
+                      "src/fabric/admission.ts"
+                    ],
+                    "relevantFilesRead": [
+                      "src/fabric/admission.ts"
+                    ],
+                    "searches": 4,
+                    "totalToolCalls": 6,
+                    "validCalls": 6,
+                    "validToolCallRate": 1,
+                    "readPrecision": 1,
+                    "hallucinatedPaths": [],
+                    "mutationAttempts": 0,
+                    "reportedFiles": [],
+                    "answerFiles": [
+                      "src/fabric/admission.ts",
+                      "src/fabric/ledger.ts"
+                    ],
+                    "recall": 0,
+                    "reasoningRetries": 0,
+                    "reasoningTokens": 123
+                  }
+                },
+                "errorKind": "RATE_LIMITED"
+              }
+            ]
+          },
+          "PLANNER": {
+            "status": "NOT_TESTED",
+            "overallScore": 0,
+            "cases": []
+          },
+          "REVIEWER": {
+            "status": "NOT_TESTED",
+            "overallScore": 0,
+            "cases": []
+          }
+        }
+      }
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "status": "EXECUTED",
+      "startedAt": "2026-09-28T14:27:21.857Z",
+      "completedAt": "2026-09-28T14:27:39.367Z",
+      "requests": 18,
+      "maxRequests": 28,
+      "halted": false,
+      "paidSpendUsd": 0,
+      "usage": [
+        {
+          "request": 1,
+          "inputTokens": 216,
+          "outputTokens": 40,
+          "totalTokens": 256,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 2,
+          "inputTokens": 240,
+          "outputTokens": 40,
+          "totalTokens": 280,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 3,
+          "inputTokens": 288,
+          "outputTokens": 177,
+          "totalTokens": 465,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 4,
+          "inputTokens": 122,
+          "outputTokens": 120,
+          "totalTokens": 242,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 5,
+          "inputTokens": 286,
+          "outputTokens": 52,
+          "totalTokens": 338,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 6,
+          "inputTokens": 367,
+          "outputTokens": 61,
+          "totalTokens": 428,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 7,
+          "inputTokens": 415,
+          "outputTokens": 66,
+          "totalTokens": 481,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 8,
+          "inputTokens": 588,
+          "outputTokens": 108,
+          "totalTokens": 696,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 9,
+          "inputTokens": 672,
+          "outputTokens": 143,
+          "totalTokens": 815,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 10,
+          "inputTokens": 280,
+          "outputTokens": 51,
+          "totalTokens": 331,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 11,
+          "inputTokens": 361,
+          "outputTokens": 46,
+          "totalTokens": 407,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 12,
+          "inputTokens": 390,
+          "outputTokens": 39,
+          "totalTokens": 429,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 13,
+          "inputTokens": 433,
+          "outputTokens": 48,
+          "totalTokens": 481,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 14,
+          "inputTokens": 463,
+          "outputTokens": 47,
+          "totalTokens": 510,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 15,
+          "inputTokens": 506,
+          "outputTokens": 49,
+          "totalTokens": 555,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 16,
+          "inputTokens": 280,
+          "outputTokens": 82,
+          "totalTokens": 362,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 17,
+          "inputTokens": 361,
+          "outputTokens": 46,
+          "totalTokens": 407,
+          "source": "PROVIDER_REPORTED",
+          "errorCode": null
+        },
+        {
+          "request": 18,
+          "inputTokens": null,
+          "outputTokens": null,
+          "totalTokens": null,
+          "source": "UNKNOWN",
+          "errorCode": null
+        }
+      ],
+      "errorCode": null,
+      "receipt": {
+        "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+        "qualificationState": "QUALIFIED",
+        "hardFailureRoles": [],
+        "roleResults": {
+          "CODER": {
+            "status": "QUALIFIED",
+            "overallScore": 1,
+            "cases": [
+              {
+                "caseId": "compact.tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 246,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                },
+                "errorKind": null
+              },
+              {
+                "caseId": "compact.edit",
+                "passed": true,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 784,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 40
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 177
+                    }
+                  ]
+                },
+                "errorKind": null
+              }
+            ]
+          },
+          "TOOL_AGENT": {
+            "status": "PROBATION",
+            "overallScore": 0.6666666666666666,
+            "cases": [
+              {
+                "caseId": "compact.tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 246,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                },
+                "errorKind": null
+              },
+              {
+                "caseId": "compact.edit",
+                "passed": true,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 784,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 40
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 177
+                    }
+                  ]
+                },
+                "errorKind": null
+              },
+              {
+                "caseId": "compact.structured",
+                "passed": false,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 627,
+                "details": {
+                  "textLength": 0,
+                  "parsed": false
+                },
+                "errorKind": null
+              }
+            ]
+          },
+          "ANALYST": {
+            "status": "NOT_QUALIFIED",
+            "overallScore": 0,
+            "cases": [
+              {
+                "caseId": "compact.structured",
+                "passed": false,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 627,
+                "details": {
+                  "textLength": 0,
+                  "parsed": false
+                },
+                "errorKind": null
+              }
+            ]
+          },
+          "EXPLORER": {
+            "status": "NOT_TESTED",
+            "overallScore": 1,
+            "cases": [
+              {
+                "caseId": "explorer.route_execution",
+                "passed": true,
+                "hardFailure": false,
+                "retries": 0,
+                "latencyMs": 3261,
+                "details": {
+                  "modelCalls": 5,
+                  "filesRead": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "relevantFilesRead": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "searches": 1,
+                  "totalToolCalls": 4,
+                  "validCalls": 4,
+                  "validToolCallRate": 1,
+                  "readPrecision": 1,
+                  "hallucinatedPaths": [],
+                  "mutationAttempts": 0,
+                  "reportedFiles": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "answerFiles": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "recall": 1,
+                  "reasoningRetries": 0,
+                  "reasoningTokens": 121
+                },
+                "errorKind": null
+              },
+              {
+                "caseId": "explorer.reservation_release",
+                "passed": false,
+                "hardFailure": false,
+                "retries": 1,
+                "latencyMs": 9943,
+                "details": {
+                  "firstAttempt": {
+                    "modelCalls": 6,
+                    "filesRead": [
+                      "src/fabric/admission.ts"
+                    ],
+                    "relevantFilesRead": [
+                      "src/fabric/admission.ts"
+                    ],
+                    "searches": 4,
+                    "totalToolCalls": 6,
+                    "validCalls": 6,
+                    "validToolCallRate": 1,
+                    "readPrecision": 1,
+                    "hallucinatedPaths": [],
+                    "mutationAttempts": 0,
+                    "reportedFiles": [],
+                    "answerFiles": [
+                      "src/fabric/admission.ts",
+                      "src/fabric/ledger.ts"
+                    ],
+                    "recall": 0,
+                    "reasoningRetries": 0,
+                    "reasoningTokens": 25
+                  }
+                },
+                "errorKind": "RATE_LIMITED"
+              }
+            ]
+          },
+          "PLANNER": {
+            "status": "NOT_TESTED",
+            "overallScore": 0,
+            "cases": []
+          },
+          "REVIEWER": {
+            "status": "NOT_TESTED",
+            "overallScore": 0,
+            "cases": []
+          }
+        }
+      }
+    }
+  ]
+}

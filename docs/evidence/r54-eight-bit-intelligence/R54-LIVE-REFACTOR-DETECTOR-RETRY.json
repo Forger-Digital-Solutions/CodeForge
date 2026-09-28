@@ -1,0 +1,6088 @@
+{
+  "schemaVersion": 1,
+  "round": "R54",
+  "scenario": "refactor",
+  "complexityHint": null,
+  "generatedAt": "2026-09-28T13:42:06.754Z",
+  "startedAt": "2026-09-28T13:34:39.080Z",
+  "elapsedMs": 447674,
+  "provenance": "live zero-cost mission over the R52 capacity fabric",
+  "purpose": "R53 refactor mission: shared aggregation, public summary composition, behavioral preservation, and independent tests.",
+  "providersPresent": [
+    "groq",
+    "mistral",
+    "openrouter",
+    "cerebras"
+  ],
+  "allowanceProbeBudget": 8,
+  "catalogRefresh": {
+    "registered": 27,
+    "failed": 0,
+    "errors": [
+      "openrouter: quota bootstrap observed account-level free allowance"
+    ]
+  },
+  "quotaDomains": {
+    "beforeMission": {
+      "observed": [
+        "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+        "openrouter/nvidia/nemotron-3.5-lightning:free",
+        "groq/qwen/qwen3.8-27b",
+        "openrouter/qwen/qwen3.8-27b:free",
+        "openrouter/dots-studio/dots-3-note-preview:free",
+        "openrouter/openrouter/free",
+        "openrouter/google/gemma-4-26b-a4b-it:free",
+        "openrouter/google/gemma-4-31b-it:free",
+        "openrouter/thinkingmachines/inkling:free",
+        "openrouter/thinkingmachines/inkling-small:free",
+        "openrouter/poolside/laguna-s-2.1:free",
+        "openrouter/poolside/laguna-xs-2.1:free",
+        "openrouter/liquid/lfm-2.5-2.6b:free",
+        "openrouter/inclusionai/ling-3.0-flash-fin:free",
+        "openrouter/inclusionai/ling-3.0-flash-sante:free",
+        "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "openrouter/cohere/north-mini-code:free",
+        "openrouter/stealth/space-bunny-alpha"
+      ],
+      "unmeasured": [
+        "groq/openai/gpt-oss-120b",
+        "groq/openai/gpt-oss-120b",
+        "groq/openai/gpt-oss-20b",
+        "groq/openai/gpt-oss-20b",
+        "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+        "openrouter/nvidia/nemotron-3.5-lightning:free",
+        "groq/qwen/qwen3.8-27b",
+        "openrouter/qwen/qwen3.8-27b:free",
+        "openrouter/dots-studio/dots-3-note-preview:free",
+        "openrouter/openrouter/free",
+        "openrouter/google/gemma-4-26b-a4b-it:free",
+        "openrouter/google/gemma-4-31b-it:free",
+        "openrouter/thinkingmachines/inkling:free",
+        "openrouter/thinkingmachines/inkling-small:free",
+        "openrouter/poolside/laguna-s-2.1:free",
+        "openrouter/poolside/laguna-xs-2.1:free",
+        "openrouter/liquid/lfm-2.5-2.6b:free",
+        "openrouter/inclusionai/ling-3.0-flash-fin:free",
+        "openrouter/inclusionai/ling-3.0-flash-sante:free",
+        "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "openrouter/cohere/north-mini-code:free",
+        "openrouter/stealth/space-bunny-alpha",
+        "groq/allam-2-7b",
+        "groq/allam-2-7b",
+        "mistral/codestral-latest",
+        "mistral/codestral-latest",
+        "mistral/ministral-3b-latest",
+        "mistral/ministral-3b-latest",
+        "mistral/ministral-8b-latest",
+        "mistral/ministral-8b-latest",
+        "mistral/devstral-medium-latest",
+        "mistral/devstral-medium-latest",
+        "mistral/devstral-2512",
+        "mistral/devstral-2512",
+        "mistral/devstral-latest",
+        "mistral/devstral-latest",
+        "mistral/devstral-medium-2507",
+        "mistral/devstral-medium-2507",
+        "mistral/devstral-small-2507",
+        "mistral/devstral-small-2507",
+        "mistral/labs-devstral-small-2512",
+        "mistral/labs-devstral-small-2512",
+        "mistral/devstral-small-2505",
+        "mistral/devstral-small-2505",
+        "mistral/zai-glm-5-2",
+        "mistral/zai-glm-5-2",
+        "mistral/zai-glm-5-3",
+        "mistral/zai-glm-5-3",
+        "groq/llama-3.1-8b-instant",
+        "groq/llama-3.1-8b-instant",
+        "groq/llama-3.3-70b-versatile",
+        "groq/llama-3.3-70b-versatile",
+        "mistral/magistral-medium-latest",
+        "mistral/magistral-medium-latest",
+        "mistral/magistral-small",
+        "mistral/magistral-small",
+        "mistral/open-mistral-7b",
+        "mistral/open-mistral-7b",
+        "mistral/mistral-large-latest",
+        "mistral/mistral-large-latest",
+        "mistral/mistral-large-2411",
+        "mistral/mistral-large-2411",
+        "mistral/mistral-large-2512",
+        "mistral/mistral-large-2512",
+        "mistral/mistral-medium-latest",
+        "mistral/mistral-medium-latest",
+        "mistral/mistral-medium-2505",
+        "mistral/mistral-medium-2505",
+        "mistral/mistral-medium-2508",
+        "mistral/mistral-medium-2508",
+        "mistral/mistral-medium-2604",
+        "mistral/mistral-medium-2604",
+        "mistral/mistral-nemo",
+        "mistral/mistral-nemo",
+        "mistral/mistral-small-latest",
+        "mistral/mistral-small-latest",
+        "mistral/mistral-small-2506",
+        "mistral/mistral-small-2506",
+        "mistral/mistral-small-2603",
+        "mistral/mistral-small-2603",
+        "mistral/open-mixtral-8x22b",
+        "mistral/open-mixtral-8x22b",
+        "mistral/open-mixtral-8x7b",
+        "mistral/open-mixtral-8x7b",
+        "mistral/open-mistral-nemo",
+        "mistral/open-mistral-nemo",
+        "mistral/pixtral-12b",
+        "mistral/pixtral-12b",
+        "mistral/pixtral-large-latest",
+        "mistral/pixtral-large-latest",
+        "groq/qwen/qwen3.6-27b",
+        "groq/qwen/qwen3.6-27b",
+        "mistral/voxtral-small-latest",
+        "mistral/voxtral-small-latest"
+      ]
+    },
+    "afterMission": {
+      "observed": [
+        "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+        "groq/qwen/qwen3.8-27b",
+        "openrouter/qwen/qwen3.8-27b:free",
+        "openrouter/dots-studio/dots-3-note-preview:free",
+        "openrouter/openrouter/free",
+        "openrouter/google/gemma-4-26b-a4b-it:free",
+        "openrouter/google/gemma-4-31b-it:free",
+        "openrouter/thinkingmachines/inkling:free",
+        "openrouter/thinkingmachines/inkling-small:free",
+        "openrouter/poolside/laguna-s-2.1:free",
+        "openrouter/poolside/laguna-xs-2.1:free",
+        "openrouter/liquid/lfm-2.5-2.6b:free",
+        "openrouter/inclusionai/ling-3.0-flash-fin:free",
+        "openrouter/inclusionai/ling-3.0-flash-sante:free",
+        "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "openrouter/cohere/north-mini-code:free",
+        "openrouter/stealth/space-bunny-alpha",
+        "openrouter/nvidia/nemotron-3.5-lightning:free"
+      ],
+      "unmeasured": [
+        "groq/openai/gpt-oss-120b",
+        "groq/openai/gpt-oss-120b",
+        "groq/openai/gpt-oss-20b",
+        "groq/openai/gpt-oss-20b",
+        "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+        "groq/qwen/qwen3.8-27b",
+        "openrouter/qwen/qwen3.8-27b:free",
+        "openrouter/dots-studio/dots-3-note-preview:free",
+        "openrouter/openrouter/free",
+        "openrouter/google/gemma-4-26b-a4b-it:free",
+        "openrouter/google/gemma-4-31b-it:free",
+        "openrouter/thinkingmachines/inkling:free",
+        "openrouter/thinkingmachines/inkling-small:free",
+        "openrouter/poolside/laguna-s-2.1:free",
+        "openrouter/poolside/laguna-xs-2.1:free",
+        "openrouter/liquid/lfm-2.5-2.6b:free",
+        "openrouter/inclusionai/ling-3.0-flash-fin:free",
+        "openrouter/inclusionai/ling-3.0-flash-sante:free",
+        "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "openrouter/cohere/north-mini-code:free",
+        "openrouter/stealth/space-bunny-alpha",
+        "groq/allam-2-7b",
+        "groq/allam-2-7b",
+        "mistral/codestral-latest",
+        "mistral/codestral-latest",
+        "mistral/ministral-3b-latest",
+        "mistral/ministral-3b-latest",
+        "mistral/ministral-8b-latest",
+        "mistral/ministral-8b-latest",
+        "openrouter/nvidia/nemotron-3.5-lightning:free",
+        "mistral/devstral-medium-latest",
+        "mistral/devstral-medium-latest",
+        "mistral/devstral-2512",
+        "mistral/devstral-2512",
+        "mistral/devstral-latest",
+        "mistral/devstral-latest",
+        "mistral/devstral-medium-2507",
+        "mistral/devstral-medium-2507",
+        "mistral/devstral-small-2507",
+        "mistral/devstral-small-2507",
+        "mistral/labs-devstral-small-2512",
+        "mistral/labs-devstral-small-2512",
+        "mistral/devstral-small-2505",
+        "mistral/devstral-small-2505",
+        "mistral/zai-glm-5-2",
+        "mistral/zai-glm-5-2",
+        "mistral/zai-glm-5-3",
+        "mistral/zai-glm-5-3",
+        "groq/llama-3.1-8b-instant",
+        "groq/llama-3.1-8b-instant",
+        "groq/llama-3.3-70b-versatile",
+        "groq/llama-3.3-70b-versatile",
+        "mistral/magistral-medium-latest",
+        "mistral/magistral-medium-latest",
+        "mistral/magistral-small",
+        "mistral/magistral-small",
+        "mistral/open-mistral-7b",
+        "mistral/open-mistral-7b",
+        "mistral/mistral-large-latest",
+        "mistral/mistral-large-latest",
+        "mistral/mistral-large-2411",
+        "mistral/mistral-large-2411",
+        "mistral/mistral-large-2512",
+        "mistral/mistral-large-2512",
+        "mistral/mistral-medium-latest",
+        "mistral/mistral-medium-latest",
+        "mistral/mistral-medium-2505",
+        "mistral/mistral-medium-2505",
+        "mistral/mistral-medium-2508",
+        "mistral/mistral-medium-2508",
+        "mistral/mistral-medium-2604",
+        "mistral/mistral-medium-2604",
+        "mistral/mistral-nemo",
+        "mistral/mistral-nemo",
+        "mistral/mistral-small-latest",
+        "mistral/mistral-small-latest",
+        "mistral/mistral-small-2506",
+        "mistral/mistral-small-2506",
+        "mistral/mistral-small-2603",
+        "mistral/mistral-small-2603",
+        "mistral/open-mixtral-8x22b",
+        "mistral/open-mixtral-8x22b",
+        "mistral/open-mixtral-8x7b",
+        "mistral/open-mixtral-8x7b",
+        "mistral/open-mistral-nemo",
+        "mistral/open-mistral-nemo",
+        "mistral/pixtral-12b",
+        "mistral/pixtral-12b",
+        "mistral/pixtral-large-latest",
+        "mistral/pixtral-large-latest",
+        "groq/qwen/qwen3.6-27b",
+        "groq/qwen/qwen3.6-27b",
+        "mistral/voxtral-small-latest",
+        "mistral/voxtral-small-latest"
+      ]
+    }
+  },
+  "replayedRoleEvidence": null,
+  "missionAdmission": null,
+  "topology": null,
+  "capacityRoutesPreMission": [
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "pool": "owner:groq:model:openai/gpt-oss-120b",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "PROBATION",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "NOT_TESTED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "pool": "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "PROBATION",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "NOT_TESTED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "pool": "owner:groq:model:openai/gpt-oss-20b",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "NOT_TESTED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "pool": "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "NOT_TESTED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "owner:openrouter",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "pool": "owner:openrouter",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "HARD_FAILURE"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "HARD_FAILURE"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "qwen/qwen3.8-27b",
+      "pool": "owner:groq:model:qwen/qwen3.8-27b",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_TESTED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "qwen/qwen3.8-27b",
+      "pool": "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+      "eligible": true,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_TESTED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "qwen/qwen3.8-27b:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "qwen/qwen3.8-27b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "openrouter/free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "openrouter/free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-26b-a4b-it:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-26b-a4b-it:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-31b-it:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "google/gemma-4-31b-it:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling-small:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "thinkingmachines/inkling-small:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-s-2.1:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-s-2.1:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-fin:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-fin:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-sante:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "inclusionai/ling-3.0-flash-sante:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "stealth/space-bunny-alpha",
+      "pool": "owner:openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "stealth/space-bunny-alpha",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "allam-2-7b",
+      "pool": "owner:groq:model:allam-2-7b",
+      "eligible": false,
+      "qualification": "HARD_FAILURE",
+      "roles": {
+        "CODER": "HARD_FAILURE",
+        "TOOL_AGENT": "HARD_FAILURE",
+        "ANALYST": "NOT_QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "allam-2-7b",
+      "pool": "managed:groq:live-acct-groq:model:allam-2-7b",
+      "eligible": false,
+      "qualification": "HARD_FAILURE",
+      "roles": {
+        "CODER": "HARD_FAILURE",
+        "TOOL_AGENT": "HARD_FAILURE",
+        "ANALYST": "NOT_QUALIFIED"
+      },
+      "health": "UNKNOWN"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "pool": "owner:mistral:model:codestral-latest",
+      "eligible": false,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "PROBATION"
+      },
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:codestral-latest",
+      "eligible": false,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "PROBATION"
+      },
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-3b-latest",
+      "pool": "owner:mistral:model:ministral-3b-latest",
+      "eligible": false,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-3b-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:ministral-3b-latest",
+      "eligible": false,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-8b-latest",
+      "pool": "owner:mistral:model:ministral-8b-latest",
+      "eligible": false,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-8b-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:ministral-8b-latest",
+      "eligible": false,
+      "qualification": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "QUALIFIED"
+      },
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-medium-latest",
+      "pool": "owner:mistral:model:devstral-medium-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-medium-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:devstral-medium-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-2512",
+      "pool": "owner:mistral:model:devstral-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-2512",
+      "pool": "managed:mistral:live-acct-mistral:model:devstral-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-latest",
+      "pool": "owner:mistral:model:devstral-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:devstral-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-medium-2507",
+      "pool": "owner:mistral:model:devstral-medium-2507",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-medium-2507",
+      "pool": "managed:mistral:live-acct-mistral:model:devstral-medium-2507",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-small-2507",
+      "pool": "owner:mistral:model:devstral-small-2507",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-small-2507",
+      "pool": "managed:mistral:live-acct-mistral:model:devstral-small-2507",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "labs-devstral-small-2512",
+      "pool": "owner:mistral:model:labs-devstral-small-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "labs-devstral-small-2512",
+      "pool": "managed:mistral:live-acct-mistral:model:labs-devstral-small-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-small-2505",
+      "pool": "owner:mistral:model:devstral-small-2505",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "devstral-small-2505",
+      "pool": "managed:mistral:live-acct-mistral:model:devstral-small-2505",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "zai-glm-5-2",
+      "pool": "owner:mistral:model:zai-glm-5-2",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "zai-glm-5-2",
+      "pool": "managed:mistral:live-acct-mistral:model:zai-glm-5-2",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "zai-glm-5-3",
+      "pool": "owner:mistral:model:zai-glm-5-3",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "zai-glm-5-3",
+      "pool": "managed:mistral:live-acct-mistral:model:zai-glm-5-3",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "llama-3.1-8b-instant",
+      "pool": "owner:groq:model:llama-3.1-8b-instant",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "llama-3.1-8b-instant",
+      "pool": "managed:groq:live-acct-groq:model:llama-3.1-8b-instant",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "llama-3.3-70b-versatile",
+      "pool": "owner:groq:model:llama-3.3-70b-versatile",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "llama-3.3-70b-versatile",
+      "pool": "managed:groq:live-acct-groq:model:llama-3.3-70b-versatile",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "magistral-medium-latest",
+      "pool": "owner:mistral:model:magistral-medium-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "magistral-medium-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:magistral-medium-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "magistral-small",
+      "pool": "owner:mistral:model:magistral-small",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "magistral-small",
+      "pool": "managed:mistral:live-acct-mistral:model:magistral-small",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mistral-7b",
+      "pool": "owner:mistral:model:open-mistral-7b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mistral-7b",
+      "pool": "managed:mistral:live-acct-mistral:model:open-mistral-7b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-large-latest",
+      "pool": "owner:mistral:model:mistral-large-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-large-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-large-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-large-2411",
+      "pool": "owner:mistral:model:mistral-large-2411",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-large-2411",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-large-2411",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-large-2512",
+      "pool": "owner:mistral:model:mistral-large-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-large-2512",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-large-2512",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-latest",
+      "pool": "owner:mistral:model:mistral-medium-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2505",
+      "pool": "owner:mistral:model:mistral-medium-2505",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2505",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2505",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2508",
+      "pool": "owner:mistral:model:mistral-medium-2508",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2508",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2508",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2604",
+      "pool": "owner:mistral:model:mistral-medium-2604",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-medium-2604",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2604",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-nemo",
+      "pool": "owner:mistral:model:mistral-nemo",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-nemo",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-nemo",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-latest",
+      "pool": "owner:mistral:model:mistral-small-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-small-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-2506",
+      "pool": "owner:mistral:model:mistral-small-2506",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-2506",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-small-2506",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-2603",
+      "pool": "owner:mistral:model:mistral-small-2603",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-small-2603",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-small-2603",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mixtral-8x22b",
+      "pool": "owner:mistral:model:open-mixtral-8x22b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mixtral-8x22b",
+      "pool": "managed:mistral:live-acct-mistral:model:open-mixtral-8x22b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mixtral-8x7b",
+      "pool": "owner:mistral:model:open-mixtral-8x7b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mixtral-8x7b",
+      "pool": "managed:mistral:live-acct-mistral:model:open-mixtral-8x7b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mistral-nemo",
+      "pool": "owner:mistral:model:open-mistral-nemo",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "open-mistral-nemo",
+      "pool": "managed:mistral:live-acct-mistral:model:open-mistral-nemo",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "pixtral-12b",
+      "pool": "owner:mistral:model:pixtral-12b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "pixtral-12b",
+      "pool": "managed:mistral:live-acct-mistral:model:pixtral-12b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "pixtral-large-latest",
+      "pool": "owner:mistral:model:pixtral-large-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "pixtral-large-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:pixtral-large-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "qwen/qwen3.6-27b",
+      "pool": "owner:groq:model:qwen/qwen3.6-27b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "groq",
+      "modelId": "qwen/qwen3.6-27b",
+      "pool": "managed:groq:live-acct-groq:model:qwen/qwen3.6-27b",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-small-latest",
+      "pool": "owner:mistral:model:voxtral-small-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "voxtral-small-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:voxtral-small-latest",
+      "eligible": false,
+      "qualification": "NOT_TESTED",
+      "roles": null,
+      "health": "UNOBSERVED"
+    }
+  ],
+  "preMissionDecisions": {
+    "EXPLORER": {
+      "outcome": "ADMITTED",
+      "nextAvailableAt": null,
+      "selected": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "candidates": [
+        {
+          "route": "groq/openai/gpt-oss-120b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:openai/gpt-oss-120b",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "groq/openai/gpt-oss-20b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:openai/gpt-oss-20b",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "groq/qwen/qwen3.8-27b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:qwen/qwen3.8-27b",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/qwen/qwen3.8-27b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/qwen/qwen3.8-27b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/dots-studio/dots-3-note-preview:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/dots-studio/dots-3-note-preview:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/openrouter/free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/openrouter/free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-26b-a4b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-26b-a4b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-31b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-31b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling-small:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling-small:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-s-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-s-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-xs-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-xs-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/liquid/lfm-2.5-2.6b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/liquid/lfm-2.5-2.6b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-fin:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-fin:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/cohere/north-mini-code:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/cohere/north-mini-code:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/stealth/space-bunny-alpha",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/stealth/space-bunny-alpha",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/allam-2-7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:allam-2-7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/allam-2-7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:groq:live-acct-groq:model:allam-2-7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/codestral-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:codestral-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/codestral-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:codestral-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/ministral-3b-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:ministral-3b-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/ministral-3b-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:ministral-3b-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/ministral-8b-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:ministral-8b-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/ministral-8b-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:ministral-8b-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-medium-2507",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-medium-2507",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-medium-2507",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-medium-2507",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-small-2507",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-small-2507",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-small-2507",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-small-2507",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/labs-devstral-small-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:labs-devstral-small-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/labs-devstral-small-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:labs-devstral-small-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-small-2505",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-small-2505",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-small-2505",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-small-2505",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/zai-glm-5-2",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:zai-glm-5-2",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/zai-glm-5-2",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:zai-glm-5-2",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/zai-glm-5-3",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:zai-glm-5-3",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/zai-glm-5-3",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:zai-glm-5-3",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/llama-3.1-8b-instant",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:llama-3.1-8b-instant",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/llama-3.1-8b-instant",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:groq:live-acct-groq:model:llama-3.1-8b-instant",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/llama-3.3-70b-versatile",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:llama-3.3-70b-versatile",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/llama-3.3-70b-versatile",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:groq:live-acct-groq:model:llama-3.3-70b-versatile",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/magistral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:magistral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/magistral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:magistral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/magistral-small",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:magistral-small",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/magistral-small",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:magistral-small",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mistral-7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:open-mistral-7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mistral-7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:open-mistral-7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-large-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-large-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-2411",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-large-2411",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-2411",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-large-2411",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-large-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-large-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2505",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-medium-2505",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2505",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2505",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2508",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-medium-2508",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2508",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2508",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2604",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-medium-2604",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2604",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2604",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-nemo",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-nemo",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-nemo",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-nemo",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-small-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-small-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-2506",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-small-2506",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-2506",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-small-2506",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-2603",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-small-2603",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-2603",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-small-2603",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mixtral-8x22b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:open-mixtral-8x22b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mixtral-8x22b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:open-mixtral-8x22b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mixtral-8x7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:open-mixtral-8x7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mixtral-8x7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:open-mixtral-8x7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mistral-nemo",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:open-mistral-nemo",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mistral-nemo",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:open-mistral-nemo",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/pixtral-12b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:pixtral-12b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/pixtral-12b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:pixtral-12b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/pixtral-large-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:pixtral-large-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/pixtral-large-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:pixtral-large-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/qwen/qwen3.6-27b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:qwen/qwen3.6-27b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/qwen/qwen3.6-27b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:groq:live-acct-groq:model:qwen/qwen3.6-27b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/voxtral-small-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:voxtral-small-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/voxtral-small-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:voxtral-small-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/qwen/qwen3.8-27b",
+          "status": "ROLE_INELIGIBLE",
+          "pool": "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+          "reasonCodes": [
+            "ROLE_VERDICT_EXCLUDED"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "status": "ROLE_INELIGIBLE",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "ROLE_VERDICT_EXCLUDED"
+          ]
+        },
+        {
+          "route": "groq/openai/gpt-oss-20b",
+          "status": "CAPACITY_UNMEASURED",
+          "pool": "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+          "reasonCodes": [
+            "MODEL_QUOTA_UNMEASURED",
+            "CAPACITY_UNMEASURED",
+            "RIGHT_SIZE_PRESERVED"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "status": "SELECTED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "AUTHORIZED",
+            "ROLE_QUALIFIED",
+            "QUOTA_RESERVED",
+            "ADMITTED"
+          ]
+        },
+        {
+          "route": "groq/openai/gpt-oss-120b",
+          "status": "CAPACITY_UNMEASURED",
+          "pool": "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+          "reasonCodes": [
+            "MODEL_QUOTA_UNMEASURED",
+            "RANKED_BEHIND_SELECTED",
+            "ROLE_PROBATION_FALLBACK",
+            "RIGHT_SIZE_PRESERVED"
+          ]
+        }
+      ]
+    },
+    "CODER": {
+      "outcome": "ADMITTED",
+      "nextAvailableAt": null,
+      "selected": "groq/qwen/qwen3.8-27b",
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "candidates": [
+        {
+          "route": "groq/openai/gpt-oss-120b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:openai/gpt-oss-120b",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "groq/openai/gpt-oss-20b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:openai/gpt-oss-20b",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "groq/qwen/qwen3.8-27b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:qwen/qwen3.8-27b",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/qwen/qwen3.8-27b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/qwen/qwen3.8-27b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/dots-studio/dots-3-note-preview:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/dots-studio/dots-3-note-preview:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/openrouter/free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/openrouter/free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-26b-a4b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-26b-a4b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-31b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-31b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling-small:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling-small:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-s-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-s-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-xs-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-xs-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/liquid/lfm-2.5-2.6b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/liquid/lfm-2.5-2.6b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-fin:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-fin:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/cohere/north-mini-code:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/cohere/north-mini-code:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/stealth/space-bunny-alpha",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/stealth/space-bunny-alpha",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/allam-2-7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:allam-2-7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/allam-2-7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:groq:live-acct-groq:model:allam-2-7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/codestral-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:codestral-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/codestral-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:codestral-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/ministral-3b-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:ministral-3b-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/ministral-3b-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:ministral-3b-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/ministral-8b-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:ministral-8b-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/ministral-8b-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:ministral-8b-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-medium-2507",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-medium-2507",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-medium-2507",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-medium-2507",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-small-2507",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-small-2507",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-small-2507",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-small-2507",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/labs-devstral-small-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:labs-devstral-small-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/labs-devstral-small-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:labs-devstral-small-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-small-2505",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-small-2505",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-small-2505",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-small-2505",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/zai-glm-5-2",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:zai-glm-5-2",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/zai-glm-5-2",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:zai-glm-5-2",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/zai-glm-5-3",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:zai-glm-5-3",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/zai-glm-5-3",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:zai-glm-5-3",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/llama-3.1-8b-instant",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:llama-3.1-8b-instant",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/llama-3.1-8b-instant",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:groq:live-acct-groq:model:llama-3.1-8b-instant",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/llama-3.3-70b-versatile",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:llama-3.3-70b-versatile",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/llama-3.3-70b-versatile",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:groq:live-acct-groq:model:llama-3.3-70b-versatile",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/magistral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:magistral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/magistral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:magistral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/magistral-small",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:magistral-small",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/magistral-small",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:magistral-small",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mistral-7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:open-mistral-7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mistral-7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:open-mistral-7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-large-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-large-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-2411",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-large-2411",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-2411",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-large-2411",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-large-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-large-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2505",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-medium-2505",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2505",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2505",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2508",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-medium-2508",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2508",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2508",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2604",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-medium-2604",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2604",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2604",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-nemo",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-nemo",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-nemo",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-nemo",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-small-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-small-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-2506",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-small-2506",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-2506",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-small-2506",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-2603",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-small-2603",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-2603",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-small-2603",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mixtral-8x22b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:open-mixtral-8x22b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mixtral-8x22b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:open-mixtral-8x22b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mixtral-8x7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:open-mixtral-8x7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mixtral-8x7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:open-mixtral-8x7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mistral-nemo",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:open-mistral-nemo",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mistral-nemo",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:open-mistral-nemo",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/pixtral-12b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:pixtral-12b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/pixtral-12b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:pixtral-12b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/pixtral-large-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:pixtral-large-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/pixtral-large-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:pixtral-large-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/qwen/qwen3.6-27b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:qwen/qwen3.6-27b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/qwen/qwen3.6-27b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:groq:live-acct-groq:model:qwen/qwen3.6-27b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/voxtral-small-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:voxtral-small-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/voxtral-small-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:voxtral-small-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/openai/gpt-oss-120b",
+          "status": "CAPACITY_UNMEASURED",
+          "pool": "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+          "reasonCodes": [
+            "MODEL_QUOTA_UNMEASURED",
+            "CAPACITY_UNMEASURED",
+            "RIGHT_SIZE_PRESERVED"
+          ]
+        },
+        {
+          "route": "groq/openai/gpt-oss-20b",
+          "status": "CAPACITY_UNMEASURED",
+          "pool": "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+          "reasonCodes": [
+            "MODEL_QUOTA_UNMEASURED",
+            "CAPACITY_UNMEASURED",
+            "RIGHT_SIZE_PRESERVED"
+          ]
+        },
+        {
+          "route": "groq/qwen/qwen3.8-27b",
+          "status": "SELECTED",
+          "pool": "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+          "reasonCodes": [
+            "AUTHORIZED",
+            "ROLE_QUALIFIED",
+            "QUOTA_RESERVED",
+            "ADMITTED"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "status": "STANDBY",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "RANKED_BEHIND_SELECTED",
+            "RIGHT_SIZE_PRESERVED"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "status": "STANDBY",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "RANKED_BEHIND_SELECTED",
+            "RIGHT_SIZE_PRESERVED"
+          ]
+        }
+      ]
+    },
+    "REVIEWER": {
+      "outcome": "ADMITTED",
+      "nextAvailableAt": null,
+      "selected": "groq/qwen/qwen3.8-27b",
+      "reasonCodes": [
+        "AUTHORIZED",
+        "ROLE_QUALIFIED",
+        "QUOTA_RESERVED",
+        "ADMITTED"
+      ],
+      "candidates": [
+        {
+          "route": "groq/openai/gpt-oss-120b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:openai/gpt-oss-120b",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "groq/openai/gpt-oss-120b",
+          "status": "ROLE_INELIGIBLE",
+          "pool": "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+          "reasonCodes": [
+            "ROLE_NOT_QUALIFIED"
+          ]
+        },
+        {
+          "route": "groq/openai/gpt-oss-20b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:openai/gpt-oss-20b",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "groq/openai/gpt-oss-20b",
+          "status": "ROLE_INELIGIBLE",
+          "pool": "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+          "reasonCodes": [
+            "ROLE_NOT_QUALIFIED"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "status": "ROLE_INELIGIBLE",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "ROLE_NOT_QUALIFIED"
+          ]
+        },
+        {
+          "route": "groq/qwen/qwen3.8-27b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:qwen/qwen3.8-27b",
+          "reasonCodes": [
+            "OWNER_DEV_FREE_NOT_PRODUCT_FREE"
+          ]
+        },
+        {
+          "route": "openrouter/qwen/qwen3.8-27b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/qwen/qwen3.8-27b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/dots-studio/dots-3-note-preview:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/dots-studio/dots-3-note-preview:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/openrouter/free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/openrouter/free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-26b-a4b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-26b-a4b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-31b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/google/gemma-4-31b-it:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling-small:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/thinkingmachines/inkling-small:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-s-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-s-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-xs-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/poolside/laguna-xs-2.1:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/liquid/lfm-2.5-2.6b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/liquid/lfm-2.5-2.6b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-fin:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-fin:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/cohere/north-mini-code:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/cohere/north-mini-code:free",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/stealth/space-bunny-alpha",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "openrouter/stealth/space-bunny-alpha",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/allam-2-7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:allam-2-7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/allam-2-7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:groq:live-acct-groq:model:allam-2-7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/codestral-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:codestral-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/codestral-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:codestral-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/ministral-3b-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:ministral-3b-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/ministral-3b-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:ministral-3b-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/ministral-8b-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:ministral-8b-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/ministral-8b-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:ministral-8b-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-medium-2507",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-medium-2507",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-medium-2507",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-medium-2507",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-small-2507",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-small-2507",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-small-2507",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-small-2507",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/labs-devstral-small-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:labs-devstral-small-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/labs-devstral-small-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:labs-devstral-small-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-small-2505",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:devstral-small-2505",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/devstral-small-2505",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:devstral-small-2505",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/zai-glm-5-2",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:zai-glm-5-2",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/zai-glm-5-2",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:zai-glm-5-2",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/zai-glm-5-3",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:zai-glm-5-3",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/zai-glm-5-3",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:zai-glm-5-3",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/llama-3.1-8b-instant",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:llama-3.1-8b-instant",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/llama-3.1-8b-instant",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:groq:live-acct-groq:model:llama-3.1-8b-instant",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/llama-3.3-70b-versatile",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:llama-3.3-70b-versatile",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/llama-3.3-70b-versatile",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:groq:live-acct-groq:model:llama-3.3-70b-versatile",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/magistral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:magistral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/magistral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:magistral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/magistral-small",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:magistral-small",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/magistral-small",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:magistral-small",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mistral-7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:open-mistral-7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mistral-7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:open-mistral-7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-large-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-large-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-2411",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-large-2411",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-2411",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-large-2411",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-large-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-large-2512",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-large-2512",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2505",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-medium-2505",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2505",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2505",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2508",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-medium-2508",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2508",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2508",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2604",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-medium-2604",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-medium-2604",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-medium-2604",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-nemo",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-nemo",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-nemo",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-nemo",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-small-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-small-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-2506",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-small-2506",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-2506",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-small-2506",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-2603",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:mistral-small-2603",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/mistral-small-2603",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:mistral-small-2603",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mixtral-8x22b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:open-mixtral-8x22b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mixtral-8x22b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:open-mixtral-8x22b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mixtral-8x7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:open-mixtral-8x7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mixtral-8x7b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:open-mixtral-8x7b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mistral-nemo",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:open-mistral-nemo",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/open-mistral-nemo",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:open-mistral-nemo",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/pixtral-12b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:pixtral-12b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/pixtral-12b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:pixtral-12b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/pixtral-large-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:pixtral-large-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/pixtral-large-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:pixtral-large-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/qwen/qwen3.6-27b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:groq:model:qwen/qwen3.6-27b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/qwen/qwen3.6-27b",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:groq:live-acct-groq:model:qwen/qwen3.6-27b",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/voxtral-small-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "owner:mistral:model:voxtral-small-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "mistral/voxtral-small-latest",
+          "status": "POLICY_EXCLUDED",
+          "pool": "managed:mistral:live-acct-mistral:model:voxtral-small-latest",
+          "reasonCodes": [
+            "UNHEALTHY"
+          ]
+        },
+        {
+          "route": "groq/qwen/qwen3.8-27b",
+          "status": "SELECTED",
+          "pool": "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+          "reasonCodes": [
+            "AUTHORIZED",
+            "ROLE_QUALIFIED",
+            "QUOTA_RESERVED",
+            "ADMITTED"
+          ]
+        },
+        {
+          "route": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+          "status": "STANDBY",
+          "pool": "managed:openrouter:live-acct-openrouter",
+          "reasonCodes": [
+            "RANKED_BEHIND_SELECTED",
+            "RIGHT_SIZE_PRESERVED"
+          ]
+        }
+      ]
+    }
+  },
+  "independentPools": [
+    "shared:openrouter",
+    "shared:cerebras",
+    "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+    "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+    "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+    "managed:groq:live-acct-groq:model:allam-2-7b",
+    "managed:groq:live-acct-groq:model:llama-3.1-8b-instant",
+    "managed:groq:live-acct-groq:model:llama-3.3-70b-versatile",
+    "managed:groq:live-acct-groq:model:qwen/qwen3.6-27b",
+    "managed:mistral:live-acct-mistral:model:codestral-latest",
+    "managed:mistral:live-acct-mistral:model:ministral-3b-latest",
+    "managed:mistral:live-acct-mistral:model:ministral-8b-latest",
+    "managed:mistral:live-acct-mistral:model:devstral-medium-latest",
+    "managed:mistral:live-acct-mistral:model:devstral-2512",
+    "managed:mistral:live-acct-mistral:model:devstral-latest",
+    "managed:mistral:live-acct-mistral:model:devstral-medium-2507",
+    "managed:mistral:live-acct-mistral:model:devstral-small-2507",
+    "managed:mistral:live-acct-mistral:model:labs-devstral-small-2512",
+    "managed:mistral:live-acct-mistral:model:devstral-small-2505",
+    "managed:mistral:live-acct-mistral:model:zai-glm-5-2",
+    "managed:mistral:live-acct-mistral:model:zai-glm-5-3",
+    "managed:mistral:live-acct-mistral:model:magistral-medium-latest",
+    "managed:mistral:live-acct-mistral:model:magistral-small",
+    "managed:mistral:live-acct-mistral:model:open-mistral-7b",
+    "managed:mistral:live-acct-mistral:model:mistral-large-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-large-2411",
+    "managed:mistral:live-acct-mistral:model:mistral-large-2512",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-2505",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-2508",
+    "managed:mistral:live-acct-mistral:model:mistral-medium-2604",
+    "managed:mistral:live-acct-mistral:model:mistral-nemo",
+    "managed:mistral:live-acct-mistral:model:mistral-small-latest",
+    "managed:mistral:live-acct-mistral:model:mistral-small-2506",
+    "managed:mistral:live-acct-mistral:model:mistral-small-2603",
+    "managed:mistral:live-acct-mistral:model:open-mixtral-8x22b",
+    "managed:mistral:live-acct-mistral:model:open-mixtral-8x7b",
+    "managed:mistral:live-acct-mistral:model:open-mistral-nemo",
+    "managed:mistral:live-acct-mistral:model:pixtral-12b",
+    "managed:mistral:live-acct-mistral:model:pixtral-large-latest",
+    "managed:mistral:live-acct-mistral:model:voxtral-small-latest",
+    "managed:openrouter:live-acct-openrouter",
+    "managed:cerebras:live-acct-cerebras",
+    "owner:groq:model:openai/gpt-oss-120b",
+    "owner:groq:model:openai/gpt-oss-20b",
+    "owner:groq:model:qwen/qwen3.8-27b",
+    "owner:groq:model:allam-2-7b",
+    "owner:mistral:model:codestral-latest",
+    "owner:mistral:model:ministral-3b-latest",
+    "owner:mistral:model:ministral-8b-latest",
+    "owner:mistral:model:devstral-medium-latest",
+    "owner:mistral:model:devstral-2512",
+    "owner:mistral:model:devstral-latest",
+    "owner:mistral:model:devstral-medium-2507",
+    "owner:mistral:model:devstral-small-2507",
+    "owner:mistral:model:labs-devstral-small-2512",
+    "owner:mistral:model:devstral-small-2505",
+    "owner:mistral:model:zai-glm-5-2",
+    "owner:mistral:model:zai-glm-5-3",
+    "owner:groq:model:llama-3.1-8b-instant",
+    "owner:groq:model:llama-3.3-70b-versatile",
+    "owner:mistral:model:magistral-medium-latest",
+    "owner:mistral:model:magistral-small",
+    "owner:mistral:model:open-mistral-7b",
+    "owner:mistral:model:mistral-large-latest",
+    "owner:mistral:model:mistral-large-2411",
+    "owner:mistral:model:mistral-large-2512",
+    "owner:mistral:model:mistral-medium-latest",
+    "owner:mistral:model:mistral-medium-2505",
+    "owner:mistral:model:mistral-medium-2508",
+    "owner:mistral:model:mistral-medium-2604",
+    "owner:mistral:model:mistral-nemo",
+    "owner:mistral:model:mistral-small-latest",
+    "owner:mistral:model:mistral-small-2506",
+    "owner:mistral:model:mistral-small-2603",
+    "owner:mistral:model:open-mixtral-8x22b",
+    "owner:mistral:model:open-mixtral-8x7b",
+    "owner:mistral:model:open-mistral-nemo",
+    "owner:mistral:model:pixtral-12b",
+    "owner:mistral:model:pixtral-large-latest",
+    "owner:groq:model:qwen/qwen3.6-27b",
+    "owner:mistral:model:voxtral-small-latest"
+  ],
+  "runStatus": "blocked",
+  "preMissionIntegration": null,
+  "runSummary": "Writer did not complete: [AGENT_MODEL_TURN_LIMIT] The coder agent used all 26 model turns (including 1 failover grant) without finishing; the work is unfinished, not complete.",
+  "changedFiles": [],
+  "review": {
+    "passed": false,
+    "findings": []
+  },
+  "verification": [],
+  "completionGate": null,
+  "integration": {
+    "status": "blocked",
+    "branch": "codeforge/worktree/run-ab6c19d1-36d3-44b3-955a-c7936304e70e-a5b1632b",
+    "worktreeId": "wt-a5b1632b",
+    "reason": "SUBAGENT_WRITER_BLOCKED"
+  },
+  "counters": {
+    "childrenSpawned": 1,
+    "reviewRounds": 0,
+    "taskAttempts": 1,
+    "verificationAttempts": 0
+  },
+  "roleReport": [
+    {
+      "role": "explorer",
+      "outcome": "converged_failed",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "qualification": "QUALIFIED",
+      "roleVerdict": "QUALIFIED",
+      "healthAfterRun": "CAPABILITY_LIMITED",
+      "requests": 5,
+      "toolCalls": 4,
+      "inputTokens": 25737,
+      "outputTokens": 3330,
+      "failovers": [],
+      "recoveryOutcome": "replan",
+      "recoveryDetail": "Run ended with stopReason: budget_exhausted"
+    },
+    {
+      "role": "coder",
+      "outcome": "converged_failed",
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "qualification": "QUALIFIED",
+      "roleVerdict": "QUALIFIED",
+      "healthAfterRun": "QUARANTINED",
+      "requests": 26,
+      "toolCalls": 32,
+      "inputTokens": 174985,
+      "outputTokens": 4051,
+      "failovers": [
+        {
+          "from": "groq/qwen/qwen3.8-27b",
+          "to": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "at": "2026-09-28T13:35:55.038Z",
+          "reason": "RATE_LIMITED",
+          "callsBeforeFailure": 1
+        }
+      ],
+      "recoveryOutcome": "replan",
+      "recoveryDetail": "Run ended with stopReason: budget_exhausted"
+    }
+  ],
+  "workers": [
+    {
+      "role": "Repository Explorer",
+      "agentId": "explorer",
+      "status": "blocked",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+      },
+      "route": null,
+      "routePoolId": null,
+      "resultSummary": "[AGENT_MODEL_TURN_LIMIT] The explorer agent used all 5 model turns without finishing; the work is unfinished, not complete.",
+      "telemetry": {
+        "wallTimeMs": 55469,
+        "modelRequests": 5,
+        "inputTokens": 25737,
+        "outputTokens": 3330,
+        "toolCalls": 4,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 0
+      }
+    },
+    {
+      "role": "Autonomous Builder",
+      "agentId": "coder",
+      "status": "blocked",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3.5-lightning:free"
+      },
+      "route": null,
+      "routePoolId": null,
+      "resultSummary": "[AGENT_MODEL_TURN_LIMIT] The coder agent used all 26 model turns (including 1 failover grant) without finishing; the work is unfinished, not complete.",
+      "telemetry": {
+        "wallTimeMs": 390636,
+        "modelRequests": 26,
+        "inputTokens": 174985,
+        "outputTokens": 4051,
+        "toolCalls": 32,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 0
+      }
+    }
+  ],
+  "journals": [
+    {
+      "runId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "role": "explorer",
+      "state": "converged_failed",
+      "route": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "capacityPoolId": "managed:openrouter:live-acct-openrouter"
+      },
+      "turnCount": 5,
+      "toolCallCount": 4,
+      "requests": 5,
+      "inputTokens": 25737,
+      "outputTokens": 3330,
+      "routeFailovers": [],
+      "recoveryOutcome": "replan",
+      "recoveryDetail": "Run ended with stopReason: budget_exhausted",
+      "stopReason": "budget_exhausted",
+      "turnTrace": [
+        {
+          "turn": 2,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "read_file",
+              "targetHash": "8e39757b6619e56f",
+              "outcome": "success",
+              "bytes": 491,
+              "observationHash": "6c11eda6dd2a48b9be90b89512d6365685677367267fd9c8594800c5a89fcbfc"
+            }
+          ]
+        },
+        {
+          "turn": 3,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "read_file",
+              "targetHash": "d83ca42528935e98",
+              "outcome": "success",
+              "bytes": 238,
+              "observationHash": "65af5688a476143fa6fea309e44da2efecd831771568923c5efd424b6db574e2"
+            }
+          ]
+        },
+        {
+          "turn": 4,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "read_file",
+              "targetHash": "038b16ed91678abb",
+              "outcome": "success",
+              "bytes": 198,
+              "observationHash": "ab7aadbfeb348cb4674afb0d233e921f3a7b13a7bee49680c1d444355e563dbf"
+            }
+          ]
+        },
+        {
+          "turn": 5,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "read_file",
+              "targetHash": "79da94b8c4848e4d",
+              "outcome": "success",
+              "bytes": 121,
+              "observationHash": "4ac0f3345e2cf698d837e315a9f77eb2b37082e7f7b1b710f6f0e40b8a1dcfb5"
+            }
+          ]
+        }
+      ],
+      "editAttempts": [],
+      "roleProgress": null
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "role": "coder",
+      "state": "converged_failed",
+      "route": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3.5-lightning:free",
+        "capacityPoolId": "managed:openrouter:live-acct-openrouter"
+      },
+      "turnCount": 26,
+      "toolCallCount": 32,
+      "requests": 26,
+      "inputTokens": 174985,
+      "outputTokens": 4051,
+      "routeFailovers": [
+        {
+          "from": "groq/qwen/qwen3.8-27b",
+          "to": "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "at": "2026-09-28T13:35:55.038Z",
+          "reason": "RATE_LIMITED",
+          "callsBeforeFailure": 1
+        }
+      ],
+      "recoveryOutcome": "replan",
+      "recoveryDetail": "Run ended with stopReason: budget_exhausted",
+      "stopReason": "budget_exhausted",
+      "turnTrace": [
+        {
+          "turn": 1,
+          "batchSize": 2,
+          "calls": [
+            {
+              "tool": "list_files",
+              "targetHash": "cdb4ee2aea69cc6a",
+              "outcome": "success",
+              "bytes": 219,
+              "observationHash": "bf93c0426b775c494ef6b289513ca099fc92d57ac11770e028662319bc3117a6"
+            },
+            {
+              "tool": "read_file",
+              "targetHash": "038b16ed91678abb",
+              "outcome": "success",
+              "bytes": 199,
+              "observationHash": "0edbbdcd74beee1df94f0b590fac803490577f9190834ee10798257ff0c49629"
+            }
+          ]
+        },
+        {
+          "turn": 2,
+          "batchSize": 6,
+          "calls": [
+            {
+              "tool": "read_file",
+              "targetHash": "79da94b8c4848e4d",
+              "outcome": "success",
+              "bytes": 122,
+              "observationHash": "19f5c537b0e68fcd77dab8cb26f91358f756b429d204dda8d0e0809dc09ca8b9"
+            },
+            {
+              "tool": "read_file",
+              "targetHash": "0b5856b7606f07e4",
+              "outcome": "success",
+              "bytes": 194,
+              "observationHash": "91548fd6a56eaf40837b81535e87094294b25a3494bbe1b9596ca382af7f7922"
+            },
+            {
+              "tool": "read_file",
+              "targetHash": "a735f857c8f926a5",
+              "outcome": "success",
+              "bytes": 134,
+              "observationHash": "3bd7a98c3d94eaa00e96ce1f972f408c25838ee5c80d91cef8012e6fe32ebd1d"
+            },
+            {
+              "tool": "read_file",
+              "targetHash": "2aa1aec608535863",
+              "outcome": "success",
+              "bytes": 390,
+              "observationHash": "51f57d7e6bf8d29520cddb664e016b4d587fa46cb7a84e2411c26951ca8afbb2"
+            },
+            {
+              "tool": "read_file",
+              "targetHash": "40da006dbd0b851f",
+              "outcome": "success",
+              "bytes": 253,
+              "observationHash": "b441bf7c63ba13e11c5bd5a90b212742d987f975ba5c33144ce6e49d1dbd1c51"
+            },
+            {
+              "tool": "read_file",
+              "targetHash": "8e39757b6619e56f",
+              "outcome": "success",
+              "bytes": 496,
+              "observationHash": "541124d4f7394ff600cd76a8b04070f3a4770567a93e84abe8190b1383d0d0ee"
+            }
+          ]
+        },
+        {
+          "turn": 3,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "read_file",
+              "targetHash": "bc03763018cc8638",
+              "outcome": "success",
+              "bytes": 169,
+              "observationHash": "fd68994625c4c66e99d615cf4982b48d194cb2d86889eb48cba02a28c4bba348"
+            }
+          ]
+        },
+        {
+          "turn": 4,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "edit_file",
+              "targetHash": "038b16ed91678abb",
+              "outcome": "success",
+              "bytes": 105,
+              "observationHash": "16fa632009a28e42ed523cd9daffb9411ab4d2faca4924b2c39726569c3d5248"
+            }
+          ]
+        },
+        {
+          "turn": 5,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "edit_file",
+              "targetHash": "79da94b8c4848e4d",
+              "outcome": "success",
+              "bytes": 106,
+              "observationHash": "9f6c6ead39a99799543bbf70e2899bb9424eb2f494c6b38cc829208c3e222f19"
+            }
+          ]
+        },
+        {
+          "turn": 6,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "edit_file",
+              "targetHash": "0b5856b7606f07e4",
+              "outcome": "failed",
+              "bytes": 208,
+              "observationHash": "6a86cf9c4145422e0105157e830d40d5335a6b20ff8ba5256e906f48c20ce797"
+            }
+          ]
+        },
+        {
+          "turn": 7,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "read_file",
+              "targetHash": "0b5856b7606f07e4",
+              "outcome": "success",
+              "bytes": 194,
+              "observationHash": "91548fd6a56eaf40837b81535e87094294b25a3494bbe1b9596ca382af7f7922"
+            }
+          ]
+        },
+        {
+          "turn": 8,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "edit_file",
+              "targetHash": "0b5856b7606f07e4",
+              "outcome": "failed",
+              "bytes": 208,
+              "observationHash": "6a86cf9c4145422e0105157e830d40d5335a6b20ff8ba5256e906f48c20ce797"
+            }
+          ]
+        },
+        {
+          "turn": 9,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "c4d8e8c3aadfadf8",
+              "outcome": "success",
+              "bytes": 132,
+              "observationHash": "38828f42c4b3509d5fdee84f22e391f7c1c9353c9298ffe4ca15c5164ea08409"
+            }
+          ]
+        },
+        {
+          "turn": 10,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "edit_file",
+              "targetHash": "0b5856b7606f07e4",
+              "outcome": "failed",
+              "bytes": 208,
+              "observationHash": "6a86cf9c4145422e0105157e830d40d5335a6b20ff8ba5256e906f48c20ce797"
+            }
+          ]
+        },
+        {
+          "turn": 11,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "write_file",
+              "targetHash": "0b5856b7606f07e4",
+              "outcome": "success",
+              "bytes": 122,
+              "observationHash": "b2da0646815141a9f266638aaef880bc9d6762bb178a9064f3dfee3103c9588f"
+            }
+          ]
+        },
+        {
+          "turn": 12,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "12c99cef061ab599",
+              "outcome": "denied",
+              "bytes": 107,
+              "observationHash": "d18ad699079f6c77bc9f49900f61507697d2dac15bef4e820cbd48cb9d63b032"
+            }
+          ]
+        },
+        {
+          "turn": 13,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "e59a395beaedd083",
+              "outcome": "denied",
+              "bytes": 107,
+              "observationHash": "d18ad699079f6c77bc9f49900f61507697d2dac15bef4e820cbd48cb9d63b032"
+            }
+          ]
+        },
+        {
+          "turn": 14,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "e59a395beaedd083",
+              "outcome": "denied",
+              "bytes": 107,
+              "observationHash": "d18ad699079f6c77bc9f49900f61507697d2dac15bef4e820cbd48cb9d63b032"
+            }
+          ]
+        },
+        {
+          "turn": 15,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "c8679ab9e1123536",
+              "outcome": "success",
+              "bytes": 99,
+              "observationHash": "923c88569bb5d7f42aa7d580ceca1664b18dd57a4462debe624ad713645b8f81"
+            }
+          ]
+        },
+        {
+          "turn": 16,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "675b23f425230725",
+              "outcome": "success",
+              "bytes": 225,
+              "observationHash": "2ad1f1faababa3b0e46a78df84a0f5988e52ece7b45f34b18a1a70322357c308"
+            }
+          ]
+        },
+        {
+          "turn": 17,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "3122045cb5bd6b4b",
+              "outcome": "denied",
+              "bytes": 107,
+              "observationHash": "d18ad699079f6c77bc9f49900f61507697d2dac15bef4e820cbd48cb9d63b032"
+            }
+          ]
+        },
+        {
+          "turn": 18,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "7850f7009d822b56",
+              "outcome": "denied",
+              "bytes": 107,
+              "observationHash": "d18ad699079f6c77bc9f49900f61507697d2dac15bef4e820cbd48cb9d63b032"
+            }
+          ]
+        },
+        {
+          "turn": 19,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "8d7e1140609e9a28",
+              "outcome": "denied",
+              "bytes": 107,
+              "observationHash": "d18ad699079f6c77bc9f49900f61507697d2dac15bef4e820cbd48cb9d63b032"
+            }
+          ]
+        },
+        {
+          "turn": 20,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "304006a067f5307f",
+              "outcome": "success",
+              "bytes": 961,
+              "observationHash": "f6ce9bd3d74726d267939a07f7f7dfea198ad7ced9f2adc5673f78a66108c945"
+            }
+          ]
+        },
+        {
+          "turn": 21,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "5f0efd5f7a3d25f2",
+              "outcome": "failed",
+              "bytes": 515,
+              "observationHash": "17c26a184eea0a6b48a4bbf0a69993da0ae85f455692ca9b166ae8fb73ce0308"
+            }
+          ]
+        },
+        {
+          "turn": 22,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "read_file",
+              "targetHash": "79da94b8c4848e4d",
+              "outcome": "success",
+              "bytes": 352,
+              "observationHash": "4f3e4c3a99c0ff6333c7d4b2f8bf6bb7e69f3eb40399a046bc1e85b9f83d166e"
+            }
+          ]
+        },
+        {
+          "turn": 23,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "46404612a20f0946",
+              "outcome": "failed",
+              "bytes": 513,
+              "observationHash": "d2b1d051c6b2c478617c4a358e77a020ef62cb6651e86da0cb4fdbdbbfffe8bb"
+            }
+          ]
+        },
+        {
+          "turn": 24,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "d790159a05563f43",
+              "outcome": "failed",
+              "bytes": 475,
+              "observationHash": "39a9a1eb2dabd0e88897919feac3474314cc99878f9b11575b59cd80946104ca"
+            }
+          ]
+        },
+        {
+          "turn": 25,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "write_file",
+              "targetHash": "6fb2402165636f28",
+              "outcome": "success",
+              "bytes": 124,
+              "observationHash": "cce2bd670237967dd6dbaad8f51889b6ec1f3ea23e459aa187d1c0d098786e62"
+            }
+          ]
+        },
+        {
+          "turn": 26,
+          "batchSize": 1,
+          "calls": [
+            {
+              "tool": "run_command",
+              "targetHash": "229dada1667c33eb",
+              "outcome": "failed",
+              "bytes": 961,
+              "observationHash": "c1a5c7552f00ae80063836a549ed4a8b76c2b8a14df4f9da673ade770751afa1"
+            }
+          ]
+        }
+      ],
+      "editAttempts": [
+        {
+          "turn": 4,
+          "tool": "edit_file",
+          "pathHash": "038b16ed91678abb",
+          "outcome": "success",
+          "failureClass": null
+        },
+        {
+          "turn": 5,
+          "tool": "edit_file",
+          "pathHash": "79da94b8c4848e4d",
+          "outcome": "success",
+          "failureClass": null
+        },
+        {
+          "turn": 6,
+          "tool": "edit_file",
+          "pathHash": "0b5856b7606f07e4",
+          "outcome": "failed",
+          "failureClass": "target_not_found"
+        },
+        {
+          "turn": 8,
+          "tool": "edit_file",
+          "pathHash": "0b5856b7606f07e4",
+          "outcome": "failed",
+          "failureClass": "target_not_found"
+        },
+        {
+          "turn": 10,
+          "tool": "edit_file",
+          "pathHash": "0b5856b7606f07e4",
+          "outcome": "failed",
+          "failureClass": "target_not_found"
+        },
+        {
+          "turn": 11,
+          "tool": "write_file",
+          "pathHash": "0b5856b7606f07e4",
+          "outcome": "success",
+          "failureClass": null
+        },
+        {
+          "turn": 25,
+          "tool": "write_file",
+          "pathHash": "6fb2402165636f28",
+          "outcome": "success",
+          "failureClass": null
+        }
+      ],
+      "roleProgress": {
+        "stalled": false,
+        "reason": null,
+        "quietTurns": 0,
+        "threshold": 6,
+        "novelObservations": 18,
+        "successfulMutations": 4,
+        "repeatedEditFailures": 0
+      }
+    }
+  ],
+  "modelTurns": [
+    {
+      "runId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "agentId": "explorer",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e:explorer:1",
+      "state": "provider_response_completed",
+      "transcriptBytes": 7824,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 4069,
+      "outputTokens": 1024,
+      "finishReason": "length",
+      "toolRequests": 0
+    },
+    {
+      "runId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "agentId": "explorer",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e:explorer:2",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 12029,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 5128,
+      "outputTokens": 866,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "agentId": "explorer",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e:explorer:3",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 12520,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 5361,
+      "outputTokens": 936,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "agentId": "explorer",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e:explorer:4",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 12758,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 5515,
+      "outputTokens": 435,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "agentId": "explorer",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e:explorer:5",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 12956,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 5664,
+      "outputTokens": 69,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:1",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 10840,
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 4720,
+      "outputTokens": 65,
+      "finishReason": "tool_calls",
+      "toolRequests": 2
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:2",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 11258,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 5507,
+      "outputTokens": 182,
+      "finishReason": "tool_calls",
+      "toolRequests": 6
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:3",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 12921,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6445,
+      "outputTokens": 414,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:4",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 13528,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6601,
+      "outputTokens": 775,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:5",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 8034,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 5473,
+      "outputTokens": 214,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:6",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 8216,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 5705,
+      "outputTokens": 246,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:7",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 8431,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 5976,
+      "outputTokens": 44,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:8",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 8625,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6118,
+      "outputTokens": 137,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:9",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 8840,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6306,
+      "outputTokens": 184,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:10",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 8972,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6398,
+      "outputTokens": 173,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:11",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 9187,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6586,
+      "outputTokens": 107,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:12",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 9255,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6620,
+      "outputTokens": 91,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:13",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 9362,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6743,
+      "outputTokens": 71,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:14",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 9469,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6849,
+      "outputTokens": 84,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:15",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 9576,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6953,
+      "outputTokens": 69,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:16",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 9675,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 7038,
+      "outputTokens": 70,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:17",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 9182,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6692,
+      "outputTokens": 64,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:18",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 9289,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6782,
+      "outputTokens": 57,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:19",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 9396,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6874,
+      "outputTokens": 74,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:20",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 9503,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 6983,
+      "outputTokens": 59,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:21",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 10464,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 7378,
+      "outputTokens": 296,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:22",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 10986,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 7619,
+      "outputTokens": 67,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:23",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 11338,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 7797,
+      "outputTokens": 131,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:24",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 11858,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 8036,
+      "outputTokens": 149,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:25",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 12340,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 8273,
+      "outputTokens": 172,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    },
+    {
+      "runId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "agentId": "coder",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6:coder:26",
+      "state": "tool_requests_decoded",
+      "transcriptBytes": 12464,
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "usageSource": "PROVIDER_REPORTED",
+      "inputTokens": 8513,
+      "outputTokens": 56,
+      "finishReason": "tool_calls",
+      "toolRequests": 1
+    }
+  ],
+  "routerEvents": [
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "providerId": "openrouter",
+        "score": 85,
+        "reasons": [
+          "FABRIC_ADMITTED",
+          "SUPPLY_PURE_MANAGED_FREE",
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED",
+          "ROLE_QUALIFIED_EVIDENCE",
+          "ROLE_RUNTIME_EVIDENCE_ABSENT"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+        "modelId": "qwen/qwen3.8-27b",
+        "providerId": "groq",
+        "score": 85,
+        "reasons": [
+          "FABRIC_ADMITTED",
+          "SUPPLY_PURE_MANAGED_FREE",
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED",
+          "ROLE_QUALIFIED_EVIDENCE",
+          "ROLE_RUNTIME_EVIDENCE_ABSENT"
+        ]
+      }
+    },
+    {
+      "type": "router.failover",
+      "payload": {
+        "taskId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+        "fromModelId": "groq/qwen/qwen3.8-27b",
+        "toModelId": "openrouter/nvidia/nemotron-3.5-lightning:free",
+        "reason": "RATE_LIMITED"
+      }
+    }
+  ],
+  "toolTrace": [
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "toolCallId": "call-b893d561-558b-4a64-8b3e-1ab36f9d1e17",
+      "toolName": "read_file",
+      "argsHash": "8c04ee37f4760371",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "toolCallId": "call-b893d561-558b-4a64-8b3e-1ab36f9d1e17",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 491,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "toolCallId": "call-636567fe-460f-40df-b26d-28f01a45b8e3",
+      "toolName": "read_file",
+      "argsHash": "5a0913dcbf0e7cd0",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "toolCallId": "call-636567fe-460f-40df-b26d-28f01a45b8e3",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 238,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "toolCallId": "call-f5f63e94-5771-4fa8-aa6c-525fa929d485",
+      "toolName": "read_file",
+      "argsHash": "13566cdd2e435ac7",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "toolCallId": "call-f5f63e94-5771-4fa8-aa6c-525fa929d485",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 198,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "toolCallId": "call-7ca0329c-52d3-4c56-9edf-a782ddbd7668",
+      "toolName": "read_file",
+      "argsHash": "d6d98416b44c546a",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-42e0506c-7058-43ba-a725-59ded9e3013e",
+      "toolCallId": "call-7ca0329c-52d3-4c56-9edf-a782ddbd7668",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 121,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "t4ratxbcw",
+      "toolName": "list_files",
+      "argsHash": "10052d6519c1141a",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "t4ratxbcw",
+      "toolName": "list_files",
+      "argsHash": null,
+      "resultLength": 219,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "jkjfq6h5x",
+      "toolName": "read_file",
+      "argsHash": "13566cdd2e435ac7",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "jkjfq6h5x",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 199,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-d982cb84-5619-4ed9-bc4a-5afd3b2b7242",
+      "toolName": "read_file",
+      "argsHash": "d6d98416b44c546a",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-d982cb84-5619-4ed9-bc4a-5afd3b2b7242",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 122,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-f0c14062-8fc2-4fe2-bc63-cd04ad938843",
+      "toolName": "read_file",
+      "argsHash": "aeb9c7b9f077b730",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-f0c14062-8fc2-4fe2-bc63-cd04ad938843",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 194,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-128f2016-7108-43e2-b841-74ce136e3f26",
+      "toolName": "read_file",
+      "argsHash": "47cd6a4a68409680",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-128f2016-7108-43e2-b841-74ce136e3f26",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 134,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-f2a17a65-3b5a-4ea8-8f63-d16ca10c017d",
+      "toolName": "read_file",
+      "argsHash": "3b6e94533340c987",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-f2a17a65-3b5a-4ea8-8f63-d16ca10c017d",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 390,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-e8db3a23-e9ef-46f4-b5fa-96b8ee7c5f57",
+      "toolName": "read_file",
+      "argsHash": "5195131211bee138",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-e8db3a23-e9ef-46f4-b5fa-96b8ee7c5f57",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 253,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-a7b65d6f-bf93-4e70-920a-7a967e7af18a",
+      "toolName": "read_file",
+      "argsHash": "8c04ee37f4760371",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-a7b65d6f-bf93-4e70-920a-7a967e7af18a",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 496,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-f1a47dc5-5c6e-43f3-81ff-d5f8e78f462a",
+      "toolName": "read_file",
+      "argsHash": "c53392fb46f91cd4",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-f1a47dc5-5c6e-43f3-81ff-d5f8e78f462a",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 169,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-cc809e98-85c9-412e-ac50-65f204b1001c",
+      "toolName": "edit_file",
+      "argsHash": "b109b046028e10dd",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-cc809e98-85c9-412e-ac50-65f204b1001c",
+      "toolName": "edit_file",
+      "argsHash": null,
+      "resultLength": 105,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-5d4f434c-8530-499c-b67d-1c1c69957f8e",
+      "toolName": "edit_file",
+      "argsHash": "1311fcff242652f1",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-5d4f434c-8530-499c-b67d-1c1c69957f8e",
+      "toolName": "edit_file",
+      "argsHash": null,
+      "resultLength": 106,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-6553c4ad-7e46-4389-b0ff-f0a69d87a1c1",
+      "toolName": "edit_file",
+      "argsHash": "c26cc0fe69fef9d6",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_failed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-6553c4ad-7e46-4389-b0ff-f0a69d87a1c1",
+      "toolName": "edit_file",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": "OTHER"
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-f5744a8b-48c1-42f5-b371-e3cfb8936585",
+      "toolName": "read_file",
+      "argsHash": "aeb9c7b9f077b730",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-f5744a8b-48c1-42f5-b371-e3cfb8936585",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 194,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-52f207fa-9b62-4804-91fc-54a9fa72a4c4",
+      "toolName": "edit_file",
+      "argsHash": "3e1a2f3d8722123e",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_failed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-52f207fa-9b62-4804-91fc-54a9fa72a4c4",
+      "toolName": "edit_file",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": "OTHER"
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-40dd05b4-5bbc-4ce6-a5ba-19baaa292461",
+      "toolName": "run_command",
+      "argsHash": "ffee55ff3f262030",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-40dd05b4-5bbc-4ce6-a5ba-19baaa292461",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": 132,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-e5dfcfc2-8c39-4698-9241-1bea36b9822d",
+      "toolName": "edit_file",
+      "argsHash": "055f55486dca6ba3",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_failed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-e5dfcfc2-8c39-4698-9241-1bea36b9822d",
+      "toolName": "edit_file",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": "OTHER"
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-25410a4c-acb4-4745-900e-12091704b8df",
+      "toolName": "write_file",
+      "argsHash": "ac7ce4252531666b",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-25410a4c-acb4-4745-900e-12091704b8df",
+      "toolName": "write_file",
+      "argsHash": null,
+      "resultLength": 122,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_blocked",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-65d3843b-54ca-4799-9766-9a384f761f21",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_blocked",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-b27a1dab-a8cd-4861-8f09-f36483cf5d99",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_blocked",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-7ff762d5-b365-45e1-8aab-c55d880050ed",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-a6d136b6-0973-48e4-a773-fcdd1d2336e2",
+      "toolName": "run_command",
+      "argsHash": "d68c32550b9d869a",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-a6d136b6-0973-48e4-a773-fcdd1d2336e2",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": 99,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-2dc4ebff-2930-4d57-8600-e7434f4f8e60",
+      "toolName": "run_command",
+      "argsHash": "ebeb83a73b5eb7e6",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-2dc4ebff-2930-4d57-8600-e7434f4f8e60",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": 203,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_blocked",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-048e64ef-b5fa-4400-a266-4e0001bd8dc8",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_blocked",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-634ebdb1-8077-48a4-9c92-ddece2e5ef60",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_blocked",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-7325d38e-8646-44d0-82b2-875d00e82398",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-1b0b8c64-6e3c-44f9-af38-f285b07f8a4e",
+      "toolName": "run_command",
+      "argsHash": "1cec75421c247afe",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-1b0b8c64-6e3c-44f9-af38-f285b07f8a4e",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": 961,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-becd49f7-f276-424b-a011-83704804c376",
+      "toolName": "run_command",
+      "argsHash": "29bdca50076a75b9",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_failed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-becd49f7-f276-424b-a011-83704804c376",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": "OTHER"
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-c5f7c420-7892-4968-81ce-d5f263a28c62",
+      "toolName": "read_file",
+      "argsHash": "d6d98416b44c546a",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-c5f7c420-7892-4968-81ce-d5f263a28c62",
+      "toolName": "read_file",
+      "argsHash": null,
+      "resultLength": 352,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-af6461c1-a36f-42ef-a0e4-f8da7945bffd",
+      "toolName": "run_command",
+      "argsHash": "388be684980d4532",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_failed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-af6461c1-a36f-42ef-a0e4-f8da7945bffd",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": "OTHER"
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-110a24ab-f9b6-485b-bb29-8f9578989ba2",
+      "toolName": "run_command",
+      "argsHash": "254241e033b08740",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_failed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-110a24ab-f9b6-485b-bb29-8f9578989ba2",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": "OTHER"
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-32425dfd-959e-4716-bcd9-baf872b0f432",
+      "toolName": "write_file",
+      "argsHash": "c7464b6fcf4a608d",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_completed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-32425dfd-959e-4716-bcd9-baf872b0f432",
+      "toolName": "write_file",
+      "argsHash": null,
+      "resultLength": 124,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_started",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-6185137f-b26d-4f51-a7e8-067d21ee9df6",
+      "toolName": "run_command",
+      "argsHash": "d356688bc09f892b",
+      "resultLength": null,
+      "errorKind": null
+    },
+    {
+      "type": "tool.execution_failed",
+      "turnId": "child-6dcc44f2-2eab-437b-a1bd-15c3c446d1c6",
+      "toolCallId": "call-6185137f-b26d-4f51-a7e8-067d21ee9df6",
+      "toolName": "run_command",
+      "argsHash": null,
+      "resultLength": null,
+      "errorKind": "OTHER"
+    }
+  ],
+  "poolByRole": {
+    "explorer": [
+      "managed:openrouter:live-acct-openrouter"
+    ],
+    "coder": [
+      "managed:openrouter:live-acct-openrouter"
+    ]
+  },
+  "reviewerIndependent": false,
+  "forgeVerifyRecords": [],
+  "treeEquality": {
+    "verifiedTree": "46ede984dae573ffe2b74882dc066ca5a02fd9ca",
+    "integratedTree": "46ede984dae573ffe2b74882dc066ca5a02fd9ca",
+    "worktreeHead": "273087e20fc2db28545b12691efba38e80d7c529",
+    "equal": true
+  },
+  "baseRevision": "273087e20fc2db28545b12691efba38e80d7c529",
+  "finalRevision": null,
+  "finalMathContents": "export function multiply(a, b) { return a * b; }\n\nexport function add(a, b) { return a + b; }\n",
+  "finalFormatContents": "export function format(value) { return `result: ${value}`; }\n",
+  "postIntegrationProbe": {
+    "ok": false,
+    "output": "✔ format (0.7695ms)\n✔ multiply (0.8023ms)\nfile:///C:/Users/DADDY_%7E1/AppData/Local/Temp/r51-repo-MjiIDf/test/report.test.mjs:3\nimport { summarize } from '../src/index.mjs';\n         ^^^^^^^^^\nSyntaxError: The requested module '../src/index.mjs' does not provide an export named 'summarize'\n    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)\n    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\n\nNode.js v24.19.0\n✖ test\\report.test.mjs (94.1116ms)\nfile:///C:/Users/DADDY_%7E1/AppData/Local/Temp/r51-repo-MjiIDf/test/stats-refactor.test.mjs:3\nimport { sum, mean } from '../src/stats.mjs';\n         ^^^\nSyntaxError: The requested module '../src/stats.mjs' does not provide an export named 'sum'\n    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)\n    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\n\nNode.js v24.19.0\n✖ test\\stats-refactor.test.mjs (82.2804ms)\n✔ mean (0.746ms)\nℹ tests 5\nℹ suites 0\nℹ pass 3\nℹ fail 2\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 158.762\n\n✖ failing tests:\n\ntest at test\\report.test.mjs:1:1\n✖ test\\report.test.mjs (94.1116ms)\n  'test failed'\n\ntest at test\\stats-refactor.test.mjs:1:1\n✖ test\\stats-refactor.test.mjs (82.2804ms)\n  'test failed'\n"
+  },
+  "servedModels": [
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "freeStatus": "verified_free",
+      "isFree": true,
+      "paidFallbackPossible": false
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "freeStatus": "verified_free",
+      "isFree": true,
+      "paidFallbackPossible": false
+    }
+  ],
+  "allServedRoutesForgeAutoEligible": false,
+  "paidSpendUsd": 0,
+  "paidBoundary": "8-Bit managed free only: no Paid Auto route, no BYOK route, no paid receipts possible — every served route is asserted ForgeAuto-eligible with verified_free status.",
+  "credentialsUsed": [
+    "GROQ_API_KEY (present)",
+    "MISTRAL_API_KEY (present)",
+    "OPENROUTER_API_KEY (present)",
+    "CEREBRAS_API_KEY (present)"
+  ]
+}
