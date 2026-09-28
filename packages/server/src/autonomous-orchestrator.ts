@@ -51,6 +51,7 @@ import type { ProviderTopologyCapacity } from "@codeforge/forge-green";
 import { resolveAdaptiveTopology } from "./adaptive-topology.js";
 import { evaluateMissionAdmission, type CapacityConfidenceReport, type MissionAdmissionVerdict } from "./capacity-confidence.js";
 import { classifyTaskComplexity, type TaskComplexityDecision, type TaskComplexityTier } from "./task-complexity.js";
+import { resolveForgeAutoRole, rosterRouteAllowance, type ForgeAutoRoster, type RosterCandidate, type RosterRole, type RosterRouteAllowance } from "./forgeauto-roster.js";
 
 const execFile = promisify(execFileCallback);
 
@@ -215,6 +216,8 @@ export interface OrchestratorRunOptions {
   complexityHint?: TaskComplexityTier;
   /** R21: visual assets present — routes through the vision topology. */
   hasImages?: boolean;
+  /** Trusted user policy snapshot; admission is rechecked against runtime capacity on every role. */
+  rosterContext?: { roster: ForgeAutoRoster; catalog: readonly RosterCandidate[] };
 }
 
 export interface OrchestratorOptions {
@@ -456,6 +459,17 @@ export class AutonomousRunOrchestrator {
    */
   async startRun(options: OrchestratorRunOptions): Promise<AutonomousRunResult> {
     const { sessionId, workspacePath, goal, verificationCommands = [], verificationTimeoutMs, adapter, signal, coderExecutor } = options;
+    const rosterAllowanceFor = (role: RosterRole): RosterRouteAllowance | undefined => {
+      if (!options.rosterContext) return undefined;
+      const roster = role === "LEAD" && options.rosterContext.roster.lead.mode === "MANUAL"
+        ? { ...options.rosterContext.roster, slots: options.rosterContext.roster.slots.map((slot, index) => ({ ...slot, enabled: slot.enabled && index === options.rosterContext!.roster.lead.slotIndex })) }
+        : options.rosterContext.roster;
+      const resolved = resolveForgeAutoRole(roster, options.rosterContext.catalog, role, { privateCode: true, userConsented: false });
+      if (resolved.status !== "READY") throw new Error(`ROSTER_${resolved.status}:${role}`);
+      const allowance = rosterRouteAllowance(resolved, { ownerUserId: roster.ownerUserId, rosterUpdatedAt: roster.updatedAt, role });
+      if (allowance.freeRoutes.length === 0 && allowance.paidModelIds.length === 0 && allowance.userRoutes.length === 0) throw new Error(`ROSTER_NO_EXECUTABLE_SOURCE:${role}`);
+      return allowance;
+    };
     const r1ExplorerTimeoutMs = options.r1PhaseTimeoutMs?.explorer ?? R1_EXPLORER_TIMEOUT_MS;
     const r1PlannerTimeoutMs = options.r1PhaseTimeoutMs?.planner ?? R1_PLANNER_TIMEOUT_MS;
 
@@ -619,6 +633,7 @@ export class AutonomousRunOrchestrator {
         parentRunId: runId,
         sessionId,
         agentId: "explorer",
+        ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("EXPLORER") } : {}),
         task,
         workspacePath: targetWs.rootPath,
         adapter,
@@ -641,6 +656,23 @@ export class AutonomousRunOrchestrator {
       // PHASE 2: TASK & EXECUTION PLANNING
       // ==========================================
       this.transitionRun(run, "planning", adapter);
+      let leadHandoff = "";
+      if (options.rosterContext && options.rosterContext.roster.lead.mode !== "NONE") {
+        counters.childrenSpawned++;
+        const leadResult = await this.subagentManager.spawnChildAgent({
+          parentRunId: runId, sessionId, agentId: "lead",
+          task: `Interpret intent and delegate bounded work for goal: ${goal}`,
+          workspacePath: targetWs.rootPath, adapter, signal: controller.signal,
+          parentPermissions: { read: true, search: true, write: false, executeCommand: false, network: false },
+          rosterAllowance: rosterAllowanceFor("LEAD"),
+          explorerEvidence: explorerEvidence.slice(0, 20),
+          findings: explorerFindings.slice(0, 20),
+          contextSummary: "Use the supplied Explorer evidence. Return priorities and unresolved obligations; do not assert completion.",
+        });
+        allEvidence.push(...(leadResult.evidence ?? []));
+        allFindings.push(...(leadResult.findings ?? []));
+        leadHandoff = `Lead status: ${leadResult.status}. Bounded handoff: ${leadResult.summary.slice(0, 4_000)}. This is advice, not verification evidence.`;
+      }
       const runAgentRuntime = this.subagentsR1Enabled ? this.runtimeForSession(sessionId) : this.agentRuntime;
       // Without a planner in the topology the coder works from the goal-derived task graph.
       if (runAgentRuntime && topologyPlan.hasPlanner) {
@@ -655,11 +687,12 @@ export class AutonomousRunOrchestrator {
           parentRunId: runId,
           sessionId,
           agentId: "planner",
+          ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("PLANNER") } : {}),
           task: `Produce the minimal task graph for goal: ${goal}`,
           workspacePath: targetWs.rootPath,
           explorerEvidence,
           findings: explorerFindings,
-          contextSummary: explorationContext,
+          contextSummary: `${explorationContext}\n${leadHandoff}`,
           adapter,
           signal: controller.signal,
           structuredOutput: "planner",
@@ -726,7 +759,7 @@ export class AutonomousRunOrchestrator {
       counters.taskAttempts++;
       let reviewFeedback: string | undefined;
       const taskPlan = JSON.stringify(run.taskGraph.tasks.map(({ id, title, objective, dependencies, assignedRole }) => ({ id, title, objective, dependencies, assignedRole })));
-      const executionContext = `Execution constraints: this autonomous workspace lease has network:false. Use repository-local tools only; do not invoke package installers or network/external commands. Required verification commands: ${verificationCommands.length > 0 ? verificationCommands.map((command) => `\`${command}\``).join(", ") : "none supplied; inspect repository-local test configuration."}`;
+      const executionContext = `Execution constraints: this autonomous workspace lease has network:false. Use repository-local tools only; do not invoke package installers or network/external commands. Required verification commands: ${verificationCommands.length > 0 ? verificationCommands.map((command) => `\`${command}\``).join(", ") : "none supplied; inspect repository-local test configuration."}\n${leadHandoff}`;
 
       // ==========================================
       // PHASE 4: REVIEW & BOUNDED REVISION LOOP
@@ -756,6 +789,7 @@ export class AutonomousRunOrchestrator {
             parentRunId: runId,
             sessionId,
             agentId: "coder",
+            ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("CODER") } : {}),
             task: goal,
             workspacePath: worktreeWs.rootPath,
             parentPermissions: { read: true, search: true, write: true, executeCommand: true, network: false },
@@ -805,6 +839,7 @@ export class AutonomousRunOrchestrator {
               parentRunId: runId,
               sessionId,
               agentId: "coder",
+              ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("CODER") } : {}),
               task: goal,
               workspacePath: worktreeWs.rootPath,
               parentPermissions: { read: true, search: true, write: true, executeCommand: true, network: false },
@@ -856,6 +891,8 @@ export class AutonomousRunOrchestrator {
             runId,
             agentId: "coder",
             role: "coder",
+            ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("CODER") } : {}),
+            ...(options.rosterContext ? { roleRouting: true } : {}),
             goal,
             workspaceId: worktreeWs.id,
             workspacePath: worktreeWs.rootPath,
@@ -868,6 +905,7 @@ export class AutonomousRunOrchestrator {
             // rediscovered everything upstream already mapped (the R44 normal-topology gap).
             explorerEvidence,
             findings: explorerFindings,
+            ...(leadHandoff ? { initialContext: leadHandoff } : {}),
           });
           implementerPoolId = coderRunResult.routePoolId ?? implementerPoolId;
           implementerRoute = coderRunResult.route ?? implementerRoute;
@@ -918,6 +956,7 @@ export class AutonomousRunOrchestrator {
           parentRunId: runId,
           sessionId,
           agentId: "reviewer",
+          ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("REVIEWER") } : {}),
           task: `Review implementation for goal: ${goal}`,
           workspacePath: worktreeWs.rootPath,
           contextSummary: reviewerContext,
@@ -960,6 +999,7 @@ export class AutonomousRunOrchestrator {
             parentRunId: runId,
             sessionId,
             agentId: "reviewer",
+            ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("REVIEWER") } : {}),
             task: `Review implementation for goal: ${goal}`,
             workspacePath: worktreeWs.rootPath,
             contextSummary: `${reviewerContext}\n\nThe prior Reviewer returned no valid verdict. You are the replacement Reviewer. Inspect the same worktree and return an independent verdict.`,

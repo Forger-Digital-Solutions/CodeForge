@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain, dialog, Menu, shell, safeStorage, Tray, nativeImage, screen, Notification } from "electron";
-import { migrateLegacyPlaintextCredentials, openCredential, sealCredential } from "./secure-credential-codec.js";
+import { createOwnerScopedCredentialResolver, isUserApiCredentialRef, migrateLegacyPlaintextCredentials, openCredential, sealCredential } from "./secure-credential-codec.js";
 import { resolveCloudCatalogSyncMode } from "./cloud-catalog-sync.js";
 import { checkGitExecArgs } from "./git-exec-allowlist.js";
 import path from "node:path";
@@ -226,6 +226,9 @@ const ALLOWED_PROVIDER_IDS = new Set<string>([...ROUTABLE_PROVIDER_IDS, "cloudfl
 function isAllowedCredentialKey(key: string): boolean {
   if (ALLOWED_PROVIDER_IDS.has(key)) return true;
   if (/^ollama-cloud:user:[a-f0-9]{24}$/.test(key)) return true;
+  // R55: deterministic credential refs for USER_API sources — a pointer to a sealed value,
+  // never the value itself.
+  if (isUserApiCredentialRef(key)) return true;
   const idx = key.indexOf(":");
   if (idx <= 0) return false;
   const providerId = key.slice(0, idx);
@@ -1222,6 +1225,12 @@ async function initializeServer(dbPath: string): Promise<void> {
       // explicit userId admit through the Free Fabric as this local user, which is also the
       // stamped owner of its per-user provider pools.
       localUserId: userConnectedFreeScopeId(),
+      // R55: USER_API source keys resolve only for this host's connected owner identity and
+      // only through the safeStorage-backed store — the server never sees plaintext otherwise.
+      userCredentialResolver: createOwnerScopedCredentialResolver(
+        userConnectedFreeScopeId,
+        (credentialRef) => desktopCredentialStore?.get(credentialRef),
+      ),
       // R22: bridge contributed extension commands into the agent tool surface. The delegate
       // reads the live manager so initExtensions() ordering never strands the bridge.
       pluginCommandHost: {

@@ -40,6 +40,7 @@ import { createFreeModelCatalogRefresh, type FreeModelCatalogRefresh, type Refre
  */
 export interface FreeCloudRoutingHooks {
   isForgeAutoEligible(providerId: string, modelId: string): boolean;
+  supplyClassOf?(providerId: string, modelId: string): SupplyClass | undefined;
   canonicalIdOf(providerId: string, modelId: string): string;
   /** Other ForgeAuto-eligible routes serving the same canonical model (same-model failover first). */
   sameModelAlternates(providerId: string, modelId: string): Array<{ providerId: string; modelId: string }>;
@@ -905,6 +906,10 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       if (r) return r.forgeAutoEligible;
     }
     return false;
+  }
+
+  supplyClassOf(providerId: string, modelId: string): SupplyClass | undefined {
+    return this.snapshot().models.flatMap((model) => model.routes).find((route) => route.providerId === providerId && route.providerModelId === modelId)?.supplyClass;
   }
 
   canonicalIdOf(providerId: string, modelId: string): string {

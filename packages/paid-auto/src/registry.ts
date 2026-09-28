@@ -2,11 +2,7 @@ import type { ProviderModel } from "@codeforge/providers";
 
 export const PAID_AUTO_VERIFIED_AT = "2026-09-16T00:00:00.000Z";
 
-export type PaidAutoCanonicalModelId =
-  | "gpt-5.6-luna"
-  | "glm-5.3-flash"
-  | "qwen3.8-flash"
-  | "deepseek-v4.1-flash";
+export type PaidAutoCanonicalModelId = string;
 
 export type PaidAutoRouteKind = "direct" | "openrouter";
 export type PaidAutoRouteId = `${PaidAutoCanonicalModelId}:direct` | `${PaidAutoCanonicalModelId}:openrouter`;
@@ -59,7 +55,7 @@ export const PAID_AUTO_MODELS: readonly PaidAutoModel[] = [
   {
     canonicalModelId: "gpt-5.6-luna",
     displayName: "GPT-5.6 Luna",
-    family: "gpt",
+    family: "luna",
     contextWindow: 1_050_000,
     maxOutput: 128_000,
     capabilities: commonCapabilities,

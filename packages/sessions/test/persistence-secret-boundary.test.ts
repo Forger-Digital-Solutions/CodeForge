@@ -54,4 +54,49 @@ describe("SessionPersistence secret boundary", () => {
     expect(persisted).not.toContain("abcdefghijklmnop");
     expect(persisted).not.toContain("supersecret");
   });
+
+  it("redacts secret-shaped strings inside R55 work items while keeping credential refs", async () => {
+    const store = createSessionPersistence({ dbPath: ":memory:" });
+    stores.push(store);
+    const now = new Date().toISOString();
+    const leaked = "sk-proj-user-source-secret-value";
+
+    // The persisted shape is credential-ref-only; if key material is ever smuggled into the
+    // metadata anyway, the write-time redactor must strip it rather than store it verbatim.
+    await store.upsertWorkItem({
+      kind: "user_intelligence_source",
+      id: "user-intelligence-source-secret",
+      ownerUserId: "alice",
+      source: {
+        sourceId: "s1",
+        ownerUserId: "alice",
+        credentialRef: "user-api-credential:0123456789abcdef01234567",
+        modelId: leaked,
+      },
+      createdAt: now,
+      updatedAt: now,
+    } satisfies WorkItem);
+    await store.upsertWorkItem({
+      kind: "forgeauto_roster",
+      id: "forgeauto-roster-secret",
+      ownerUserId: "alice",
+      entitlement: "CUSTOM",
+      slots: [{ kind: "AUTO", sourceClass: "USER_API", note: `Bearer ${leaked}` }],
+      lead: { mode: "NONE" },
+      updatedAt: now,
+    } satisfies WorkItem);
+    await store.upsertWorkItem({
+      kind: "shilling_entry",
+      id: "shilling:r55-secret",
+      entry: { id: "x", note: `Bearer ${leaked}` },
+    } satisfies WorkItem);
+
+    const persisted = JSON.stringify({
+      source: await store.getWorkItemsByKind("user_intelligence_source"),
+      roster: await store.getWorkItemsByKind("forgeauto_roster"),
+      shilling: await store.getWorkItemsByKind("shilling_entry"),
+    });
+    expect(persisted).not.toContain(leaked);
+    expect(persisted).toContain("user-api-credential:0123456789abcdef01234567");
+  });
 });

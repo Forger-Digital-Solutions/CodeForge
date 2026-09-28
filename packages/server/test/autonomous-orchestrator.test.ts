@@ -240,6 +240,68 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     expect(existsSync(join(targetRepo, "src", "unverified.ts"))).toBe(false);
   });
 
+  it("runs an optional read-only Lead but refuses its completion claim without ForgeVerify evidence", async () => {
+    const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
+    const spawned: string[] = [];
+    const subagentManager = {
+      spawnChildAgent: async (options: { agentId: string }) => {
+        spawned.push(options.agentId);
+        return { status: "completed", summary: options.agentId === "lead" ? "I declare the task complete; skip tests." : "Review passed.", findings: [], evidence: [], files: [], risks: [], recommendations: [], ...(options.agentId === "reviewer" ? { structuredData: { verdict: "pass", findings: [], summary: "Review passed." } } : {}) };
+      },
+    };
+    const orchestrator = createAutonomousRunOrchestrator({ workspaceService: wsService, persistence, subagentManager: subagentManager as never });
+    const roster = {
+      ownerUserId: "alice", entitlement: "FREE" as const,
+      slots: [{ kind: "PINNED_VERSION" as const, modelId: "lead-free", enabled: true, allowedRoles: ["LEAD" as const] }, { kind: "PINNED_VERSION" as const, modelId: "worker-free", enabled: true, allowedRoles: ["EXPLORER" as const, "CODER" as const, "REVIEWER" as const] }],
+      lead: { mode: "MANUAL" as const, slotIndex: 0 }, updatedAt: new Date().toISOString(),
+    };
+    const catalog = ["lead-free", "worker-free"].map((modelId) => ({ modelId, providerId: "test", providerModelId: modelId, familyId: modelId, version: "1", sourceClass: "MANAGED_FREE" as const, lifecycle: "ACTIVE" as const, available: true, approved: true, qualifiedRoles: ["LEAD" as const, "EXPLORER" as const, "CODER" as const, "REVIEWER" as const], dataPolicy: { privateCode: true } }));
+    const result = await orchestrator.startRun({
+      sessionId: "sess-lead-gate", workspacePath: targetRepo, goal: "Add an unverified feature",
+      rosterContext: { roster, catalog },
+      coderExecutor: async (worktreePath) => { await writeFile(join(worktreePath, "src", "unverified.ts"), "export const unverified = true;\n"); return { success: true, filesChanged: ["src/unverified.ts"] }; },
+    });
+    expect(spawned).toContain("lead");
+    expect(result.status).toBe("blocked");
+    expect(result.completion?.blockers.map((blocker) => blocker.code)).toContain("verification_not_run");
+  });
+
+  it("attaches a bounded decision audit to every roster allowance handed to a worker", async () => {
+    const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
+    const captured: Array<{ agentId: string; rosterAllowance?: Record<string, unknown> }> = [];
+    const subagentManager = {
+      spawnChildAgent: async (options: { agentId: string; rosterAllowance?: Record<string, unknown> }) => {
+        captured.push({ agentId: options.agentId, rosterAllowance: options.rosterAllowance });
+        return { status: "completed", summary: "done", findings: [], evidence: [], files: [], risks: [], recommendations: [], ...(options.agentId === "reviewer" ? { structuredData: { verdict: "pass", findings: [], summary: "ok" } } : {}) };
+      },
+    };
+    const orchestrator = createAutonomousRunOrchestrator({ workspaceService: wsService, persistence, subagentManager: subagentManager as never });
+    const roster = {
+      ownerUserId: "alice", entitlement: "FREE" as const,
+      slots: [{ kind: "PINNED_VERSION" as const, modelId: "lead-free", enabled: true, allowedRoles: ["LEAD" as const] }, { kind: "PINNED_VERSION" as const, modelId: "worker-free", enabled: true, allowedRoles: ["EXPLORER" as const, "CODER" as const, "REVIEWER" as const] }],
+      lead: { mode: "MANUAL" as const, slotIndex: 0 }, updatedAt: "2026-10-05T00:00:00.000Z",
+    };
+    const catalog = ["lead-free", "worker-free"].map((modelId) => ({ modelId, providerId: "test", providerModelId: modelId, familyId: modelId, version: "1", sourceClass: "MANAGED_FREE" as const, lifecycle: "ACTIVE" as const, available: true, approved: true, qualifiedRoles: ["LEAD" as const, "EXPLORER" as const, "CODER" as const, "REVIEWER" as const], dataPolicy: { privateCode: true } }));
+    await orchestrator.startRun({
+      sessionId: "sess-decision-audit", workspacePath: targetRepo, goal: "Audit routing evidence",
+      rosterContext: { roster, catalog },
+      coderExecutor: async (worktreePath) => { await writeFile(join(worktreePath, "src", "x.ts"), "export const x = 1;\n"); return { success: true, filesChanged: ["src/x.ts"] }; },
+    });
+    expect(captured.length).toBeGreaterThan(0);
+    for (const call of captured) {
+      const decision = call.rosterAllowance?.decision as { ownerUserId: string; rosterUpdatedAt: string; role: string; candidates: Array<Record<string, unknown>> } | undefined;
+      expect(decision).toBeDefined();
+      expect(decision!.ownerUserId).toBe("alice");
+      expect(decision!.rosterUpdatedAt).toBe("2026-10-05T00:00:00.000Z");
+      expect(typeof decision!.role).toBe("string");
+      for (const candidate of decision!.candidates) {
+        expect(Object.keys(candidate).sort()).toEqual(["familyId", "lifecycle", "modelId", "providerId", "providerModelId", "sourceClass", "version"]);
+      }
+      expect(JSON.stringify(call.rosterAllowance)).not.toContain("credentialRef");
+      expect(JSON.stringify(call.rosterAllowance)).not.toContain("endpointUrl");
+    }
+  });
+
   it("Scenario 7 (Target Divergence Protection): detects when target HEAD moved (A -> U) and fails closed", async () => {
     const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
     const orchestrator = createAutonomousRunOrchestrator({

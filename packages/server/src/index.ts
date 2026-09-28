@@ -26,7 +26,7 @@ import type { ProviderTopologyCapacity } from "@codeforge/forge-green";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore, defaultCapacityGovernor } from "@codeforge/providers";
-import { createPaidAutoService, PAID_AUTO_PROVIDER_ID, type PaidAutoService } from "@codeforge/paid-auto";
+import { createPaidAutoService, PAID_AUTO_PROVIDER_ID, PaidFamilyCatalog, PaidFamilyCatalogStore, type ApprovedPaidSuccessor, type PaidAutoModel, type PaidAutoService, type PaidPromotionEvidence } from "@codeforge/paid-auto";
 import {
   createTaskAuthority,
   createLease,
@@ -36,6 +36,7 @@ import {
 } from "@codeforge/permissions";
 import { runDemoRuntime } from "./demo-runtime.js";
 import { AgentRuntime, createAgentRuntime, type HostedWorkerOptions } from "./agent-runtime.js";
+import { ManagedPaidAllowanceLedger, type ManagedPaidPolicy } from "@codeforge/cloud-usage";
 import { resolveWithinWorkspace } from "./path-security.js";
 import { buildProviderTopologyCapacity } from "./provider-topology-capacity.js";
 import { buildCapacityConfidence, type CapacityConfidenceReport } from "./capacity-confidence.js";
@@ -54,6 +55,9 @@ import { buildExplorationBrief } from "@codeforge/context";
 import { UserIntentHoldController } from "./user-intent-hold.js";
 import { createExternalToolSurface, loadExternalToolConfig, type ExternalToolConfig, type ExternalToolSurface, type PluginToolHost } from "./external-tools.js";
 import { buildActivityOverview, type ActivityOverview, type ActivityPeriod } from "./activity-overview.js";
+export * from "./forgeauto-roster.js";
+import { ForgeAutoRosterStore, type ForgeAutoRoster, type RosterCandidate, type RosterEntitlement, type RosterRole } from "./forgeauto-roster.js";
+import { UserIntelligenceRuntimeRegistry, type OwnerCredentialResolver, type UserIntelligenceSource } from "./user-intelligence.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -168,6 +172,22 @@ export interface ServerOptions {
    * supply; they can never spend another user's pool.
    */
   localUserId?: string;
+  /** Trusted account entitlement for persisted ForgeAuto rosters; request bodies cannot change it. */
+  rosterEntitlement?: RosterEntitlement;
+  /** R55: trusted owner-scoped credential lookup for USER_API sources (the desktop passes a
+   *  safeStorage-backed resolver). Absent, every lookup returns undefined — user sources stay
+   *  listed but never execute, fail closed. */
+  userCredentialResolver?: OwnerCredentialResolver;
+  /**
+   * R55 wave 2: the owner's managed-paid policy — entitlement, cost mode, included
+   * allowance, overage ceiling, and user-owned/paid-lead gates. Its `ownerUserId` must
+   * equal `localUserId`; a foreign policy fails construction closed. Absent, paid roster
+   * candidates and user-owned roster admission stay off (fail closed), while user
+   * sources remain programmatically registrable.
+   */
+  managedPaidPolicy?: ManagedPaidPolicy;
+  /** Trusted exact successor mappings; never inferred from a model-name prefix. */
+  approvedPaidSuccessors?: readonly ApprovedPaidSuccessor[];
   /**
    * Paid Auto metadata may be supplied for visibility and audit, but this free-only server never
    * permits its routes to become execution-eligible.
@@ -236,8 +256,16 @@ export class CodeForgeServer {
   private readonly freeFabric?: FreeFabric;
   private readonly fabricContext?: FabricContextProvider;
   private readonly localUserId?: string;
+  private readonly rosterEntitlement: RosterEntitlement;
+  private readonly rosterStore: ForgeAutoRosterStore;
+  private readonly userIntelligence: UserIntelligenceRuntimeRegistry;
+  private readonly managedPaidPolicy?: ManagedPaidPolicy;
+  private readonly managedPaidLedger: ManagedPaidAllowanceLedger;
   private readonly routeHealthLedger: EightBitRouteHealthLedger;
   private readonly paidAuto: PaidAutoService;
+  private readonly paidFamilyCatalog?: PaidFamilyCatalog;
+  private readonly paidFamilyCatalogStore?: PaidFamilyCatalogStore;
+  private paidFamilyUpdateQueue: Promise<void> = Promise.resolve();
   private readonly subagentsR1Enabled: boolean;
   private runtimes: Map<string, AgentRuntime> = new Map();
   private useRealRuntime: boolean;
@@ -306,6 +334,23 @@ export class CodeForgeServer {
     this.routeHealthLedger = new EightBitRouteHealthLedger(this.persistence);
     this.routeHealthLedger.attach(this.routeHealth);
     this.localUserId = options.localUserId;
+    this.rosterEntitlement = options.rosterEntitlement ?? "FREE";
+    this.rosterStore = new ForgeAutoRosterStore(this.persistence);
+    this.userIntelligence = new UserIntelligenceRuntimeRegistry(
+      this.persistence,
+      this.providerCatalog,
+      options.userCredentialResolver ?? { get: () => undefined },
+    );
+    // R55 wave 2: a managed-paid policy is trusted server configuration — it must name
+    // this owner or the server refuses to start rather than silently binding one owner's
+    // allowance to another's runs.
+    if (options.managedPaidPolicy) {
+      if (!this.localUserId || options.managedPaidPolicy.ownerUserId !== this.localUserId) {
+        throw new Error("MANAGED_PAID_OWNER_MISMATCH: managedPaidPolicy.ownerUserId must equal localUserId");
+      }
+      this.managedPaidPolicy = options.managedPaidPolicy;
+    }
+    this.managedPaidLedger = new ManagedPaidAllowanceLedger(this.persistence);
     // R24 Mission C: the Free Fabric — the admission authority every automatic free routing
     // decision passes through. Route/pool tables are live projections of the Free Cloud
     // registry (re-read inside each decide()), the temporal route-health authority supplies
@@ -336,7 +381,12 @@ export class CodeForgeServer {
         return { userId: uid, userIdentities: freeCloud.capacityIdentitiesFor(uid) };
       };
     }
+    if (!options.paidAuto) {
+      this.paidFamilyCatalog = new PaidFamilyCatalog(undefined, options.approvedPaidSuccessors ?? []);
+      this.paidFamilyCatalogStore = new PaidFamilyCatalogStore(this.persistence, options.approvedPaidSuccessors ?? []);
+    }
     this.paidAuto = options.paidAuto ?? createPaidAutoService({
+      familyCatalog: this.paidFamilyCatalog,
       paidExecutionEnabled: options.paidExecutionEnabled ?? process.env.CODEFORGE_PAID_EXECUTION_ENABLED === "true",
       openRouterFallbackEnabled: options.openRouterFallbackEnabled ?? process.env.CODEFORGE_OPENROUTER_FALLBACK_ENABLED === "true",
     });
@@ -570,6 +620,11 @@ export class CodeForgeServer {
    */
   async init(): Promise<void> {
     await this.persistence.init();
+    // R55: re-register durable user-source adapters before any recovered turn can route.
+    if (this.localUserId) await this.userIntelligence.hydrateOwner(this.localUserId);
+    if (this.paidFamilyCatalog && this.paidFamilyCatalogStore) {
+      this.paidFamilyCatalog.hydrate((await this.paidFamilyCatalogStore.load()).all());
+    }
     // R24: restore durable route health before any recovered turn can re-route — a saturation
     // still inside its TTL stays excluded, a retirement stays excluded forever, and expired
     // transient conditions hydrate as already-gone.
@@ -606,6 +661,46 @@ export class CodeForgeServer {
         await (runtime as unknown as { init: () => Promise<void> }).init();
       }
     }
+  }
+
+  private async updatePaidFamilyCatalog(change: (catalog: PaidFamilyCatalog) => void): Promise<void> {
+    if (!this.paidFamilyCatalog || !this.paidFamilyCatalogStore) throw new Error("PAID_FAMILY_CATALOG_EXTERNALLY_OWNED");
+    const update = this.paidFamilyUpdateQueue.then(async () => {
+      const before = this.paidFamilyCatalog!.all();
+      try {
+        change(this.paidFamilyCatalog!);
+        await this.paidFamilyCatalogStore!.save(this.paidFamilyCatalog!);
+      } catch (error) {
+        this.paidFamilyCatalog!.hydrate(before);
+        throw error;
+      }
+    });
+    this.paidFamilyUpdateQueue = update.catch(() => {});
+    await update;
+  }
+
+  async discoverPaidSuccessor(input: Parameters<PaidFamilyCatalog["discoverSuccessor"]>[0]): Promise<void> {
+    await this.updatePaidFamilyCatalog((catalog) => { catalog.discoverSuccessor(input); });
+  }
+
+  async beginPaidProbation(modelId: string, observedAt: string): Promise<void> {
+    await this.updatePaidFamilyCatalog((catalog) => { catalog.beginProbation(modelId, observedAt); });
+  }
+
+  async qualifyPaidSuccessor(modelId: string, evidence: PaidPromotionEvidence): Promise<void> {
+    await this.updatePaidFamilyCatalog((catalog) => { catalog.qualify(modelId, evidence); });
+  }
+
+  async promotePaidSuccessor(modelId: string, evidence: PaidPromotionEvidence, predecessorDisposition: "SUPERSEDED" | "ACTIVE_ECONOMY"): Promise<void> {
+    await this.updatePaidFamilyCatalog((catalog) => { catalog.promote(modelId, evidence, predecessorDisposition); });
+  }
+
+  async updatePaidPrice(modelId: string, pricing: PaidAutoModel["direct"]["pricing"]): Promise<void> {
+    await this.updatePaidFamilyCatalog((catalog) => { catalog.updateDirectPricing(modelId, pricing); });
+  }
+
+  async retirePaidModel(modelId: string, observedAt: string): Promise<void> {
+    await this.updatePaidFamilyCatalog((catalog) => { catalog.retire(modelId, observedAt); });
   }
 
   async start(): Promise<void> {
@@ -993,6 +1088,16 @@ export class CodeForgeServer {
 
     if (url.pathname === "/api/model-selection" && req.method === "GET") {
       this.handleGetModelSelection(res, url.searchParams.get("sessionId"));
+      return;
+    }
+
+    if (url.pathname === "/api/forgeauto/roster" && req.method === "GET") {
+      void this.handleForgeAutoRosterGet(res);
+      return;
+    }
+
+    if (url.pathname === "/api/forgeauto/roster" && req.method === "PUT") {
+      void this.handleForgeAutoRosterPut(req, res);
       return;
     }
 
@@ -1986,12 +2091,15 @@ export class CodeForgeServer {
           eventStore: this.eventStore,
           persistence: this.persistence,
         });
+        const selectedRoster = this.localUserId ? await this.rosterStore.get(this.localUserId) : undefined;
+        const rosterContext = selectedRoster ? { roster: selectedRoster, catalog: this.rosterCatalog() } : undefined;
         void this.orchestrator.startRun({
           sessionId,
           workspacePath,
           goal,
           verificationCommands: data.verificationCommands,
           adapter,
+          ...(rosterContext ? { rosterContext } : {}),
         });
         const run = this.orchestrator.getAllRuns().find((r: AutonomousRun) => r.goal === goal && r.sessionId === sessionId);
         const runId = run ? run.id : `run-${crypto.randomUUID()}`;
@@ -2002,6 +2110,98 @@ export class CodeForgeServer {
         res.end(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }));
       }
     });
+  }
+
+  private rosterCatalog(): RosterCandidate[] {
+    const candidates: RosterCandidate[] = [];
+    const dataProfiles = new Map((this.freeCloud?.capacityRoutes() ?? []).map((route) => [`${route.providerId}/${route.modelId}`, route.dataPolicyProfile]));
+    const roleMap: Partial<Record<string, RosterRole>> = {
+      PRIMARY_CODING_AGENT: "CODER", PLANNER: "PLANNER", REVIEWER: "REVIEWER",
+      SEARCH_ASSIST: "EXPLORER", FAST_REASONER: "LEAD", SUBAGENT: "TESTER",
+    };
+    for (const model of this.freeCloud?.snapshot().models ?? []) {
+      const routes = model.routes.filter((route) => route.forgeAutoEligible && route.supplyClass === "PURE_MANAGED_FREE" && dataProfiles.get(`${route.providerId}/${route.providerModelId}`) === "PRIVATE_CODE_ALLOWED");
+      if (routes.length === 0) continue;
+      const primary = routes[0]!;
+      candidates.push({
+        modelId: model.canonicalId, providerId: primary.providerId, providerModelId: primary.providerModelId,
+        routes: routes.map((route) => ({ providerId: route.providerId, modelId: route.providerModelId })),
+        familyId: model.family, version: model.canonicalId, sourceClass: "MANAGED_FREE", lifecycle: "ACTIVE",
+        approved: true, available: true,
+        qualifiedRoles: [...new Set([...model.roles.map((role) => roleMap[role]).filter((role): role is RosterRole => role !== undefined), ...(model.roles.includes("PLANNER") ? ["LEAD" as const] : [])])],
+        dataPolicy: { privateCode: true },
+      });
+    }
+    // R55 wave 2: MANAGED_PAID candidates exist only under a PAID product entitlement —
+    // a CUSTOM roster entitlement alone never unlocks managed paid supply, and a paid
+    // Lead candidate additionally requires the policy's paidLeadAllowed gate.
+    if (this.managedPaidPolicy?.entitlement === "PAID") {
+      const now = Date.now();
+      const leadGate = this.managedPaidPolicy.paidLeadAllowed;
+      for (const view of this.paidAuto.modelViews()) {
+        const model = this.paidAuto.getModel(view.id);
+        const record = this.paidAuto.familyVersion(view.id);
+        if (!model || !record) continue;
+        const qualifiedRoles = this.paidAuto.roleVerdicts()
+          .filter((verdict) => verdict.canonicalModelId === view.id && (verdict.status === "QUALIFIED" || verdict.status === "PROBATION") && now - Date.parse(verdict.measuredAt) <= 30 * 24 * 60 * 60 * 1000)
+          .map((verdict) => verdict.role as RosterRole)
+          .filter((role) => leadGate || role !== "LEAD");
+        candidates.push({
+          modelId: model.canonicalModelId, providerId: model.direct.providerId, providerModelId: model.direct.providerModelId,
+          familyId: model.family, version: model.canonicalModelId, sourceClass: "MANAGED_PAID", lifecycle: record.lifecycle,
+          approved: true, available: view.available && record.providerAvailable, qualifiedRoles, dataPolicy: { privateCode: true },
+        });
+      }
+    }
+    // R55: user-owned sources are offered only under a CUSTOM entitlement AND an explicit
+    // policy opt-in — no policy means sources stay registrable but never roster-admissible.
+    // Only the registry's credentialRef-free projection is offered.
+    if (this.rosterEntitlement === "CUSTOM" && this.localUserId && this.managedPaidPolicy?.userOwnedAllowed === true) {
+      candidates.push(...this.userIntelligence.rosterCandidates(this.localUserId));
+    }
+    return candidates;
+  }
+
+  /** R55 trusted programmatic management — owner-only, no unauthenticated HTTP surface. */
+  async putUserIntelligenceSource(ownerUserId: string, source: UserIntelligenceSource): Promise<UserIntelligenceSource> {
+    this.assertLocalOwner(ownerUserId);
+    return this.userIntelligence.put(ownerUserId, source);
+  }
+
+  async getUserIntelligenceSource(ownerUserId: string, sourceId: string): Promise<UserIntelligenceSource | undefined> {
+    this.assertLocalOwner(ownerUserId);
+    return this.userIntelligence.get(ownerUserId, sourceId);
+  }
+
+  async listUserIntelligenceSources(ownerUserId: string): Promise<UserIntelligenceSource[]> {
+    this.assertLocalOwner(ownerUserId);
+    return this.userIntelligence.list(ownerUserId);
+  }
+
+  private assertLocalOwner(ownerUserId: string): void {
+    if (!this.localUserId || ownerUserId !== this.localUserId) throw new Error("USER_SOURCE_OWNER_MISMATCH");
+  }
+
+  private async handleForgeAutoRosterGet(res: http.ServerResponse): Promise<void> {
+    if (!this.localUserId) { this.sendJson(res, 403, { error: "ROSTER_AUTHENTICATED_OWNER_REQUIRED" }); return; }
+    this.sendJson(res, 200, { roster: await this.rosterStore.get(this.localUserId), candidates: this.rosterCatalog(), entitlement: this.rosterEntitlement });
+  }
+
+  private async handleForgeAutoRosterPut(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+    if (!this.localUserId) { this.sendJson(res, 403, { error: "ROSTER_AUTHENTICATED_OWNER_REQUIRED" }); return; }
+    try {
+      const data = await this.readJsonBody(req);
+      const roster: ForgeAutoRoster = {
+        ownerUserId: this.localUserId, entitlement: this.rosterEntitlement,
+        slots: Array.isArray(data.slots) ? data.slots as ForgeAutoRoster["slots"] : [],
+        lead: data.lead && typeof data.lead === "object" ? data.lead as ForgeAutoRoster["lead"] : { mode: "NONE" },
+        updatedAt: new Date().toISOString(),
+      };
+      const saved = await this.rosterStore.put(this.localUserId, roster, this.rosterCatalog());
+      this.sendJson(res, 200, { roster: saved });
+    } catch (error) {
+      this.sendJson(res, 400, { error: error instanceof Error ? error.message : "ROSTER_INVALID" });
+    }
   }
 
   private handleOrchestratorGet(req: http.IncomingMessage, res: http.ServerResponse, pathname: string): void {
@@ -2388,6 +2588,8 @@ export class CodeForgeServer {
         freeFabric: this.freeFabric,
         fabricContext: this.fabricContext,
         paidAuto: this.paidAuto,
+        managedPaidPolicy: this.managedPaidPolicy,
+        managedPaidLedger: this.managedPaidLedger,
         hostedWorker,
         routeHealth: this.routeHealth,
         capacityWaitRetryMs: 15_000,
@@ -2413,6 +2615,8 @@ export class CodeForgeServer {
         freeFabric: this.freeFabric,
         fabricContext: this.fabricContext,
         paidAuto: this.paidAuto,
+        managedPaidPolicy: this.managedPaidPolicy,
+        managedPaidLedger: this.managedPaidLedger,
         routeHealth: this.routeHealth,
         capacityWaitRetryMs: 15_000,
         authorityFor: () => this.authorityFor(sessionId),

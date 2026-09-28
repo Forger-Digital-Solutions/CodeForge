@@ -109,6 +109,43 @@ describe("Subagent Foundation — Explorer, Reviewer, Privilege Ceiling & Contex
     expect(blockedResult.risks.length).toBeGreaterThan(0);
   });
 
+  it("R55: a roster allowance forces role routing even when the R1 flag is off", async () => {
+    const captured: Array<Record<string, unknown>> = [];
+    const spyRuntime = {
+      executeAgentRun: async (req: Record<string, unknown>) => {
+        captured.push(req);
+        return {
+          status: "completed",
+          summary: "done",
+          findings: [],
+          evidence: [],
+          toolExecutions: [],
+          usage: { inputTokens: 0, outputTokens: 0, requestCount: 1, toolCount: 0 },
+          stopReason: "completed",
+          filesChanged: [],
+        };
+      },
+    };
+    // r1Enabled deliberately omitted — the default false path must still honor a roster.
+    const manager = createSubagentManager({ persistence, agentRuntime: spyRuntime as never });
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-sub-1", eventStore, persistence });
+    const allowance = { freeRoutes: [{ providerId: "p-a", modelId: "m-a" }], paidModelIds: [], userRoutes: [] };
+
+    const result = await manager.spawnChildAgent({
+      parentRunId: "run-r55-nonr1",
+      agentId: "coder",
+      task: "t",
+      workspacePath: ws,
+      rosterAllowance: allowance as never,
+      adapter,
+    });
+
+    expect(result.status).toBe("completed");
+    expect(captured).toHaveLength(1);
+    expect(captured[0]!.roleRouting).toBe(true);
+    expect(captured[0]!.rosterAllowance).toEqual(allowance);
+  });
+
   it("enforces Privilege Ceiling (child permissions ⊆ parent permissions)", async () => {
     const manager = createSubagentManager({ persistence });
 

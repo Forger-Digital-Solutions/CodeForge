@@ -91,6 +91,39 @@ export const SubagentRunWorkItemSchema = z.object({
    * worktree a crashed worker was writing to. Optional for records written before R2. */
   workspacePath: z.string().max(2_048).optional(),
   model: z.object({ providerId: z.string().min(1), modelId: z.string().min(1) }).optional(),
+  rosterAllowance: z.object({
+    freeRoutes: z.array(z.object({ providerId: z.string().min(1), modelId: z.string().min(1) })),
+    paidModelIds: z.array(z.string().min(1)),
+    /** R55: owner-scoped USER_API routes resolved for this worker's role. Absent on
+     *  pre-R55 records — readers must treat a missing list as empty. */
+    userRoutes: z.array(z.object({
+      sourceId: z.string().min(1),
+      providerId: z.string().min(1),
+      modelId: z.string().min(1),
+      sourceClass: z.literal("USER_API"),
+      pinned: z.boolean(),
+      inputCostPerMillion: z.number().nullable(),
+      outputCostPerMillion: z.number().nullable(),
+      costConfidence: z.enum(["AUTHORITATIVE", "OBSERVED", "ESTIMATED", "UNKNOWN"]),
+      priceSource: z.string().optional(),
+    })).optional(),
+    /** R55 wave 2: bounded routing-decision audit — candidate identity + lifecycle only.
+     *  Never carries endpoint URLs, credential references, headers, prompts, or bodies. */
+    decision: z.object({
+      ownerUserId: z.string().min(1).max(256),
+      rosterUpdatedAt: z.string().min(1).max(64),
+      role: z.string().min(1).max(64),
+      candidates: z.array(z.object({
+        modelId: z.string().min(1).max(256),
+        providerId: z.string().min(1).max(128),
+        providerModelId: z.string().min(1).max(256),
+        familyId: z.string().min(1).max(128),
+        version: z.string().min(1).max(128),
+        sourceClass: z.string().min(1).max(32),
+        lifecycle: z.string().min(1).max(32),
+      })).max(64),
+    }).optional(),
+  }).optional(),
   budget: AgentExecutionBudgetRecordSchema,
   telemetry: AgentWorkerTelemetrySchema,
   artifacts: z.array(AgentArtifactReferenceSchema).max(100),

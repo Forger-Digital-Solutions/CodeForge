@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  createOwnerScopedCredentialResolver,
   isSealedCredential,
+  isUserApiCredentialRef,
   maskCredentialForDisplay,
   migrateLegacyPlaintextCredentials,
   openCredential,
@@ -99,5 +101,31 @@ describe("desktop secure credential codec (Security R1)", () => {
   it("masks credentials for display without revealing them", () => {
     expect(maskCredentialForDisplay("sk-or-v1-abcdefghijklmnop7F2A")).toBe("sk-…7F2A");
     expect(maskCredentialForDisplay("short")).toBe("••••");
+  });
+
+  it("accepts only deterministic user-api credential refs as storage keys", () => {
+    expect(isUserApiCredentialRef("user-api-credential:0123456789abcdef01234567")).toBe(true);
+    expect(isUserApiCredentialRef("user-api-credential:0123456789abcdef0123456")).toBe(false);
+    expect(isUserApiCredentialRef("user-api-credential:0123456789abcdef012345678")).toBe(false);
+    expect(isUserApiCredentialRef("user-api-credential:0123456789abcdef0123456g")).toBe(false);
+    expect(isUserApiCredentialRef("user-api-credential:")).toBe(false);
+    expect(isUserApiCredentialRef("user-api-credential:sk-live-key")).toBe(false);
+    expect(isUserApiCredentialRef("user-api-credential:0123456789ABCDEF01234567")).toBe(false);
+    expect(isUserApiCredentialRef(" openrouter")).toBe(false);
+    expect(isUserApiCredentialRef("user-api-credential:0123456789abcdef01234567:extra")).toBe(false);
+  });
+
+  it("resolves user-api credentials only for the connected owner scope", () => {
+    const store = new Map<string, string>([["user-api-credential:0123456789abcdef01234567", FIXTURE_KEY]]);
+    const resolver = createOwnerScopedCredentialResolver(() => "alice", (ref) => store.get(ref));
+
+    expect(resolver.get("alice", "user-api-credential:0123456789abcdef01234567")).toBe(FIXTURE_KEY);
+    // A different owner identity can never touch this host's sealed value.
+    expect(resolver.get("bob", "user-api-credential:0123456789abcdef01234567")).toBeUndefined();
+    // Non-ref key shapes never reach the store.
+    expect(resolver.get("alice", "openrouter")).toBeUndefined();
+    expect(resolver.get("alice", "user-api-credential:not-hex")).toBeUndefined();
+    // A deterministic ref with no stored value resolves to nothing — fail closed.
+    expect(resolver.get("alice", "user-api-credential:ffffffffffffffffffffffff")).toBeUndefined();
   });
 });

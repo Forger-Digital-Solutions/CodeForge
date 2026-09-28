@@ -16,8 +16,6 @@ import {
   type StreamEvent,
 } from "@codeforge/providers";
 import {
-  PAID_AUTO_MODELS,
-  paidAutoModel,
   paidAutoProviderModel,
   type PaidAutoCanonicalModelId,
   type PaidAutoModel,
@@ -26,8 +24,18 @@ import {
 } from "./registry.js";
 import { rank16Bit, type SixteenBitEvidenceMap, type SixteenBitRankOptions, type SixteenBitRanking, type SixteenBitRoleQualification, type SixteenBitTaskProfile } from "./expected-cost.js";
 import { PAID_ROLE_EVIDENCE_MAX_AGE_MS, PaidRoleEvidenceBook, type PaidRoleVerdict } from "./role-router.js";
+import { PaidFamilyCatalog, type PaidFamilyVersion } from "./families.js";
 
 export const PAID_AUTO_PROVIDER_ID = "paid-auto";
+
+/**
+ * R55 wave 2: cost-mode preference for role-route ordering. Structurally identical to
+ * ManagedPaidPolicy.costMode in @codeforge/cloud-usage — kept structural so paid-auto
+ * never imports the accounting package. Ranking policy only: it can reorder candidates
+ * that already passed qualification, price, and authorization gates; it can never expand
+ * the admissible set.
+ */
+export type PaidRoleCostMode = "CHEAPEST" | "BALANCED" | "MAXIMUM_INTELLIGENCE" | "CUSTOM";
 
 export type PaidAutoState =
   | "NOT_CONFIGURED"
@@ -68,6 +76,7 @@ export interface PaidAutoRouteQualification {
 }
 
 export interface PaidAutoServiceOptions {
+  familyCatalog?: PaidFamilyCatalog;
   credentialStore?: CredentialStore;
   adapters?: Partial<Record<PaidAutoRoute["providerId"], ProviderAdapter>>;
   paidExecutionEnabled?: boolean;
@@ -200,12 +209,12 @@ export class PaidAutoOpenRouterAdapter implements ProviderAdapter {
   readonly providerId = "openrouter";
   private readonly upstream: ProviderAdapter;
 
-  constructor(upstream: ProviderAdapter) {
+  constructor(upstream: ProviderAdapter, private readonly catalog: PaidFamilyCatalog = new PaidFamilyCatalog()) {
     this.upstream = upstream;
   }
 
   async listModels(): Promise<ProviderModel[]> {
-    return PAID_AUTO_MODELS.map((model) => ({ ...paidAutoProviderModel(model), modelId: model.fallback.providerModelId }));
+    return this.catalog.activeModels().map((model) => ({ ...paidAutoProviderModel(model), modelId: model.fallback.providerModelId }));
   }
 
   chat(req: ChatRequest): Promise<ChatResponse> {
@@ -223,11 +232,11 @@ export class PaidAutoOpenRouterAdapter implements ProviderAdapter {
   }
 
   canRoute(modelId: string): boolean {
-    return PAID_AUTO_MODELS.some((model) => model.canonicalModelId === modelId);
+    return this.catalog.activeModels().some((model) => model.canonicalModelId === modelId);
   }
 
   private routeFor(modelId: string): PaidAutoRoute {
-    const model = paidAutoModel(modelId);
+    const model = this.catalog.model(modelId);
     if (!model) {
       throw new PaidAutoExecutionError({
         code: "MODEL_NOT_FOUND",
@@ -276,6 +285,7 @@ export function classifyPaidAutoFailure(error: unknown): PaidAutoFailureClass {
 }
 
 export class PaidAutoService {
+  private readonly familyCatalog: PaidFamilyCatalog;
   private readonly credentialStore: CredentialStore;
   private readonly adapters: Record<PaidAutoRoute["providerId"], ProviderAdapter>;
   private readonly paidExecutionEnabled: boolean;
@@ -289,13 +299,14 @@ export class PaidAutoService {
   private readonly roleEvidenceMaxAgeMs: number;
 
   constructor(options: PaidAutoServiceOptions = {}) {
+    this.familyCatalog = options.familyCatalog ?? new PaidFamilyCatalog();
     this.credentialStore = options.credentialStore ?? new EnvironmentCredentialStore();
     this.adapters = {
       openai: options.adapters?.openai ?? createOpenAIAdapter({ credentialStore: this.credentialStore }),
       zai: options.adapters?.zai ?? createZaiAdapter({ credentialStore: this.credentialStore }),
       alibaba: options.adapters?.alibaba ?? createAlibabaAdapter({ credentialStore: this.credentialStore }),
       deepseek: options.adapters?.deepseek ?? createDeepSeekAdapter({ credentialStore: this.credentialStore }),
-      openrouter: options.adapters?.openrouter ?? new PaidAutoOpenRouterAdapter(createOpenRouterAdapter({ credentialStore: this.credentialStore })),
+      openrouter: options.adapters?.openrouter ?? new PaidAutoOpenRouterAdapter(createOpenRouterAdapter({ credentialStore: this.credentialStore }), this.familyCatalog),
     };
     this.paidExecutionEnabled = options.paidExecutionEnabled ?? false;
     this.openRouterFallbackEnabled = options.openRouterFallbackEnabled ?? false;
@@ -319,15 +330,24 @@ export class PaidAutoService {
   }
 
   getModel(canonicalModelId: string): PaidAutoModel | undefined {
-    return paidAutoModel(canonicalModelId);
+    return this.familyCatalog.model(canonicalModelId);
+  }
+
+  /**
+   * R55 wave 2: the durable family-catalog record for a canonical id — real lifecycle and
+   * provider availability, so roster projections name an ACTIVE_ECONOMY predecessor what
+   * it is instead of manufacturing ACTIVE.
+   */
+  familyVersion(canonicalModelId: string): PaidFamilyVersion | undefined {
+    return this.familyCatalog.version(canonicalModelId);
   }
 
   models(): readonly PaidAutoModel[] {
-    return PAID_AUTO_MODELS;
+    return this.familyCatalog.activeModels();
   }
 
   modelViews(): PaidAutoModelView[] {
-    return PAID_AUTO_MODELS.map((model) => {
+    return this.models().map((model) => {
       const state = this.stateFor(model.direct);
       return {
         id: model.canonicalModelId,
@@ -358,7 +378,7 @@ export class PaidAutoService {
   }
 
   runtimeModel(canonicalModelId: string): PaidAutoRuntimeModel | undefined {
-    const model = paidAutoModel(canonicalModelId);
+    const model = this.familyCatalog.model(canonicalModelId);
     if (!model) return undefined;
     return {
       providerId: PAID_AUTO_PROVIDER_ID,
@@ -382,7 +402,7 @@ export class PaidAutoService {
   }
 
   state(canonicalModelId: string): PaidAutoState | undefined {
-    const model = paidAutoModel(canonicalModelId);
+    const model = this.familyCatalog.model(canonicalModelId);
     return model ? this.stateFor(model.direct) : undefined;
   }
 
@@ -417,6 +437,8 @@ export class PaidAutoService {
    */
   selectRoleRoute(input: {
     role: string;
+    /** An explicit ForgeAuto roster may narrow the paid fleet; no route outside it may serve. */
+    allowedModelIds?: readonly PaidAutoCanonicalModelId[];
     inputTokens?: number;
     outputTokens?: number;
     requiresTools?: boolean;
@@ -429,6 +451,10 @@ export class PaidAutoService {
      *  the same pool stays reachable when no independent route can serve, and the
      *  candidate's reasonCodes record SAME_POOL_FALLBACK/INDEPENDENT_POOL_PREFERRED. */
     preferIndependentFromRouteId?: PaidAutoRouteId;
+    /** R55 wave 2: cost-mode ordering over an already-admissible candidate set.
+     *  MAXIMUM_INTELLIGENCE reorders by measured role-fit evidence only — when no
+     *  candidate carries a score the existing order is preserved untouched. */
+    costMode?: PaidRoleCostMode;
   }): PaidRoleRouteSelection {
     const task: SixteenBitTaskProfile = {
       role: input.role,
@@ -439,16 +465,16 @@ export class PaidAutoService {
     };
     const now = this.now();
     const evidence: SixteenBitEvidenceMap = {};
-    for (const model of PAID_AUTO_MODELS) {
+    for (const model of this.models()) {
       evidence[model.canonicalModelId] = {
         ...input.measured?.[model.canonicalModelId],
         roleStatus: this.roleEvidence.verdictFor(model.canonicalModelId, input.role, now, this.roleEvidenceMaxAgeMs),
       };
     }
-    const ranking = rank16Bit(task, evidence, () => now, { priceOverrides: input.priceOverrides });
+    const ranking = rank16Bit(task, evidence, () => now, { priceOverrides: input.priceOverrides, models: this.models() });
     const orderedCandidates: PaidRoleRouteCandidate[] = [];
-    for (const candidate of ranking.candidates.filter((c) => c.excluded === undefined)) {
-      const model = paidAutoModel(candidate.canonicalModelId);
+    for (const candidate of ranking.candidates.filter((c) => c.excluded === undefined && (input.allowedModelIds === undefined || input.allowedModelIds.includes(c.canonicalModelId)))) {
+      const model = this.familyCatalog.model(candidate.canonicalModelId);
       const route = model ? this.executableRouteFor(model) : undefined;
       if (!route) continue;
       orderedCandidates.push({
@@ -466,6 +492,18 @@ export class PaidAutoService {
     if (input.preferIndependentFromRouteId !== undefined) {
       orderedCandidates.sort((a, b) => Number(a.route.routeId === input.preferIndependentFromRouteId) - Number(b.route.routeId === input.preferIndependentFromRouteId));
     }
+    // R55 wave 2 cost modes. CHEAPEST is the existing expected-cost order; BALANCED and
+    // CUSTOM keep it pending weights. MAXIMUM_INTELLIGENCE reorders only within the
+    // already role-qualified/authorized list by the measured role-fit score — candidates
+    // without a score keep their relative order at the tail, and a wholly unscored list
+    // is left exactly as computed. The admissible set never changes.
+    if (input.costMode === "MAXIMUM_INTELLIGENCE" && orderedCandidates.length > 1) {
+      const scored = orderedCandidates.map((candidate) => ({ candidate, score: evidence[candidate.canonicalModelId]?.roleFit }));
+      if (scored.some((entry) => entry.score !== undefined)) {
+        scored.sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity));
+        orderedCandidates.splice(0, orderedCandidates.length, ...scored.map((entry) => entry.candidate));
+      }
+    }
     const selected = orderedCandidates[0];
     const outcome: PaidRoleRouteOutcome = selected
       ? "selected"
@@ -480,7 +518,7 @@ export class PaidAutoService {
       ...(selected ? { selected } : {}),
       orderedCandidates,
       ranking,
-      reasonCodes: selected ? selected.reasonCodes : [ranking.selectionStatus],
+      reasonCodes: selected ? selected.reasonCodes : input.allowedModelIds ? ["ROSTER_NO_ADMISSIBLE_SELECTED_MODEL", ranking.selectionStatus] : [ranking.selectionStatus],
     };
   }
 
@@ -566,7 +604,7 @@ export class PaidAutoService {
 
   healthCheck(): ProviderHealthResponse {
     if (!this.paidExecutionEnabled) return { status: "offline", error: "Paid Auto execution is disabled by the server kill switch." };
-    const states = PAID_AUTO_MODELS.map((model) => this.stateFor(model.direct));
+    const states = this.models().map((model) => this.stateFor(model.direct));
     if (states.some((state) => state === "READY")) return { status: "available" };
     if (states.some((state) => state === "TEMPORARILY_UNAVAILABLE" || state === "QUARANTINED")) return { status: "degraded" };
     if (states.some((state) => state === "AUTHORIZATION_REQUIRED" || state === "BILLING_REQUIRED")) return { status: "auth_required" };
@@ -628,9 +666,19 @@ export class PaidAutoService {
   }
 
   private requireModel(canonicalModelId: string): PaidAutoModel {
-    const model = paidAutoModel(canonicalModelId);
-    if (!model) throw new PaidAutoExecutionError({ code: "MODEL_NOT_FOUND", message: "Paid Auto accepts only its four registered canonical models.", failureClass: "invalid_request", executionCertainty: "not_started" });
+    const model = this.familyCatalog.model(canonicalModelId);
+    if (!model || !this.models().some((item) => item.canonicalModelId === canonicalModelId)) throw new PaidAutoExecutionError({ code: "MODEL_NOT_FOUND", message: "Paid Auto accepts only active approved canonical models.", failureClass: "invalid_request", executionCertainty: "not_started" });
     return model;
+  }
+
+  /**
+   * R55 wave 2: the route that would physically execute for a roster-authorized canonical
+   * selection — needed by allowance accounting to price the *actual* attempt route.
+   */
+  executableRouteForModel(canonicalModelId: string): PaidAutoRoute | undefined {
+    if (!this.models().some((item) => item.canonicalModelId === canonicalModelId)) return undefined;
+    const model = this.familyCatalog.model(canonicalModelId);
+    return model ? this.executableRouteFor(model) : undefined;
   }
 
   /** The route that would execute now, or undefined — mirrors routeForExecution without

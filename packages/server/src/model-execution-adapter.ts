@@ -1,4 +1,5 @@
 import {
+  type ProviderAdapter,
   type ProviderCatalog,
   type ChatRequest,
   type ChatMessage,
@@ -19,6 +20,7 @@ import type { PaidAutoService } from "@codeforge/paid-auto";
 import { redactSecrets } from "@codeforge/secrets";
 import { fingerprint, type ForgeGreenAdvisor } from "@codeforge/forge-green";
 import type { ForgeGreenRunPolicy } from "./forgegreen-run-policy.js";
+import { isUserApiAdapter } from "./user-intelligence.js";
 
 export interface ModelExecutionRequest {
   modelSelection?: AgentModelSelection;
@@ -148,6 +150,9 @@ export class ModelExecutionAdapter {
    */
   private governorFor(provider: unknown): ProviderCapacityGovernor | undefined {
     if (!this.governor) return undefined;
+    // R55: USER_API sources are the user's own account — managed-free capacity pacing
+    // never applies to them.
+    if (isUserApiAdapter(provider as ProviderAdapter | undefined)) return undefined;
     if (!this.governorIsExplicit && (provider as { isTestProvider?: boolean } | undefined)?.isTestProvider === true) {
       return undefined;
     }
@@ -176,6 +181,12 @@ export class ModelExecutionAdapter {
         throw new Error(
           `[${ERROR_CODES.PROVIDER_MODEL_UNAVAILABLE}] Requested provider "${selection.providerId}" is not registered in provider catalog. Exact model execution failed closed.`,
         );
+      }
+
+      // R55: USER_API adapters are owner-authorized through the roster allowance upstream —
+      // ForgeZero's managed-free catalog holds no record for them and must not gate them.
+      if (isUserApiAdapter(provider)) {
+        return { providerId: selection.providerId, modelId: selection.modelId };
       }
 
       const modelRec = this.firewall.getModel(selection.providerId, selection.modelId);
@@ -299,6 +310,10 @@ export class ModelExecutionAdapter {
       if (req.signal?.aborted) {
         return;
       }
+      // R55 wave 2: a proven pre-dispatch rejection (executionCertainty "not_started" —
+      // e.g. the paid gate refused before any billable provider work began) keeps its
+      // typed identity so allowance accounting can release rather than settle.
+      if ((err as { executionCertainty?: unknown }).executionCertainty === "not_started") throw err;
       const norm = normalizeProviderError(err);
       if (norm.code === ERROR_CODES.PROVIDER_RATE_LIMITED && pacingGovernor) {
         pacingGovernor.recordRateLimit(providerId, (err as { retryAfter?: unknown }).retryAfter as number | undefined);

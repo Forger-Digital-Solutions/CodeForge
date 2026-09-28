@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach, afterAll } from "vitest";
-import { createSessionPersistence, SessionPersistence } from "@codeforge/sessions";
+import { createSessionPersistence, isWorkItem, openSqliteDatabase, SessionPersistence } from "@codeforge/sessions";
 import type { SessionRecord, TurnRecord, WorkItem } from "@codeforge/sessions";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
@@ -288,6 +288,156 @@ describe("SessionPersistence", () => {
     expect(await db!.getSession("to-delete")).toBeUndefined();
     expect(await db!.getTurns("to-delete")).toEqual([]);
     expect(await db!.getWorkItems("to-delete")).toEqual([]);
+  });
+
+  it("parses and round-trips the four R55 work-item kinds across restart, with no raw credential", async () => {
+    const now = new Date().toISOString();
+    const items = [
+      {
+        kind: "forgeauto_roster",
+        id: "forgeauto-roster-owner",
+        ownerUserId: "alice",
+        entitlement: "CUSTOM",
+        slots: [{ kind: "AUTO", sourceClass: "USER_API", enabled: true }],
+        lead: { mode: "NONE" },
+        updatedAt: now,
+      },
+      {
+        kind: "paid_family_catalog",
+        id: "paid-family-catalog",
+        versions: [{ family: "luna", version: "5.6" }],
+      },
+      {
+        kind: "shilling_entry",
+        id: "shilling:r55",
+        entry: { id: "r55", sourceClass: "USER_API", userProviderSpendUsd: 0.00002, costConfidence: "OBSERVED" },
+      },
+      {
+        kind: "user_intelligence_source",
+        id: "user-intelligence-source-hash",
+        ownerUserId: "alice",
+        // Credential material is never persisted — only the deterministic ref.
+        source: { sourceId: "s1", ownerUserId: "alice", credentialRef: "user-api-credential:0123456789abcdef01234567", modelId: "m1" },
+        createdAt: now,
+        updatedAt: now,
+      },
+      // R55 wave 2: managed-paid accounting + routing decision receipts. Money travels as
+      // integer USD micros; receipts carry evidence identity only.
+      {
+        kind: "managed_paid_account",
+        id: "managed-paid-account-alice",
+        ownerUserId: "alice",
+        consumedUsdMicros: 1_500,
+        reservedUsdMicros: 500,
+        updatedAt: now,
+      },
+      {
+        kind: "managed_paid_reservation",
+        id: "managed-paid-reservation-alice",
+        reservation: {
+          ownerUserId: "alice", requestId: "req-1", taskId: "task-1", role: "CODER",
+          providerId: "openai", modelId: "gpt-5.6-luna", estimatedUsdMicros: 2_000,
+          chargedUsdMicros: null, actualUsdMicros: null, status: "OPEN",
+          priceSource: "https://developers.openai.com/pricing", createdAt: now, updatedAt: now,
+        },
+      },
+      {
+        kind: "managed_paid_receipt",
+        id: "managed-paid-receipt-alice",
+        receipt: {
+          ownerUserId: "alice", requestId: "req-1", taskId: "task-1", role: "CODER",
+          providerId: "openai", modelId: "gpt-5.6-luna", estimatedUsdMicros: 2_000,
+          actualUsdMicros: 1_500, chargedUsdMicros: 1_500, confidence: "OBSERVED",
+          priceSource: "https://developers.openai.com/pricing", recordedAt: now,
+        },
+      },
+      {
+        kind: "forgeauto_decision_receipt",
+        id: "forgeauto-decision-1",
+        decision: {
+          runId: "run-1", ownerUserId: "alice", rosterUpdatedAt: now, role: "CODER",
+          candidates: [{ modelId: "m1", providerId: "p1", providerModelId: "pm1", familyId: "f1", version: "v1", sourceClass: "USER_API", lifecycle: "ACTIVE" }],
+          selected: { providerId: "p1", modelId: "pm1" }, reasonCodes: ["ROSTER_USER_API_EXPLICIT"], recordedAt: now,
+        },
+        recordedAt: now,
+      },
+    ];
+
+    for (const item of items) {
+      expect(isWorkItem(item)).toBe(true);
+      await db!.upsertWorkItem(item as WorkItem);
+    }
+
+    await db!.close();
+    db = null;
+    const reopened = createSessionPersistence({ dbPath });
+    for (const kind of ["forgeauto_roster", "paid_family_catalog", "shilling_entry", "user_intelligence_source", "managed_paid_account", "managed_paid_reservation", "managed_paid_receipt", "forgeauto_decision_receipt"]) {
+      const stored = await reopened.getWorkItemsByKind(kind);
+      expect(stored).toHaveLength(1);
+      expect(isWorkItem(stored[0])).toBe(true);
+      expect(JSON.stringify(stored[0])).not.toContain("sk-secret");
+      expect(JSON.stringify(stored[0])).not.toContain("apiKey");
+    }
+    await reopened.close();
+  });
+
+  it("opens a pre-R55 database with no migration — R55 adds work-item kinds only", async () => {
+    // R55 changed no DDL: the physical store is still the generic work_items(id,
+    // sessionId, kind, data) table written by pre-R55 builds — there is no version
+    // table or migration id. This fixture recreates that physical schema by hand and
+    // seeds pre-R55 rows (a session plus a legacy "activity" work item) with raw SQL.
+    const now = new Date().toISOString();
+    await db!.close();
+    db = null;
+    SessionPersistence.deleteDatabase(dbPath);
+
+    const raw = openSqliteDatabase(dbPath);
+    try {
+      // The full physical DDL a pre-R55 build writes — identical to today's schema,
+      // because R55 introduced no DDL change at all.
+      raw.db.exec(`
+        CREATE TABLE sessions (id TEXT PRIMARY KEY, title TEXT NOT NULL, createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL, status TEXT NOT NULL, currentAgentId TEXT, currentModelId TEXT, currentProviderId TEXT, permissionMode TEXT, planMode TEXT, displayMode TEXT, branch TEXT, workspacePath TEXT, taskTitle TEXT, outcome TEXT);
+        CREATE TABLE turns (id TEXT PRIMARY KEY, sessionId TEXT NOT NULL, seq INTEGER NOT NULL, userMessage TEXT NOT NULL, status TEXT NOT NULL, agentId TEXT, startedAt TEXT, completedAt TEXT, error TEXT, FOREIGN KEY (sessionId) REFERENCES sessions(id) ON DELETE CASCADE);
+        CREATE TABLE work_items (id TEXT PRIMARY KEY, sessionId TEXT, kind TEXT NOT NULL, data TEXT NOT NULL, FOREIGN KEY (sessionId) REFERENCES sessions(id) ON DELETE CASCADE);
+        CREATE TABLE events (id INTEGER PRIMARY KEY AUTOINCREMENT, sessionId TEXT NOT NULL, data TEXT NOT NULL, createdAt TEXT NOT NULL);
+      `);
+      raw.db.prepare("INSERT INTO sessions (id, title, createdAt, updatedAt, status) VALUES ($id, $title, $createdAt, $updatedAt, $status)")
+        .run({ $id: "sess-1", $title: "Pre-R55 Session", $createdAt: now, $updatedAt: now, $status: "running" });
+      raw.db.prepare("INSERT INTO work_items (id, sessionId, kind, data) VALUES ($id, $sessionId, $kind, $data)")
+        .run({
+          $id: "legacy-wi-1", $sessionId: "sess-1", $kind: "activity",
+          $data: JSON.stringify({ kind: "activity", id: "legacy-wi-1", sessionId: "sess-1", title: "Pre-R55 Activity", status: "done" }),
+        });
+    } finally {
+      raw.db.close();
+    }
+
+    // Reopening through the current persistence layer leaves prior data untouched and
+    // accepts the R55 kinds into the same generic table — no migration ran.
+    const reopened = createSessionPersistence({ dbPath });
+    try {
+      expect((await reopened.getSession("sess-1"))!.title).toBe("Pre-R55 Session");
+      const legacy = await reopened.getWorkItemsByKind("activity");
+      expect(legacy).toHaveLength(1);
+      expect((legacy[0] as unknown as { title: string }).title).toBe("Pre-R55 Activity");
+
+      await reopened.upsertWorkItem({
+        kind: "forgeauto_roster", id: "r55-roster", ownerUserId: "alice",
+        entitlement: "CUSTOM", slots: [{ kind: "AUTO", sourceClass: "USER_API", enabled: true }],
+        lead: { mode: "NONE" }, updatedAt: now,
+      } as WorkItem);
+      await reopened.upsertWorkItem({
+        kind: "shilling_entry", id: "r55-sh",
+        entry: { id: "r55", sourceClass: "MANAGED_PAID", managedSpendUsd: 0.5, costConfidence: "OBSERVED" },
+      } as WorkItem);
+
+      expect((await reopened.getWorkItemsByKind("forgeauto_roster"))[0]).toMatchObject({ ownerUserId: "alice" });
+      expect((await reopened.getWorkItemsByKind("shilling_entry"))[0]).toMatchObject({ id: "r55-sh" });
+      // The pre-R55 row still reads alongside them.
+      expect(await reopened.getWorkItemsByKind("activity")).toHaveLength(1);
+    } finally {
+      await reopened.close();
+    }
   });
 });
 

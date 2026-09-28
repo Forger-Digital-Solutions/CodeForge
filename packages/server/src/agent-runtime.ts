@@ -101,8 +101,11 @@ import { createModelExecutionAdapter, convertToProviderTools, normalizeProviderE
 import { roleOutputBudget, type ReasoningRouteProfile } from "./role-output-budget.js";
 import { ForgeGreenRunPolicy, type ForgeGreenPolicySnapshot } from "./forgegreen-run-policy.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
-import { PAID_AUTO_AUTO_MODEL_ID, PAID_AUTO_PROVIDER_ID, type PaidAutoRouteId, type PaidAutoService } from "@codeforge/paid-auto";
+import { PAID_AUTO_AUTO_MODEL_ID, PAID_AUTO_PROVIDER_ID, type PaidAutoRouteId, type PaidAutoService, type PaidRoleRouteCandidate } from "@codeforge/paid-auto";
 import { tryConsumeInferenceRequest, type InferenceLane, type WorkflowInferenceBudget } from "./inference-budget.js";
+import type { RosterRouteAllowance, RosterUserRoute } from "./forgeauto-roster.js";
+import { isUserApiAdapter, userApiAdapterIdentity } from "./user-intelligence.js";
+import { createShillingEntry, ManagedPaidAllowanceError, ShillingLedger, type ManagedPaidAllowanceLedger, type ManagedPaidPolicy, type ShillingSourceClass } from "@codeforge/cloud-usage";
 import { assessCoderProgress, type RoleProgressAssessment } from "./role-progress.js";
 
 export interface AgentRuntimeRequest {
@@ -143,6 +146,8 @@ export interface AgentRuntimeRequest {
    * rotates within that roster only — the free fleet is never consulted for a paid turn.
    */
   roleRouting?: boolean;
+  /** Resolved per-role user roster. Present only after the caller validates ownership and entitlement. */
+  rosterAllowance?: RosterRouteAllowance;
   /**
    * R48: reviewer independence — prefer a quota pool different from the implementing
    * route's. The value is the implementer's pool identity: a fabric `capacityPoolId` on
@@ -579,6 +584,14 @@ export interface AgentRuntimeOptions {
    */
   fabricContext?: FabricContextProvider;
   paidAuto?: PaidAutoService;
+  /**
+   * R55 wave 2: the owner's managed-paid policy + ledger. When both are present, every
+   * roster-authorized paid attempt reserves a conservative estimate before the wire and
+   * settles or releases honestly afterward. Absent = paid calls run unaccounted exactly
+   * as before (legacy explicit paid execution without a roster is unchanged).
+   */
+  managedPaidPolicy?: ManagedPaidPolicy;
+  managedPaidLedger?: ManagedPaidAllowanceLedger;
   /** Shared provider pacing. Supplying one explicitly also governs deterministic test adapters. */
   capacityGovernor?: ProviderCapacityGovernor;
   /**
@@ -645,6 +658,7 @@ export function eightBitRoleForAgentRole(role: AgentRoleType | string): EightBit
     case "explorer":
       return "EXPLORER";
     case "planner":
+    case "lead":
       return "PLANNER";
     case "reviewer":
       return "REVIEWER";
@@ -920,6 +934,7 @@ export class AgentRuntime {
   private readonly sessionId: string;
   private readonly eventStore: EventStore;
   private readonly persistence: ISessionPersistence;
+  private readonly shillingLedger: ShillingLedger;
   private readonly firewall: ForgeZero;
   private readonly providerCatalog: ProviderCatalog;
   private readonly workspacePath?: string;
@@ -968,6 +983,8 @@ export class AgentRuntime {
   private readonly eightBit: EightBitRuntime;
   private readonly freeCloud?: FreeCloudRoutingHooks;
   private readonly paidAuto?: PaidAutoService;
+  private readonly managedPaidPolicy?: ManagedPaidPolicy;
+  private readonly managedPaidLedger?: ManagedPaidAllowanceLedger;
   private readonly capacityGovernor: ProviderCapacityGovernor;
   private readonly capacityGovernorIsExplicit: boolean;
   private readonly reasoningRouteProfiles?: Readonly<Record<string, ReasoningRouteProfile>>;
@@ -984,6 +1001,7 @@ export class AgentRuntime {
     this.sessionId = options.sessionId;
     this.eventStore = options.eventStore;
     this.persistence = options.persistence;
+    this.shillingLedger = new ShillingLedger(this.persistence);
     this.firewall = options.firewall;
     this.providerCatalog = options.providerCatalog;
     this.workspacePath = options.workspacePath;
@@ -1010,6 +1028,8 @@ export class AgentRuntime {
     });
     this.freeCloud = options.freeCloud;
     this.paidAuto = options.paidAuto;
+    this.managedPaidPolicy = options.managedPaidPolicy;
+    this.managedPaidLedger = options.managedPaidLedger;
     this.capacityGovernor = options.capacityGovernor ?? defaultCapacityGovernor;
     this.capacityGovernorIsExplicit = options.capacityGovernor !== undefined;
     this.reasoningRouteProfiles = options.reasoningRouteProfiles;
@@ -1871,9 +1891,116 @@ export class AgentRuntime {
       // up to the bounded budget; an explicit exact selection is never replaced.
       let activeSelection: AgentModelSelection | undefined = req.modelSelection
         ?? (this.modelSelection ? { providerId: this.modelSelection.providerId, modelId: this.modelSelection.modelId } : undefined);
+      if (req.rosterAllowance && activeSelection) {
+        const permitted = activeSelection.providerId === PAID_AUTO_PROVIDER_ID
+          ? activeSelection.modelId === PAID_AUTO_AUTO_MODEL_ID && req.rosterAllowance.paidModelIds.length > 0
+            || req.rosterAllowance.paidModelIds.some((modelId) => modelId === activeSelection!.modelId)
+          : req.rosterAllowance.freeRoutes.some((route) => route.providerId === activeSelection!.providerId && route.modelId === activeSelection!.modelId)
+            || (req.rosterAllowance.userRoutes ?? []).some((route) => route.providerId === activeSelection!.providerId && route.modelId === activeSelection!.modelId);
+        if (!permitted) throw new Error("ROSTER_ROUTE_NOT_SELECTED");
+      }
       let roleRouteRotatable = false;
+      // R55: USER_API routes execute only when the resolved role allowance admits the exact
+      // route — a marked adapter without an admitting allowance fails closed before network.
+      let activeUserRoute: RosterUserRoute | undefined;
+      // R55 wave 2: the roster-authorized paid candidate serving the active selection —
+      // carries the physical executing route so allowance accounting prices the real
+      // attempt. The last settled receipt supplies the turn's managedSpendUsd.
+      let activePaidCandidate: PaidRoleRouteCandidate | undefined;
+      let paidChargeEvidence: { chargedUsd: number; confidence: "OBSERVED" | "ESTIMATED" } | undefined;
+      const resolveUserRoute = (providerId: string, modelId: string): RosterUserRoute | undefined =>
+        (req.rosterAllowance?.userRoutes ?? []).find((route) => route.providerId === providerId && route.modelId === modelId);
+      // R55 wave 2: append-only ForgeAuto routing decision receipts — present only when the
+      // caller attached a decision audit to the allowance. Receipts carry bounded candidate
+      // identity + reason codes; never endpoint URLs, credential refs, or message bodies.
+      const decisionEvidence = req.rosterAllowance?.decision;
+      let decisionSeq = 0;
+      const recordRouteDecision = async (selected: { providerId: string; modelId: string }, reasonCodes: readonly string[], fallbackFrom?: string): Promise<void> => {
+        if (!decisionEvidence) return;
+        decisionSeq += 1;
+        // Match the selection back to an allowed candidate by class-specific identity:
+        // paid selections carry the canonical modelId under the paid-auto provider id;
+        // USER_API selections carry the deterministic source provider + provider model;
+        // free selections carry the route/provider model identity.
+        const matched = decisionEvidence.candidates.find((candidate) =>
+          selected.providerId === PAID_AUTO_PROVIDER_ID
+            ? candidate.sourceClass === "MANAGED_PAID" && candidate.modelId === selected.modelId
+            : candidate.providerId === selected.providerId
+              && (candidate.modelId === selected.modelId || candidate.providerModelId === selected.modelId));
+        const recordedAt = new Date().toISOString();
+        try {
+          await this.persistence.insertIfAbsent({
+            id: `forgeauto-decision:${req.runId}:${req.agentId}:${decisionSeq}`,
+            kind: "forgeauto_decision_receipt",
+            sessionId: this.sessionId,
+            decision: {
+              runId: req.runId,
+              agentId: req.agentId,
+              ownerUserId: decisionEvidence.ownerUserId,
+              rosterUpdatedAt: decisionEvidence.rosterUpdatedAt,
+              role: decisionEvidence.role,
+              candidates: decisionEvidence.candidates,
+              selected: matched ?? { providerId: selected.providerId, modelId: selected.modelId },
+              // A selection no allowed candidate claims is recorded honestly rather than
+              // pretending a complete family/version/lifecycle identity.
+              ...(matched ? {} : { unmatchedSelected: true }),
+              reasonCodes: reasonCodes.slice(0, 32),
+              ...(fallbackFrom !== undefined ? { fallbackFrom } : {}),
+              recordedAt,
+            },
+            recordedAt,
+          } as unknown as WorkItem);
+        } catch {
+          adapter.emitSubagentProgress?.(req.agentId, "ForgeAuto decision receipt write failed; routing evidence continues in events.");
+        }
+      };
+      // R55 wave 2: the user adapter's stamped identity — owner, source, qualification —
+      // must match the requesting user and the admitting allowance route before dispatch.
+      const assertUserAdapterOwned = (route: RosterUserRoute): void => {
+        const identity = userApiAdapterIdentity(this.providerCatalog.get(route.providerId));
+        if (!identity
+          || identity.ownerUserId !== (req.userId ?? this.userId)
+          || identity.sourceId !== route.sourceId
+          || identity.qualification !== "QUALIFIED") {
+          throw new Error("ROSTER_ROUTE_NOT_SELECTED");
+        }
+      };
+      if (activeSelection && isUserApiAdapter(this.providerCatalog.get(activeSelection.providerId))) {
+        activeUserRoute = resolveUserRoute(activeSelection.providerId, activeSelection.modelId);
+        if (!activeUserRoute) throw new Error("ROSTER_ROUTE_NOT_SELECTED");
+        assertUserAdapterOwned(activeUserRoute);
+        roleRouteRotatable = !activeUserRoute.pinned;
+        adapter.emitRouterSelection(req.runId, activeSelection.modelId, activeSelection.providerId, 0, ["ROSTER_USER_API_EXPLICIT"]);
+        await recordRouteDecision(activeSelection, ["ROSTER_USER_API_EXPLICIT"]);
+      } else if (activeSelection) {
+        // The paid-auto/auto sentinel is not a route decision yet — role routing resolves
+        // it below and records the canonical it actually selected. Recording the sentinel
+        // would emit an unmatched receipt ahead of the real one.
+        const autoSentinel = req.roleRouting === true
+          && activeSelection.providerId === PAID_AUTO_PROVIDER_ID
+          && activeSelection.modelId === PAID_AUTO_AUTO_MODEL_ID;
+        if (!autoSentinel) await recordRouteDecision(activeSelection, ["ROSTER_ROUTE_EXPLICIT"]);
+      }
       if (activeSelection) {
         journalActiveRoute = activeSelection;
+      }
+      // R55: a role allowance admitting only user routes selects the first one directly —
+      // user sources never enter the Free Fabric, paid-auto, or capacity logic.
+      if (!activeSelection && req.roleRouting && req.rosterAllowance
+        && req.rosterAllowance.freeRoutes.length === 0
+        && req.rosterAllowance.paidModelIds.length === 0
+        && (req.rosterAllowance.userRoutes?.length ?? 0) > 0) {
+        const firstUserRoute = req.rosterAllowance.userRoutes[0]!;
+        if (!isUserApiAdapter(this.providerCatalog.get(firstUserRoute.providerId))) {
+          throw new Error(`[${ERROR_CODES.PROVIDER_UNAVAILABLE}] ROSTER_NO_ADMITTED_ROUTE: user route ${firstUserRoute.sourceId} has no registered adapter; failing closed.`);
+        }
+        assertUserAdapterOwned(firstUserRoute);
+        activeUserRoute = firstUserRoute;
+        activeSelection = { providerId: firstUserRoute.providerId, modelId: firstUserRoute.modelId };
+        roleRouteRotatable = !firstUserRoute.pinned;
+        journalActiveRoute = activeSelection;
+        adapter.emitRouterSelection(req.runId, firstUserRoute.modelId, firstUserRoute.providerId, 0, ["ROSTER_USER_API_EXPLICIT"]);
+        await recordRouteDecision(activeSelection, ["ROSTER_USER_API_EXPLICIT"]);
       }
       if (!activeSelection && req.roleRouting && this.hasRoutableFleet()) {
         const role = eightBitRoleForAgentRole(req.role);
@@ -1918,6 +2045,7 @@ export class AgentRuntime {
             hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
             routeFilter: (providerId, modelId) =>
               (!qualifiedForRole || qualifiedForRole(providerId, modelId))
+              && (!req.rosterAllowance || req.rosterAllowance.freeRoutes.some((route) => route.providerId === providerId && route.modelId === modelId))
               && (req.excludeRoleRoute?.providerId !== providerId || req.excludeRoleRoute.modelId !== modelId),
             capacityScoreAdjustment: this.freeCloud
               ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
@@ -1969,6 +2097,7 @@ export class AgentRuntime {
         journalActiveRoute = activeSelection;
         servedPoolId = routing.fabric?.selected?.capacityPoolId;
         adapter.emitRouterSelection(req.runId, routing.model.modelId, routing.model.providerId, Math.round(routing.score), routing.reasons);
+        await recordRouteDecision(activeSelection, routing.reasons, req.excludeRoleRoute ? `${req.excludeRoleRoute.providerId}/${req.excludeRoleRoute.modelId}` : undefined);
         if (req.excludeRoleRoute) {
           adapter.emitRouterFailover(
             req.runId,
@@ -1990,6 +2119,7 @@ export class AgentRuntime {
         }
         paidRoleRouteInput = {
           role: eightBitRoleForAgentRole(req.role),
+          ...(req.rosterAllowance ? { allowedModelIds: req.rosterAllowance.paidModelIds } : {}),
           inputTokens: estimatePromptOnlyTokens({
             model: "",
             messages,
@@ -2009,21 +2139,57 @@ export class AgentRuntime {
           }),
           requiresTools: req.role !== "planner" && req.role !== "reviewer",
           ...(req.preferIndependentFromPoolId ? { preferIndependentFromRouteId: req.preferIndependentFromPoolId as PaidAutoRouteId } : {}),
+          ...(this.managedPaidPolicy && req.rosterAllowance ? { costMode: this.managedPaidPolicy.costMode } : {}),
         };
         const selection = this.paidAuto.selectRoleRoute(paidRoleRouteInput);
         if (selection.outcome !== "selected" || !selection.selected) {
           throw new Error(`[${ERROR_CODES.PROVIDER_UNAVAILABLE}] No qualified paid route for role ${req.role}: 16-Bit role routing reported ${selection.outcome} (${selection.reasonCodes.join(", ")}). No free route was substituted.`);
         }
+        activePaidCandidate = selection.selected;
         activeSelection = { providerId: PAID_AUTO_PROVIDER_ID, modelId: selection.selected.canonicalModelId };
         roleRouteRotatable = true;
         journalActiveRoute = activeSelection;
         servedPoolId = selection.selected.route.routeId;
         adapter.emitRouterSelection(req.runId, selection.selected.canonicalModelId, PAID_AUTO_PROVIDER_ID, selection.selected.expectedCostUsd, selection.reasonCodes);
+        await recordRouteDecision(activeSelection, selection.reasonCodes);
       }
 
-      const requestModelTurn = async (): Promise<ModelExecutionResponse> => {
+      if (req.rosterAllowance && !activeSelection) {
+        throw new Error(`[${ERROR_CODES.PROVIDER_UNAVAILABLE}] ROSTER_NO_ADMITTED_ROUTE: no selected model is currently eligible for ${req.role}.`);
+      }
+
+      // R55 wave 2: every charged managed-paid physical attempt — a success or a failed/
+      // ambiguous post-dispatch attempt settled at ESTIMATED — writes one idempotent
+      // Shilling entry keyed by the deterministic reservation requestId, so crash replay
+      // can never double count. The model-turn entry stays the meter for free/user turns.
+      const recordPaidAttempt = async (
+        reservation: { requestId: string; providerId: string; modelId: string },
+        receipt: { chargedUsd: number; confidence: "OBSERVED" | "ESTIMATED"; recordedAt: string },
+        usage: AgentUsage | null,
+      ): Promise<void> => {
+        try {
+          await this.shillingLedger.record(createShillingEntry({
+            id: sha256(`managed-paid-attempt:${reservation.requestId}`),
+            userId: req.userId ?? this.userId, taskId: req.runId, role: req.role,
+            requestId: reservation.requestId, providerId: reservation.providerId, modelId: reservation.modelId,
+            sourceClass: "MANAGED_PAID",
+            rawInputUsage: usage?.inputTokens ?? null,
+            rawOutputUsage: usage?.outputTokens ?? null,
+            rawUsage: usage ? usage.inputTokens + usage.outputTokens : null,
+            conversion: { rawUnit: usage ? "TOKENS" : "UNKNOWN", confidence: "UNKNOWN" },
+            managedSpendUsd: receipt.chargedUsd,
+            userProviderSpendUsd: null,
+            costConfidence: receipt.confidence,
+            recordedAt: receipt.recordedAt,
+          }));
+        } catch {
+          adapter.emitSubagentProgress?.(req.agentId, "Paid attempt Shilling write failed; the allowance receipt remains authoritative.");
+        }
+      };
+      const requestModelTurn = async (modelTurnId: string): Promise<ModelExecutionResponse> => {
         let rotations = 0;
         let sameRouteRetries = 0;
+        const triedUserRoutes = new Set<string>();
         for (;;) {
           forgeGreenR0Telemetry.recordModelAttempt({
             providerId: activeSelection?.providerId,
@@ -2032,6 +2198,8 @@ export class AgentRuntime {
             contextBytes: Buffer.byteLength(messages.map((message) => message.content).join("\n"), "utf8"),
             stablePromptBytes: messages[0]?.role === "system" ? Buffer.byteLength(messages[0].content, "utf8") : undefined,
           });
+          // Declared outside the try so the catch can release/settle the hold honestly.
+          let paidReservation: { requestId: string; providerId: string; modelId: string; inputRate: number; outputRate: number } | undefined;
           try {
             const modelCallStartedAt = Date.now();
             // R34 Mission F: same superseded-output compaction as the interactive loop —
@@ -2070,6 +2238,41 @@ export class AgentRuntime {
                 `[${ERROR_CODES.AGENT_CONTEXT_BUDGET_EXCEEDED}] The ${req.role} transcript measures ~${dispatchPromptTokens} tokens but route ${activeSelection ? `${activeSelection.providerId}/${activeSelection.modelId}` : "<none>"} leaves only ${dispatchContextLimit} context tokens — no completion could ever fit, so no provider request was sent.`,
               );
             }
+            // R55 wave 2: roster-authorized managed-paid attempts hold allowance before the
+            // wire. The estimate is conservative — measured prompt + the dispatch's full
+            // output budget at the executing route's CURRENT rates — and the request ID is
+            // deterministic per (turn, attempt) so crash replays re-reserve idempotently.
+            // Legacy explicit paid execution without a roster allowance is unchanged.
+            if (req.rosterAllowance && this.managedPaidLedger && this.managedPaidPolicy
+              && activeSelection?.providerId === PAID_AUTO_PROVIDER_ID && activeSelection.modelId !== PAID_AUTO_AUTO_MODEL_ID
+              && req.rosterAllowance.paidModelIds.includes(activeSelection.modelId)) {
+              const ownerUserId = req.userId ?? this.userId;
+              if (this.managedPaidPolicy.ownerUserId !== ownerUserId) {
+                throw new ManagedPaidAllowanceError("MANAGED_PAID_OWNER_MISMATCH", "the managed paid policy belongs to a different owner");
+              }
+              const executingRoute = activePaidCandidate?.canonicalModelId === activeSelection.modelId
+                ? activePaidCandidate.route
+                : this.paidAuto!.executableRouteForModel(activeSelection.modelId);
+              if (!executingRoute) {
+                throw new ManagedPaidAllowanceError("MANAGED_PAID_ROUTE_UNRESOLVED", `no executable paid route resolves for ${activeSelection.modelId}`);
+              }
+              const pricing = executingRoute.pricing;
+              if (pricing.status !== "CURRENT" || pricing.inputCostPerMillion === null || pricing.outputCostPerMillion === null) {
+                throw new ManagedPaidAllowanceError("MANAGED_PAID_COST_UNKNOWN", `route ${executingRoute.routeId} lacks current price evidence — the attempt fails before any network call`);
+              }
+              const estimatedUsd = (dispatchPromptTokens * pricing.inputCostPerMillion + dispatchOutputBudget.maxTokens * pricing.outputCostPerMillion) / 1_000_000;
+              const requestId = `${modelTurnId}:paid-attempt:${rotations + sameRouteRetries}`;
+              await this.managedPaidLedger.reserve(this.managedPaidPolicy, {
+                requestId,
+                taskId: req.runId,
+                role: req.role,
+                providerId: executingRoute.providerId,
+                modelId: executingRoute.providerModelId,
+                estimatedUsd,
+                priceSource: pricing.source,
+              });
+              paidReservation = { requestId, providerId: executingRoute.providerId, modelId: executingRoute.providerModelId, inputRate: pricing.inputCostPerMillion, outputRate: pricing.outputCostPerMillion };
+            }
             const response = await modelAdapter.execute({
               modelSelection: activeSelection,
               messages: dispatchMessages,
@@ -2080,6 +2283,23 @@ export class AgentRuntime {
               authorityState: req.authorityState ?? "canonical",
               dedupeScope: req.runId,
             });
+            if (paidReservation) {
+              // Observed provider usage settles the measured cost; anything else settles the
+              // reserved estimate honestly as ESTIMATED — never zeroed.
+              const actualUsd = response.usageSource === "PROVIDER_REPORTED"
+                ? (response.usage.inputTokens * paidReservation.inputRate + response.usage.outputTokens * paidReservation.outputRate) / 1_000_000
+                : null;
+              // The provider already served this attempt — an accounting write failure is
+              // not a provider failure and must never trigger a duplicate retry/failover.
+              let receipt;
+              try {
+                receipt = await this.managedPaidLedger!.settle(req.userId ?? this.userId, paidReservation.requestId, actualUsd, actualUsd === null ? "ESTIMATED" : "OBSERVED");
+              } catch (settleErr) {
+                throw new ManagedPaidAllowanceError("MANAGED_PAID_ACCOUNTING_FAILED", `settlement of a completed paid attempt failed: ${settleErr instanceof Error ? settleErr.message : String(settleErr)}`);
+              }
+              paidChargeEvidence = { chargedUsd: receipt.chargedUsd, confidence: receipt.confidence };
+              await recordPaidAttempt(paidReservation, receipt, response.usageSource === "PROVIDER_REPORTED" ? response.usage : null);
+            }
             if (!response.optimization?.duplicateSuppressed) {
               forgeGreenR0Telemetry.recordProviderAttempt(response.providerId, response.modelId, forgeGreenR0RouteClass);
             }
@@ -2131,6 +2351,35 @@ export class AgentRuntime {
             // R41: a context-fit verdict is a local admission decision — no provider request
             // was made, so there is no failure evidence to record and no route to rotate.
             if (err instanceof RoleContextOverflowError) throw err;
+            // R55 wave 2: allowance verdicts are terminal policy failures — exhaustion or an
+            // unpriceable route must end a paid-only role before the wire, never rotate into
+            // a route the policy did not authorize.
+            if (err instanceof ManagedPaidAllowanceError) throw err;
+            if (paidReservation) {
+              // A proven pre-dispatch rejection releases the hold; a failed or ambiguous
+              // post-dispatch attempt settles the estimate — the provider may have billed.
+              // The charged attempt is still written to task accounting.
+              if ((err as { executionCertainty?: unknown }).executionCertainty === "not_started") {
+                try {
+                  await this.managedPaidLedger!.release(req.userId ?? this.userId, paidReservation.requestId);
+                } catch {
+                  // A stuck OPEN hold is the conservative direction — it over-reserves
+                  // allowance until reconciled rather than under-recording spend.
+                  adapter.emitSubagentProgress?.(req.agentId, "Managed paid reservation release failed; the hold remains recorded for recovery.");
+                }
+              } else {
+                let failedReceipt;
+                try {
+                  failedReceipt = await this.managedPaidLedger!.settle(req.userId ?? this.userId, paidReservation.requestId, null, "ESTIMATED");
+                } catch (settleErr) {
+                  // Losing the charge would under-report spend — fail the run closed with
+                  // the accounting identity; the provider is never re-invoked for this.
+                  throw new ManagedPaidAllowanceError("MANAGED_PAID_ACCOUNTING_FAILED", `settlement of a dispatched paid attempt failed: ${settleErr instanceof Error ? settleErr.message : String(settleErr)}`);
+                }
+                await recordPaidAttempt(paidReservation, failedReceipt, null);
+              }
+              paidReservation = undefined;
+            }
             const isCancelled = req.signal?.aborted || (err instanceof Error && err.message.includes(ERROR_CODES.AGENT_CANCELLED));
             const normalized = normalizeProviderError(err);
             if (activeSelection) {
@@ -2188,10 +2437,53 @@ export class AgentRuntime {
               // A replacement route continues a transcript it did not produce — suppressions
               // and replays optimized for the failing route must not survive the switch.
               greenPolicy.escalate("provider_failover", `${failing.providerId}/${failing.modelId} -> ${PAID_AUTO_PROVIDER_ID}/${next.canonicalModelId} (${normalized.code})`);
+              activePaidCandidate = next;
               activeSelection = { providerId: PAID_AUTO_PROVIDER_ID, modelId: next.canonicalModelId };
               journalActiveRoute = activeSelection;
               servedPoolId = next.route.routeId;
               rotations++;
+              await recordRouteDecision(activeSelection, [normalized.code], `${failing.providerId}/${failing.modelId}`);
+              continue;
+            }
+            if (activeUserRoute) {
+              // R55: user failover stays inside the already-resolved allowance — a pinned
+              // route only earns the bounded same-route retry and never substitutes another
+              // model; an AUTO user route may rotate to another admitted userRoutes entry,
+              // never to Free/Paid, another owner's source, or an unselected adapter.
+              const retryable = (err as { retryable?: unknown }).retryable === true;
+              if (!retryable || (pinned && sameRouteRetries >= PINNED_ROUTE_MAX_SAME_ROUTE_RETRIES)) throw err;
+              if (pinned) {
+                sameRouteRetries++;
+                forgeGreenR0Telemetry.recordRetry(normalized.code);
+                continue;
+              }
+              triedUserRoutes.add(`${failing.providerId}/${failing.modelId}`);
+              // Only an admitted route whose adapter identity still names THIS owner, THIS
+              // source, and QUALIFIED may serve as the replacement — a suspended source or
+              // a copied foreign allowance fails closed here before the wire.
+              const replacement = (req.rosterAllowance?.userRoutes ?? []).find((route) => {
+                if (triedUserRoutes.has(`${route.providerId}/${route.modelId}`)) return false;
+                const identity = userApiAdapterIdentity(this.providerCatalog.get(route.providerId));
+                return identity !== undefined
+                  && identity.ownerUserId === (req.userId ?? this.userId)
+                  && identity.sourceId === route.sourceId
+                  && identity.qualification === "QUALIFIED";
+              });
+              if (!replacement) throw err;
+              adapter.emitRouterFailover(req.runId, `${failing.providerId}/${failing.modelId}`, `${replacement.providerId}/${replacement.modelId}`, normalized.code);
+              routeFailovers.push({
+                from: `${failing.providerId}/${failing.modelId}`,
+                to: `${replacement.providerId}/${replacement.modelId}`,
+                at: new Date().toISOString(),
+                reason: normalized.code,
+                callsBeforeFailure: routeWindowFor(failing.providerId, failing.modelId).calls,
+              });
+              greenPolicy.escalate("provider_failover", `${failing.providerId}/${failing.modelId} -> ${replacement.providerId}/${replacement.modelId} (${normalized.code})`);
+              activeUserRoute = replacement;
+              activeSelection = { providerId: replacement.providerId, modelId: replacement.modelId };
+              journalActiveRoute = activeSelection;
+              rotations++;
+              await recordRouteDecision(activeSelection, [normalized.code], `${failing.providerId}/${failing.modelId}`);
               continue;
             }
             const qualifiedForFailureRole = this.roleRouteFilter(eightBitRoleForAgentRole(req.role));
@@ -2241,6 +2533,7 @@ export class AgentRuntime {
               hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
               routeFilter: (providerId, modelId) =>
                 (!qualifiedForFailureRole || qualifiedForFailureRole(providerId, modelId))
+                && (!req.rosterAllowance || req.rosterAllowance.freeRoutes.some((route) => route.providerId === providerId && route.modelId === modelId))
                 && (req.excludeRoleRoute?.providerId !== providerId || req.excludeRoleRoute.modelId !== modelId),
               capacityScoreAdjustment: this.freeCloud
                 ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
@@ -2293,6 +2586,7 @@ export class AgentRuntime {
             journalActiveRoute = activeSelection;
             servedPoolId = outcome.capacityPoolId ?? servedPoolId;
             rotations++;
+            await recordRouteDecision(activeSelection, [outcome.reason], `${failing.providerId}/${failing.modelId}`);
           }
         }
       };
@@ -2537,13 +2831,64 @@ export class AgentRuntime {
         await persistModelTurn("created");
 
         // Execute model request
-        let response;
+        let response: ModelExecutionResponse;
         try {
           await persistModelTurn("provider_request_started");
-          response = await requestModelTurn();
+          response = await requestModelTurn(modelTurnId);
           turnResponse = response;
           await persistModelTurn("provider_response_completed");
+          const supplyClass = this.freeCloud?.supplyClassOf?.(response.providerId, response.modelId);
+          // R55: USER_API classification comes from the admitting allowance route, never
+          // from whatever supply class a shared fabric happens to report.
+          const servedUserRoute = (req.rosterAllowance?.userRoutes ?? []).find(
+            (route) => route.providerId === response.providerId && route.modelId === response.modelId,
+          );
+          const sourceClass: ShillingSourceClass = response.providerId === PAID_AUTO_PROVIDER_ID
+            ? "MANAGED_PAID"
+            : servedUserRoute ? "USER_API" : supplyClass === "PURE_MANAGED_FREE" ? "MANAGED_FREE" : supplyClass ? "USER_API" : "UNKNOWN";
+          const providerReported = response.usageSource === "PROVIDER_REPORTED";
+          const rawUsage = providerReported ? response.usage.inputTokens + response.usage.outputTokens : null;
+          // R55: a user-provider spend exists only when the provider reported usage AND the
+          // route carries a complete price evidence chain — both rates, a non-UNKNOWN
+          // confidence, and a nonempty bounded price source. Unknowns stay null, never zero.
+          const pricedUserRoute = servedUserRoute && providerReported
+            && servedUserRoute.inputCostPerMillion !== null && servedUserRoute.outputCostPerMillion !== null
+            && servedUserRoute.costConfidence !== "UNKNOWN"
+            && typeof servedUserRoute.priceSource === "string" && servedUserRoute.priceSource.trim().length > 0 && servedUserRoute.priceSource.length <= 512
+            ? servedUserRoute : undefined;
+          const userProviderSpendUsd = pricedUserRoute
+            ? (response.usage.inputTokens * pricedUserRoute.inputCostPerMillion! + response.usage.outputTokens * pricedUserRoute.outputCostPerMillion!) / 1_000_000
+            : null;
+          // R55 wave 2: a managed-paid turn reports the settled attempt receipt's charge —
+          // OBSERVED actual or ESTIMATED reserve — as managedSpendUsd; user spend stays null.
+          const managedSpendUsd = sourceClass === "MANAGED_PAID" ? paidChargeEvidence?.chargedUsd ?? null : null;
+          // R55 wave 2: with attempt accounting active, each charged managed-paid attempt
+          // already wrote its own idempotent entry — a second turn-level spend entry would
+          // double count. Free/USER_API turns keep the model-turn meter.
+          const attemptAccounted = this.managedPaidLedger !== undefined && this.managedPaidPolicy !== undefined && req.rosterAllowance !== undefined;
+          if (sourceClass !== "MANAGED_PAID" || !attemptAccounted) {
+            try {
+              await this.shillingLedger.record(createShillingEntry({
+                id: sha256(modelTurnId), userId: req.userId ?? this.userId, taskId: req.runId, role: req.role,
+                requestId: modelTurnId, providerId: response.providerId, modelId: response.modelId,
+                sourceClass,
+                rawInputUsage: providerReported ? response.usage.inputTokens : null,
+                rawOutputUsage: providerReported ? response.usage.outputTokens : null,
+                rawUsage, conversion: { rawUnit: providerReported ? "TOKENS" : "UNKNOWN", confidence: "UNKNOWN" },
+                managedSpendUsd, userProviderSpendUsd,
+                costConfidence: userProviderSpendUsd !== null
+                  ? pricedUserRoute!.costConfidence
+                  : sourceClass === "MANAGED_PAID" ? paidChargeEvidence?.confidence ?? "UNKNOWN" : "UNKNOWN",
+                recordedAt: new Date().toISOString(),
+              }));
+            } catch {
+              adapter.emitSubagentProgress?.(req.agentId, "Shilling ledger write failed; raw model-turn usage remains recorded.");
+            }
+          }
         } catch (err: unknown) {
+          // R55 wave 2: allowance/accounting failures keep their typed identity — they are
+          // policy verdicts and ledger integrity failures, not provider errors.
+          if (err instanceof ManagedPaidAllowanceError) throw err;
           if (err instanceof RoleContextOverflowError) {
             // R41: the transcript alone exceeds this route's context window — an honest
             // non-completion, not a provider error to normalize and surface as failed.
@@ -2742,7 +3087,7 @@ export class AgentRuntime {
           }
 
           const toolDef = toolBroker.getRegistry().get(tc.name);
-          const roleIsReadOnly = req.role === "explorer" || req.role === "planner" || req.role === "reviewer";
+          const roleIsReadOnly = req.role === "explorer" || req.role === "planner" || req.role === "lead" || req.role === "reviewer";
           if (toolDef && !toolDef.readOnly && !roleIsReadOnly && req.permissions.write) {
             if (budget.maxWriteToolCalls !== undefined && writeCallCount >= budget.maxWriteToolCalls) {
               stopReason = "budget_exhausted";
@@ -5295,6 +5640,9 @@ export class AgentRuntime {
 
   private capacityGovernedProvider(provider: ProviderAdapter, turnId: string): ProviderAdapter {
     if ((provider as { isGoverned?: boolean }).isGoverned === true) return provider;
+    // R55: a USER_API route draws on the user's own account — managed-free capacity pacing
+    // must not wrap it (same boundary as governorFor in the execution adapter).
+    if (isUserApiAdapter(provider)) return provider;
     if (!this.capacityGovernorIsExplicit && provider.isTestProvider === true) return provider;
     if (typeof (provider as { streamChatWithContext?: unknown }).streamChatWithContext === "function") return provider;
     const state = this.activeTurns.get(turnId);

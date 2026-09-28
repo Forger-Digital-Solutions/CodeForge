@@ -15,6 +15,7 @@ import {
   type SubagentManager,
 } from "@codeforge/server";
 import { classifyRunRecovery } from "../src/run-recovery.js";
+import { createShillingEntry, ShillingLedger } from "@codeforge/cloud-usage";
 
 const execFileAsync = promisify(execFile);
 const fixturePath = fileURLToPath(new URL("./fixtures/run-recovery-worker.mjs", import.meta.url));
@@ -621,6 +622,135 @@ describe("durable active-worker crash recovery (real process boundaries)", () =>
       expect(workers[0]?.error).toContain("RECOVERY_REPLAN: worktree path does not exist on disk");
     } finally {
       await fixture.cleanup();
+    }
+  });
+});
+
+describe("R55 — user-route allowance survives worker recovery", () => {
+  it("replays the identical user allowance, keeps the pinned route exact, and never double-records a Shilling", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "cf-r55-recovery-"));
+    const dbPath = path.join(dir, "session.db");
+    const now = new Date().toISOString();
+    const userRoute = {
+      sourceId: "alice-src",
+      providerId: "user-api-0123abcd",
+      modelId: "user-model-1",
+      sourceClass: "USER_API" as const,
+      pinned: true,
+      inputCostPerMillion: 1,
+      outputCostPerMillion: 2,
+      costConfidence: "OBSERVED" as const,
+      priceSource: "user-declared",
+    };
+    const allowance = { freeRoutes: [], paidModelIds: [], userRoutes: [userRoute] };
+
+    // Phase 1 — the "pre-crash" process writes an interrupted worker pinned to a user route,
+    // a consistent active journal, and the Shilling entry its first model turn recorded.
+    const first = createSessionPersistence({ dbPath });
+    await first.init();
+    await first.upsertSession({ id: "recovery-session", title: "R55 Recovery", createdAt: now, updatedAt: now, status: "running" });
+    await first.upsertWorkItem({
+      kind: "subagent_run",
+      id: "child-user-route",
+      sessionId: "recovery-session",
+      parentRunId: "parent-user-route",
+      agentId: "coder",
+      role: "coder",
+      task: "t",
+      depth: 1,
+      status: "running",
+      capsule: { schemaVersion: 1, assignment: "a", goal: "g", relevantFiles: [], knownEvidence: [], constraints: [], requiredOutput: [] },
+      permissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+      allowedTools: [],
+      workspace: { id: "child-user-route", kind: "local" },
+      workspacePath: dir,
+      rosterAllowance: allowance,
+      budget: { maxModelTurns: 25, maxToolCalls: 50, maxContextTokens: 64_000, wallTimeMs: 60_000 },
+      telemetry: { wallTimeMs: 0, modelRequests: 0, inputTokens: 0, outputTokens: 0, toolCalls: 0, retryCount: 0, duplicateWorkCount: 0, providerFailures: 0 },
+      artifacts: [],
+      createdAt: now,
+      updatedAt: now,
+    } as never);
+    await first.upsertWorkItem({
+      kind: "agent_run_journal",
+      id: "agent-run-journal-child-user-route",
+      sessionId: "recovery-session",
+      runId: "child-user-route",
+      agentId: "coder",
+      role: "coder",
+      state: "active",
+      recoveryOutcome: "none",
+      messages: [{ role: "system", content: "s" }, { role: "user", content: "u" }],
+      turnCount: 1,
+      toolCallCount: 0,
+      writeCallCount: 0,
+      commandCallCount: 0,
+      createdAt: now,
+      updatedAt: now,
+    } as never);
+    // The ledger path is the only way a Shilling lands — exercise record() itself rather
+    // than the generic work-item primitive.
+    const shillingEntry = createShillingEntry({
+      id: "r55-fixture", userId: "alice", taskId: "child-user-route", role: "coder", requestId: "mt-1",
+      providerId: userRoute.providerId, modelId: userRoute.modelId, sourceClass: "USER_API",
+      rawInputUsage: 10, rawOutputUsage: 5, rawUsage: 15,
+      conversion: { rawUnit: "TOKENS", confidence: "UNKNOWN" },
+      managedSpendUsd: null, userProviderSpendUsd: 0.00002, costConfidence: "OBSERVED", recordedAt: now,
+    });
+    const firstLedger = new ShillingLedger(first);
+    expect(await firstLedger.record(shillingEntry)).toBe(true);
+    // A replayed identical record is a no-op, never a second row.
+    expect(await firstLedger.record(shillingEntry)).toBe(false);
+    await first.close();
+
+    // Phase 2 — a fresh process boundary: new persistence + manager over a capture runtime.
+    const restarted = createSessionPersistence({ dbPath });
+    await restarted.init();
+    try {
+      const captured: Array<Record<string, unknown>> = [];
+      const spyRuntime = {
+        executeAgentRun: async (req: Record<string, unknown>) => {
+          captured.push(req);
+          return {
+            status: "completed",
+            summary: "Resumed.",
+            findings: [],
+            evidence: [],
+            toolExecutions: [],
+            usage: { inputTokens: 0, outputTokens: 0, requestCount: 1, toolCount: 0 },
+            stopReason: "completed",
+            filesChanged: [],
+          };
+        },
+      };
+      const manager = createSubagentManager({
+        persistence: restarted,
+        agentRuntime: spyRuntime as never,
+        r1Enabled: true,
+      });
+
+      const report = await manager.recoverInterruptedWorkers();
+      expect(report.resumed).toBe(1);
+      expect(captured).toHaveLength(1);
+
+      // The recovered run must decide from the exact persisted allowance — the pinned
+      // user route is selected verbatim, never re-resolved into another source.
+      expect(captured[0]!.rosterAllowance).toEqual(allowance);
+      expect(captured[0]!.modelSelection).toEqual({ providerId: userRoute.providerId, modelId: userRoute.modelId });
+      expect(captured[0]!.resumeJournal).toBeDefined();
+
+      // After the restart the ledger still dedupes by entry identity — an identical replay
+      // is a no-op, a conflicting payload on the same id is a hard conflict, and no second
+      // row ever materializes.
+      const restartedLedger = new ShillingLedger(restarted);
+      expect(await restartedLedger.record(shillingEntry)).toBe(false);
+      await expect(restartedLedger.record({ ...shillingEntry, rawUsage: 16 })).rejects.toThrow("SHILLING_ENTRY_CONFLICT");
+      const shillings = await restarted.getWorkItemsByKind("shilling_entry");
+      expect(shillings).toHaveLength(1);
+      expect((shillings[0] as unknown as { entry: { id: string } }).entry.id).toBe("r55-fixture");
+    } finally {
+      await restarted.close();
+      try { await fs.rm(dir, { recursive: true, force: true }); } catch {}
     }
   });
 });

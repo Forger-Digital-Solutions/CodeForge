@@ -123,6 +123,7 @@ export interface SixteenBitPriceOverride {
 
 export interface SixteenBitRankOptions {
   priceOverrides?: Partial<Record<PaidAutoCanonicalModelId, SixteenBitPriceOverride>>;
+  models?: readonly PaidAutoModel[];
 }
 
 function attemptCostUsd(model: PaidAutoModel, task: SixteenBitTaskProfile, override?: SixteenBitPriceOverride): number | undefined {
@@ -142,7 +143,8 @@ export function rank16Bit(
   now: () => number = () => Date.now(),
   options: SixteenBitRankOptions = {},
 ): SixteenBitRanking {
-  const candidates: SixteenBitCandidate[] = PAID_AUTO_MODELS.map((model) => {
+  const models = options.models ?? PAID_AUTO_MODELS;
+  const candidates: SixteenBitCandidate[] = models.map((model) => {
     const ev = evidence[model.canonicalModelId];
     const priceOverride = options.priceOverrides?.[model.canonicalModelId];
     const reasonCodes: string[] = [];
@@ -202,7 +204,7 @@ export function rank16Bit(
   /** R48 admission tier: QUALIFIED/PROBATION are measured-admissible; NOT_TESTED/STALE/absent
    *  evidence is admissible only below them — an unmeasured route must never price-outrank a
    *  measured-qualified one. Legacy callers (no roleStatus anywhere) keep flat cost ranking. */
-  const anyRoleEvidence = PAID_AUTO_MODELS.some((m) => evidence[m.canonicalModelId]?.roleStatus !== undefined);
+  const anyRoleEvidence = models.some((m) => evidence[m.canonicalModelId]?.roleStatus !== undefined);
   const admissibilityTier = (c: SixteenBitCandidate): number => {
     const status = evidence[c.canonicalModelId]?.roleStatus;
     if (!anyRoleEvidence || status === undefined) return 0;

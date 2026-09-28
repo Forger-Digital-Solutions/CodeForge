@@ -410,6 +410,31 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(failoverTargets).not.toContain("provider-a/provider-a-model");
   });
 
+  it("keeps initial and failover Free routing within the selected roster", async () => {
+    const unselected = managedRoute("provider-a", { qualityScore: 99 });
+    const selected = managedRoute("provider-b", { qualityScore: 70 });
+    registerFleet("provider-a", "provider-a-model");
+    registerFleet("provider-b", "provider-b-model");
+    const fabric = makeFabric([unselected, selected], [poolFor(unselected), poolFor(selected)]);
+    const a = new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents());
+    const b = new ScriptedRouteProvider("provider-b", "provider-b-model", () => [
+      { type: "error", code: "PROVIDER_UNAVAILABLE", status: 503, message: "provider outage", retryable: false },
+    ]);
+    catalog.register(a);
+    catalog.register(b);
+    const runtime = makeRuntime("sess-roster-free", fabric);
+    const result = await runtime.executeAgentRun({
+      runId: "run-roster-free", agentId: "coder", role: "coder", goal: "Do the task",
+      workspaceId: "ws-roster-free", workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+      roleRouting: true,
+      rosterAllowance: { freeRoutes: [{ providerId: "provider-b", modelId: "provider-b-model" }], paidModelIds: [], userRoutes: [] },
+    });
+    expect(result.status).not.toBe("completed");
+    expect(b.callCount).toBeGreaterThan(0);
+    expect(a.callCount).toBe(0);
+  });
+
   it("a queued role-routed run fails closed with no provider call and no reservation", async () => {
     const route = managedRoute("provider-a", { windows: [quotaWindow({ limit: 1, remaining: 1 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
     registerFleet("provider-a", "provider-a-model");

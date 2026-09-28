@@ -89,3 +89,35 @@ export function maskCredentialForDisplay(value: string): string {
   if (value.length <= 8) return "••••";
   return `${value.slice(0, 3)}…${value.slice(-4)}`;
 }
+
+/**
+ * R55: deterministic storage keys for USER_API source credentials. The ref carries no
+ * credential material — it is a hash-derived pointer the server hands back verbatim; only
+ * the trusted main process maps it to a sealed value.
+ */
+export function isUserApiCredentialRef(key: string): boolean {
+  return /^user-api-credential:[a-f0-9]{24}$/.test(key);
+}
+
+export interface OwnerScopedCredentialResolver {
+  get(ownerUserId: string, credentialRef: string): string | undefined;
+}
+
+/**
+ * Owner-scoped credential resolution for the embedded server: a lookup succeeds only when
+ * the requested owner is exactly the connected free-scope identity on this host and the ref
+ * is a deterministic user-api credential key. Any other owner, or any other ref shape,
+ * resolves to undefined — the source stays listed but cannot execute.
+ */
+export function createOwnerScopedCredentialResolver(
+  connectedScopeId: () => string,
+  getCredential: (credentialRef: string) => string | undefined,
+): OwnerScopedCredentialResolver {
+  return {
+    get: (ownerUserId, credentialRef) => {
+      if (ownerUserId !== connectedScopeId()) return undefined;
+      if (!isUserApiCredentialRef(credentialRef)) return undefined;
+      return getCredential(credentialRef);
+    },
+  };
+}
