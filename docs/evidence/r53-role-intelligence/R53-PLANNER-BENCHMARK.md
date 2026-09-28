@@ -1,0 +1,5 @@
+# R53 Planner benchmark and topology value
+
+`R53-ROLE-BENCHMARK.json` reran the production role protocol against measured zero-price routes. Mistral Codestral 2508 passed both structured Planner cases and remained QUALIFIED. Groq GPT-OSS 20B received a provider interruption after Explorer, so Planner was inconclusive. Nemotron Super's compact stage was interrupted before Planner. These capacity events are not Planner failures and did not overwrite production receipts.
+
+`packages/server/src/adaptive-topology.ts` chooses no Planner for tiny and normal tasks, and includes a Planner with two Explorers for complex and fixed R1 tasks. Its deterministic capacity advice can reduce the parallel topology to normal. The live R53 missions in this round used the normal Explorer → Coder → Reviewer → ForgeVerify topology. They therefore show that a Planner is not necessary for the measured bug and checkout tasks; they do not measure whether Planner improves a complex task. The existing R24 paired topology tests exercise orchestration and capacity effects but do not establish live Planner correctness gain. No Planner removal or expansion follows from this evidence.

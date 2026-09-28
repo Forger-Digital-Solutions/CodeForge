@@ -1,0 +1,1160 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28T01:41:08.376Z",
+  "source": "production EightBitRouteHealthAuthority and createFreeFabric",
+  "simulatedTaskDecisions": 34,
+  "winnerFlips": 2,
+  "capacityQualityContamination": false,
+  "roleIsolation": true,
+  "expiredEvidenceSamples": 0,
+  "afterExpiry": "alpha",
+  "observations": [
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:00:31.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:01:02.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:01:33.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:02:04.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "role_failed",
+      "failureClass": "NON_CONVERGENCE",
+      "at": "2026-09-27T12:02:35.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "role_failed",
+      "failureClass": "NON_CONVERGENCE",
+      "at": "2026-09-27T12:03:06.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "role_failed",
+      "failureClass": "NON_CONVERGENCE",
+      "at": "2026-09-27T12:03:37.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "role_failed",
+      "failureClass": "NON_CONVERGENCE",
+      "at": "2026-09-27T12:04:08.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "role_failed",
+      "failureClass": "NON_CONVERGENCE",
+      "at": "2026-09-27T12:04:39.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "role_failed",
+      "failureClass": "NON_CONVERGENCE",
+      "at": "2026-09-27T12:05:10.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:06:11.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:06:42.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:07:13.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:07:44.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:08:15.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:08:46.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:09:17.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "CODER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:09:48.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "REVIEWER",
+      "outcome": "role_failed",
+      "failureClass": "NON_CONVERGENCE",
+      "at": "2026-09-27T12:10:19.000Z"
+    },
+    {
+      "route": "beta",
+      "role": "REVIEWER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:10:20.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "REVIEWER",
+      "outcome": "role_failed",
+      "failureClass": "NON_CONVERGENCE",
+      "at": "2026-09-27T12:10:51.000Z"
+    },
+    {
+      "route": "beta",
+      "role": "REVIEWER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:10:52.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "REVIEWER",
+      "outcome": "role_failed",
+      "failureClass": "NON_CONVERGENCE",
+      "at": "2026-09-27T12:11:23.000Z"
+    },
+    {
+      "route": "beta",
+      "role": "REVIEWER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:11:24.000Z"
+    },
+    {
+      "route": "alpha",
+      "role": "REVIEWER",
+      "outcome": "role_failed",
+      "failureClass": "NON_CONVERGENCE",
+      "at": "2026-09-27T12:11:55.000Z"
+    },
+    {
+      "route": "beta",
+      "role": "REVIEWER",
+      "outcome": "verified_complete",
+      "failureClass": null,
+      "at": "2026-09-27T12:11:56.000Z"
+    }
+  ],
+  "decisions": [
+    {
+      "label": "cold-start",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "strong-0",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 1,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 1,
+          "netEvidence": 0.992
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "strong-1",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 6,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 2,
+          "netEvidence": 1.975
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "strong-2",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 13,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 3,
+          "netEvidence": 2.949
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "strong-3",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 4,
+          "netEvidence": 3.915
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "degrade-0",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 5,
+          "netEvidence": 3.137
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "degrade-1",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 14,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 6,
+          "netEvidence": 2.365
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "degrade-2",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 10,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 7,
+          "netEvidence": 1.6
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "degrade-3",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 5,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 8,
+          "netEvidence": 0.841
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "degrade-4",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 1,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_NON_CONVERGENCE"
+          ],
+          "samples": 9,
+          "netEvidence": 0.089
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "degrade-5",
+      "role": "CODER",
+      "selected": "beta",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": -4,
+          "reasonCodes": [
+            "ROLE_RUNTIME_NEGATIVE",
+            "ROLE_RUNTIME_DOMINANT_NON_CONVERGENCE"
+          ],
+          "samples": 10,
+          "netEvidence": -0.657
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "capacity-denied",
+      "role": "CODER",
+      "selected": "beta",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": -4,
+          "reasonCodes": [
+            "ROLE_RUNTIME_NEGATIVE",
+            "ROLE_RUNTIME_DOMINANT_NON_CONVERGENCE"
+          ],
+          "samples": 10,
+          "netEvidence": -0.653
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": "alpha"
+    },
+    {
+      "label": "recover-0",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 2,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_NON_CONVERGENCE"
+          ],
+          "samples": 11,
+          "netEvidence": 0.343
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "recover-1",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 8,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 12,
+          "netEvidence": 1.33
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "recover-2",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 14,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 13,
+          "netEvidence": 2.309
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "recover-3",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 14,
+          "netEvidence": 3.279
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "recover-4",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 15,
+          "netEvidence": 4.241
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "recover-5",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 16,
+          "netEvidence": 5.194
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "recover-6",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 17,
+          "netEvidence": 6.138
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "recover-7",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 18,
+          "netEvidence": 7.074
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "role-mix-0",
+      "role": "REVIEWER",
+      "selected": "beta",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": -1,
+          "reasonCodes": [
+            "ROLE_RUNTIME_NEGATIVE",
+            "ROLE_RUNTIME_DOMINANT_NON_CONVERGENCE"
+          ],
+          "samples": 1,
+          "netEvidence": -0.744
+        },
+        "beta": {
+          "scoreAdjustment": 1,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 1,
+          "netEvidence": 0.992
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "role-mix-1",
+      "role": "REVIEWER",
+      "selected": "beta",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": -4,
+          "reasonCodes": [
+            "ROLE_RUNTIME_NEGATIVE",
+            "ROLE_RUNTIME_DOMINANT_NON_CONVERGENCE"
+          ],
+          "samples": 2,
+          "netEvidence": -1.48
+        },
+        "beta": {
+          "scoreAdjustment": 6,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 2,
+          "netEvidence": 1.974
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "role-mix-2",
+      "role": "REVIEWER",
+      "selected": "beta",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": -10,
+          "reasonCodes": [
+            "ROLE_RUNTIME_NEGATIVE",
+            "ROLE_RUNTIME_DOMINANT_NON_CONVERGENCE"
+          ],
+          "samples": 3,
+          "netEvidence": -2.211
+        },
+        "beta": {
+          "scoreAdjustment": 13,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 3,
+          "netEvidence": 2.948
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "role-mix-3",
+      "role": "REVIEWER",
+      "selected": "beta",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": -16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_NEGATIVE",
+            "ROLE_RUNTIME_DOMINANT_NON_CONVERGENCE"
+          ],
+          "samples": 4,
+          "netEvidence": -2.934
+        },
+        "beta": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 4,
+          "netEvidence": 3.913
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "coder-isolated",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 18,
+          "netEvidence": 6.744
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "new-route-0",
+      "role": "REVIEWER",
+      "selected": "beta",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": -16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_NEGATIVE",
+            "ROLE_RUNTIME_DOMINANT_NON_CONVERGENCE"
+          ],
+          "samples": 4,
+          "netEvidence": -2.884
+        },
+        "beta": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 4,
+          "netEvidence": 3.847
+        },
+        "gamma": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "new-route-1",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 18,
+          "netEvidence": 6.619
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        },
+        "gamma": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "new-route-2",
+      "role": "REVIEWER",
+      "selected": "beta",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": -16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_NEGATIVE",
+            "ROLE_RUNTIME_DOMINANT_NON_CONVERGENCE"
+          ],
+          "samples": 4,
+          "netEvidence": -2.834
+        },
+        "beta": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 4,
+          "netEvidence": 3.78
+        },
+        "gamma": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "new-route-3",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 18,
+          "netEvidence": 6.494
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        },
+        "gamma": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "new-route-4",
+      "role": "REVIEWER",
+      "selected": "beta",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": -16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_NEGATIVE",
+            "ROLE_RUNTIME_DOMINANT_NON_CONVERGENCE"
+          ],
+          "samples": 4,
+          "netEvidence": -2.784
+        },
+        "beta": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 4,
+          "netEvidence": 3.713
+        },
+        "gamma": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "new-route-5",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 18,
+          "netEvidence": 6.369
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        },
+        "gamma": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "new-route-6",
+      "role": "REVIEWER",
+      "selected": "beta",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": -16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_NEGATIVE",
+            "ROLE_RUNTIME_DOMINANT_NON_CONVERGENCE"
+          ],
+          "samples": 4,
+          "netEvidence": -2.734
+        },
+        "beta": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 4,
+          "netEvidence": 3.647
+        },
+        "gamma": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "new-route-7",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 16,
+          "reasonCodes": [
+            "ROLE_RUNTIME_POSITIVE",
+            "ROLE_RUNTIME_DOMINANT_VERIFIED_COMPLETE"
+          ],
+          "samples": 18,
+          "netEvidence": 6.244
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        },
+        "gamma": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    },
+    {
+      "label": "expired-evidence",
+      "role": "CODER",
+      "selected": "alpha",
+      "outcome": "ADMITTED",
+      "score": {
+        "alpha": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        },
+        "beta": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        },
+        "gamma": {
+          "scoreAdjustment": 0,
+          "reasonCodes": [
+            "ROLE_RUNTIME_EVIDENCE_ABSENT"
+          ],
+          "samples": 0,
+          "netEvidence": 0
+        }
+      },
+      "exhaustedRoute": null
+    }
+  ],
+  "caveat": "Deterministic route-decision replay; it does not invoke providers, role qualification, or ForgeVerify. Each task gets a fresh capacity ledger to isolate role ranking from concurrency."
+}

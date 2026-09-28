@@ -1,0 +1,55 @@
+
+ RUN  v5.0.1 G:/CodeForge
+
+stdout | packages/model-registry/test/live-catalog-snapshot.test.ts > Live Free-Model Catalog Snapshot (Integration)
+[catalog] Registered openrouter adapter
+
+stdout | packages/model-registry/test/live-catalog-snapshot.test.ts > Live Free-Model Catalog Snapshot (Integration) > should discover and verify free models from live providers
+[catalog] Testing with 1 provider(s)
+[catalog] Starting live free-model catalog refresh...
+
+stdout | packages/model-registry/test/live-catalog-snapshot.test.ts > Live Free-Model Catalog Snapshot (Integration) > should discover and verify free models from live providers
+[catalog] Refresh complete:
+  - Registry: live (1804 models)
+  - Discovered: 1 provider(s)
+  - Verified free (zero-unit): 21
+  - Verified free (allowance): 0
+  - Registered in ForgeZero: 21
+  - Errors: 0
+
+=== VERIFIED_FREE Catalog Summary ===
+Total models in catalog: 21
+Verified free models: 21
+
+Verified-free models:
+  - openrouter/stealth/space-bunny-alpha [routed] Space Bunny Alpha
+  - openrouter/inclusionai/ling-3.0-flash-sante:free [routed] Ling 3.0 Flash Sante (free)
+  - openrouter/inclusionai/ling-3.0-flash-fin:free [routed] Ling 3.0 Flash Fin (free)
+  - openrouter/qwen/qwen3.8-27b:free [routed] Qwen3.8 27B (free)
+  - openrouter/dots-studio/dots-3-note-preview:free [routed] Dots3-Note Preview (free)
+  - openrouter/liquid/lfm-2.5-2.6b:free [routed] LFM2.5-2.6B (free)
+  - openrouter/nvidia/nemotron-3.5-lightning:free [routed] Nemotron 3.5 Lightning (free)
+  - openrouter/thinkingmachines/inkling-small:free [routed] Inkling Small (free)
+  - openrouter/poolside/laguna-s-2.1:free [routed] Laguna S 2.1 (free)
+  - openrouter/thinkingmachines/inkling:free [routed] Inkling (free)
+  - openrouter/poolside/laguna-xs-2.1:free [routed] Laguna XS 2.1 (free)
+  - openrouter/cohere/north-mini-code:free [routed] North Mini Code (free)
+  - openrouter/nvidia/nemotron-3.5-content-safety:free [routed] Nemotron 3.5 Content Safety (free)
+  - openrouter/nvidia/nemotron-3-ultra-550b-a55b:free [routed] Nemotron 3 Ultra (free)
+  - openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free [routed] Nemotron 3 Nano Omni (free)
+  - openrouter/google/gemma-4-26b-a4b-it:free [routed] Gemma 4 26B A4B  (free)
+  - openrouter/google/gemma-4-31b-it:free [routed] Gemma 4 31B (free)
+  - openrouter/google/lyria-3-pro-preview [routed] Lyria 3 Pro Preview
+  - openrouter/google/lyria-3-clip-preview [routed] Lyria 3 Clip Preview
+  - openrouter/nvidia/nemotron-3-super-120b-a12b:free [routed] Nemotron 3 Super (free)
+  - openrouter/openrouter/free [routed] Free Models Router
+
+·····································································································································································································································································································································································································································································································································stdout | packages/eight-bit/test/policy-metadata.test.ts > 8-Bit provider policy metadata > reports policy metadata without treating it as acceptance
+[qualification] Qualifying google/gemini-2.5-flash for roles:
+
+···--·········
+
+ Test Files  47 passed | 1 skipped (48)
+      Tests  529 passed | 2 skipped (531)
+   Start at  06:17:03
+   Duration  50.14s (tests 77%, import 13%, transform 9%, setup 1%)

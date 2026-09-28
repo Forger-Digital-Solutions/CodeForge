@@ -1,0 +1,746 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28T01:07:40.461Z",
+  "sourceInventory": "2026-09-28T00:47:25.928Z",
+  "rows": [
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": "INCONCLUSIVE_PROVIDER",
+      "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "qualificationState": "NOT_QUALIFIED",
+      "requests": 3,
+      "wallTimeMs": 9609,
+      "transient": true,
+      "roles": {
+        "EXPLORER": {
+          "status": "NOT_TESTED",
+          "passed": 0,
+          "failed": 0,
+          "inconclusive": 0,
+          "cases": []
+        },
+        "PLANNER": {
+          "status": "NOT_TESTED",
+          "passed": 0,
+          "failed": 0,
+          "inconclusive": 0,
+          "cases": []
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "passed": 2,
+          "failed": 0,
+          "inconclusive": 0,
+          "cases": [
+            {
+              "caseId": "compact.tool_call",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 911,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "toolCalls": [
+                  "read_file"
+                ],
+                "path": "src/calc.ts"
+              }
+            },
+            {
+              "caseId": "compact.edit",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 8090,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "calls": 2,
+                "path": "src/calc.ts",
+                "oldTextMatches": true,
+                "oldTextHasBug": true,
+                "newTextOk": true,
+                "turns": [
+                  {
+                    "toolCalls": [
+                      "read_file"
+                    ],
+                    "finishReason": "tool_calls",
+                    "textLength": 0,
+                    "outputTokens": 53
+                  },
+                  {
+                    "toolCalls": [
+                      "edit_file"
+                    ],
+                    "finishReason": "tool_calls",
+                    "textLength": 0,
+                    "outputTokens": 201
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "REVIEWER": {
+          "status": "NOT_TESTED",
+          "passed": 0,
+          "failed": 0,
+          "inconclusive": 0,
+          "cases": []
+        }
+      }
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "status": "EXECUTED",
+      "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+      "qualificationState": "QUALIFIED",
+      "requests": 29,
+      "wallTimeMs": 12726,
+      "transient": false,
+      "roles": {
+        "EXPLORER": {
+          "status": "PROBATION",
+          "passed": 1,
+          "failed": 1,
+          "inconclusive": 0,
+          "cases": [
+            {
+              "caseId": "explorer.route_execution",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 1931,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "modelCalls": 4,
+                "filesRead": [
+                  "src/router.ts",
+                  "src/provider/client.ts"
+                ],
+                "relevantFilesRead": [
+                  "src/router.ts",
+                  "src/provider/client.ts"
+                ],
+                "searches": 0,
+                "totalToolCalls": 3,
+                "validCalls": 3,
+                "validToolCallRate": 1,
+                "readPrecision": 1,
+                "hallucinatedPaths": [],
+                "mutationAttempts": 0,
+                "reportedFiles": [
+                  "src/router.ts",
+                  "src/provider/client.ts"
+                ],
+                "answerFiles": [
+                  "src/router.ts",
+                  "src/provider/client.ts"
+                ],
+                "recall": 1,
+                "reasoningRetries": 0,
+                "reasoningTokens": 62
+              }
+            },
+            {
+              "caseId": "explorer.reservation_release",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 2335,
+              "retries": 1,
+              "error": null,
+              "details": {
+                "modelCalls": 6,
+                "filesRead": [
+                  "src/fabric/admission.ts",
+                  "src/fabric/ledger.ts"
+                ],
+                "relevantFilesRead": [
+                  "src/fabric/admission.ts",
+                  "src/fabric/ledger.ts"
+                ],
+                "searches": 3,
+                "totalToolCalls": 6,
+                "validCalls": 6,
+                "validToolCallRate": 1,
+                "readPrecision": 1,
+                "hallucinatedPaths": [],
+                "mutationAttempts": 0,
+                "reportedFiles": [],
+                "answerFiles": [
+                  "src/fabric/admission.ts",
+                  "src/fabric/ledger.ts"
+                ],
+                "recall": 0,
+                "reasoningRetries": 0,
+                "reasoningTokens": 120,
+                "firstAttempt": {
+                  "modelCalls": 6,
+                  "filesRead": [
+                    "src/fabric/admission.ts"
+                  ],
+                  "relevantFilesRead": [
+                    "src/fabric/admission.ts"
+                  ],
+                  "searches": 4,
+                  "totalToolCalls": 6,
+                  "validCalls": 6,
+                  "validToolCallRate": 1,
+                  "readPrecision": 1,
+                  "hallucinatedPaths": [],
+                  "mutationAttempts": 0,
+                  "reportedFiles": [],
+                  "answerFiles": [
+                    "src/fabric/admission.ts",
+                    "src/fabric/ledger.ts"
+                  ],
+                  "recall": 0,
+                  "reasoningRetries": 0,
+                  "reasoningTokens": 123
+                }
+              }
+            }
+          ]
+        },
+        "PLANNER": {
+          "status": "NOT_TESTED",
+          "passed": 0,
+          "failed": 0,
+          "inconclusive": 2,
+          "cases": [
+            {
+              "caseId": "planner.release_callsite",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 545,
+              "retries": 1,
+              "error": "RATE_LIMITED_429",
+              "details": {
+                "firstAttempt": {
+                  "protocol": "task_graph_v1",
+                  "tasks": 2,
+                  "roles": [
+                    "coder",
+                    "reviewer"
+                  ],
+                  "requiredRolesPresent": true,
+                  "dependencyOrderValid": true,
+                  "inventedPaths": [
+                    "src/fabric/admission.js"
+                  ],
+                  "verificationStepPresent": true,
+                  "scopeWithinBudget": true,
+                  "schemaValid": true,
+                  "reasoningRetried": false,
+                  "reasoningTokens": 869
+                }
+              }
+            },
+            {
+              "caseId": "planner.schema",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 413,
+              "retries": 0,
+              "error": "RATE_LIMITED_429"
+            }
+          ]
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "passed": 2,
+          "failed": 0,
+          "inconclusive": 0,
+          "cases": [
+            {
+              "caseId": "compact.tool_call",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 295,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "toolCalls": [
+                  "read_file"
+                ],
+                "path": "src/calc.ts"
+              }
+            },
+            {
+              "caseId": "compact.edit",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 935,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "calls": 2,
+                "path": "src/calc.ts",
+                "oldTextMatches": true,
+                "oldTextHasBug": true,
+                "newTextOk": true,
+                "turns": [
+                  {
+                    "toolCalls": [
+                      "read_file"
+                    ],
+                    "finishReason": "tool_calls",
+                    "textLength": 0,
+                    "outputTokens": 36
+                  },
+                  {
+                    "toolCalls": [
+                      "edit_file"
+                    ],
+                    "finishReason": "tool_calls",
+                    "textLength": 0,
+                    "outputTokens": 73
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "REVIEWER": {
+          "status": "NOT_TESTED",
+          "passed": 0,
+          "failed": 0,
+          "inconclusive": 6,
+          "cases": [
+            {
+              "caseId": "reviewer.one_bug",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 336,
+              "retries": 0,
+              "error": "RATE_LIMITED_429"
+            },
+            {
+              "caseId": "reviewer.clean",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 65,
+              "retries": 0,
+              "error": "RATE_LIMITED_429"
+            },
+            {
+              "caseId": "reviewer.clean_comment",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 537,
+              "retries": 0,
+              "error": "RATE_LIMITED_429"
+            },
+            {
+              "caseId": "reviewer.swallowed_failure",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 70,
+              "retries": 1,
+              "error": "RATE_LIMITED_429",
+              "details": {
+                "firstAttempt": {
+                  "schemaValid": true,
+                  "verdict": "reject",
+                  "expectedApproved": false,
+                  "verdictCorrect": true,
+                  "findingLocalized": false,
+                  "findings": [
+                    "The added function `recordFailure` calls `sendTelemetry(id)` but `sendTelemetry` is not imported or defined in this file, which will cause a compile error."
+                  ],
+                  "reasoningRetried": false,
+                  "reasoningTokens": 423
+                }
+              }
+            },
+            {
+              "caseId": "reviewer.reservation_leak",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 310,
+              "retries": 0,
+              "error": "RATE_LIMITED_429"
+            },
+            {
+              "caseId": "reviewer.test_cheat",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 65,
+              "retries": 0,
+              "error": "RATE_LIMITED_429"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-2508",
+      "status": "EXECUTED",
+      "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+      "qualificationState": "QUALIFIED",
+      "requests": 34,
+      "wallTimeMs": 20624,
+      "transient": false,
+      "roles": {
+        "EXPLORER": {
+          "status": "NOT_QUALIFIED",
+          "passed": 0,
+          "failed": 2,
+          "inconclusive": 0,
+          "cases": [
+            {
+              "caseId": "explorer.route_execution",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 3055,
+              "retries": 1,
+              "error": null,
+              "details": {
+                "modelCalls": 6,
+                "filesRead": [],
+                "relevantFilesRead": [],
+                "searches": 6,
+                "totalToolCalls": 6,
+                "validCalls": 6,
+                "validToolCallRate": 1,
+                "readPrecision": 0,
+                "hallucinatedPaths": [],
+                "mutationAttempts": 0,
+                "reportedFiles": [],
+                "answerFiles": [
+                  "src/router.ts",
+                  "src/provider/client.ts"
+                ],
+                "recall": 0,
+                "reasoningRetries": 0,
+                "firstAttempt": {
+                  "modelCalls": 6,
+                  "filesRead": [],
+                  "relevantFilesRead": [],
+                  "searches": 5,
+                  "totalToolCalls": 5,
+                  "validCalls": 5,
+                  "validToolCallRate": 1,
+                  "readPrecision": 0,
+                  "hallucinatedPaths": [],
+                  "mutationAttempts": 0,
+                  "reportedFiles": [],
+                  "answerFiles": [
+                    "src/router.ts",
+                    "src/provider/client.ts"
+                  ],
+                  "recall": 0,
+                  "reasoningRetries": 0
+                }
+              }
+            },
+            {
+              "caseId": "explorer.reservation_release",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 1339,
+              "retries": 1,
+              "error": null,
+              "details": {
+                "modelCalls": 3,
+                "filesRead": [],
+                "relevantFilesRead": [],
+                "searches": 1,
+                "totalToolCalls": 1,
+                "validCalls": 1,
+                "validToolCallRate": 1,
+                "readPrecision": 0,
+                "hallucinatedPaths": [],
+                "mutationAttempts": 0,
+                "reportedFiles": [],
+                "answerFiles": [
+                  "src/fabric/admission.ts",
+                  "src/fabric/ledger.ts"
+                ],
+                "recall": 0,
+                "reasoningRetries": 0,
+                "firstAttempt": {
+                  "modelCalls": 6,
+                  "filesRead": [],
+                  "relevantFilesRead": [],
+                  "searches": 6,
+                  "totalToolCalls": 6,
+                  "validCalls": 6,
+                  "validToolCallRate": 1,
+                  "readPrecision": 0,
+                  "hallucinatedPaths": [],
+                  "mutationAttempts": 0,
+                  "reportedFiles": [],
+                  "answerFiles": [
+                    "src/fabric/admission.ts",
+                    "src/fabric/ledger.ts"
+                  ],
+                  "recall": 0,
+                  "reasoningRetries": 0
+                }
+              }
+            }
+          ]
+        },
+        "PLANNER": {
+          "status": "QUALIFIED",
+          "passed": 2,
+          "failed": 0,
+          "inconclusive": 0,
+          "cases": [
+            {
+              "caseId": "planner.release_callsite",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 1271,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "protocol": "task_graph_v1",
+                "tasks": 2,
+                "roles": [
+                  "coder",
+                  "reviewer"
+                ],
+                "requiredRolesPresent": true,
+                "dependencyOrderValid": true,
+                "inventedPaths": [],
+                "verificationStepPresent": true,
+                "scopeWithinBudget": true,
+                "schemaValid": true,
+                "reasoningRetried": false
+              }
+            },
+            {
+              "caseId": "planner.schema",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 1320,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "protocol": "task_graph_v1",
+                "tasks": 2,
+                "roles": [
+                  "coder",
+                  "reviewer"
+                ],
+                "requiredRolesPresent": true,
+                "dependencyOrderValid": true,
+                "inventedPaths": [],
+                "verificationStepPresent": true,
+                "scopeWithinBudget": true,
+                "schemaValid": true,
+                "reasoningRetried": false
+              }
+            }
+          ]
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "passed": 2,
+          "failed": 0,
+          "inconclusive": 0,
+          "cases": [
+            {
+              "caseId": "compact.tool_call",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 451,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "toolCalls": [
+                  "read_file"
+                ],
+                "path": "src/calc.ts"
+              }
+            },
+            {
+              "caseId": "compact.edit",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 1464,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "calls": 2,
+                "path": "src/calc.ts",
+                "oldTextMatches": true,
+                "oldTextHasBug": true,
+                "newTextOk": true,
+                "turns": [
+                  {
+                    "toolCalls": [
+                      "read_file"
+                    ],
+                    "finishReason": "tool_calls",
+                    "textLength": 0,
+                    "outputTokens": 14
+                  },
+                  {
+                    "toolCalls": [
+                      "edit_file"
+                    ],
+                    "finishReason": "tool_calls",
+                    "textLength": 0,
+                    "outputTokens": 69
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "REVIEWER": {
+          "status": "PROBATION",
+          "passed": 4,
+          "failed": 2,
+          "inconclusive": 0,
+          "cases": [
+            {
+              "caseId": "reviewer.one_bug",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 770,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "schemaValid": true,
+                "verdict": "reject",
+                "expectedApproved": false,
+                "verdictCorrect": true,
+                "findingLocalized": true,
+                "findings": [
+                  "The function does not correctly implement the intent. It should return the sum of its arguments, but it is currently returning the product."
+                ],
+                "reasoningRetried": false
+              }
+            },
+            {
+              "caseId": "reviewer.clean",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 610,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "schemaValid": true,
+                "verdict": "approve",
+                "expectedApproved": true,
+                "verdictCorrect": true,
+                "findingLocalized": true,
+                "findings": [
+                  "The diff correctly renames the internal helper function 'log' to 'writeLog' without changing its behavior."
+                ],
+                "reasoningRetried": false
+              }
+            },
+            {
+              "caseId": "reviewer.clean_comment",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 642,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "schemaValid": true,
+                "verdict": "approve",
+                "expectedApproved": true,
+                "verdictCorrect": true,
+                "findingLocalized": true,
+                "findings": [
+                  "The diff correctly implements the intent by adding a comment about the quota window semantics without changing any behavior."
+                ],
+                "reasoningRetried": false
+              }
+            },
+            {
+              "caseId": "reviewer.swallowed_failure",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 594,
+              "retries": 1,
+              "error": null,
+              "details": {
+                "schemaValid": true,
+                "verdict": "approve",
+                "expectedApproved": false,
+                "verdictCorrect": false,
+                "findingLocalized": false,
+                "findings": [
+                  "The diff correctly implements the intent of recording provider failures."
+                ],
+                "reasoningRetried": false,
+                "firstAttempt": {
+                  "schemaValid": true,
+                  "verdict": "approve",
+                  "expectedApproved": false,
+                  "verdictCorrect": false,
+                  "findingLocalized": false,
+                  "findings": [
+                    "The diff correctly implements the intent of recording provider failures."
+                  ],
+                  "reasoningRetried": false
+                }
+              }
+            },
+            {
+              "caseId": "reviewer.reservation_leak",
+              "passed": true,
+              "hardFailure": false,
+              "latencyMs": 796,
+              "retries": 0,
+              "error": null,
+              "details": {
+                "schemaValid": true,
+                "verdict": "reject",
+                "expectedApproved": false,
+                "verdictCorrect": true,
+                "findingLocalized": true,
+                "findings": [
+                  "The fastPath function does not return anything, but the intent suggests it should return a value or perform an action after the early return."
+                ],
+                "reasoningRetried": false
+              }
+            },
+            {
+              "caseId": "reviewer.test_cheat",
+              "passed": false,
+              "hardFailure": false,
+              "latencyMs": 913,
+              "retries": 1,
+              "error": null,
+              "details": {
+                "schemaValid": true,
+                "verdict": "approve",
+                "expectedApproved": false,
+                "verdictCorrect": false,
+                "findingLocalized": false,
+                "findings": [
+                  "The diff correctly implements the intent of making the flaky router test pass by changing the test to a non-flaky version."
+                ],
+                "reasoningRetried": false,
+                "firstAttempt": {
+                  "schemaValid": true,
+                  "verdict": "approve",
+                  "expectedApproved": false,
+                  "verdictCorrect": false,
+                  "findingLocalized": false,
+                  "findings": [
+                    "The diff correctly implements the intent of making the flaky router test pass by changing the test to a non-flaky version."
+                  ],
+                  "reasoningRetried": false
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "paidSpendUsd": 0,
+  "note": "Current live production qualification probes over measured eligible managed-free models. Results are benchmark evidence; this script does not mutate persisted qualification receipts."
+}

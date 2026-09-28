@@ -1,0 +1,1446 @@
+
+ RUN  v5.0.1 G:/CodeForge
+
+·························································stdout | packages/repo-intelligence/test/fg2-efficiency.test.ts > FG-2 efficiency scenarios > proves warm reuse, localized invalidation, cross-session survival, and cross-worktree reuse with measured metrics
+FG2-EFFICIENCY {"coldFilesParsed":81,"coldDurationMs":1832,"warmReparseAvoidedMs":904.9483,"warmNoOpMs":927,"singleFileEditMs":333,"singleFileEditParsed":1,"graphRevisions":{"cold":2,"afterImplementationEdit":3,"afterImportEdit":4}}
+
+····stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > blocks a run whose weak verification passed but the goal review found the goal unmet
+CodeForge server running at http://localhost:51602
+
+··stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > repairs an unmet goal once, then completes when the re-review confirms
+CodeForge server running at http://localhost:51610
+
+·stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > blocks completion when the reviewer produces no decisive verdict, even after a retry
+CodeForge server running at http://localhost:51615
+
+··stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > continues useful edits beyond the old 32-request envelope and still requires review
+CodeForge server running at http://localhost:51620
+
+···stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > still reaches the review when implementation exhausts the primary inference partition
+CodeForge server running at http://localhost:51625
+
+····stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > blocks when the reserved review budget runs out before a verdict
+CodeForge server running at http://localhost:51630
+
+·stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > blocks when every reviewer verdict is explicitly indeterminate
+CodeForge server running at http://localhost:51635
+
+···stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > blocks when the review response is empty
+CodeForge server running at http://localhost:51640
+
+··stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > completes on a decisive verdict even when the primary partition is spent
+CodeForge server running at http://localhost:51646
+
+··stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > blocks on a stated-contract violation the semantic review judged met, then completes after repair
+CodeForge server running at http://localhost:51652
+
+··stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > stays blocked when a stated-contract violation survives every repair attempt
+CodeForge server running at http://localhost:51657
+
+··stdout | packages/repo-intelligence/test/fg2-efficiency.test.ts > FG-2 large-repository incremental certification > keeps a tiny edit cheap in a 1,000,000+ line repository with bounded graph queries
+FG2-LARGE-REPO {"lines":1000000,"coldIndexMs":51799,"warmNoOpMs":6045,"singleFileIncrementalParsed":1,"callGraphMs":2,"findCallersMs":3,"boundedTraversalMs":4,"indexCompleteness":"PARTIAL","completenessReasons":["fallback_parse_files:1"]}
+
+stdout | packages/repo-intelligence/test/fg2-efficiency.test.ts > FG-2 large-repository incremental certification > keeps a tiny edit cheap in a 1,000,000+ line repository with bounded graph queries
+FG3-LARGE-REPO-CONTEXT {"repositoryLines":1000000,"repositoryFiles":1001,"repositoryIndexBytes":50610176,"localizedTaskLevel":"L2","localizedTaskSelectedFiles":6,"localizedTaskPromptBytes":38038,"localizedTaskTokenEstimate":15348,"localizedTaskTokenClassification":"estimated","planLatencyMs":948,"byteReductionRatio":1330.5}
+
+·······································································stdout | packages/server/test/plan-gate-authority.test.ts > Plan gate — workflow transitions are not permission boundaries > authority endpoint validates, persists, and exposes the lease on the session
+CodeForge server running at http://localhost:60765
+
+stdout | packages/server/test/plan-gate-authority.test.ts > Plan gate — workflow transitions are not permission boundaries > Plan: Auto runs an approval-required plan to completion with zero permission cards
+CodeForge server running at http://localhost:60773
+
+········stdout | packages/server/test/plan-gate-authority.test.ts > Plan gate — workflow transitions are not permission boundaries > Plan: Review First surfaces exactly one execute_plan decision and proceeds after it
+CodeForge server running at http://localhost:60784
+
+·······stdout | packages/server/test/plan-gate-authority.test.ts > Plan gate — workflow transitions are not permission boundaries > repair continuation inherits the session lease — no second plan card under Auto
+CodeForge server running at http://localhost:60793
+
+············stdout | packages/server/test/mission-api.test.ts > CF-09 mission HTTP surface > creates, pauses, inspects, resumes, and completes a mission over HTTP
+CodeForge server running at http://localhost:60813
+
+·····x·······························stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > rejects empty message
+CodeForge server running at http://localhost:60831
+
+·stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > rejects message too long (>10000)
+CodeForge server running at http://localhost:60836
+
+···stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > rejects invalid workspace path (nonexistent)
+CodeForge server running at http://localhost:60841
+
+stdout | packages/server/test/mission-api.test.ts > CF-09 mission HTTP surface > records trusted steering and cancels a running mission
+CodeForge server running at http://localhost:60844
+
+·stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > rejects concurrent workflows per session (max 1)
+CodeForge server running at http://localhost:60849
+
+··stdout | packages/server/test/plan-execution-e2e.test.ts > autonomous plan execution — approve / reject / cancel > approve: one approval per side effect, edit applied once, verification passes, evidence and checkpoint recorded
+CodeForge server running at http://localhost:60858
+
+·stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > enforces the global workflow cap and releases every slot after cancellation
+CodeForge server running at http://localhost:60862
+
+·····stdout | packages/server/test/plan-execution-e2e.test.ts > autonomous plan execution — approve / reject / cancel > applies an approved edit but refuses to claim success when there is nothing to verify
+CodeForge server running at http://localhost:60870
+
+············stdout | packages/server/test/plan-execution-e2e.test.ts > autonomous plan execution — approve / reject / cancel > reject: the file is untouched and the workflow does not claim success
+CodeForge server running at http://localhost:60881
+
+········stdout | packages/server/test/plan-execution-e2e.test.ts > autonomous plan execution — approve / reject / cancel > cancel: a pending approval dies with its workflow and a late approve executes nothing
+CodeForge server running at http://localhost:60924
+
+stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > redacts secrets in persisted turn and evidence
+CodeForge server running at http://localhost:60930
+
+·················stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > handles workflow cancel and surfaces cancelled phase
+CodeForge server running at http://localhost:60940
+
+·······stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > lists workflows and includes task metadata
+CodeForge server running at http://localhost:60947
+
+·································stdout | packages/repo-intelligence/test/fg2-certification.test.ts > FG-2 symbol graph, provenance, and ambiguity > reports callers with provenance and bounded scans
+DEBUG-CALLERS [{"callerPath":"src/core.ts","callerSymbolId":"fd9371b8f8c09499a37f5bc36030ef47c397f940e1c7e4ffc5fafadca9d40f45","line":4,"targetName":"coreHelper","provenance":"syntax-resolved","ambiguous":false},{"callerPath":"src/app.ts","callerSymbolId":"630228fd29415fd9faa23d375e17fe795e46cad3faedad8faf73d206debd1622","line":4,"targetName":"coreHelper","provenance":"import-resolved","ambiguous":false},{"callerPath":"src/dynamic.ts","callerSymbolId":"f460ba03672f640d55ccba57b5e7336f9d10661508811bf2c3b6e875f13837bb","line":16,"targetName":"coreHelper","provenance":"import-resolved","ambiguous":false},{"callerPath":"src/barrel-consumer.ts","callerSymbolId":"5af942d86aeee3718088db2b18cfcdfee9c0f0e76fd9bf90a324274f434e7a65","line":4,"targetName":"coreHelper","provenance":"import-resolved","ambiguous":false}] [{"symbolId":"e39ac0af17c544285cbb9a699639e4961f483b61acbe45edfe0c0c5db5fc73a7","path":"src/core.ts","name":"coreHelper"}] { level: 'COMPLETE', reasons: [] }
+
+······x····stdout | packages/server/test/workflow-agent-integration.test.ts > Workflow ↔ AgentRuntime Real Integration > workflow Implement phase delegates to AgentRuntime with ForgeZero-verified free model (real execution)
+CodeForge server running at http://localhost:63799
+
+··········stdout | packages/server/test/workflow-agent-integration.test.ts > Workflow ↔ AgentRuntime Real Integration > explicit Agent mode via /api/send is routed to real autonomous execution
+CodeForge server running at http://localhost:63811
+
+···x····stdout | packages/server/test/workflow-agent-integration.test.ts > Workflow ↔ AgentRuntime Real Integration > workflow repair loop uses AgentRuntime after verification failure
+CodeForge server running at http://localhost:63825
+
+·············stdout | packages/server/test/workflow.test.ts > Workflow Server Integration > runs workflow via HTTP and completes disciplined steps
+CodeForge server running at http://localhost:63835
+
+····stdout | packages/server/test/workflow.test.ts > Workflow Server Integration > workflow approval flow blocks until resolved
+CodeForge server running at http://localhost:63842
+
+·············stdout | packages/server/test/workflow.test.ts > Workflow Server Integration > workflow cancel works
+CodeForge server running at http://localhost:63854
+
+···········stdout | packages/server/test/workflow.test.ts > Workflow Server Integration > lists workflows
+CodeForge server running at http://localhost:63861
+
+······stdout | packages/server/test/workflow.test.ts > R9 regression — Stop cancels the workflow during engine phases > turn-level cancel route cancels an active workflow while it is verifying (no agent turn running)
+CodeForge server running at http://localhost:55307
+
+······················································stdout | packages/server/test/workflow-loop-recovery.test.ts > workflow recovery after a post-edit tool loop > continues once after a real edit, then requires verification and the completion gate
+CodeForge server running at http://localhost:55319
+
+stdout | packages/server/test/r24-topology-efficiency-benchmark.test.ts > R24 paired benchmark — fixed_r1 baseline vs adaptive topology under constrained capacity > the adaptive arm reaches the same verified completion spending fewer provider calls — every spawned agent held a real fabric reservation
+R24_PAIRED_BENCHMARK {"armA":{"topology":"fixed_r1","providerCalls":8,"tokens":9680,"childrenSpawned":4,"outcome":"completed"},"armB":{"topology":"normal","providerCalls":4,"tokens":4940,"childrenSpawned":2,"outcome":"completed"},"providerCallRatio":2,"tokenRatio":1.959514170040486}
+
+································stdout | packages/server/test/workflow-agent-budget.test.ts > workflow agent working budget > cancels the agent turn when the budget is exhausted and fails the task truthfully
+CodeForge server running at http://localhost:55327
+
+····stdout | packages/server/test/workflow-loop-recovery.test.ts > workflow recovery after a post-edit tool loop > does not continue a loop that changed no file
+CodeForge server running at http://localhost:55342
+
+········stdout | packages/server/test/workflow-loop-recovery.test.ts > workflow recovery after a post-edit tool loop > stops after one continuation when the model loops again
+CodeForge server running at http://localhost:55350
+
+··stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests
+CodeForge server running at http://localhost:55355
+
+stderr | tests/direct-byok-cloud-outage.test.ts > Direct / BYOK independence during CodeForge Cloud outage > a running Cloud whose DATABASE is unavailable rejects Hosted, invokes no provider, and leaves Direct/BYOK working
+{"ts":"2026-09-28T01:36:21.406Z","level":"warn","logger":"cloud-api","msg":"retention sweep failed","error":{"name":"Error","message":"Database connection lost"}}
+
+·stdout | tests/direct-byok-cloud-outage.test.ts > Direct / BYOK independence during CodeForge Cloud outage > a running Cloud whose DATABASE is unavailable rejects Hosted, invokes no provider, and leaves Direct/BYOK working
+{"ts":"2026-09-28T01:36:21.466Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Invalid JWT token format\"},\"occurredAt\":\"2026-09-28T01:36:21.466Z\"}"}
+
+··stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should successfully pause a running turn
+Turn status: running
+Pause URL: /api/sessions/pause-sess/turns/d7004ff1-84ba-449f-95c6-4b0c24c9cb53/pause
+
+stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should successfully pause a running turn
+Pause response: { ok: true, status: 200, body: { ok: true } }
+Pause error message: undefined
+Pause error: undefined
+
+·stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should successfully resume a paused turn
+Turn status before pause: running
+
+stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should successfully resume a paused turn
+Pause result: { ok: true, status: 200, body: { ok: true } }
+Pause error: undefined
+
+stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should successfully resume a paused turn
+Resume result: { ok: true, status: 200, body: { ok: true } }
+Resume error: undefined
+
+··stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should successfully cancel a running turn
+Turn status before cancel: running
+
+stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should successfully cancel a running turn
+Cancel result: { ok: true, status: 200, body: { ok: true } }
+Cancel error: undefined
+
+··stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should fail when calling resume while turn is running (not paused)
+Turn status: running
+
+stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should fail when calling resume while turn is running (not paused)
+Resume-Fail result: {
+  ok: false,
+  status: 400,
+  body: {
+    error: 'Turn 33fa8540-35ca-4aee-9117-4fe6ca4fce89 is not paused, recovering, or waiting for free capacity'
+  }
+}
+Resume-Fail error: Turn 33fa8540-35ca-4aee-9117-4fe6ca4fce89 is not paused, recovering, or waiting for free capacity
+
+··stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should complete a full run-pause-resume-cancel cycle
+Full-Cycle Turn status: running
+
+stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should complete a full run-pause-resume-cancel cycle
+Pause-1 result: { ok: true, status: 200, body: { ok: true } }
+Pause-1 error: undefined
+
+··stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should complete a full run-pause-resume-cancel cycle
+Resume result: { ok: true, status: 200, body: { ok: true } }
+Resume error: undefined
+
+stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should complete a full run-pause-resume-cancel cycle
+Pause-2 result: { ok: true, status: 200, body: { ok: true } }
+Pause-2 error: undefined
+
+·stdout | packages/integration-tests/test/pause-resume-cancel.test.ts > Stop/Pause/Resume Integration Tests > should complete a full run-pause-resume-cancel cycle
+Cancel result: { ok: true, status: 200, body: { ok: true } }
+Cancel error: undefined
+
+···············x··························································stdout | packages/model-registry/test/live-catalog-snapshot.test.ts > Live Free-Model Catalog Snapshot (Integration)
+[catalog] Registered openrouter adapter
+
+stdout | packages/model-registry/test/live-catalog-snapshot.test.ts > Live Free-Model Catalog Snapshot (Integration) > should discover and verify free models from live providers
+[catalog] Testing with 1 provider(s)
+[catalog] Starting live free-model catalog refresh...
+
+stdout | packages/model-registry/test/live-catalog-snapshot.test.ts > Live Free-Model Catalog Snapshot (Integration) > should discover and verify free models from live providers
+[catalog] Refresh complete:
+  - Registry: live (1799 models)
+  - Discovered: 1 provider(s)
+  - Verified free (zero-unit): 21
+  - Verified free (allowance): 0
+  - Registered in ForgeZero: 21
+  - Errors: 0
+
+=== VERIFIED_FREE Catalog Summary ===
+Total models in catalog: 21
+Verified free models: 21
+
+Verified-free models:
+  - openrouter/stealth/space-bunny-alpha [routed] Space Bunny Alpha
+  - openrouter/inclusionai/ling-3.0-flash-sante:free [routed] Ling 3.0 Flash Sante (free)
+  - openrouter/inclusionai/ling-3.0-flash-fin:free [routed] Ling 3.0 Flash Fin (free)
+  - openrouter/qwen/qwen3.8-27b:free [routed] Qwen3.8 27B (free)
+  - openrouter/dots-studio/dots-3-note-preview:free [routed] Dots3-Note Preview (free)
+  - openrouter/liquid/lfm-2.5-2.6b:free [routed] LFM2.5-2.6B (free)
+  - openrouter/nvidia/nemotron-3.5-lightning:free [routed] Nemotron 3.5 Lightning (free)
+  - openrouter/thinkingmachines/inkling-small:free [routed] Inkling Small (free)
+  - openrouter/poolside/laguna-s-2.1:free [routed] Laguna S 2.1 (free)
+  - openrouter/thinkingmachines/inkling:free [routed] Inkling (free)
+  - openrouter/poolside/laguna-xs-2.1:free [routed] Laguna XS 2.1 (free)
+  - openrouter/cohere/north-mini-code:free [routed] North Mini Code (free)
+  - openrouter/nvidia/nemotron-3.5-content-safety:free [routed] Nemotron 3.5 Content Safety (free)
+  - openrouter/nvidia/nemotron-3-ultra-550b-a55b:free [routed] Nemotron 3 Ultra (free)
+  - openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free [routed] Nemotron 3 Nano Omni (free)
+  - openrouter/google/gemma-4-26b-a4b-it:free [routed] Gemma 4 26B A4B  (free)
+  - openrouter/google/gemma-4-31b-it:free [routed] Gemma 4 31B (free)
+  - openrouter/google/lyria-3-pro-preview [routed] Lyria 3 Pro Preview
+  - openrouter/google/lyria-3-clip-preview [routed] Lyria 3 Clip Preview
+  - openrouter/nvidia/nemotron-3-super-120b-a12b:free [routed] Nemotron 3 Super (free)
+  - openrouter/openrouter/free [routed] Free Models Router
+
+······x································stdout | packages/integration-tests/test/demo-mode.test.ts > Demo Mode Isolation Tests
+CodeForge server running at http://localhost:55376
+
+······································································································································································································································································stdout | packages/server/test/approval-session-grants.test.ts > task grants on the session lease > routine workspace writes and edits never prompt under Auto Review
+CodeForge server running at http://localhost:55385
+
+··stdout | packages/server/test/approval-session-grants.test.ts > task grants on the session lease > asks once for a project-modifying command, then honors Allow for task on a repeat
+CodeForge server running at http://localhost:55388
+
+·······stdout | packages/server/test/dynamic-runtime.test.ts > dynamic real/demo runtime (connect-after-boot first-run fix) > routes to demo before any real provider, and flips to real once one is registered post-boot
+CodeForge server running at http://localhost:55391
+
+stdout | packages/server/test/approval-session-grants.test.ts > task grants on the session lease > Allow Once keeps asking for each Tier-2 command, even an identical repeat
+CodeForge server running at http://localhost:55396
+
+stdout | packages/server/test/dynamic-runtime.test.ts > dynamic real/demo runtime (connect-after-boot first-run fix) > explicit useRealRuntime stays real even with no provider yet
+CodeForge server running at http://localhost:55397
+
+··stdout | packages/server/test/dynamic-runtime.test.ts > dynamic real/demo runtime (connect-after-boot first-run fix) > persists one completed demo turn across a server restart
+CodeForge server running at http://localhost:55400
+
+·········stdout | packages/server/test/approval-session-grants.test.ts > task grants on the session lease > does not let a task grant survive into another session's lease
+CodeForge server running at http://localhost:55407
+
+······stdout | packages/server/test/approval-session-grants.test.ts > task grants on the session lease > destructive commands always ask and Allow for task cannot mint a grant for them
+CodeForge server running at http://localhost:55411
+
+·stdout | packages/server/test/dynamic-runtime.test.ts > dynamic real/demo runtime (connect-after-boot first-run fix) > persists one completed demo turn across a server restart
+CodeForge server running at http://localhost:55412
+
+··································stdout | packages/server/test/sse-reconnect-e2e.test.ts > SSE reconnect and renderer reconstruction E2E > replays missed active and terminal events without duplicate effects
+CodeForge server running at http://localhost:65113
+
+·········stdout | packages/server/test/sse-reconnect-e2e.test.ts > SSE reconnect and renderer reconstruction E2E > delivers each live event once to each concurrent client
+CodeForge server running at http://localhost:58624
+
+·······stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > persists, executes via the worker, and returns an owner-scoped result
+{"ts":"2026-09-28T01:38:22.565Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"d224ec55-0082-4ddd-b520-be711da9717d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:22.565Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > persists, executes via the worker, and returns an owner-scoped result
+{"ts":"2026-09-28T01:38:22.599Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"d224ec55-0082-4ddd-b520-be711da9717d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"36f1a89f-c65b-43c9-a321-f335a84e6e84\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:22.598Z\"}"}
+
+·stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > returns the same durable execution for an idempotent replay
+{"ts":"2026-09-28T01:38:22.820Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"8cb506cd-7a79-4bb6-bcaa-23b047012f73\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:22.820Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > returns the same durable execution for an idempotent replay
+{"ts":"2026-09-28T01:38:22.834Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"8cb506cd-7a79-4bb6-bcaa-23b047012f73\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"1abe1608-c521-4ccb-9eb3-533687aee29a\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:22.834Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > returns the same durable execution for an idempotent replay
+{"ts":"2026-09-28T01:38:22.873Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"8cb506cd-7a79-4bb6-bcaa-23b047012f73\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"1abe1608-c521-4ccb-9eb3-533687aee29a\",\"created\":false},\"occurredAt\":\"2026-09-28T01:38:22.872Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > isolates status, result, and cancellation across users
+{"ts":"2026-09-28T01:38:23.015Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"835e78e9-abc2-4f60-b16b-e6dbfa40777d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:23.015Z\"}"}
+
+·stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > isolates status, result, and cancellation across users
+{"ts":"2026-09-28T01:38:23.068Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"7ff34559-970d-41cb-bd13-bdcc58a636c8\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:23.068Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > isolates status, result, and cancellation across users
+{"ts":"2026-09-28T01:38:23.081Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"835e78e9-abc2-4f60-b16b-e6dbfa40777d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"f53796e3-5f09-48e5-a6ed-49abc39e98ff\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:23.081Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > cancels a queued execution without ever calling the provider
+{"ts":"2026-09-28T01:38:23.261Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"97e56394-7014-4f41-941c-50bd48fcc9c5\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:23.261Z\"}"}
+
+···stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > cancels a queued execution without ever calling the provider
+{"ts":"2026-09-28T01:38:23.281Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"97e56394-7014-4f41-941c-50bd48fcc9c5\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"f5ff996e-23af-4d41-83a8-57a7e6f39e86\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:23.281Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > cancels a queued execution without ever calling the provider
+{"ts":"2026-09-28T01:38:23.294Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.cancelled\",\"outcome\":\"success\",\"userId\":\"97e56394-7014-4f41-941c-50bd48fcc9c5\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"f5ff996e-23af-4d41-83a8-57a7e6f39e86\",\"transitioned\":true},\"occurredAt\":\"2026-09-28T01:38:23.294Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > cancels a dispatching execution and aborts the in-flight provider call
+{"ts":"2026-09-28T01:38:23.638Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"ede6c3da-4c15-4d6f-8c4c-7e499f5b4500\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:23.637Z\"}"}
+
+·stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > cancels a dispatching execution and aborts the in-flight provider call
+{"ts":"2026-09-28T01:38:23.655Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"ede6c3da-4c15-4d6f-8c4c-7e499f5b4500\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"39227f9b-d53f-4384-a196-2c26bc50b8ce\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:23.655Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > cancels a dispatching execution and aborts the in-flight provider call
+{"ts":"2026-09-28T01:38:23.792Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.cancelled\",\"outcome\":\"success\",\"userId\":\"ede6c3da-4c15-4d6f-8c4c-7e499f5b4500\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"39227f9b-d53f-4384-a196-2c26bc50b8ce\",\"transitioned\":true},\"occurredAt\":\"2026-09-28T01:38:23.792Z\"}"}
+
+·stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > holds the route capacity ceiling under a concurrent HTTP burst
+{"ts":"2026-09-28T01:38:24.244Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"0d212fe8-ebb4-4f26-9650-31ce657b8cd0\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:24.243Z\"}"}
+
+·stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > holds the route capacity ceiling under a concurrent HTTP burst
+{"ts":"2026-09-28T01:38:24.278Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"0d212fe8-ebb4-4f26-9650-31ce657b8cd0\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"9eabb972-e047-433e-9817-11269dad3e2e\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:24.278Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > holds the route capacity ceiling under a concurrent HTTP burst
+{"ts":"2026-09-28T01:38:24.290Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"0d212fe8-ebb4-4f26-9650-31ce657b8cd0\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"97a537e4-9abf-473c-a05d-de314c4baa6b\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:24.289Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > holds the route capacity ceiling under a concurrent HTTP burst
+{"ts":"2026-09-28T01:38:24.302Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"0d212fe8-ebb4-4f26-9650-31ce657b8cd0\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"3d465da5-2bec-4d2b-9bf8-498fc996784f\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:24.302Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > holds the route capacity ceiling under a concurrent HTTP burst
+{"ts":"2026-09-28T01:38:24.306Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"0d212fe8-ebb4-4f26-9650-31ce657b8cd0\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"a55bd2a0-e904-4811-bfc9-61e51a84a250\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:24.306Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > holds the route capacity ceiling under a concurrent HTTP burst
+{"ts":"2026-09-28T01:38:24.309Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"0d212fe8-ebb4-4f26-9650-31ce657b8cd0\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"d3ea9ffd-3da3-4cba-abbb-c6d8d82f44bf\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:24.309Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > holds the route capacity ceiling under a concurrent HTTP burst
+{"ts":"2026-09-28T01:38:24.321Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"0d212fe8-ebb4-4f26-9650-31ce657b8cd0\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"c145cb13-7fdc-4fb0-9151-17d78995f016\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:24.321Z\"}"}
+
+·stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > fails closed when the durable enqueue write throws — no execution, no provider call
+{"ts":"2026-09-28T01:38:24.578Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"4e4c4cf6-7b1d-4218-89c5-1d13b4991e71\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:24.577Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > fails closed when the durable enqueue write throws — no execution, no provider call
+{"ts":"2026-09-28T01:38:24.597Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"4e4c4cf6-7b1d-4218-89c5-1d13b4991e71\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"injected enqueue failure\"},\"occurredAt\":\"2026-09-28T01:38:24.597Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > fails closed when the durable enqueue write throws — no execution, no provider call
+{"ts":"2026-09-28T01:38:24.614Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"4e4c4cf6-7b1d-4218-89c5-1d13b4991e71\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"injected enqueue failure\"},\"occurredAt\":\"2026-09-28T01:38:24.614Z\"}"}
+
+···stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > quarantines worker-completed work when the completion write fails — recovered once, never re-executed
+{"ts":"2026-09-28T01:38:24.961Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"32e247c1-f4be-446e-ad33-81a3bf345b3a\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:24.961Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > quarantines worker-completed work when the completion write fails — recovered once, never re-executed
+{"ts":"2026-09-28T01:38:24.993Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"32e247c1-f4be-446e-ad33-81a3bf345b3a\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"648525b3-a0c9-4422-9d51-0f058681c17b\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:24.993Z\"}"}
+
+stderr | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > quarantines worker-completed work when the completion write fails — recovered once, never re-executed
+{"ts":"2026-09-28T01:38:25.012Z","level":"warn","logger":"cloud-api","msg":"hosted queue worker error","error":"injected completion write failure"}
+{"ts":"2026-09-28T01:38:25.015Z","level":"warn","logger":"cloud-api","msg":"hosted queue worker error","error":"injected completion write failure"}
+
+·stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > aborts in-flight dispatch when the heartbeat write fails — dead lease is fenced, recovery terminalizes once
+{"ts":"2026-09-28T01:38:25.532Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"7d814066-0647-401e-8a6d-1826ca7914ef\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:25.532Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > aborts in-flight dispatch when the heartbeat write fails — dead lease is fenced, recovery terminalizes once
+{"ts":"2026-09-28T01:38:25.560Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"7d814066-0647-401e-8a6d-1826ca7914ef\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"6fb648fc-740c-457e-ad22-13fb5f5fa4c3\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:25.560Z\"}"}
+
+····stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > recovers queued work after a full server restart — the execution outlives the process
+{"ts":"2026-09-28T01:38:27.882Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"2c78292e-a768-4109-9a28-c268b0ed0b67\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:27.879Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > recovers queued work after a full server restart — the execution outlives the process
+{"ts":"2026-09-28T01:38:27.914Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"2c78292e-a768-4109-9a28-c268b0ed0b67\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"d15c8437-03d1-45cb-bfcd-de66d7267253\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:27.911Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > recovers queued work after a full server restart — the execution outlives the process
+{"ts":"2026-09-28T01:38:27.976Z","level":"info","logger":"cloud-api","msg":"retention sweep","oauth_transactions":1,"browser_oauth_transactions":0,"desktop_auth_codes":1,"github_app_callback_states":0,"browser_sessions":0,"device_sessions":0}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > recovers queued work after a full server restart — the execution outlives the process
+{"ts":"2026-09-28T01:38:28.068Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"2c78292e-a768-4109-9a28-c268b0ed0b67\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":false},\"occurredAt\":\"2026-09-28T01:38:28.065Z\"}"}
+
+·stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > quarantines mid-dispatch work after a hard stop — restart recovers once, never re-executes
+{"ts":"2026-09-28T01:38:29.388Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"e50119f6-f719-42f9-b00a-89b9281c022a\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:29.386Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > quarantines mid-dispatch work after a hard stop — restart recovers once, never re-executes
+{"ts":"2026-09-28T01:38:29.409Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"e50119f6-f719-42f9-b00a-89b9281c022a\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"797d0f88-041a-4f7a-a13f-6c706fc6e91d\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:29.407Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > quarantines mid-dispatch work after a hard stop — restart recovers once, never re-executes
+{"ts":"2026-09-28T01:38:29.496Z","level":"info","logger":"cloud-api","msg":"retention sweep","oauth_transactions":1,"browser_oauth_transactions":0,"desktop_auth_codes":1,"github_app_callback_states":0,"browser_sessions":0,"device_sessions":0}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > quarantines mid-dispatch work after a hard stop — restart recovers once, never re-executes
+{"ts":"2026-09-28T01:38:29.560Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"e50119f6-f719-42f9-b00a-89b9281c022a\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":false},\"occurredAt\":\"2026-09-28T01:38:29.558Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > executes durable parent/child fan-out — idempotent child, root inheritance, cross-user fence
+{"ts":"2026-09-28T01:38:29.696Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"d1822f4d-87e1-46f3-81f1-c16185842075\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:29.696Z\"}"}
+
+·stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > executes durable parent/child fan-out — idempotent child, root inheritance, cross-user fence
+{"ts":"2026-09-28T01:38:29.769Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"dfb89f5b-175e-45c9-a636-53a06b49e979\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:29.769Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > executes durable parent/child fan-out — idempotent child, root inheritance, cross-user fence
+{"ts":"2026-09-28T01:38:29.796Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"d1822f4d-87e1-46f3-81f1-c16185842075\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"ab89eeb5-2c90-4272-9fd1-3ed6d4fea815\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:29.796Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > executes durable parent/child fan-out — idempotent child, root inheritance, cross-user fence
+{"ts":"2026-09-28T01:38:29.813Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"d1822f4d-87e1-46f3-81f1-c16185842075\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"8e16000a-ab93-46c6-a192-a9e41e923824\",\"parentExecutionId\":\"ab89eeb5-2c90-4272-9fd1-3ed6d4fea815\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:29.813Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > executes durable parent/child fan-out — idempotent child, root inheritance, cross-user fence
+{"ts":"2026-09-28T01:38:29.820Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"d1822f4d-87e1-46f3-81f1-c16185842075\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"8e16000a-ab93-46c6-a192-a9e41e923824\",\"parentExecutionId\":\"ab89eeb5-2c90-4272-9fd1-3ed6d4fea815\",\"created\":false},\"occurredAt\":\"2026-09-28T01:38:29.820Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > executes durable parent/child fan-out — idempotent child, root inheritance, cross-user fence
+{"ts":"2026-09-28T01:38:29.839Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"d1822f4d-87e1-46f3-81f1-c16185842075\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"0196d7f7-e952-44d3-b225-a45e00d01757\",\"parentExecutionId\":\"8e16000a-ab93-46c6-a192-a9e41e923824\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:29.839Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > executes durable parent/child fan-out — idempotent child, root inheritance, cross-user fence
+{"ts":"2026-09-28T01:38:29.865Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"dfb89f5b-175e-45c9-a636-53a06b49e979\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"parentExecutionId\":\"ab89eeb5-2c90-4272-9fd1-3ed6d4fea815\",\"reason\":\"Parent hosted execution not found\"},\"occurredAt\":\"2026-09-28T01:38:29.864Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > executes durable parent/child fan-out — idempotent child, root inheritance, cross-user fence
+{"ts":"2026-09-28T01:38:29.882Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"d1822f4d-87e1-46f3-81f1-c16185842075\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"fad0949e-0669-40f6-8076-5132014089a4\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:29.882Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > executes durable parent/child fan-out — idempotent child, root inheritance, cross-user fence
+{"ts":"2026-09-28T01:38:29.950Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d1822f4d-87e1-46f3-81f1-c16185842075\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"parentExecutionId\":\"fad0949e-0669-40f6-8076-5132014089a4\",\"reason\":\"Parent hosted execution is already terminal\"},\"occurredAt\":\"2026-09-28T01:38:29.950Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > cancelling a parent over HTTP cascades to its queued children without provider calls
+{"ts":"2026-09-28T01:38:30.146Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"7f099f09-7734-474e-a5e7-78b4000b01bc\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:38:30.146Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > cancelling a parent over HTTP cascades to its queued children without provider calls
+{"ts":"2026-09-28T01:38:30.156Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"7f099f09-7734-474e-a5e7-78b4000b01bc\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"a68cc01d-13b8-4e56-b698-a4ce6dcc5904\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:30.156Z\"}"}
+
+·stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > cancelling a parent over HTTP cascades to its queued children without provider calls
+{"ts":"2026-09-28T01:38:30.179Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"7f099f09-7734-474e-a5e7-78b4000b01bc\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"1ebfdb83-ca7c-474e-b7c9-5e5ed45c1a91\",\"parentExecutionId\":\"a68cc01d-13b8-4e56-b698-a4ce6dcc5904\",\"created\":true},\"occurredAt\":\"2026-09-28T01:38:30.179Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-executions.test.ts > Durable hosted executions over HTTP > cancelling a parent over HTTP cascades to its queued children without provider calls
+{"ts":"2026-09-28T01:38:30.201Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.cancelled\",\"outcome\":\"success\",\"userId\":\"7f099f09-7734-474e-a5e7-78b4000b01bc\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"a68cc01d-13b8-4e56-b698-a4ce6dcc5904\",\"transitioned\":true},\"occurredAt\":\"2026-09-28T01:38:30.201Z\"}"}
+
+·stdout | packages/server/test/context-efficiency.test.ts > R34 context-efficiency benchmark > measures serialized input per dispatch, before vs after superseded-output compaction
+[r34-bench] role before=16888 after=16888 | interactive before=12315 after=11596 delta=719 (5.8%)
+
+················································stdout | packages/server/test/repository-index-api.test.ts > repository index API > reports local status, searches, rebuilds, and honors enable/disable control
+CodeForge server running at http://localhost:58696
+
+············stdout | packages/server/test/repository-index-api.test.ts > repository index API > re-opening the same workspace while it indexes never races the index file
+CodeForge server running at http://localhost:58701
+
+··stdout | packages/server/test/cf17-runtime-restart-api.test.ts > CF-17 runtime recovery through the production server restart path > hydrates an interrupted turn, preserves its queued steer once, and replans instead of replaying
+CodeForge server running at http://localhost:58704
+
+·stdout | packages/server/test/repository-index-api.test.ts > repository index API > switching workspaces mid-index cancels the old indexer and indexes the new one
+CodeForge server running at http://localhost:58709
+
+··stdout | packages/server/test/cf17-runtime-restart-api.test.ts > CF-17 runtime recovery through the production server restart path > hydrates an interrupted turn, preserves its queued steer once, and replans instead of replaying
+CodeForge server running at http://localhost:58712
+
+stdout | packages/server/test/cf17-runtime-restart-api.test.ts > CF-17 runtime recovery through the production server restart path > CF-17 active-command steering waits for a real child command boundary and consumes the steer exactly once
+CodeForge server running at http://localhost:58715
+
+·········stdout | packages/server/test/cf17-runtime-restart-api.test.ts > CF-17 runtime recovery through the production server restart path > CF-17 approval-resolution races preserve one approval, one steer, and one guarded action in both committed orderings
+CodeForge server running at http://localhost:58721
+
+stdout | packages/server/test/repository-index-api.test.ts > repository index API > re-stating an enabled index is idempotent — no rebuild, no interruption
+CodeForge server running at http://localhost:58723
+
+·············stdout | tests/reverse-proxy-sse.test.ts > Local reverse-proxy SSE certification
+{"ts":"2026-09-28T01:39:06.644Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"60fe99e9-f073-41bc-9a0e-ed62545d65ab\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:06.643Z\"}"}
+
+stdout | tests/reverse-proxy-sse.test.ts > Local reverse-proxy SSE certification > streams progressively through a real out-of-process reverse proxy
+{"ts":"2026-09-28T01:39:06.921Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"60fe99e9-f073-41bc-9a0e-ed62545d65ab\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"354c6a88-ee7c-498b-bba2-d4cd0cd03594\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:06.921Z\"}"}
+
+·stdout | tests/reverse-proxy-sse.test.ts > Local reverse-proxy SSE certification > NEGATIVE CONTROL: a buffering proxy fails the same progressive-streaming assertion
+{"ts":"2026-09-28T01:39:07.982Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"60fe99e9-f073-41bc-9a0e-ed62545d65ab\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"6954b4b3-d658-472c-b000-dba5326d57c9\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:07.982Z\"}"}
+
+·stdout | tests/reverse-proxy-sse.test.ts > Local reverse-proxy SSE certification > propagates client cancellation through the proxy to the origin
+{"ts":"2026-09-28T01:39:09.076Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"60fe99e9-f073-41bc-9a0e-ed62545d65ab\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"b7307c40-33f7-4385-9ebe-a7312bc831ea\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:09.075Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-001: a stolen credential/session database reveals no usable secret
+{"ts":"2026-09-28T01:39:09.269Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"fe09c6f8-27e3-4921-a13b-ee59ab47f487\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:09.269Z\"}"}
+
+··stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-002: a manually altered ciphertext fails closed and the login cannot complete
+{"ts":"2026-09-28T01:39:09.465Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"crypto.decrypt.failed\",\"outcome\":\"failure\",\"details\":{\"purpose\":\"github_pkce_verifier\",\"leg\":\"desktop\"},\"occurredAt\":\"2026-09-28T01:39:09.464Z\"}"}
+
+stdout | tests/reverse-proxy-sse.test.ts > Local reverse-proxy SSE certification > emits a terminal failure event through the proxy when the origin times out the inference
+{"ts":"2026-09-28T01:39:09.618Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"9c194037-8f10-48a6-9cd1-0033f1fb0ace\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:09.618Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-003: a sealed secret copied into another tenant's record does not decrypt; user A cannot read user B
+{"ts":"2026-09-28T01:39:09.634Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"crypto.decrypt.failed\",\"outcome\":\"failure\",\"details\":{\"purpose\":\"github_pkce_verifier\",\"leg\":\"desktop\"},\"occurredAt\":\"2026-09-28T01:39:09.634Z\"}"}
+
+··stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-003: a sealed secret copied into another tenant's record does not decrypt; user A cannot read user B
+{"ts":"2026-09-28T01:39:09.684Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"b530fbb4-d347-431b-8902-33af7dc3b77b\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:09.683Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-003: a sealed secret copied into another tenant's record does not decrypt; user A cannot read user B
+{"ts":"2026-09-28T01:39:09.689Z","level":"info","logger":"cloud-api","msg":"retention sweep","oauth_transactions":2,"browser_oauth_transactions":0,"desktop_auth_codes":1,"github_app_callback_states":0,"browser_sessions":0,"device_sessions":0}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-003: a sealed secret copied into another tenant's record does not decrypt; user A cannot read user B
+{"ts":"2026-09-28T01:39:09.731Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"8a43e042-5e9a-4812-aadf-1c2e2310dc69\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:09.731Z\"}"}
+
+stdout | tests/reverse-proxy-sse.test.ts > Local reverse-proxy SSE certification > emits a terminal failure event through the proxy when the origin times out the inference
+{"ts":"2026-09-28T01:39:09.857Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"9c194037-8f10-48a6-9cd1-0033f1fb0ace\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"8e338eeb-6bb7-47fc-9733-25b064361ea0\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:09.857Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-004: no client-facing response or renderer bridge exposes a platform provider key
+{"ts":"2026-09-28T01:39:10.006Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"9105cabf-44fb-4ef7-ad28-08094ef0fd20\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:10.006Z\"}"}
+
+·stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-004: no client-facing response or renderer bridge exposes a platform provider key
+{"ts":"2026-09-28T01:39:10.118Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"9105cabf-44fb-4ef7-ad28-08094ef0fd20\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"No verified free model is currently available in the CodeForge Cloud pool\"},\"occurredAt\":\"2026-09-28T01:39:10.118Z\"}"}
+
+·stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-007/008: forged, missing, and replayed GitHub callback state produce a static error page — never a redirect or a session
+{"ts":"2026-09-28T01:39:10.254Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.oauth.state_invalid\",\"outcome\":\"failure\",\"details\":{\"leg\":\"desktop\",\"reason\":\"OAuth transaction not found\"},\"occurredAt\":\"2026-09-28T01:39:10.254Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-007/008: forged, missing, and replayed GitHub callback state produce a static error page — never a redirect or a session
+{"ts":"2026-09-28T01:39:10.269Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.oauth.state_invalid\",\"outcome\":\"failure\",\"details\":{\"leg\":\"desktop\",\"reason\":\"OAuth transaction not found\"},\"occurredAt\":\"2026-09-28T01:39:10.268Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-007/008: forged, missing, and replayed GitHub callback state produce a static error page — never a redirect or a session
+{"ts":"2026-09-28T01:39:10.300Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.oauth.state_invalid\",\"outcome\":\"failure\",\"details\":{\"leg\":\"desktop\",\"reason\":\"OAuth transaction already consumed (replay detected)\"},\"occurredAt\":\"2026-09-28T01:39:10.299Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-007/008: forged, missing, and replayed GitHub callback state produce a static error page — never a redirect or a session
+{"ts":"2026-09-28T01:39:10.318Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"db31dafc-100b-423f-ba7b-27f2729c1096\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:10.317Z\"}"}
+
+·stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-009: forged, replayed, unpaid, and live-mode payment webhooks never change a balance
+{"ts":"2026-09-28T01:39:10.418Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"d7d122e1-6e58-4569-b588-f5c44b94cd9c\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:10.417Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-009: forged, replayed, unpaid, and live-mode payment webhooks never change a balance
+{"ts":"2026-09-28T01:39:10.425Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"billing.webhook.signature_invalid\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{},\"occurredAt\":\"2026-09-28T01:39:10.425Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-009: forged, replayed, unpaid, and live-mode payment webhooks never change a balance
+{"ts":"2026-09-28T01:39:10.440Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"billing.webhook.signature_invalid\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{},\"occurredAt\":\"2026-09-28T01:39:10.440Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-009: forged, replayed, unpaid, and live-mode payment webhooks never change a balance
+{"ts":"2026-09-28T01:39:10.443Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"billing.webhook.signature_invalid\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{},\"occurredAt\":\"2026-09-28T01:39:10.443Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-009: forged, replayed, unpaid, and live-mode payment webhooks never change a balance
+{"ts":"2026-09-28T01:39:10.446Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"billing.webhook.signature_invalid\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{},\"occurredAt\":\"2026-09-28T01:39:10.446Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-009: forged, replayed, unpaid, and live-mode payment webhooks never change a balance
+{"ts":"2026-09-28T01:39:10.457Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"billing.webhook.processed\",\"outcome\":\"info\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"action\":\"deferred_awaiting_payment\",\"eventType\":\"checkout.session.completed\"},\"occurredAt\":\"2026-09-28T01:39:10.457Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-009: forged, replayed, unpaid, and live-mode payment webhooks never change a balance
+{"ts":"2026-09-28T01:39:10.471Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"billing.webhook.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"action\":\"rejected_livemode_event\",\"eventType\":\"checkout.session.completed\"},\"occurredAt\":\"2026-09-28T01:39:10.471Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-009: forged, replayed, unpaid, and live-mode payment webhooks never change a balance
+{"ts":"2026-09-28T01:39:10.490Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"billing.webhook.processed\",\"outcome\":\"info\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"action\":\"credits_purchased\",\"eventType\":\"checkout.session.completed\"},\"occurredAt\":\"2026-09-28T01:39:10.489Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-009: forged, replayed, unpaid, and live-mode payment webhooks never change a balance
+{"ts":"2026-09-28T01:39:10.505Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"billing.webhook.duplicate\",\"outcome\":\"info\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"action\":\"duplicate_skipped\",\"eventType\":\"checkout.session.completed\"},\"occurredAt\":\"2026-09-28T01:39:10.505Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-010: a client cannot assert a paid plan, a balance, or a price
+{"ts":"2026-09-28T01:39:10.658Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"8b31230c-cd73-4012-b2e7-5d5a6d61b903\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:10.658Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-010: a client cannot assert a paid plan, a balance, or a price
+{"ts":"2026-09-28T01:39:10.674Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"account.settings.changed\",\"outcome\":\"success\",\"userId\":\"8b31230c-cd73-4012-b2e7-5d5a6d61b903\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"fields\":\"privacyMode\"},\"occurredAt\":\"2026-09-28T01:39:10.674Z\"}"}
+
+·stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-010: a client cannot assert a paid plan, a balance, or a price
+{"ts":"2026-09-28T01:39:10.722Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"request.rejected\",\"outcome\":\"denied\",\"userId\":\"8b31230c-cd73-4012-b2e7-5d5a6d61b903\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"billing_return_url_not_allowed\"},\"occurredAt\":\"2026-09-28T01:39:10.722Z\"}"}
+
+·stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-014: an access token stops working at logout, and the rotated/old refresh token cannot be replayed
+{"ts":"2026-09-28T01:39:10.802Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"7ff6e496-bf2d-4e7a-8087-8994812e9b56\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:10.801Z\"}"}
+
+·stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-014: an access token stops working at logout, and the rotated/old refresh token cannot be replayed
+{"ts":"2026-09-28T01:39:10.834Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.logout\",\"outcome\":\"success\",\"userId\":\"7ff6e496-bf2d-4e7a-8087-8994812e9b56\",\"details\":{\"leg\":\"desktop\"},\"occurredAt\":\"2026-09-28T01:39:10.834Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-014: an access token stops working at logout, and the rotated/old refresh token cannot be replayed
+{"ts":"2026-09-28T01:39:10.850Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"userId\":\"7ff6e496-bf2d-4e7a-8087-8994812e9b56\",\"details\":{\"reason\":\"revoked:logout\"},\"occurredAt\":\"2026-09-28T01:39:10.850Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-014: an access token stops working at logout, and the rotated/old refresh token cannot be replayed
+{"ts":"2026-09-28T01:39:10.851Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Session has been revoked or has expired\"},\"occurredAt\":\"2026-09-28T01:39:10.851Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-014: an access token stops working at logout, and the rotated/old refresh token cannot be replayed
+{"ts":"2026-09-28T01:39:10.865Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Device session has been revoked\"},\"occurredAt\":\"2026-09-28T01:39:10.865Z\"}"}
+
+stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-014: an access token stops working at logout, and the rotated/old refresh token cannot be replayed
+{"ts":"2026-09-28T01:39:10.866Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/auth/refresh\",\"reason\":\"Device session has been revoked\"},\"occurredAt\":\"2026-09-28T01:39:10.866Z\"}"}
+
+··stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > ATTACK-016: a backup of the encrypted rows restores into a fresh database and decrypts only with the key ring
+{"ts":"2026-09-28T01:39:11.393Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"crypto.decrypt.failed\",\"outcome\":\"failure\",\"details\":{\"purpose\":\"github_pkce_verifier\",\"leg\":\"desktop\"},\"occurredAt\":\"2026-09-28T01:39:11.393Z\"}"}
+
+··stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > unknown internal errors are never echoed to the client
+{"ts":"2026-09-28T01:39:12.022Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"93e69340-725d-46ca-84d3-29d4923b9892\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:12.022Z\"}"}
+
+stderr | tests/security/attack-acceptance.test.ts > Security R1 acceptance — CodeForge Cloud > unknown internal errors are never echoed to the client
+{"ts":"2026-09-28T01:39:12.033Z","level":"error","logger":"cloud-api","msg":"unhandled request error","correlationId":"939713c4-2b93-4e19-a8fd-8d11aa7e0476","path":"/v1/usage","method":"GET","error":{"name":"Error","message":"ECONNREFUSED [REDACTED] at /srv/app/node_modules/pg/lib/client.js:123"}}
+
+······stdout | tests/security/attack-acceptance.test.ts > Security R1 acceptance — agent execution plane and local control plane > ATTACK-011: a guessed session/workflow id on the local control plane is refused without the per-process bearer
+CodeForge server running at http://localhost:58800
+
+···················stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > carries providerId+modelId unchanged from the desktop client through to the provider adapter
+{"ts":"2026-09-28T01:39:19.840Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"b22cc1c5-6493-43b1-8b2e-a8d418876aab\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:19.840Z\"}"}
+
+stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > carries providerId+modelId unchanged from the desktop client through to the provider adapter
+{"ts":"2026-09-28T01:39:19.886Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"b22cc1c5-6493-43b1-8b2e-a8d418876aab\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"1569ee70-5454-4a74-8c41-0218cddd16d4\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:19.886Z\"}"}
+
+stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > announces the served provider and model on the wire so a substitution would be visible
+{"ts":"2026-09-28T01:39:20.246Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"196b2ec7-dfec-4a07-adbe-07e466582ac0\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:20.246Z\"}"}
+
+stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > announces the served provider and model on the wire so a substitution would be visible
+{"ts":"2026-09-28T01:39:20.256Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"196b2ec7-dfec-4a07-adbe-07e466582ac0\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"ec846c73-c106-42ef-8fec-b6583cdde00d\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:20.256Z\"}"}
+
+···stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > resolves a bare exact model id to its own provider — not to whichever provider is handy
+{"ts":"2026-09-28T01:39:20.507Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"ef08da54-6135-4014-90d6-d600f6bbf816\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:20.506Z\"}"}
+
+·stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > resolves a bare exact model id to its own provider — not to whichever provider is handy
+{"ts":"2026-09-28T01:39:20.524Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"ef08da54-6135-4014-90d6-d600f6bbf816\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"a8bb0017-ed4e-42d1-aca3-053cc28dd38c\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:20.524Z\"}"}
+
+stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > FAILS rather than substituting when the exact model is unavailable
+{"ts":"2026-09-28T01:39:20.865Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"583174cf-e9db-441a-adc7-5ab403ed3abf\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:20.865Z\"}"}
+
+stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > FAILS rather than substituting when the exact model is unavailable
+{"ts":"2026-09-28T01:39:20.881Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"583174cf-e9db-441a-adc7-5ab403ed3abf\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model exact-alpha::alpha-precise-v1 is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:20.881Z\"}"}
+
+·stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > FAILS rather than substituting when the exact model was never registered
+{"ts":"2026-09-28T01:39:21.003Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"e2b9555b-93ef-4b9b-b335-f71c59ffc7b0\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:21.003Z\"}"}
+
+stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > FAILS rather than substituting when the exact model was never registered
+{"ts":"2026-09-28T01:39:21.019Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"e2b9555b-93ef-4b9b-b335-f71c59ffc7b0\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model exact-alpha::alpha-model-that-does-not-exist is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:21.019Z\"}"}
+
+·stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > refuses a mismatched provider/model pairing instead of routing to the model's real provider
+{"ts":"2026-09-28T01:39:21.148Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"6758422b-0dd6-4c4f-9aff-ac5df8b1a06b\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:21.147Z\"}"}
+
+·stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > refuses a mismatched provider/model pairing instead of routing to the model's real provider
+{"ts":"2026-09-28T01:39:21.167Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"6758422b-0dd6-4c4f-9aff-ac5df8b1a06b\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model exact-alpha::beta-precise-v1 is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:21.166Z\"}"}
+
+·stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > does not let hostile request fields redirect an exact model
+{"ts":"2026-09-28T01:39:21.285Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"f7993276-a9d2-422e-a488-99c110704d3f\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:21.285Z\"}"}
+
+stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > does not let hostile request fields redirect an exact model
+{"ts":"2026-09-28T01:39:21.303Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"f7993276-a9d2-422e-a488-99c110704d3f\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"3e86f1e6-5d07-4f61-827d-e4a9605913ca\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:21.303Z\"}"}
+
+stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > does not let hostile request fields redirect an exact model
+{"ts":"2026-09-28T01:39:21.475Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"f7993276-a9d2-422e-a488-99c110704d3f\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"8b284b4b-bb0d-4f3a-98ee-36025bace933\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:21.475Z\"}"}
+
+stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > does not let hostile request fields redirect an exact model
+{"ts":"2026-09-28T01:39:21.655Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"f7993276-a9d2-422e-a488-99c110704d3f\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"68078709-409c-4a37-983b-3c160812a2f8\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:21.655Z\"}"}
+
+··stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > does not let hostile request fields redirect an exact model
+{"ts":"2026-09-28T01:39:21.836Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"f7993276-a9d2-422e-a488-99c110704d3f\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"021f29db-4d98-41bd-82a4-7985f1f523ce\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:21.836Z\"}"}
+
+stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > keeps Auto routing separate from exact selection
+{"ts":"2026-09-28T01:39:22.129Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"8de3b982-18a4-4cb6-8224-e1583d77ef71\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:22.129Z\"}"}
+
+·stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > keeps Auto routing separate from exact selection
+{"ts":"2026-09-28T01:39:22.187Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"8de3b982-18a4-4cb6-8224-e1583d77ef71\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"35755c88-d4ab-43c4-8e4a-4b39a6c05cb5\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:22.187Z\"}"}
+
+·stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > keeps Auto routing separate from exact selection
+{"ts":"2026-09-28T01:39:22.366Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"8de3b982-18a4-4cb6-8224-e1583d77ef71\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"a44832df-9f6c-425a-bf67-60ab7e70062b\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:22.366Z\"}"}
+
+stdout | apps/cloud-api/test/publication-http.e2e.test.ts > CF-11 authenticated publication HTTP ownership > makes cross-user and unknown publication IDs indistinguishable before every privileged side effect
+{"ts":"2026-09-28T01:39:22.385Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/publications\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:39:22.385Z\"}"}
+
+stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > fails Auto closed when no verified-free capacity remains, rather than reaching for anything else
+{"ts":"2026-09-28T01:39:22.628Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"6f305eb2-dffd-48c7-9681-7b52452be685\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:22.628Z\"}"}
+
+stdout | tests/exact-model-contract.test.ts > Exact-model contract end to end > fails Auto closed when no verified-free capacity remains, rather than reaching for anything else
+{"ts":"2026-09-28T01:39:22.642Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"6f305eb2-dffd-48c7-9681-7b52452be685\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"No verified free model is currently available in the CodeForge Cloud pool\"},\"occurredAt\":\"2026-09-28T01:39:22.642Z\"}"}
+
+······stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > reports GEMS unavailable for every GEMS model, and runs nothing else
+{"ts":"2026-09-28T01:39:23.914Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"01dcad54-50da-4bc9-b94f-b1f0802ef79e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:23.913Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > reports GEMS unavailable for every GEMS model, and runs nothing else
+{"ts":"2026-09-28T01:39:23.943Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"01dcad54-50da-4bc9-b94f-b1f0802ef79e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:23.943Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > reports GEMS unavailable for every GEMS model, and runs nothing else
+{"ts":"2026-09-28T01:39:23.973Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"01dcad54-50da-4bc9-b94f-b1f0802ef79e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:23.973Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > reports GEMS unavailable for every GEMS model, and runs nothing else
+{"ts":"2026-09-28T01:39:23.990Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"01dcad54-50da-4bc9-b94f-b1f0802ef79e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:23.984Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > reports GEMS unavailable for every GEMS model, and runs nothing else
+{"ts":"2026-09-28T01:39:24.022Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"01dcad54-50da-4bc9-b94f-b1f0802ef79e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:24.021Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never routes a bare GEMS model id onto another provider
+{"ts":"2026-09-28T01:39:24.148Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"939687ff-e63d-457e-8e39-18fa95ce4929\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:24.148Z\"}"}
+
+·stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never routes a bare GEMS model id onto another provider
+{"ts":"2026-09-28T01:39:24.174Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"939687ff-e63d-457e-8e39-18fa95ce4929\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Requested hosted model 'gems-topaz' is not currently available\"},\"occurredAt\":\"2026-09-28T01:39:24.174Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never routes a bare GEMS model id onto another provider
+{"ts":"2026-09-28T01:39:24.195Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"939687ff-e63d-457e-8e39-18fa95ce4929\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Requested hosted model 'gems-sapphire' is not currently available\"},\"occurredAt\":\"2026-09-28T01:39:24.195Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never routes a bare GEMS model id onto another provider
+{"ts":"2026-09-28T01:39:24.200Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"939687ff-e63d-457e-8e39-18fa95ce4929\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Requested hosted model 'gems-peridot' is not currently available\"},\"occurredAt\":\"2026-09-28T01:39:24.200Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never routes a bare GEMS model id onto another provider
+{"ts":"2026-09-28T01:39:24.215Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"939687ff-e63d-457e-8e39-18fa95ce4929\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Requested hosted model 'gems-garnet' is not currently available\"},\"occurredAt\":\"2026-09-28T01:39:24.215Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.412Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:24.412Z\"}"}
+
+·stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.421Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model openrouter::gems-topaz is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.420Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.455Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model openrouter::gems-sapphire is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.455Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.463Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model groq::gems-topaz is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.463Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.478Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model groq::gems-sapphire is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.478Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.499Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model openai::gems-topaz is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.499Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.504Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model openai::gems-sapphire is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.504Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.522Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model anthropic::gems-topaz is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.522Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.530Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model anthropic::gems-sapphire is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.530Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.546Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model google::gems-topaz is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.545Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.550Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model google::gems-sapphire is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.550Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.564Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model cloudflare-workers-ai::gems-topaz is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.563Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.583Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model cloudflare-workers-ai::gems-sapphire is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.583Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.592Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model zai::gems-topaz is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.592Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.610Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model zai::gems-sapphire is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.610Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.631Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model opencode::gems-topaz is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.631Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses hostile attempts to execute a GEMS model under a foreign provider id
+{"ts":"2026-09-28T01:39:24.635Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"d8f4b69c-7aee-4d9a-be77-d7e7870e365d\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model opencode::gems-sapphire is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:24.635Z\"}"}
+
+·stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses a foreign model claimed under the GEMS provider id
+{"ts":"2026-09-28T01:39:24.784Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"271dfdc8-c9b1-47fb-b516-776453ea2b03\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:24.784Z\"}"}
+
+·stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses a foreign model claimed under the GEMS provider id
+{"ts":"2026-09-28T01:39:24.798Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"271dfdc8-c9b1-47fb-b516-776453ea2b03\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:24.798Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses a foreign model claimed under the GEMS provider id
+{"ts":"2026-09-28T01:39:24.809Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"271dfdc8-c9b1-47fb-b516-776453ea2b03\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:24.809Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses a foreign model claimed under the GEMS provider id
+{"ts":"2026-09-28T01:39:24.826Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"271dfdc8-c9b1-47fb-b516-776453ea2b03\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:24.826Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses a foreign model claimed under the GEMS provider id
+{"ts":"2026-09-28T01:39:24.831Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"271dfdc8-c9b1-47fb-b516-776453ea2b03\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:24.830Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses a foreign model claimed under the GEMS provider id
+{"ts":"2026-09-28T01:39:24.834Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"271dfdc8-c9b1-47fb-b516-776453ea2b03\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:24.834Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses a foreign model claimed under the GEMS provider id
+{"ts":"2026-09-28T01:39:24.848Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"271dfdc8-c9b1-47fb-b516-776453ea2b03\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:24.848Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses a foreign model claimed under the GEMS provider id
+{"ts":"2026-09-28T01:39:24.856Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"271dfdc8-c9b1-47fb-b516-776453ea2b03\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:24.855Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > refuses a foreign model claimed under the GEMS provider id
+{"ts":"2026-09-28T01:39:24.871Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"271dfdc8-c9b1-47fb-b516-776453ea2b03\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:24.871Z\"}"}
+
+·stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never selects GEMS through Auto routing while GEMS is offline
+{"ts":"2026-09-28T01:39:25.069Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"ff244b2f-8f55-4da2-bdd9-f48691718153\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:25.069Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never selects GEMS through Auto routing while GEMS is offline
+{"ts":"2026-09-28T01:39:25.114Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"ff244b2f-8f55-4da2-bdd9-f48691718153\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"f6fd78a0-747e-40ea-96c4-9c4644012591\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:25.114Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never selects GEMS through Auto routing while GEMS is offline
+{"ts":"2026-09-28T01:39:25.294Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"ff244b2f-8f55-4da2-bdd9-f48691718153\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"75ae0b76-9b8b-4e8f-9444-b88c1852c751\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:25.294Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never selects GEMS through Auto routing while GEMS is offline
+{"ts":"2026-09-28T01:39:25.467Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"ff244b2f-8f55-4da2-bdd9-f48691718153\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"30aa459a-d341-48b9-aaf9-c53b43a8cc10\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:25.467Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never selects GEMS through Auto routing while GEMS is offline
+{"ts":"2026-09-28T01:39:25.648Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"ff244b2f-8f55-4da2-bdd9-f48691718153\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"b9102bfb-24a9-467b-baf8-2cd224230a46\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:25.648Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never selects GEMS through Auto routing while GEMS is offline
+{"ts":"2026-09-28T01:39:25.832Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"ff244b2f-8f55-4da2-bdd9-f48691718153\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"94a6ed04-734e-4754-aeae-7e68c3a341f1\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:25.832Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never selects GEMS through Auto routing while GEMS is offline
+{"ts":"2026-09-28T01:39:25.997Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"ff244b2f-8f55-4da2-bdd9-f48691718153\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"f7b5b693-1147-407a-a157-5fd2377f1aa5\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:25.996Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never selects GEMS through Auto routing while GEMS is offline
+{"ts":"2026-09-28T01:39:26.200Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"ff244b2f-8f55-4da2-bdd9-f48691718153\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"97bf5ce0-84f3-4c25-bd4d-a1635dcb6322\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:26.200Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > never selects GEMS through Auto routing while GEMS is offline
+{"ts":"2026-09-28T01:39:26.427Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"ff244b2f-8f55-4da2-bdd9-f48691718153\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"ddb5c7f1-c838-4403-b57c-9183a683ecf2\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:26.427Z\"}"}
+
+·stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > excludes GEMS from routable Hosted Free capacity in the catalog
+{"ts":"2026-09-28T01:39:26.857Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"ef55f471-2758-4d20-8e6a-395359c0cfd5\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:26.857Z\"}"}
+
+·stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > keeps GEMS unroutable even when a provider adapter registers itself under the gems id
+{"ts":"2026-09-28T01:39:27.336Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"767f8cda-a2fd-4271-84a1-72e69a39966e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:27.336Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > keeps GEMS unroutable even when a provider adapter registers itself under the gems id
+{"ts":"2026-09-28T01:39:27.376Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"767f8cda-a2fd-4271-84a1-72e69a39966e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:27.376Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > keeps GEMS unroutable even when a provider adapter registers itself under the gems id
+{"ts":"2026-09-28T01:39:27.406Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"767f8cda-a2fd-4271-84a1-72e69a39966e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:27.405Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > keeps GEMS unroutable even when a provider adapter registers itself under the gems id
+{"ts":"2026-09-28T01:39:27.428Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"767f8cda-a2fd-4271-84a1-72e69a39966e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:27.428Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > keeps GEMS unroutable even when a provider adapter registers itself under the gems id
+{"ts":"2026-09-28T01:39:27.444Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"767f8cda-a2fd-4271-84a1-72e69a39966e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:27.443Z\"}"}
+
+··stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > holds the firewall through the desktop Hosted client, not just the raw HTTP boundary
+{"ts":"2026-09-28T01:39:27.595Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"c5d29796-a970-47ec-b023-691f5e7cff1c\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:27.595Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > holds the firewall through the desktop Hosted client, not just the raw HTTP boundary
+{"ts":"2026-09-28T01:39:27.621Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"c5d29796-a970-47ec-b023-691f5e7cff1c\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:27.621Z\"}"}
+
+stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > holds the firewall through the desktop Hosted client, not just the raw HTTP boundary
+{"ts":"2026-09-28T01:39:27.647Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"c5d29796-a970-47ec-b023-691f5e7cff1c\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"GEMS models are currently unavailable (offline)\"},\"occurredAt\":\"2026-09-28T01:39:27.646Z\"}"}
+
+··stdout | tests/gems-identity-firewall.test.ts > GEMS identity firewall > keeps GEMS records marked paid and non-fallbackable in the shared catalog definition
+{"ts":"2026-09-28T01:39:27.849Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"f481351b-c9b9-4ce6-a745-fbdeb871c434\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:27.849Z\"}"}
+
+·····-·····stdout | apps/cloud-api/test/hosted-capacity.test.ts > Zero-setup real hosted capacity (deterministic, injected provider) > runs a zero-provider-key hosted inference through Auto and settles usage
+{"ts":"2026-09-28T01:39:31.445Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"8ac7d4db-99e4-48bd-995e-7ebecdb8e487\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:31.445Z\"}"}
+
+stdout | apps/cloud-api/test/hosted-capacity.test.ts > Zero-setup real hosted capacity (deterministic, injected provider) > runs a zero-provider-key hosted inference through Auto and settles usage
+{"ts":"2026-09-28T01:39:31.484Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"8ac7d4db-99e4-48bd-995e-7ebecdb8e487\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"521a3418-f1c7-4aa1-a245-54495fbba46f\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:31.483Z\"}"}
+
+····stdout | tests/cloud-adversarial-security.test.ts > Phase 56 — P0 Adversarial Security Certification > returns a static error page — never a redirect — for an invalid or replayed GitHub callback
+{"ts":"2026-09-28T01:39:33.212Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.oauth.state_invalid\",\"outcome\":\"failure\",\"details\":{\"leg\":\"desktop\",\"reason\":\"OAuth transaction not found\"},\"occurredAt\":\"2026-09-28T01:39:33.211Z\"}"}
+
+·stdout | tests/cloud-adversarial-security.test.ts > Phase 56 — P0 Adversarial Security Certification > does not honor forged forwarding headers unless the deployment explicitly trusts its proxy
+{"ts":"2026-09-28T01:39:33.392Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"ae77a72d-aca2-4937-8b87-429f6c53588b\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:33.392Z\"}"}
+
+·stdout | tests/cloud-adversarial-security.test.ts > Phase 56 — P0 Adversarial Security Certification > does not honor forged forwarding headers unless the deployment explicitly trusts its proxy
+{"ts":"2026-09-28T01:39:33.500Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"c9d7f950-3a7f-4b5c-8afc-d26ebd2bfcdb\",\"ipAddress\":\"203.0.113.42\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:33.499Z\"}"}
+
+stdout | tests/cloud-adversarial-security.test.ts > Phase 56 — P0 Adversarial Security Certification > enforces server-owned OAuth transactions, rejecting unknown state and wrong PKCE
+{"ts":"2026-09-28T01:39:33.646Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.oauth.state_invalid\",\"outcome\":\"failure\",\"details\":{\"leg\":\"desktop\",\"reason\":\"OAuth transaction not found\"},\"occurredAt\":\"2026-09-28T01:39:33.646Z\"}"}
+
+··stdout | tests/cloud-adversarial-security.test.ts > Phase 56 — P0 Adversarial Security Certification > enforces single-use desktop authorization codes (replay fails)
+{"ts":"2026-09-28T01:39:33.839Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"67d8418a-53d2-4673-8772-d855163afe8b\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:33.839Z\"}"}
+
+·stdout | tests/cloud-adversarial-security.test.ts > Phase 56 — P0 Adversarial Security Certification > enforces single-use OAuth state at the GitHub callback (replaying state fails)
+{"ts":"2026-09-28T01:39:34.039Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.oauth.state_invalid\",\"outcome\":\"failure\",\"details\":{\"leg\":\"desktop\",\"reason\":\"OAuth transaction already consumed (replay detected)\"},\"occurredAt\":\"2026-09-28T01:39:34.039Z\"}"}
+
+·stdout | tests/cloud-adversarial-security.test.ts > Phase 56 — P0 Adversarial Security Certification > lets exactly one concurrent exchange of a captured desktop code succeed
+{"ts":"2026-09-28T01:39:34.214Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"cd6d253b-5cc3-414f-aad8-e52d75c9093b\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:34.214Z\"}"}
+
+·stdout | tests/cloud-adversarial-security.test.ts > Phase 56 — P0 Adversarial Security Certification > enforces atomic refresh token rotation and rejects replaying consumed refresh tokens
+{"ts":"2026-09-28T01:39:34.377Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"1b0c8b70-47fc-452d-a3f6-c349ae4c4576\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:34.377Z\"}"}
+
+stdout | tests/cloud-adversarial-security.test.ts > Phase 56 — P0 Adversarial Security Certification > enforces atomic refresh token rotation and rejects replaying consumed refresh tokens
+{"ts":"2026-09-28T01:39:34.396Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.refreshed\",\"outcome\":\"success\",\"userId\":\"1b0c8b70-47fc-452d-a3f6-c349ae4c4576\",\"ipAddress\":\"127.0.0.1\",\"details\":{},\"occurredAt\":\"2026-09-28T01:39:34.396Z\"}"}
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > binds loopback by default
+CodeForge server running at http://localhost:63305
+
+stdout | tests/cloud-adversarial-security.test.ts > Phase 56 — P0 Adversarial Security Certification > enforces atomic refresh token rotation and rejects replaying consumed refresh tokens
+{"ts":"2026-09-28T01:39:34.416Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.replay_detected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Device session has been revoked (replay detected)\"},\"occurredAt\":\"2026-09-28T01:39:34.416Z\"}"}
+
+stdout | tests/cloud-adversarial-security.test.ts > Phase 56 — P0 Adversarial Security Certification > enforces atomic refresh token rotation and rejects replaying consumed refresh tokens
+{"ts":"2026-09-28T01:39:34.417Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/auth/refresh\",\"reason\":\"Device session has been revoked (replay detected)\"},\"occurredAt\":\"2026-09-28T01:39:34.417Z\"}"}
+
+······stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > refuses a routable bind without a control-plane token, binds it only with one
+CodeForge server running at http://localhost:63314
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > rejects browser origins outside the packaged and development renderers
+CodeForge server running at http://localhost:63316
+
+··stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > accepts the trusted development renderer origin http://localhost:5173
+CodeForge server running at http://localhost:63318
+
+·stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > accepts the trusted development renderer origin http://127.0.0.1:5173
+CodeForge server running at http://localhost:63320
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > refuses Origin: null unless a per-process bearer is enforced (sandboxed-iframe drive-by)
+CodeForge server running at http://localhost:63323
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > refuses Origin: null unless a per-process bearer is enforced (sandboxed-iframe drive-by)
+CodeForge server running at http://localhost:63325
+
+··stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > refuses non-loopback Host headers on a loopback bind (DNS rebinding)
+CodeForge server running at http://localhost:63328
+
+···stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > requires the per-process token when desktop authentication is configured
+CodeForge server running at http://localhost:63331
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > rejects a wrong or malformed bearer
+CodeForge server running at http://localhost:63334
+
+·stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > never accepts the bearer from the URL, including for the event stream
+CodeForge server running at http://localhost:63337
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > guards approval resolution with the bearer
+CodeForge server running at http://localhost:63340
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > does not let a valid token bypass the browser-origin boundary
+CodeForge server running at http://localhost:63342
+
+···································stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > resolves both independent clients to the SAME account, balance, and entitlements
+{"ts":"2026-09-28T01:39:45.876Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"eae4184a-3fd3-41d9-87af-348bd95755d4\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:45.874Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > resolves both independent clients to the SAME account, balance, and entitlements
+{"ts":"2026-09-28T01:39:45.950Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"eae4184a-3fd3-41d9-87af-348bd95755d4\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":false},\"occurredAt\":\"2026-09-28T01:39:45.949Z\"}"}
+
+·stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > limits same-account Free hosted concurrency to 1 across two independent clients
+{"ts":"2026-09-28T01:39:46.218Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"272ba303-8264-45d7-b4be-cc1d9c23aa45\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:46.218Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > limits same-account Free hosted concurrency to 1 across two independent clients
+{"ts":"2026-09-28T01:39:46.261Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"272ba303-8264-45d7-b4be-cc1d9c23aa45\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":false},\"occurredAt\":\"2026-09-28T01:39:46.261Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > limits same-account Free hosted concurrency to 1 across two independent clients
+{"ts":"2026-09-28T01:39:46.286Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"272ba303-8264-45d7-b4be-cc1d9c23aa45\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"1e7c02e3-1bc1-4876-9bbd-dca592fd3141\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:46.286Z\"}"}
+
+·stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > limits same-account Free hosted concurrency to 1 across two independent clients
+{"ts":"2026-09-28T01:39:46.397Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"272ba303-8264-45d7-b4be-cc1d9c23aa45\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Concurrent task limit reached (1/1)\"},\"occurredAt\":\"2026-09-28T01:39:46.396Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > limits same-account Free hosted concurrency to 1 across two independent clients
+{"ts":"2026-09-28T01:39:46.506Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"272ba303-8264-45d7-b4be-cc1d9c23aa45\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"76bc20cc-9218-4b8c-b6f9-12df3feef316\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:46.505Z\"}"}
+
+·stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > ignores client-supplied balance, plan, entitlement, and concurrency claims
+{"ts":"2026-09-28T01:39:46.888Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"7d7098c2-d1f9-4ce6-9dfa-8ba242d2453e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:46.888Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > ignores client-supplied balance, plan, entitlement, and concurrency claims
+{"ts":"2026-09-28T01:39:46.941Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"7d7098c2-d1f9-4ce6-9dfa-8ba242d2453e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":false},\"occurredAt\":\"2026-09-28T01:39:46.941Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > ignores client-supplied balance, plan, entitlement, and concurrency claims
+{"ts":"2026-09-28T01:39:46.983Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"7d7098c2-d1f9-4ce6-9dfa-8ba242d2453e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"fccff7fd-6657-4d4c-bbac-de7a4c044ed7\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:46.982Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > rejects a client that forges a provider or model it is not entitled to
+{"ts":"2026-09-28T01:39:47.315Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"3c41f019-6358-4044-8971-db710e37eeb8\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:47.315Z\"}"}
+
+·stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > rejects a client that forges a provider or model it is not entitled to
+{"ts":"2026-09-28T01:39:47.374Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"3c41f019-6358-4044-8971-db710e37eeb8\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":false},\"occurredAt\":\"2026-09-28T01:39:47.373Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > rejects a client that forges a provider or model it is not entitled to
+{"ts":"2026-09-28T01:39:47.395Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"3c41f019-6358-4044-8971-db710e37eeb8\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Model attacker-owned-provider::gpt-4o is not permitted under your STANDARD privacy mode\"},\"occurredAt\":\"2026-09-28T01:39:47.394Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > rejects a client that forges a provider or model it is not entitled to
+{"ts":"2026-09-28T01:39:47.401Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"3c41f019-6358-4044-8971-db710e37eeb8\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Requested hosted model 'definitely-not-a-registered-model' is not currently available\"},\"occurredAt\":\"2026-09-28T01:39:47.401Z\"}"}
+
+·stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > keeps both clients' sessions independent — revoking one does not revoke the other
+{"ts":"2026-09-28T01:39:47.618Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"1a281ca1-0545-4a2c-ab9d-8a873fb48dc6\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:47.618Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > keeps both clients' sessions independent — revoking one does not revoke the other
+{"ts":"2026-09-28T01:39:47.680Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"1a281ca1-0545-4a2c-ab9d-8a873fb48dc6\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":false},\"occurredAt\":\"2026-09-28T01:39:47.680Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > keeps both clients' sessions independent — revoking one does not revoke the other
+{"ts":"2026-09-28T01:39:47.698Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.logout\",\"outcome\":\"success\",\"userId\":\"1a281ca1-0545-4a2c-ab9d-8a873fb48dc6\",\"details\":{\"leg\":\"desktop\"},\"occurredAt\":\"2026-09-28T01:39:47.698Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > keeps both clients' sessions independent — revoking one does not revoke the other
+{"ts":"2026-09-28T01:39:47.719Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"Device session has been revoked\"},\"occurredAt\":\"2026-09-28T01:39:47.719Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > keeps both clients' sessions independent — revoking one does not revoke the other
+{"ts":"2026-09-28T01:39:47.720Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/auth/refresh\",\"reason\":\"Device session has been revoked\"},\"occurredAt\":\"2026-09-28T01:39:47.720Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > keeps both clients' sessions independent — revoking one does not revoke the other
+{"ts":"2026-09-28T01:39:47.747Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.refreshed\",\"outcome\":\"success\",\"userId\":\"1a281ca1-0545-4a2c-ab9d-8a873fb48dc6\",\"ipAddress\":\"127.0.0.1\",\"details\":{},\"occurredAt\":\"2026-09-28T01:39:47.747Z\"}"}
+
+·stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > makes a spend by one client immediately authoritative for the other
+{"ts":"2026-09-28T01:39:47.894Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"2a460373-97e4-4cb2-850c-afd898b3a84f\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:47.893Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > makes a spend by one client immediately authoritative for the other
+{"ts":"2026-09-28T01:39:47.933Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"2a460373-97e4-4cb2-850c-afd898b3a84f\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":false},\"occurredAt\":\"2026-09-28T01:39:47.933Z\"}"}
+
+stdout | tests/two-client-authority.test.ts > Two-client server authority (SQLite) > makes a spend by one client immediately authoritative for the other
+{"ts":"2026-09-28T01:39:47.954Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"2a460373-97e4-4cb2-850c-afd898b3a84f\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"f140f4b8-1bf4-4cbc-b06b-896de970b792\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:47.954Z\"}"}
+
+·------··········stdout | apps/cloud-api/test/cloud-api.test.ts > CodeForge Cloud Server API End-to-End > completes full server-authoritative auth lifecycle, account queries, and hosted inference streaming
+{"ts":"2026-09-28T01:39:52.346Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"472215fb-7da9-4a3e-bdd9-24a2be017d21\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:52.345Z\"}"}
+
+stdout | apps/cloud-api/test/cloud-api.test.ts > CodeForge Cloud Server API End-to-End > completes full server-authoritative auth lifecycle, account queries, and hosted inference streaming
+{"ts":"2026-09-28T01:39:52.418Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"472215fb-7da9-4a3e-bdd9-24a2be017d21\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"9eebab8d-578e-47f1-80e1-cad4ec4e69e3\",\"created\":true},\"occurredAt\":\"2026-09-28T01:39:52.418Z\"}"}
+
+stdout | packages/server/test/parallel-api.test.ts > parallel run HTTP surface > accepts, lists, reads, and refuses to cancel a terminal parallel run
+CodeForge server running at http://localhost:55143
+
+·stdout | apps/cloud-api/test/cloud-api.test.ts > CodeForge Cloud Server API End-to-End > completes full server-authoritative auth lifecycle, account queries, and hosted inference streaming
+{"ts":"2026-09-28T01:39:52.612Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.refreshed\",\"outcome\":\"success\",\"userId\":\"472215fb-7da9-4a3e-bdd9-24a2be017d21\",\"ipAddress\":\"127.0.0.1\",\"details\":{},\"occurredAt\":\"2026-09-28T01:39:52.611Z\"}"}
+
+stdout | apps/cloud-api/test/cloud-api.test.ts > CodeForge Cloud Server API End-to-End > completes full server-authoritative auth lifecycle, account queries, and hosted inference streaming
+{"ts":"2026-09-28T01:39:52.627Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.logout\",\"outcome\":\"success\",\"userId\":\"472215fb-7da9-4a3e-bdd9-24a2be017d21\",\"details\":{\"leg\":\"desktop\"},\"occurredAt\":\"2026-09-28T01:39:52.627Z\"}"}
+
+·stdout | apps/cloud-api/test/cloud-api.test.ts > CodeForge Cloud Server API End-to-End > processes Stripe webhook signatures and activates Pro subscriptions
+{"ts":"2026-09-28T01:39:52.775Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"billing.webhook.processed\",\"outcome\":\"info\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"action\":\"pro_subscription_activated\",\"eventType\":\"checkout.session.completed\"},\"occurredAt\":\"2026-09-28T01:39:52.775Z\"}"}
+
+··stdout | apps/cloud-api/test/cloud-api.test.ts > CodeForge Cloud Server API End-to-End > completes the browser GitHub flow with an opaque HttpOnly session and supports logout
+{"ts":"2026-09-28T01:39:53.202Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"a6a53abe-65cc-4308-88a8-d2f1af81ad37\",\"details\":{\"leg\":\"browser\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:53.201Z\"}"}
+
+stdout | apps/cloud-api/test/cloud-api.test.ts > CodeForge Cloud Server API End-to-End > completes the browser GitHub flow with an opaque HttpOnly session and supports logout
+{"ts":"2026-09-28T01:39:53.238Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.logout\",\"outcome\":\"success\",\"userId\":\"a6a53abe-65cc-4308-88a8-d2f1af81ad37\",\"details\":{\"leg\":\"browser\"},\"occurredAt\":\"2026-09-28T01:39:53.237Z\"}"}
+
+stdout | apps/cloud-api/test/cloud-api.test.ts > CodeForge Cloud Server API End-to-End > completes the browser GitHub flow with an opaque HttpOnly session and supports logout
+{"ts":"2026-09-28T01:39:53.254Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/auth/session\",\"reason\":\"Invalid browser session\"},\"occurredAt\":\"2026-09-28T01:39:53.253Z\"}"}
+
+··stdout | apps/cloud-api/test/cloud-api.test.ts > CodeForge Cloud Server API End-to-End > falls back to a truthful 'no email shared' identity when the email endpoint is unavailable
+{"ts":"2026-09-28T01:39:53.415Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"081c64b3-b866-450e-9761-d8a583f51110\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:53.415Z\"}"}
+
+stdout | apps/cloud-api/test/cloud-api.test.ts > CodeForge Cloud Server API End-to-End > keeps browser OAuth denial and open-redirect attempts fail-closed
+{"ts":"2026-09-28T01:39:53.622Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.oauth.denied\",\"outcome\":\"denied\",\"details\":{\"leg\":\"browser\"},\"occurredAt\":\"2026-09-28T01:39:53.622Z\"}"}
+
+··stdout | apps/cloud-api/test/cloud-api.test.ts > CodeForge Cloud Server API End-to-End > maps a browser callback replay to a safe invalid state without reissuing a cookie
+{"ts":"2026-09-28T01:39:53.763Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"4ea9d87f-7ef6-4484-872d-db8e92d1a445\",\"details\":{\"leg\":\"browser\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:39:53.763Z\"}"}
+
+stdout | apps/cloud-api/test/cloud-api.test.ts > CodeForge Cloud Server API End-to-End > maps a browser callback replay to a safe invalid state without reissuing a cookie
+{"ts":"2026-09-28T01:39:53.768Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.oauth.state_invalid\",\"outcome\":\"failure\",\"details\":{\"leg\":\"browser\",\"reason\":\"Browser OAuth transaction already consumed (replay detected)\"},\"occurredAt\":\"2026-09-28T01:39:53.768Z\"}"}
+
+····························································stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > passes against a correctly configured deployment
+{"ts":"2026-09-28T01:39:56.684Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:39:56.683Z\"}"}
+
+stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > passes against a correctly configured deployment
+{"ts":"2026-09-28T01:39:56.693Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:39:56.692Z\"}"}
+
+·stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > passes against a correctly configured deployment
+{"ts":"2026-09-28T01:39:56.703Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Invalid JWT token structure\"},\"occurredAt\":\"2026-09-28T01:39:56.702Z\"}"}
+
+·stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > passes against a correctly configured deployment
+{"ts":"2026-09-28T01:39:56.854Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:39:56.854Z\"}"}
+
+····stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > verifies health, readiness, auth enforcement, OAuth readiness, and open-redirect refusal
+{"ts":"2026-09-28T01:39:57.086Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:39:57.085Z\"}"}
+
+stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > verifies health, readiness, auth enforcement, OAuth readiness, and open-redirect refusal
+{"ts":"2026-09-28T01:39:57.109Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:39:57.109Z\"}"}
+
+stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > verifies health, readiness, auth enforcement, OAuth readiness, and open-redirect refusal
+{"ts":"2026-09-28T01:39:57.125Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Invalid JWT token structure\"},\"occurredAt\":\"2026-09-28T01:39:57.124Z\"}"}
+
+·stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > verifies health, readiness, auth enforcement, OAuth readiness, and open-redirect refusal
+{"ts":"2026-09-28T01:39:57.219Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:39:57.219Z\"}"}
+
+·················stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > detects a secret leaked in a response body, without echoing it
+{"ts":"2026-09-28T01:39:57.670Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:39:57.665Z\"}"}
+
+·stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > detects a secret leaked in a response body, without echoing it
+{"ts":"2026-09-28T01:39:57.675Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:39:57.675Z\"}"}
+
+stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > detects a secret leaked in a response body, without echoing it
+{"ts":"2026-09-28T01:39:57.680Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Invalid JWT token structure\"},\"occurredAt\":\"2026-09-28T01:39:57.680Z\"}"}
+
+···stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > detects a secret leaked in a response body, without echoing it
+{"ts":"2026-09-28T01:39:57.759Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:39:57.759Z\"}"}
+
+·stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > produces a JSON receipt containing no secrets
+{"ts":"2026-09-28T01:39:57.950Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:39:57.950Z\"}"}
+
+stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > produces a JSON receipt containing no secrets
+{"ts":"2026-09-28T01:39:57.967Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:39:57.967Z\"}"}
+
+stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > produces a JSON receipt containing no secrets
+{"ts":"2026-09-28T01:39:57.978Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Invalid JWT token structure\"},\"occurredAt\":\"2026-09-28T01:39:57.978Z\"}"}
+
+stdout | apps/cloud-api/test/staging-tooling.test.ts > remote deployment probe > produces a JSON receipt containing no secrets
+{"ts":"2026-09-28T01:39:58.057Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:39:58.057Z\"}"}
+
+·····························stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.236Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:00.235Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.288Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.288Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.308Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:00.307Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.314Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.313Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.331Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:00.330Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.346Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.346Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.367Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:00.366Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.385Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.385Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.391Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:00.390Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.398Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.397Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.410Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:00.409Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.413Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.413Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.426Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:00.426Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.446Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.445Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.464Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:00.464Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.468Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.468Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.484Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:00.484Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.488Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.488Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.505Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:00.505Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.510Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.510Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.525Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:00.524Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.528Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.528Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.545Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:00.545Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every header-based identity assertion on authenticated endpoints
+{"ts":"2026-09-28T01:40:00.552Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/usage\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.552Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every body-based identity assertion on hosted inference
+{"ts":"2026-09-28T01:40:00.667Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.667Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every body-based identity assertion on hosted inference
+{"ts":"2026-09-28T01:40:00.673Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.672Z\"}"}
+
+·stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every body-based identity assertion on hosted inference
+{"ts":"2026-09-28T01:40:00.694Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.694Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every body-based identity assertion on hosted inference
+{"ts":"2026-09-28T01:40:00.704Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.703Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every body-based identity assertion on hosted inference
+{"ts":"2026-09-28T01:40:00.709Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.709Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every body-based identity assertion on hosted inference
+{"ts":"2026-09-28T01:40:00.726Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.726Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every body-based identity assertion on hosted inference
+{"ts":"2026-09-28T01:40:00.747Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.747Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every body-based identity assertion on hosted inference
+{"ts":"2026-09-28T01:40:00.763Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.763Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses every body-based identity assertion on hosted inference
+{"ts":"2026-09-28T01:40:00.768Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/hosted/inference\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:00.767Z\"}"}
+
+·stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses tokens that are unsigned, wrongly signed, or use the 'none' algorithm
+{"ts":"2026-09-28T01:40:00.971Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"dd4125c4-5357-4b87-8c6e-92298a222493\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:40:00.971Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses tokens that are unsigned, wrongly signed, or use the 'none' algorithm
+{"ts":"2026-09-28T01:40:00.990Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Invalid JWT token structure\"},\"occurredAt\":\"2026-09-28T01:40:00.990Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses tokens that are unsigned, wrongly signed, or use the 'none' algorithm
+{"ts":"2026-09-28T01:40:01.002Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Invalid JWT signature\"},\"occurredAt\":\"2026-09-28T01:40:01.002Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses tokens that are unsigned, wrongly signed, or use the 'none' algorithm
+{"ts":"2026-09-28T01:40:01.024Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Invalid JWT header encoding\"},\"occurredAt\":\"2026-09-28T01:40:01.024Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > refuses tokens that are unsigned, wrongly signed, or use the 'none' algorithm
+{"ts":"2026-09-28T01:40:01.038Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:01.038Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > does not accept a token as a query parameter or cookie
+{"ts":"2026-09-28T01:40:01.224Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"00f72d93-b818-42ad-932a-d242d615b134\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:40:01.224Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > does not accept a token as a query parameter or cookie
+{"ts":"2026-09-28T01:40:01.227Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:01.227Z\"}"}
+
+stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > does not accept a token as a query parameter or cookie
+{"ts":"2026-09-28T01:40:01.239Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid browser session\"},\"occurredAt\":\"2026-09-28T01:40:01.239Z\"}"}
+
+····stdout | tests/production-auth-bypass-guard.test.ts > Production identity-bypass guard > behavioral: the live HTTP surface refuses every bypass shape > ignores a client-asserted identity even when a VALID token is also present
+{"ts":"2026-09-28T01:40:01.421Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"2a4ae957-a396-4d4c-9168-f31ce972046e\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:40:01.421Z\"}"}
+
+····································stdout | packages/server/test/task-identity.test.ts > task identity stability
+CodeForge server running at http://localhost:55196
+
+·····································stdout | packages/server/test/model-selection-boundary.test.ts
+CodeForge server running at http://localhost:55206
+
+stdout | packages/server/test/workspace-binding-guard.test.ts > workspace binding guard
+CodeForge server running at http://localhost:55208
+
+····stdout | packages/server/test/model-selection-boundary.test.ts > HTTP model-selection boundary > keeps an internally qualified Paid Auto route policy-blocked
+CodeForge server running at http://localhost:55212
+
+·········stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > routes every phrase only by the requested mode
+CodeForge server running at http://localhost:55220
+
+··stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > fails closed for malformed execution modes
+CodeForge server running at http://localhost:55225
+
+··stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > uses the documented deterministic Chat fallback when mode is missing
+CodeForge server running at http://localhost:55230
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > reports Agent startup failure without starting Chat
+CodeForge server running at http://localhost:55233
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > keeps structured Agent failure Error: lease conflict in the Agent domain
+CodeForge server running at http://localhost:55238
+
+··stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > keeps structured Agent failure Error: A workflow is already running for this session. Cancel or wait. in the Agent domain
+CodeForge server running at http://localhost:55241
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > keeps structured Agent failure Error: Too many concurrent workflows. Please wait. in the Agent domain
+CodeForge server running at http://localhost:55245
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > keeps structured Agent failure Error: Provider unavailable in the Agent domain
+CodeForge server running at http://localhost:55248
+
+···stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > returns workspace failure for Agent without trying Chat
+CodeForge server running at http://localhost:55251
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > keeps Chat startup failure in the Chat domain
+CodeForge server running at http://localhost:55254
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > keeps the fixed workflow endpoint in the Agent failure domain
+CodeForge server running at http://localhost:55257
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > steers the active runtime without changing its execution mode
+CodeForge server running at http://localhost:55260
+
+······stdout | packages/server/test/server-stop.test.ts > CodeForgeServer shutdown > cancels and drains an active agent turn before closing session persistence
+CodeForge server running at http://localhost:55265
+
+stdout | tests/cloud-e2e.test.ts > CodeForge Cloud Full Platform Certification E2E > completes full certified cloud flow: Zero-Setup Sign-in -> Free Inference -> Metering -> Stripe Pro Upgrade -> Cancellation
+{"ts":"2026-09-28T01:40:14.945Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"4e4d79b1-ed5f-483e-b60f-95187ad6df43\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:40:14.944Z\"}"}
+
+stdout | packages/server/test/server-stop.test.ts > CodeForgeServer shutdown > cancels and drains active workflow event writes before closing session persistence
+CodeForge server running at http://localhost:55267
+
+stdout | tests/cloud-e2e.test.ts > CodeForge Cloud Full Platform Certification E2E > completes full certified cloud flow: Zero-Setup Sign-in -> Free Inference -> Metering -> Stripe Pro Upgrade -> Cancellation
+{"ts":"2026-09-28T01:40:15.002Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"4e4d79b1-ed5f-483e-b60f-95187ad6df43\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"1a717b23-1990-4bf0-8b3b-e9496c55f408\",\"created\":true},\"occurredAt\":\"2026-09-28T01:40:15.001Z\"}"}
+
+stdout | tests/cloud-e2e.test.ts > CodeForge Cloud Full Platform Certification E2E > completes full certified cloud flow: Zero-Setup Sign-in -> Free Inference -> Metering -> Stripe Pro Upgrade -> Cancellation
+{"ts":"2026-09-28T01:40:15.182Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"denied\",\"userId\":\"4e4d79b1-ed5f-483e-b60f-95187ad6df43\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"reason\":\"You have used your included CodeForge hosted usage\"},\"occurredAt\":\"2026-09-28T01:40:15.182Z\"}"}
+
+stdout | tests/cloud-e2e.test.ts > CodeForge Cloud Full Platform Certification E2E > completes full certified cloud flow: Zero-Setup Sign-in -> Free Inference -> Metering -> Stripe Pro Upgrade -> Cancellation
+{"ts":"2026-09-28T01:40:15.204Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"billing.webhook.processed\",\"outcome\":\"info\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"action\":\"pro_subscription_activated\",\"eventType\":\"checkout.session.completed\"},\"occurredAt\":\"2026-09-28T01:40:15.204Z\"}"}
+
+stdout | tests/cloud-e2e.test.ts > CodeForge Cloud Full Platform Certification E2E > completes full certified cloud flow: Zero-Setup Sign-in -> Free Inference -> Metering -> Stripe Pro Upgrade -> Cancellation
+{"ts":"2026-09-28T01:40:15.221Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"hosted.execution.enqueued\",\"outcome\":\"success\",\"userId\":\"4e4d79b1-ed5f-483e-b60f-95187ad6df43\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"executionId\":\"9a5ae725-fe64-43d6-aa7e-7c6fb8a1adbe\",\"created\":true},\"occurredAt\":\"2026-09-28T01:40:15.221Z\"}"}
+
+stdout | tests/cloud-e2e.test.ts > CodeForge Cloud Full Platform Certification E2E > completes full certified cloud flow: Zero-Setup Sign-in -> Free Inference -> Metering -> Stripe Pro Upgrade -> Cancellation
+{"ts":"2026-09-28T01:40:15.403Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"billing.webhook.duplicate\",\"outcome\":\"info\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"action\":\"duplicate_skipped\",\"eventType\":\"checkout.session.completed\"},\"occurredAt\":\"2026-09-28T01:40:15.402Z\"}"}
+
+stdout | tests/cloud-e2e.test.ts > CodeForge Cloud Full Platform Certification E2E > completes full certified cloud flow: Zero-Setup Sign-in -> Free Inference -> Metering -> Stripe Pro Upgrade -> Cancellation
+{"ts":"2026-09-28T01:40:15.410Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"billing.webhook.processed\",\"outcome\":\"info\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"action\":\"subscription_canceled\",\"eventType\":\"customer.subscription.deleted\"},\"occurredAt\":\"2026-09-28T01:40:15.410Z\"}"}
+
+·stdout | packages/server/test/model-selection-tool-capability.test.ts > explicit selection of a route without tool calling > fails the turn closed with an actionable message and no provider call
+CodeForge server running at http://localhost:55268
+
+··············stdout | apps/cloud-api/test/account-deletion.test.ts > DELETE /v1/account — GDPR erasure > rejects an unauthenticated deletion request
+{"ts":"2026-09-28T01:40:16.819Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Missing or invalid [REDACTED]\"},\"occurredAt\":\"2026-09-28T01:40:16.819Z\"}"}
+
+·······stdout | apps/cloud-api/test/account-deletion.test.ts > DELETE /v1/account — GDPR erasure > rejects deletion without the explicit confirmation field, and the account survives
+{"ts":"2026-09-28T01:40:17.167Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"67fd07da-ae09-4ace-b699-ef35b10ec98b\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:40:17.166Z\"}"}
+
+·······stdout | apps/cloud-api/test/account-deletion.test.ts > DELETE /v1/account — GDPR erasure > userId comes only from the verified token — there is no field to target a different account
+{"ts":"2026-09-28T01:40:17.384Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"f6ecb79f-e70e-4da6-8656-e9106215c0bc\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:40:17.384Z\"}"}
+
+stdout | apps/cloud-api/test/account-deletion.test.ts > DELETE /v1/account — GDPR erasure > userId comes only from the verified token — there is no field to target a different account
+{"ts":"2026-09-28T01:40:17.404Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"account.deleted\",\"outcome\":\"success\",\"userId\":\"f6ecb79f-e70e-4da6-8656-e9106215c0bc\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"sessionsDeleted\":0,\"artifactsPurged\":0},\"occurredAt\":\"2026-09-28T01:40:17.404Z\"}"}
+
+··stdout | apps/cloud-api/test/account-deletion.test.ts > DELETE /v1/account — GDPR erasure > deletes the account, its hosted workflow sessions, and is safely idempotent on retry
+{"ts":"2026-09-28T01:40:17.559Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.login.succeeded\",\"outcome\":\"success\",\"userId\":\"192464d6-b92d-4843-bf74-a5c6b5252cfa\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"leg\":\"desktop\",\"isNewUser\":true},\"occurredAt\":\"2026-09-28T01:40:17.559Z\"}"}
+
+·····stdout | apps/cloud-api/test/account-deletion.test.ts > DELETE /v1/account — GDPR erasure > deletes the account, its hosted workflow sessions, and is safely idempotent on retry
+{"ts":"2026-09-28T01:40:17.595Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"account.deleted\",\"outcome\":\"success\",\"userId\":\"192464d6-b92d-4843-bf74-a5c6b5252cfa\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"sessionsDeleted\":1,\"artifactsPurged\":0},\"occurredAt\":\"2026-09-28T01:40:17.595Z\"}"}
+
+stdout | apps/cloud-api/test/account-deletion.test.ts > DELETE /v1/account — GDPR erasure > deletes the account, its hosted workflow sessions, and is safely idempotent on retry
+{"ts":"2026-09-28T01:40:17.609Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"userId\":\"192464d6-b92d-4843-bf74-a5c6b5252cfa\",\"details\":{\"reason\":\"session_unknown\"},\"occurredAt\":\"2026-09-28T01:40:17.608Z\"}"}
+
+stdout | apps/cloud-api/test/account-deletion.test.ts > DELETE /v1/account — GDPR erasure > deletes the account, its hosted workflow sessions, and is safely idempotent on retry
+{"ts":"2026-09-28T01:40:17.610Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/workflows/hosted-f75c315b-595c-43de-8d83-77ebc760d1ad\",\"reason\":\"Session has been revoked or has expired\"},\"occurredAt\":\"2026-09-28T01:40:17.610Z\"}"}
+
+·stdout | apps/cloud-api/test/account-deletion.test.ts > DELETE /v1/account — GDPR erasure > deletes the account, its hosted workflow sessions, and is safely idempotent on retry
+{"ts":"2026-09-28T01:40:17.618Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"userId\":\"192464d6-b92d-4843-bf74-a5c6b5252cfa\",\"details\":{\"reason\":\"session_unknown\"},\"occurredAt\":\"2026-09-28T01:40:17.618Z\"}"}
+
+stdout | apps/cloud-api/test/account-deletion.test.ts > DELETE /v1/account — GDPR erasure > deletes the account, its hosted workflow sessions, and is safely idempotent on retry
+{"ts":"2026-09-28T01:40:17.621Z","level":"info","logger":"cloud-api","msg":"[security-audit] {\"type\":\"auth.session.rejected\",\"outcome\":\"denied\",\"ipAddress\":\"127.0.0.1\",\"details\":{\"path\":\"/v1/account\",\"reason\":\"Session has been revoked or has expired\"},\"occurredAt\":\"2026-09-28T01:40:17.620Z\"}"}
+
+Release packaging supports only the staging or production channel.
+The production Cloud URL must be HTTPS and must not be loopback.
+························stdout | packages/server/test/steering.test.ts > Agent Steering Safety & Turn Concurrency (CF-06) > HTTP API: /api/send with steer: true steers active turn and rejects concurrent start
+CodeForge server running at http://localhost:55285
+
+·stdout | packages/server/test/steering.test.ts > Agent Steering Safety & Turn Concurrency (CF-06) > accepts a steer through the public API while an approval is pending
+CodeForge server running at http://localhost:55290
+
+··············································································································stdout | packages/server/test/delivery-api.test.ts > CF-10 delivery HTTP surface > exposes local delivery inspection routes and rejects uncertified sources
+CodeForge server running at http://localhost:55301
+
+···········stdout | packages/server/test/delivery-api.test.ts > CF-10 delivery HTTP surface > does not let delivery API actions resurrect terminal state or make duplicate terminal transitions
+CodeForge server running at http://localhost:55307
+
+·················································stdout | packages/ui/test/execution-mode-desktop-e2e.test.ts > CF-12 Desktop renderer to server execution-mode path > keeps an action-verb submission in Chat when the renderer selected Chat
+CodeForge server running at http://localhost:55317
+
+stdout | packages/ui/test/execution-mode-desktop-e2e.test.ts > CF-12 Desktop renderer to server execution-mode path > keeps passive wording in Agent when the renderer selected Agent
+CodeForge server running at http://localhost:55320
+
+stdout | packages/ui/test/execution-mode-desktop-e2e.test.ts > CF-12 Desktop renderer to server execution-mode path > renders an Agent startup failure from the persisted server event without a Chat fallback
+CodeForge server running at http://localhost:55323
+
+··stdout | packages/ui/test/execution-mode-desktop-e2e.test.ts > CF-12 Desktop renderer to server execution-mode path > snapshots a mode change so it affects only the next renderer submission
+CodeForge server running at http://localhost:55328
+
+·············stdout | packages/server/test/release-status.test.ts > GET /api/free-cloud/release-status (R35-AQ) > reports internal-unavailable honestly when Free Cloud is not configured
+CodeForge server running at http://localhost:55333
+
+··················stdout | packages/server/test/release-status.test.ts > GET /api/free-cloud/release-status (R35-AQ) > reports no-supply as an external blocker, never as a defect
+CodeForge server running at http://localhost:55336
+
+·stdout | packages/server/test/release-status.test.ts > GET /api/free-cloud/release-status (R35-AQ) > requires the control-plane bearer when one is configured
+CodeForge server running at http://localhost:55338
+
+·stdout | packages/server/test/release-status.test.ts > GET /api/free-cloud/release-status (R35-AQ) > fails closed: a routable bind without a control-plane token refuses to start
+CodeForge server running at http://localhost:55341
+
+····································································································stdout | packages/server/test/user-intent-hold-api.test.ts > CF-17 intent-hold protocol boundary > acknowledges bounded hold transitions and persists no draft payload
+CodeForge server running at http://localhost:55345
+
+···················································-·······················································stdout | apps/desktop/test/runtime-port-isolation.test.ts > desktop runtime port isolation > starts on an independent loopback port while another listener is occupied
+CodeForge server running at http://localhost:55351
+
+········stdout | apps/desktop/test/runtime-port-isolation.test.ts > desktop runtime port isolation > keeps two isolated runtimes on distinct endpoints
+CodeForge server running at http://localhost:55354
+
+stdout | apps/desktop/test/runtime-port-isolation.test.ts > desktop runtime port isolation > keeps two isolated runtimes on distinct endpoints
+CodeForge server running at http://localhost:55355
+
+······································································································································································································································stdout | packages/server/test/session-isolation.test.ts > session isolation (R35-R) > one session's turns and events are not visible through another session's reads
+CodeForge server running at http://localhost:55359
+
+stdout | packages/server/test/session-isolation.test.ts > session isolation (R35-R) > resolving another turn's approval by id cannot cross into a session that has no such approval
+CodeForge server running at http://localhost:55362
+
+························································································································stdout | packages/server/test/close-safety-runtime-status.test.ts > CodeForgeServer.getRuntimeStatus() — the real authority behind close-safety > reports idle/recoverable with no active work on a fresh server
+CodeForge server running at http://localhost:55366
+
+stdout | packages/server/test/close-safety-runtime-status.test.ts > CodeForgeServer.getRuntimeStatus() — the real authority behind close-safety > reflects a genuinely running local command as active AND unrecoverable — and resolveCloseAction always asks
+CodeForge server running at http://localhost:55367
+
+·stdout | packages/server/test/close-safety-runtime-status.test.ts > CodeForgeServer.getRuntimeStatus() — the real authority behind close-safety > returns to idle once the command completes, and normal close preferences apply again
+CodeForge server running at http://localhost:55368
+
+stdout | packages/server/test/close-safety-runtime-status.test.ts > CodeForgeServer.getRuntimeStatus() — the real authority behind close-safety > reports multiple simultaneously active commands with an accurate count
+CodeForge server running at http://localhost:55369
+
+···············stdout | packages/server/test/bind-failure.test.ts > CodeForgeServer.start bind failure > still starts normally on a free port
+CodeForge server running at http://localhost:55372
+
+stderr | packages/server/test/api-key-validation.test.ts > API Key Validation > validateRealRuntimeConfiguration via server constructor > when CODEFORGE_REAL_RUNTIME=true > and no provider API keys are present > should log a warning but still allow server to start
+⚠️  CODEFORGE_REAL_RUNTIME=true but no provider API keys configured.
+Real runtime mode requires at least one provider API key (e.g., OPENROUTER_API_KEY).
+The server will start but real inference will fail at runtime.
+Set API keys in environment variables or configure credentials in the app.
+
+························································································································································································································································································································································································································································································································································································································································································-······························································································································································································································································································································································································stdout | packages/eight-bit/test/policy-metadata.test.ts > 8-Bit provider policy metadata > reports policy metadata without treating it as acceptance
+[qualification] Qualifying google/gemini-2.5-flash for roles:
+
+····························································································································································································································································································--··········································································································································································································································································································································································································································································------------------------------------·········-
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts > CF-11 production Desktop Cloud bridge > surfaces target divergence and authorization revocation before a managed push or PR
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts:213:3
+    211|   });
+    212|
+    213|   it("surfaces target divergence and authorization revocation before a…
+       |   ^
+    214|     const diverged = await desktopHarness();
+    215|     const advanced = await advanceRemoteTarget(diverged.fixture);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts > CF-11 production Desktop Cloud bridge > uses only Cloud retry for retryable failure and preserves permanent terminal failure
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts:231:3
+    229|   }, 15_000);
+    230|
+    231|   it("uses only Cloud retry for retryable failure and preserves perman…
+       |   ^
+    232|     const retryable = await desktopHarness({ failMintOnce: true });
+    233|     const first = await retryable.bridge.publish(retryable.delivery.id…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  packages/forgegreen-campaign/test/fg11-source-state.test.ts > FG-11 source-state / campaign-harness identity > the live repository currently matches the certified source-state document
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/forgegreen-campaign/test/fg11-source-state.test.ts:55:27
+     53|     const certified = loadCertifiedSourceState(repoRoot);
+     54|     const result = verifyCertifiedSourceState(repoRoot, certified);
+     55|     expect(result.stable).toBe(true);
+       |                           ^
+     56|     expect(result.changedFiles).toEqual([]);
+     57|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  packages/forgegreen-campaign/test/fg12e-harness-provenance.test.ts > FG-12E harness provenance > freezing the FG-12E identity re-verifies the certified Candidate D source-state and does not change it
+SourceStateDriftError: FG12E_SOURCE_STATE_DRIFT
+ ❯ freezeFg12eIdentity packages/forgegreen-campaign/src/fg12e/harness-identity.ts:37:28
+     35|   const certified = loadCertifiedSourceState(repoRoot);
+     36|   const check = verifyCertifiedSourceState(repoRoot, certified);
+     37|   if (!check.stable) throw new SourceStateDriftError("FG12E_SOURCE_STA…
+       |                            ^
+     38|   return {
+     39|     certifiedSourceStateId: check.currentId,
+ ❯ packages/forgegreen-campaign/test/fg12e-harness-provenance.test.ts:32:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  packages/server/test/parallel-orchestrator-integration.test.ts > CF-08 real concurrent worktree orchestration > proves two Coders overlap in separate real worktrees and safely promotes their clean synthesis
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/server/test/parallel-orchestrator-integration.test.ts:79:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  4 failed | 488 passed | 8 skipped (500)
+      Tests  5 failed | 4089 passed | 48 skipped (4142)
+   Start at  21:24:40
+   Duration  1010.01s (tests 87%, import 12%, transform 1%)
+
+    Isolate  500 workers spawned · ~460ms startup each (spawn + environment, per file)
+             at least ~37.85s faster with isolate: false — reuses workers across files instead of one per file

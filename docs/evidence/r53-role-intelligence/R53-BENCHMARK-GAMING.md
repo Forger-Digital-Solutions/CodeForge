@@ -1,0 +1,5 @@
+# R53 benchmark integrity
+
+The seven Reviewer challenge cases were fixed before calls, include a clean filename/constant variant, and require both a correct verdict and a localized defect finding for broken patches. The six Explorer cases use distinct repository shapes and grade invented and unnecessary paths separately. Both direct challenge scripts select only measured explicit-zero-price managed routes and write immutable run evidence; neither script writes production qualification receipts or route-quality outcomes.
+
+The direct challenges are deliberately lower authority than the production role suite and verified autonomous missions. The Reviewer grader's localized phrase markers could reward a response that mentions a defect word without fully understanding the patch; the Explorer exact-set grader counted an arguably relevant extra quota test as wrong. The results are evidence for comparison and diagnosis, not a promotion mechanism. A future suite should use executable semantic variants and holdout repositories before direct challenge scores can trigger requalification decisions.

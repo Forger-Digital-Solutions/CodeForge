@@ -1,0 +1,267 @@
+
+> codeforge@0.4.0 build
+> npm run build --workspaces --if-present
+
+
+> @codeforge/agent@0.4.0 build
+> tsc -b
+
+
+> @codeforge/benchmark@0.4.0 build
+> tsc -b
+
+
+> @codeforge/browser@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cli@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-auth@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-billing@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-db@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-entitlements@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-gateway@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-usage@0.4.0 build
+> tsc -b
+
+
+> @codeforge/computer-use@0.4.0 build
+> tsc -b
+
+
+> @codeforge/context@0.4.0 build
+> tsc -b
+
+
+> @codeforge/core@0.4.0 build
+> tsc -b
+
+
+> @codeforge/crypto@0.4.0 build
+> tsc -b
+
+
+> @codeforge/director@0.4.0 build
+> tsc -b
+
+
+> @codeforge/eight-bit@0.4.0 build
+> tsc -b
+
+
+> @codeforge/forge-green@0.4.0 build
+> tsc -b
+
+
+> @codeforge/forge-zero@0.4.0 build
+> tsc -b
+
+
+> @codeforge/forgegreen-campaign@0.4.0 build
+> tsc -b
+
+
+> @codeforge/gems@0.4.0 build
+> tsc -b
+
+
+> @codeforge/git@0.4.0 build
+> tsc -b
+
+
+> @codeforge/identity@0.4.0 build
+> tsc -b
+
+
+> @codeforge/integration-tests@0.4.0 build
+> tsc -b
+
+
+> @codeforge/intelligence@0.4.0 build
+> tsc -b
+
+
+> @codeforge/legal-policy@0.4.0 build
+> tsc -b
+
+
+> @codeforge/lsp@0.4.0 build
+> tsc -b
+
+
+> @codeforge/mcp@0.4.0 build
+> tsc -b
+
+
+> @codeforge/model-registry@0.4.0 build
+> tsc -b
+
+
+> @codeforge/paid-auto@0.4.0 build
+> tsc -b
+
+
+> @codeforge/permissions@0.4.0 build
+> tsc -b
+
+
+> @codeforge/plugins@0.4.0 build
+> tsc -b
+
+
+> @codeforge/protocol@0.4.0 build
+> tsc -b
+
+
+> @codeforge/providers@0.4.0 build
+> tsc -b
+
+
+> @codeforge/repo-intelligence@0.4.0 build
+> tsc -b
+
+
+> @codeforge/router@0.4.0 build
+> tsc -b
+
+
+> @codeforge/sandbox@0.4.0 build
+> tsc -b
+
+
+> @codeforge/sdk@0.4.0 build
+> tsc -b
+
+
+> @codeforge/secrets@0.4.0 build
+> tsc -b
+
+
+> @codeforge/server@0.4.0 build
+> tsc -b
+
+
+> @codeforge/sessions@0.4.0 build
+> tsc -b
+
+
+> @codeforge/shared@0.4.0 build
+> tsc -b
+
+
+> @codeforge/telemetry@0.4.0 build
+> tsc -b
+
+
+> @codeforge/terminal@0.4.0 build
+> tsc -b
+
+
+> @codeforge/tools@0.4.0 build
+> tsc -b
+
+
+> @codeforge/ui@0.4.0 build
+> tsc -b
+
+
+> codeforge-vscode@0.4.0 build
+> tsc -b
+
+
+> @codeforge/workflow@0.4.0 build
+> tsc -b
+
+
+> codeforge-cloud-api@0.4.0 build
+> tsc -b
+
+
+> codeforge-desktop@0.4.0 build
+> npm run build:packages && npm run build:main && npm run build:renderer
+
+
+> codeforge-desktop@0.4.0 build:packages
+> tsc -b ../../tsconfig.json
+
+npm notice
+npm notice New major version of npm available! 11.17.0 -> 12.1.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.1.0
+npm notice To update run: npm install -g npm@12.1.0
+npm notice
+
+> codeforge-desktop@0.4.0 build:main
+> tsc -p tsconfig.main.json && node -e "const fs=require('fs'); fs.copyFileSync('src/preload.cjs', 'dist/preload.cjs'); fs.copyFileSync('cloud-endpoints.json', 'dist/cloud-endpoints.json')" && node scripts/build-identity.mjs
+
+{"version":"0.4.0","commit":"80231234ae271e3119f0a0275fc9c6dedcab818e","shortCommit":"80231234ae27","branch":"codex/r29-release-closure","dirty":true,"builtAt":"2026-09-28T10:19:14.931Z"}
+npm notice
+npm notice New major version of npm available! 11.17.0 -> 12.1.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.1.0
+npm notice To update run: npm install -g npm@12.1.0
+npm notice
+
+> codeforge-desktop@0.4.0 build:renderer
+> node scripts/check-renderer-sources.mjs && vite build
+
+RENDERER_SOURCE_TREE=PASS (apps\desktop\src, packages\ui\src)
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 191 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/renderer/index.html                             0.78 kB │ gzip:   0.44 kB
+dist/renderer/assets/index-C6ysZ1K8.css            105.07 kB │ gzip:  16.55 kB
+dist/renderer/assets/rolldown-runtime-CbXtAM7H.js    0.58 kB │ gzip:   0.36 kB
+dist/renderer/assets/vendor-ClNNG_bI.js            246.22 kB │ gzip:  72.19 kB
+dist/renderer/assets/index-C5Hs66EJ.js             495.38 kB │ gzip: 168.72 kB
+
+✓ built in 372ms
+npm notice
+npm notice New major version of npm available! 11.17.0 -> 12.1.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.1.0
+npm notice To update run: npm install -g npm@12.1.0
+npm notice
+
+> @codeforge/web@0.4.0 build
+> tsc -b && vite build
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 148 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                             0.61 kB │ gzip:   0.36 kB
+dist/assets/index-DwxEPmdK.css             68.00 kB │ gzip:  11.05 kB
+dist/assets/rolldown-runtime-CbXtAM7H.js    0.58 kB │ gzip:   0.36 kB
+dist/assets/vendor-CdbtticQ.js            246.21 kB │ gzip:  72.22 kB
+dist/assets/index-BGHD4H7U.js             316.84 kB │ gzip: 120.94 kB
+
+✓ built in 219ms
+npm notice
+npm notice New major version of npm available! 11.17.0 -> 12.1.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.1.0
+npm notice To update run: npm install -g npm@12.1.0
+npm notice
+npm notice
+npm notice New major version of npm available! 11.17.0 -> 12.1.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.1.0
+npm notice To update run: npm install -g npm@12.1.0
+npm notice

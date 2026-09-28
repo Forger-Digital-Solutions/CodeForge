@@ -1,0 +1,5 @@
+# R53 ForgeGreen capacity regression
+
+The root-config server suite completed with 902 passed, 3 skipped, and zero failures after the R53 qualification changes. Seven focused capacity/fairness files completed with 52 passed, zero failed or skipped. Those files cover R52 capacity scenarios, multi-user fairness, quota policy and ledger behavior, cold-start demand probing, route capacity probing, and model-scoped 429 isolation. The broader affected routing set finished with 529 passed and 2 skipped across EightBit, model registry, and Free Fabric server wiring.
+
+Provider 429 remains a capacity signal: it does not add runtime role-quality evidence, and an upstream transient during role qualification now stops further probes while preserving the prior receipt. The 34-decision production-ranking simulation verified no quality-evidence change when a route was capacity denied. The live multi-step mission exercised a real mid-run Coder failover and an independent Reviewer pool; the refactor and any later R53 missions are recorded separately.

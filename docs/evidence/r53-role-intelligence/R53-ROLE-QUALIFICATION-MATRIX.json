@@ -1,0 +1,528 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28T10:55:29.820Z",
+  "inventoryGeneratedAt": "2026-09-28T00:47:25.928Z",
+  "note": "One row per eligible managed route. Runtime role feedback from ephemeral R52 mission hosts is not in the qualification database; null means unobserved here, not zero quality failures.",
+  "rows": [
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:codestral-latest",
+      "receiptSuite": "R41_ROLE_QUALIFICATION_V3",
+      "qualifiedAt": "2026-09-26T23:43:56.852Z",
+      "receiptCurrent": true,
+      "capacityState": "CAPACITY_UNMEASURED",
+      "policyState": "ELIGIBLE_MANAGED_FREE",
+      "roles": {
+        "EXPLORER": {
+          "status": "NOT_QUALIFIED",
+          "receiptScoreAdjustment": -3,
+          "sampleCount": 2,
+          "passedCases": 0,
+          "failedCases": 2,
+          "lastPositiveCase": null,
+          "lastNegativeCase": "explorer.reservation_release",
+          "runtimeQualitySamples": null
+        },
+        "PLANNER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "planner.schema",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "compact.edit",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "REVIEWER": {
+          "status": "PROBATION",
+          "receiptScoreAdjustment": 0,
+          "sampleCount": 6,
+          "passedCases": 4,
+          "failedCases": 2,
+          "lastPositiveCase": "reviewer.reservation_leak",
+          "lastNegativeCase": "reviewer.test_cheat",
+          "runtimeQualitySamples": null
+        }
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-2508",
+      "pool": "managed:mistral:live-acct-mistral:model:codestral-2508",
+      "receiptSuite": "R41_ROLE_QUALIFICATION_V3",
+      "qualifiedAt": "2026-09-27T00:09:50.273Z",
+      "receiptCurrent": true,
+      "capacityState": "CAPACITY_MEASURED",
+      "policyState": "ELIGIBLE_MANAGED_FREE",
+      "roles": {
+        "EXPLORER": {
+          "status": "NOT_QUALIFIED",
+          "receiptScoreAdjustment": -3,
+          "sampleCount": 2,
+          "passedCases": 0,
+          "failedCases": 2,
+          "lastPositiveCase": null,
+          "lastNegativeCase": "explorer.reservation_release",
+          "runtimeQualitySamples": null
+        },
+        "PLANNER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "planner.schema",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "compact.edit",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "REVIEWER": {
+          "status": "PROBATION",
+          "receiptScoreAdjustment": 0,
+          "sampleCount": 6,
+          "passedCases": 4,
+          "failedCases": 2,
+          "lastPositiveCase": "reviewer.reservation_leak",
+          "lastNegativeCase": "reviewer.test_cheat",
+          "runtimeQualitySamples": null
+        }
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "mistral-code-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:mistral-code-latest",
+      "receiptSuite": "R41_ROLE_QUALIFICATION_V3",
+      "qualifiedAt": "2026-09-27T00:44:58.837Z",
+      "receiptCurrent": true,
+      "capacityState": "CAPACITY_UNMEASURED",
+      "policyState": "ELIGIBLE_MANAGED_FREE",
+      "roles": {
+        "EXPLORER": {
+          "status": "NOT_QUALIFIED",
+          "receiptScoreAdjustment": -3,
+          "sampleCount": 2,
+          "passedCases": 0,
+          "failedCases": 2,
+          "lastPositiveCase": null,
+          "lastNegativeCase": "explorer.reservation_release",
+          "runtimeQualitySamples": null
+        },
+        "PLANNER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "planner.schema",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "compact.edit",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "REVIEWER": {
+          "status": "PROBATION",
+          "receiptScoreAdjustment": 0,
+          "sampleCount": 6,
+          "passedCases": 4,
+          "failedCases": 2,
+          "lastPositiveCase": "reviewer.reservation_leak",
+          "lastNegativeCase": "reviewer.test_cheat",
+          "runtimeQualitySamples": null
+        }
+      }
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "pool": "managed:groq:live-acct-groq:model:openai/gpt-oss-120b",
+      "receiptSuite": "R41_ROLE_QUALIFICATION_V3",
+      "qualifiedAt": "2026-09-26T23:43:41.154Z",
+      "receiptCurrent": true,
+      "capacityState": "CAPACITY_UNMEASURED",
+      "policyState": "ELIGIBLE_MANAGED_FREE",
+      "roles": {
+        "EXPLORER": {
+          "status": "PROBATION",
+          "receiptScoreAdjustment": 0,
+          "sampleCount": 2,
+          "passedCases": 1,
+          "failedCases": 1,
+          "lastPositiveCase": "explorer.route_execution",
+          "lastNegativeCase": "explorer.reservation_release",
+          "runtimeQualitySamples": null
+        },
+        "PLANNER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 1,
+          "sampleCount": 1,
+          "passedCases": 1,
+          "failedCases": 0,
+          "lastPositiveCase": "planner.release_callsite",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "compact.edit",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "REVIEWER": {
+          "status": "NOT_TESTED",
+          "receiptScoreAdjustment": 0,
+          "sampleCount": 0,
+          "passedCases": 0,
+          "failedCases": 0,
+          "lastPositiveCase": null,
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        }
+      }
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "pool": "managed:groq:live-acct-groq:model:openai/gpt-oss-20b",
+      "receiptSuite": "R41_ROLE_QUALIFICATION_V3",
+      "qualifiedAt": "2026-09-26T23:51:24.989Z",
+      "receiptCurrent": true,
+      "capacityState": "CAPACITY_MEASURED",
+      "policyState": "ELIGIBLE_MANAGED_FREE",
+      "roles": {
+        "EXPLORER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 1,
+          "sampleCount": 1,
+          "passedCases": 1,
+          "failedCases": 0,
+          "lastPositiveCase": "explorer.route_execution",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "PLANNER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 1,
+          "sampleCount": 1,
+          "passedCases": 1,
+          "failedCases": 0,
+          "lastPositiveCase": "planner.schema",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "compact.edit",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "REVIEWER": {
+          "status": "NOT_TESTED",
+          "receiptScoreAdjustment": 0,
+          "sampleCount": 0,
+          "passedCases": 0,
+          "failedCases": 0,
+          "lastPositiveCase": null,
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        }
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-3b-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:ministral-3b-latest",
+      "receiptSuite": "R41_ROLE_QUALIFICATION_V3",
+      "qualifiedAt": "2026-09-26T23:51:34.507Z",
+      "receiptCurrent": true,
+      "capacityState": "CAPACITY_UNMEASURED",
+      "policyState": "ELIGIBLE_MANAGED_FREE",
+      "roles": {
+        "EXPLORER": {
+          "status": "NOT_QUALIFIED",
+          "receiptScoreAdjustment": -3,
+          "sampleCount": 2,
+          "passedCases": 0,
+          "failedCases": 2,
+          "lastPositiveCase": null,
+          "lastNegativeCase": "explorer.reservation_release",
+          "runtimeQualitySamples": null
+        },
+        "PLANNER": {
+          "status": "HARD_FAILURE",
+          "receiptScoreAdjustment": -6,
+          "sampleCount": 2,
+          "passedCases": 0,
+          "failedCases": 2,
+          "lastPositiveCase": null,
+          "lastNegativeCase": "planner.schema",
+          "runtimeQualitySamples": null
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "compact.edit",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "REVIEWER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 9,
+          "sampleCount": 6,
+          "passedCases": 6,
+          "failedCases": 0,
+          "lastPositiveCase": "reviewer.test_cheat",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        }
+      }
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "ministral-8b-latest",
+      "pool": "managed:mistral:live-acct-mistral:model:ministral-8b-latest",
+      "receiptSuite": "R41_ROLE_QUALIFICATION_V3",
+      "qualifiedAt": "2026-09-26T23:55:02.154Z",
+      "receiptCurrent": true,
+      "capacityState": "CAPACITY_UNMEASURED",
+      "policyState": "ELIGIBLE_MANAGED_FREE",
+      "roles": {
+        "EXPLORER": {
+          "status": "NOT_QUALIFIED",
+          "receiptScoreAdjustment": -3,
+          "sampleCount": 2,
+          "passedCases": 0,
+          "failedCases": 2,
+          "lastPositiveCase": null,
+          "lastNegativeCase": "explorer.reservation_release",
+          "runtimeQualitySamples": null
+        },
+        "PLANNER": {
+          "status": "HARD_FAILURE",
+          "receiptScoreAdjustment": -6,
+          "sampleCount": 2,
+          "passedCases": 0,
+          "failedCases": 2,
+          "lastPositiveCase": null,
+          "lastNegativeCase": "planner.schema",
+          "runtimeQualitySamples": null
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "compact.edit",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "REVIEWER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 6,
+          "sampleCount": 6,
+          "passedCases": 5,
+          "failedCases": 1,
+          "lastPositiveCase": "reviewer.test_cheat",
+          "lastNegativeCase": "reviewer.clean_comment",
+          "runtimeQualitySamples": null
+        }
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "receiptSuite": "R41_ROLE_QUALIFICATION_V3",
+      "qualifiedAt": "2026-09-27T13:51:10.419Z",
+      "receiptCurrent": true,
+      "capacityState": "CAPACITY_MEASURED",
+      "policyState": "ELIGIBLE_MANAGED_FREE",
+      "roles": {
+        "EXPLORER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 1,
+          "sampleCount": 1,
+          "passedCases": 1,
+          "failedCases": 0,
+          "lastPositiveCase": "explorer.route_execution",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "PLANNER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "planner.schema",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "compact.edit",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "REVIEWER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 8,
+          "sampleCount": 5,
+          "passedCases": 5,
+          "failedCases": 0,
+          "lastPositiveCase": "reviewer.test_cheat",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        }
+      }
+    },
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "pool": "managed:openrouter:live-acct-openrouter",
+      "receiptSuite": "R41_ROLE_QUALIFICATION_V3",
+      "qualifiedAt": "2026-09-27T00:03:21.287Z",
+      "receiptCurrent": true,
+      "capacityState": "CAPACITY_MEASURED",
+      "policyState": "ELIGIBLE_MANAGED_FREE",
+      "roles": {
+        "EXPLORER": {
+          "status": "NOT_QUALIFIED",
+          "receiptScoreAdjustment": -3,
+          "sampleCount": 2,
+          "passedCases": 0,
+          "failedCases": 2,
+          "lastPositiveCase": null,
+          "lastNegativeCase": "explorer.reservation_release",
+          "runtimeQualitySamples": null
+        },
+        "PLANNER": {
+          "status": "HARD_FAILURE",
+          "receiptScoreAdjustment": -6,
+          "sampleCount": 2,
+          "passedCases": 0,
+          "failedCases": 2,
+          "lastPositiveCase": null,
+          "lastNegativeCase": "planner.schema",
+          "runtimeQualitySamples": null
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "compact.edit",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "REVIEWER": {
+          "status": "HARD_FAILURE",
+          "receiptScoreAdjustment": -12,
+          "sampleCount": 6,
+          "passedCases": 2,
+          "failedCases": 4,
+          "lastPositiveCase": "reviewer.clean",
+          "lastNegativeCase": "reviewer.test_cheat",
+          "runtimeQualitySamples": null
+        }
+      }
+    },
+    {
+      "providerId": "groq",
+      "modelId": "qwen/qwen3.8-27b",
+      "pool": "managed:groq:live-acct-groq:model:qwen/qwen3.8-27b",
+      "receiptSuite": "R41_ROLE_QUALIFICATION_V3",
+      "qualifiedAt": "2026-09-26T23:54:56.523Z",
+      "receiptCurrent": true,
+      "capacityState": "CAPACITY_UNMEASURED",
+      "policyState": "ELIGIBLE_MANAGED_FREE",
+      "roles": {
+        "EXPLORER": {
+          "status": "NOT_TESTED",
+          "receiptScoreAdjustment": 0,
+          "sampleCount": 0,
+          "passedCases": 0,
+          "failedCases": 0,
+          "lastPositiveCase": null,
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "PLANNER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 1,
+          "sampleCount": 1,
+          "passedCases": 1,
+          "failedCases": 0,
+          "lastPositiveCase": "planner.release_callsite",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "CODER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 3,
+          "sampleCount": 2,
+          "passedCases": 2,
+          "failedCases": 0,
+          "lastPositiveCase": "compact.edit",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        },
+        "REVIEWER": {
+          "status": "QUALIFIED",
+          "receiptScoreAdjustment": 1,
+          "sampleCount": 1,
+          "passedCases": 1,
+          "failedCases": 0,
+          "lastPositiveCase": "reviewer.clean_comment",
+          "lastNegativeCase": null,
+          "runtimeQualitySamples": null
+        }
+      }
+    }
+  ]
+}

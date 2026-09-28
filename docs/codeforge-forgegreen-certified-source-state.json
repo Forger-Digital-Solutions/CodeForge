@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "f24481030f350a69de885b9b73f8394adb50b4c23bfc47067a3754c5be2fce19",
-  "surfaceVersion": "r52-production-scale-v1",
+  "sourceStateId": "d122e0cce57f80a5c81612a2fe120cc1223db585f5df9eb91dd6e751e6791593",
+  "surfaceVersion": "r53-role-intelligence-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -48,7 +48,7 @@
     "packages/workflow/src/verification-service.ts"
   ],
   "materialFileHashes": {
-    "packages/agent/src/index.ts": "36ea246e4fb980d70c5aea3721f024f43918782d",
+    "packages/agent/src/index.ts": "fd9c7b00cbcb0bc14cf6e1e8bdef4890c096a2f6",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
     "packages/benchmark/src/index.ts": "615c02c9d77491a17e8b6a80a82cb619efd6be02",
@@ -1861,14 +1861,44 @@
       "regressionEvidence": "docs/evidence/r52-production-scale/R52-FINAL-REPORT.md; live inventory 64 models / 244 routes / 142 pools / 3 verified usable free domains; five live $0 missions through the production stack — 4 completed (unmeasured-demand-recovery, provider-outage absorbed at admission, reviewer-scarcity demand-probe recovery, multi-step with two real mid-run failovers and 4/4 post-integration tests) and 1 honest block (reviewer turn-budget exhaustion on nemotron — gate refused completion); seeded long-horizon simulation 4,796 decisions / 41 users / 0 invariant violations / 0 starvation / 0 leaked leases; model-registry 145, eight-bit 347/2sk (8 no-false-waiting scenarios + 7 multi-user fairness), server 902/3sk with the two R51 baseline failures now fixed (stale fixtures, not relaxed gates), paid-auto 71, cloud-billing 3, full monorepo build clean; Cloudflare Workers AI re-probed on the exact production analytics queries — still unauthorized on the env token, guard correctly stays fail-closed",
       "recertifiedAt": "2026-09-28",
       "sourceStateConstant": "CODEFORGE_R52_PRODUCTION_SCALE_SOURCE_STATE"
+    },
+    {
+      "label": "R53 role-intelligence source recertification",
+      "reason": "Reviewer instruction now asks for a verdict once the supplied diff resolves the concrete task, avoiding unnecessary read-only exploration while retaining blocking findings and the existing structured review contract. Three distinct current role failures reopen a fresh qualification through the governed free-only queue. Role probes stop at the first upstream transient and retain the prior receipt. ForgeVerify and paid routing are unchanged.",
+      "priorSourceStateId": "f24481030f350a69de885b9b73f8394adb50b4c23bfc47067a3754c5be2fce19",
+      "priorSurfaceVersion": "r52-production-scale-v1",
+      "resultingSourceStateId": "d122e0cce57f80a5c81612a2fe120cc1223db585f5df9eb91dd6e751e6791593",
+      "resultingSurfaceVersion": "r53-role-intelligence-v1",
+      "changes": [
+        {
+          "file": "packages/agent/src/index.ts",
+          "change": "Reviewer convergence instruction for sufficient evidence; structured verdict and blocker requirements unchanged.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/model-registry/src/free-cloud-service.ts",
+          "change": "Current, distinct role failures trigger bounded urgent requalification; provider capacity and policy exclusions remain separate.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/eight-bit/src/qualification/role-suite.ts",
+          "change": "Upstream transient interrupts later role probes, leaves unattempted roles untested, and makes the receipt retryable without a false quality verdict.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r53-role-intelligence/R53-FINAL-REPORT.md",
+      "recertifiedAt": "2026-09-28",
+      "sourceStateConstant": "CODEFORGE_R53_ROLE_INTELLIGENCE_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-28T00:32:34.556Z",
+  "recertifiedAt": "2026-09-28T01:43:01.735Z",
   "recertification": {
-    "phase": "R52 production-scale closure: honest inventory, storm-controlled measurement, no false waiting",
-    "reason": "Recertify the reviewed R52 changes: capacity measurement is storm-controlled (in-flight coalescing + domain cooldown + bounded per-decision probes), unreached unmeasured candidates report CAPACITY_UNMEASURED truthfully rather than STANDBY, and health-excluded reports carry pool identity. Live inventory proves three verified usable free domains (groq, mistral, openrouter — 18 independent pools); Cloudflare Workers AI stays fail-closed on blocked telemetry; stale qualification receipts reopen measurement instead of quarantining; restart re-measures quota on demand. Completion gate, paid/free isolation, reviewer independence semantics, and fairness are unchanged.",
-    "changedFiles": [],
+    "phase": "R53 role-intelligence source recertification",
+    "reason": "Reviewer instruction now asks for a verdict once the supplied diff resolves the concrete task, avoiding unnecessary read-only exploration while retaining blocking findings and the existing structured review contract. Three distinct current role failures reopen a fresh qualification through the governed free-only queue. Role probes stop at the first upstream transient and retain the prior receipt. ForgeVerify and paid routing are unchanged.",
+    "changedFiles": [
+      "packages/agent/src/index.ts"
+    ],
     "priorSourceStateId": "f24481030f350a69de885b9b73f8394adb50b4c23bfc47067a3754c5be2fce19",
     "guarded": true
   },

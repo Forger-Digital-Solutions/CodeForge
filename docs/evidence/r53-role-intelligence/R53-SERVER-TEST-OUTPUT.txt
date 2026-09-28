@@ -1,0 +1,351 @@
+
+ RUN  v5.0.1 G:/CodeForge
+
+······························································································stdout | packages/server/test/mission-api.test.ts > CF-09 mission HTTP surface > creates, pauses, inspects, resumes, and completes a mission over HTTP
+CodeForge server running at http://localhost:60290
+
+·············stdout | packages/server/test/mission-api.test.ts > CF-09 mission HTTP surface > records trusted steering and cancels a running mission
+CodeForge server running at http://localhost:54810
+
+·stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > rejects empty message
+CodeForge server running at http://localhost:54815
+
+stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > rejects message too long (>10000)
+CodeForge server running at http://localhost:54820
+
+·stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > rejects invalid workspace path (nonexistent)
+CodeForge server running at http://localhost:54826
+
+·stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > rejects concurrent workflows per session (max 1)
+CodeForge server running at http://localhost:54831
+
+·stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > enforces the global workflow cap and releases every slot after cancellation
+CodeForge server running at http://localhost:54838
+
+··stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > blocks a run whose weak verification passed but the goal review found the goal unmet
+CodeForge server running at http://localhost:54849
+
+stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > repairs an unmet goal once, then completes when the re-review confirms
+CodeForge server running at http://localhost:54896
+
+·stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > redacts secrets in persisted turn and evidence
+CodeForge server running at http://localhost:54903
+
+··stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > blocks completion when the reviewer produces no decisive verdict, even after a retry
+CodeForge server running at http://localhost:54908
+
+··stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > handles workflow cancel and surfaces cancelled phase
+CodeForge server running at http://localhost:54913
+
+··stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > continues useful edits beyond the old 32-request envelope and still requires review
+CodeForge server running at http://localhost:54918
+
+stdout | packages/server/test/workflow-hardening.test.ts > WorkflowService hardening — production autonomous execution > lists workflows and includes task metadata
+CodeForge server running at http://localhost:54921
+
+·····stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > still reaches the review when implementation exhausts the primary inference partition
+CodeForge server running at http://localhost:58583
+
+··stdout | packages/server/test/plan-gate-authority.test.ts > Plan gate — workflow transitions are not permission boundaries > authority endpoint validates, persists, and exposes the lease on the session
+CodeForge server running at http://localhost:58588
+
+stdout | packages/server/test/plan-gate-authority.test.ts > Plan gate — workflow transitions are not permission boundaries > Plan: Auto runs an approval-required plan to completion with zero permission cards
+CodeForge server running at http://localhost:58593
+
+·stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > blocks when the reserved review budget runs out before a verdict
+CodeForge server running at http://localhost:58598
+
+··stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > blocks when every reviewer verdict is explicitly indeterminate
+CodeForge server running at http://localhost:53909
+
+···········stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > blocks when the review response is empty
+CodeForge server running at http://localhost:53915
+
+·stdout | packages/server/test/plan-gate-authority.test.ts > Plan gate — workflow transitions are not permission boundaries > Plan: Review First surfaces exactly one execute_plan decision and proceeds after it
+CodeForge server running at http://localhost:53920
+
+···stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > completes on a decisive verdict even when the primary partition is spent
+CodeForge server running at http://localhost:53925
+
+··stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > blocks on a stated-contract violation the semantic review judged met, then completes after repair
+CodeForge server running at http://localhost:53930
+
+····stdout | packages/server/test/plan-gate-authority.test.ts > Plan gate — workflow transitions are not permission boundaries > repair continuation inherits the session lease — no second plan card under Auto
+CodeForge server running at http://localhost:53935
+
+··stdout | packages/server/test/workflow-goal-review.test.ts > workflow goal-conformance review > stays blocked when a stated-contract violation survives every repair attempt
+CodeForge server running at http://localhost:53940
+
+················stdout | packages/server/test/plan-execution-e2e.test.ts > autonomous plan execution — approve / reject / cancel > approve: one approval per side effect, edit applied once, verification passes, evidence and checkpoint recorded
+CodeForge server running at http://localhost:53951
+
+··stdout | packages/server/test/plan-execution-e2e.test.ts > autonomous plan execution — approve / reject / cancel > applies an approved edit but refuses to claim success when there is nothing to verify
+CodeForge server running at http://localhost:53958
+
+····stdout | packages/server/test/plan-execution-e2e.test.ts > autonomous plan execution — approve / reject / cancel > reject: the file is untouched and the workflow does not claim success
+CodeForge server running at http://localhost:53963
+
+··stdout | packages/server/test/plan-execution-e2e.test.ts > autonomous plan execution — approve / reject / cancel > cancel: a pending approval dies with its workflow and a late approve executes nothing
+CodeForge server running at http://localhost:53968
+
+······················stdout | packages/server/test/r24-topology-efficiency-benchmark.test.ts > R24 paired benchmark — fixed_r1 baseline vs adaptive topology under constrained capacity > the adaptive arm reaches the same verified completion spending fewer provider calls — every spawned agent held a real fabric reservation
+R24_PAIRED_BENCHMARK {"armA":{"topology":"fixed_r1","providerCalls":8,"tokens":9680,"childrenSpawned":4,"outcome":"completed"},"armB":{"topology":"normal","providerCalls":4,"tokens":4940,"childrenSpawned":2,"outcome":"completed"},"providerCallRatio":2,"tokenRatio":1.959514170040486}
+
+···········stdout | packages/server/test/workflow.test.ts > Workflow Server Integration > runs workflow via HTTP and completes disciplined steps
+CodeForge server running at http://localhost:53975
+
+·········stdout | packages/server/test/workflow.test.ts > Workflow Server Integration > workflow approval flow blocks until resolved
+CodeForge server running at http://localhost:53980
+
+····stdout | packages/server/test/workflow.test.ts > Workflow Server Integration > workflow cancel works
+CodeForge server running at http://localhost:53985
+
+····stdout | packages/server/test/workflow.test.ts > Workflow Server Integration > lists workflows
+CodeForge server running at http://localhost:53990
+
+stdout | packages/server/test/workflow-agent-integration.test.ts > Workflow ↔ AgentRuntime Real Integration > workflow Implement phase delegates to AgentRuntime with ForgeZero-verified free model (real execution)
+CodeForge server running at http://localhost:53993
+
+·····stdout | packages/server/test/workflow.test.ts > R9 regression — Stop cancels the workflow during engine phases > turn-level cancel route cancels an active workflow while it is verifying (no agent turn running)
+CodeForge server running at http://localhost:54000
+
+·stdout | packages/server/test/workflow-agent-integration.test.ts > Workflow ↔ AgentRuntime Real Integration > explicit Agent mode via /api/send is routed to real autonomous execution
+CodeForge server running at http://localhost:54005
+
+············stdout | packages/server/test/workflow-agent-integration.test.ts > Workflow ↔ AgentRuntime Real Integration > workflow repair loop uses AgentRuntime after verification failure
+CodeForge server running at http://localhost:54010
+
+·····················stdout | packages/server/test/workflow-loop-recovery.test.ts > workflow recovery after a post-edit tool loop > continues once after a real edit, then requires verification and the completion gate
+CodeForge server running at http://localhost:54016
+
+·····stdout | packages/server/test/workflow-loop-recovery.test.ts > workflow recovery after a post-edit tool loop > does not continue a loop that changed no file
+CodeForge server running at http://localhost:54021
+
+·············stdout | packages/server/test/workflow-loop-recovery.test.ts > workflow recovery after a post-edit tool loop > stops after one continuation when the model loops again
+CodeForge server running at http://localhost:54029
+
+·····················stdout | packages/server/test/workflow-agent-budget.test.ts > workflow agent working budget > cancels the agent turn when the budget is exhausted and fails the task truthfully
+CodeForge server running at http://localhost:54037
+
+···stdout | packages/server/test/approval-session-grants.test.ts > task grants on the session lease > routine workspace writes and edits never prompt under Auto Review
+CodeForge server running at http://localhost:54042
+
+stdout | packages/server/test/approval-session-grants.test.ts > task grants on the session lease > asks once for a project-modifying command, then honors Allow for task on a repeat
+CodeForge server running at http://localhost:54045
+
+··stdout | packages/server/test/approval-session-grants.test.ts > task grants on the session lease > Allow Once keeps asking for each Tier-2 command, even an identical repeat
+CodeForge server running at http://localhost:54048
+
+···stdout | packages/server/test/approval-session-grants.test.ts > task grants on the session lease > does not let a task grant survive into another session's lease
+CodeForge server running at http://localhost:54051
+
+·stdout | packages/server/test/approval-session-grants.test.ts > task grants on the session lease > destructive commands always ask and Allow for task cannot mint a grant for them
+CodeForge server running at http://localhost:54054
+
+···········stdout | packages/server/test/sse-reconnect-e2e.test.ts > SSE reconnect and renderer reconstruction E2E > replays missed active and terminal events without duplicate effects
+CodeForge server running at http://localhost:54057
+
+stdout | packages/server/test/context-efficiency.test.ts > R34 context-efficiency benchmark > measures serialized input per dispatch, before vs after superseded-output compaction
+[r34-bench] role before=16888 after=16888 | interactive before=12315 after=11596 delta=719 (5.8%)
+
+···stdout | packages/server/test/repository-index-api.test.ts > repository index API > reports local status, searches, rebuilds, and honors enable/disable control
+CodeForge server running at http://localhost:54064
+
+··stdout | packages/server/test/sse-reconnect-e2e.test.ts > SSE reconnect and renderer reconstruction E2E > delivers each live event once to each concurrent client
+CodeForge server running at http://localhost:54090
+
+stdout | packages/server/test/repository-index-api.test.ts > repository index API > re-opening the same workspace while it indexes never races the index file
+CodeForge server running at http://localhost:54093
+
+·············stdout | packages/server/test/repository-index-api.test.ts > repository index API > switching workspaces mid-index cancels the old indexer and indexes the new one
+CodeForge server running at http://localhost:54102
+
+··················stdout | packages/server/test/repository-index-api.test.ts > repository index API > re-stating an enabled index is idempotent — no rebuild, no interruption
+CodeForge server running at http://localhost:54107
+
+···········stdout | packages/server/test/dynamic-runtime.test.ts > dynamic real/demo runtime (connect-after-boot first-run fix) > routes to demo before any real provider, and flips to real once one is registered post-boot
+CodeForge server running at http://localhost:54112
+
+stdout | packages/server/test/dynamic-runtime.test.ts > dynamic real/demo runtime (connect-after-boot first-run fix) > explicit useRealRuntime stays real even with no provider yet
+CodeForge server running at http://localhost:54117
+
+··stdout | packages/server/test/dynamic-runtime.test.ts > dynamic real/demo runtime (connect-after-boot first-run fix) > persists one completed demo turn across a server restart
+CodeForge server running at http://localhost:54120
+
+·····stdout | packages/server/test/cf17-runtime-restart-api.test.ts > CF-17 runtime recovery through the production server restart path > hydrates an interrupted turn, preserves its queued steer once, and replans instead of replaying
+CodeForge server running at http://localhost:54125
+
+stdout | packages/server/test/cf17-runtime-restart-api.test.ts > CF-17 runtime recovery through the production server restart path > hydrates an interrupted turn, preserves its queued steer once, and replans instead of replaying
+CodeForge server running at http://localhost:54128
+
+stdout | packages/server/test/cf17-runtime-restart-api.test.ts > CF-17 runtime recovery through the production server restart path > CF-17 active-command steering waits for a real child command boundary and consumes the steer exactly once
+CodeForge server running at http://localhost:54131
+
+···stdout | packages/server/test/dynamic-runtime.test.ts > dynamic real/demo runtime (connect-after-boot first-run fix) > persists one completed demo turn across a server restart
+CodeForge server running at http://localhost:54133
+
+··stdout | packages/server/test/cf17-runtime-restart-api.test.ts > CF-17 runtime recovery through the production server restart path > CF-17 approval-resolution races preserve one approval, one steer, and one guarded action in both committed orderings
+CodeForge server running at http://localhost:54137
+
+·······················································stdout | packages/server/test/parallel-api.test.ts > parallel run HTTP surface > accepts, lists, reads, and refuses to cancel a terminal parallel run
+CodeForge server running at http://localhost:54143
+
+···············································································stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > binds loopback by default
+CodeForge server running at http://localhost:54148
+
+·····stdout | packages/server/test/task-identity.test.ts > task identity stability
+CodeForge server running at http://localhost:54152
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > refuses a routable bind without a control-plane token, binds it only with one
+CodeForge server running at http://localhost:54153
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > rejects browser origins outside the packaged and development renderers
+CodeForge server running at http://localhost:54155
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > accepts the trusted development renderer origin http://localhost:5173
+CodeForge server running at http://localhost:54157
+
+···stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > accepts the trusted development renderer origin http://127.0.0.1:5173
+CodeForge server running at http://localhost:54159
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > refuses Origin: null unless a per-process bearer is enforced (sandboxed-iframe drive-by)
+CodeForge server running at http://localhost:54161
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > refuses Origin: null unless a per-process bearer is enforced (sandboxed-iframe drive-by)
+CodeForge server running at http://localhost:54163
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > refuses non-loopback Host headers on a loopback bind (DNS rebinding)
+CodeForge server running at http://localhost:54166
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > requires the per-process token when desktop authentication is configured
+CodeForge server running at http://localhost:54168
+
+·····stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > rejects a wrong or malformed bearer
+CodeForge server running at http://localhost:54171
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > never accepts the bearer from the URL, including for the event stream
+CodeForge server running at http://localhost:54174
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > guards approval resolution with the bearer
+CodeForge server running at http://localhost:54177
+
+stdout | packages/server/test/network-exposure.test.ts > local control-plane network exposure > does not let a valid token bypass the browser-origin boundary
+CodeForge server running at http://localhost:54179
+
+······stdout | packages/server/test/workspace-binding-guard.test.ts > workspace binding guard
+CodeForge server running at http://localhost:54183
+
+stdout | packages/server/test/model-selection-tool-capability.test.ts > explicit selection of a route without tool calling > fails the turn closed with an actionable message and no provider call
+CodeForge server running at http://localhost:54184
+
+·····stdout | packages/server/test/server-stop.test.ts > CodeForgeServer shutdown > cancels and drains an active agent turn before closing session persistence
+CodeForge server running at http://localhost:54191
+
+·stdout | packages/server/test/server-stop.test.ts > CodeForgeServer shutdown > cancels and drains active workflow event writes before closing session persistence
+CodeForge server running at http://localhost:54192
+
+··stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > routes every phrase only by the requested mode
+CodeForge server running at http://localhost:54193
+
+stdout | packages/server/test/model-selection-boundary.test.ts
+CodeForge server running at http://localhost:54194
+
+····stdout | packages/server/test/model-selection-boundary.test.ts > HTTP model-selection boundary > keeps an internally qualified Paid Auto route policy-blocked
+CodeForge server running at http://localhost:54201
+
+··stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > fails closed for malformed execution modes
+CodeForge server running at http://localhost:54204
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > uses the documented deterministic Chat fallback when mode is missing
+CodeForge server running at http://localhost:54209
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > reports Agent startup failure without starting Chat
+CodeForge server running at http://localhost:54212
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > keeps structured Agent failure Error: lease conflict in the Agent domain
+CodeForge server running at http://localhost:54217
+
+····stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > keeps structured Agent failure Error: A workflow is already running for this session. Cancel or wait. in the Agent domain
+CodeForge server running at http://localhost:54220
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > keeps structured Agent failure Error: Too many concurrent workflows. Please wait. in the Agent domain
+CodeForge server running at http://localhost:54223
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > keeps structured Agent failure Error: Provider unavailable in the Agent domain
+CodeForge server running at http://localhost:54226
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > returns workspace failure for Agent without trying Chat
+CodeForge server running at http://localhost:54229
+
+stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > keeps Chat startup failure in the Chat domain
+CodeForge server running at http://localhost:54232
+
+··stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > keeps the fixed workflow endpoint in the Agent failure domain
+CodeForge server running at http://localhost:54235
+
+·······stdout | packages/server/test/execution-mode-dispatch.test.ts > CF-12 explicit execution-mode dispatch > steers the active runtime without changing its execution mode
+CodeForge server running at http://localhost:54238
+
+··································stdout | packages/server/test/steering.test.ts > Agent Steering Safety & Turn Concurrency (CF-06) > HTTP API: /api/send with steer: true steers active turn and rejects concurrent start
+CodeForge server running at http://localhost:54241
+
+·stdout | packages/server/test/steering.test.ts > Agent Steering Safety & Turn Concurrency (CF-06) > accepts a steer through the public API while an approval is pending
+CodeForge server running at http://localhost:54246
+
+·············stdout | packages/server/test/release-status.test.ts > GET /api/free-cloud/release-status (R35-AQ) > reports internal-unavailable honestly when Free Cloud is not configured
+CodeForge server running at http://localhost:54251
+
+stdout | packages/server/test/release-status.test.ts > GET /api/free-cloud/release-status (R35-AQ) > reports no-supply as an external blocker, never as a defect
+CodeForge server running at http://localhost:54253
+
+stdout | packages/server/test/release-status.test.ts > GET /api/free-cloud/release-status (R35-AQ) > requires the control-plane bearer when one is configured
+CodeForge server running at http://localhost:54255
+
+···stdout | packages/server/test/release-status.test.ts > GET /api/free-cloud/release-status (R35-AQ) > fails closed: a routable bind without a control-plane token refuses to start
+CodeForge server running at http://localhost:54258
+
+·······stdout | packages/server/test/delivery-api.test.ts > CF-10 delivery HTTP surface > exposes local delivery inspection routes and rejects uncertified sources
+CodeForge server running at http://localhost:54260
+
+stdout | packages/server/test/delivery-api.test.ts > CF-10 delivery HTTP surface > does not let delivery API actions resurrect terminal state or make duplicate terminal transitions
+CodeForge server running at http://localhost:54265
+
+·····································stdout | packages/server/test/user-intent-hold-api.test.ts > CF-17 intent-hold protocol boundary > acknowledges bounded hold transitions and persists no draft payload
+CodeForge server running at http://localhost:54271
+
+······stdout | packages/server/test/bind-failure.test.ts > CodeForgeServer.start bind failure > still starts normally on a free port
+CodeForge server running at http://localhost:54278
+
+················stdout | packages/server/test/session-isolation.test.ts > session isolation (R35-R) > one session's turns and events are not visible through another session's reads
+CodeForge server running at http://localhost:54279
+
+stdout | packages/server/test/session-isolation.test.ts > session isolation (R35-R) > resolving another turn's approval by id cannot cross into a session that has no such approval
+CodeForge server running at http://localhost:54282
+
+stderr | packages/server/test/api-key-validation.test.ts > API Key Validation > validateRealRuntimeConfiguration via server constructor > when CODEFORGE_REAL_RUNTIME=true > and no provider API keys are present > should log a warning but still allow server to start
+⚠️  CODEFORGE_REAL_RUNTIME=true but no provider API keys configured.
+Real runtime mode requires at least one provider API key (e.g., OPENROUTER_API_KEY).
+The server will start but real inference will fail at runtime.
+Set API keys in environment variables or configure credentials in the app.
+
+·····················································································stdout | packages/server/test/close-safety-runtime-status.test.ts > CodeForgeServer.getRuntimeStatus() — the real authority behind close-safety > reports idle/recoverable with no active work on a fresh server
+CodeForge server running at http://localhost:54284
+
+stdout | packages/server/test/close-safety-runtime-status.test.ts > CodeForgeServer.getRuntimeStatus() — the real authority behind close-safety > reflects a genuinely running local command as active AND unrecoverable — and resolveCloseAction always asks
+CodeForge server running at http://localhost:54285
+
+·stdout | packages/server/test/close-safety-runtime-status.test.ts > CodeForgeServer.getRuntimeStatus() — the real authority behind close-safety > returns to idle once the command completes, and normal close preferences apply again
+CodeForge server running at http://localhost:54286
+
+stdout | packages/server/test/close-safety-runtime-status.test.ts > CodeForgeServer.getRuntimeStatus() — the real authority behind close-safety > reports multiple simultaneously active commands with an accurate count
+CodeForge server running at http://localhost:54287
+
+······························································································································-····-·····-
+
+ Test Files  136 passed | 3 skipped (139)
+      Tests  902 passed | 3 skipped (905)
+   Start at  21:53:16
+   Duration  1108.84s (tests 90%, import 9%, transform 1%)
+
+    Isolate  139 workers spawned · ~395ms startup each (spawn + environment, per file)
+             at least ~13.33s faster with isolate: false — reuses workers across files instead of one per file

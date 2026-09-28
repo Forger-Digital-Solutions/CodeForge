@@ -1,0 +1,531 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28T01:28:31.030Z",
+  "sourceInventory": "2026-09-28T00:47:25.928Z",
+  "cases": [
+    {
+      "id": "simple-bug",
+      "expected": [
+        "src/money/format.ts",
+        "test/money/format.test.ts"
+      ]
+    },
+    {
+      "id": "cross-package",
+      "expected": [
+        "packages/cli/src/options.ts",
+        "packages/server/src/request.ts",
+        "tests/client-timeout.test.ts"
+      ]
+    },
+    {
+      "id": "unfamiliar-feature",
+      "expected": [
+        "src/cart.mjs",
+        "src/coupons.mjs",
+        "src/index.mjs",
+        "test/checkout.test.mjs"
+      ]
+    },
+    {
+      "id": "large-repo",
+      "expected": [
+        "packages/forge-zero/src/quota.ts",
+        "packages/eight-bit/src/free-fabric.ts",
+        "packages/eight-bit/test/free-fabric.test.ts"
+      ]
+    },
+    {
+      "id": "symbol-rename",
+      "expected": [
+        "src/cart.ts",
+        "src/index.ts",
+        "src/checkout.ts",
+        "test/cart.test.ts"
+      ]
+    },
+    {
+      "id": "hidden-adapter",
+      "expected": [
+        "packages/providers/src/openrouter.ts",
+        "packages/providers/src/types.ts",
+        "packages/server/src/agent-runtime.ts",
+        "packages/providers/test/openrouter-contract.test.ts"
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": "EXECUTED",
+      "qualificationBefore": "QUALIFIED",
+      "cases": [
+        {
+          "caseId": "simple-bug",
+          "expected": [
+            "src/money/format.ts",
+            "test/money/format.test.ts"
+          ],
+          "selected": [
+            "src/money/format.ts",
+            "test/money/format.test.ts"
+          ],
+          "relevant": [
+            "src/money/format.ts",
+            "test/money/format.test.ts"
+          ],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 1,
+          "precision": 1,
+          "passed": true,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 118,
+          "outputTokens": 161,
+          "wallTimeMs": 2358,
+          "failure": null
+        },
+        {
+          "caseId": "cross-package",
+          "expected": [
+            "packages/cli/src/options.ts",
+            "packages/server/src/request.ts",
+            "tests/client-timeout.test.ts"
+          ],
+          "selected": [
+            "packages/cli/src/options.ts",
+            "packages/server/src/request.ts",
+            "tests/client-timeout.test.ts"
+          ],
+          "relevant": [
+            "packages/cli/src/options.ts",
+            "packages/server/src/request.ts",
+            "tests/client-timeout.test.ts"
+          ],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 1,
+          "precision": 1,
+          "passed": true,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 140,
+          "outputTokens": 160,
+          "wallTimeMs": 1381,
+          "failure": null
+        },
+        {
+          "caseId": "unfamiliar-feature",
+          "expected": [
+            "src/cart.mjs",
+            "src/coupons.mjs",
+            "src/index.mjs",
+            "test/checkout.test.mjs"
+          ],
+          "selected": [
+            "src/cart.mjs",
+            "src/coupons.mjs",
+            "src/index.mjs",
+            "test/checkout.test.mjs"
+          ],
+          "relevant": [
+            "src/cart.mjs",
+            "src/coupons.mjs",
+            "src/index.mjs",
+            "test/checkout.test.mjs"
+          ],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 1,
+          "precision": 1,
+          "passed": true,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 133,
+          "outputTokens": 264,
+          "wallTimeMs": 2641,
+          "failure": null
+        },
+        {
+          "caseId": "large-repo",
+          "expected": [
+            "packages/forge-zero/src/quota.ts",
+            "packages/eight-bit/src/free-fabric.ts",
+            "packages/eight-bit/test/free-fabric.test.ts"
+          ],
+          "selected": [
+            "packages/forge-zero/src/quota.ts",
+            "packages/eight-bit/src/free-fabric.ts",
+            "packages/forge-zero/test/quota.test.ts",
+            "packages/eight-bit/test/free-fabric.test.ts"
+          ],
+          "relevant": [
+            "packages/forge-zero/src/quota.ts",
+            "packages/eight-bit/src/free-fabric.ts",
+            "packages/eight-bit/test/free-fabric.test.ts"
+          ],
+          "invented": [],
+          "irrelevant": [
+            "packages/forge-zero/test/quota.test.ts"
+          ],
+          "recall": 1,
+          "precision": 0.75,
+          "passed": false,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 182,
+          "outputTokens": 412,
+          "wallTimeMs": 10016,
+          "failure": null
+        },
+        {
+          "caseId": "symbol-rename",
+          "expected": [
+            "src/cart.ts",
+            "src/index.ts",
+            "src/checkout.ts",
+            "test/cart.test.ts"
+          ],
+          "selected": [
+            "src/cart.ts",
+            "src/index.ts",
+            "src/checkout.ts",
+            "test/cart.test.ts"
+          ],
+          "relevant": [
+            "src/cart.ts",
+            "src/index.ts",
+            "src/checkout.ts",
+            "test/cart.test.ts"
+          ],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 1,
+          "precision": 1,
+          "passed": true,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 147,
+          "outputTokens": 182,
+          "wallTimeMs": 1486,
+          "failure": null
+        },
+        {
+          "caseId": "hidden-adapter",
+          "expected": [
+            "packages/providers/src/openrouter.ts",
+            "packages/providers/src/types.ts",
+            "packages/server/src/agent-runtime.ts",
+            "packages/providers/test/openrouter-contract.test.ts"
+          ],
+          "selected": [
+            "packages/providers/src/openrouter.ts",
+            "packages/providers/src/types.ts",
+            "packages/server/src/agent-runtime.ts",
+            "packages/providers/test/openrouter-contract.test.ts"
+          ],
+          "relevant": [
+            "packages/providers/src/openrouter.ts",
+            "packages/providers/src/types.ts",
+            "packages/server/src/agent-runtime.ts",
+            "packages/providers/test/openrouter-contract.test.ts"
+          ],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 1,
+          "precision": 1,
+          "passed": true,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 168,
+          "outputTokens": 206,
+          "wallTimeMs": 2151,
+          "failure": null
+        }
+      ],
+      "passed": 5
+    },
+    {
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "status": "INCONCLUSIVE_PROVIDER",
+      "qualificationBefore": "QUALIFIED",
+      "cases": [
+        {
+          "caseId": "simple-bug",
+          "expected": [
+            "src/money/format.ts",
+            "test/money/format.test.ts"
+          ],
+          "selected": [
+            "src/money/format.ts",
+            "test/money/format.test.ts"
+          ],
+          "relevant": [
+            "src/money/format.ts",
+            "test/money/format.test.ts"
+          ],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 1,
+          "precision": 1,
+          "passed": true,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 174,
+          "outputTokens": 194,
+          "wallTimeMs": 574,
+          "failure": null
+        },
+        {
+          "caseId": "cross-package",
+          "expected": [
+            "packages/cli/src/options.ts",
+            "packages/server/src/request.ts",
+            "tests/client-timeout.test.ts"
+          ],
+          "selected": [
+            "packages/cli/src/options.ts",
+            "packages/server/src/request.ts",
+            "tests/client-timeout.test.ts"
+          ],
+          "relevant": [
+            "packages/cli/src/options.ts",
+            "packages/server/src/request.ts",
+            "tests/client-timeout.test.ts"
+          ],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 1,
+          "precision": 1,
+          "passed": true,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 194,
+          "outputTokens": 559,
+          "wallTimeMs": 794,
+          "failure": null
+        },
+        {
+          "caseId": "unfamiliar-feature",
+          "expected": [
+            "src/cart.mjs",
+            "src/coupons.mjs",
+            "src/index.mjs",
+            "test/checkout.test.mjs"
+          ],
+          "selected": [],
+          "relevant": [],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 0,
+          "precision": 0,
+          "passed": false,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": null,
+          "outputTokens": null,
+          "wallTimeMs": 658,
+          "failure": "PROVIDER_ERROR"
+        }
+      ],
+      "passed": 2
+    },
+    {
+      "providerId": "mistral",
+      "modelId": "codestral-2508",
+      "status": "EXECUTED",
+      "qualificationBefore": "NOT_QUALIFIED",
+      "cases": [
+        {
+          "caseId": "simple-bug",
+          "expected": [
+            "src/money/format.ts",
+            "test/money/format.test.ts"
+          ],
+          "selected": [
+            "src/money/format.ts",
+            "test/money/format.test.ts"
+          ],
+          "relevant": [
+            "src/money/format.ts",
+            "test/money/format.test.ts"
+          ],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 1,
+          "precision": 1,
+          "passed": true,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 107,
+          "outputTokens": 26,
+          "wallTimeMs": 482,
+          "failure": null
+        },
+        {
+          "caseId": "cross-package",
+          "expected": [
+            "packages/cli/src/options.ts",
+            "packages/server/src/request.ts",
+            "tests/client-timeout.test.ts"
+          ],
+          "selected": [
+            "packages/cli/src/options.ts",
+            "packages/server/src/request.ts",
+            "tests/client-timeout.test.ts"
+          ],
+          "relevant": [
+            "packages/cli/src/options.ts",
+            "packages/server/src/request.ts",
+            "tests/client-timeout.test.ts"
+          ],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 1,
+          "precision": 1,
+          "passed": true,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 129,
+          "outputTokens": 40,
+          "wallTimeMs": 543,
+          "failure": null
+        },
+        {
+          "caseId": "unfamiliar-feature",
+          "expected": [
+            "src/cart.mjs",
+            "src/coupons.mjs",
+            "src/index.mjs",
+            "test/checkout.test.mjs"
+          ],
+          "selected": [
+            "src/cart.mjs",
+            "src/coupons.mjs",
+            "src/index.mjs",
+            "test/checkout.test.mjs"
+          ],
+          "relevant": [
+            "src/cart.mjs",
+            "src/coupons.mjs",
+            "src/index.mjs",
+            "test/checkout.test.mjs"
+          ],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 1,
+          "precision": 1,
+          "passed": true,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 122,
+          "outputTokens": 36,
+          "wallTimeMs": 502,
+          "failure": null
+        },
+        {
+          "caseId": "large-repo",
+          "expected": [
+            "packages/forge-zero/src/quota.ts",
+            "packages/eight-bit/src/free-fabric.ts",
+            "packages/eight-bit/test/free-fabric.test.ts"
+          ],
+          "selected": [
+            "packages/forge-zero/src/quota.ts",
+            "packages/eight-bit/src/free-fabric.ts",
+            "packages/forge-zero/test/quota.test.ts",
+            "packages/eight-bit/test/free-fabric.test.ts"
+          ],
+          "relevant": [
+            "packages/forge-zero/src/quota.ts",
+            "packages/eight-bit/src/free-fabric.ts",
+            "packages/eight-bit/test/free-fabric.test.ts"
+          ],
+          "invented": [],
+          "irrelevant": [
+            "packages/forge-zero/test/quota.test.ts"
+          ],
+          "recall": 1,
+          "precision": 0.75,
+          "passed": false,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 171,
+          "outputTokens": 66,
+          "wallTimeMs": 703,
+          "failure": null
+        },
+        {
+          "caseId": "symbol-rename",
+          "expected": [
+            "src/cart.ts",
+            "src/index.ts",
+            "src/checkout.ts",
+            "test/cart.test.ts"
+          ],
+          "selected": [
+            "src/cart.ts",
+            "src/index.ts",
+            "src/checkout.ts",
+            "test/cart.test.ts"
+          ],
+          "relevant": [
+            "src/cart.ts",
+            "src/index.ts",
+            "src/checkout.ts",
+            "test/cart.test.ts"
+          ],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 1,
+          "precision": 1,
+          "passed": true,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 136,
+          "outputTokens": 39,
+          "wallTimeMs": 538,
+          "failure": null
+        },
+        {
+          "caseId": "hidden-adapter",
+          "expected": [
+            "packages/providers/src/openrouter.ts",
+            "packages/providers/src/types.ts",
+            "packages/server/src/agent-runtime.ts",
+            "packages/providers/test/openrouter-contract.test.ts"
+          ],
+          "selected": [
+            "packages/providers/src/openrouter.ts",
+            "packages/providers/src/types.ts",
+            "packages/server/src/agent-runtime.ts",
+            "packages/providers/test/openrouter-contract.test.ts"
+          ],
+          "relevant": [
+            "packages/providers/src/openrouter.ts",
+            "packages/providers/src/types.ts",
+            "packages/server/src/agent-runtime.ts",
+            "packages/providers/test/openrouter-contract.test.ts"
+          ],
+          "invented": [],
+          "irrelevant": [],
+          "recall": 1,
+          "precision": 1,
+          "passed": true,
+          "requests": 1,
+          "toolCalls": 0,
+          "inputTokens": 157,
+          "outputTokens": 57,
+          "wallTimeMs": 608,
+          "failure": null
+        }
+      ],
+      "passed": 5
+    }
+  ],
+  "paidSpendUsd": 0,
+  "caveat": "Single-turn file-index discovery probes. No repository tools or autonomous navigation; results alone do not change qualification receipts."
+}

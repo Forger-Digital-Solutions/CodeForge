@@ -1,0 +1,3 @@
+# R53 16-Bit boundary regression
+
+The canonical paid-auto, cloud-billing, and server paid-role-routing files ran under root Vitest: 83 tests passed, zero failed or skipped across eight files. They cover paid role routing, expected cost, evaluation budgets, budget-gated adapters, billing, and paid route isolation. R53 source changes are in 8-Bit role qualification/Free Fabric, model registry scheduling, and Reviewer instructions; they do not change 16-Bit selection, billing, BYOK routing, or spend limits. The eight live receipts, including the bounded diagnostic, each report `paidSpendUsd: 0` and `allServedRoutesForgeAutoEligible: true`.

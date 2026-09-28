@@ -23,6 +23,7 @@
 // Credentials are read from the environment by presence only; values are never printed or
 // persisted. Evidence lands under docs/evidence/r52-production-scale/.
 import { execFile as execFileCallback } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdir, writeFile, rm, readFile } from "node:fs/promises";
 import { dirname, resolve, join } from "node:path";
 import { tmpdir } from "node:os";
@@ -413,6 +414,21 @@ async function main() {
   const routerEvents = eventStore.getAll()
     .filter((event) => event.type === "router.selection" || event.type === "router.failover")
     .map((event) => ({ type: event.type, payload: event.payload }));
+  const toolTrace = eventStore.getAll()
+    .filter((event) => event.type.startsWith("tool.execution_"))
+    .map((event) => {
+      const payload = event.payload ?? {};
+      const argsJson = typeof payload.argsJson === "string" ? payload.argsJson : null;
+      return {
+        type: event.type,
+        turnId: payload.turnId ?? null,
+        toolCallId: payload.toolCallId ?? null,
+        toolName: payload.toolName ?? null,
+        argsHash: argsJson === null ? null : createHash("sha256").update(argsJson).digest("hex").slice(0, 16),
+        resultLength: typeof payload.result === "string" ? payload.result.length : null,
+        errorKind: typeof payload.error === "string" ? (payload.error.match(/\b(?:429|RATE_LIMITED|TOOL_WORKSPACE_ESCAPE|TIMEOUT)\b/i)?.[0] ?? "OTHER") : null,
+      };
+    });
 
   let treeEquality = null;
   try {
@@ -499,6 +515,7 @@ async function main() {
     workers,
     journals,
     routerEvents,
+    toolTrace,
     poolByRole,
     reviewerIndependent,
     forgeVerifyRecords: verificationItems,
