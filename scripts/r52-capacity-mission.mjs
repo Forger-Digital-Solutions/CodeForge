@@ -273,8 +273,8 @@ async function main() {
   await writeFile(join(repoDir, "README.md"), "# math-lib\n\nTiny math utilities. Run `npm test`.\n", "utf-8");
   await mkdir(join(repoDir, "src"), { recursive: true });
   await mkdir(join(repoDir, "test"), { recursive: true });
-  await writeFile(join(repoDir, "src", "math.mjs"), scenario === "feature" ? "export function multiply(a, b) { return a * b; }\n\nexport function add(a, b) { return a + b; }\n" : "export function multiply(a, b) { return 0; }\n\nexport function add(a, b) { return a + b; }\n", "utf-8");
-  await writeFile(join(repoDir, "src", "format.mjs"), scenario === "feature" ? "export function format(value) { return `result: ${value}`; }\n" : "export function format(value) { return `value: ${value}`; }\n", "utf-8");
+  await writeFile(join(repoDir, "src", "math.mjs"), scenario === "feature" || scenario === "refactor" ? "export function multiply(a, b) { return a * b; }\n\nexport function add(a, b) { return a + b; }\n" : "export function multiply(a, b) { return 0; }\n\nexport function add(a, b) { return a + b; }\n", "utf-8");
+  await writeFile(join(repoDir, "src", "format.mjs"), scenario === "feature" || scenario === "refactor" ? "export function format(value) { return `result: ${value}`; }\n" : "export function format(value) { return `value: ${value}`; }\n", "utf-8");
   await writeFile(join(repoDir, "src", "stats.mjs"), "export function mean(values) { if (values.length === 0) return 0; return values.reduce((a, b) => a + b, 0) / values.length; }\n", "utf-8");
   await writeFile(join(repoDir, "src", "index.mjs"), "export { multiply, add } from './math.mjs';\nexport { format } from './format.mjs';\nexport { mean } from './stats.mjs';\n", "utf-8");
   await writeFile(join(repoDir, "test", "math.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { multiply } from '../src/math.mjs';\ntest('multiply', () => assert.equal(multiply(6, 7), 42));\n", "utf-8");
@@ -292,6 +292,11 @@ async function main() {
     await writeFile(join(repoDir, "test", "cart.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { subtotalCents } from '../src/cart.mjs';\ntest('quantity-aware subtotal', () => assert.equal(subtotalCents([{ unitCents: 199, quantity: 2 }, { unitCents: 50, quantity: 1 }]), 448));\ntest('empty cart', () => assert.equal(subtotalCents([]), 0));\ntest('negative quantity is rejected', () => assert.throws(() => subtotalCents([{ unitCents: 100, quantity: -1 }])));\n", "utf-8");
     await writeFile(join(repoDir, "test", "coupons.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { applyCoupon } from '../src/coupons.mjs';\ntest('SAVE10 rounds to cents', () => assert.equal(applyCoupon(448, 'SAVE10'), 403));\ntest('unknown coupon is rejected', () => assert.throws(() => applyCoupon(448, 'UNKNOWN')));\n", "utf-8");
     await writeFile(join(repoDir, "test", "checkout.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { checkoutTotal } from '../src/index.mjs';\ntest('public checkout composes cart and coupon', () => assert.equal(checkoutTotal([{ unitCents: 199, quantity: 2 }, { unitCents: 50, quantity: 1 }], 'SAVE10'), 403));\ntest('checkout without coupon', () => assert.equal(checkoutTotal([{ unitCents: 199, quantity: 2 }]), 398));\n", "utf-8");
+  }
+  if (scenario === "refactor") {
+    await writeFile(join(repoDir, "src", "report.mjs"), "export function summarize(values) { return {}; }\n", "utf-8");
+    await writeFile(join(repoDir, "test", "stats-refactor.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { sum, mean } from '../src/stats.mjs';\ntest('sum of several values', () => assert.equal(sum([2, 4, 6]), 12));\ntest('empty sum', () => assert.equal(sum([]), 0));\ntest('mean preserves behavior', () => assert.equal(mean([2, 4, 6]), 4));\n", "utf-8");
+    await writeFile(join(repoDir, "test", "report.test.mjs"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { summarize } from '../src/index.mjs';\ntest('summary composes shared aggregation and formatter', () => assert.deepEqual(summarize([2, 4, 6]), { count: 3, total: 12, mean: 4, label: 'result: 12' }));\ntest('empty summary preserves zero conventions', () => assert.deepEqual(summarize([]), { count: 0, total: 0, mean: 0, label: 'result: 0' }));\n", "utf-8");
   }
   await execFile("git", ["add", "."], { cwd: repoDir });
   await execFile("git", ["commit", "-m", "Initial commit"], { cwd: repoDir });
@@ -325,11 +330,15 @@ async function main() {
         ? "Inspect the repository and make all failing tests pass: fix multiply in src/math.mjs, the public output format in src/format.mjs, and median (both odd- and even-length inputs) in src/median.mjs. Do not modify the tests."
         : scenario === "feature"
           ? "Add a quantity-aware checkout feature using integer cents. Implement subtotalCents in src/cart.mjs, coupon policy in src/coupons.mjs (SAVE10 is 10% off rounded to cents; reject unknown coupons), and a public checkoutTotal composition exported from src/index.mjs. Reject invalid negative quantities. Preserve existing math and format behavior. Inspect the tests but do not edit them."
+          : scenario === "refactor"
+            ? "Refactor shared aggregation: export sum(values) from src/stats.mjs, make mean reuse it while preserving empty-array behavior, implement summarize(values) in src/report.mjs using sum, mean, and format, and export summarize publicly from src/index.mjs. Preserve existing math, format, and stats behavior. Inspect the tests but do not edit them."
           : "Inspect the repository and make both failing tests pass by fixing multiply in src/math.mjs and the public output format in src/format.mjs. Do not modify the tests.",
       verificationCommands: scenario === "multi-step"
         ? ["node --test test/math.test.mjs test/format.test.mjs test/median.test.mjs"]
         : scenario === "feature"
           ? ["node --test test/cart.test.mjs test/coupons.test.mjs test/checkout.test.mjs test/math.test.mjs test/format.test.mjs"]
+          : scenario === "refactor"
+            ? ["node --test test/stats.test.mjs test/stats-refactor.test.mjs test/report.test.mjs test/math.test.mjs test/format.test.mjs"]
           : ["node --test test/math.test.mjs test/format.test.mjs"],
       adapter,
       signal: runController.signal,
@@ -416,7 +425,7 @@ async function main() {
   const finalFormat = await readFile(join(repoDir, "src", "format.mjs"), "utf-8").catch(() => null);
   let postIntegrationProbe = null;
   try {
-    const probe = await execFile("node", ["--test", ...(scenario === "multi-step" ? ["test/math.test.mjs", "test/format.test.mjs", "test/median.test.mjs"] : scenario === "feature" ? ["test/cart.test.mjs", "test/coupons.test.mjs", "test/checkout.test.mjs", "test/math.test.mjs", "test/format.test.mjs"] : ["test/math.test.mjs", "test/format.test.mjs"])], { cwd: repoDir });
+    const probe = await execFile("node", ["--test", ...(scenario === "multi-step" ? ["test/math.test.mjs", "test/format.test.mjs", "test/median.test.mjs"] : scenario === "feature" ? ["test/cart.test.mjs", "test/coupons.test.mjs", "test/checkout.test.mjs", "test/math.test.mjs", "test/format.test.mjs"] : scenario === "refactor" ? ["test/stats.test.mjs", "test/stats-refactor.test.mjs", "test/report.test.mjs", "test/math.test.mjs", "test/format.test.mjs"] : ["test/math.test.mjs", "test/format.test.mjs"])], { cwd: repoDir });
     postIntegrationProbe = { ok: true, output: `${probe.stdout}`.slice(0, 2_000) };
   } catch (err) {
     postIntegrationProbe = { ok: false, output: `${err.stdout ?? ""}${err.stderr ?? ""}`.slice(0, 2_000) };
@@ -445,7 +454,7 @@ async function main() {
 
   const evidence = {
     schemaVersion: 1,
-    round: scenario === "feature" ? "R53" : "R52",
+    round: scenario === "feature" || scenario === "refactor" ? "R53" : "R52",
     scenario,
     generatedAt: completedAt,
     startedAt,
@@ -461,6 +470,8 @@ async function main() {
             ? "R52 multi-step mission: a three-file task exercising explorer + coder + reviewer through more turns on the live free fabric."
             : scenario === "feature"
               ? "R53 feature mission: quantity-aware integer-cents checkout across cart, coupon, composition, public export, and independent tests."
+              : scenario === "refactor"
+                ? "R53 refactor mission: shared aggregation, public summary composition, behavioral preservation, and independent tests."
             : "R52 healthy mission: bootstrap probes measure supply normally; the mission completes through the standard fabric.",
     providersPresent: present,
     allowanceProbeBudget: allowanceProbes,

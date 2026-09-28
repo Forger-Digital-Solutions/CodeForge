@@ -555,9 +555,10 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
   });
 
   it("a review turn prefers a quota pool independent of the implementation route", async () => {
-    // A outscores B — without the independence hint the fabric would give review the same pool.
+    // Comparable scores let the bounded independence preference overcome A's recent
+    // successful implementation health adjustment without hiding a large quality gap.
     const routeA = managedRoute("provider-a", { qualityScore: 95 });
-    const routeB = managedRoute("provider-b", { qualityScore: 60 });
+    const routeB = managedRoute("provider-b", { qualityScore: 94 });
     registerFleet("provider-a", "provider-a-model");
     registerFleet("provider-b", "provider-b-model");
     const fabric = makeFabric([routeA, routeB], [poolFor(routeA), poolFor(routeB)]);

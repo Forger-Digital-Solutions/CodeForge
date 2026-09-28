@@ -54,7 +54,7 @@ export interface FabricRequest {
    *  to the request that produced it. */
   healthRole?: EightBitRole;
   /** Prefer a different physical quota pool from the implementation route for review.
-   *  The same pool remains eligible only after independent routes fail admission. */
+   *  The preference is bounded by qualification tier and measured role quality. */
   preferIndependentFromPoolId?: string;
   taskKind?: string;
   /** Capacity this request intends to reserve. Defaults: 1 request, modest token budget. */
@@ -213,6 +213,9 @@ export interface FreeFabricOptions {
 
 const DEFAULT_LEASE_MS = 10 * 60_000;
 const DEFAULT_DOMAIN_DEMOTION_SCORE = -50;
+// Smaller than one full ±16 runtime role-evidence swing: independence breaks close calls,
+// while repeated verified quality evidence can still choose the same physical pool.
+const REVIEWER_INDEPENDENCE_BONUS = 10;
 
 /** Ratio floor for a provider whose tokenizer is unmeasured: above the ~1.0 sparse tokenizers
  *  observed on agent traffic, short of the ~1.8 measured on a dense one — the first real
@@ -384,8 +387,8 @@ export class FreeFabric {
         measuredTier === undefined ? 0 : measuredTier === "QUALIFIED" ? 0 : measuredTier === "PROBATION" ? 1 : 2,
       );
       // R41: measured per-role quality (persisted qualification receipts) separates peers
-      // inside the same domain+tier — it lands in effectiveScore, which the sort only
-      // reaches after independence, domain demotion, and the qualified/probation tier.
+      // inside the same domain+tier. Reviewer independence is a bounded preference so a
+      // dramatically weaker independent route cannot displace a qualified better reviewer.
       const roleQuality = request.roleQualityAdjustment?.(entry.providerId, entry.modelId);
       ranked.push({
         entry, healthState: assess?.state, scoreAdjustment: adjustment, fitPenalty: fit,
@@ -394,16 +397,18 @@ export class FreeFabric {
         domainRank, roleFallback, qualificationTierRank,
       });
     }
+    const independenceBonus = (candidate: typeof ranked[number]): number =>
+      request.preferIndependentFromPoolId !== undefined && candidate.entry.capacityPoolId !== request.preferIndependentFromPoolId ? REVIEWER_INDEPENDENCE_BONUS : 0;
     ranked.sort((a, b) => {
       const priorPool = request.preferIndependentFromPoolId;
-      const independenceOrder = priorPool === undefined ? 0
-        : Number(a.entry.capacityPoolId === priorPool) - Number(b.entry.capacityPoolId === priorPool);
-      return independenceOrder || a.domainRank - b.domainRank
+      return a.domainRank - b.domainRank
         // R37 G/H + R48: qualified tier strictly before probation, probation strictly before
         // unmeasured — a measured "close enough" or untested route never outranks a fully
         // qualified peer on score alone.
         || a.qualificationTierRank - b.qualificationTierRank
-        || b.effectiveScore - a.effectiveScore || a.entry.routeId.localeCompare(b.entry.routeId);
+        || (b.effectiveScore + independenceBonus(b)) - (a.effectiveScore + independenceBonus(a))
+        || (priorPool === undefined ? 0 : Number(a.entry.capacityPoolId === priorPool) - Number(b.entry.capacityPoolId === priorPool))
+        || a.entry.routeId.localeCompare(b.entry.routeId);
     });
 
     let selected: FabricRouteDecision["selected"];

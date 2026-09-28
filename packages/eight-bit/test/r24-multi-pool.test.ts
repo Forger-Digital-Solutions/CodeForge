@@ -326,10 +326,10 @@ describe("FreeFabric — independent reviewer quota pools", () => {
     });
   }
 
-  it("prefers an independent pool over higher-scored models sharing the implementation quota", () => {
+  it("prefers an independent pool when its Reviewer quality is comparable", () => {
     const implementation = route("implementation", { providerId: "provider-a", capacityPoolId: "account-a", roles: ["REVIEWER"], qualityScore: 95 });
     const sibling = route("sibling", { providerId: "provider-a", capacityPoolId: "account-a", roles: ["REVIEWER"], qualityScore: 90 });
-    const independent = route("independent", { providerId: "provider-b", capacityPoolId: "account-b", roles: ["REVIEWER"], qualityScore: 50 });
+    const independent = route("independent", { providerId: "provider-b", capacityPoolId: "account-b", roles: ["REVIEWER"], qualityScore: 90 });
     const fabric = reviewerFabric([implementation, sibling, independent], [poolFor(implementation), poolFor(independent)]);
 
     const decision = fabric.decide({ requestId: "review-1", userId: "alice", role: "REVIEWER", preferIndependentFromPoolId: "account-a" });
@@ -339,10 +339,27 @@ describe("FreeFabric — independent reviewer quota pools", () => {
     expect(decision.explanation.candidates.find((candidate) => candidate.routeId === "sibling")?.status).toBe("STANDBY");
   });
 
+  it("keeps a much stronger same-pool Reviewer ahead of a weak independent candidate", () => {
+    const samePool = route("same-pool", { providerId: "provider-a", capacityPoolId: "account-a", roles: ["REVIEWER"], qualityScore: 95 });
+    const weakIndependent = route("weak-independent", { providerId: "provider-b", capacityPoolId: "account-b", roles: ["REVIEWER"], qualityScore: 50 });
+    const fabric = reviewerFabric([samePool, weakIndependent], [poolFor(samePool), poolFor(weakIndependent)]);
+    const decision = fabric.decide({ requestId: "review-quality", userId: "alice", role: "REVIEWER", preferIndependentFromPoolId: "account-a" });
+    expect(decision.selected?.routeId).toBe("same-pool");
+    expect(decision.explanation.reasonCodes).toContain("SAME_POOL_FALLBACK");
+  });
+
+  it("never lets independent probation displace a qualified Reviewer", () => {
+    const qualified = route("qualified", { providerId: "provider-a", capacityPoolId: "account-a", roles: ["REVIEWER"], qualityScore: 70 });
+    const probation = route("probation", { providerId: "provider-b", capacityPoolId: "account-b", roles: ["REVIEWER"], qualityScore: 99 });
+    const fabric = reviewerFabric([qualified, probation], [poolFor(qualified), poolFor(probation)]);
+    const decision = fabric.decide({ requestId: "review-tier", userId: "alice", role: "REVIEWER", preferIndependentFromPoolId: "account-a", roleQualificationTierFor: (providerId) => providerId === "provider-a" ? "QUALIFIED" : "PROBATION" });
+    expect(decision.selected?.routeId).toBe("qualified");
+  });
+
   it("tries every independent pool before falling back to the implementation pool", () => {
     const implementation = route("implementation", { providerId: "provider-a", capacityPoolId: "account-a", roles: ["REVIEWER"], qualityScore: 95 });
-    const exhausted = route("exhausted", { providerId: "provider-b", capacityPoolId: "account-b", roles: ["REVIEWER"], qualityScore: 80, windows: [quotaWindow({ remaining: 0 })] });
-    const available = route("available", { providerId: "provider-c", capacityPoolId: "account-c", roles: ["REVIEWER"], qualityScore: 40 });
+    const exhausted = route("exhausted", { providerId: "provider-b", capacityPoolId: "account-b", roles: ["REVIEWER"], qualityScore: 94, windows: [quotaWindow({ remaining: 0 })] });
+    const available = route("available", { providerId: "provider-c", capacityPoolId: "account-c", roles: ["REVIEWER"], qualityScore: 90 });
     const fabric = reviewerFabric([implementation, exhausted, available], [poolFor(implementation), poolFor(exhausted), poolFor(available)]);
 
     const decision = fabric.decide({ requestId: "review-2", userId: "alice", role: "REVIEWER", preferIndependentFromPoolId: "account-a" });
@@ -354,7 +371,7 @@ describe("FreeFabric — independent reviewer quota pools", () => {
   it("admits the same pool deterministically after independent capacity is denied", () => {
     const implementation = route("implementation", { providerId: "provider-a", capacityPoolId: "account-a", roles: ["REVIEWER"], qualityScore: 90 });
     const sibling = route("sibling", { providerId: "provider-a", capacityPoolId: "account-a", roles: ["REVIEWER"], qualityScore: 90 });
-    const exhausted = route("exhausted", { providerId: "provider-b", capacityPoolId: "account-b", roles: ["REVIEWER"], windows: [quotaWindow({ remaining: 0 })] });
+    const exhausted = route("exhausted", { providerId: "provider-b", capacityPoolId: "account-b", roles: ["REVIEWER"], qualityScore: 95, windows: [quotaWindow({ remaining: 0 })] });
     const fabric = reviewerFabric([sibling, exhausted, implementation], [poolFor(implementation), poolFor(exhausted)]);
 
     const decision = fabric.decide({ requestId: "review-3", userId: "alice", role: "REVIEWER", preferIndependentFromPoolId: "account-a" });
