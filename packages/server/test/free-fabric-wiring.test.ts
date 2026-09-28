@@ -368,6 +368,48 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(authority.assess("provider-a", "provider-a-model", { role: "CODER" }).hardExclude).toBe(false);
   });
 
+  it("keeps an excluded quality owner excluded when the replacement route fails over mid-run", async () => {
+    const excluded = managedRoute("provider-a", { qualityScore: 95 });
+    const replacement = managedRoute("provider-b", { qualityScore: 90 });
+    const failover = managedRoute("provider-c", { qualityScore: 80 });
+    registerFleet("provider-a", "provider-a-model");
+    registerFleet("provider-b", "provider-b-model");
+    registerFleet("provider-c", "provider-c-model");
+    const fabric = makeFabric([excluded, replacement, failover], [poolFor(excluded), poolFor(replacement), poolFor(failover)]);
+    const a = new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents());
+    const b = new ScriptedRouteProvider("provider-b", "provider-b-model", () => [
+      { type: "error", code: "PROVIDER_UNAVAILABLE", status: 503, message: "provider outage", retryable: false },
+    ]);
+    const c = new ScriptedRouteProvider("provider-c", "provider-c-model", () => okEvents());
+    catalog.register(a);
+    catalog.register(b);
+    catalog.register(c);
+    const runtime = makeRuntime("sess-excluded-failover", fabric);
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-excluded-failover", eventStore, persistence });
+    const result = await runtime.executeAgentRun({
+      runId: "run-excluded-failover",
+      agentId: "coder",
+      role: "coder",
+      goal: "Continue the existing work",
+      workspaceId: "ws-excluded-failover",
+      workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+      roleRouting: true,
+      excludeRoleRoute: { providerId: "provider-a", modelId: "provider-a-model" },
+      adapter,
+    });
+    expect(result.status).toBe("completed");
+    expect(result.route).toMatchObject({ providerId: "provider-c", modelId: "provider-c-model" });
+    expect(a.callCount).toBe(0);
+    expect(b.callCount).toBe(1);
+    expect(c.callCount).toBe(1);
+    expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+    const failoverTargets = eventStore.getAll()
+      .filter((event) => event.type === "router.failover")
+      .map((event) => (event.payload as { toModelId?: string }).toModelId);
+    expect(failoverTargets).not.toContain("provider-a/provider-a-model");
+  });
+
   it("a queued role-routed run fails closed with no provider call and no reservation", async () => {
     const route = managedRoute("provider-a", { windows: [quotaWindow({ limit: 1, remaining: 1 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
     registerFleet("provider-a", "provider-a-model");

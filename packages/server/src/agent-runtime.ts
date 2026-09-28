@@ -2194,6 +2194,7 @@ export class AgentRuntime {
               rotations++;
               continue;
             }
+            const qualifiedForFailureRole = this.roleRouteFilter(eightBitRoleForAgentRole(req.role));
             const outcome = await this.eightBit.handleTurnFailure({
               sessionId: this.sessionId,
               turnId: req.runId,
@@ -2238,7 +2239,9 @@ export class AgentRuntime {
                 profiles: this.reasoningRouteProfiles,
               }).outputTokenDemand,
               hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
-              routeFilter: this.roleRouteFilter(eightBitRoleForAgentRole(req.role)),
+              routeFilter: (providerId, modelId) =>
+                (!qualifiedForFailureRole || qualifiedForFailureRole(providerId, modelId))
+                && (req.excludeRoleRoute?.providerId !== providerId || req.excludeRoleRoute.modelId !== modelId),
               capacityScoreAdjustment: this.freeCloud
                 ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
                 : undefined,
