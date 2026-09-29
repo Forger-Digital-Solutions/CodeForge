@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-29T00:41:28.135Z",
+  "owner": "r56-user-owner-a",
+  "secondOwner": "r56-user-owner-b",
+  "steps": {
+    "endpointPolicy": [
+      {
+        "endpoint": "http://<host>/v1",
+        "rejected": true
+      },
+      {
+        "endpoint": "http://<host>/v1",
+        "rejected": true
+      },
+      {
+        "endpoint": "https://<host>/v1",
+        "rejected": true
+      },
+      {
+        "endpoint": "https://<host>/v1/../../x",
+        "rejected": true
+      },
+      {
+        "endpoint": "ftp://<host>/v1",
+        "rejected": true
+      }
+    ],
+    "endpointProbe": {
+      "modelsStatus": 200,
+      "listedModelCount": 126,
+      "chatStatus": 429,
+      "chatClass": "QUOTA_OR_RATE_LIMITED"
+    },
+    "sourceIdentity": {
+      "providerId": "user-api-7a7d29d05e2296b21b4f3643",
+      "credentialRefShape": true
+    },
+    "unqualifiedDispatchRefused": true,
+    "ownerIsolation": {
+      "bSourceListEmpty": true,
+      "bSourceGetUndefined": true,
+      "bCredentialUnresolved": true,
+      "bRosterCandidatesEmpty": true
+    },
+    "rosterProjection": {
+      "count": 1,
+      "credentialRefLeaked": false,
+      "lifecycleWhenUnqualified": "DISCOVERED",
+      "executableWhenUnqualified": false
+    },
+    "liveDispatch": {
+      "reachedProvider": true,
+      "status": "PROVIDER_REJECTED_QUOTA",
+      "classified": "user-api-7a7d29d05e2296b21b4f3643 error (429): {\n    \"error\": {\n        \"message\": \"You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.\",\n        \"type\": \"insuf"
+    },
+    "suspendedInvalidatesAdapter": true,
+    "missingCredentialFailsClosed": true,
+    "persistenceReopen": {
+      "sourceSurvived": true,
+      "ownerMatched": true,
+      "endpointSurvived": true,
+      "providerIdStable": true,
+      "qualificationLiveValue": "QUALIFIED",
+      "adapterReregistered": true,
+      "crossOwnerStillEmpty": true,
+      "credentialRefStillAbsentFromCandidates": true
+    }
+  }
+}

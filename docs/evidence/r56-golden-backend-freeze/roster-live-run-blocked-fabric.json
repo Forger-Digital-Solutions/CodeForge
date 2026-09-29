@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-29T01:04:54.842Z",
+  "startedAt": "2026-09-29T01:04:50.575Z",
+  "purpose": "R56 live ForgeAuto/Free roster run over the real Groq free lane (real external model calls; credential never recorded)",
+  "owner": "r56-live-owner",
+  "roster": {
+    "entitlement": "FREE",
+    "slots": [
+      {
+        "kind": "PINNED_VERSION",
+        "modelId": "openai/gpt-oss-120b",
+        "enabled": true,
+        "allowedRoles": [
+          "CODER"
+        ]
+      },
+      {
+        "kind": "AUTO",
+        "sourceClass": "MANAGED_FREE",
+        "enabled": true,
+        "allowedRoles": [
+          "EXPLORER",
+          "PLANNER",
+          "TESTER",
+          "REVIEWER",
+          "LEAD"
+        ]
+      }
+    ],
+    "lead": {
+      "mode": "NONE"
+    }
+  },
+  "goal": "Implement multiply and repair the formatter so the focused math and format tests pass.",
+  "runStatus": "blocked",
+  "runSummary": "Writer did not complete: Agent coder failed: [PROVIDER_UNAVAILABLE] No eligible free route for role coder: 8-Bit admission found no healthy route meeting this role's capability contract (NO_ELIGIBLE_FREE_MODEL). No paid or unknown-cost route was used.",
+  "changedFiles": [],
+  "completion": null,
+  "verification": [],
+  "integration": {
+    "status": "blocked",
+    "branch": "codeforge/worktree/run-2b68d95f-2b9c-4abb-995a-a9686405b39c-d0b1130c",
+    "worktreeId": "wt-d0b1130c",
+    "reason": "SUBAGENT_WRITER_BLOCKED"
+  },
+  "counters": {
+    "childrenSpawned": 1,
+    "reviewRounds": 0,
+    "taskAttempts": 1,
+    "verificationAttempts": 0
+  },
+  "workers": [
+    {
+      "role": "Repository Explorer",
+      "agentId": "explorer",
+      "status": "failed",
+      "model": null,
+      "rosterAllowance": {
+        "freeRoutes": [
+          {
+            "providerId": "groq",
+            "modelId": "openai/gpt-oss-120b"
+          },
+          {
+            "providerId": "groq",
+            "modelId": "openai/gpt-oss-20b"
+          }
+        ],
+        "paidModelIds": [],
+        "userRoutes": [],
+        "decisionOwner": "r56-live-owner"
+      },
+      "telemetry": {
+        "wallTimeMs": 837,
+        "modelRequests": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "toolCalls": 0,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 1
+      },
+      "workspace": {
+        "kind": "local"
+      }
+    },
+    {
+      "role": "Autonomous Builder",
+      "agentId": "coder",
+      "status": "failed",
+      "model": null,
+      "rosterAllowance": {
+        "freeRoutes": [
+          {
+            "providerId": "groq",
+            "modelId": "openai/gpt-oss-120b"
+          }
+        ],
+        "paidModelIds": [],
+        "userRoutes": [],
+        "decisionOwner": "r56-live-owner"
+      },
+      "telemetry": {
+        "wallTimeMs": 1041,
+        "modelRequests": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "toolCalls": 0,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 1
+      },
+      "workspace": {
+        "kind": "git-worktree"
+      }
+    }
+  ],
+  "routing": [],
+  "decisionReceipts": [],
+  "shillingEntries": [],
+  "toolEventCount": 0,
+  "fixture": {
+    "baselineHead": "4d90d137083f1cfd78be86b3b047893e4fe6d830",
+    "finalHead": "4d90d137083f1cfd78be86b3b047893e4fe6d830",
+    "dirtyTree": ""
+  },
+  "finalMathContents": "export function multiply(a, b) { return 0; }\n\nexport function add(a, b) { return a + b; }\n",
+  "finalFormatContents": "export function format(value) { return `value: ${value}`; }\n",
+  "independentVerificationProbe": {
+    "ok": false,
+    "stdout": "✖ format (1.6989ms)\n✖ multiply (4.1959ms)\nℹ tests 2\nℹ suites 0\nℹ pass 0\nℹ fail 2\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 148.6559\n\n✖ failing tests:\n\ntest at test\\format.test.mjs:4:1\n✖ format (1.6989ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  + actual - expected\n  \n  + 'value: 42'\n  - 'result: 42'\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/cf-r56-repo-uFPoYg/test/format.test.mjs:4:29)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 'value: 42',\n    expected: 'result: 42',\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n\ntest at test\\math.test.mjs:4:1\n✖ multiply (4.1959ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  0 !== 42\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/cf-r56-repo-uFPoYg/test/math.test.mjs:4:31)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 0,\n    expected: 42,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n"
+  },
+  "governorCapacityReports": {
+    "groq": {
+      "providerId": "groq",
+      "tpmUsed": 0,
+      "tpmLimit": 7500,
+      "rpmUsed": 0,
+      "rpmLimit": 28,
+      "activeConcurrent": 0,
+      "maxConcurrent": 2,
+      "inFlightTokens": 0,
+      "queueDepth": 0,
+      "isCoolingDown": false,
+      "cooldownRemainingMs": 0
+    }
+  },
+  "providerCredentialsUsed": [
+    "GROQ_API_KEY (present)"
+  ],
+  "dbPath": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\cf-r56-worktrees-dHezt2\\r56-live.db"
+}

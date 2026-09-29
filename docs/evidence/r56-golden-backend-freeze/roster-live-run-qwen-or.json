@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-29T02:31:50.825Z",
+  "startedAt": "2026-09-29T02:31:45.921Z",
+  "purpose": "R56 live ForgeAuto/Free roster run over the real Groq free lane (real external model calls; credential never recorded)",
+  "owner": "r56-live-owner",
+  "roster": {
+    "entitlement": "FREE",
+    "slots": [
+      {
+        "kind": "PINNED_VERSION",
+        "modelId": "qwen/qwen3.8-27b:free",
+        "enabled": true,
+        "allowedRoles": [
+          "CODER"
+        ]
+      },
+      {
+        "kind": "PINNED_VERSION",
+        "modelId": "openai/gpt-oss-20b",
+        "enabled": true,
+        "allowedRoles": [
+          "EXPLORER"
+        ]
+      },
+      {
+        "kind": "AUTO",
+        "sourceClass": "MANAGED_FREE",
+        "enabled": true,
+        "allowedRoles": [
+          "PLANNER",
+          "TESTER",
+          "REVIEWER",
+          "LEAD"
+        ]
+      }
+    ],
+    "lead": {
+      "mode": "NONE"
+    }
+  },
+  "goal": "Implement multiply and repair the formatter so the focused math and format tests pass.",
+  "runStatus": "blocked",
+  "runSummary": "Writer did not complete: Agent coder failed: [PROVIDER_RATE_LIMITED] OpenRouter error (429): {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"qwen/qwen3.8-27b:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rat",
+  "changedFiles": [],
+  "completion": null,
+  "verification": [],
+  "integration": {
+    "status": "blocked",
+    "branch": "codeforge/worktree/run-86652cc1-2ff5-47ec-8d05-f10c3a36e6a4-dc8704ab",
+    "worktreeId": "wt-dc8704ab",
+    "reason": "SUBAGENT_WRITER_BLOCKED"
+  },
+  "counters": {
+    "childrenSpawned": 1,
+    "reviewRounds": 0,
+    "taskAttempts": 1,
+    "verificationAttempts": 0
+  },
+  "workers": [
+    {
+      "role": "Repository Explorer",
+      "agentId": "explorer",
+      "status": "failed",
+      "model": {
+        "providerId": "groq",
+        "modelId": "openai/gpt-oss-20b"
+      },
+      "rosterAllowance": {
+        "freeRoutes": [
+          {
+            "providerId": "groq",
+            "modelId": "openai/gpt-oss-20b"
+          }
+        ],
+        "paidModelIds": [],
+        "userRoutes": [],
+        "decisionOwner": "r56-live-owner"
+      },
+      "telemetry": {
+        "wallTimeMs": 2030,
+        "modelRequests": 2,
+        "inputTokens": 2456,
+        "outputTokens": 564,
+        "toolCalls": 1,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 1
+      },
+      "workspace": {
+        "kind": "local"
+      }
+    },
+    {
+      "role": "Autonomous Builder",
+      "agentId": "coder",
+      "status": "failed",
+      "model": null,
+      "rosterAllowance": {
+        "freeRoutes": [
+          {
+            "providerId": "openrouter",
+            "modelId": "qwen/qwen3.8-27b:free"
+          }
+        ],
+        "paidModelIds": [],
+        "userRoutes": [],
+        "decisionOwner": "r56-live-owner"
+      },
+      "telemetry": {
+        "wallTimeMs": 1018,
+        "modelRequests": 1,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "toolCalls": 0,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 1
+      },
+      "workspace": {
+        "kind": "git-worktree"
+      }
+    }
+  ],
+  "routing": [
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-530b0a4d-2dda-41d3-98ad-eb32bb8bbb64",
+        "modelId": "openai/gpt-oss-20b",
+        "providerId": "groq",
+        "score": 94,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "access_free_native",
+          "HEALTH_UNKNOWN",
+          "HEALTH:NO_HEALTH_EVIDENCE",
+          "ROLE_RUNTIME_EVIDENCE_ABSENT"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-ffce782a-897b-454a-ad1e-2d46919e8ab8",
+        "modelId": "qwen/qwen3.8-27b:free",
+        "providerId": "openrouter",
+        "score": 137,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "access_free_native",
+          "HEALTH_UNKNOWN",
+          "HEALTH:NO_HEALTH_EVIDENCE",
+          "ROLE_RUNTIME_EVIDENCE_ABSENT"
+        ]
+      }
+    }
+  ],
+  "decisionReceipts": [
+    {
+      "runId": "child-530b0a4d-2dda-41d3-98ad-eb32bb8bbb64",
+      "agentId": "explorer",
+      "ownerUserId": "r56-live-owner",
+      "rosterUpdatedAt": "2026-09-29T02:31:45.558Z",
+      "role": "EXPLORER",
+      "candidates": [
+        {
+          "modelId": "openai/gpt-oss-20b",
+          "providerId": "groq",
+          "providerModelId": "openai/gpt-oss-20b",
+          "familyId": "gpt-oss",
+          "version": "20b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE_ECONOMY"
+        }
+      ],
+      "selected": {
+        "modelId": "openai/gpt-oss-20b",
+        "providerId": "groq",
+        "providerModelId": "openai/gpt-oss-20b",
+        "familyId": "gpt-oss",
+        "version": "20b",
+        "sourceClass": "MANAGED_FREE",
+        "lifecycle": "ACTIVE_ECONOMY"
+      },
+      "reasonCodes": [
+        "coding_capable",
+        "tool_calling",
+        "long_context",
+        "sufficient_context",
+        "access_free_native",
+        "HEALTH_UNKNOWN",
+        "HEALTH:NO_HEALTH_EVIDENCE",
+        "ROLE_RUNTIME_EVIDENCE_ABSENT"
+      ],
+      "recordedAt": "2026-09-29T02:31:46.824Z"
+    },
+    {
+      "runId": "child-ffce782a-897b-454a-ad1e-2d46919e8ab8",
+      "agentId": "coder",
+      "ownerUserId": "r56-live-owner",
+      "rosterUpdatedAt": "2026-09-29T02:31:45.558Z",
+      "role": "CODER",
+      "candidates": [
+        {
+          "modelId": "qwen/qwen3.8-27b:free",
+          "providerId": "openrouter",
+          "providerModelId": "qwen/qwen3.8-27b:free",
+          "familyId": "qwen3",
+          "version": "3.8-27b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        }
+      ],
+      "selected": {
+        "modelId": "qwen/qwen3.8-27b:free",
+        "providerId": "openrouter",
+        "providerModelId": "qwen/qwen3.8-27b:free",
+        "familyId": "qwen3",
+        "version": "3.8-27b",
+        "sourceClass": "MANAGED_FREE",
+        "lifecycle": "ACTIVE"
+      },
+      "reasonCodes": [
+        "coding_capable",
+        "tool_calling",
+        "long_context",
+        "sufficient_context",
+        "access_free_native",
+        "HEALTH_UNKNOWN",
+        "HEALTH:NO_HEALTH_EVIDENCE",
+        "ROLE_RUNTIME_EVIDENCE_ABSENT"
+      ],
+      "recordedAt": "2026-09-29T02:31:50.554Z"
+    }
+  ],
+  "shillingEntries": [
+    {
+      "id": "af546bb111a1e72c209a11fc4dabfdc16ba50e0bd53bfd295881c6fddb1811ee",
+      "role": "explorer",
+      "sourceClass": "UNKNOWN",
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "rawUsage": 3020,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    }
+  ],
+  "toolEventCount": 0,
+  "fixture": {
+    "baselineHead": "ceb02d63c23c8363ec3b031118f7fefd7e4e3fa4",
+    "finalHead": "ceb02d63c23c8363ec3b031118f7fefd7e4e3fa4",
+    "dirtyTree": ""
+  },
+  "finalMathContents": "export function multiply(a, b) { return 0; }\n\nexport function add(a, b) { return a + b; }\n",
+  "finalFormatContents": "export function format(value) { return `value: ${value}`; }\n",
+  "independentVerificationProbe": {
+    "ok": false,
+    "stdout": "✖ format (1.6287ms)\n✖ multiply (1.6276ms)\nℹ tests 2\nℹ suites 0\nℹ pass 0\nℹ fail 2\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 119.1222\n\n✖ failing tests:\n\ntest at test\\format.test.mjs:4:1\n✖ format (1.6287ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  + actual - expected\n  \n  + 'value: 42'\n  - 'result: 42'\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/cf-r56-repo-uGtKWP/test/format.test.mjs:4:29)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 'value: 42',\n    expected: 'result: 42',\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n\ntest at test\\math.test.mjs:4:1\n✖ multiply (1.6276ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  0 !== 42\n  \n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/cf-r56-repo-uGtKWP/test/math.test.mjs:4:31)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 0,\n    expected: 42,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n"
+  },
+  "governorCapacityReports": {
+    "groq": {
+      "providerId": "groq",
+      "tpmUsed": 6058,
+      "tpmLimit": 7500,
+      "rpmUsed": 2,
+      "rpmLimit": 28,
+      "activeConcurrent": 0,
+      "maxConcurrent": 2,
+      "inFlightTokens": 0,
+      "queueDepth": 0,
+      "isCoolingDown": false,
+      "cooldownRemainingMs": 0
+    }
+  },
+  "providerCredentialsUsed": [
+    "GROQ_API_KEY (present)"
+  ],
+  "dbPath": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\cf-r56-worktrees-wvZrkd\\r56-live.db"
+}

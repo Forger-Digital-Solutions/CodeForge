@@ -1,0 +1,757 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28T23:50:14.297Z",
+  "purpose": "R1 Managed-Free live provider certification (real external calls; bounded probes; credentials never recorded)",
+  "zeroCashPolicy": "Free endpoints only; no upgrade, purchase, or plan activation path was invoked.",
+  "providers": [
+    {
+      "providerId": "groq",
+      "displayName": "Groq",
+      "status": "CERTIFIED",
+      "auth": {
+        "ok": true,
+        "elapsedMs": 265
+      },
+      "catalog": {
+        "ok": false,
+        "modelCount": 11,
+        "candidatesPresent": [
+          "openai/gpt-oss-120b",
+          "openai/gpt-oss-20b",
+          "qwen/qwen3.8-27b"
+        ],
+        "candidatesAbsent": [
+          "qwen/qwen3.6-27b"
+        ]
+      },
+      "qualifications": [
+        {
+          "modelId": "openai/gpt-oss-120b",
+          "elapsedMs": 2649,
+          "qualificationState": "QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "QUALIFIED",
+            "TOOL_AGENT": "PROBATION",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 435,
+              "error": null
+            },
+            "CODER:compact.edit": {
+              "passed": true,
+              "latencyMs": 1345,
+              "error": null
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 435,
+              "error": null
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": true,
+              "latencyMs": 1345,
+              "error": null
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 868,
+              "error": null
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 868,
+              "error": null
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 3,
+            "transient": false,
+            "quotaExhausted": false
+          }
+        },
+        {
+          "modelId": "openai/gpt-oss-20b",
+          "elapsedMs": 992,
+          "qualificationState": "QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "QUALIFIED",
+            "TOOL_AGENT": "QUALIFIED",
+            "ANALYST": "QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 209,
+              "error": null
+            },
+            "CODER:compact.edit": {
+              "passed": true,
+              "latencyMs": 470,
+              "error": null
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 209,
+              "error": null
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": true,
+              "latencyMs": 470,
+              "error": null
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": true,
+              "latencyMs": 312,
+              "error": null
+            },
+            "ANALYST:compact.structured": {
+              "passed": true,
+              "latencyMs": 312,
+              "error": null
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 3,
+            "transient": false,
+            "quotaExhausted": false
+          }
+        },
+        {
+          "modelId": "qwen/qwen3.8-27b",
+          "elapsedMs": 1276,
+          "qualificationState": "QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "QUALIFIED",
+            "TOOL_AGENT": "QUALIFIED",
+            "ANALYST": "QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 337,
+              "error": null
+            },
+            "CODER:compact.edit": {
+              "passed": true,
+              "latencyMs": 746,
+              "error": null
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": true,
+              "latencyMs": 337,
+              "error": null
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": true,
+              "latencyMs": 746,
+              "error": null
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": true,
+              "latencyMs": 193,
+              "error": null
+            },
+            "ANALYST:compact.structured": {
+              "passed": true,
+              "latencyMs": 193,
+              "error": null
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 3,
+            "transient": false,
+            "quotaExhausted": false
+          }
+        }
+      ],
+      "observedResponses": [
+        {
+          "providerId": "groq",
+          "status": 200,
+          "headers": [],
+          "observedAt": 1790639407649
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-120b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "999"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "7584"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "1m26.4s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "3.119s"
+            ]
+          ],
+          "observedAt": 1790639407999
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-120b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "998"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "7150"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "2m52.8s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "6.375s"
+            ]
+          ],
+          "observedAt": 1790639408625
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-120b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "997"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6913"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "4m19.2s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "8.152s"
+            ]
+          ],
+          "observedAt": 1790639408896
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-120b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "996"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6973"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "5m45.6s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "7.702s"
+            ]
+          ],
+          "observedAt": 1790639409654
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-20b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "999"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "7584"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "1m26.4s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "3.119s"
+            ]
+          ],
+          "observedAt": 1790639410420
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-20b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "998"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "7174"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "2m52.8s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "6.194s"
+            ]
+          ],
+          "observedAt": 1790639410636
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-20b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "997"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6881"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "4m19.2s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "8.392s"
+            ]
+          ],
+          "observedAt": 1790639410895
+        },
+        {
+          "providerId": "groq",
+          "modelId": "openai/gpt-oss-20b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "996"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6950"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "5m45.6s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "7.875s"
+            ]
+          ],
+          "observedAt": 1790639411170
+        },
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.8-27b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "999"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "7379"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "1m26.4s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "4.657s"
+            ]
+          ],
+          "observedAt": 1790639411634
+        },
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.8-27b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "998"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6736"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "2m52.8s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "25.5s"
+            ]
+          ],
+          "observedAt": 1790639411851
+        },
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.8-27b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "997"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6237"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "4m19.2s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "13.222s"
+            ]
+          ],
+          "observedAt": 1790639412378
+        },
+        {
+          "providerId": "groq",
+          "modelId": "qwen/qwen3.8-27b",
+          "status": 200,
+          "headers": [
+            [
+              "x-ratelimit-limit-requests",
+              "1000"
+            ],
+            [
+              "x-ratelimit-limit-tokens",
+              "8000"
+            ],
+            [
+              "x-ratelimit-remaining-requests",
+              "996"
+            ],
+            [
+              "x-ratelimit-remaining-tokens",
+              "6443"
+            ],
+            [
+              "x-ratelimit-reset-requests",
+              "5m45.6s"
+            ],
+            [
+              "x-ratelimit-reset-tokens",
+              "13.56s"
+            ]
+          ],
+          "observedAt": 1790639412498
+        }
+      ],
+      "errors": [],
+      "wallTimeMs": 5185
+    },
+    {
+      "providerId": "cloudflare-workers-ai",
+      "displayName": "Cloudflare Workers AI",
+      "status": "PARTIALLY_CERTIFIED",
+      "auth": {
+        "ok": true,
+        "elapsedMs": 1408
+      },
+      "catalog": {
+        "ok": false,
+        "modelCount": 31,
+        "candidatesPresent": [
+          "@cf/openai/gpt-oss-120b",
+          "@cf/zai-org/glm-4.7-flash",
+          "@cf/nvidia/nemotron-3-120b-a12b",
+          "@cf/qwen/qwen3.8-27b",
+          "@cf/qwen/qwen2.5-coder-32b-instruct",
+          "@cf/qwen/qwen3-30b-a3b-fp8",
+          "@cf/google/gemma-4-26b-a4b-it"
+        ],
+        "candidatesAbsent": []
+      },
+      "qualifications": [
+        {
+          "modelId": "@cf/openai/gpt-oss-120b",
+          "elapsedMs": 314,
+          "qualificationState": "NOT_QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 313,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "CODER:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 313,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 3,
+            "transient": false,
+            "quotaExhausted": false
+          }
+        },
+        {
+          "modelId": "@cf/zai-org/glm-4.7-flash",
+          "elapsedMs": 1,
+          "qualificationState": "NOT_QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "CODER:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 3,
+            "transient": false,
+            "quotaExhausted": false
+          }
+        },
+        {
+          "modelId": "@cf/nvidia/nemotron-3-120b-a12b",
+          "elapsedMs": 0,
+          "qualificationState": "NOT_QUALIFIED",
+          "hardFailureRoles": [],
+          "roleStatuses": {
+            "CODER": "NOT_QUALIFIED",
+            "TOOL_AGENT": "NOT_QUALIFIED",
+            "ANALYST": "NOT_QUALIFIED"
+          },
+          "caseDetails": {
+            "CODER:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "CODER:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "TOOL_AGENT:compact.tool_call": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "TOOL_AGENT:compact.edit": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "TOOL_AGENT:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            },
+            "ANALYST:compact.structured": {
+              "passed": false,
+              "latencyMs": 0,
+              "error": "[CLOUDFLARE_USAGE_SCOPE_REQUIRED] GraphQL authorization error: not authorized for that account — the token needs account-level analytics read — trustworthy Workers AI usage for UTC day 2026-09-28 is u"
+            }
+          },
+          "metadata": {
+            "compact": true,
+            "requests": 3,
+            "transient": false,
+            "quotaExhausted": false
+          }
+        }
+      ],
+      "observedResponses": [],
+      "errors": [],
+      "wallTimeMs": 1724
+    },
+    {
+      "providerId": "zai",
+      "displayName": "Z.AI",
+      "status": "EXTERNAL_AUTHORIZATION_REQUIRED",
+      "requiredEnvironmentVariables": [
+        "ZAI_API_KEY"
+      ],
+      "note": "Operator credential absent; no live call attempted. All other providers proceeded independently.",
+      "wallTimeMs": 0
+    }
+  ]
+}
