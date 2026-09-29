@@ -52,6 +52,8 @@ import { resolveAdaptiveTopology } from "./adaptive-topology.js";
 import { evaluateMissionAdmission, type CapacityConfidenceReport, type MissionAdmissionVerdict } from "./capacity-confidence.js";
 import { classifyTaskComplexity, type TaskComplexityDecision, type TaskComplexityTier } from "./task-complexity.js";
 import { resolveForgeAutoRole, rosterRouteAllowance, type ForgeAutoRoster, type RosterCandidate, type RosterRole, type RosterRouteAllowance } from "./forgeauto-roster.js";
+import { adviseFromExperience, buildExperienceReceipt, type ExperienceWorker } from "./experience-learning.js";
+import { classifyRetryNovelty, strategyFingerprint, type StrategyObservation } from "./strategy-novelty.js";
 
 const execFile = promisify(execFileCallback);
 
@@ -360,7 +362,28 @@ export class AutonomousRunOrchestrator {
         error: run.error,
         createdAt: run.startedAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      } as unknown as import("@codeforge/sessions").WorkItem).catch(() => {});
+      } as unknown as import("@codeforge/sessions").WorkItem).then(async () => {
+        if (!run.result || !TERMINAL_STATUSES.has(run.status)) return;
+        const workers = await this.persistence!.getWorkItemsByKind("subagent_run") as unknown as ExperienceWorker[];
+        const receipt = buildExperienceReceipt(run, workers);
+        const now = new Date().toISOString();
+        await this.persistence!.insertIfAbsent({
+          kind: "autonomous_experience_receipt",
+          id: `experience:${run.id}`,
+          sessionId: run.sessionId,
+          receipt: receipt.local,
+          createdAt: now,
+          updatedAt: now,
+        } as unknown as import("@codeforge/sessions").WorkItem);
+        await this.persistence!.insertIfAbsent({
+          kind: "generalized_experience_signal",
+          id: `experience-signal:${run.id}`,
+          sessionId: run.sessionId,
+          signal: receipt.generalized,
+          createdAt: now,
+          updatedAt: now,
+        } as unknown as import("@codeforge/sessions").WorkItem);
+      }).catch(() => {});
     } catch {}
   }
 
@@ -766,6 +789,14 @@ export class AutonomousRunOrchestrator {
       // ==========================================
       let reviewPassed = false;
       let reviewFindings: AgentFinding[] = [];
+      const strategyHistory: StrategyObservation[] = [];
+      const priorSignals = process.env.CODEFORGE_EXPERIENCE_ADVICE === "off"
+        ? []
+        : await this.persistence?.getWorkItemsByKind("generalized_experience_signal").catch(() => []);
+      const learningAdvice = adviseFromExperience(
+        (priorSignals ?? []).map((item) => (item as unknown as { signal?: Record<string, unknown> }).signal ?? {}),
+        topology.complexity.tier,
+      );
       let lastDeterministicReview: Awaited<ReturnType<typeof reviewDiff>> | undefined;
       // R48: the implementing run's quota-pool identity — the reviewer spawn prefers a
       // different physical pool so the review is capacity-independent, not the same
@@ -1067,6 +1098,36 @@ export class AutonomousRunOrchestrator {
         }
 
         // Blocking findings require bounded revision
+        const [{ stdout: attemptDiff }, { stdout: attemptPaths }] = await Promise.all([
+          this.git(worktreeWs.rootPath, ["diff", baseRevision]).catch(() => ({ stdout: "" })),
+          this.git(worktreeWs.rootPath, ["diff", "--name-only", baseRevision]).catch(() => ({ stdout: "" })),
+        ]);
+        const observation: StrategyObservation = {
+          targetFiles: attemptPaths.split(/\r?\n/).filter(Boolean),
+          failureCodes: reviewFindings.filter((finding) => finding.severity === "blocking").map((finding) => finding.category),
+          stateDigest: crypto.createHash("sha256").update(attemptDiff).digest("hex"),
+        };
+        const novelty = classifyRetryNovelty(strategyHistory, observation);
+        strategyHistory.push(observation);
+        if (novelty === "LOW_NOVELTY_RETRY" || novelty === "STRATEGY_EXHAUSTED" || learningAdvice.action === "INDEPENDENT_DIAGNOSIS") {
+          const fingerprint = strategyFingerprint(observation);
+          const now = new Date().toISOString();
+          await this.persistence?.insertIfAbsent({
+            kind: "strategy_intervention_receipt",
+            id: `strategy-intervention:${runId}:${run.reviewRounds}`,
+            sessionId,
+            runId,
+            classification: novelty,
+            strategyFingerprint: fingerprint.strategy,
+            failureSignature: fingerprint.failure,
+            stateDigest: fingerprint.state,
+            intervention: learningAdvice.action === "INDEPENDENT_DIAGNOSIS" ? "PRIOR_EXPERIENCE_DIAGNOSIS" : "INDEPENDENT_REVIEWER_DIAGNOSIS_AND_CODER_REPLAN",
+            learningSampleCount: learningAdvice.supportingSamples,
+            learningConfidence: learningAdvice.confidence,
+            createdAt: now,
+            updatedAt: now,
+          } as unknown as import("@codeforge/sessions").WorkItem);
+        }
         run.reviewRounds++;
         counters.reviewRounds++;
 
@@ -1074,7 +1135,7 @@ export class AutonomousRunOrchestrator {
           // Exhausted revision budget -> fail closed into blocked state
           const summary = `Reviewer identified persistent blocking issues after ${MAX_REVIEW_REVISION_ROUNDS} revision rounds: ${reviewFindings.map((f) => f.message).join("; ")}`;
           this.transitionRun(run, "blocked", adapter);
-          run.error = "REVIEW_REVISION_LIMIT";
+          run.error = novelty === "STRATEGY_EXHAUSTED" ? "STRATEGY_EXHAUSTED" : "REVIEW_REVISION_LIMIT";
 
           const blockedResult: AutonomousRunResult = {
             runId,
@@ -1085,7 +1146,7 @@ export class AutonomousRunOrchestrator {
             changedFiles,
             review: { passed: false, findings: reviewFindings },
             verification: verificationResults,
-            integration: { status: "blocked", branch: worktreeWs.branch, worktreeId: worktreeWs.id, reason: "REVIEW_REVISION_LIMIT" },
+            integration: { status: "blocked", branch: worktreeWs.branch, worktreeId: worktreeWs.id, reason: run.error },
             evidence: allEvidence,
             counters,
           };
@@ -1098,6 +1159,7 @@ export class AutonomousRunOrchestrator {
         this.transitionRun(run, "revising", adapter);
         reviewFeedback = JSON.stringify({
           verdict: "revision_required",
+          ...(novelty === "LOW_NOVELTY_RETRY" || learningAdvice.action === "INDEPENDENT_DIAGNOSIS" ? { intervention: "Reinspect the causal assumption, seek a different implementation strategy, and run a targeted check before editing again." } : {}),
           findings: reviewFindings.map(({ id, severity, category, message, evidence, path, line }) => ({ id, severity, category, message, evidence, path, line })),
         });
       }

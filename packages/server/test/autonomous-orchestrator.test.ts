@@ -87,6 +87,15 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     // Verify git log has the integrated commit
     const { stdout: logOut } = await execFile("git", ["log", "-1", "--oneline"], { cwd: targetRepo });
     expect(logOut).toContain("Autonomous implementation");
+
+    let receipt = await persistence.getWorkItem(`experience:${result.runId}`);
+    for (let attempt = 0; attempt < 20 && !receipt; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      receipt = await persistence.getWorkItem(`experience:${result.runId}`);
+    }
+    expect(receipt).toBeDefined();
+    const signal = await persistence.getWorkItem(`experience-signal:${result.runId}`) as unknown as { signal?: { label?: string } } | undefined;
+    expect(signal?.signal?.label).toBe("VERIFIED_SUCCESS");
   });
 
   it("Scenario 2 & 3 (Reviewer Gate & Revision Loop): blocking review finding triggers revision which succeeds", async () => {
@@ -132,12 +141,14 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
       persistence,
     });
 
+    const feedbacks: string[] = [];
     const result = await orchestrator.startRun({
       sessionId: "sess-rev-limit",
       workspacePath: targetRepo,
       goal: "Implement flawed change",
       adapter: createWorkspaceEventAdapter({ sessionId: "sess-rev-limit", eventStore, persistence }),
-      coderExecutor: async (worktreePath) => {
+      coderExecutor: async (worktreePath, _goal, feedback) => {
+        if (feedback) feedbacks.push(feedback);
         const mathFile = join(worktreePath, "src", "math.ts");
         // Always write code with syntaxerror / regression error
         await writeFile(mathFile, "export function bug() { throw new SyntaxError('unresolved syntaxerror failure'); }\n");
@@ -147,8 +158,12 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
 
     expect(result.status).toBe("blocked");
     expect(result.integration.status).toBe("blocked");
-    expect(result.integration.reason).toBe("REVIEW_REVISION_LIMIT");
+    expect(result.integration.reason).toBe("STRATEGY_EXHAUSTED");
     expect(result.counters.reviewRounds).toBeGreaterThanOrEqual(MAX_REVIEW_REVISION_ROUNDS);
+    expect(feedbacks.some((feedback) => feedback.includes("Reinspect the causal assumption"))).toBe(true);
+    const interventions = await persistence.getWorkItemsByKind("strategy_intervention_receipt") as unknown as Array<{ classification?: string }>;
+    expect(interventions.some((entry) => entry.classification === "LOW_NOVELTY_RETRY")).toBe(true);
+    expect(interventions.some((entry) => entry.classification === "STRATEGY_EXHAUSTED")).toBe(true);
 
     // Parent repo must remain completely untouched!
     const originalMath = await readFile(join(targetRepo, "src", "math.ts"), "utf-8");
