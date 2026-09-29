@@ -1,0 +1,31 @@
+{
+  "schema": "r58-source-certificate/v1",
+  "predecessor": {
+    "commit": "cbae062c52f0bbc0723fb3832f316f0cff7a8504",
+    "sourceStateId": "16d40300ecc8b7c91e998239dcfd932847d13c8bf285a74e71501923ed84cc97",
+    "materialFiles": 65,
+    "canariesPassed": 8
+  },
+  "current": {
+    "certificateCommit": "7f16ed26917cff182865dd3039f1d082cc3dad72",
+    "sourceStateId": "193a34dc933b27e917b728219c1f004fc86c87a27a0aadd7280dca50b5607830",
+    "surfaceVersion": "r58-progress-aware-autonomy-v1",
+    "materialFiles": 68,
+    "canariesPassed": 8,
+    "canariesTotal": 8,
+    "addedMaterialFiles": [
+      "apps/desktop/src/main.ts",
+      "packages/protocol/src/subagent-runtime.ts",
+      "packages/server/src/role-progress.ts"
+    ],
+    "changedMaterialFiles": [
+      "apps/desktop/src/main.ts",
+      "packages/protocol/src/subagent-runtime.ts",
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/autonomous-orchestrator.ts",
+      "packages/server/src/index.ts",
+      "packages/server/src/role-progress.ts",
+      "packages/server/src/subagent-manager.ts"
+    ]
+  }
+}

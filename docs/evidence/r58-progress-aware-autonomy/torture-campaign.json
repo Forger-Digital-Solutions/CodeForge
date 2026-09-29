@@ -1,0 +1,18 @@
+{
+  "schema": "r58-torture-campaign/v1",
+  "runner": "Vitest with controlled test providers and isolated repositories",
+  "resultFile": "deterministic-torture-vitest.json",
+  "selectedTests": { "passed": 60, "failed": 0 },
+  "scenarios": [
+    { "id": "A", "name": "slow healthy worker", "status": "PASS_SIMULATED", "evidence": "progress-watchdog: useful coder survives beyond former two-extension ceiling and remains cancellable", "limit": "Scaled wall-clock harness, not a real 840-second provider run" },
+    { "id": "B", "name": "dead provider", "status": "PASS_SIMULATED", "evidence": "progress-watchdog: stalled provider is aborted with durable stalled reason" },
+    { "id": "C", "name": "activity loop", "status": "PARTIAL", "evidence": "r58-useful-progress rejects duplicate reads and failed calls; watchdog bounds extension count", "limit": "No dedicated sustained oscillating-edit torture run" },
+    { "id": "D", "name": "checkpoint and continuation", "status": "PASS_IN_PROCESS", "evidence": "autonomous-orchestrator: expired productive coder checkpoint is durable and a sequential lease continues edits" },
+    { "id": "E", "name": "crash and restart", "status": "PARTIAL", "evidence": "autonomous-orchestrator restart recovery and checkpoint-certification restart/restore pass", "limit": "Automatic relaunch of a budget-expired coder continuation after process death is unproven" },
+    { "id": "F", "name": "cancellation", "status": "PASS_SIMULATED", "evidence": "progress-watchdog cancellation and autonomous-orchestrator cancellation propagation/lease release pass" },
+    { "id": "G", "name": "verification failure", "status": "PASS_SIMULATED", "evidence": "autonomous-orchestrator verification failure blocks integration; completion-gate rejects missing, failed, and stale verification" },
+    { "id": "H", "name": "reviewer rejection", "status": "PASS_SIMULATED", "evidence": "autonomous-orchestrator blocking review causes corrective revision, then verification" },
+    { "id": "I", "name": "capacity churn", "status": "PARTIAL", "evidence": "pinned-route recovery handles a short 429 and bounds repeated failure", "limit": "Mid-agent route migration is not established" }
+  ],
+  "overall": "PARTIAL"
+}

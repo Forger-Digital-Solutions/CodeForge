@@ -1,0 +1,14 @@
+{
+  "schema": "r58-cleanup-audit/v1",
+  "isolatedBaselineWorktree": "G:/CodeForge/benchmarks/r58/tmp/dogfood-baseline",
+  "baselineWasCleanBeforeRemoval": true,
+  "baselineRemoved": true,
+  "temporaryProfileRemovedAfterTargetedProcessStop": true,
+  "attemptProcessIdsStopped": [35252, 9220],
+  "codeForgeProcessesRemaining": 0,
+  "r58TemporaryDirectoriesRemaining": 0,
+  "preExistingOtherWorktreesPreserved": true,
+  "preExistingR57PrunableEntriesPreserved": true,
+  "primaryCheckoutUserChangesPreserved": true,
+  "status": "PASS"
+}

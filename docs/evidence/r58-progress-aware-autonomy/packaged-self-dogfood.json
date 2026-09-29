@@ -1,0 +1,70 @@
+{
+  "schema": "r58-packaged-self-dogfood/v1",
+  "evidenceClass": "packaged_live_provider",
+  "startedAt": "2026-09-29T17:51:07.206Z",
+  "finishedAt": "2026-09-29T17:54:59.734Z",
+  "failure": "Primary packaged renderer did not connect to the expected runtime endpoint",
+  "artifact": {
+    "sha256": "397fc1c2b602d12f8819b325f571ddfce5dd5982689c9274402bae2671651a01"
+  },
+  "workspace": {
+    "baselineHead": "3b8ffd3d9cb369fbff36897fe22d199de52403ba"
+  },
+  "process": {
+    "pid": 35252,
+    "stdoutBytes": 163,
+    "stderrBytes": 673,
+    "resourceSamples": [
+      {
+        "at": "2026-09-29T17:51:08.953Z",
+        "rssBytes": 24612864,
+        "handles": 241
+      },
+      {
+        "at": "2026-09-29T17:51:39.546Z",
+        "rssBytes": 250966016,
+        "handles": 1006
+      },
+      {
+        "at": "2026-09-29T17:52:09.678Z",
+        "rssBytes": 250929152,
+        "handles": 1006
+      },
+      {
+        "at": "2026-09-29T17:52:39.756Z",
+        "rssBytes": 247173120,
+        "handles": 1002
+      },
+      {
+        "at": "2026-09-29T17:53:09.660Z",
+        "rssBytes": 247185408,
+        "handles": 1002
+      },
+      {
+        "at": "2026-09-29T17:53:39.752Z",
+        "rssBytes": 247197696,
+        "handles": 994
+      },
+      {
+        "at": "2026-09-29T17:54:10.225Z",
+        "rssBytes": 247214080,
+        "handles": 994
+      },
+      {
+        "at": "2026-09-29T17:54:41.508Z",
+        "rssBytes": 247267328,
+        "handles": 990
+      },
+      {
+        "at": "2026-09-29T17:55:01.306Z",
+        "rssBytes": 247238656,
+        "handles": 990
+      }
+    ]
+  },
+  "cleanup": {
+    "removedWorktrees": [],
+    "worktreeRemovalFailures": [],
+    "profileRemoved": false
+  }
+}

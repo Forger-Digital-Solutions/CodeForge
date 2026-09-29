@@ -1,0 +1,13 @@
+{
+  "schema": "r58-packaged-approval-block/v1",
+  "requestedAction": "Run rebuilt Windows CodeForge.exe on isolated R57 coding task using a real free OpenRouter model",
+  "sandboxedAttempt": { "receipt": "packaged-self-dogfood.json", "taskSubmitted": false, "reason": "Primary packaged renderer did not connect to the expected runtime endpoint" },
+  "unsandboxedRetry": {
+    "attempts": 2,
+    "status": "REJECTED_BY_AUTO_REVIEW",
+    "reason": "External transfer of repository and task context to OpenRouter was not recognized as explicitly authorized trusted user content; reviewer instructed not to bypass the rejection through another route."
+  },
+  "realCodingEvidence": false,
+  "completionGateEvidence": false,
+  "classification": "approval_blocked_packaged_live_provider_proof"
+}

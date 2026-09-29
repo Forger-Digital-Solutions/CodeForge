@@ -1,0 +1,28 @@
+{
+  "schema": "r58-package-build/v1",
+  "status": "PASS",
+  "artifact": "apps/desktop/release/win-unpacked/CodeForge.exe",
+  "version": "0.4.0",
+  "sha256": "397fc1c2b602d12f8819b325f571ddfce5dd5982689c9274402bae2671651a01",
+  "buildCommit": "3682da3529a52969557f4f630031fdb244b300e9",
+  "buildTime": "2026-09-29T17:25:50.231Z",
+  "buildDirty": true,
+  "signatureStatus": "NotSigned",
+  "sourceStateId": "193a34dc933b27e917b728219c1f004fc86c87a27a0aadd7280dca50b5607830",
+  "buildSteps": {
+    "typescriptForceBuild": "PASS",
+    "desktopMain": "PASS",
+    "renderer": "PASS",
+    "nativeRebuild": "PASS",
+    "electronBuilderDirectoryPackage": "PASS"
+  },
+  "audits": {
+    "internalDependencyGraph": "PASS",
+    "runtimeDependencyGraph": "PASS",
+    "authEndpoint": "PASS",
+    "browserSecurity": "PASS",
+    "buildIdentity": "PASS",
+    "productionSubagentWiring": "PASS"
+  },
+  "dirtyExplanation": "The pre-existing R34 benchmark change and R57 harness changes remained in the primary checkout at build time. Generated security reports were copied into R58 evidence and restored afterward. Packaged main and renderer stamps agree on the committed HEAD; all R58 material source is certified."
+}

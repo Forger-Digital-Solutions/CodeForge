@@ -1,0 +1,11 @@
+{
+  "schema": "r58-full-regression/v1",
+  "command": "node node_modules/vitest/vitest.mjs run --maxWorkers=2",
+  "startedAt": "2026-09-29T17:29:48Z",
+  "durationSeconds": 1767,
+  "testFiles": { "passed": 505, "skipped": 8, "total": 513 },
+  "tests": { "passed": 4222, "skipped": 48, "total": 4270 },
+  "exitCode": 0,
+  "status": "PASS",
+  "note": "The two-worker limit was used because Windows git/worktree integration tests are wall-clock sensitive under unrestricted parallel load."
+}

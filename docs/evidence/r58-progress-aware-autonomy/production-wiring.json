@@ -1,0 +1,18 @@
+{
+  "schema": "r58-packaged-wiring/v1",
+  "status": "PASS",
+  "artifact": {
+    "exeSha256": "397fc1c2b602d12f8819b325f571ddfce5dd5982689c9274402bae2671651a01",
+    "buildCommit": "3682da3529a52969557f4f630031fdb244b300e9",
+    "buildDirty": true,
+    "builtAt": "2026-09-29T17:25:50.231Z"
+  },
+  "sourceStateId": "193a34dc933b27e917b728219c1f004fc86c87a27a0aadd7280dca50b5607830",
+  "assertions": {
+    "desktopExplicitR1": true,
+    "serverDefaultsR1": true,
+    "legacyCoderStubFailsClosed": true,
+    "missingR1RuntimeFailsClosed": true,
+    "usefulProgressClassifierPackaged": true
+  }
+}
