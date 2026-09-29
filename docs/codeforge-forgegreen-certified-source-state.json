@@ -1,12 +1,13 @@
 {
-  "sourceStateId": "16d40300ecc8b7c91e998239dcfd932847d13c8bf285a74e71501923ed84cc97",
-  "surfaceVersion": "r57-endurance-product-fixes-v6",
+  "sourceStateId": "193a34dc933b27e917b728219c1f004fc86c87a27a0aadd7280dca50b5607830",
+  "surfaceVersion": "r58-progress-aware-autonomy-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
   "recoveryBranch": "forger-digital-solutions-forgegreen-certified",
   "idAlgorithm": "sha256(JSON.stringify(materialFiles sorted lexicographically, each as [path, gitBlobHash]))",
   "materialFiles": [
+    "apps/desktop/src/main.ts",
     "packages/agent/src/index.ts",
     "packages/agent/src/planning-contract.ts",
     "packages/benchmark/src/codeforge-bench-r2.ts",
@@ -33,6 +34,7 @@
     "packages/paid-auto/src/index.ts",
     "packages/paid-auto/src/registry.ts",
     "packages/paid-auto/src/service.ts",
+    "packages/protocol/src/subagent-runtime.ts",
     "packages/providers/src/capacity-governor.ts",
     "packages/providers/src/index.ts",
     "packages/router/package.json",
@@ -52,6 +54,7 @@
     "packages/server/src/integration-service.ts",
     "packages/server/src/model-execution-adapter.ts",
     "packages/server/src/role-output-budget.ts",
+    "packages/server/src/role-progress.ts",
     "packages/server/src/run-failure.ts",
     "packages/server/src/strategy-novelty.ts",
     "packages/server/src/subagent-manager.ts",
@@ -74,6 +77,7 @@
     "packages/workflow/src/verification-service.ts"
   ],
   "materialFileHashes": {
+    "apps/desktop/src/main.ts": "360733f14693a022b8e2120a888e6bc3a136c336",
     "packages/agent/src/index.ts": "3e33c03e81390c55ef6a52153f28a1f9db5cb30c",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
@@ -100,14 +104,15 @@
     "packages/paid-auto/src/index.ts": "fbef7d85109e7e1bf54c2b2f6982a4b8181c0ecc",
     "packages/paid-auto/src/registry.ts": "96773c01b27182b62675b15cddfb8354f5257c52",
     "packages/paid-auto/src/service.ts": "2f6ebdcbb71f8b2f9fbf00e949b19e274b2a111c",
+    "packages/protocol/src/subagent-runtime.ts": "76dfee10cf2a6d686f28aff4bb25edad39f6a443",
     "packages/providers/src/capacity-governor.ts": "e9cd2a44560415437c494a3c586d28811751d04c",
     "packages/providers/src/index.ts": "6cb2cde912d6337932d19269d1bfa66c065518ca",
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
-    "packages/server/src/agent-runtime.ts": "94df8fdbe732952e991a2ddbd55ddacd12b2400c",
-    "packages/server/src/autonomous-orchestrator.ts": "ce33eef7a1f036cc6a4ffeeca13dd8062712c3b9",
+    "packages/server/src/agent-runtime.ts": "bc6cc11902c768b81eab4c22470d16de3084a021",
+    "packages/server/src/autonomous-orchestrator.ts": "1f2d1d92420b7085e1f721755956d60cbdc3d180",
     "packages/server/src/checkpoint-service.ts": "9fc8c2328fc396a6831cb2803a8b679fbc288427",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
     "packages/server/src/experience-learning.ts": "4b2412fac97695e1568fdef4c0490c0f26446723",
@@ -115,13 +120,14 @@
     "packages/server/src/forgeauto-roster.ts": "741bf73fe25e24bb1576af0ca2d778318a5f1e88",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
     "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
-    "packages/server/src/index.ts": "43d44deb301efefb0e0d45191b0e4a563aed44be",
+    "packages/server/src/index.ts": "8104fdb877ad59b116136945aea9c561241208e0",
     "packages/server/src/integration-service.ts": "f72e3ffc8b3087c7f3acd861eba9eb859a008dfd",
     "packages/server/src/model-execution-adapter.ts": "bc52ae7ab56484f4c69fe392c21f4fa9e7c9e4f8",
     "packages/server/src/role-output-budget.ts": "f2560f9ee66fe33d5cf9f0bb6b1d1f3bd7a441dc",
+    "packages/server/src/role-progress.ts": "4aa4c3e8f85ab55b9e315662363264614e1f1279",
     "packages/server/src/run-failure.ts": "c3758e6b652cf2b8b6051425e6655095c7bef52e",
     "packages/server/src/strategy-novelty.ts": "79af053d023fdbd6f67719377eefe05b583f22ba",
-    "packages/server/src/subagent-manager.ts": "2eea24698f52721cf88afada0de716d5828f99d0",
+    "packages/server/src/subagent-manager.ts": "279d57d368efc000e23b6a18b1706e6db8cb657a",
     "packages/server/src/turn-state-machine.ts": "bd79b984c832d8ad7020b58b2f4991c747abafd6",
     "packages/server/src/user-intelligence.ts": "9324dc19fccea0eb945c07700c23a0966d759604",
     "packages/server/src/workflow-service.ts": "a6fa8ae76d908fe503ba6050d8afdf9d2e239b23",
@@ -2288,20 +2294,64 @@
       "regressionEvidence": "docs/evidence/r57-autonomous-endurance-learning/R57-FINAL-REPORT.md",
       "recertifiedAt": "2026-09-29",
       "sourceStateConstant": "CODEFORGE_R57_ENDURANCE_PRODUCT_FIXES_V6_SOURCE_STATE"
+    },
+    {
+      "label": "R58 progress-aware autonomy recertification",
+      "reason": "R58 promotes the real packaged subagent runtime, removes the no-op coder success path, measures distinct tool effects and route latency for bounded coder leases, and checkpoints one sequential continuation after productive lease expiry. ForgeZero, ForgeVerify, and completion authority are unchanged.",
+      "priorSourceStateId": "16d40300ecc8b7c91e998239dcfd932847d13c8bf285a74e71501923ed84cc97",
+      "priorSurfaceVersion": "r57-endurance-product-fixes-v6",
+      "resultingSourceStateId": "193a34dc933b27e917b728219c1f004fc86c87a27a0aadd7280dca50b5607830",
+      "resultingSurfaceVersion": "r58-progress-aware-autonomy-v1",
+      "changes": [
+        {
+          "file": "apps/desktop/src/main.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/protocol/src/subagent-runtime.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/index.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/role-progress.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/subagent-manager.ts",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r58-progress-aware-autonomy/R58-FINAL-REPORT.md",
+      "recertifiedAt": "2026-09-29",
+      "sourceStateConstant": "CODEFORGE_R58_PROGRESS_AWARE_AUTONOMY_V1_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-29T13:02:33.233Z",
+  "recertifiedAt": "2026-09-29T16:49:21.145Z",
   "recertification": {
-    "phase": "R57 endurance worktree-lifecycle recertification",
-    "reason": "The corrected packaged self-dogfood run still failed after isolated worktree creation: the checkpoint materialization checkout inside the child worktree could not rewrite deep tracked evidence paths on Windows. The per-invocation core.longpaths opt-in moved into the shared Git helpers of workspace, checkpoint, orchestrator, and integration services so every filesystem-facing call inside a managed worktree inherits it. No completion, routing, security, or accounting authority was relaxed.",
+    "phase": "R58 progress-aware autonomy recertification",
+    "reason": "R58 promotes the real packaged subagent runtime, removes the no-op coder success path, measures distinct tool effects and route latency for bounded coder leases, and checkpoints one sequential continuation after productive lease expiry. ForgeZero, ForgeVerify, and completion authority are unchanged.",
     "changedFiles": [
+      "apps/desktop/src/main.ts",
+      "packages/protocol/src/subagent-runtime.ts",
+      "packages/server/src/agent-runtime.ts",
       "packages/server/src/autonomous-orchestrator.ts",
-      "packages/server/src/checkpoint-service.ts",
-      "packages/server/src/integration-service.ts",
-      "packages/server/src/workspace-service.ts"
+      "packages/server/src/index.ts",
+      "packages/server/src/role-progress.ts",
+      "packages/server/src/subagent-manager.ts"
     ],
-    "priorSourceStateId": "b4170e607417a2e0876adf121c6901b084cabd151d866a8f8506dd06e8518ef4",
+    "priorSourceStateId": "16d40300ecc8b7c91e998239dcfd932847d13c8bf285a74e71501923ed84cc97",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
