@@ -1,5 +1,6 @@
 import type { EightBitHealthTracker } from "./health.js";
 import { classifyFailure, shortRateLimitWaitMs, SHORT_RATE_LIMIT_MAX_WAIT_MS } from "./health.js";
+import { classifyProviderFailure } from "@codeforge/forge-zero";
 import type { EightBitRouter, SelectRouteOptions } from "./router.js";
 import type { EightBitDecisionStore } from "./persistence.js";
 import { newReceiptId } from "./persistence.js";
@@ -180,7 +181,15 @@ export class EightBitFailoverCoordinator {
 
   async handleFailure(req: FailoverRequest): Promise<FailoverOutcome> {
     const reason = classifyFailure(req.error);
-    const health = this.health.recordFailure(req.current.providerId, req.current.modelId, reason);
+    // The raw 4xx/5xx body names the wall's scope (Groq "tokens per day" is per-model;
+    // OpenRouter "free-models-per-day" is account-wide). When the body carries no scope
+    // signal the tracker falls back to the reason's default — never to a guessed marking.
+    const errorMessage = req.error instanceof Error ? req.error.message : String(req.error ?? "");
+    const classified = classifyProviderFailure(errorMessage);
+    const health = this.health.recordFailure(req.current.providerId, req.current.modelId, reason, {
+      scope: classified?.scope,
+      ...(classified?.retryAfter !== undefined && Number.isFinite(classified.retryAfter) ? { cooldownUntil: classified.retryAfter } : {}),
+    });
     const policy = this.health.policyFor(reason);
 
     if (policy === "surface_only") {

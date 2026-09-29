@@ -9,6 +9,7 @@ import {
   ProviderCapacityGovernor,
   ProviderError,
   defaultCapacityGovernor,
+  rateLimitScopeFor,
   estimatePromptTokens,
   estimatePromptOnlyTokens,
 } from "@codeforge/providers";
@@ -73,14 +74,59 @@ function safeTransportCauseCode(err: unknown): string | undefined {
   return typeof code === "string" && SAFE_TRANSPORT_CAUSE_CODE.test(code) ? code : undefined;
 }
 
+/**
+ * Provider adapters emit a typed `code` on errors and stream-error events, and an upstream
+ * re-wrap can carry an already-normalized runtime code. Text classification cannot re-derive
+ * these — Groq's `output_parse_failed` reads as a generic stream error and was flattened into
+ * PROVIDER_UNAVAILABLE, which mislabelled a model-quality fact as a provider outage in
+ * telemetry and the run-failure record. A code in the known vocabulary therefore wins over
+ * message patterns; generic (`PROVIDER_ERROR`/`PROVIDER_UNAVAILABLE`) or unknown codes still
+ * fall through to text, which can only sharpen them.
+ */
+const PROVIDER_WIRE_CODES: Readonly<Record<string, string>> = {
+  RATE_LIMITED: ERROR_CODES.PROVIDER_RATE_LIMITED,
+  AUTH_ERROR: ERROR_CODES.PROVIDER_AUTH_FAILED,
+  PAYMENT_REQUIRED: "PAYMENT_REQUIRED",
+  MODEL_NOT_FOUND: ERROR_CODES.PROVIDER_MODEL_UNAVAILABLE,
+  CONTEXT_LENGTH: ERROR_CODES.PROVIDER_CONTEXT_LIMIT,
+  TIMEOUT: ERROR_CODES.PROVIDER_TIMEOUT,
+  INVALID_TOOL_OUTPUT: "INVALID_TOOL_OUTPUT",
+  STREAM_INTERRUPTED: ERROR_CODES.PROVIDER_STREAM_INTERRUPTED,
+};
+
+const NORMALIZED_PROVIDER_CODES: ReadonlySet<string> = new Set(Object.values(ERROR_CODES));
+
+function normalizedCodeFor(token: string | undefined): string | undefined {
+  if (token === undefined) return undefined;
+  if (token === ERROR_CODES.PROVIDER_UNAVAILABLE) return undefined;
+  return PROVIDER_WIRE_CODES[token] ?? (NORMALIZED_PROVIDER_CODES.has(token) ? token : undefined);
+}
+
 export function normalizeProviderError(err: unknown): { code: string; message: string } {
-  const raw = err instanceof Error ? err.message : String(err);
+  const raw = err instanceof Error
+    ? err.message
+    : typeof err === "object" && err !== null && typeof (err as { message?: unknown }).message === "string"
+      ? (err as { message: string }).message
+      : String(err);
   const redacted = redactSecrets(raw);
   const lower = redacted.toLowerCase();
   // The cause marker rides on the message after classification, so 8-Bit's classifier can
   // derive TRANSIENT_NETWORK from it without the marker re-routing the error code here.
   const causeCode = safeTransportCauseCode(err);
   const msg = causeCode ? `${redacted} [cause=${causeCode}]` : redacted;
+
+  const structured = normalizedCodeFor(typeof (err as { code?: unknown })?.code === "string" ? (err as { code: string }).code : undefined)
+    ?? normalizedCodeFor(/^\s*\[([A-Z][A-Z0-9_]*)\]\s*/.exec(redacted)?.[1]);
+  if (structured !== undefined) {
+    // Strip only envelopes that re-state the honored code — a foreign bracket is content.
+    let out = msg;
+    for (;;) {
+      const envelope = /^\s*\[([A-Z][A-Z0-9_.:-]*)\]\s*/.exec(out);
+      if (envelope === null || normalizedCodeFor(envelope[1]) !== structured) break;
+      out = out.slice(envelope[0].length);
+    }
+    return { code: structured, message: out.length > 0 ? out : structured };
+  }
 
   if (lower.includes("401") || lower.includes("unauthorized") || lower.includes("invalid api key") || lower.includes("auth_failed") || lower.includes("missing_api_key")) {
     return { code: ERROR_CODES.PROVIDER_AUTH_FAILED, message: `Authentication failed with provider: ${msg}` };
@@ -290,9 +336,9 @@ export class ModelExecutionAdapter {
           actualTokens = (u.inputTokens ?? 0) + (u.outputTokens ?? 0);
         }
         if (event.type === "error") {
-          const norm = normalizeProviderError(event.message);
+          const norm = normalizeProviderError(event);
           if (norm.code === ERROR_CODES.PROVIDER_RATE_LIMITED && pacingGovernor) {
-            pacingGovernor.recordRateLimit(providerId, event.retryAfter);
+            pacingGovernor.recordRateLimit(providerId, event.retryAfter, { modelId, scope: rateLimitScopeFor(event.message) });
           }
           yield {
             type: "error",
@@ -316,7 +362,7 @@ export class ModelExecutionAdapter {
       if ((err as { executionCertainty?: unknown }).executionCertainty === "not_started") throw err;
       const norm = normalizeProviderError(err);
       if (norm.code === ERROR_CODES.PROVIDER_RATE_LIMITED && pacingGovernor) {
-        pacingGovernor.recordRateLimit(providerId, (err as { retryAfter?: unknown }).retryAfter as number | undefined);
+        pacingGovernor.recordRateLimit(providerId, (err as { retryAfter?: unknown }).retryAfter as number | undefined, { modelId, scope: rateLimitScopeFor(err instanceof Error ? err.message : String(err)) });
       }
       yield {
         type: "error",

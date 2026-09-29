@@ -161,6 +161,12 @@ export interface EightBitRouteHealth {
   lastFailureAt?: string;
   cooldownUntil?: number;
   status: "HEALTHY" | "DEGRADED" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "UNAVAILABLE" | "SUSPENDED" | "UNKNOWN";
+  /** Whether this record's failure evidence is shared across the provider's other routes
+   * (org credential, account quota, upstream outage) or belongs to this model alone. The
+   * ForgeZero projection honors it: provider-scope marks every sibling, model-scope marks
+   * this route only. Absent on records hydrated from a pre-scope store — applyToFirewall
+   * derives scope from `lastFailureReason` in that case. */
+  scope?: "model" | "provider";
   /**
    * True once repeated AUTH_FAILUREs (401/403) cross the permanent-suspend threshold
    * (R1 legal remediation spec §21-22, ENG-P2-03). Distinguishes an indefinite suspension that

@@ -48,6 +48,18 @@ describe("describeRunFailure", () => {
     expect(failure.message).toContain("PROVIDER_UNAVAILABLE");
   });
 
+  it("a preserved INVALID_TOOL_OUTPUT envelope is invalid_model_output, not provider outage", () => {
+    // R56: once the adapter honors the provider's typed code, the envelope must land on
+    // the model-quality mapping — not the generic CodeForge-policy fallback.
+    const failure = describeRunFailure(
+      new Error("[INVALID_TOOL_OUTPUT] groq stream error (output_parse_failed) after HTTP 200"),
+      { providerId: "groq", modelId: "groq/openai/gpt-oss-20b" },
+    );
+    expect(failure.code).toBe("invalid_model_output");
+    expect(failure.ownership).toBe("runtime");
+    expect(failure.retryable).toBe(true);
+  });
+
   it("a route-exhausted managed run stops safely with route_exhausted", () => {
     const failure = describeRunFailure(new Error("whatever"), {
       providerId: "codeforge-cloud",

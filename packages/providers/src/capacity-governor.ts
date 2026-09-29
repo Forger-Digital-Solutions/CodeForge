@@ -1,4 +1,5 @@
 import { ProviderError, type ProviderAdapter, type PromptCacheCapability, type ProviderResponseObservation } from "./index.js";
+import { classifyRateLimit } from "@codeforge/forge-zero";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
 
 /**
@@ -79,6 +80,9 @@ export interface AcquireOptions {
    * header-driven admission compares against.
    */
   promptTokens?: number;
+  /** The concrete model this request will dispatch to — lets a model-scoped 429 cooldown
+   *  gate just that route instead of blocking the provider's healthy siblings. */
+  modelId?: string;
 }
 
 /** Freshness window for a header-derived token bucket; older observations fall back to the sliding window. */
@@ -150,6 +154,19 @@ export interface ProviderCapacityReport {
   observedQuota?: ObservedQuota;
 }
 
+/**
+ * Governor-side scope for a 429. A provider body naming a per-model bucket (TPD/TPM/RPM/
+ * burst) is evidence about that model's bucket — cool the route, not its siblings: a
+ * provider-wide cooldown for a model-scoped wall destroys within-provider failover exactly
+ * when it is needed (R56: Groq `gpt-oss-120b` TPD wall cooled `gpt-oss-20b` and starved a
+ * roster-pinned sibling). An account-allocation wall or an unclassifiable 429 stays
+ * provider-scoped — shared capacity is the safe default when the body names no bucket.
+ */
+export function rateLimitScopeFor(errorMessage: string | undefined): "model" | "provider" {
+  const cls = classifyRateLimit(errorMessage ?? "");
+  return cls === "ACCOUNT" || cls === "UNKNOWN" ? "provider" : "model";
+}
+
 function defaultSleep(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     if (signal?.aborted) {
@@ -186,6 +203,9 @@ export class ProviderCapacityGovernor {
   private readonly sleep: (ms: number, signal?: AbortSignal) => Promise<void>;
   private readonly defaultLimits: Record<string, Partial<ProviderCapacityLimit>>;
   private readonly maxQueueDepth?: number;
+  /** Model-scoped cooldowns for 429s whose bodies name a per-model bucket (see
+   *  rateLimitScopeFor). Keyed `${providerId}${modelId}`. */
+  private readonly modelCooldowns = new Map<string, number>();
 
   constructor(options: ProviderCapacityGovernorOptions = {}) {
     this.now = options.now ?? (() => Date.now());
@@ -332,8 +352,10 @@ export class ProviderCapacityGovernor {
         const now = this.now();
         this.pruneHistory(state, now);
 
-        // 1. Dynamic Cooldown Gate (from upstream 429 or explicit reset header)
-        const isCooldown = now < state.cooldownUntil;
+        // 1. Dynamic Cooldown Gate (from upstream 429 or explicit reset header). A
+        // model-scoped wall holds only that route's cooldown — sibling models dispatch.
+        const effectiveCooldownUntil = Math.max(state.cooldownUntil, this.modelCooldownUntil(providerId, options.modelId));
+        const isCooldown = now < effectiveCooldownUntil;
         const limits = this.getEffectiveLimits(providerId);
         const currentTokens = state.tokenHistory.reduce((sum, entry) => sum + entry.tokens, 0) + state.inFlightTokens;
         const currentRequests = state.requestHistory.length;
@@ -359,9 +381,12 @@ export class ProviderCapacityGovernor {
           }
 
           if (isCooldown) {
-            const waitMs = state.cooldownUntil - now;
+            const waitMs = effectiveCooldownUntil - now;
             if (waitMs > 60_000) {
-              throw new Error(`[PROVIDER_RATE_LIMITED] Provider '${providerId}' is in cooldown (${Math.round(waitMs / 1000)}s remaining)`);
+              const target = options.modelId !== undefined && now < this.modelCooldownUntil(providerId, options.modelId) && now >= state.cooldownUntil
+                ? `Model '${options.modelId}' on provider '${providerId}'`
+                : `Provider '${providerId}'`;
+              throw new Error(`[PROVIDER_RATE_LIMITED] ${target} is in cooldown (${Math.round(waitMs / 1000)}s remaining)`);
             }
             await this.sleep(waitMs, signal);
             continue;
@@ -578,21 +603,38 @@ export class ProviderCapacityGovernor {
 
   /**
    * Preserve a provider supplied retry horizon when an adapter reports a 429 as an exception
-   * rather than a response object. This is intentionally provider-scoped: provider rate limits
-   * are shared capacity, while 8-Bit still owns the route-level health and failover decision.
+   * rather than a response object. Scope follows the provider's own evidence: a body naming
+   * a per-model bucket cools that model only; an account wall or an unclassifiable 429 keeps
+   * the provider-scoped cooldown (provider rate limits are shared capacity), while 8-Bit
+   * still owns the route-level health and failover decision.
    */
-  recordRateLimit(providerId: string, retryAfter?: number): void {
-    const state = this.getState(providerId);
+  recordRateLimit(providerId: string, retryAfter?: number, options?: { modelId?: string; scope?: "model" | "provider" }): void {
     const fallbackUntil = this.now() + 5_000;
     const suppliedUntil = typeof retryAfter === "number" && Number.isFinite(retryAfter)
       ? Math.max(this.now(), retryAfter)
       : fallbackUntil;
+    if (options?.scope === "model" && options.modelId !== undefined) {
+      const key = this.modelCooldownKey(providerId, options.modelId);
+      this.modelCooldowns.set(key, Math.max(this.modelCooldowns.get(key) ?? 0, suppliedUntil));
+      return;
+    }
+    const state = this.getState(providerId);
     state.cooldownUntil = Math.max(state.cooldownUntil, suppliedUntil);
   }
 
-  isCoolingDown(providerId: string): boolean {
+  private modelCooldownKey(providerId: string, modelId: string): string {
+    return `${providerId}${modelId}`;
+  }
+
+  private modelCooldownUntil(providerId: string, modelId: string | undefined): number {
+    if (modelId === undefined) return 0;
+    return this.modelCooldowns.get(this.modelCooldownKey(providerId, modelId)) ?? 0;
+  }
+
+  isCoolingDown(providerId: string, modelId?: string): boolean {
     const state = this.states.get(providerId);
-    return state ? this.now() < state.cooldownUntil : false;
+    if (state && this.now() < state.cooldownUntil) return true;
+    return this.now() < this.modelCooldownUntil(providerId, modelId);
   }
 
   getCapacityReport(providerId: string): ProviderCapacityReport {
@@ -659,7 +701,7 @@ export class GovernedProviderAdapter implements ProviderAdapter {
 
   async chat(req: ChatRequest): Promise<ChatResponse> {
     const estimatedTokens = estimatePromptTokens(req);
-    const reservation = await this.governor.acquire(this.providerId, estimatedTokens, undefined, { promptTokens: estimatePromptOnlyTokens(req) });
+    const reservation = await this.governor.acquire(this.providerId, estimatedTokens, undefined, { promptTokens: estimatePromptOnlyTokens(req), modelId: req.model });
     try {
       const res = await this.inner.chat(req);
       const actualTokens = (res.usage?.inputTokens ?? 0) + (res.usage?.outputTokens ?? 0);
@@ -671,7 +713,7 @@ export class GovernedProviderAdapter implements ProviderAdapter {
       // observed 429, so its cooldown/backoff (and any future evidence-driven limit) never
       // engaged for calls that only ever throw rather than returning an error response.
       if (err instanceof ProviderError && err.status === 429) {
-        this.governor.recordRateLimit(this.providerId, err.retryAfter);
+        this.governor.recordRateLimit(this.providerId, err.retryAfter, { modelId: req.model, scope: rateLimitScopeFor(err.message) });
       }
       throw err;
     }
@@ -681,7 +723,7 @@ export class GovernedProviderAdapter implements ProviderAdapter {
     const estimatedTokens = estimatePromptTokens(req);
     let reservation: Reservation | undefined;
     try {
-      reservation = await this.governor.acquire(this.providerId, estimatedTokens, signal, { promptTokens: estimatePromptOnlyTokens(req) });
+      reservation = await this.governor.acquire(this.providerId, estimatedTokens, signal, { promptTokens: estimatePromptOnlyTokens(req), modelId: req.model });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       yield {
@@ -705,13 +747,13 @@ export class GovernedProviderAdapter implements ProviderAdapter {
           totalTokens = (u.inputTokens ?? 0) + (u.outputTokens ?? 0);
           inputTokens = u.inputTokens;
         } else if (event.type === "error" && event.status === 429) {
-          this.governor.recordRateLimit(this.providerId, event.retryAfter);
+          this.governor.recordRateLimit(this.providerId, event.retryAfter, { modelId: req.model, scope: rateLimitScopeFor(event.message) });
         }
         yield event;
       }
     } catch (error) {
       if (error instanceof ProviderError && error.status === 429) {
-        this.governor.recordRateLimit(this.providerId, error.retryAfter);
+        this.governor.recordRateLimit(this.providerId, error.retryAfter, { modelId: req.model, scope: rateLimitScopeFor(error.message) });
       }
       throw error;
     } finally {

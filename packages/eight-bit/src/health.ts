@@ -162,6 +162,26 @@ function statusFor(reason: FailureReason, consecutiveFailures: number): EightBit
 }
 
 /**
+ * Failure classes whose evidence is about state the provider's other routes share: an
+ * org-scoped credential rejection, an account tier/quota wall, or an upstream outage —
+ * marking siblings is correct because the same call would fail there too. Everything else
+ * (per-model rate buckets, quota walls naming the model, retired models, request-shaped
+ * failures) is model-scoped: provider-wide marking destroyed within-provider failover when
+ * Groq's `gpt-oss-120b` TPD wall cooled the healthy `gpt-oss-20b` sibling (R56).
+ */
+const PROVIDER_SCOPED_REASONS: ReadonlySet<FailureReason> = new Set([
+  "AUTH_FAILURE",
+  "PAID_PLAN_REQUIRED",
+  "FREE_TIER_NOT_AVAILABLE",
+  "ACCESS_RESTRICTED",
+  "PROVIDER_OUTAGE",
+  "TEMPORARY_CAPACITY",
+  "TRANSIENT_NETWORK",
+  "TIMEOUT",
+  "UNKNOWN",
+]);
+
+/**
  * Live health feedback loop. Reuses ForgeZero as the eligibility source of truth (`markProviderHealth`
  * already excludes a bad provider from `eligibleModels()`); this layer is what was missing per the
  * architecture audit — `recentFailureCount` and cooldown state were schema fields nothing ever wrote.
@@ -197,8 +217,13 @@ export class EightBitHealthTracker {
   }
 
   /** Record a real failure observed during actual CodeForge operation. Bounded, monotonic
-   * per-route consecutive-failure counter; resets on the next recorded success. */
-  recordFailure(providerId: string, modelId: string, reason: FailureReason): EightBitRouteHealth {
+   * per-route consecutive-failure counter; resets on the next recorded success.
+   * `opts.scope` carries the caller's failure classification (e.g. planFailureHealthMarking)
+   * when the raw error named a per-model or account-level wall; absent evidence falls back
+   * to the reason's default scope, never to a guessed marking. `opts.cooldownUntil` carries
+   * the classified reset horizon (a TPD wall holds until its daily reset rather than
+   * re-probing the route every generic cooldown tick and burning a request each time). */
+  recordFailure(providerId: string, modelId: string, reason: FailureReason, opts?: { scope?: "model" | "provider"; cooldownUntil?: number }): EightBitRouteHealth {
     const key = routeKeyOf(providerId, modelId);
     const prior = this.getHealth(providerId, modelId);
     // A route already permanently suspended stays that way — credentials don't become valid
@@ -213,8 +238,11 @@ export class EightBitHealthTracker {
       consecutiveFailures,
       lastFailureReason: reason,
       lastFailureAt: new Date(this.now()).toISOString(),
-      cooldownUntil: cooldownMs > 0 ? this.now() + cooldownMs : prior.cooldownUntil,
+      cooldownUntil: opts?.cooldownUntil !== undefined && Number.isFinite(opts.cooldownUntil)
+        ? Math.max(opts.cooldownUntil, this.now())
+        : cooldownMs > 0 ? this.now() + cooldownMs : prior.cooldownUntil,
       status,
+      scope: opts?.scope ?? (PROVIDER_SCOPED_REASONS.has(reason) ? "provider" : "model"),
       permanentlySuspended: isPermanentAuthSuspension(reason, consecutiveFailures) || undefined,
     };
     this.routes.set(key, updated);
@@ -235,7 +263,9 @@ export class EightBitHealthTracker {
     if (!prior?.permanentlySuspended) return;
     const cleared: EightBitRouteHealth = { providerId, modelId, consecutiveFailures: 0, status: "HEALTHY" };
     this.routes.set(key, cleared);
-    this.firewall.markProviderHealth(providerId, "available");
+    // Route-scoped recovery: clearing this route must not erase a sibling's live cooldown —
+    // a recovered model is evidence about itself, not about the provider's other routes.
+    this.firewall.markModelHealth(providerId, modelId, "available");
   }
 
   /** A successful call clears the consecutive-failure streak (bounded retry succeeded /
@@ -245,7 +275,7 @@ export class EightBitHealthTracker {
     const prior = this.routes.get(key);
     if (!prior || prior.consecutiveFailures === 0) return;
     this.routes.set(key, { providerId, modelId, consecutiveFailures: 0, status: "HEALTHY" });
-    this.firewall.markProviderHealth(providerId, "available");
+    this.firewall.markModelHealth(providerId, modelId, "available");
   }
 
   /**
@@ -283,10 +313,19 @@ export class EightBitHealthTracker {
               : health.status === "DEGRADED"
                 ? "degraded"
                 : "available";
-    this.firewall.markProviderHealth(health.providerId, status, {
-      retryAfter: health.cooldownUntil,
-      lastError: health.lastFailureReason,
-    });
+    const scope = health.scope
+      ?? (health.lastFailureReason !== undefined && PROVIDER_SCOPED_REASONS.has(health.lastFailureReason) ? "provider" : "model");
+    if (scope === "provider") {
+      this.firewall.markProviderHealth(health.providerId, status, {
+        retryAfter: health.cooldownUntil,
+        lastError: health.lastFailureReason,
+      });
+    } else {
+      this.firewall.markModelHealth(health.providerId, health.modelId, status, {
+        retryAfter: health.cooldownUntil,
+        lastError: health.lastFailureReason,
+      });
+    }
   }
 }
 

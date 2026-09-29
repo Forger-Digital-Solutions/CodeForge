@@ -488,6 +488,7 @@ export {
   GovernedProviderAdapter,
   DEFAULT_FALLBACK_LIMITS,
   defaultCapacityGovernor,
+  rateLimitScopeFor,
   estimatePromptTokens,
   estimatePromptOnlyTokens,
   type AcquireOptions,

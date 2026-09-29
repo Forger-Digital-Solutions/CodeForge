@@ -60,6 +60,10 @@ const FORGE_CODE_FAILURES: Record<string, { code: RunFailureCode; ownership?: Ru
   UNKNOWN_COST_REJECTED: { code: "paid_plan_required", ownership: "paid", retryable: false, message: "This route could cost money, so CodeForge refused it" },
   PAID_FALLBACK_REJECTED: { code: "paid_plan_required", ownership: "paid", retryable: false, message: "This route can fall back to paid usage, so CodeForge refused it" },
   PROVIDER_UNAVAILABLE: { code: "provider_outage", ownership: "runtime", retryable: true, message: "Access to this route could not be confirmed right now, so the run was stopped safely" },
+  // Provider-wire codes that survive normalization verbatim (model-execution-adapter honors
+  // the adapter's typed code rather than re-deriving one from the message text).
+  INVALID_TOOL_OUTPUT: { code: "invalid_model_output", ownership: "runtime", retryable: true, message: "The model returned output CodeForge could not act on" },
+  PAYMENT_REQUIRED: { code: "paid_plan_required", ownership: "paid", retryable: false, message: "This route could cost money, so CodeForge refused it" },
   PROVIDER_MODEL_UNAVAILABLE: { code: "model_unavailable", ownership: "runtime", retryable: true, message: "This route is not available from its provider right now" },
   PROVIDER_RATE_LIMITED: { code: "provider_rate_limited", retryable: true, message: "This route is temporarily rate limited, so CodeForge stopped safely" },
   PROVIDER_CAPACITY_EXCEEDED: { code: "provider_capacity", retryable: true, message: "This route is at capacity right now, so CodeForge stopped safely" },

@@ -33,6 +33,40 @@ describe("Model Execution Adapter & Provider Contract (CF-07)", () => {
     expect(normalizeProviderError(stringCause).message).toBe("fetch failed");
   });
 
+  it("honors a provider adapter's structured error code over message text", () => {
+    // R56 live defect: Groq's in-band output_parse_failed (typed INVALID_TOOL_OUTPUT) was
+    // re-classified by message text and surfaced as PROVIDER_UNAVAILABLE — a model-quality
+    // fact mislabelled as a provider outage in telemetry and the run-failure record.
+    const event = {
+      type: "error" as const,
+      code: "INVALID_TOOL_OUTPUT",
+      message: "groq stream error (output_parse_failed) after HTTP 200: Parsing failed. The model generated output that could not be parsed.",
+      retryable: true,
+      status: 400,
+    };
+    const norm = normalizeProviderError(event);
+    expect(norm.code).toBe("INVALID_TOOL_OUTPUT");
+    expect(norm.message).toContain("output_parse_failed");
+
+    // A ProviderError re-normalized up-stack keeps its code and sheds its own envelope.
+    const wrapped = Object.assign(new Error("[INVALID_TOOL_OUTPUT] groq stream error (output_parse_failed) after HTTP 200"), { code: "INVALID_TOOL_OUTPUT" });
+    const rewrapped = normalizeProviderError(wrapped);
+    expect(rewrapped.code).toBe("INVALID_TOOL_OUTPUT");
+    expect(rewrapped.message).not.toContain("[INVALID_TOOL_OUTPUT]");
+    expect(rewrapped.message).toContain("output_parse_failed");
+
+    // The provider-wire vocabulary maps onto runtime codes.
+    expect(normalizeProviderError(Object.assign(new Error("provider error (429)"), { code: "RATE_LIMITED" })).code).toBe(ERROR_CODES.PROVIDER_RATE_LIMITED);
+    expect(normalizeProviderError(Object.assign(new Error("denied"), { code: "AUTH_ERROR" })).code).toBe(ERROR_CODES.PROVIDER_AUTH_FAILED);
+
+    // Generic codes still let text classification sharpen them.
+    expect(normalizeProviderError(Object.assign(new Error("429 too many requests"), { code: "PROVIDER_ERROR" })).code).toBe(ERROR_CODES.PROVIDER_RATE_LIMITED);
+    // PROVIDER_UNAVAILABLE is the text-fallback itself — never a structured override.
+    expect(normalizeProviderError(Object.assign(new Error("rate limit exceeded"), { code: "PROVIDER_UNAVAILABLE" })).code).toBe(ERROR_CODES.PROVIDER_RATE_LIMITED);
+    // Unknown .code fields (Node transport errnos) never become provider codes.
+    expect(normalizeProviderError(Object.assign(new TypeError("fetch failed"), { code: "ECONNREFUSED" })).code).toBe(ERROR_CODES.PROVIDER_UNAVAILABLE);
+  });
+
   it("fails closed without silent model substitution when exact model is requested but unavailable", async () => {
     const catalog = new InMemoryProviderCatalog();
     const firewall = new ForgeZero();

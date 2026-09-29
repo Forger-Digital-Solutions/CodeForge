@@ -56,6 +56,7 @@ import { UserIntentHoldController } from "./user-intent-hold.js";
 import { createExternalToolSurface, loadExternalToolConfig, type ExternalToolConfig, type ExternalToolSurface, type PluginToolHost } from "./external-tools.js";
 import { buildActivityOverview, type ActivityOverview, type ActivityPeriod } from "./activity-overview.js";
 export * from "./forgeauto-roster.js";
+export * from "./user-intelligence.js";
 import { ForgeAutoRosterStore, type ForgeAutoRoster, type RosterCandidate, type RosterEntitlement, type RosterRole } from "./forgeauto-roster.js";
 import { UserIntelligenceRuntimeRegistry, type OwnerCredentialResolver, type UserIntelligenceSource } from "./user-intelligence.js";
 
