@@ -1,0 +1,13 @@
+CONTROL_PLANE_BEARER_FILTER_http://127.0.0.1:58588
+PACKAGED_STARTUP=PASS
+FORGEGREEN_RUNTIME=PASS
+EIGHT_BIT_RUNTIME=PASS
+CLOUD_DB_PACKAGED_RUNTIME=PASS
+smoke_mode=live-task
+app_is_packaged=true
+packaged_live_free_models=20
+packaged_live_model_select=200
+packaged_live_task_phase=completed
+packaged_live_task_file_correct=true
+packaged_live_task=PASS
+CONTROL_PLANE_BEARER_WITHHELD wc=1 frame=file:///G:/CodeForge/apps/desktop/release/win-unpacked/resources/app.asar/apps/desktop/dist/renderer/index.html url=http://127.0.0.1:58588/api/sessions
