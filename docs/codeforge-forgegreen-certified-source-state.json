@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "934a07bc2c0bcd506d8307817be5daf23185afcbb679e5896ba5493b06b41b9e",
-  "surfaceVersion": "r56-golden-backend-freeze-v1",
+  "sourceStateId": "72ce0ea372aa558742c325859f966325d2bd98cbbd2eaa34524ffdf2bb21ca72",
+  "surfaceVersion": "r57-experience-foundation-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -42,6 +42,7 @@
     "packages/server/src/agent-runtime.ts",
     "packages/server/src/autonomous-orchestrator.ts",
     "packages/server/src/duplicate-suppression.ts",
+    "packages/server/src/experience-learning.ts",
     "packages/server/src/forge-verify-persistence.ts",
     "packages/server/src/forgeauto-roster.ts",
     "packages/server/src/forgegreen-run-policy.ts",
@@ -50,6 +51,7 @@
     "packages/server/src/model-execution-adapter.ts",
     "packages/server/src/role-output-budget.ts",
     "packages/server/src/run-failure.ts",
+    "packages/server/src/strategy-novelty.ts",
     "packages/server/src/subagent-manager.ts",
     "packages/server/src/turn-state-machine.ts",
     "packages/server/src/user-intelligence.ts",
@@ -102,8 +104,9 @@
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
     "packages/server/src/agent-runtime.ts": "94df8fdbe732952e991a2ddbd55ddacd12b2400c",
-    "packages/server/src/autonomous-orchestrator.ts": "5b9c52b0e1e4f98e2b67786cd44aee7c806fd42c",
+    "packages/server/src/autonomous-orchestrator.ts": "fd05f28bc510fa9f17cd9c87f33baf4533bf511a",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
+    "packages/server/src/experience-learning.ts": "60fdc70a913d0eed031174356976556b90d1aa9f",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/forgeauto-roster.ts": "741bf73fe25e24bb1576af0ca2d778318a5f1e88",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
@@ -112,6 +115,7 @@
     "packages/server/src/model-execution-adapter.ts": "bc52ae7ab56484f4c69fe392c21f4fa9e7c9e4f8",
     "packages/server/src/role-output-budget.ts": "f2560f9ee66fe33d5cf9f0bb6b1d1f3bd7a441dc",
     "packages/server/src/run-failure.ts": "c3758e6b652cf2b8b6051425e6655095c7bef52e",
+    "packages/server/src/strategy-novelty.ts": "79af053d023fdbd6f67719377eefe05b583f22ba",
     "packages/server/src/subagent-manager.ts": "2eea24698f52721cf88afada0de716d5828f99d0",
     "packages/server/src/turn-state-machine.ts": "bd79b984c832d8ad7020b58b2f4991c747abafd6",
     "packages/server/src/user-intelligence.ts": "9324dc19fccea0eb945c07700c23a0966d759604",
@@ -2130,24 +2134,47 @@
       "regressionEvidence": "docs/evidence/r56-golden-backend-freeze/R56-FINAL-REPORT.md",
       "recertifiedAt": "2026-09-29",
       "sourceStateConstant": "CODEFORGE_R56_GOLDEN_BACKEND_FREEZE_SOURCE_STATE"
+    },
+    {
+      "label": "R57 experience foundation source recertification",
+      "reason": "Partial R57 foundation: owner-local and generalized privacy-safe experience receipts, reviewer revision strategy-novelty intervention, and bounded abstract-outcome recovery advice. This certificate covers only reviewed source drift; it does not certify R57 endurance, live concurrency, packaged recovery, or full-round closure.",
+      "priorSourceStateId": "934a07bc2c0bcd506d8307817be5daf23185afcbb679e5896ba5493b06b41b9e",
+      "priorSurfaceVersion": "r56-golden-backend-freeze-v1",
+      "resultingSourceStateId": "72ce0ea372aa558742c325859f966325d2bd98cbbd2eaa34524ffdf2bb21ca72",
+      "resultingSurfaceVersion": "r57-experience-foundation-v1",
+      "changes": [
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "Persists scoped experience and generalized signals from terminal autonomous runs; compares observable reviewer-failure strategy history, records interventions, and consumes bounded prior abstract outcomes for recovery advice.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/experience-learning.ts",
+          "change": "Defines authority-bound success labels, privacy-safe receipt projection, and reconstructable bounded recovery advice; no source, prompt, path, endpoint, or raw model identity enters generalized signals.",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/strategy-novelty.ts",
+          "change": "Hashes observable target-file and failure-code signatures and classifies bounded revision novelty without storing reasoning or raw source.",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r57-autonomous-endurance-learning/R57-PARTIAL-REPORT.md",
+      "recertifiedAt": "2026-09-29",
+      "sourceStateConstant": "CODEFORGE_R57_EXPERIENCE_FOUNDATION_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-29T03:03:41.708Z",
+  "recertifiedAt": "2026-09-29T03:31:56.277Z",
   "recertification": {
-    "phase": "R56 golden backend freeze source recertification",
-    "reason": "R56 proves the R55 backend as a product under real conditions: live managed-free roster runs over Groq and OpenRouter :free lanes (real inference, real rate limits, a three-hop cross-provider failover chain, and a gate-authorized end-to-end completion on openrouter/nvidia/nemotron-3-super-120b-a12b:free), live USER_API dispatch against an owner-scoped OpenAI-compatible endpoint with fail-closed qualification, a live managed-paid probe through the budget-gated 16-Bit ledger with ACTUAL reconciliation, packaged Windows startup/interrupt/recovery smoke plus a live coding task completed inside the shipping binary, and the ForgeVerify adversarial corpus holding FALSE_COMPLETION_COUNT=0. It also fixes two live-discovered defects: model-scoped provider failures (e.g. Groq per-model TPD) now mark only the affected route — preserving sibling failover — and typed provider error codes survive normalization (INVALID_TOOL_OUTPUT stays invalid_model_output, never flattened to provider_outage) — neither change weakens fail-closed semantics.",
+    "phase": "R57 experience foundation source recertification",
+    "reason": "Partial R57 foundation: owner-local and generalized privacy-safe experience receipts, reviewer revision strategy-novelty intervention, and bounded abstract-outcome recovery advice. This certificate covers only reviewed source drift; it does not certify R57 endurance, live concurrency, packaged recovery, or full-round closure.",
     "changedFiles": [
-      "packages/eight-bit/src/failover.ts",
-      "packages/eight-bit/src/health.ts",
-      "packages/eight-bit/src/types.ts",
-      "packages/providers/src/capacity-governor.ts",
-      "packages/providers/src/index.ts",
-      "packages/server/src/index.ts",
-      "packages/server/src/model-execution-adapter.ts",
-      "packages/server/src/run-failure.ts"
+      "packages/server/src/autonomous-orchestrator.ts",
+      "packages/server/src/experience-learning.ts",
+      "packages/server/src/strategy-novelty.ts"
     ],
-    "priorSourceStateId": "5478003269dd076f7cfe92ac4e85f87097b63b4f7b24b7b316386d7fd871a727",
+    "priorSourceStateId": "934a07bc2c0bcd506d8307817be5daf23185afcbb679e5896ba5493b06b41b9e",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
