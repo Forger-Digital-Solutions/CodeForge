@@ -2,12 +2,17 @@
   "schema": "r58-packaged-approval-block/v1",
   "requestedAction": "Run rebuilt Windows CodeForge.exe on isolated R57 coding task using a real free OpenRouter model",
   "sandboxedAttempt": { "receipt": "packaged-self-dogfood.json", "taskSubmitted": false, "reason": "Primary packaged renderer did not connect to the expected runtime endpoint" },
-  "unsandboxedRetry": {
-    "attempts": 2,
-    "status": "REJECTED_BY_AUTO_REVIEW",
-    "reason": "External transfer of repository and task context to OpenRouter was not recognized as explicitly authorized trusted user content; reviewer instructed not to bypass the rejection through another route."
+  "approval": {
+    "openrouter": "explicitly_approved_by_user",
+    "groq": "explicitly_approved_by_user_for_second_attempt"
   },
-  "realCodingEvidence": false,
+  "reviewHistory": {
+    "initialUnsandboxedRequest": "REJECTED_BY_AUTO_REVIEW",
+    "reason": "External transfer of repository/task context was not recognized as explicitly authorized trusted user content.",
+    "followup": "The user then explicitly approved the OpenRouter transfer and separately approved Groq fallback. Both approved attempts ran."
+  },
+  "realPackagedSubagentEvidence": true,
+  "realModelCallEvidence": false,
   "completionGateEvidence": false,
-  "classification": "approval_blocked_packaged_live_provider_proof"
+  "classification": "blocked_free_supply_and_no_success_path"
 }

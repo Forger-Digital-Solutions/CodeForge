@@ -1,0 +1,58 @@
+{
+  "schema": "r58-packaged-live-summary/v1",
+  "task": {
+    "baselineCommit": "3b8ffd3d9cb369fbff36897fe22d199de52403ba",
+    "sameR57FailureCorpusGoal": true,
+    "workspaceCleanAtStartAndFinish": true
+  },
+  "artifact": {
+    "sha256": "397fc1c2b602d12f8819b325f571ddfce5dd5982689c9274402bae2671651a01",
+    "subagentR1EnvironmentFlag": "unset"
+  },
+  "attempts": [
+    {
+      "provider": "openrouter",
+      "receipt": "packaged-self-dogfood-approved.json",
+      "startedAt": "2026-09-29T18:14:16.059Z",
+      "finishedAt": "2026-09-29T18:28:35.456Z",
+      "catalogModelCount": 31,
+      "eightBitOutcome": "FABRIC_DENIED_NO_SUPPLY / NO_ELIGIBLE_ROUTE",
+      "observedRouteHealth": [
+        { "model": "poolside/laguna-s-2.1:free", "state": "RATE_LIMITED", "reason": "HTTP_429", "resetEstimate": "2026-09-29T18:15:19.961Z" },
+        { "model": "poolside/laguna-xs-2.1:free", "state": "RATE_LIMITED", "reason": "HTTP_429", "resetEstimate": "2026-09-29T18:15:20.298Z" },
+        { "model": "qwen/qwen3.8-27b:free", "state": "RATE_LIMITED", "reason": "HTTP_429", "resetEstimate": "2026-09-29T18:15:20.479Z" }
+      ],
+      "workers": 2,
+      "modelTurns": 0,
+      "toolCalls": 0,
+      "changedFiles": [],
+      "terminalStatus": "failed"
+    },
+    {
+      "provider": "groq",
+      "receipt": "packaged-self-dogfood-groq.json",
+      "startedAt": "2026-09-29T18:46:08.711Z",
+      "finishedAt": "2026-09-29T19:01:37.118Z",
+      "catalogModelCount": 11,
+      "eligibleCatalogSampleCount": 0,
+      "workers": 2,
+      "modelTurns": 0,
+      "toolCalls": 0,
+      "changedFiles": [],
+      "terminalStatus": "failed",
+      "failureClass": "AGENT_CANCELLED after watchdogAbortReason=stalled",
+      "builderWallBudgetMs": 600000,
+      "builderStartedAt": "2026-09-29T18:49:09.027Z",
+      "runTerminalElapsedBeyondBuilderBudgetMs": 148091
+    }
+  ],
+  "independentAcceptance": {
+    "status": "FAIL_EXPECTED_UNFIXED_BASELINE",
+    "evidence": "Nested defensive-copy assertion still observes input-mutated instead of model-a on the unfixed R57 commit"
+  },
+  "independentVerificationCommand": {
+    "status": "BLOCKED_BY_HARNESS_SETUP",
+    "reason": "The clean baseline worktree did not have the root node_modules junction; R58 harness now creates it temporarily for a future run"
+  },
+  "overall": "BLOCKED_FREE_SUPPLY_AND_NO_SUCCESS_PATH"
+}

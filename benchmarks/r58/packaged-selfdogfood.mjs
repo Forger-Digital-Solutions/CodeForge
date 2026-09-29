@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
 import { execFile as execFileCallback, spawn } from "node:child_process";
 import { createReadStream } from "node:fs";
-import { mkdir, mkdtemp, readFile, readdir, rm, symlink, unlink, writeFile } from "node:fs/promises";
+import { lstat, mkdir, mkdtemp, readFile, readdir, rm, symlink, unlink, writeFile } from "node:fs/promises";
 import net from "node:net";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -127,6 +127,13 @@ async function main() {
   const baselineHead = (await execFile("git", ["rev-parse", "HEAD"], { cwd: workspacePath })).stdout.trim();
   const baselineStatus = (await execFile("git", ["status", "--porcelain"], { cwd: workspacePath })).stdout.trim();
   if (baselineStatus) throw new Error("Isolated self-dogfood worktree must be clean at the task boundary");
+  const workspaceDependencyLink = path.join(workspacePath, "node_modules");
+  let workspaceDependencyLinkCreated = false;
+  try { await lstat(workspaceDependencyLink); }
+  catch {
+    await symlink(path.join(root, "node_modules"), workspaceDependencyLink, "junction");
+    workspaceDependencyLinkCreated = true;
+  }
   const profileRoot = path.join(root, "benchmarks", "r58", "tmp");
   await mkdir(profileRoot, { recursive: true });
   const profile = await mkdtemp(path.join(profileRoot, "codeforge-r58-packaged-dogfood-"));
@@ -288,6 +295,7 @@ async function main() {
         cleanup.worktreeRemovalFailures.push({ worktree: entry, error: String(error.message ?? error).slice(0, 200) });
       }
     }
+    if (workspaceDependencyLinkCreated) await unlink(workspaceDependencyLink).catch(() => {});
     await unlink(worktreeDependencyLink).catch(() => {});
     const resolvedProfile = path.resolve(profile);
     const profileRelative = path.relative(path.resolve(profileRoot), resolvedProfile);

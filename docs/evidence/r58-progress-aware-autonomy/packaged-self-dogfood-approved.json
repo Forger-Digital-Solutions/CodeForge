@@ -1,0 +1,278 @@
+{
+  "schema": "r58-packaged-self-dogfood/v1",
+  "evidenceClass": "packaged_live_provider",
+  "startedAt": "2026-09-29T18:14:16.059Z",
+  "finishedAt": "2026-09-29T18:28:35.456Z",
+  "artifact": {
+    "version": "0.4.0",
+    "sha256": "397fc1c2b602d12f8819b325f571ddfce5dd5982689c9274402bae2671651a01"
+  },
+  "workspace": {
+    "baselineHead": "3b8ffd3d9cb369fbff36897fe22d199de52403ba",
+    "finalHead": "3b8ffd3d9cb369fbff36897fe22d199de52403ba",
+    "cleanAtStart": true,
+    "cleanAtFinish": true,
+    "changedFiles": [],
+    "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "task": {
+    "goalClass": "bounded_failure_corpus_utility",
+    "verificationCommands": [
+      "node node_modules/vitest/vitest.mjs run packages/benchmark/test/failure-corpus.test.ts",
+      "node G:/CodeForge/benchmarks/r57/selfdogfood-acceptance.mjs --workspace=."
+    ]
+  },
+  "run": {
+    "id": "run-27ac561a-feb9-417b-8226-bd4b81254f5d",
+    "status": "failed",
+    "summary": "Autonomous run failed: Agent coder cancelled: [PROVIDER_UNAVAILABLE] No eligible free route for role coder: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ELIGIBLE_ROUTE). No paid or unknown-cost route was used.",
+    "completion": null,
+    "integration": "not_attempted",
+    "reviewPassed": false,
+    "verificationPassed": [],
+    "verification": [],
+    "counters": {
+      "childrenSpawned": 1,
+      "reviewRounds": 0,
+      "taskAttempts": 1,
+      "verificationAttempts": 0
+    },
+    "error": "Agent coder cancelled: [PROVIDER_UNAVAILABLE] No eligible free route for role coder: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ELIGIBLE_ROUTE). No paid or unknown-cost route was used."
+  },
+  "provider": {
+    "sourceClass": "MANAGED_FREE",
+    "providerId": "openrouter",
+    "selectedModel": null,
+    "modelCount": 31,
+    "eligibleCatalogSample": [
+      "openrouter/stealth/space-bunny-alpha",
+      "openrouter/inclusionai/ling-3.0-flash-sante:free",
+      "openrouter/qwen/qwen3.8-27b:free",
+      "openrouter/dots-studio/dots-3-note-preview:free",
+      "openrouter/liquid/lfm-2.5-2.6b:free",
+      "openrouter/nvidia/nemotron-3.5-lightning:free",
+      "openrouter/thinkingmachines/inkling-small:free",
+      "openrouter/poolside/laguna-s-2.1:free",
+      "openrouter/thinkingmachines/inkling:free",
+      "openrouter/poolside/laguna-xs-2.1:free",
+      "openrouter/cohere/north-mini-code:free",
+      "openrouter/nvidia/nemotron-3.5-content-safety:free",
+      "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+      "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "openrouter/google/gemma-4-26b-a4b-it:free",
+      "openrouter/google/gemma-4-31b-it:free",
+      "openrouter/google/lyria-3-pro-preview",
+      "openrouter/google/lyria-3-clip-preview",
+      "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+      "openrouter/openrouter/free"
+    ]
+  },
+  "runtimeFlags": {
+    "CODEFORGE_SUBAGENTS_R1": "unset"
+  },
+  "workers": [
+    {
+      "id": "child-6f8077ff-19cc-4151-9090-b1f031dc76d0",
+      "role": "Repository Explorer",
+      "status": "cancelled",
+      "executorKind": "agent_runtime",
+      "modelRequests": 0,
+      "toolCalls": 0,
+      "usefulProgressEvents": 0,
+      "duplicateProgressChecks": 1,
+      "watchdogExtensions": 0,
+      "watchdogAbortReason": "stalled",
+      "observedModelLatencyMs": null
+    },
+    {
+      "id": "child-486035c5-ce0e-47eb-9e94-76031cd5fcfb",
+      "role": "Autonomous Builder",
+      "status": "cancelled",
+      "executorKind": "agent_runtime",
+      "modelRequests": 0,
+      "toolCalls": 0,
+      "usefulProgressEvents": 0,
+      "duplicateProgressChecks": 2,
+      "watchdogExtensions": 0,
+      "watchdogAbortReason": "stalled",
+      "observedModelLatencyMs": null
+    }
+  ],
+  "modelTurns": [],
+  "toolExecutionCount": 0,
+  "continuations": [],
+  "shillingEntryCount": 0,
+  "experienceReceiptCount": 1,
+  "independentVerification": {
+    "passed": false,
+    "outputSample": "es/cjs/loader:1294:5)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  code: 'MODULE_NOT_FOUND',\r\n  requireStack: []\r\n}\r\n\r\nNode.js v24.19.0\r\n"
+  },
+  "independentAcceptance": {
+    "passed": false,
+    "outputSample": "- expected\r\n\r\n+ 'input-mutated'\r\n- 'model-a'\r\n\r\n    at file:///G:/CodeForge/benchmarks/r57/selfdogfood-acceptance.mjs:37:8 {\r\n  generatedMessage: true,\r\n  code: 'ERR_ASSERTION',\r\n  actual: 'input-mutated',\r\n  expected: 'model-a',\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.19.0\r\n"
+  },
+  "process": {
+    "pid": 12084,
+    "stdoutBytes": 163,
+    "stderrBytes": 396,
+    "resourceSamples": [
+      {
+        "at": "2026-09-29T18:14:16.584Z",
+        "rssBytes": 118652928,
+        "handles": 278
+      },
+      {
+        "at": "2026-09-29T18:14:47.093Z",
+        "rssBytes": 438169600,
+        "handles": 1208
+      },
+      {
+        "at": "2026-09-29T18:15:17.004Z",
+        "rssBytes": 465027072,
+        "handles": 1205
+      },
+      {
+        "at": "2026-09-29T18:15:47.071Z",
+        "rssBytes": 454975488,
+        "handles": 1217
+      },
+      {
+        "at": "2026-09-29T18:16:17.146Z",
+        "rssBytes": 522313728,
+        "handles": 1221
+      },
+      {
+        "at": "2026-09-29T18:16:46.999Z",
+        "rssBytes": 486121472,
+        "handles": 1214
+      },
+      {
+        "at": "2026-09-29T18:17:17.023Z",
+        "rssBytes": 503631872,
+        "handles": 1218
+      },
+      {
+        "at": "2026-09-29T18:17:47.105Z",
+        "rssBytes": 539975680,
+        "handles": 1215
+      },
+      {
+        "at": "2026-09-29T18:18:17.230Z",
+        "rssBytes": 475668480,
+        "handles": 1218
+      },
+      {
+        "at": "2026-09-29T18:18:47.643Z",
+        "rssBytes": 612552704,
+        "handles": 1216
+      },
+      {
+        "at": "2026-09-29T18:19:17.551Z",
+        "rssBytes": 600743936,
+        "handles": 1218
+      },
+      {
+        "at": "2026-09-29T18:19:47.860Z",
+        "rssBytes": 569655296,
+        "handles": 1222
+      },
+      {
+        "at": "2026-09-29T18:20:17.859Z",
+        "rssBytes": 597499904,
+        "handles": 1221
+      },
+      {
+        "at": "2026-09-29T18:20:47.586Z",
+        "rssBytes": 559439872,
+        "handles": 1226
+      },
+      {
+        "at": "2026-09-29T18:21:18.062Z",
+        "rssBytes": 575975424,
+        "handles": 1224
+      },
+      {
+        "at": "2026-09-29T18:21:48.395Z",
+        "rssBytes": 560898048,
+        "handles": 1226
+      },
+      {
+        "at": "2026-09-29T18:22:17.930Z",
+        "rssBytes": 559230976,
+        "handles": 1224
+      },
+      {
+        "at": "2026-09-29T18:22:47.910Z",
+        "rssBytes": 583086080,
+        "handles": 1227
+      },
+      {
+        "at": "2026-09-29T18:23:17.865Z",
+        "rssBytes": 586412032,
+        "handles": 1227
+      },
+      {
+        "at": "2026-09-29T18:23:47.839Z",
+        "rssBytes": 574066688,
+        "handles": 1228
+      },
+      {
+        "at": "2026-09-29T18:24:17.826Z",
+        "rssBytes": 593117184,
+        "handles": 1231
+      },
+      {
+        "at": "2026-09-29T18:24:48.075Z",
+        "rssBytes": 590467072,
+        "handles": 1230
+      },
+      {
+        "at": "2026-09-29T18:25:18.855Z",
+        "rssBytes": 593448960,
+        "handles": 1231
+      },
+      {
+        "at": "2026-09-29T18:25:48.091Z",
+        "rssBytes": 614887424,
+        "handles": 1226
+      },
+      {
+        "at": "2026-09-29T18:26:18.132Z",
+        "rssBytes": 604139520,
+        "handles": 1228
+      },
+      {
+        "at": "2026-09-29T18:26:48.065Z",
+        "rssBytes": 593862656,
+        "handles": 1228
+      },
+      {
+        "at": "2026-09-29T18:27:17.907Z",
+        "rssBytes": 622567424,
+        "handles": 1227
+      },
+      {
+        "at": "2026-09-29T18:27:48.123Z",
+        "rssBytes": 618283008,
+        "handles": 1228
+      },
+      {
+        "at": "2026-09-29T18:28:17.928Z",
+        "rssBytes": 620810240,
+        "handles": 1229
+      },
+      {
+        "at": "2026-09-29T18:28:41.040Z",
+        "rssBytes": 599732224,
+        "handles": 1228
+      }
+    ]
+  },
+  "cleanup": {
+    "removedWorktrees": [
+      "wt-fc1af1d4"
+    ],
+    "worktreeRemovalFailures": [],
+    "profileRemoved": true
+  }
+}

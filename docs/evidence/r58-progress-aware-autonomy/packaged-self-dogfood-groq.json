@@ -1,0 +1,272 @@
+{
+  "schema": "r58-packaged-self-dogfood/v1",
+  "evidenceClass": "packaged_live_provider",
+  "startedAt": "2026-09-29T18:46:08.711Z",
+  "finishedAt": "2026-09-29T19:01:37.118Z",
+  "artifact": {
+    "version": "0.4.0",
+    "sha256": "397fc1c2b602d12f8819b325f571ddfce5dd5982689c9274402bae2671651a01"
+  },
+  "workspace": {
+    "baselineHead": "3b8ffd3d9cb369fbff36897fe22d199de52403ba",
+    "finalHead": "3b8ffd3d9cb369fbff36897fe22d199de52403ba",
+    "cleanAtStart": true,
+    "cleanAtFinish": true,
+    "changedFiles": [],
+    "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "task": {
+    "goalClass": "bounded_failure_corpus_utility",
+    "verificationCommands": [
+      "node node_modules/vitest/vitest.mjs run packages/benchmark/test/failure-corpus.test.ts",
+      "node G:/CodeForge/benchmarks/r57/selfdogfood-acceptance.mjs --workspace=."
+    ]
+  },
+  "run": {
+    "id": "run-d9cbbaef-1045-4bed-9f17-98550bc056bb",
+    "status": "failed",
+    "summary": "Autonomous run failed: Agent coder cancelled: [AGENT_CANCELLED] Agent execution was cancelled.",
+    "completion": null,
+    "integration": "not_attempted",
+    "reviewPassed": false,
+    "verificationPassed": [],
+    "verification": [],
+    "counters": {
+      "childrenSpawned": 1,
+      "reviewRounds": 0,
+      "taskAttempts": 1,
+      "verificationAttempts": 0
+    },
+    "error": "Agent coder cancelled: [AGENT_CANCELLED] Agent execution was cancelled."
+  },
+  "provider": {
+    "sourceClass": "MANAGED_FREE",
+    "providerId": "groq",
+    "selectedModel": null,
+    "modelCount": 11,
+    "eligibleCatalogSample": []
+  },
+  "runtimeFlags": {
+    "CODEFORGE_SUBAGENTS_R1": "unset"
+  },
+  "workers": [
+    {
+      "id": "child-4049f6c5-bed4-472d-b548-28c1d599e385",
+      "role": "Repository Explorer",
+      "status": "cancelled",
+      "executorKind": "agent_runtime",
+      "modelRequests": 0,
+      "toolCalls": 0,
+      "usefulProgressEvents": 0,
+      "duplicateProgressChecks": 1,
+      "watchdogExtensions": 0,
+      "watchdogAbortReason": "stalled",
+      "observedModelLatencyMs": null
+    },
+    {
+      "id": "child-4b5dab1a-8725-491a-9ec3-a5d5d0920fb6",
+      "role": "Autonomous Builder",
+      "status": "cancelled",
+      "executorKind": "agent_runtime",
+      "modelRequests": 0,
+      "toolCalls": 0,
+      "usefulProgressEvents": 0,
+      "duplicateProgressChecks": 2,
+      "watchdogExtensions": 0,
+      "watchdogAbortReason": "stalled",
+      "observedModelLatencyMs": null
+    }
+  ],
+  "modelTurns": [],
+  "toolExecutionCount": 0,
+  "continuations": [],
+  "shillingEntryCount": 0,
+  "experienceReceiptCount": 1,
+  "independentVerification": {
+    "passed": false,
+    "outputSample": "es/cjs/loader:1294:5)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  code: 'MODULE_NOT_FOUND',\r\n  requireStack: []\r\n}\r\n\r\nNode.js v24.19.0\r\n"
+  },
+  "independentAcceptance": {
+    "passed": false,
+    "outputSample": "- expected\r\n\r\n+ 'input-mutated'\r\n- 'model-a'\r\n\r\n    at file:///G:/CodeForge/benchmarks/r57/selfdogfood-acceptance.mjs:37:8 {\r\n  generatedMessage: true,\r\n  code: 'ERR_ASSERTION',\r\n  actual: 'input-mutated',\r\n  expected: 'model-a',\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.19.0\r\n"
+  },
+  "process": {
+    "pid": 20252,
+    "stdoutBytes": 163,
+    "stderrBytes": 396,
+    "resourceSamples": [
+      {
+        "at": "2026-09-29T18:46:10.479Z",
+        "rssBytes": 110108672,
+        "handles": 278
+      },
+      {
+        "at": "2026-09-29T18:46:48.992Z",
+        "rssBytes": 354381824,
+        "handles": 1157
+      },
+      {
+        "at": "2026-09-29T18:47:12.222Z",
+        "rssBytes": 386748416,
+        "handles": 1156
+      },
+      {
+        "at": "2026-09-29T18:47:43.138Z",
+        "rssBytes": 423931904,
+        "handles": 1156
+      },
+      {
+        "at": "2026-09-29T18:48:15.902Z",
+        "rssBytes": 308219904,
+        "handles": 1163
+      },
+      {
+        "at": "2026-09-29T18:48:44.053Z",
+        "rssBytes": 323936256,
+        "handles": 1151
+      },
+      {
+        "at": "2026-09-29T18:49:12.600Z",
+        "rssBytes": 342052864,
+        "handles": 1158
+      },
+      {
+        "at": "2026-09-29T18:49:42.033Z",
+        "rssBytes": 396513280,
+        "handles": 1149
+      },
+      {
+        "at": "2026-09-29T18:50:12.659Z",
+        "rssBytes": 403472384,
+        "handles": 1152
+      },
+      {
+        "at": "2026-09-29T18:50:42.918Z",
+        "rssBytes": 413691904,
+        "handles": 1151
+      },
+      {
+        "at": "2026-09-29T18:51:12.829Z",
+        "rssBytes": 610631680,
+        "handles": 1153
+      },
+      {
+        "at": "2026-09-29T18:51:42.929Z",
+        "rssBytes": 365240320,
+        "handles": 1154
+      },
+      {
+        "at": "2026-09-29T18:52:13.497Z",
+        "rssBytes": 426426368,
+        "handles": 1157
+      },
+      {
+        "at": "2026-09-29T18:52:43.723Z",
+        "rssBytes": 449413120,
+        "handles": 1163
+      },
+      {
+        "at": "2026-09-29T18:53:12.976Z",
+        "rssBytes": 485847040,
+        "handles": 1163
+      },
+      {
+        "at": "2026-09-29T18:53:42.614Z",
+        "rssBytes": 465707008,
+        "handles": 1164
+      },
+      {
+        "at": "2026-09-29T18:54:12.643Z",
+        "rssBytes": 453840896,
+        "handles": 1156
+      },
+      {
+        "at": "2026-09-29T18:54:42.209Z",
+        "rssBytes": 481894400,
+        "handles": 1159
+      },
+      {
+        "at": "2026-09-29T18:55:12.670Z",
+        "rssBytes": 513568768,
+        "handles": 1160
+      },
+      {
+        "at": "2026-09-29T18:55:42.044Z",
+        "rssBytes": 482390016,
+        "handles": 1162
+      },
+      {
+        "at": "2026-09-29T18:56:11.603Z",
+        "rssBytes": 503762944,
+        "handles": 1163
+      },
+      {
+        "at": "2026-09-29T18:56:41.737Z",
+        "rssBytes": 474554368,
+        "handles": 1164
+      },
+      {
+        "at": "2026-09-29T18:57:11.575Z",
+        "rssBytes": 581681152,
+        "handles": 1166
+      },
+      {
+        "at": "2026-09-29T18:57:41.531Z",
+        "rssBytes": 590680064,
+        "handles": 1167
+      },
+      {
+        "at": "2026-09-29T18:58:11.767Z",
+        "rssBytes": 481918976,
+        "handles": 1168
+      },
+      {
+        "at": "2026-09-29T18:58:41.681Z",
+        "rssBytes": 481370112,
+        "handles": 1167
+      },
+      {
+        "at": "2026-09-29T18:59:12.272Z",
+        "rssBytes": 498700288,
+        "handles": 1171
+      },
+      {
+        "at": "2026-09-29T18:59:41.711Z",
+        "rssBytes": 566341632,
+        "handles": 1171
+      },
+      {
+        "at": "2026-09-29T19:00:12.076Z",
+        "rssBytes": 546680832,
+        "handles": 1172
+      },
+      {
+        "at": "2026-09-29T19:00:47.633Z",
+        "rssBytes": 568557568,
+        "handles": 1172
+      },
+      {
+        "at": "2026-09-29T19:01:21.164Z",
+        "rssBytes": 543141888,
+        "handles": 1172
+      },
+      {
+        "at": "2026-09-29T19:02:19.006Z",
+        "rssBytes": 502190080,
+        "handles": 1169
+      },
+      {
+        "at": "2026-09-29T19:02:49.794Z",
+        "rssBytes": 496824320,
+        "handles": 1169
+      }
+    ]
+  },
+  "cleanup": {
+    "removedWorktrees": [
+      "wt-f1d8b0d4"
+    ],
+    "worktreeRemovalFailures": [],
+    "profileRemoved": false
+  }
+}
