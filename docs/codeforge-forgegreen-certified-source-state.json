@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "5b139a060e743b2866a232e6e57dd7bc7ee380a8870c6c15c72affc87ef90bb0",
-  "surfaceVersion": "r57-experience-foundation-v4",
+  "sourceStateId": "b4170e607417a2e0876adf121c6901b084cabd151d866a8f8506dd06e8518ef4",
+  "surfaceVersion": "r57-endurance-product-fixes-v5",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -56,6 +56,7 @@
     "packages/server/src/turn-state-machine.ts",
     "packages/server/src/user-intelligence.ts",
     "packages/server/src/workflow-service.ts",
+    "packages/server/src/workspace-service.ts",
     "packages/sessions/src/persistence.ts",
     "packages/sessions/src/postgres-persistence.ts",
     "packages/sessions/src/session-state.ts",
@@ -104,14 +105,14 @@
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
     "packages/server/src/agent-runtime.ts": "94df8fdbe732952e991a2ddbd55ddacd12b2400c",
-    "packages/server/src/autonomous-orchestrator.ts": "407002c9ebfb60ed1f3a91a0067bfb17d1897f1e",
+    "packages/server/src/autonomous-orchestrator.ts": "a5dc232dd1e4dd4f8fc224b526c207bb97c850c7",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
     "packages/server/src/experience-learning.ts": "4b2412fac97695e1568fdef4c0490c0f26446723",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/forgeauto-roster.ts": "741bf73fe25e24bb1576af0ca2d778318a5f1e88",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
     "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
-    "packages/server/src/index.ts": "fc4cb5a590c83674ef4b73cb028cad45094ce5e4",
+    "packages/server/src/index.ts": "43d44deb301efefb0e0d45191b0e4a563aed44be",
     "packages/server/src/model-execution-adapter.ts": "bc52ae7ab56484f4c69fe392c21f4fa9e7c9e4f8",
     "packages/server/src/role-output-budget.ts": "f2560f9ee66fe33d5cf9f0bb6b1d1f3bd7a441dc",
     "packages/server/src/run-failure.ts": "c3758e6b652cf2b8b6051425e6655095c7bef52e",
@@ -120,6 +121,7 @@
     "packages/server/src/turn-state-machine.ts": "bd79b984c832d8ad7020b58b2f4991c747abafd6",
     "packages/server/src/user-intelligence.ts": "9324dc19fccea0eb945c07700c23a0966d759604",
     "packages/server/src/workflow-service.ts": "a6fa8ae76d908fe503ba6050d8afdf9d2e239b23",
+    "packages/server/src/workspace-service.ts": "b53deda09e80ef037d9c62c408652c15db5f6b97",
     "packages/sessions/src/persistence.ts": "5832703ed9a300702e585be80d8886b6d8be2612",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "0ce91821620263f0371f7886a20157ad5dc083f7",
@@ -2221,17 +2223,47 @@
       "regressionEvidence": "docs/evidence/r57-autonomous-endurance-learning/R57-PARTIAL-REPORT.md",
       "recertifiedAt": "2026-09-29",
       "sourceStateConstant": "CODEFORGE_R57_EXPERIENCE_FOUNDATION_V4_SOURCE_STATE"
+    },
+    {
+      "label": "R57 endurance product-fix recertification",
+      "reason": "Packaged CodeForge-on-CodeForge found a Windows Git long-path checkout failure and an orchestrator API run-ID race. The committed fixes opt in to Git long paths only for worktree creation and reserve the response run ID before asynchronous setup. No completion, routing, security, or accounting authority was relaxed.",
+      "priorSourceStateId": "5b139a060e743b2866a232e6e57dd7bc7ee380a8870c6c15c72affc87ef90bb0",
+      "priorSurfaceVersion": "r57-experience-foundation-v4",
+      "resultingSourceStateId": "b4170e607417a2e0876adf121c6901b084cabd151d866a8f8506dd06e8518ef4",
+      "resultingSurfaceVersion": "r57-endurance-product-fixes-v5",
+      "changes": [
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "Accepts a validated trusted run ID reserved by the control plane before asynchronous setup.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/index.ts",
+          "change": "Returns the same reserved orchestrator run ID to the client, removing the unrelated fallback ID.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workspace-service.ts",
+          "change": "Enables Git long-path checkout for both isolated worktree creation paths on Windows.",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r57-autonomous-endurance-learning/R57-CONTINUATION-REPORT.md",
+      "recertifiedAt": "2026-09-29",
+      "sourceStateConstant": "CODEFORGE_R57_ENDURANCE_PRODUCT_FIXES_V5_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-29T03:44:47.662Z",
+  "recertifiedAt": "2026-09-29T12:16:22.069Z",
   "recertification": {
-    "phase": "R57 experience foundation role precedence recertification",
-    "reason": "R57 foundation role-precedence correction: the production Independent Code Reviewer title contains the word Code and must classify as Reviewer, never Coder. Live-receipt projection exposed the overlap. This certificate covers reviewed source drift, not full-round closure.",
+    "phase": "R57 endurance product-fix recertification",
+    "reason": "Packaged CodeForge-on-CodeForge found a Windows Git long-path checkout failure and an orchestrator API run-ID race. The committed fixes opt in to Git long paths only for worktree creation and reserve the response run ID before asynchronous setup. No completion, routing, security, or accounting authority was relaxed.",
     "changedFiles": [
-      "packages/server/src/experience-learning.ts"
+      "packages/server/src/autonomous-orchestrator.ts",
+      "packages/server/src/index.ts",
+      "packages/server/src/workspace-service.ts"
     ],
-    "priorSourceStateId": "b13d419d64ffe1b325c8faff8d9f687fc3d8af0c17b902d0b7c6263abf659217",
+    "priorSourceStateId": "5b139a060e743b2866a232e6e57dd7bc7ee380a8870c6c15c72affc87ef90bb0",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
