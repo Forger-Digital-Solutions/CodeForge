@@ -218,7 +218,14 @@ describe("Subagent Foundation — Explorer, Reviewer, Privilege Ceiling & Contex
       eventStore,
       persistence,
     });
-    const manager = createSubagentManager({ persistence, r1Enabled: true });
+    const runtime = {
+      executeAgentRun: async () => ({
+        status: "completed", summary: "Map the fixture workspace", findings: [], evidence: [],
+        toolExecutions: [], usage: { inputTokens: 0, outputTokens: 0, requestCount: 1, toolCount: 0 },
+        stopReason: "completed", filesChanged: [],
+      }),
+    } as unknown as AgentRuntime;
+    const manager = createSubagentManager({ persistence, agentRuntime: runtime, r1Enabled: true });
 
     const result = await manager.spawnChildAgent({
       parentRunId: "run-r1-1",

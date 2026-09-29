@@ -14,7 +14,9 @@ import {
   type ProviderConnectionState,
 } from "../src/index.js";
 
-const T0 = Date.parse("2026-09-22T10:00:00.000Z");
+// The ForgeZero receipt has a seven-day freshness bound, so anchor this simulated clock
+// at test start rather than letting a fixed historical fixture silently expire.
+const T0 = Date.now();
 
 function testClock(startMs = T0) {
   let current = startMs;
