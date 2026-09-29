@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "b13d419d64ffe1b325c8faff8d9f687fc3d8af0c17b902d0b7c6263abf659217",
-  "surfaceVersion": "r57-experience-foundation-v3",
+  "sourceStateId": "5b139a060e743b2866a232e6e57dd7bc7ee380a8870c6c15c72affc87ef90bb0",
+  "surfaceVersion": "r57-experience-foundation-v4",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -106,7 +106,7 @@
     "packages/server/src/agent-runtime.ts": "94df8fdbe732952e991a2ddbd55ddacd12b2400c",
     "packages/server/src/autonomous-orchestrator.ts": "407002c9ebfb60ed1f3a91a0067bfb17d1897f1e",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
-    "packages/server/src/experience-learning.ts": "97e9eba79e240e088c575471e8b3afa86aed7a39",
+    "packages/server/src/experience-learning.ts": "4b2412fac97695e1568fdef4c0490c0f26446723",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/forgeauto-roster.ts": "741bf73fe25e24bb1576af0ca2d778318a5f1e88",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
@@ -2203,17 +2203,35 @@
       "regressionEvidence": "docs/evidence/r57-autonomous-endurance-learning/R57-PARTIAL-REPORT.md",
       "recertifiedAt": "2026-09-29",
       "sourceStateConstant": "CODEFORGE_R57_EXPERIENCE_FOUNDATION_V3_SOURCE_STATE"
+    },
+    {
+      "label": "R57 experience foundation role precedence recertification",
+      "reason": "R57 foundation role-precedence correction: the production Independent Code Reviewer title contains the word Code and must classify as Reviewer, never Coder. Live-receipt projection exposed the overlap. This certificate covers reviewed source drift, not full-round closure.",
+      "priorSourceStateId": "b13d419d64ffe1b325c8faff8d9f687fc3d8af0c17b902d0b7c6263abf659217",
+      "priorSurfaceVersion": "r57-experience-foundation-v3",
+      "resultingSourceStateId": "5b139a060e743b2866a232e6e57dd7bc7ee380a8870c6c15c72affc87ef90bb0",
+      "resultingSurfaceVersion": "r57-experience-foundation-v4",
+      "changes": [
+        {
+          "file": "packages/server/src/experience-learning.ts",
+          "change": "Classifies Reviewer titles before the more generic Code substring so Independent Code Reviewer is not mislabeled Coder in experience signals.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r57-autonomous-endurance-learning/R57-PARTIAL-REPORT.md",
+      "recertifiedAt": "2026-09-29",
+      "sourceStateConstant": "CODEFORGE_R57_EXPERIENCE_FOUNDATION_V4_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-29T03:41:51.671Z",
+  "recertifiedAt": "2026-09-29T03:44:47.662Z",
   "recertification": {
-    "phase": "R57 experience foundation role recertification",
-    "reason": "R57 foundation role-label correction: production worker role titles are mapped to fixed abstract role classes in the experience receipt without retaining arbitrary role text. This certificate covers reviewed source drift, not full-round closure.",
+    "phase": "R57 experience foundation role precedence recertification",
+    "reason": "R57 foundation role-precedence correction: the production Independent Code Reviewer title contains the word Code and must classify as Reviewer, never Coder. Live-receipt projection exposed the overlap. This certificate covers reviewed source drift, not full-round closure.",
     "changedFiles": [
       "packages/server/src/experience-learning.ts"
     ],
-    "priorSourceStateId": "cdc101bc4d3db2fa68552d254e6e6d07fa186a1ebe5df413514cea39b142619b",
+    "priorSourceStateId": "b13d419d64ffe1b325c8faff8d9f687fc3d8af0c17b902d0b7c6263abf659217",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
