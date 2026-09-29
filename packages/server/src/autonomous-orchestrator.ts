@@ -198,6 +198,8 @@ export interface AutonomousRun {
 }
 
 export interface OrchestratorRunOptions {
+  /** A trusted caller may reserve the ID before asynchronous workspace setup. */
+  runId?: string;
   sessionId: string;
   workspacePath: string;
   goal: string;
@@ -496,7 +498,11 @@ export class AutonomousRunOrchestrator {
     const r1ExplorerTimeoutMs = options.r1PhaseTimeoutMs?.explorer ?? R1_EXPLORER_TIMEOUT_MS;
     const r1PlannerTimeoutMs = options.r1PhaseTimeoutMs?.planner ?? R1_PLANNER_TIMEOUT_MS;
 
-    const runId = `run-${crypto.randomUUID()}`;
+    const runId = options.runId ?? `run-${crypto.randomUUID()}`;
+    if (!/^run-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(runId)) {
+      throw new Error("Invalid reserved run ID");
+    }
+    if (this.runs.has(runId) || this.abortControllers.has(runId)) throw new Error("Reserved run ID already exists");
     const controller = new AbortController();
     if (signal) {
       if (signal.aborted) controller.abort();

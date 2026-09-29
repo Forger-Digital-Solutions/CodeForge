@@ -61,8 +61,10 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     });
 
     const adapter = createWorkspaceEventAdapter({ sessionId: "sess-hp", eventStore, persistence });
+    const reservedRunId = "run-00000000-0000-4000-8000-000000000057";
 
     const result = await orchestrator.startRun({
+      runId: reservedRunId,
       sessionId: "sess-hp",
       workspacePath: targetRepo,
       goal: "Add multiply function to math.ts",
@@ -77,6 +79,8 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     });
 
     expect(result.status).toBe("completed");
+    expect(result.runId).toBe(reservedRunId);
+    expect(orchestrator.getRun(reservedRunId)?.status).toBe("completed");
     expect(result.review.passed).toBe(true);
     expect(result.integration.status).toBe("integrated");
 
@@ -135,16 +139,29 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
   });
 
   it("uses repeated abstract prior outcomes to advise a later revision without changing completion authority", async () => {
-    await persistence.upsertSession({ id: "prior-owner", title: "Prior abstract evidence", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "completed" });
-    for (const id of ["prior-a", "prior-b"]) {
-      await persistence.insertIfAbsent({
-        kind: "generalized_experience_signal", id, sessionId: "prior-owner",
-        signal: { schemaVersion: "r57-experience-signal/v1", taskClass: "normal", label: "STRATEGY_EXHAUSTED" },
-      } as unknown as import("@codeforge/sessions").WorkItem);
-    }
     const orchestrator = createAutonomousRunOrchestrator({
       workspaceService: createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir }), persistence,
     });
+    const priorRuns = [];
+    for (const sessionId of ["prior-owner-a", "prior-owner-b"]) {
+      const prior = await orchestrator.startRun({
+        sessionId, workspacePath: targetRepo, goal: "Repair repeated subtract regression",
+        complexityHint: "normal", verificationCommands: ["node -e \"process.exit(0)\""],
+        coderExecutor: async (worktreePath) => {
+          await writeFile(join(worktreePath, "src", "math.ts"), "export function bug() { throw new SyntaxError('unresolved syntaxerror failure'); }\n");
+          return { success: true, filesChanged: ["src/math.ts"] };
+        },
+      });
+      expect(prior.status).toBe("blocked");
+      priorRuns.push(prior.runId);
+    }
+    let priorSignals: Array<{ id: string; signal?: { label?: string } }> = [];
+    for (let attempt = 0; attempt < 100; attempt++) {
+      priorSignals = await persistence.getWorkItemsByKind("generalized_experience_signal") as unknown as Array<{ id: string; signal?: { label?: string } }>;
+      if (priorRuns.every((runId) => priorSignals.some((item) => item.id === `experience-signal:${runId}`))) break;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    for (const runId of priorRuns) expect(priorSignals.find((item) => item.id === `experience-signal:${runId}`)?.signal?.label).toBe("STRATEGY_EXHAUSTED");
     let attempts = 0;
     let advice = "";
     const result = await orchestrator.startRun({
@@ -162,6 +179,57 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     expect(result.status).toBe("completed");
     expect(advice).toContain("Reinspect the causal assumption");
     expect(result.completion?.outcome).toBe("completed");
+    if (process.env.CODEFORGE_R57_LEARNING_PROOF_OUT) {
+      const interventions = await persistence.getWorkItemsByKind("strategy_intervention_receipt") as unknown as Array<{ sessionId: string; classification?: string; strategyFingerprint?: string; failureSignature?: string; intervention?: string }>;
+      await writeFile(process.env.CODEFORGE_R57_LEARNING_PROOF_OUT, `${JSON.stringify({
+        schema: "r57-production-learning-proof/v1",
+        evidenceClass: "production_orchestrator_scripted_workers",
+        priorRuns: priorRuns.map((runId) => ({ runId, label: priorSignals.find((item) => item.id === `experience-signal:${runId}`)?.signal?.label })),
+        priorInterventions: interventions.filter((item) => ["prior-owner-a", "prior-owner-b"].includes(item.sessionId)).map((item) => ({ classification: item.classification, strategyFingerprint: item.strategyFingerprint, failureSignature: item.failureSignature, intervention: item.intervention })),
+        laterRun: { runId: result.runId, status: result.status, completion: result.completion?.outcome, attempts, adviceContainsIndependentDiagnosis: advice.includes("Reinspect the causal assumption") },
+        rawPromptOrSourceCaptured: false,
+      }, null, 2)}\n`);
+    }
+  });
+
+  it("changes strategy after a low-novelty reviewer failure and then completes through the gate", async () => {
+    const orchestrator = createAutonomousRunOrchestrator({
+      workspaceService: createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir }), persistence,
+    });
+    const feedbacks: string[] = [];
+    let attempts = 0;
+    const result = await orchestrator.startRun({
+      sessionId: "r57-anti-loop", workspacePath: targetRepo,
+      goal: "Repair subtract regression with independent verification",
+      verificationCommands: ["node -e \"process.exit(0)\""],
+      coderExecutor: async (worktreePath, _goal, feedback) => {
+        attempts++;
+        feedbacks.push(feedback ?? "");
+        await writeFile(join(worktreePath, "src", "math.ts"), attempts < 3
+          ? "export function bug() { throw new SyntaxError('unresolved syntaxerror failure'); }\n"
+          : "export function subtract(a: number, b: number): number { return a - b; }\n");
+        return { success: true, filesChanged: ["src/math.ts"] };
+      },
+    });
+    const interventions = await persistence.getWorkItemsByKind("strategy_intervention_receipt") as unknown as Array<{ sessionId: string; classification?: string; strategyFingerprint?: string; failureSignature?: string; intervention?: string }>;
+    const scoped = interventions.filter((item) => item.sessionId === "r57-anti-loop");
+    expect(result.status).toBe("completed");
+    expect(result.completion?.outcome).toBe("completed");
+    expect(attempts).toBe(3);
+    expect(feedbacks[2]).toContain("Reinspect the causal assumption");
+    expect(scoped.some((item) => item.classification === "LOW_NOVELTY_RETRY")).toBe(true);
+    expect(await readFile(join(targetRepo, "src", "math.ts"), "utf8")).toContain("subtract");
+    if (process.env.CODEFORGE_R57_ANTILOOP_PROOF_OUT) {
+      await writeFile(process.env.CODEFORGE_R57_ANTILOOP_PROOF_OUT, `${JSON.stringify({
+        schema: "r57-production-anti-loop-proof/v1", evidenceClass: "production_orchestrator_scripted_workers",
+        strategyAttempts: attempts, repeatedFailureCount: 2,
+        interventions: scoped.map((item) => ({ classification: item.classification, strategyFingerprint: item.strategyFingerprint, failureSignature: item.failureSignature, intervention: item.intervention })),
+        newStrategyBegan: feedbacks[2].includes("Reinspect the causal assumption"),
+        outcome: result.status, completionGate: result.completion?.outcome,
+        changedFiles: result.changedFiles,
+        rawPromptOrHiddenReasoningCaptured: false,
+      }, null, 2)}\n`);
+    }
   });
 
   it("Scenario 4 (Revision Limit Exhaustion): persistent blocking defect exhausts revision budget and fails closed into blocked state", async () => {

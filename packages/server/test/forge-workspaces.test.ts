@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import { createWorkspaceService, validateSafeBranchName } from "../src/workspace-service.js";
@@ -178,6 +178,22 @@ describe("ForgeWorkspaces — Structured Identity, Leases & Git Worktrees", () =
 
     wsService.releaseLease(parentLease.leaseId);
     wsService.releaseLease(worktreeLease.leaseId);
+  });
+
+  it.skipIf(process.platform !== "win32")("materializes a deep repository file in a Windows worktree", async () => {
+    const deepRelative = join("docs", "evidence", "r57", "a".repeat(40), "b".repeat(40), "c".repeat(40), "d".repeat(27), "probe.json");
+    const parentFile = join(parentRepo, deepRelative);
+    expect(parentFile.length).toBeLessThan(260);
+    expect(join(worktreeBaseDir, basename(parentRepo), "wt-00000000", deepRelative).length).toBeGreaterThan(260);
+    await mkdir(dirname(parentFile), { recursive: true });
+    await writeFile(parentFile, "{}\n");
+    await execFile("git", ["add", deepRelative], { cwd: parentRepo });
+    await execFile("git", ["commit", "-m", "Add deep path"], { cwd: parentRepo });
+
+    const wsService = createWorkspaceService({ worktreeParentDir: worktreeBaseDir });
+    const parentWs = await wsService.registerLocalWorkspace(parentRepo);
+    const worktree = await wsService.createWorktree({ parentWorkspaceId: parentWs.id, base: "head", runId: "deep-path" });
+    expect(await readFile(join(worktree.rootPath, deepRelative), "utf8")).toBe("{}\n");
   });
 
   it("creates isolated Git worktree from Checkpoint and materializes exact development snapshot", async () => {

@@ -42,7 +42,7 @@ import { buildProviderTopologyCapacity } from "./provider-topology-capacity.js";
 import { buildCapacityConfidence, type CapacityConfidenceReport } from "./capacity-confidence.js";
 import { createWorkflowService, type WorkflowService } from "./workflow-service.js";
 import { WorkspaceService, createWorkspaceService } from "./workspace-service.js";
-import { AutonomousRunOrchestrator, createAutonomousRunOrchestrator, type AutonomousRun } from "./autonomous-orchestrator.js";
+import { AutonomousRunOrchestrator, createAutonomousRunOrchestrator } from "./autonomous-orchestrator.js";
 import { ParallelAutonomousRunOrchestrator, createParallelAutonomousRunOrchestrator } from "./parallel-orchestrator.js";
 import { MissionSupervisor, createMissionSupervisor } from "./mission-supervisor.js";
 import type { MissionSteering } from "./mission-state.js";
@@ -2094,7 +2094,9 @@ export class CodeForgeServer {
         });
         const selectedRoster = this.localUserId ? await this.rosterStore.get(this.localUserId) : undefined;
         const rosterContext = selectedRoster ? { roster: selectedRoster, catalog: this.rosterCatalog() } : undefined;
+        const runId = `run-${crypto.randomUUID()}`;
         void this.orchestrator.startRun({
+          runId,
           sessionId,
           workspacePath,
           goal,
@@ -2102,8 +2104,6 @@ export class CodeForgeServer {
           adapter,
           ...(rosterContext ? { rosterContext } : {}),
         });
-        const run = this.orchestrator.getAllRuns().find((r: AutonomousRun) => r.goal === goal && r.sessionId === sessionId);
-        const runId = run ? run.id : `run-${crypto.randomUUID()}`;
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
         res.end(JSON.stringify({ ok: true, runId }));
       } catch (err: unknown) {

@@ -358,8 +358,8 @@ export class WorkspaceService {
       baseCommitSha = checkpoint.baseHead || checkpoint.commitSha;
       baseRef = checkpoint.durableRef;
 
-      // 1. Create worktree from base commit
-      await this.gitCommand(repoRoot, ["worktree", "add", "-b", branchName, canonicalWorktreePath, baseCommitSha]);
+      // Windows Git needs the one-command long-path opt-in when the repository has deep tracked evidence paths.
+      await this.gitCommand(repoRoot, ["-c", "core.longpaths=true", "worktree", "add", "-b", branchName, canonicalWorktreePath, baseCommitSha]);
 
       // 2. Materialize exact checkpoint state inside the isolated child worktree
       const childCheckpointSvc = this.checkpointServiceFactory(canonicalWorktreePath);
@@ -374,7 +374,7 @@ export class WorkspaceService {
       baseRef = "HEAD";
 
       // Create isolated worktree from that HEAD
-      await this.gitCommand(baseCwd, ["worktree", "add", "-b", branchName, canonicalWorktreePath, baseCommitSha]);
+      await this.gitCommand(baseCwd, ["-c", "core.longpaths=true", "worktree", "add", "-b", branchName, canonicalWorktreePath, baseCommitSha]);
     }
 
     const { stdout: childHead } = await this.gitCommand(canonicalWorktreePath, ["rev-parse", "HEAD"]);
