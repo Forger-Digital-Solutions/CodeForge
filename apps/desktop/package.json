@@ -153,6 +153,8 @@
           "computer-use/package.json",
           "cloud-db/dist/**/*.js",
           "cloud-db/package.json",
+          "cloud-usage/dist/**/*.js",
+          "cloud-usage/package.json",
           "legal-policy/dist/**/*.js",
           "legal-policy/package.json",
           "mcp/dist/**/*.js",
