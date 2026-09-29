@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "72ce0ea372aa558742c325859f966325d2bd98cbbd2eaa34524ffdf2bb21ca72",
-  "surfaceVersion": "r57-experience-foundation-v1",
+  "sourceStateId": "cdc101bc4d3db2fa68552d254e6e6d07fa186a1ebe5df413514cea39b142619b",
+  "surfaceVersion": "r57-experience-foundation-v2",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -104,9 +104,9 @@
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
     "packages/server/src/agent-runtime.ts": "94df8fdbe732952e991a2ddbd55ddacd12b2400c",
-    "packages/server/src/autonomous-orchestrator.ts": "fd05f28bc510fa9f17cd9c87f33baf4533bf511a",
+    "packages/server/src/autonomous-orchestrator.ts": "407002c9ebfb60ed1f3a91a0067bfb17d1897f1e",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
-    "packages/server/src/experience-learning.ts": "60fdc70a913d0eed031174356976556b90d1aa9f",
+    "packages/server/src/experience-learning.ts": "d27baa5e0f0dbdb92622770582a8dc87cec312c4",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/forgeauto-roster.ts": "741bf73fe25e24bb1576af0ca2d778318a5f1e88",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
@@ -2162,19 +2162,41 @@
       "regressionEvidence": "docs/evidence/r57-autonomous-endurance-learning/R57-PARTIAL-REPORT.md",
       "recertifiedAt": "2026-09-29",
       "sourceStateConstant": "CODEFORGE_R57_EXPERIENCE_FOUNDATION_SOURCE_STATE"
+    },
+    {
+      "label": "R57 experience foundation isolation recertification",
+      "reason": "R57 foundation isolation correction: experience receipts match worker evidence by both parent run and owner session, scope reads to that session, and retain only typed subagent rows. This certificate covers reviewed source drift, not full-round closure.",
+      "priorSourceStateId": "72ce0ea372aa558742c325859f966325d2bd98cbbd2eaa34524ffdf2bb21ca72",
+      "priorSurfaceVersion": "r57-experience-foundation-v1",
+      "resultingSourceStateId": "cdc101bc4d3db2fa68552d254e6e6d07fa186a1ebe5df413514cea39b142619b",
+      "resultingSurfaceVersion": "r57-experience-foundation-v2",
+      "changes": [
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "change": "Uses the owner session's work items when composing an autonomous experience receipt, avoiding a cross-user scan.",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/experience-learning.ts",
+          "change": "Accepts only subagent rows matching both owner session and parent run, preventing accidental cross-user worker aggregation on run-id collision.",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r57-autonomous-endurance-learning/R57-PARTIAL-REPORT.md",
+      "recertifiedAt": "2026-09-29",
+      "sourceStateConstant": "CODEFORGE_R57_EXPERIENCE_FOUNDATION_V2_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-29T03:31:56.277Z",
+  "recertifiedAt": "2026-09-29T03:37:02.820Z",
   "recertification": {
-    "phase": "R57 experience foundation source recertification",
-    "reason": "Partial R57 foundation: owner-local and generalized privacy-safe experience receipts, reviewer revision strategy-novelty intervention, and bounded abstract-outcome recovery advice. This certificate covers only reviewed source drift; it does not certify R57 endurance, live concurrency, packaged recovery, or full-round closure.",
+    "phase": "R57 experience foundation isolation recertification",
+    "reason": "R57 foundation isolation correction: experience receipts match worker evidence by both parent run and owner session, scope reads to that session, and retain only typed subagent rows. This certificate covers reviewed source drift, not full-round closure.",
     "changedFiles": [
       "packages/server/src/autonomous-orchestrator.ts",
-      "packages/server/src/experience-learning.ts",
-      "packages/server/src/strategy-novelty.ts"
+      "packages/server/src/experience-learning.ts"
     ],
-    "priorSourceStateId": "934a07bc2c0bcd506d8307817be5daf23185afcbb679e5896ba5493b06b41b9e",
+    "priorSourceStateId": "72ce0ea372aa558742c325859f966325d2bd98cbbd2eaa34524ffdf2bb21ca72",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
