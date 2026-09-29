@@ -17,6 +17,15 @@ export interface ExperienceWorker {
 const digest = (value: string): string => createHash("sha256").update(value).digest("hex");
 const count = (value: number | undefined): number => Number.isSafeInteger(value) && value! >= 0 ? value! : 0;
 const bucket = (value: number): string => value === 0 ? "0" : value <= 10 ? "1-10" : value <= 100 ? "11-100" : value <= 1_000 ? "101-1000" : "1000+";
+const roleClass = (role: string): string => {
+  const value = role.toLowerCase();
+  if (value.includes("explor")) return "explorer";
+  if (value.includes("plan")) return "planner";
+  if (value.includes("build") || value.includes("cod")) return "coder";
+  if (value.includes("review")) return "reviewer";
+  if (value.includes("lead")) return "lead";
+  return "other";
+};
 
 export function experienceLabel(run: AutonomousRun): ExperienceLabel {
   if (run.status === "completed" && run.result?.completion?.outcome === "completed" && run.result.integration.status === "integrated") return "VERIFIED_SUCCESS";
@@ -56,7 +65,7 @@ export function buildExperienceReceipt(run: AutonomousRun, workers: readonly Exp
     verificationPassed: label === "VERIFIED_SUCCESS",
     ...totals,
     workerCount: scoped.length,
-    roles: scoped.map((worker) => ["explorer", "planner", "coder", "reviewer"].includes(worker.role) ? worker.role : "other"),
+    roles: scoped.map((worker) => roleClass(worker.role)),
   };
   return {
     local: {
@@ -72,7 +81,7 @@ export function buildExperienceReceipt(run: AutonomousRun, workers: readonly Exp
       integrationStatus: run.result?.integration.status ?? null,
       workers: scoped.map((worker) => ({
         id: worker.id,
-        role: ["explorer", "planner", "coder", "reviewer"].includes(worker.role) ? worker.role : "other",
+        role: roleClass(worker.role),
         status: ["completed", "blocked", "failed", "cancelled"].includes(worker.status) ? worker.status : "unknown",
         routeRef: worker.model ? digest(`${worker.model.providerId}/${worker.model.modelId}`) : null,
         telemetry: {

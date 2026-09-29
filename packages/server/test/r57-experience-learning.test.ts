@@ -30,7 +30,7 @@ describe("R57 experience learning boundary", () => {
 
   it("keeps proprietary content out of generalized signals while retaining scoped operational identity", () => {
     const receipt = buildExperienceReceipt(run(), [{
-      kind: "subagent_run", id: "worker-private", sessionId: "secret-owner-session", parentRunId: "run-1", role: "coder", status: "failed",
+      kind: "subagent_run", id: "worker-private", sessionId: "secret-owner-session", parentRunId: "run-1", role: "Autonomous Builder", status: "failed",
       model: { providerId: "user-secret-provider", modelId: "private-model" },
       telemetry: { modelRequests: 2, toolCalls: 3, inputTokens: 100, retryCount: 1 },
     }]);
@@ -38,7 +38,7 @@ describe("R57 experience learning boundary", () => {
     for (const forbidden of ["SECRET_API_KEY", "super-secret", "acme", "key.ts", "private-model", "user-secret-provider", "secret-owner-session", "private-workspace", "worker-private"]) {
       expect(generalized).not.toContain(forbidden);
     }
-    expect(receipt.generalized).toMatchObject({ label: "VERIFIED_FAILURE", modelRequests: 2, toolCalls: 3, retries: 1, verificationPassed: false });
+    expect(receipt.generalized).toMatchObject({ label: "VERIFIED_FAILURE", modelRequests: 2, toolCalls: 3, retries: 1, verificationPassed: false, roles: ["coder"] });
     expect(receipt.local).toHaveProperty("runId", "run-1");
     expect(JSON.stringify(receipt.local)).not.toContain("super-secret");
     expect(JSON.stringify(receipt.local)).not.toContain("private-model");
