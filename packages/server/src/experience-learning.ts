@@ -4,7 +4,9 @@ import type { AutonomousRun } from "./autonomous-orchestrator.js";
 export type ExperienceLabel = "VERIFIED_SUCCESS" | "VERIFIED_FAILURE" | "BLOCKED_EXTERNAL" | "PROVIDER_FAILURE" | "STRATEGY_EXHAUSTED" | "USER_ABORT" | "INFRA_FAILURE" | "UNKNOWN";
 
 export interface ExperienceWorker {
+  kind: "subagent_run";
   id: string;
+  sessionId: string;
   parentRunId: string;
   role: string;
   status: string;
@@ -33,7 +35,7 @@ export function buildExperienceReceipt(run: AutonomousRun, workers: readonly Exp
   local: Record<string, unknown>;
   generalized: Record<string, unknown>;
 } {
-  const scoped = workers.filter((worker) => worker.parentRunId === run.id);
+  const scoped = workers.filter((worker) => worker.kind === "subagent_run" && worker.parentRunId === run.id && worker.sessionId === run.sessionId);
   const totals = scoped.reduce((sum, worker) => ({
     modelRequests: sum.modelRequests + count(worker.telemetry?.modelRequests),
     toolCalls: sum.toolCalls + count(worker.telemetry?.toolCalls),

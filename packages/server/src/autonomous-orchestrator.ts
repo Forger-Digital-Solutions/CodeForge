@@ -364,7 +364,7 @@ export class AutonomousRunOrchestrator {
         updatedAt: new Date().toISOString(),
       } as unknown as import("@codeforge/sessions").WorkItem).then(async () => {
         if (!run.result || !TERMINAL_STATUSES.has(run.status)) return;
-        const workers = await this.persistence!.getWorkItemsByKind("subagent_run") as unknown as ExperienceWorker[];
+        const workers = await this.persistence!.getWorkItems(run.sessionId) as unknown as ExperienceWorker[];
         const receipt = buildExperienceReceipt(run, workers);
         const now = new Date().toISOString();
         await this.persistence!.insertIfAbsent({

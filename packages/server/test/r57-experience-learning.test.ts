@@ -30,7 +30,7 @@ describe("R57 experience learning boundary", () => {
 
   it("keeps proprietary content out of generalized signals while retaining scoped operational identity", () => {
     const receipt = buildExperienceReceipt(run(), [{
-      id: "worker-private", parentRunId: "run-1", role: "coder", status: "failed",
+      kind: "subagent_run", id: "worker-private", sessionId: "secret-owner-session", parentRunId: "run-1", role: "coder", status: "failed",
       model: { providerId: "user-secret-provider", modelId: "private-model" },
       telemetry: { modelRequests: 2, toolCalls: 3, inputTokens: 100, retryCount: 1 },
     }]);
@@ -45,7 +45,10 @@ describe("R57 experience learning boundary", () => {
   });
 
   it("counts only workers belonging to the run", () => {
-    const receipt = buildExperienceReceipt(run(), [{ id: "other", parentRunId: "run-2", role: "coder", status: "completed", telemetry: { modelRequests: 999 } }]);
+    const receipt = buildExperienceReceipt(run(), [
+      { kind: "subagent_run", id: "other", sessionId: "secret-owner-session", parentRunId: "run-2", role: "coder", status: "completed", telemetry: { modelRequests: 999 } },
+      { kind: "subagent_run", id: "foreign", sessionId: "other-owner-session", parentRunId: "run-1", role: "coder", status: "completed", telemetry: { modelRequests: 999 } },
+    ]);
     expect(receipt.generalized).toMatchObject({ workerCount: 0, modelRequests: 0 });
   });
 
