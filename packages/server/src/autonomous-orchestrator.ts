@@ -899,6 +899,71 @@ export class AutonomousRunOrchestrator {
               updatedAt: new Date().toISOString(),
             } as unknown as import("@codeforge/sessions").WorkItem);
           }
+          // A productive lease can expire before a slow free route finishes its bounded turn
+          // budget. The old child is terminal before this point, so the same worktree has only
+          // one writer. Persist an immutable snapshot, then grant one final continuation lease.
+          const priorWorkers = (await this.persistence?.getWorkItemsByKind("subagent_run") ?? []) as unknown as import("@codeforge/protocol").SubagentRunWorkItem[];
+          const lastCoder = priorWorkers.filter((item) => item.kind === "subagent_run"
+            && item.parentRunId === runId && item.agentId === "coder")
+            .sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0];
+          const alreadyContinued = (await this.persistence?.getWorkItemsByKind("coder_lease_continuation") ?? [])
+            .some((item) => (item as unknown as { runId?: string }).runId === runId);
+          if (codeResult.status === "blocked" && lastCoder?.watchdogAbortReason === "watchdog_budget_ceiling"
+            && (lastCoder.usefulProgressEvents ?? 0) > 0 && !alreadyContinued && !controller.signal.aborted) {
+            const continuationId = `coder-continuation-${runId}-${counters.taskAttempts}`;
+            const continuationCheckpoint = await this.checkpointServiceFactory(worktreeWs.rootPath).createCheckpoint({
+              checkpointId: continuationId,
+              label: `Coder lease continuation for ${runId}`,
+              sessionId,
+            });
+            const { stdout: modified } = await this.git(worktreeWs.rootPath, ["diff", "--name-only", baseRevision]);
+            const { stdout: untracked } = await this.git(worktreeWs.rootPath, ["ls-files", "--others", "--exclude-standard"]);
+            const preservedFiles = [...new Set([...modified.split(/\r?\n/), ...untracked.split(/\r?\n/)].filter(Boolean))];
+            await this.persistence?.upsertWorkItem({
+              kind: "coder_lease_continuation",
+              id: continuationId,
+              sessionId,
+              runId,
+              priorWorkerId: lastCoder.id,
+              checkpointId: continuationCheckpoint.checkpointId,
+              checkpointCommit: continuationCheckpoint.commitSha,
+              changedFiles: preservedFiles,
+              status: "resuming",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            } as unknown as import("@codeforge/sessions").WorkItem);
+            codeResult = await this.subagentManager.spawnChildAgent({
+              parentRunId: runId,
+              sessionId,
+              agentId: "coder",
+              ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("CODER") } : {}),
+              task: goal,
+              workspacePath: worktreeWs.rootPath,
+              parentPermissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+              adapter,
+              signal: controller.signal,
+              taskPlan,
+              explorerEvidence,
+              findings: explorerFindings,
+              reviewFeedback,
+              contextSummary: `Resume the same task from checkpoint ${continuationCheckpoint.commitSha}. The prior worker is terminal. Existing changed files: ${JSON.stringify(preservedFiles)}. Inspect these files before editing; do not repeat completed edits. Prior status: ${codeResult.summary.slice(0, 1_000)}. Complete remaining requirements and run ${JSON.stringify(verificationCommands)}. ${executionContext}`,
+              workspaceKind: "git-worktree",
+              workspaceBranch: worktreeWs.branch,
+            });
+            await this.persistence?.upsertWorkItem({
+              kind: "coder_lease_continuation",
+              id: continuationId,
+              sessionId,
+              runId,
+              priorWorkerId: lastCoder.id,
+              checkpointId: continuationCheckpoint.checkpointId,
+              checkpointCommit: continuationCheckpoint.commitSha,
+              changedFiles: preservedFiles,
+              status: codeResult.status,
+              createdAt: continuationCheckpoint.createdAt.toISOString(),
+              updatedAt: new Date().toISOString(),
+            } as unknown as import("@codeforge/sessions").WorkItem);
+          }
           if (codeResult.status !== "completed") {
             if (codeResult.status === "cancelled") throw new Error(codeResult.summary);
             const reason = "SUBAGENT_WRITER_BLOCKED";
@@ -945,15 +1010,14 @@ export class AutonomousRunOrchestrator {
             findings: explorerFindings,
             ...(leadHandoff ? { initialContext: leadHandoff } : {}),
           });
+          if (coderRunResult.status !== "completed") {
+            throw new Error(`AUTONOMOUS_CODER_BLOCKED: ${coderRunResult.summary}`);
+          }
           implementerPoolId = coderRunResult.routePoolId ?? implementerPoolId;
           implementerRoute = coderRunResult.route ?? implementerRoute;
-          changedFiles = coderRunResult.filesChanged.length > 0
-            ? coderRunResult.filesChanged
-            : (await fs.readdir(worktreeWs.rootPath)).filter((f) => !f.startsWith("."));
+          changedFiles = coderRunResult.filesChanged;
         } else {
-          // Standard implementation logic in worktree
-          const files = await fs.readdir(worktreeWs.rootPath);
-          changedFiles = files.filter((f) => !f.startsWith("."));
+          throw new Error("AUTONOMOUS_EXECUTOR_UNAVAILABLE: no coder executor was configured");
         }
 
         // Transition to Reviewing

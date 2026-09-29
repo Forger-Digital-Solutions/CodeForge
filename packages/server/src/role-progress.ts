@@ -23,6 +23,24 @@ export interface RoleProgressAssessment {
 
 const MUTATIONS = new Set(["edit_file", "write_file"]);
 
+/** Count distinct observable effects, never model turns or repeated tool activity. The
+ * existing role trace is bounded by the model/tool budgets and carries hashes, not content. */
+export function countUsefulProgress(turns: readonly ProgressTurn[]): number {
+  const effects = new Set<string>();
+  for (const turn of turns) {
+    for (const call of turn.calls) {
+      if (call.outcome !== "success" || !call.observationHash) continue;
+      if (MUTATIONS.has(call.tool)) {
+        if (call.requestHash) effects.add(`edit:${call.tool}:${call.target ?? ""}:${call.requestHash}:${call.observationHash}`);
+      } else {
+        const key = evidenceKey(call);
+        if (key) effects.add(key);
+      }
+    }
+  }
+  return effects.size;
+}
+
 function evidenceKey(call: ProgressToolCall): string | null {
   if (call.outcome === "denied" || call.outcome === "suppressed" || !call.observationHash) return null;
   if (MUTATIONS.has(call.tool)) return null;

@@ -133,6 +133,10 @@ export const SubagentRunWorkItemSchema = z.object({
    * was aborted. Persisted so a watchdog kill is auditable as a mechanism, not a timing guess. */
   watchdogExtensions: z.number().int().nonnegative().optional(),
   watchdogAbortReason: z.enum(["stalled", "watchdog_budget_ceiling"]).optional(),
+  executorKind: z.enum(["agent_runtime", "legacy_builtin", "unavailable"]).optional(),
+  usefulProgressEvents: z.number().int().nonnegative().optional(),
+  duplicateProgressChecks: z.number().int().nonnegative().optional(),
+  observedModelLatencyMs: z.number().nonnegative().optional(),
   startedAt: z.string().datetime().optional(),
   completedAt: z.string().datetime().optional(),
   createdAt: z.string().datetime(),

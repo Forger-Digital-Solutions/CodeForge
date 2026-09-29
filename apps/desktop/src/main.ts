@@ -1219,6 +1219,7 @@ async function initializeServer(dbPath: string): Promise<void> {
       // A shipping desktop request must never yield the server's scripted demo events. With no
       // real provider, the real runtime fails closed and the UI surfaces the missing route.
       useRealRuntime: true,
+      subagentsR1Enabled: true,
       controlPlaneToken,
       freeCloud: freeCloud ?? undefined,
       // R24 Mission C: the embedded server is a single-user host — requests that carry no

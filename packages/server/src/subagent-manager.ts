@@ -32,6 +32,7 @@ import { classifyRunRecovery, type RunRecoveryToolRecord } from "./run-recovery.
 import type { DurableToolExecutionState, ToolExecutionClass } from "./agent-runtime.js";
 
 import type { AgentRuntime } from "./agent-runtime.js";
+import { countUsefulProgress, type ProgressTurn } from "./role-progress.js";
 import type { IntelligenceSourceClass, RosterCandidate, RosterRole, RosterRouteAllowance } from "./forgeauto-roster.js";
 
 export const MAX_SUBAGENT_DEPTH = 1;
@@ -103,7 +104,7 @@ export interface SubagentManagerOptions {
   workspaceService?: WorkspaceService;
   agentRuntime?: AgentRuntime;
   getAgentRuntime?: (sessionId: string) => AgentRuntime;
-  /** R1 path: durable worker state, Task Capsules, and artifact references. Off by default. */
+  /** R1 path: durable worker state, Task Capsules, and artifact references. */
   r1Enabled?: boolean;
   /**
    * Progress watchdog: a child whose durable model turns/tool executions advanced within this
@@ -112,7 +113,7 @@ export interface SubagentManagerOptions {
    * by the 60s window), so silence beyond this is a real stall.
    */
   watchdogProgressWindowMs?: number;
-  /** Hard ceiling on watchdog extensions: budget ≤ timeoutMs + maxExtensions × window. */
+  /** Hard ceiling on earned watchdog extensions. Coder default is role specific. */
   watchdogMaxExtensions?: number;
 }
 
@@ -124,6 +125,7 @@ export class SubagentManager {
   private readonly r1Enabled: boolean;
   private readonly watchdogProgressWindowMs: number;
   private readonly watchdogMaxExtensions: number;
+  private readonly coderWatchdogMaxExtensions: number;
   private readonly activeChildren: Map<string, ChildRun> = new Map(); // childRunId -> ChildRun
   private readonly childrenByParent: Map<string, Set<string>> = new Map(); // parentRunId -> Set<childRunId>
 
@@ -135,6 +137,7 @@ export class SubagentManager {
     this.r1Enabled = options.r1Enabled ?? false;
     this.watchdogProgressWindowMs = options.watchdogProgressWindowMs ?? 120_000;
     this.watchdogMaxExtensions = options.watchdogMaxExtensions ?? 2;
+    this.coderWatchdogMaxExtensions = options.watchdogMaxExtensions ?? 15;
   }
 
   private emptyTelemetry(): AgentWorkerTelemetry {
@@ -271,6 +274,7 @@ export class SubagentManager {
       },
       telemetry: this.emptyTelemetry(),
       artifacts: [],
+      executorKind: this.agentRuntime || this.getAgentRuntime ? "agent_runtime" : this.r1Enabled ? "unavailable" : "legacy_builtin",
       createdAt: now,
       updatedAt: now,
     };
@@ -363,39 +367,50 @@ export class SubagentManager {
       ?? 180_000;
     const watchdogMaxExtensions = options.watchdogMaxExtensions
       ?? (options.metadata?.watchdogMaxExtensions as number | undefined)
-      ?? this.watchdogMaxExtensions;
+      ?? (def.id === "coder" ? this.coderWatchdogMaxExtensions : this.watchdogMaxExtensions);
     let watchdogExtensions = 0;
+    let usefulProgressEvents = 0;
+    let duplicateProgressChecks = 0;
     // R42: a single quiet window can be an event-loop pause (GC, parallel-suite contention),
     // not a dead worker — "stalled" requires two consecutive stale windows. The cost is one
     // extra bounded window before a genuinely dead worker is killed.
     let consecutiveStaleChecks = 0;
+    const hardDeadlineMs = Date.now() + childTimeoutMs + watchdogMaxExtensions * this.watchdogProgressWindowMs;
     const watchdogTimerRef: { timer?: NodeJS.Timeout } = {};
     const progressWatchdog = (): void => {
       if (controller.signal.aborted || !this.activeChildren.has(childRunId)) return;
       void (async () => {
-        const progressAt = await this.latestRunProgressMs(childRunId);
+        const progress = await this.latestRunProgress(childRunId);
         if (controller.signal.aborted || !this.activeChildren.has(childRunId)) return;
-        const staleNow = progressAt === undefined || Date.now() - progressAt > this.watchdogProgressWindowMs;
-        consecutiveStaleChecks = staleNow ? consecutiveStaleChecks + 1 : 0;
-        if (!staleNow && watchdogExtensions < watchdogMaxExtensions) {
+        const advanced = progress.usefulCount > usefulProgressEvents;
+        if (advanced) usefulProgressEvents = progress.usefulCount;
+        else duplicateProgressChecks++;
+        if (childRun.workerRecord) {
+          childRun.workerRecord.usefulProgressEvents = usefulProgressEvents;
+          childRun.workerRecord.duplicateProgressChecks = duplicateProgressChecks;
+          if (progress.averageModelLatencyMs !== undefined) childRun.workerRecord.observedModelLatencyMs = progress.averageModelLatencyMs;
+        }
+        consecutiveStaleChecks = advanced ? 0 : consecutiveStaleChecks + 1;
+        const latencyExtensions = def.id === "coder" && progress.averageModelLatencyMs !== undefined && options.watchdogMaxExtensions === undefined
+          ? Math.max(2, Math.ceil((this.executionBudget(def.id, options.executionBudget).maxModelTurns * progress.averageModelLatencyMs * 1.5 - childTimeoutMs) / this.watchdogProgressWindowMs) + 2)
+          : watchdogMaxExtensions;
+        const extensionLimit = Math.min(watchdogMaxExtensions, latencyExtensions);
+        if (advanced && watchdogExtensions < extensionLimit && Date.now() < hardDeadlineMs) {
           watchdogExtensions++;
           childRun.watchdogExtensions = watchdogExtensions;
           if (childRun.workerRecord) childRun.workerRecord.watchdogExtensions = watchdogExtensions;
-          watchdogTimerRef.timer = setTimeout(progressWatchdog, this.watchdogProgressWindowMs);
+          if (childRun.workerRecord) await this.persistWorker(childRun.workerRecord);
+          watchdogTimerRef.timer = setTimeout(progressWatchdog, Math.min(this.watchdogProgressWindowMs, Math.max(1, hardDeadlineMs - Date.now())));
           return;
         }
-        if (staleNow && consecutiveStaleChecks < 2 && watchdogExtensions < watchdogMaxExtensions) {
-          watchdogTimerRef.timer = setTimeout(progressWatchdog, this.watchdogProgressWindowMs);
+        if (!advanced && watchdogMaxExtensions > 0 && consecutiveStaleChecks < 2 && Date.now() < hardDeadlineMs) {
+          if (childRun.workerRecord) await this.persistWorker(childRun.workerRecord);
+          watchdogTimerRef.timer = setTimeout(progressWatchdog, Math.min(this.watchdogProgressWindowMs, Math.max(1, hardDeadlineMs - Date.now())));
           return;
         }
-        // The abort reason records the objective fact, not the racy inference: a worker that
-        // was still fresh — or one that earned every extension — died at its budget ceiling;
-        // a worker killed quiet with budget left is "stalled". A zero-extension budget is the
-        // phase-ceiling path: nothing was ever earned, so only freshness distinguishes ceiling.
-        childRun.watchdogAbortReason = !staleNow || (watchdogMaxExtensions > 0 && watchdogExtensions >= watchdogMaxExtensions)
-          ? "watchdog_budget_ceiling"
-          : "stalled";
+        childRun.watchdogAbortReason = advanced ? "watchdog_budget_ceiling" : "stalled";
         if (childRun.workerRecord) childRun.workerRecord.watchdogAbortReason = childRun.watchdogAbortReason;
+        if (childRun.workerRecord) await this.persistWorker(childRun.workerRecord);
         controller.abort();
       })().catch(() => {
         childRun.watchdogAbortReason = "stalled";
@@ -514,6 +529,8 @@ export class SubagentManager {
           ...(runtimeRes.routePoolId ? { routePoolId: runtimeRes.routePoolId } : {}),
           ...(runtimeRes.route ? { route: runtimeRes.route } : {}),
         };
+      } else if (this.r1Enabled) {
+        throw new Error("AUTONOMOUS_EXECUTOR_UNAVAILABLE: R1 worker has no agent runtime");
       } else if (def.id === "explorer") {
         result = await this.executeExplorer(childRun, contextSummary, adapter);
       } else if (def.id === "reviewer") {
@@ -629,28 +646,19 @@ export class SubagentManager {
     return result;
   }
 
-  /**
-   * Latest durable activity timestamp for a child run: model-turn boundaries, tool-execution
-   * records, and the run journal all bump `updatedAt` as the worker advances. A recent timestamp
-   * is evidence of legitimate paced progress; prolonged silence is a true stall.
-   */
-  private async latestRunProgressMs(runId: string): Promise<number | undefined> {
-    if (!this.persistence) return undefined;
-    let latest: number | undefined;
-    const consider = (raw: unknown): void => {
-      if (typeof raw !== "string") return;
-      const t = Date.parse(raw);
-      if (!Number.isNaN(t) && (latest === undefined || t > latest)) latest = t;
+  /** Distinct tool effects are the extension signal; model-turn writes supply latency only. */
+  private async latestRunProgress(runId: string): Promise<{ usefulCount: number; averageModelLatencyMs?: number }> {
+    if (!this.persistence) return { usefulCount: 0 };
+    const journal = await this.persistence.getWorkItem(`agent-run-journal-${runId}`) as { telemetry?: { toolTrace?: ProgressTurn[] } } | undefined;
+    const turns = await this.persistence.getWorkItemsByKind("agent_model_turn");
+    const latencies = turns.flatMap((item) => {
+      const record = item as unknown as { runId?: string; modelLatencyMs?: number };
+      return record.runId === runId && Number.isFinite(record.modelLatencyMs) ? [record.modelLatencyMs!] : [];
+    });
+    return {
+      usefulCount: countUsefulProgress(journal?.telemetry?.toolTrace ?? []),
+      ...(latencies.length > 0 ? { averageModelLatencyMs: latencies.reduce((sum, value) => sum + value, 0) / latencies.length } : {}),
     };
-    for (const kind of ["agent_model_turn", "agent_tool_execution"] as const) {
-      for (const item of await this.persistence.getWorkItemsByKind(kind)) {
-        const rec = item as unknown as { runId?: string; updatedAt?: string };
-        if (rec.runId === runId) consider(rec.updatedAt);
-      }
-    }
-    const journal = await this.persistence.getWorkItem(`agent-run-journal-${runId}`) as { updatedAt?: string } | undefined;
-    if (journal) consider(journal.updatedAt);
-    return latest;
   }
 
   /**

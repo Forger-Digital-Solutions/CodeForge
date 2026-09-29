@@ -2805,6 +2805,7 @@ export class AgentRuntime {
         await this.userIntentHold?.waitForDispatch(this.sessionId, "model");
         const modelTurnCreatedAt = new Date().toISOString();
         let turnResponse: ModelExecutionResponse | undefined;
+        let modelLatencyMs: number | undefined;
         const persistModelTurn = async (state: "created" | "provider_request_started" | "provider_response_completed" | "tool_requests_decoded" | "agent_result_completed" | "failed" | "cancelled"): Promise<void> => {
           await this.persistence.upsertWorkItem({
             kind: "agent_model_turn",
@@ -2823,6 +2824,7 @@ export class AgentRuntime {
               outputTokens: turnResponse.usage.outputTokens,
               finishReason: turnResponse.finishReason,
               toolRequests: turnResponse.toolCalls.length,
+              modelLatencyMs,
             } : {}),
             createdAt: modelTurnCreatedAt,
             updatedAt: new Date().toISOString(),
@@ -2836,6 +2838,7 @@ export class AgentRuntime {
           await persistModelTurn("provider_request_started");
           response = await requestModelTurn(modelTurnId);
           turnResponse = response;
+          modelLatencyMs = Math.max(0, Date.now() - Date.parse(modelTurnCreatedAt));
           await persistModelTurn("provider_response_completed");
           const supplyClass = this.freeCloud?.supplyClassOf?.(response.providerId, response.modelId);
           // R55: USER_API classification comes from the admitting allowance route, never

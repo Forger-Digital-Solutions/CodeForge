@@ -102,6 +102,45 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     expect(signal?.signal?.label).toBe("VERIFIED_SUCCESS");
   });
 
+  it("continues one expired productive coder lease from a durable worktree checkpoint", async () => {
+    const sessionId = "sess-r58-continuation";
+    await persistence.upsertSession({ id: sessionId, title: "Continuation", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "idle" });
+    const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
+    let coderCalls = 0;
+    const subagentManager = {
+      spawnChildAgent: async (options: { agentId: string; parentRunId: string; workspacePath: string; contextSummary?: string }) => {
+        const base = { summary: "done", findings: [], evidence: [], files: [], risks: [], recommendations: [] };
+        if (options.agentId === "coder") {
+          coderCalls++;
+          const file = join(options.workspacePath, "src", "math.ts");
+          if (coderCalls === 1) {
+            await writeFile(file, `${await readFile(file, "utf-8")}\nexport const firstLease = true;\n`);
+            await persistence.upsertWorkItem({
+              kind: "subagent_run", id: "expired-coder", sessionId, parentRunId: options.parentRunId,
+              agentId: "coder", watchdogAbortReason: "watchdog_budget_ceiling", usefulProgressEvents: 3,
+              createdAt: new Date().toISOString(), status: "blocked",
+            } as never);
+            return { ...base, status: "blocked", summary: "Productive lease expired" };
+          }
+          expect(options.contextSummary).toContain("src/math.ts");
+          await writeFile(file, `${await readFile(file, "utf-8")}\nexport const secondLease = true;\n`);
+          return { ...base, status: "completed", files: ["src/math.ts"] };
+        }
+        return { ...base, status: "completed", ...(options.agentId === "reviewer" ? { structuredData: { verdict: "pass", findings: [], summary: "Approved" } } : {}) };
+      },
+    };
+    const orchestrator = createAutonomousRunOrchestrator({ workspaceService: wsService, persistence, subagentManager: subagentManager as never, subagentsR1Enabled: true });
+    const result = await orchestrator.startRun({ sessionId, workspacePath: targetRepo, goal: "Add two lease markers to math.ts", topology: "normal", verificationCommands: ["node -e \"process.exit(0)\""] });
+    expect(coderCalls).toBe(2);
+    expect(result.status).toBe("completed");
+    const content = await readFile(join(targetRepo, "src", "math.ts"), "utf-8");
+    expect(content.match(/firstLease/g)).toHaveLength(1);
+    expect(content.match(/secondLease/g)).toHaveLength(1);
+    const continuation = (await persistence.getWorkItemsByKind("coder_lease_continuation"))[0] as unknown as { checkpointCommit?: string; status?: string } | undefined;
+    expect(continuation?.checkpointCommit).toMatch(/^[0-9a-f]{40}$/);
+    expect(continuation?.status).toBe("completed");
+  });
+
   it("Scenario 2 & 3 (Reviewer Gate & Revision Loop): blocking review finding triggers revision which succeeds", async () => {
     const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
     const orchestrator = createAutonomousRunOrchestrator({

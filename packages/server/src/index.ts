@@ -196,7 +196,7 @@ export interface ServerOptions {
   paidAuto?: PaidAutoService;
   paidExecutionEnabled?: boolean;
   openRouterFallbackEnabled?: boolean;
-  /** R1 additive instrumentation path; disabled unless explicitly enabled. */
+  /** Production subagent path. Tests may explicitly disable it for legacy compatibility. */
   subagentsR1Enabled?: boolean;
   /**
    * R22: governed external tool surface (browser + MCP). When omitted, configuration is read
@@ -392,7 +392,7 @@ export class CodeForgeServer {
       openRouterFallbackEnabled: options.openRouterFallbackEnabled ?? process.env.CODEFORGE_OPENROUTER_FALLBACK_ENABLED === "true",
     });
     this.providerCatalog.register(this.paidAuto.asProviderAdapter());
-    this.subagentsR1Enabled = options.subagentsR1Enabled ?? process.env.CODEFORGE_SUBAGENTS_R1 === "true";
+    this.subagentsR1Enabled = options.subagentsR1Enabled ?? process.env.CODEFORGE_SUBAGENTS_R1 !== "false";
     this.useRealRuntime = options.useRealRuntime ?? process.env.CODEFORGE_REAL_RUNTIME === "true";
 
     // Validate that API keys are available if real runtime is requested
