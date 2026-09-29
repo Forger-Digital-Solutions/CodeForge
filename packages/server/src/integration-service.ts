@@ -69,7 +69,8 @@ export class IntegrationService {
   }
 
   private async git(cwd: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
-    return execFile("git", args, { cwd, maxBuffer: 10 * 1024 * 1024, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } });
+    // Status/add/commit run inside managed worktrees that may contain deep tracked paths; Windows Git needs the opt-in.
+    return execFile("git", ["-c", "core.longpaths=true", ...args], { cwd, maxBuffer: 10 * 1024 * 1024, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } });
   }
 
   /**

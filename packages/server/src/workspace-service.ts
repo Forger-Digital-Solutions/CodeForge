@@ -358,8 +358,7 @@ export class WorkspaceService {
       baseCommitSha = checkpoint.baseHead || checkpoint.commitSha;
       baseRef = checkpoint.durableRef;
 
-      // Windows Git needs the one-command long-path opt-in when the repository has deep tracked evidence paths.
-      await this.gitCommand(repoRoot, ["-c", "core.longpaths=true", "worktree", "add", "-b", branchName, canonicalWorktreePath, baseCommitSha]);
+      await this.gitCommand(repoRoot, ["worktree", "add", "-b", branchName, canonicalWorktreePath, baseCommitSha]);
 
       // 2. Materialize exact checkpoint state inside the isolated child worktree
       const childCheckpointSvc = this.checkpointServiceFactory(canonicalWorktreePath);
@@ -374,7 +373,7 @@ export class WorkspaceService {
       baseRef = "HEAD";
 
       // Create isolated worktree from that HEAD
-      await this.gitCommand(baseCwd, ["-c", "core.longpaths=true", "worktree", "add", "-b", branchName, canonicalWorktreePath, baseCommitSha]);
+      await this.gitCommand(baseCwd, ["worktree", "add", "-b", branchName, canonicalWorktreePath, baseCommitSha]);
     }
 
     const { stdout: childHead } = await this.gitCommand(canonicalWorktreePath, ["rev-parse", "HEAD"]);
@@ -635,7 +634,9 @@ export class WorkspaceService {
   }
 
   private async gitCommand(cwd: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
-    return await execFile("git", args, { cwd, windowsHide: true, env: getSanitizedEnvForChild() });
+    // Windows Git needs the per-invocation long-path opt-in whenever a managed worktree may
+    // contain deep tracked paths (worktree add/remove, status, checkout materialization).
+    return await execFile("git", ["-c", "core.longpaths=true", ...args], { cwd, windowsHide: true, env: getSanitizedEnvForChild() });
   }
 }
 

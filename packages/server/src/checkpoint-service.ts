@@ -508,11 +508,7 @@ export class CheckpointService {
 
   private async verifyGitRepo(): Promise<void> {
     try {
-      const { stdout } = await execFile("git", ["rev-parse", "--is-inside-work-tree"], {
-        cwd: this.workspaceRoot,
-        windowsHide: true,
-        env: getSanitizedEnvForChild(),
-      });
+      const { stdout } = await this.gitCommandArgs(["rev-parse", "--is-inside-work-tree"]);
       if (stdout.trim() !== "true") {
         throw new Error("Not a git repository");
       }
@@ -522,11 +518,7 @@ export class CheckpointService {
   }
 
   private async getHeadSha(): Promise<string> {
-    const { stdout } = await execFile("git", ["rev-parse", "HEAD"], {
-      cwd: this.workspaceRoot,
-      windowsHide: true,
-      env: getSanitizedEnvForChild(),
-    });
+    const { stdout } = await this.gitCommandArgs(["rev-parse", "HEAD"]);
     const sha = stdout.trim();
     if (!sha || !/^[0-9a-f]{40}$/i.test(sha)) {
       throw new Error(`Invalid HEAD commit SHA: "${sha}"`);
@@ -536,11 +528,7 @@ export class CheckpointService {
 
   private async getCurrentBranch(): Promise<string> {
     try {
-      const { stdout } = await execFile("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
-        cwd: this.workspaceRoot,
-        windowsHide: true,
-        env: getSanitizedEnvForChild(),
-      });
+      const { stdout } = await this.gitCommandArgs(["rev-parse", "--abbrev-ref", "HEAD"]);
       return stdout.trim() || "HEAD";
     } catch {
       return "HEAD";
@@ -555,11 +543,7 @@ export class CheckpointService {
     untracked: string[];
   }> {
     try {
-      const { stdout: statusOut } = await execFile("git", ["status", "--porcelain=v2"], {
-        cwd: this.workspaceRoot,
-        windowsHide: true,
-        env: getSanitizedEnvForChild(),
-      });
+      const { stdout: statusOut } = await this.gitCommandArgs(["status", "--porcelain=v2"]);
 
       const lines = statusOut.trim().split("\n").filter(Boolean);
       const modified: string[] = [];
@@ -600,7 +584,9 @@ export class CheckpointService {
 
   private async gitCommandArgs(args: string[], ignoreErrors = false): Promise<{ stdout: string; stderr: string }> {
     try {
-      return await execFile("git", args, { cwd: this.workspaceRoot, windowsHide: true, env: getSanitizedEnvForChild() });
+      // Checkpoint materialization runs inside managed worktrees that may contain deep tracked
+      // paths; Windows Git needs the per-invocation long-path opt-in for every filesystem-facing call.
+      return await execFile("git", ["-c", "core.longpaths=true", ...args], { cwd: this.workspaceRoot, windowsHide: true, env: getSanitizedEnvForChild() });
     } catch (error) {
       if (ignoreErrors) {
         return { stdout: "", stderr: "" };

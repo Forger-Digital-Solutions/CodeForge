@@ -196,6 +196,32 @@ describe("ForgeWorkspaces — Structured Identity, Leases & Git Worktrees", () =
     expect(await readFile(join(worktree.rootPath, deepRelative), "utf8")).toBe("{}\n");
   });
 
+  it.skipIf(process.platform !== "win32")("materializes a checkpoint snapshot that rewrites a deep path in a Windows worktree", async () => {
+    const deepRelative = join("docs", "evidence", "r57", "a".repeat(40), "b".repeat(40), "c".repeat(40), "d".repeat(27), "probe.json");
+    const parentFile = join(parentRepo, deepRelative);
+    expect(parentFile.length).toBeLessThan(260);
+    expect(join(worktreeBaseDir, basename(parentRepo), "wt-00000000", deepRelative).length).toBeGreaterThan(260);
+    await mkdir(dirname(parentFile), { recursive: true });
+    await writeFile(parentFile, "{}\n");
+    await execFile("git", ["add", deepRelative], { cwd: parentRepo });
+    await execFile("git", ["commit", "-m", "Add deep path"], { cwd: parentRepo });
+    // The stash snapshot's tree must differ at the deep path so checkpoint materialization has to rewrite it.
+    await writeFile(parentFile, "{\"changed\":true}\n");
+
+    const checkpointSvc = createCheckpointService(parentRepo);
+    await checkpointSvc.createCheckpoint({ checkpointId: "chk-deep-001", label: "Deep path snapshot" });
+
+    const wsService = createWorkspaceService({ worktreeParentDir: worktreeBaseDir });
+    const parentWs = await wsService.registerLocalWorkspace(parentRepo);
+    const worktree = await wsService.createWorktree({
+      parentWorkspaceId: parentWs.id,
+      base: "checkpoint",
+      checkpointId: "chk-deep-001",
+      runId: "deep-path-checkpoint",
+    });
+    expect(await readFile(join(worktree.rootPath, deepRelative), "utf8")).toBe("{\"changed\":true}\n");
+  });
+
   it("creates isolated Git worktree from Checkpoint and materializes exact development snapshot", async () => {
     // Setup dirty + staged state in parent repo
     await writeFile(join(parentRepo, "src.ts"), "export const val = 42;\n");
