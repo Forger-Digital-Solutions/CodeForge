@@ -21,8 +21,8 @@ const roleClass = (role: string): string => {
   const value = role.toLowerCase();
   if (value.includes("explor")) return "explorer";
   if (value.includes("plan")) return "planner";
-  if (value.includes("build") || value.includes("cod")) return "coder";
   if (value.includes("review")) return "reviewer";
+  if (value.includes("build") || value.includes("cod")) return "coder";
   if (value.includes("lead")) return "lead";
   return "other";
 };

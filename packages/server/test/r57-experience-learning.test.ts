@@ -60,4 +60,12 @@ describe("R57 experience learning boundary", () => {
     expect(advice.confidence).toBeLessThan(0.75);
     expect(adviseFromExperience([exhausted, exhausted], "complex").action).toBe("STANDARD");
   });
+
+  it("classifies the production Independent Code Reviewer as reviewer", () => {
+    const receipt = buildExperienceReceipt(run(), [{
+      kind: "subagent_run", id: "reviewer", sessionId: "secret-owner-session", parentRunId: "run-1",
+      role: "Independent Code Reviewer", status: "completed",
+    }]);
+    expect(receipt.generalized.roles).toEqual(["reviewer"]);
+  });
 });
