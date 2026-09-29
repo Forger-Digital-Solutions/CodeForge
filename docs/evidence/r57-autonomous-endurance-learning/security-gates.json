@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "r57-security-gates/v1",
+  "secretScan": {
+    "status": "PASS",
+    "filesScanned": 1806,
+    "ownerReviewRequired": []
+  },
+  "dependencyAudit": {
+    "status": "PASS",
+    "dependenciesAudited": 674,
+    "blocking": 0
+  },
+  "publicClaims": {
+    "status": "PASS",
+    "blocking": []
+  },
+  "docLinks": {
+    "status": "PASS",
+    "broken": []
+  }
+}

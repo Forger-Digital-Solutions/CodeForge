@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "r57-foundation-proof/v1",
+  "evidenceClass": "deterministic_fixture",
+  "verifiedReceipt": {
+    "schemaVersion": "r57-experience-receipt/v1",
+    "runId": "fixture-run",
+    "sessionRef": "619307e9b5c5f37e77fc2c66e018e0950558f36bc38f16866440222008523e6a",
+    "workItemId": "fixture-run",
+    "status": "completed",
+    "label": "VERIFIED_SUCCESS",
+    "completionOutcome": "completed",
+    "integrationStatus": "integrated",
+    "workers": [
+      {
+        "id": "worker-1",
+        "role": "coder",
+        "status": "completed",
+        "routeRef": null,
+        "telemetry": {
+          "wallTimeMs": 0,
+          "modelRequests": 2,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "toolCalls": 3,
+          "retries": 0,
+          "providerFailures": 0
+        }
+      }
+    ],
+    "signal": {
+      "schemaVersion": "r57-experience-signal/v1",
+      "label": "VERIFIED_SUCCESS",
+      "taskClass": "normal",
+      "repositorySizeBucket": "11-100",
+      "changeSizeBucket": "1-10",
+      "reviewRounds": 0,
+      "verificationAttempts": 1,
+      "verificationPassed": true,
+      "modelRequests": 2,
+      "toolCalls": 3,
+      "retries": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "providerFailures": 0,
+      "workerCount": 1,
+      "roles": [
+        "coder"
+      ]
+    }
+  },
+  "generalizedSignal": {
+    "schemaVersion": "r57-experience-signal/v1",
+    "label": "VERIFIED_SUCCESS",
+    "taskClass": "normal",
+    "repositorySizeBucket": "11-100",
+    "changeSizeBucket": "1-10",
+    "reviewRounds": 0,
+    "verificationAttempts": 1,
+    "verificationPassed": true,
+    "modelRequests": 2,
+    "toolCalls": 3,
+    "retries": 0,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "providerFailures": 0,
+    "workerCount": 1,
+    "roles": [
+      "coder"
+    ]
+  },
+  "unverifiedLabel": "UNKNOWN",
+  "strategyTrace": [
+    {
+      "attempt": 1,
+      "classification": "NOVEL_STRATEGY",
+      "fingerprint": {
+        "strategy": "be4c7cffd8136a5a22db5d022993091b252c7e829180e7a135393b000702ae38",
+        "failure": "49368c255c07c5400db47ad023309575f90259241a86d47cb345835208373151",
+        "state": "patch-a"
+      }
+    },
+    {
+      "attempt": 2,
+      "classification": "LOW_NOVELTY_RETRY",
+      "fingerprint": {
+        "strategy": "be4c7cffd8136a5a22db5d022993091b252c7e829180e7a135393b000702ae38",
+        "failure": "49368c255c07c5400db47ad023309575f90259241a86d47cb345835208373151",
+        "state": "patch-b"
+      }
+    },
+    {
+      "attempt": 3,
+      "classification": "STRATEGY_EXHAUSTED",
+      "fingerprint": {
+        "strategy": "be4c7cffd8136a5a22db5d022993091b252c7e829180e7a135393b000702ae38",
+        "failure": "49368c255c07c5400db47ad023309575f90259241a86d47cb345835208373151",
+        "state": "patch-c"
+      }
+    }
+  ],
+  "laterTaskAdvice": {
+    "action": "INDEPENDENT_DIAGNOSIS",
+    "supportingSamples": 2,
+    "confidence": 0.3333333333333333,
+    "reason": "Repeated strategy exhaustion on comparable task classes"
+  },
+  "privacyScan": {
+    "prohibitedContentPresent": false
+  }
+}

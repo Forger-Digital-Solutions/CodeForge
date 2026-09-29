@@ -15,7 +15,7 @@
  */
 import { spawn, execFile as execFileCallback } from 'node:child_process';
 import { promisify } from 'node:util';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -37,6 +37,8 @@ if (!existsSync(exePath)) {
   process.exit(1);
 }
 mkdirSync(soakProfile, { recursive: true });
+const runtimeMetadataPath = resolve(soakProfile, 'runtime.json');
+rmSync(runtimeMetadataPath, { force: true });
 
 const cleanRuntimeEnv = { ...process.env };
 delete cleanRuntimeEnv.NODE_PATH;
@@ -52,12 +54,12 @@ child.stdout.on('data', (d) => process.stdout.write(`[ELECTRON STDOUT] ${d}`));
 child.stderr.on('data', (d) => process.stderr.write(`[ELECTRON STDERR] ${d}`));
 
 async function runtimeMetadata() {
-  const file = resolve(soakProfile, 'runtime.json');
+  const file = runtimeMetadataPath;
   for (let i = 0; i < 60; i++) {
     if (existsSync(file)) {
       try {
         const parsed = JSON.parse(readFileSync(file, 'utf8'));
-        if (parsed?.runtimeEndpoint) return parsed;
+      if (parsed?.runtimeEndpoint && parsed.pid === child.pid) return parsed;
       } catch {}
     }
     await new Promise((r) => setTimeout(r, 1000));
@@ -108,8 +110,23 @@ async function processTreeSample() {
       }
     } catch {}
   }
+  if (rows.length === 0) {
+    const { stdout: mainOnly } = await execFile('powershell', [
+      '-NoProfile', '-Command',
+      `Get-Process -Id ${child.pid} -ErrorAction SilentlyContinue | Select-Object @{N='ProcessId';E={$_.Id}},@{N='WorkingSetSize';E={$_.WorkingSet64}},@{N='HandleCount';E={$_.Handles}} | ConvertTo-Json -Compress`,
+    ], { maxBuffer: 1024 * 1024, windowsHide: true }).catch(() => ({ stdout: '' }));
+    try {
+      const main = JSON.parse(mainOnly.trim());
+      if (main?.ProcessId === child.pid) {
+        processMeasurementScope = 'main_process_only';
+        return [main];
+      }
+    } catch {}
+  }
   return rows;
 }
+
+let processMeasurementScope = 'process_tree';
 
 async function probeEndpoint(endpoint) {
   try {
@@ -163,9 +180,12 @@ while (Date.now() < deadline && !childExited) {
     totalHandles: rows.reduce((a, r) => a + (r.HandleCount ?? 0), 0),
     endpoint: probe,
     childAlive: !childExited,
+    processMeasurementScope,
   });
+  if (!probe.reachable || probe.status !== 401 || rows.length === 0) break;
   await new Promise((r) => setTimeout(r, sampleEveryMs));
 }
+const soakCompleted = Date.now() >= deadline && !childExited;
 
 // Graceful shutdown: close the window tree, then force only if needed.
 let shutdown = 'clean_exit_observed';
@@ -191,7 +211,7 @@ const receipt = {
   soak: { minutesBudgeted: minutes, sampleEveryMs, samplesTaken: samples.length, wallClockMs: Date.now() - startedAt },
   runtime: { endpoint: metadata.runtimeEndpoint, pid: metadata.pid, version: metadata.applicationVersion },
   outcome: {
-    processAliveThroughSoak: samples.every((s) => s.childAlive),
+    processAliveThroughSoak: soakCompleted && samples.every((s) => s.childAlive),
     endpointReachableCount: samples.filter((s) => s.endpoint.reachable).length,
     endpoint401Count: samples.filter((s) => s.endpoint.status === 401).length,
     endpointUnexpectedStatuses: [...new Set(samples.filter((s) => s.endpoint.status && s.endpoint.status !== 401).map((s) => s.endpoint.status))],
@@ -210,6 +230,7 @@ const receipt = {
   honesty: {
     probe: 'Unauthenticated GET /api/models — 401 expected and counted; it proves liveness and the auth boundary holding under soak, not authenticated throughput.',
     scope: 'Process-level packaged soak (uptime, memory/handle trend, liveness). Does not drive workflows; task-level packaged endurance is separate.',
+    processMeasurementScope,
   },
 };
 
@@ -223,4 +244,7 @@ console.log(JSON.stringify({
   shutdown,
   leftover,
 }, null, 2));
-process.exitCode = receipt.outcome.processAliveThroughSoak && leftover === 0 ? 0 : 2;
+process.exitCode = receipt.outcome.processAliveThroughSoak
+  && receipt.outcome.endpoint401Count === samples.length
+  && samples.every((sample) => sample.processCount > 0)
+  && leftover === 0 ? 0 : 2;

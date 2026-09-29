@@ -134,6 +134,36 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     expect(updatedMath).toContain("subtract");
   });
 
+  it("uses repeated abstract prior outcomes to advise a later revision without changing completion authority", async () => {
+    await persistence.upsertSession({ id: "prior-owner", title: "Prior abstract evidence", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "completed" });
+    for (const id of ["prior-a", "prior-b"]) {
+      await persistence.insertIfAbsent({
+        kind: "generalized_experience_signal", id, sessionId: "prior-owner",
+        signal: { schemaVersion: "r57-experience-signal/v1", taskClass: "normal", label: "STRATEGY_EXHAUSTED" },
+      } as unknown as import("@codeforge/sessions").WorkItem);
+    }
+    const orchestrator = createAutonomousRunOrchestrator({
+      workspaceService: createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir }), persistence,
+    });
+    let attempts = 0;
+    let advice = "";
+    const result = await orchestrator.startRun({
+      sessionId: "later-owner", workspacePath: targetRepo, goal: "Implement subtract with verification",
+      complexityHint: "normal", verificationCommands: ["node -e \"process.exit(0)\""],
+      coderExecutor: async (worktreePath, _goal, feedback) => {
+        attempts++;
+        if (feedback) advice = feedback;
+        await writeFile(join(worktreePath, "src", "math.ts"), attempts === 1
+          ? "export function broken() { throw new TypeError('regression error'); }\n"
+          : "export function subtract(a: number, b: number): number { return a - b; }\n");
+        return { success: true, filesChanged: ["src/math.ts"] };
+      },
+    });
+    expect(result.status).toBe("completed");
+    expect(advice).toContain("Reinspect the causal assumption");
+    expect(result.completion?.outcome).toBe("completed");
+  });
+
   it("Scenario 4 (Revision Limit Exhaustion): persistent blocking defect exhausts revision budget and fails closed into blocked state", async () => {
     const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
     const orchestrator = createAutonomousRunOrchestrator({

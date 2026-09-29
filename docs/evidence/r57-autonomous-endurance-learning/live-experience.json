@@ -1,0 +1,218 @@
+{
+  "schemaVersion": "r57-live-experience/v1",
+  "evidenceClass": "live_provider",
+  "runStatus": "completed",
+  "local": [
+    {
+      "schemaVersion": "r57-experience-receipt/v1",
+      "runId": "run-9db27a08-eb2b-4efc-80bf-0ab5fe07e2e6",
+      "sessionRef": "fb870c00d53e3370470066af16d66c040d1d1790fe8bdcd0d3ee4cb7e41f7165",
+      "workItemId": "run-9db27a08-eb2b-4efc-80bf-0ab5fe07e2e6",
+      "startedAt": "2026-09-29T03:35:42.757Z",
+      "completedAt": "2026-09-29T03:41:37.565Z",
+      "status": "completed",
+      "label": "VERIFIED_SUCCESS",
+      "completionOutcome": "completed",
+      "integrationStatus": "integrated",
+      "workers": [
+        {
+          "id": "child-7bcfa949-114a-479a-8b5c-8bc370423af3",
+          "role": "other",
+          "status": "completed",
+          "routeRef": "dbe480cf74e27b4bbbf716f8af1e32916075edb7eb3afcc4d9ba07ed289b1cbd",
+          "telemetry": {
+            "wallTimeMs": 3410,
+            "modelRequests": 2,
+            "inputTokens": 5245,
+            "outputTokens": 1427,
+            "toolCalls": 0,
+            "retries": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "id": "child-32432e06-03ac-4e34-a5cc-b113db05e881",
+          "role": "other",
+          "status": "completed",
+          "routeRef": "35aec9f8e7f68e11f90dd146798acde46eb6ec31005f7e800147d36b2a07de00",
+          "telemetry": {
+            "wallTimeMs": 139450,
+            "modelRequests": 19,
+            "inputTokens": 95755,
+            "outputTokens": 6955,
+            "toolCalls": 18,
+            "retries": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "id": "child-a82886af-e8ec-4f11-9632-9e55391ffdff",
+          "role": "other",
+          "status": "completed",
+          "routeRef": "0aae761c337abd8f2e213804f9e1e1803334bc040ec7a24f0db2e2a9dc58e4c2",
+          "telemetry": {
+            "wallTimeMs": 205166,
+            "modelRequests": 7,
+            "inputTokens": 22211,
+            "outputTokens": 917,
+            "toolCalls": 6,
+            "retries": 0,
+            "providerFailures": 0
+          }
+        }
+      ],
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "VERIFIED_SUCCESS",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "1-10",
+        "reviewRounds": 0,
+        "verificationAttempts": 1,
+        "verificationPassed": true,
+        "modelRequests": 28,
+        "toolCalls": 24,
+        "retries": 0,
+        "inputTokens": 123211,
+        "outputTokens": 9299,
+        "providerFailures": 0,
+        "workerCount": 3,
+        "roles": [
+          "other",
+          "other",
+          "other"
+        ]
+      }
+    }
+  ],
+  "generalized": [
+    {
+      "schemaVersion": "r57-experience-signal/v1",
+      "label": "VERIFIED_SUCCESS",
+      "taskClass": "normal",
+      "repositorySizeBucket": "1-10",
+      "changeSizeBucket": "1-10",
+      "reviewRounds": 0,
+      "verificationAttempts": 1,
+      "verificationPassed": true,
+      "modelRequests": 28,
+      "toolCalls": 24,
+      "retries": 0,
+      "inputTokens": 123211,
+      "outputTokens": 9299,
+      "providerFailures": 0,
+      "workerCount": 3,
+      "roles": [
+        "other",
+        "other",
+        "other"
+      ]
+    }
+  ],
+  "interventions": [],
+  "postRunProjection": {
+    "local": {
+      "schemaVersion": "r57-experience-receipt/v1",
+      "runId": "run-9db27a08-eb2b-4efc-80bf-0ab5fe07e2e6",
+      "sessionRef": "fb870c00d53e3370470066af16d66c040d1d1790fe8bdcd0d3ee4cb7e41f7165",
+      "workItemId": "run-9db27a08-eb2b-4efc-80bf-0ab5fe07e2e6",
+      "startedAt": "2026-09-29T03:35:42.757Z",
+      "completedAt": "2026-09-29T03:41:37.565Z",
+      "status": "completed",
+      "label": "VERIFIED_SUCCESS",
+      "completionOutcome": "completed",
+      "integrationStatus": "integrated",
+      "workers": [
+        {
+          "id": "child-7bcfa949-114a-479a-8b5c-8bc370423af3",
+          "role": "explorer",
+          "status": "completed",
+          "routeRef": "dbe480cf74e27b4bbbf716f8af1e32916075edb7eb3afcc4d9ba07ed289b1cbd",
+          "telemetry": {
+            "wallTimeMs": 3410,
+            "modelRequests": 2,
+            "inputTokens": 5245,
+            "outputTokens": 1427,
+            "toolCalls": 0,
+            "retries": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "id": "child-32432e06-03ac-4e34-a5cc-b113db05e881",
+          "role": "coder",
+          "status": "completed",
+          "routeRef": "35aec9f8e7f68e11f90dd146798acde46eb6ec31005f7e800147d36b2a07de00",
+          "telemetry": {
+            "wallTimeMs": 139450,
+            "modelRequests": 19,
+            "inputTokens": 95755,
+            "outputTokens": 6955,
+            "toolCalls": 18,
+            "retries": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "id": "child-a82886af-e8ec-4f11-9632-9e55391ffdff",
+          "role": "reviewer",
+          "status": "completed",
+          "routeRef": "0aae761c337abd8f2e213804f9e1e1803334bc040ec7a24f0db2e2a9dc58e4c2",
+          "telemetry": {
+            "wallTimeMs": 205166,
+            "modelRequests": 7,
+            "inputTokens": 22211,
+            "outputTokens": 917,
+            "toolCalls": 6,
+            "retries": 0,
+            "providerFailures": 0
+          }
+        }
+      ],
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "VERIFIED_SUCCESS",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "1-10",
+        "reviewRounds": 0,
+        "verificationAttempts": 1,
+        "verificationPassed": true,
+        "modelRequests": 28,
+        "toolCalls": 24,
+        "retries": 0,
+        "inputTokens": 123211,
+        "outputTokens": 9299,
+        "providerFailures": 0,
+        "workerCount": 3,
+        "roles": [
+          "explorer",
+          "coder",
+          "reviewer"
+        ]
+      }
+    },
+    "generalized": {
+      "schemaVersion": "r57-experience-signal/v1",
+      "label": "VERIFIED_SUCCESS",
+      "taskClass": "normal",
+      "repositorySizeBucket": "1-10",
+      "changeSizeBucket": "1-10",
+      "reviewRounds": 0,
+      "verificationAttempts": 1,
+      "verificationPassed": true,
+      "modelRequests": 28,
+      "toolCalls": 24,
+      "retries": 0,
+      "inputTokens": 123211,
+      "outputTokens": 9299,
+      "providerFailures": 0,
+      "workerCount": 3,
+      "roles": [
+        "explorer",
+        "coder",
+        "reviewer"
+      ]
+    }
+  }
+}

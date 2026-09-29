@@ -1,0 +1,1693 @@
+{
+  "schemaVersion": "r57-scale/v1",
+  "evidenceClass": "deterministic_simulation",
+  "wallTimeMs": 135,
+  "results": [
+    {
+      "schemaVersion": 1,
+      "runId": "r20-R57-1-USERS-5fc54607a203",
+      "timestamp": "2026-09-29T03:39:44.421Z",
+      "commit": "unknown",
+      "evidenceClass": "simulated",
+      "scenario": "R57-1-USERS",
+      "users": 1,
+      "concurrency": 1,
+      "taskMix": [
+        {
+          "taskType": "bug_fix",
+          "topology": "T0",
+          "weight": 4
+        },
+        {
+          "taskType": "feature",
+          "topology": "T1",
+          "weight": 2
+        },
+        {
+          "taskType": "refactor",
+          "topology": "T1",
+          "weight": 1
+        }
+      ],
+      "providers": [
+        "synthetic-a",
+        "synthetic-b"
+      ],
+      "routes": [
+        "free-a",
+        "free-b"
+      ],
+      "durationMs": 729,
+      "requests": 2,
+      "successes": 2,
+      "failures": 0,
+      "retries": 0,
+      "rateLimits": 0,
+      "timeouts": 0,
+      "malformedResponses": 0,
+      "connectionResets": 0,
+      "queueDepthMax": 1,
+      "queueWaitMs": {
+        "p50": 0,
+        "p95": 364,
+        "max": 364
+      },
+      "responseLatencyMs": {
+        "p50": 364,
+        "p95": 364,
+        "max": 364
+      },
+      "routeFailovers": 0,
+      "routeExhaustions": 0,
+      "tasks": {
+        "attempted": 2,
+        "completed": 2,
+        "blocked": 0,
+        "failed": 0,
+        "cancelled": 0
+      },
+      "tokensProcessed": 6800,
+      "userMetrics": [
+        {
+          "userId": "user-0001",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 182,
+          "maxWaitMs": 364
+        }
+      ],
+      "providerMetrics": [
+        {
+          "providerId": "synthetic-a",
+          "routeId": "free-a",
+          "attempts": 2,
+          "successes": 2,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 6800,
+          "busyMs": 728,
+          "cooldowns": 0,
+          "utilization": 0.33287608596250573
+        },
+        {
+          "providerId": "synthetic-b",
+          "routeId": "free-b",
+          "attempts": 0,
+          "successes": 0,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 0,
+          "busyMs": 0,
+          "cooldowns": 0,
+          "utilization": 0
+        }
+      ],
+      "fairness": {
+        "jainIndex": 1,
+        "starvationEvents": 0,
+        "normalUserP95WaitMs": 0
+      },
+      "scheduler": {
+        "admissionDecisions": 731,
+        "averageDecisionMicros": 2.0125854993160246,
+        "maxDecisionMicros": 848.8
+      },
+      "result": "PASS",
+      "eventCount": 8,
+      "starvingUsers": 0
+    },
+    {
+      "schemaVersion": 1,
+      "runId": "r20-R57-2-USERS-634ab9cabd62",
+      "timestamp": "2026-09-29T03:39:44.427Z",
+      "commit": "unknown",
+      "evidenceClass": "simulated",
+      "scenario": "R57-2-USERS",
+      "users": 2,
+      "concurrency": 2,
+      "taskMix": [
+        {
+          "taskType": "bug_fix",
+          "topology": "T0",
+          "weight": 4
+        },
+        {
+          "taskType": "feature",
+          "topology": "T1",
+          "weight": 2
+        },
+        {
+          "taskType": "refactor",
+          "topology": "T1",
+          "weight": 1
+        }
+      ],
+      "providers": [
+        "synthetic-a",
+        "synthetic-b"
+      ],
+      "routes": [
+        "free-a",
+        "free-b"
+      ],
+      "durationMs": 2489,
+      "requests": 6,
+      "successes": 6,
+      "failures": 0,
+      "retries": 0,
+      "rateLimits": 0,
+      "timeouts": 0,
+      "malformedResponses": 0,
+      "connectionResets": 0,
+      "queueDepthMax": 4,
+      "queueWaitMs": {
+        "p50": 364,
+        "p95": 1866,
+        "max": 1866
+      },
+      "responseLatencyMs": {
+        "p50": 622,
+        "p95": 622,
+        "max": 622
+      },
+      "routeFailovers": 0,
+      "routeExhaustions": 0,
+      "tasks": {
+        "attempted": 4,
+        "completed": 4,
+        "blocked": 0,
+        "failed": 0,
+        "cancelled": 0
+      },
+      "tokensProcessed": 32800,
+      "userMetrics": [
+        {
+          "userId": "user-0001",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 182,
+          "maxWaitMs": 364
+        },
+        {
+          "userId": "user-0002",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 933,
+          "maxWaitMs": 1866
+        }
+      ],
+      "providerMetrics": [
+        {
+          "providerId": "synthetic-a",
+          "routeId": "free-a",
+          "attempts": 6,
+          "successes": 6,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 32800,
+          "busyMs": 3216,
+          "cooldowns": 0,
+          "utilization": 0.43069505825632787
+        },
+        {
+          "providerId": "synthetic-b",
+          "routeId": "free-b",
+          "attempts": 0,
+          "successes": 0,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 0,
+          "busyMs": 0,
+          "cooldowns": 0,
+          "utilization": 0
+        }
+      ],
+      "fairness": {
+        "jainIndex": 1,
+        "starvationEvents": 0,
+        "normalUserP95WaitMs": 1866
+      },
+      "scheduler": {
+        "admissionDecisions": 2495,
+        "averageDecisionMicros": 0.3461723446893872,
+        "maxDecisionMicros": 41.2
+      },
+      "result": "PASS",
+      "eventCount": 24,
+      "starvingUsers": 0
+    },
+    {
+      "schemaVersion": 1,
+      "runId": "r20-R57-5-USERS-400c1e733b28",
+      "timestamp": "2026-09-29T03:39:44.432Z",
+      "commit": "unknown",
+      "evidenceClass": "simulated",
+      "scenario": "R57-5-USERS",
+      "users": 5,
+      "concurrency": 5,
+      "taskMix": [
+        {
+          "taskType": "bug_fix",
+          "topology": "T0",
+          "weight": 4
+        },
+        {
+          "taskType": "feature",
+          "topology": "T1",
+          "weight": 2
+        },
+        {
+          "taskType": "refactor",
+          "topology": "T1",
+          "weight": 1
+        }
+      ],
+      "providers": [
+        "synthetic-a",
+        "synthetic-b"
+      ],
+      "routes": [
+        "free-a",
+        "free-b"
+      ],
+      "durationMs": 2489,
+      "requests": 15,
+      "successes": 15,
+      "failures": 0,
+      "retries": 0,
+      "rateLimits": 0,
+      "timeouts": 0,
+      "malformedResponses": 0,
+      "connectionResets": 0,
+      "queueDepthMax": 10,
+      "queueWaitMs": {
+        "p50": 364,
+        "p95": 1866,
+        "max": 1866
+      },
+      "responseLatencyMs": {
+        "p50": 505,
+        "p95": 622,
+        "max": 622
+      },
+      "routeFailovers": 0,
+      "routeExhaustions": 0,
+      "tasks": {
+        "attempted": 10,
+        "completed": 10,
+        "blocked": 0,
+        "failed": 0,
+        "cancelled": 0
+      },
+      "tokensProcessed": 76400,
+      "userMetrics": [
+        {
+          "userId": "user-0001",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 182,
+          "maxWaitMs": 364
+        },
+        {
+          "userId": "user-0002",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 933,
+          "maxWaitMs": 1866
+        },
+        {
+          "userId": "user-0003",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 182,
+          "maxWaitMs": 364
+        },
+        {
+          "userId": "user-0004",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 757.5,
+          "maxWaitMs": 1515
+        },
+        {
+          "userId": "user-0005",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 450,
+          "maxWaitMs": 986
+        }
+      ],
+      "providerMetrics": [
+        {
+          "providerId": "synthetic-a",
+          "routeId": "free-a",
+          "attempts": 11,
+          "successes": 11,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 56300,
+          "busyMs": 5576,
+          "cooldowns": 0,
+          "utilization": 0.7467523771260212
+        },
+        {
+          "providerId": "synthetic-b",
+          "routeId": "free-b",
+          "attempts": 4,
+          "successes": 4,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 20100,
+          "busyMs": 1996,
+          "cooldowns": 0,
+          "utilization": 0.2673094951118254
+        }
+      ],
+      "fairness": {
+        "jainIndex": 1,
+        "starvationEvents": 0,
+        "normalUserP95WaitMs": 1866
+      },
+      "scheduler": {
+        "admissionDecisions": 2504,
+        "averageDecisionMicros": 0.3286741214057402,
+        "maxDecisionMicros": 62.9
+      },
+      "result": "PASS",
+      "eventCount": 60,
+      "starvingUsers": 0
+    },
+    {
+      "schemaVersion": 1,
+      "runId": "r20-R57-10-USERS-f3635753b7a6",
+      "timestamp": "2026-09-29T03:39:44.443Z",
+      "commit": "unknown",
+      "evidenceClass": "simulated",
+      "scenario": "R57-10-USERS",
+      "users": 10,
+      "concurrency": 10,
+      "taskMix": [
+        {
+          "taskType": "bug_fix",
+          "topology": "T0",
+          "weight": 4
+        },
+        {
+          "taskType": "feature",
+          "topology": "T1",
+          "weight": 2
+        },
+        {
+          "taskType": "refactor",
+          "topology": "T1",
+          "weight": 1
+        }
+      ],
+      "providers": [
+        "synthetic-a",
+        "synthetic-b"
+      ],
+      "routes": [
+        "free-a",
+        "free-b"
+      ],
+      "durationMs": 2736,
+      "requests": 27,
+      "successes": 27,
+      "failures": 0,
+      "retries": 0,
+      "rateLimits": 0,
+      "timeouts": 0,
+      "malformedResponses": 0,
+      "connectionResets": 0,
+      "queueDepthMax": 21,
+      "queueWaitMs": {
+        "p50": 728,
+        "p95": 1996,
+        "max": 2113
+      },
+      "responseLatencyMs": {
+        "p50": 505,
+        "p95": 622,
+        "max": 622
+      },
+      "routeFailovers": 0,
+      "routeExhaustions": 0,
+      "tasks": {
+        "attempted": 20,
+        "completed": 20,
+        "blocked": 0,
+        "failed": 0,
+        "cancelled": 0
+      },
+      "tokensProcessed": 129600,
+      "userMetrics": [
+        {
+          "userId": "user-0001",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 182,
+          "maxWaitMs": 364
+        },
+        {
+          "userId": "user-0002",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 933,
+          "maxWaitMs": 1866
+        },
+        {
+          "userId": "user-0003",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 182,
+          "maxWaitMs": 364
+        },
+        {
+          "userId": "user-0004",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1118.25,
+          "maxWaitMs": 1996
+        },
+        {
+          "userId": "user-0005",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 485.3333333333333,
+          "maxWaitMs": 1092
+        },
+        {
+          "userId": "user-0006",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1118.25,
+          "maxWaitMs": 2113
+        },
+        {
+          "userId": "user-0007",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1039,
+          "maxWaitMs": 1350
+        },
+        {
+          "userId": "user-0008",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 980.5,
+          "maxWaitMs": 1456
+        },
+        {
+          "userId": "user-0009",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 910,
+          "maxWaitMs": 1092
+        },
+        {
+          "userId": "user-0010",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 804,
+          "maxWaitMs": 986
+        }
+      ],
+      "providerMetrics": [
+        {
+          "providerId": "synthetic-a",
+          "routeId": "free-a",
+          "attempts": 16,
+          "successes": 16,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 68500,
+          "busyMs": 6997,
+          "cooldowns": 0,
+          "utilization": 0.8524610136452242
+        },
+        {
+          "providerId": "synthetic-b",
+          "routeId": "free-b",
+          "attempts": 11,
+          "successes": 11,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 61100,
+          "busyMs": 5975,
+          "cooldowns": 0,
+          "utilization": 0.7279483430799221
+        }
+      ],
+      "fairness": {
+        "jainIndex": 1,
+        "starvationEvents": 0,
+        "normalUserP95WaitMs": 1996
+      },
+      "scheduler": {
+        "admissionDecisions": 2763,
+        "averageDecisionMicros": 0.611907347086483,
+        "maxDecisionMicros": 121.4
+      },
+      "result": "PASS",
+      "eventCount": 1564,
+      "starvingUsers": 0
+    },
+    {
+      "schemaVersion": 1,
+      "runId": "r20-R57-25-USERS-41eae27395a4",
+      "timestamp": "2026-09-29T03:39:44.463Z",
+      "commit": "unknown",
+      "evidenceClass": "simulated",
+      "scenario": "R57-25-USERS",
+      "users": 25,
+      "concurrency": 25,
+      "taskMix": [
+        {
+          "taskType": "bug_fix",
+          "topology": "T0",
+          "weight": 4
+        },
+        {
+          "taskType": "feature",
+          "topology": "T1",
+          "weight": 2
+        },
+        {
+          "taskType": "refactor",
+          "topology": "T1",
+          "weight": 1
+        }
+      ],
+      "providers": [
+        "synthetic-a",
+        "synthetic-b"
+      ],
+      "routes": [
+        "free-a",
+        "free-b"
+      ],
+      "durationMs": 6422,
+      "requests": 72,
+      "successes": 72,
+      "failures": 0,
+      "retries": 0,
+      "rateLimits": 0,
+      "timeouts": 0,
+      "malformedResponses": 0,
+      "connectionResets": 0,
+      "queueDepthMax": 66,
+      "queueWaitMs": {
+        "p50": 2700,
+        "p95": 5353,
+        "max": 5799
+      },
+      "responseLatencyMs": {
+        "p50": 505,
+        "p95": 622,
+        "max": 622
+      },
+      "routeFailovers": 0,
+      "routeExhaustions": 0,
+      "tasks": {
+        "attempted": 50,
+        "completed": 50,
+        "blocked": 0,
+        "failed": 0,
+        "cancelled": 0
+      },
+      "tokensProcessed": 361600,
+      "userMetrics": [
+        {
+          "userId": "user-0001",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 311,
+          "maxWaitMs": 622
+        },
+        {
+          "userId": "user-0002",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 2383.25,
+          "maxWaitMs": 4332
+        },
+        {
+          "userId": "user-0003",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 563.5,
+          "maxWaitMs": 1127
+        },
+        {
+          "userId": "user-0004",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3031.25,
+          "maxWaitMs": 5329
+        },
+        {
+          "userId": "user-0005",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3510,
+          "maxWaitMs": 5576
+        },
+        {
+          "userId": "user-0006",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1860.5,
+          "maxWaitMs": 4226
+        },
+        {
+          "userId": "user-0007",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1984,
+          "maxWaitMs": 2982
+        },
+        {
+          "userId": "user-0008",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 2477,
+          "maxWaitMs": 3968
+        },
+        {
+          "userId": "user-0009",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 4519.5,
+          "maxWaitMs": 5060
+        },
+        {
+          "userId": "user-0010",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 986,
+          "maxWaitMs": 1608
+        },
+        {
+          "userId": "user-0011",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 2133.5,
+          "maxWaitMs": 3721
+        },
+        {
+          "userId": "user-0012",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1639.6666666666667,
+          "maxWaitMs": 3064
+        },
+        {
+          "userId": "user-0013",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 5263,
+          "maxWaitMs": 5799
+        },
+        {
+          "userId": "user-0014",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3205,
+          "maxWaitMs": 3710
+        },
+        {
+          "userId": "user-0015",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 2383,
+          "maxWaitMs": 3322
+        },
+        {
+          "userId": "user-0016",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1913.5,
+          "maxWaitMs": 3099
+        },
+        {
+          "userId": "user-0017",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 2856.3333333333335,
+          "maxWaitMs": 4848
+        },
+        {
+          "userId": "user-0018",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3126.3333333333335,
+          "maxWaitMs": 4343
+        },
+        {
+          "userId": "user-0019",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3650.5,
+          "maxWaitMs": 4965
+        },
+        {
+          "userId": "user-0020",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 4191,
+          "maxWaitMs": 4696
+        },
+        {
+          "userId": "user-0021",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3439.75,
+          "maxWaitMs": 5201
+        },
+        {
+          "userId": "user-0022",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3210.5,
+          "maxWaitMs": 4449
+        },
+        {
+          "userId": "user-0023",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3662.5,
+          "maxWaitMs": 5353
+        },
+        {
+          "userId": "user-0024",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3146.5,
+          "maxWaitMs": 5424
+        },
+        {
+          "userId": "user-0025",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1941,
+          "maxWaitMs": 3346
+        }
+      ],
+      "providerMetrics": [
+        {
+          "providerId": "synthetic-a",
+          "routeId": "free-a",
+          "attempts": 37,
+          "successes": 37,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 182800,
+          "busyMs": 18208,
+          "cooldowns": 0,
+          "utilization": 0.9450846050036333
+        },
+        {
+          "providerId": "synthetic-b",
+          "routeId": "free-b",
+          "attempts": 35,
+          "successes": 35,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 178800,
+          "busyMs": 17714,
+          "cooldowns": 0,
+          "utilization": 0.9194435793626077
+        }
+      ],
+      "fairness": {
+        "jainIndex": 1,
+        "starvationEvents": 0,
+        "normalUserP95WaitMs": 5353
+      },
+      "scheduler": {
+        "admissionDecisions": 6494,
+        "averageDecisionMicros": 0.3941946412072576,
+        "maxDecisionMicros": 138.1
+      },
+      "result": "PASS",
+      "eventCount": 5712,
+      "starvingUsers": 0
+    },
+    {
+      "schemaVersion": 1,
+      "runId": "r20-R57-HEAVY-USER-7408a13105dc",
+      "timestamp": "2026-09-29T03:39:44.526Z",
+      "commit": "unknown",
+      "evidenceClass": "simulated",
+      "scenario": "R57-HEAVY-USER",
+      "users": 25,
+      "concurrency": 25,
+      "taskMix": [
+        {
+          "taskType": "bug_fix",
+          "topology": "T0",
+          "weight": 4
+        },
+        {
+          "taskType": "feature",
+          "topology": "T1",
+          "weight": 2
+        },
+        {
+          "taskType": "refactor",
+          "topology": "T1",
+          "weight": 1
+        }
+      ],
+      "providers": [
+        "synthetic-a",
+        "synthetic-b"
+      ],
+      "routes": [
+        "free-a",
+        "free-b"
+      ],
+      "durationMs": 36768,
+      "requests": 103,
+      "successes": 103,
+      "failures": 0,
+      "retries": 0,
+      "rateLimits": 0,
+      "timeouts": 0,
+      "malformedResponses": 0,
+      "connectionResets": 0,
+      "queueDepthMax": 97,
+      "queueWaitMs": {
+        "p50": 10354,
+        "p95": 33410,
+        "max": 36145
+      },
+      "responseLatencyMs": {
+        "p50": 505,
+        "p95": 622,
+        "max": 622
+      },
+      "routeFailovers": 0,
+      "routeExhaustions": 0,
+      "tasks": {
+        "attempted": 74,
+        "completed": 74,
+        "blocked": 0,
+        "failed": 0,
+        "cancelled": 0
+      },
+      "tokensProcessed": 504800,
+      "userMetrics": [
+        {
+          "userId": "user-0001",
+          "attemptedTasks": 50,
+          "completedTasks": 50,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 18032.26388888889,
+          "maxWaitMs": 36145
+        },
+        {
+          "userId": "user-0002",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 0,
+          "maxWaitMs": 0
+        },
+        {
+          "userId": "user-0003",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 0,
+          "maxWaitMs": 0
+        },
+        {
+          "userId": "user-0004",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 546,
+          "maxWaitMs": 1092
+        },
+        {
+          "userId": "user-0005",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 0,
+          "maxWaitMs": 0
+        },
+        {
+          "userId": "user-0006",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 0,
+          "maxWaitMs": 0
+        },
+        {
+          "userId": "user-0007",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1092,
+          "maxWaitMs": 1092
+        },
+        {
+          "userId": "user-0008",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 986,
+          "maxWaitMs": 986
+        },
+        {
+          "userId": "user-0009",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 2177,
+          "maxWaitMs": 2488
+        },
+        {
+          "userId": "user-0010",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 364,
+          "maxWaitMs": 364
+        },
+        {
+          "userId": "user-0011",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 364,
+          "maxWaitMs": 364
+        },
+        {
+          "userId": "user-0012",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 364,
+          "maxWaitMs": 364
+        },
+        {
+          "userId": "user-0013",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 980.5,
+          "maxWaitMs": 1597
+        },
+        {
+          "userId": "user-0014",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 364,
+          "maxWaitMs": 364
+        },
+        {
+          "userId": "user-0015",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 2219,
+          "maxWaitMs": 2219
+        },
+        {
+          "userId": "user-0016",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1966.5,
+          "maxWaitMs": 2219
+        },
+        {
+          "userId": "user-0017",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1767,
+          "maxWaitMs": 2078
+        },
+        {
+          "userId": "user-0018",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 933,
+          "maxWaitMs": 1244
+        },
+        {
+          "userId": "user-0019",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1708.5,
+          "maxWaitMs": 1961
+        },
+        {
+          "userId": "user-0020",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 728,
+          "maxWaitMs": 728
+        },
+        {
+          "userId": "user-0021",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 728,
+          "maxWaitMs": 728
+        },
+        {
+          "userId": "user-0022",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 728,
+          "maxWaitMs": 728
+        },
+        {
+          "userId": "user-0023",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 728,
+          "maxWaitMs": 728
+        },
+        {
+          "userId": "user-0024",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1350,
+          "maxWaitMs": 1350
+        },
+        {
+          "userId": "user-0025",
+          "attemptedTasks": 1,
+          "completedTasks": 1,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1092,
+          "maxWaitMs": 1092
+        }
+      ],
+      "providerMetrics": [
+        {
+          "providerId": "synthetic-a",
+          "routeId": "free-a",
+          "attempts": 86,
+          "successes": 86,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 418800,
+          "busyMs": 41816,
+          "cooldowns": 0,
+          "utilization": 0.3790977661734842
+        },
+        {
+          "providerId": "synthetic-b",
+          "routeId": "free-b",
+          "attempts": 17,
+          "successes": 17,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 86000,
+          "busyMs": 8534,
+          "cooldowns": 0,
+          "utilization": 0.07736800116042936
+        }
+      ],
+      "fairness": {
+        "jainIndex": 1,
+        "starvationEvents": 0,
+        "normalUserP95WaitMs": 2219
+      },
+      "scheduler": {
+        "admissionDecisions": 36871,
+        "averageDecisionMicros": 0.6541184128445633,
+        "maxDecisionMicros": 110.1
+      },
+      "result": "PASS",
+      "eventCount": 2631,
+      "starvingUsers": 0
+    },
+    {
+      "schemaVersion": 1,
+      "runId": "r20-R57-429-FAILOVER-e7ae573b649b",
+      "timestamp": "2026-09-29T03:39:44.550Z",
+      "commit": "unknown",
+      "evidenceClass": "simulated",
+      "scenario": "R57-429-FAILOVER",
+      "users": 25,
+      "concurrency": 25,
+      "taskMix": [
+        {
+          "taskType": "bug_fix",
+          "topology": "T0",
+          "weight": 4
+        },
+        {
+          "taskType": "feature",
+          "topology": "T1",
+          "weight": 2
+        },
+        {
+          "taskType": "refactor",
+          "topology": "T1",
+          "weight": 1
+        }
+      ],
+      "providers": [
+        "synthetic-a",
+        "synthetic-b"
+      ],
+      "routes": [
+        "limited",
+        "healthy"
+      ],
+      "durationMs": 9191,
+      "requests": 87,
+      "successes": 72,
+      "failures": 15,
+      "retries": 15,
+      "rateLimits": 15,
+      "timeouts": 0,
+      "malformedResponses": 0,
+      "connectionResets": 0,
+      "queueDepthMax": 67,
+      "queueWaitMs": {
+        "p50": 3851,
+        "p95": 7946,
+        "max": 8568
+      },
+      "responseLatencyMs": {
+        "p50": 505,
+        "p95": 622,
+        "max": 622
+      },
+      "routeFailovers": 15,
+      "routeExhaustions": 0,
+      "tasks": {
+        "attempted": 50,
+        "completed": 50,
+        "blocked": 0,
+        "failed": 0,
+        "cancelled": 0
+      },
+      "tokensProcessed": 361600,
+      "userMetrics": [
+        {
+          "userId": "user-0001",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1624,
+          "maxWaitMs": 4367
+        },
+        {
+          "userId": "user-0002",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3232.6,
+          "maxWaitMs": 6221
+        },
+        {
+          "userId": "user-0003",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3275,
+          "maxWaitMs": 5352
+        },
+        {
+          "userId": "user-0004",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3817.75,
+          "maxWaitMs": 6057
+        },
+        {
+          "userId": "user-0005",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 2610,
+          "maxWaitMs": 5095
+        },
+        {
+          "userId": "user-0006",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3231,
+          "maxWaitMs": 5974
+        },
+        {
+          "userId": "user-0007",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 5030,
+          "maxWaitMs": 5693
+        },
+        {
+          "userId": "user-0008",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 2867.6666666666665,
+          "maxWaitMs": 3366
+        },
+        {
+          "userId": "user-0009",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 4222,
+          "maxWaitMs": 6843
+        },
+        {
+          "userId": "user-0010",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 1941,
+          "maxWaitMs": 3366
+        },
+        {
+          "userId": "user-0011",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 6002.8,
+          "maxWaitMs": 8475
+        },
+        {
+          "userId": "user-0012",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3809.75,
+          "maxWaitMs": 7795
+        },
+        {
+          "userId": "user-0013",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 5654,
+          "maxWaitMs": 8299
+        },
+        {
+          "userId": "user-0014",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3512.5,
+          "maxWaitMs": 6085
+        },
+        {
+          "userId": "user-0015",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 4171.666666666667,
+          "maxWaitMs": 6551
+        },
+        {
+          "userId": "user-0016",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 4035.8,
+          "maxWaitMs": 7173
+        },
+        {
+          "userId": "user-0017",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3871,
+          "maxWaitMs": 7936
+        },
+        {
+          "userId": "user-0018",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 6652.333333333333,
+          "maxWaitMs": 7431
+        },
+        {
+          "userId": "user-0019",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 6151,
+          "maxWaitMs": 6445
+        },
+        {
+          "userId": "user-0020",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 5255,
+          "maxWaitMs": 7067
+        },
+        {
+          "userId": "user-0021",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 2670.5,
+          "maxWaitMs": 4343
+        },
+        {
+          "userId": "user-0022",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 2774,
+          "maxWaitMs": 4230
+        },
+        {
+          "userId": "user-0023",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3853.6666666666665,
+          "maxWaitMs": 6960
+        },
+        {
+          "userId": "user-0024",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 4817,
+          "maxWaitMs": 8568
+        },
+        {
+          "userId": "user-0025",
+          "attemptedTasks": 2,
+          "completedTasks": 2,
+          "blockedTasks": 0,
+          "failedTasks": 0,
+          "cancelledTasks": 0,
+          "averageWaitMs": 3686.3333333333335,
+          "maxWaitMs": 6081
+        }
+      ],
+      "providerMetrics": [
+        {
+          "providerId": "synthetic-a",
+          "routeId": "limited",
+          "attempts": 37,
+          "successes": 22,
+          "failures": 15,
+          "rateLimits": 15,
+          "timeouts": 0,
+          "tokens": 112600,
+          "busyMs": 18043,
+          "cooldowns": 14,
+          "utilization": 0.6543720306096543
+        },
+        {
+          "providerId": "synthetic-b",
+          "routeId": "healthy",
+          "attempts": 50,
+          "successes": 50,
+          "failures": 0,
+          "rateLimits": 0,
+          "timeouts": 0,
+          "tokens": 249000,
+          "busyMs": 24770,
+          "cooldowns": 0,
+          "utilization": 0.8983425815108983
+        }
+      ],
+      "fairness": {
+        "jainIndex": 1,
+        "starvationEvents": 0,
+        "normalUserP95WaitMs": 7946
+      },
+      "scheduler": {
+        "admissionDecisions": 9278,
+        "averageDecisionMicros": 0.35268376805344753,
+        "maxDecisionMicros": 52.9
+      },
+      "result": "DEGRADED",
+      "eventCount": 8268,
+      "starvingUsers": 0
+    }
+  ]
+}

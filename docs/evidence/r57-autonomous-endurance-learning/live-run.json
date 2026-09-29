@@ -1,0 +1,1120 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-29T03:41:37.584Z",
+  "startedAt": "2026-09-29T03:35:42.367Z",
+  "purpose": "R56 live ForgeAuto/Free roster run over real managed-free lanes (Groq + OpenRouter :free when keyed; real external model calls; credentials never recorded)",
+  "owner": "r56-live-owner",
+  "roster": {
+    "entitlement": "FREE",
+    "slots": [
+      {
+        "kind": "PINNED_VERSION",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "enabled": true,
+        "allowedRoles": [
+          "CODER"
+        ]
+      },
+      {
+        "kind": "PINNED_VERSION",
+        "modelId": "openai/gpt-oss-20b",
+        "enabled": true,
+        "allowedRoles": [
+          "EXPLORER"
+        ]
+      },
+      {
+        "kind": "AUTO",
+        "sourceClass": "MANAGED_FREE",
+        "enabled": true,
+        "allowedRoles": [
+          "PLANNER",
+          "TESTER",
+          "REVIEWER",
+          "LEAD"
+        ]
+      }
+    ],
+    "lead": {
+      "mode": "NONE"
+    }
+  },
+  "goal": "Implement multiply and repair the formatter so the focused math and format tests pass.",
+  "runStatus": "completed",
+  "runSummary": "Successfully implemented, reviewed, verified, and integrated \"Inspect the repository and make both failing tests pass by fixing multiply in src/math.mjs and the public output format in src/format.mjs. Do not modify the tests.\"",
+  "changedFiles": [
+    "src/format.mjs",
+    "src/math.mjs",
+    "verify.js"
+  ],
+  "completion": {
+    "outcome": "completed",
+    "blockers": [],
+    "advisories": [],
+    "rationale": "All required completion checks passed."
+  },
+  "verification": [
+    {
+      "command": "node --test test/math.test.mjs test/format.test.mjs",
+      "passed": 2,
+      "exitCode": 0,
+      "outputSample": "✔ format (0.9511ms)\n✔ multiply (0.8154ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 109.6296\n"
+    }
+  ],
+  "integration": {
+    "status": "integrated",
+    "branch": "codeforge/worktree/run-9db27a08-eb2b-4efc-80bf-0ab5fe07e2e6-eef19e31",
+    "worktreeId": "wt-eef19e31"
+  },
+  "counters": {
+    "childrenSpawned": 2,
+    "reviewRounds": 0,
+    "taskAttempts": 1,
+    "verificationAttempts": 1
+  },
+  "workers": [
+    {
+      "role": "Repository Explorer",
+      "agentId": "explorer",
+      "status": "completed",
+      "model": {
+        "providerId": "groq",
+        "modelId": "openai/gpt-oss-20b"
+      },
+      "rosterAllowance": {
+        "freeRoutes": [
+          {
+            "providerId": "groq",
+            "modelId": "openai/gpt-oss-20b"
+          }
+        ],
+        "paidModelIds": [],
+        "userRoutes": [],
+        "decisionOwner": "r56-live-owner"
+      },
+      "telemetry": {
+        "wallTimeMs": 3410,
+        "modelRequests": 2,
+        "inputTokens": 5245,
+        "outputTokens": 1427,
+        "toolCalls": 0,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 0
+      },
+      "workspace": {
+        "kind": "local"
+      }
+    },
+    {
+      "role": "Autonomous Builder",
+      "agentId": "coder",
+      "status": "completed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+      },
+      "rosterAllowance": {
+        "freeRoutes": [
+          {
+            "providerId": "openrouter",
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+          }
+        ],
+        "paidModelIds": [],
+        "userRoutes": [],
+        "decisionOwner": "r56-live-owner"
+      },
+      "telemetry": {
+        "wallTimeMs": 139450,
+        "modelRequests": 19,
+        "inputTokens": 95755,
+        "outputTokens": 6955,
+        "toolCalls": 18,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 0
+      },
+      "workspace": {
+        "kind": "git-worktree"
+      }
+    },
+    {
+      "role": "Independent Code Reviewer",
+      "agentId": "reviewer",
+      "status": "completed",
+      "model": {
+        "providerId": "openrouter",
+        "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free"
+      },
+      "rosterAllowance": {
+        "freeRoutes": [
+          {
+            "providerId": "groq",
+            "modelId": "openai/gpt-oss-120b"
+          },
+          {
+            "providerId": "groq",
+            "modelId": "openai/gpt-oss-20b"
+          },
+          {
+            "providerId": "groq",
+            "modelId": "qwen/qwen3.8-27b"
+          },
+          {
+            "providerId": "openrouter",
+            "modelId": "qwen/qwen3.8-27b:free"
+          },
+          {
+            "providerId": "openrouter",
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+          },
+          {
+            "providerId": "openrouter",
+            "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free"
+          }
+        ],
+        "paidModelIds": [],
+        "userRoutes": [],
+        "decisionOwner": "r56-live-owner"
+      },
+      "telemetry": {
+        "wallTimeMs": 205166,
+        "modelRequests": 7,
+        "inputTokens": 22211,
+        "outputTokens": 917,
+        "toolCalls": 6,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 0
+      },
+      "workspace": {
+        "kind": "git-worktree"
+      }
+    }
+  ],
+  "routing": [
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-7bcfa949-114a-479a-8b5c-8bc370423af3",
+        "modelId": "openai/gpt-oss-20b",
+        "providerId": "groq",
+        "score": 94,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "access_free_native",
+          "HEALTH_UNKNOWN",
+          "HEALTH:NO_HEALTH_EVIDENCE",
+          "ROLE_RUNTIME_EVIDENCE_ABSENT"
+        ]
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-32432e06-03ac-4e34-a5cc-b113db05e881",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "providerId": "openrouter",
+        "score": 140,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "access_free_native",
+          "HEALTH_UNKNOWN",
+          "HEALTH:NO_HEALTH_EVIDENCE",
+          "ROLE_RUNTIME_EVIDENCE_ABSENT"
+        ]
+      }
+    },
+    {
+      "type": "eightbit.status",
+      "payload": {
+        "event": "ROUTE_COOLDOWN",
+        "role": "CODER",
+        "previous": {
+          "providerId": "openrouter",
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+        },
+        "reasonCodes": [
+          "TEMPORARY_CAPACITY",
+          "BOUNDED_SAME_ROUTE_RETRY"
+        ],
+        "accessibleText": "Free capacity on nvidia/nemotron-3-super-120b-a12b:free is briefly exhausted; waiting 8 s, then continuing on the same route."
+      }
+    },
+    {
+      "type": "eightbit.status",
+      "payload": {
+        "event": "ROUTE_COOLDOWN",
+        "role": "CODER",
+        "previous": {
+          "providerId": "openrouter",
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+        },
+        "reasonCodes": [
+          "TEMPORARY_CAPACITY",
+          "BOUNDED_SAME_ROUTE_RETRY"
+        ],
+        "accessibleText": "Free capacity on nvidia/nemotron-3-super-120b-a12b:free is briefly exhausted; waiting 8 s, then continuing on the same route."
+      }
+    },
+    {
+      "type": "eightbit.status",
+      "payload": {
+        "event": "ROUTE_COOLDOWN",
+        "role": "CODER",
+        "previous": {
+          "providerId": "openrouter",
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free"
+        },
+        "reasonCodes": [
+          "TEMPORARY_CAPACITY",
+          "BOUNDED_SAME_ROUTE_RETRY"
+        ],
+        "accessibleText": "Free capacity on nvidia/nemotron-3-super-120b-a12b:free is briefly exhausted; waiting 8 s, then continuing on the same route."
+      }
+    },
+    {
+      "type": "router.selection",
+      "payload": {
+        "taskId": "child-a82886af-e8ec-4f11-9632-9e55391ffdff",
+        "modelId": "openai/gpt-oss-20b",
+        "providerId": "groq",
+        "score": 82,
+        "reasons": [
+          "coding_capable",
+          "tool_calling",
+          "long_context",
+          "sufficient_context",
+          "access_free_native",
+          "HEALTH_HEALTHY",
+          "HEALTH:HEALTHY:SERVED_PRODUCTION_SHAPE",
+          "ROLE_RUNTIME_EVIDENCE_ABSENT"
+        ]
+      }
+    },
+    {
+      "type": "router.failover",
+      "payload": {
+        "taskId": "child-a82886af-e8ec-4f11-9632-9e55391ffdff",
+        "fromModelId": "groq/openai/gpt-oss-20b",
+        "toModelId": "groq/openai/gpt-oss-120b",
+        "reason": "RATE_LIMITED"
+      }
+    },
+    {
+      "type": "router.failover",
+      "payload": {
+        "taskId": "child-a82886af-e8ec-4f11-9632-9e55391ffdff",
+        "fromModelId": "groq/openai/gpt-oss-120b",
+        "toModelId": "groq/qwen/qwen3.8-27b",
+        "reason": "RATE_LIMITED"
+      }
+    },
+    {
+      "type": "router.failover",
+      "payload": {
+        "taskId": "child-a82886af-e8ec-4f11-9632-9e55391ffdff",
+        "fromModelId": "groq/qwen/qwen3.8-27b",
+        "toModelId": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "reason": "RATE_LIMITED"
+      }
+    }
+  ],
+  "decisionReceipts": [
+    {
+      "runId": "child-7bcfa949-114a-479a-8b5c-8bc370423af3",
+      "agentId": "explorer",
+      "ownerUserId": "r56-live-owner",
+      "rosterUpdatedAt": "2026-09-29T03:35:41.852Z",
+      "role": "EXPLORER",
+      "candidates": [
+        {
+          "modelId": "openai/gpt-oss-20b",
+          "providerId": "groq",
+          "providerModelId": "openai/gpt-oss-20b",
+          "familyId": "gpt-oss",
+          "version": "20b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE_ECONOMY"
+        }
+      ],
+      "selected": {
+        "modelId": "openai/gpt-oss-20b",
+        "providerId": "groq",
+        "providerModelId": "openai/gpt-oss-20b",
+        "familyId": "gpt-oss",
+        "version": "20b",
+        "sourceClass": "MANAGED_FREE",
+        "lifecycle": "ACTIVE_ECONOMY"
+      },
+      "reasonCodes": [
+        "coding_capable",
+        "tool_calling",
+        "long_context",
+        "sufficient_context",
+        "access_free_native",
+        "HEALTH_UNKNOWN",
+        "HEALTH:NO_HEALTH_EVIDENCE",
+        "ROLE_RUNTIME_EVIDENCE_ABSENT"
+      ],
+      "recordedAt": "2026-09-29T03:35:43.653Z"
+    },
+    {
+      "runId": "child-32432e06-03ac-4e34-a5cc-b113db05e881",
+      "agentId": "coder",
+      "ownerUserId": "r56-live-owner",
+      "rosterUpdatedAt": "2026-09-29T03:35:41.852Z",
+      "role": "CODER",
+      "candidates": [
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "providerId": "openrouter",
+          "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "familyId": "nemotron3",
+          "version": "super-120b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        }
+      ],
+      "selected": {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "providerId": "openrouter",
+        "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "familyId": "nemotron3",
+        "version": "super-120b",
+        "sourceClass": "MANAGED_FREE",
+        "lifecycle": "ACTIVE"
+      },
+      "reasonCodes": [
+        "coding_capable",
+        "tool_calling",
+        "long_context",
+        "sufficient_context",
+        "access_free_native",
+        "HEALTH_UNKNOWN",
+        "HEALTH:NO_HEALTH_EVIDENCE",
+        "ROLE_RUNTIME_EVIDENCE_ABSENT"
+      ],
+      "recordedAt": "2026-09-29T03:35:51.277Z"
+    },
+    {
+      "runId": "child-a82886af-e8ec-4f11-9632-9e55391ffdff",
+      "agentId": "reviewer",
+      "ownerUserId": "r56-live-owner",
+      "rosterUpdatedAt": "2026-09-29T03:35:41.852Z",
+      "role": "REVIEWER",
+      "candidates": [
+        {
+          "modelId": "openai/gpt-oss-120b",
+          "providerId": "groq",
+          "providerModelId": "openai/gpt-oss-120b",
+          "familyId": "gpt-oss",
+          "version": "120b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "openai/gpt-oss-20b",
+          "providerId": "groq",
+          "providerModelId": "openai/gpt-oss-20b",
+          "familyId": "gpt-oss",
+          "version": "20b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE_ECONOMY"
+        },
+        {
+          "modelId": "qwen/qwen3.8-27b",
+          "providerId": "groq",
+          "providerModelId": "qwen/qwen3.8-27b",
+          "familyId": "qwen3",
+          "version": "3.8-27b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "qwen/qwen3.8-27b:free",
+          "providerId": "openrouter",
+          "providerModelId": "qwen/qwen3.8-27b:free",
+          "familyId": "qwen3",
+          "version": "3.8-27b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "providerId": "openrouter",
+          "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "familyId": "nemotron3",
+          "version": "super-120b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "providerId": "openrouter",
+          "providerModelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "familyId": "nemotron3",
+          "version": "ultra-550b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        }
+      ],
+      "selected": {
+        "modelId": "openai/gpt-oss-20b",
+        "providerId": "groq",
+        "providerModelId": "openai/gpt-oss-20b",
+        "familyId": "gpt-oss",
+        "version": "20b",
+        "sourceClass": "MANAGED_FREE",
+        "lifecycle": "ACTIVE_ECONOMY"
+      },
+      "reasonCodes": [
+        "coding_capable",
+        "tool_calling",
+        "long_context",
+        "sufficient_context",
+        "access_free_native",
+        "HEALTH_HEALTHY",
+        "HEALTH:HEALTHY:SERVED_PRODUCTION_SHAPE",
+        "ROLE_RUNTIME_EVIDENCE_ABSENT"
+      ],
+      "recordedAt": "2026-09-29T03:38:09.745Z"
+    },
+    {
+      "runId": "child-a82886af-e8ec-4f11-9632-9e55391ffdff",
+      "agentId": "reviewer",
+      "ownerUserId": "r56-live-owner",
+      "rosterUpdatedAt": "2026-09-29T03:35:41.852Z",
+      "role": "REVIEWER",
+      "candidates": [
+        {
+          "modelId": "openai/gpt-oss-120b",
+          "providerId": "groq",
+          "providerModelId": "openai/gpt-oss-120b",
+          "familyId": "gpt-oss",
+          "version": "120b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "openai/gpt-oss-20b",
+          "providerId": "groq",
+          "providerModelId": "openai/gpt-oss-20b",
+          "familyId": "gpt-oss",
+          "version": "20b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE_ECONOMY"
+        },
+        {
+          "modelId": "qwen/qwen3.8-27b",
+          "providerId": "groq",
+          "providerModelId": "qwen/qwen3.8-27b",
+          "familyId": "qwen3",
+          "version": "3.8-27b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "qwen/qwen3.8-27b:free",
+          "providerId": "openrouter",
+          "providerModelId": "qwen/qwen3.8-27b:free",
+          "familyId": "qwen3",
+          "version": "3.8-27b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "providerId": "openrouter",
+          "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "familyId": "nemotron3",
+          "version": "super-120b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "providerId": "openrouter",
+          "providerModelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "familyId": "nemotron3",
+          "version": "ultra-550b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        }
+      ],
+      "selected": {
+        "modelId": "openai/gpt-oss-120b",
+        "providerId": "groq",
+        "providerModelId": "openai/gpt-oss-120b",
+        "familyId": "gpt-oss",
+        "version": "120b",
+        "sourceClass": "MANAGED_FREE",
+        "lifecycle": "ACTIVE"
+      },
+      "reasonCodes": [
+        "RATE_LIMITED"
+      ],
+      "fallbackFrom": "groq/openai/gpt-oss-20b",
+      "recordedAt": "2026-09-29T03:38:10.410Z"
+    },
+    {
+      "runId": "child-a82886af-e8ec-4f11-9632-9e55391ffdff",
+      "agentId": "reviewer",
+      "ownerUserId": "r56-live-owner",
+      "rosterUpdatedAt": "2026-09-29T03:35:41.852Z",
+      "role": "REVIEWER",
+      "candidates": [
+        {
+          "modelId": "openai/gpt-oss-120b",
+          "providerId": "groq",
+          "providerModelId": "openai/gpt-oss-120b",
+          "familyId": "gpt-oss",
+          "version": "120b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "openai/gpt-oss-20b",
+          "providerId": "groq",
+          "providerModelId": "openai/gpt-oss-20b",
+          "familyId": "gpt-oss",
+          "version": "20b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE_ECONOMY"
+        },
+        {
+          "modelId": "qwen/qwen3.8-27b",
+          "providerId": "groq",
+          "providerModelId": "qwen/qwen3.8-27b",
+          "familyId": "qwen3",
+          "version": "3.8-27b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "qwen/qwen3.8-27b:free",
+          "providerId": "openrouter",
+          "providerModelId": "qwen/qwen3.8-27b:free",
+          "familyId": "qwen3",
+          "version": "3.8-27b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "providerId": "openrouter",
+          "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "familyId": "nemotron3",
+          "version": "super-120b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "providerId": "openrouter",
+          "providerModelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "familyId": "nemotron3",
+          "version": "ultra-550b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        }
+      ],
+      "selected": {
+        "modelId": "qwen/qwen3.8-27b",
+        "providerId": "groq",
+        "providerModelId": "qwen/qwen3.8-27b",
+        "familyId": "qwen3",
+        "version": "3.8-27b",
+        "sourceClass": "MANAGED_FREE",
+        "lifecycle": "ACTIVE"
+      },
+      "reasonCodes": [
+        "RATE_LIMITED"
+      ],
+      "fallbackFrom": "groq/openai/gpt-oss-120b",
+      "recordedAt": "2026-09-29T03:41:11.666Z"
+    },
+    {
+      "runId": "child-a82886af-e8ec-4f11-9632-9e55391ffdff",
+      "agentId": "reviewer",
+      "ownerUserId": "r56-live-owner",
+      "rosterUpdatedAt": "2026-09-29T03:35:41.852Z",
+      "role": "REVIEWER",
+      "candidates": [
+        {
+          "modelId": "openai/gpt-oss-120b",
+          "providerId": "groq",
+          "providerModelId": "openai/gpt-oss-120b",
+          "familyId": "gpt-oss",
+          "version": "120b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "openai/gpt-oss-20b",
+          "providerId": "groq",
+          "providerModelId": "openai/gpt-oss-20b",
+          "familyId": "gpt-oss",
+          "version": "20b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE_ECONOMY"
+        },
+        {
+          "modelId": "qwen/qwen3.8-27b",
+          "providerId": "groq",
+          "providerModelId": "qwen/qwen3.8-27b",
+          "familyId": "qwen3",
+          "version": "3.8-27b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "qwen/qwen3.8-27b:free",
+          "providerId": "openrouter",
+          "providerModelId": "qwen/qwen3.8-27b:free",
+          "familyId": "qwen3",
+          "version": "3.8-27b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "providerId": "openrouter",
+          "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "familyId": "nemotron3",
+          "version": "super-120b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "providerId": "openrouter",
+          "providerModelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "familyId": "nemotron3",
+          "version": "ultra-550b",
+          "sourceClass": "MANAGED_FREE",
+          "lifecycle": "ACTIVE"
+        }
+      ],
+      "selected": {
+        "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "providerId": "openrouter",
+        "providerModelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "familyId": "nemotron3",
+        "version": "ultra-550b",
+        "sourceClass": "MANAGED_FREE",
+        "lifecycle": "ACTIVE"
+      },
+      "reasonCodes": [
+        "RATE_LIMITED"
+      ],
+      "fallbackFrom": "groq/qwen/qwen3.8-27b",
+      "recordedAt": "2026-09-29T03:41:11.852Z"
+    }
+  ],
+  "shillingEntries": [
+    {
+      "id": "b690cd674b8f7adcf44d0cad77c354855e16a54a25fc31e889570773d996c610",
+      "role": "explorer",
+      "sourceClass": "UNKNOWN",
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "rawUsage": 3480,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "dc54f6554074084396f8ab5650d543a9bf8be5a6d7a6a8b52dbf43e839411fbc",
+      "role": "explorer",
+      "sourceClass": "UNKNOWN",
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "rawUsage": 3192,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "9b9124df439fe2079849b91bbfc9c5cd6f7bc7d536a0090afe849b65dcfbac27",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 5543,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "80cfd0ae7e7fa2b6b661bc78721ba314b5c89203aacc5e68ef3dcd875cdc801f",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 5590,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "50b5d5b94c71e26a065eea83d56a191ac726402ef9a5a9bff5a30e91f7516377",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 6117,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "5438ce16e3254296965a190207f93142165f78621cdb2655da818b6514f2a603",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 4438,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "70dd8ebb2148bc82cf55cd29a769d218fab845db58b54aae57fb6dd2ebc9590b",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 4492,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "998c7c31ae7032641feddb40bef45a7a0bf6e569065a5684be3108f3a57f73b2",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 5030,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "5a24b4faee43be579c97bdc1d55c29680e8c681e301148ab87906f40bbc16252",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 5160,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "025fca26cbc73eda3117a24ec15031b89dddf43940b6dfcaaa16e8d8b03a92c8",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 4812,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "65299a37161851fc2217cc3c12a8b931045873b28443aeb177de16d65eec8c16",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 5496,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "c7562cb58b5f6c323692ce69b8c2d1e137545d038ae3d1609657b1ca69ee5da6",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 4955,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "58e1d961c8cbe32c3e5280f6a31576c798f018dbad880c2ff60a70b70801283f",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 5108,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "b18cc3b0552e01501ba74e8b81127eae2b500bb22064280223eee7482bccebcb",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 6048,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "0b4d646f24d70ed64e083c94fae076da5968948433c722da1372850fe94a1f2f",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 5303,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "893faae2402088c4b57a40c54540f3d8e23be7cdf5c07c58c38e0f06656acdf3",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 5832,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "84ec90f6af2d0cdf67897a0e52332358d86be0cf2a74bd13ff85c65ccf4c4f51",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 5583,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "cf775e5aeebf55849ca9aeadea4887aac7591f4a283466ec2dff4bfd3cf5b684",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 5410,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "fab499d88ac6b3571976d12e1748dab267de6946197b569a0482c9edfa13046c",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 5837,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "2f7db398b39807292069db56703e788405b67b3626a6bb4db19a8680c412bc4d",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 5869,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "a7af34e85507c8283bc89f13f63d72c6fd307e7700c8fecdb25d302eaeaa1fb9",
+      "role": "coder",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "rawUsage": 6087,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "f9cad42cf07be783f5d029713e3d0c3b8e3973bcc4ad92f63e320b42b55688ad",
+      "role": "reviewer",
+      "sourceClass": "UNKNOWN",
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-20b",
+      "rawUsage": 2149,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "17d5eb04a6035ddcd1c7f415b447aa32d21cba5807cc94c1e0bbdbc35c0419a9",
+      "role": "reviewer",
+      "sourceClass": "UNKNOWN",
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "rawUsage": 2192,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "a6215ec673305d40d793d83ad304b9610b98bb9b171fb3107e0d08f13c5e61d1",
+      "role": "reviewer",
+      "sourceClass": "UNKNOWN",
+      "providerId": "groq",
+      "modelId": "openai/gpt-oss-120b",
+      "rawUsage": 2281,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "1c7cc420b18f68e6aeb2add974d34ff8088bfd13e3933b3d62320a5733514d30",
+      "role": "reviewer",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "rawUsage": 3802,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "c9c59555c1d78a3b9bfe1241c168b0f85de757094cd81b157cbfc407fbe339d5",
+      "role": "reviewer",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "rawUsage": 4128,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "9f9beca171d7a5b648b74e32a64d1a8edda081705f3b3e985f1f1d27879c0685",
+      "role": "reviewer",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "rawUsage": 4119,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    },
+    {
+      "id": "7960977d07db762009ac71c986aa3a3931d60972083383501fcb4a86a24e56b9",
+      "role": "reviewer",
+      "sourceClass": "UNKNOWN",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "rawUsage": 4457,
+      "rawUnit": "TOKENS",
+      "shConsumed": null,
+      "confidence": "UNKNOWN",
+      "managedSpendUsd": null,
+      "userProviderSpendUsd": null
+    }
+  ],
+  "toolEventCount": 0,
+  "fixture": {
+    "baselineHead": "c1ec4e9144c98b17a47e9c004d69dd56d06fc184",
+    "finalHead": "8802b92e709bd13af962c67a40238c53bacf3132",
+    "dirtyTree": ""
+  },
+  "finalMathContents": "export function multiply(a, b) { return a * b; }\r\n\r\nexport function add(a, b) { return a + b; }\r\n",
+  "finalFormatContents": "export function format(value) { return `result: ${value}`; }\r\n",
+  "independentVerificationProbe": {
+    "ok": true,
+    "stdout": "✔ format (0.8967ms)\n✔ multiply (0.8039ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 107.8737\n"
+  },
+  "governorCapacityReports": {
+    "groq": {
+      "providerId": "groq",
+      "tpmUsed": 5992,
+      "tpmLimit": 7500,
+      "rpmUsed": 2,
+      "rpmLimit": 28,
+      "activeConcurrent": 0,
+      "maxConcurrent": 2,
+      "inFlightTokens": 0,
+      "queueDepth": 0,
+      "isCoolingDown": false,
+      "cooldownRemainingMs": 0
+    }
+  },
+  "providerCredentialsUsed": [
+    "GROQ_API_KEY (present)",
+    "OPENROUTER_API_KEY (present; resolved by EnvironmentCredentialStore at request time)"
+  ],
+  "dbPath": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\cf-r56-worktrees-WNEBqk\\r56-live.db"
+}

@@ -1,0 +1,194 @@
+{
+  "schema": "r28-endurance-packaged-1",
+  "recordedAt": "2026-09-29T04:05:07.031Z",
+  "exePath": "G:\\CodeForge\\apps\\desktop\\release\\win-unpacked\\CodeForge.exe",
+  "profile": "G:\\CodeForge\\apps\\desktop\\release\\endurance-user-data",
+  "soak": {
+    "minutesBudgeted": 5,
+    "sampleEveryMs": 30000,
+    "samplesTaken": 10,
+    "wallClockMs": 328015
+  },
+  "runtime": {
+    "endpoint": "http://127.0.0.1:59101",
+    "pid": 5180,
+    "version": "0.4.0"
+  },
+  "outcome": {
+    "processAliveThroughSoak": true,
+    "endpointReachableCount": 10,
+    "endpoint401Count": 10,
+    "endpointUnexpectedStatuses": [],
+    "childExitCode": 1,
+    "shutdown": "forced_after_graceful_timeout",
+    "leftoverProcessesAfterKill": 0
+  },
+  "resourceTrends": {
+    "workingSetBytesPerSample": -5415408,
+    "handlesPerSample": -1.9,
+    "processCountPerSample": 0,
+    "first": {
+      "t": 984,
+      "processCount": 1,
+      "totalWorkingSetBytes": 336596992,
+      "maxProcessWorkingSetBytes": 336596992,
+      "totalHandles": 1142,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true,
+      "processMeasurementScope": "main_process_only"
+    },
+    "last": {
+      "t": 278586,
+      "processCount": 1,
+      "totalWorkingSetBytes": 240713728,
+      "maxProcessWorkingSetBytes": 240713728,
+      "totalHandles": 1126,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true,
+      "processMeasurementScope": "main_process_only"
+    }
+  },
+  "samples": [
+    {
+      "t": 984,
+      "processCount": 1,
+      "totalWorkingSetBytes": 336596992,
+      "maxProcessWorkingSetBytes": 336596992,
+      "totalHandles": 1142,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true,
+      "processMeasurementScope": "main_process_only"
+    },
+    {
+      "t": 31792,
+      "processCount": 1,
+      "totalWorkingSetBytes": 245280768,
+      "maxProcessWorkingSetBytes": 245280768,
+      "totalHandles": 1138,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true,
+      "processMeasurementScope": "main_process_only"
+    },
+    {
+      "t": 62580,
+      "processCount": 1,
+      "totalWorkingSetBytes": 239788032,
+      "maxProcessWorkingSetBytes": 239788032,
+      "totalHandles": 1136,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true,
+      "processMeasurementScope": "main_process_only"
+    },
+    {
+      "t": 93417,
+      "processCount": 1,
+      "totalWorkingSetBytes": 240713728,
+      "maxProcessWorkingSetBytes": 240713728,
+      "totalHandles": 1136,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true,
+      "processMeasurementScope": "main_process_only"
+    },
+    {
+      "t": 124219,
+      "processCount": 1,
+      "totalWorkingSetBytes": 240664576,
+      "maxProcessWorkingSetBytes": 240664576,
+      "totalHandles": 1136,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true,
+      "processMeasurementScope": "main_process_only"
+    },
+    {
+      "t": 155120,
+      "processCount": 1,
+      "totalWorkingSetBytes": 240222208,
+      "maxProcessWorkingSetBytes": 240222208,
+      "totalHandles": 1130,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true,
+      "processMeasurementScope": "main_process_only"
+    },
+    {
+      "t": 185971,
+      "processCount": 1,
+      "totalWorkingSetBytes": 240263168,
+      "maxProcessWorkingSetBytes": 240263168,
+      "totalHandles": 1126,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true,
+      "processMeasurementScope": "main_process_only"
+    },
+    {
+      "t": 216815,
+      "processCount": 1,
+      "totalWorkingSetBytes": 240783360,
+      "maxProcessWorkingSetBytes": 240783360,
+      "totalHandles": 1126,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true,
+      "processMeasurementScope": "main_process_only"
+    },
+    {
+      "t": 247736,
+      "processCount": 1,
+      "totalWorkingSetBytes": 240455680,
+      "maxProcessWorkingSetBytes": 240455680,
+      "totalHandles": 1126,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true,
+      "processMeasurementScope": "main_process_only"
+    },
+    {
+      "t": 278586,
+      "processCount": 1,
+      "totalWorkingSetBytes": 240713728,
+      "maxProcessWorkingSetBytes": 240713728,
+      "totalHandles": 1126,
+      "endpoint": {
+        "reachable": true,
+        "status": 401
+      },
+      "childAlive": true,
+      "processMeasurementScope": "main_process_only"
+    }
+  ],
+  "honesty": {
+    "probe": "Unauthenticated GET /api/models — 401 expected and counted; it proves liveness and the auth boundary holding under soak, not authenticated throughput.",
+    "scope": "Process-level packaged soak (uptime, memory/handle trend, liveness). Does not drive workflows; task-level packaged endurance is separate.",
+    "processMeasurementScope": "main_process_only"
+  }
+}

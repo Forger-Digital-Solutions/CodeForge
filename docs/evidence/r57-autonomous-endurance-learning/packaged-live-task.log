@@ -1,0 +1,57 @@
+MAIN_TS_LOADED
+WHEN_READY_START
+WHEN_READY_CRED_STORE_DONE
+WHEN_READY_FIREWALL_DONE
+WHEN_READY_CATALOG_DONE
+WHEN_READY_SMOKE_PROV_DONE
+WHEN_READY_PROVIDER_CONNECTIONS_DONE
+WHEN_READY_CREDS_LOADED
+WHEN_READY_MODELS_REGISTERED
+RUNTIME_METADATA_PREVIOUS_missing
+WHEN_READY_DBPATH_G:\CodeForge\apps\desktop\release\smoke-user-data\codeforge.db
+CREATE_WINDOW_START
+WINDOW_CONSTRUCTED t=1790653897639
+WHEN_READY_WINDOW_CREATED
+INIT_SERVER_START
+INIT_SERVER_HAS_CREDS_true
+INIT_SERVER_INSTANCE_CREATED
+RUNTIME_ENDPOINT_59864
+RUNTIME_METADATA_G:\CodeForge\apps\desktop\release\smoke-user-data\runtime.json
+INIT_SERVER_STARTED
+WHEN_READY_SERVER_INITIALIZED
+CONTROL_PLANE_BEARER_FILTER_http://127.0.0.1:59864
+LOAD_FILE_G:\CodeForge\apps\desktop\release\win-unpacked\resources\app.asar\apps\desktop\dist\renderer\index.html
+RENDERER_LIFECYCLE preload-entry 1790653897873
+RENDERER_LIFECYCLE preload-bridge-ready 1790653897874
+RENDERER_LIFECYCLE bootstrap 1790653897906
+RENDERER_DOM_READY t=1790653897909
+RENDERER_DID_FRAME_FINISH_LOAD t=1790653897910
+RENDERER_DID_FINISH_LOAD t=1790653897910
+WINDOW_CONTENT_LOADED
+WHEN_READY_LAUNCHING_SMOKE
+WAIT_RENDERER_START
+RENDERER_DID_STOP_LOADING t=1790653897913
+WAIT_RENDERER_FRAME_LOADED t=1790653897913
+WINDOW_READY_TO_SHOW t=1790653897914
+WINDOW_STATE_AFTER_SHOW={"t":1790653897944,"bounds":{"x":68,"y":24,"width":1400,"height":816},"isVisible":true,"isMinimized":false,"isFocused":true,"isDestroyed":false,"isLoading":false,"isLoadingMainFrame":false,"isCrashed":false,"url":"file:///G:/CodeForge/apps/desktop/release/win-unpacked/resources/app.asar/apps/desktop/dist/renderer/index.html","rendererOsPid":12864,"rendererProcessId":4}
+RENDERER_LIFECYCLE root-mounted 1790653897933
+RENDERER_LIFECYCLE first-frame 1790653897933
+PACKAGED_STARTUP=PASS
+FORGEGREEN_RUNTIME=PASS
+EIGHT_BIT_RUNTIME=PASS
+CLOUD_DB_PACKAGED_RUNTIME=PASS
+smoke_mode=live-task
+smoke_run_id=cc534ce1-df96-4da2-af1e-19e0ee47b2ca
+electron_version=44.4.1
+electron_node_version=24.21.0
+app_is_packaged=true
+RENDERER_LIFECYCLE workspace-root 1790653898234
+RENDERER_LIFECYCLE runtime-connected 1790653898644
+RENDERER_LIFECYCLE workspace-interactive 1790653898644
+packaged_live_free_models=20
+packaged_live_model_select=200
+TASK_TERMINAL_PHASE_completed_SUMMARY__ERROR_
+packaged_live_task_phase=completed
+packaged_live_task_file_correct=true
+packaged_live_task=PASS
+CONTROL_PLANE_BEARER_WITHHELD wc=1 frame=file:///G:/CodeForge/apps/desktop/release/win-unpacked/resources/app.asar/apps/desktop/dist/renderer/index.html url=http://127.0.0.1:59864/api/sessions

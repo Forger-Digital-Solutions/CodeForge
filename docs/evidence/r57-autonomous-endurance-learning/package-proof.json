@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "r57-package-proof/v1",
+  "evidenceClass": "packaged_windows",
+  "artifact": {
+    "path": "apps/desktop/release/win-unpacked/CodeForge.exe",
+    "sha256": "70bbe4fd634f80f148f62254522675ed02a47bb360377026d9834eaefd2b414e",
+    "bytes": 246415872,
+    "version": "0.4.0",
+    "commit": "65a43517616b6c490537bfff94cd6219bcf43aee",
+    "dirty": true
+  },
+  "audits": {
+    "internalDependencyGraph": "PASS",
+    "runtimeDependencyGraph": "PASS",
+    "buildIdentity": "PASS",
+    "authEndpoint": "PASS",
+    "browserSecurity": "PASS"
+  },
+  "smokes": [
+    {
+      "name": "full",
+      "file": "packaged-full.log",
+      "marker": "PACKAGED_FULL_SMOKE_OK",
+      "smokeRunId": "eb61b7b9-2889-4797-adc5-335d38f1532e"
+    },
+    {
+      "name": "interrupt",
+      "file": "packaged-interrupt.log",
+      "marker": "PACKAGED_INTERRUPT_EXPECTED_EXIT",
+      "smokeRunId": "8436e4db-9197-4c26-854e-3507389d121f"
+    },
+    {
+      "name": "recover",
+      "file": "packaged-recover.log",
+      "marker": "PACKAGED_RECOVERY_SMOKE_OK",
+      "smokeRunId": "49f1b171-7407-43f2-962d-abf2f66224da"
+    },
+    {
+      "name": "live_completed",
+      "file": "packaged-live-task.log",
+      "marker": "packaged_live_task=PASS",
+      "smokeRunId": "cc534ce1-df96-4da2-af1e-19e0ee47b2ca"
+    },
+    {
+      "name": "live_repeat_blocked",
+      "file": "packaged-live-task-repeat-blocked.log",
+      "marker": "packaged_live_task=BLOCKED",
+      "smokeRunId": "3195c1c6-735b-47bd-9f98-0dbf88005950"
+    }
+  ],
+  "repeatBlockDiagnostic": "packaged-repeat-diagnostic.json"
+}

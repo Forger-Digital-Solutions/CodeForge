@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "r57-packaged-repeat/v1",
+  "evidenceClass": "packaged_live_provider",
+  "status": "blocked",
+  "completionOutcome": "blocked",
+  "completionBlockerCodes": [
+    "goal_review_inconclusive",
+    "plan_steps_unfinished"
+  ],
+  "independentReviewApproved": false,
+  "verificationAttempts": [
+    {
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "passed": 1,
+      "failed": 0
+    }
+  ],
+  "failureCodes": [
+    {
+      "code": "provider_capacity",
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "retryable": true
+    },
+    {
+      "code": "model_unavailable",
+      "providerId": null,
+      "modelId": null,
+      "retryable": true
+    },
+    {
+      "code": "model_unavailable",
+      "providerId": null,
+      "modelId": null,
+      "retryable": true
+    },
+    {
+      "code": "model_unavailable",
+      "providerId": null,
+      "modelId": null,
+      "retryable": true
+    }
+  ],
+  "paidRoutesSelected": false
+}
