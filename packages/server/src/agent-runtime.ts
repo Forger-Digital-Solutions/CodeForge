@@ -1012,6 +1012,9 @@ export class AgentRuntime {
   private readonly capacityWaitRetryMs: number;
   private readonly qualificationWaitHorizonMs: number;
   private readonly qualificationRecoveryBudgetMs: number;
+  /** Runs inside bounded pre-first-turn phases — workspace indexing, context assembly, route
+   * admission, supply recovery — emit no durable tool-trace the subagent watchdog can count. */
+  private readonly preFlightRunIds = new Set<string>();
   private turnCount = 0;
   private maxIterations = 50;
   private readonly approvalService: ApprovalService;
@@ -1615,6 +1618,11 @@ export class AgentRuntime {
       if (req.signal?.aborted) {
         throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent run cancelled before start.`);
       }
+
+      // R59: everything until the first model dispatch is silent to the watchdog — indexing,
+      // assembly, admission, and supply recovery emit no tool-trace. Mark the run so a worker
+      // doing legitimate bounded setup is not killed as stalled; cleared at the turn loop.
+      this.preFlightRunIds.add(req.runId);
 
       // R2 recovery: when resuming, the recorded transcript already contains the original
       // bootstrap context. Re-assembling from the current workspace could silently change what
@@ -2837,6 +2845,8 @@ export class AgentRuntime {
       // substitute route gets a fair chance to converge. The grant is hard-capped: failovers
       // can never manufacture unlimited work.
       const effectiveMaxModelTurns = () => budget.maxModelTurns + Math.min(routeFailovers.length, FAILOVER_TURN_GRANT_CAP);
+      // First model dispatch ends the silent window — turn writes are durable progress.
+      this.preFlightRunIds.delete(req.runId);
       while (turnCount < effectiveMaxModelTurns()) {
         if (req.signal?.aborted) {
           throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent execution was cancelled.`);
@@ -3937,6 +3947,7 @@ export class AgentRuntime {
       // failed, or cancelled. Failover rotations already replaced the hold in place; this
       // release frees whatever route the run last admitted.
       this.eightBit.releaseFabricAdmission(req.runId);
+      this.preFlightRunIds.delete(req.runId);
       await intelligence?.closeWorkspace().catch(() => undefined);
     }
   }
@@ -4797,6 +4808,17 @@ export class AgentRuntime {
       }
     }
     return stale;
+  }
+
+  /**
+   * R59: true while a run is inside bounded pre-first-turn work — repository indexing, context
+   * assembly, route admission, and supply recovery. None of those phases can produce the
+   * tool-trace evidence the subagent watchdog counts as useful progress, so silence there is
+   * pacing, not a stall. The manager's hard deadline remains the outer bound for a phase that
+   * genuinely wedges; the mark only prevents a premature stall verdict.
+   */
+  isInPreFlightWait(runId: string): boolean {
+    return this.preFlightRunIds.has(runId);
   }
 
   async probeCapacityWait(turnId: string): Promise<FabricOutcome | undefined> {

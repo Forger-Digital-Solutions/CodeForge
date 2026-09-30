@@ -390,6 +390,18 @@ export class SubagentManager {
           childRun.workerRecord.duplicateProgressChecks = duplicateProgressChecks;
           if (progress.averageModelLatencyMs !== undefined) childRun.workerRecord.observedModelLatencyMs = progress.averageModelLatencyMs;
         }
+        // R59: bounded pre-first-turn phases — cold workspace indexing, route admission,
+        // supply recovery — emit no durable tool-trace, so absence of useful progress inside
+        // one is pacing, not a stall. Stale windows must not accrue during them: the first
+        // turn lands seconds after the mark clears and deserves its own two-window grace.
+        // The mark is read live from the runtime; the same hardDeadlineMs still bounds a
+        // phase that genuinely wedges.
+        const childRuntime = this.agentRuntime ?? (options.sessionId ? this.getAgentRuntime?.(options.sessionId) : undefined);
+        if (!advanced && childRuntime?.isInPreFlightWait?.(childRunId) === true && Date.now() < hardDeadlineMs) {
+          consecutiveStaleChecks = 0;
+          watchdogTimerRef.timer = setTimeout(progressWatchdog, Math.min(this.watchdogProgressWindowMs, Math.max(1, hardDeadlineMs - Date.now())));
+          return;
+        }
         consecutiveStaleChecks = advanced ? 0 : consecutiveStaleChecks + 1;
         const latencyExtensions = def.id === "coder" && progress.averageModelLatencyMs !== undefined && options.watchdogMaxExtensions === undefined
           ? Math.max(2, Math.ceil((this.executionBudget(def.id, options.executionBudget).maxModelTurns * progress.averageModelLatencyMs * 1.5 - childTimeoutMs) / this.watchdogProgressWindowMs) + 2)

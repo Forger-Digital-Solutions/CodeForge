@@ -71,6 +71,83 @@ describe("progress-aware watchdog (RC2 §6)", () => {
     while (cleanups.length) await cleanups.pop()!();
   });
 
+  it("does not stall-kill a worker inside bounded pre-first-turn phases (R59)", async () => {
+    // Cold workspace indexing, route admission, and supply recovery emit no durable
+    // tool-trace — a worker inside one reads as silent. The runtime's pre-flight mark is
+    // liveness: the worker must survive the quiet windows and finish, not die as "stalled".
+    const ws = await mkdtemp(join(tmpdir(), "cf-watchdog-preflight-"));
+    cleanups.push(async () => rm(ws, { recursive: true, force: true }));
+    const persistence = createSessionPersistence({ dbPath: ":memory:" });
+    cleanups.push(async () => persistence.close());
+    persistence.upsertSession({ id: "sess-wd", title: "Watchdog", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "idle" });
+    const preFlight = new Set<string>();
+    const runtime = {
+      isInPreFlightWait: (runId: string) => preFlight.has(runId),
+      executeAgentRun: async (req: { runId: string }) => {
+        preFlight.add(req.runId);
+        await new Promise((resolve) => setTimeout(resolve, 1_150));
+        preFlight.delete(req.runId);
+        return {
+          status: "completed",
+          summary: "done",
+          findings: [],
+          evidence: [],
+          toolExecutions: [],
+          filesChanged: [],
+          usage: { inputTokens: 0, outputTokens: 0, requestCount: 0, toolCount: 0 },
+        };
+      },
+    };
+    const manager = createSubagentManager({ persistence, agentRuntime: runtime as never, r1Enabled: true, watchdogProgressWindowMs: 400, watchdogMaxExtensions: 2 });
+    // timeout 600ms → base check fires inside the marked window; without the mark two stale
+    // checks would abort at ~1s while the stub still has work queued.
+    const result = await manager.spawnChildAgent({
+      parentRunId: "run-wd-preflight",
+      sessionId: "sess-wd",
+      agentId: "coder",
+      task: "Do a bounded task",
+      workspacePath: ws,
+      metadata: { timeoutMs: 600 },
+    });
+    expect(result.status).toBe("completed");
+    const worker = (await persistence.getWorkItemsByKind("subagent_run")).find((w) => w.parentRunId === "run-wd-preflight");
+    expect(worker?.watchdogAbortReason).toBeUndefined();
+  }, 20_000);
+
+  it("still stall-kills a marked worker once pre-flight outlives the hard deadline (R59)", async () => {
+    // The mark buys time only inside the existing hard deadline — a phase that genuinely
+    // wedges is still bounded, never parked forever.
+    const ws = await mkdtemp(join(tmpdir(), "cf-watchdog-preflight-dead-"));
+    cleanups.push(async () => rm(ws, { recursive: true, force: true }));
+    const persistence = createSessionPersistence({ dbPath: ":memory:" });
+    cleanups.push(async () => persistence.close());
+    persistence.upsertSession({ id: "sess-wd", title: "Watchdog", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "idle" });
+    const preFlight = new Set<string>();
+    const runtime = {
+      isInPreFlightWait: (runId: string) => preFlight.has(runId),
+      executeAgentRun: async (req: { runId: string; signal?: AbortSignal }) => {
+        preFlight.add(req.runId);
+        await new Promise<never>((_, reject) => {
+          req.signal?.addEventListener("abort", () => reject(new Error("[AGENT_CANCELLED] aborted")), { once: true });
+        });
+        return { status: "failed" };
+      },
+    };
+    const manager = createSubagentManager({ persistence, agentRuntime: runtime as never, r1Enabled: true, watchdogProgressWindowMs: 300, watchdogMaxExtensions: 1 });
+    // timeout 600 + 1×300 window → hard deadline 900ms; the mark holds checks off until then.
+    const result = await manager.spawnChildAgent({
+      parentRunId: "run-wd-preflight-dead",
+      sessionId: "sess-wd",
+      agentId: "coder",
+      task: "Do a bounded task",
+      workspacePath: ws,
+      metadata: { timeoutMs: 600 },
+    });
+    expect(result.status).toBe("cancelled");
+    const worker = (await persistence.getWorkItemsByKind("subagent_run")).find((w) => w.parentRunId === "run-wd-preflight-dead");
+    expect(worker?.watchdogAbortReason).toBe("stalled");
+  }, 20_000);
+
   it("extends a legitimately paced worker up to the ceiling, then aborts bounded", async () => {
     // Distinct file observations, rather than model turns alone, earn extensions.
     // R42: wall-clock bounds here measured the machine, not the mechanism — under parallel load

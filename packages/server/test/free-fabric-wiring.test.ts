@@ -966,6 +966,7 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     // bounded loop must keep re-deciding while a lane is live so landed evidence admits.
     let recovered = false;
     let qualifying = true;
+    let sawPreFlightMark = false;
     const route = managedRoute("provider-a");
     registerFleet("provider-a", "provider-a-model");
     const fabric = createFreeFabric({
@@ -991,6 +992,7 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
       qualificationSummary: () => [{ providerId: "provider-a", pending: recovered ? 0 : 1, qualifying, requestsSpentToday: 1, dailyBudget: 24 }],
       qualifyPending: async () => {
         // The in-flight suite persists its receipt mid-recovery, after the first wait round.
+        sawPreFlightMark = runtime.isInPreFlightWait("run-fabric-r59-loop");
         setTimeout(() => { recovered = true; qualifying = false; }, 400);
         return [];
       },
@@ -1016,6 +1018,10 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
 
     expect(result.status).toBe("completed");
     expect(provider.callCount).toBe(1);
+    // The subagent watchdog reads this mark as liveness through admission/recovery; it must
+    // be set during the wait and cleared once the run leaves pre-flight.
+    expect(sawPreFlightMark).toBe(true);
+    expect(runtime.isInPreFlightWait("run-fabric-r59-loop")).toBe(false);
   });
 
   it("R59: the recovery loop stays bounded — a lane with no live evidence denies on schedule", async () => {
