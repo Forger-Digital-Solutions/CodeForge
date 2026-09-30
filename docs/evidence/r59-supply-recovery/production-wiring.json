@@ -2,12 +2,12 @@
   "schema": "r59-packaged-supply-recovery/v1",
   "status": "PASS",
   "artifact": {
-    "exeSha256": "fc1d1cd0b540d740a18bd7c5fa39e917f35c8358d9f1bae3b495daab829fa746",
-    "buildCommit": "b3136b9e309646711116392726b9e94a1be5110b",
+    "exeSha256": "a7f056f38f848fe5ca2c4fd442e30d891ebe5f025184218cd27953dbd01029f8",
+    "buildCommit": "7fc0a3ba68cfde2285438d92959da7b25f33b6be",
     "buildDirty": true,
-    "builtAt": "2026-09-30T12:00:03.204Z"
+    "builtAt": "2026-09-30T12:36:36.169Z"
   },
-  "sourceStateId": "8f96379554ecd5715f171c079b2f898e3daf90e087b1d5218cb170d0ad16a1c8",
+  "sourceStateId": "2e7fe8e4a1aedddc5c5664e7e525ed9ddaa5d12b28bf1406cff626742c1cbd51",
   "assertions": {
     "desktopExplicitR1": true,
     "serverDefaultsR1": true,
@@ -21,6 +21,7 @@
     "qualificationProviderLanes": true,
     "qualificationSuiteDeadline": true,
     "boundedCapacityProbe": true,
-    "probePacing": true
+    "probePacing": true,
+    "denialRecoveryLoop": true
   }
 }

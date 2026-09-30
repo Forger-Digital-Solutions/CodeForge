@@ -50,8 +50,12 @@ assert.match(roleSuite, /suite deadline elapsed/);
 assert.match(service, /probeMinIntervalMs/);
 assert.match(service, /paceProviderAdapter/);
 assert.match(definitions, /maxRequestsPerMinute/);
-assert.equal(certificate.materialFiles.length, 78);
-assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v4");
+// R59 v5 denial-recovery loop surface: bounded rounds gated on live qualification lanes.
+assert.match(runtime, /qualificationRecoveryBudgetMs/);
+assert.match(runtime, /qualificationWaitHorizonMs/);
+assert.match(service, /qualificationSummary/);
+assert.equal(certificate.materialFiles.length, 79);
+assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v5");
 
 const receipt = {
   schema: "r59-packaged-supply-recovery/v1",
@@ -77,6 +81,7 @@ const receipt = {
     qualificationSuiteDeadline: true,
     boundedCapacityProbe: true,
     probePacing: true,
+    denialRecoveryLoop: true,
   },
 };
 const output = path.join(root, "docs/evidence/r59-supply-recovery/production-wiring.json");
