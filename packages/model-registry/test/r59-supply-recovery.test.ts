@@ -240,6 +240,86 @@ describe("R59 — transient qualification failure keeps the route pending and ar
   });
 });
 
+describe("R59 — qualificationSummary liveEvidence: cooled lanes are evidence-in-waiting, not dead", () => {
+  it("a provider with pending routes and spend headroom is live", () => {
+    const h = harness({ routes: [{ providerId: "openrouter", modelId: "m:free" }] });
+    const summary = h.svc.qualificationSummary().find((s) => s.providerId === "openrouter")!;
+    expect(summary.pending).toBe(1);
+    expect(summary.liveEvidence).toBe(true);
+  });
+
+  it("every route cooled but a recovery retry armed — the lane is still live evidence", async () => {
+    // The packaged-dogfood shape: transient 429s put every unqualified route in cooldown, so
+    // pending drops to 0 while the armed retry is still scheduled to measure them.
+    const h = harness({
+      routes: [{ providerId: "openrouter", modelId: "m:free" }],
+      runner: (p, m) => receipt(p, m, true),
+    });
+    await h.svc.qualifyPending();
+
+    const summary = h.svc.qualificationSummary().find((s) => s.providerId === "openrouter")!;
+    expect(summary.pending).toBe(0);
+    expect(summary.recoveryScheduledAt).toBeDefined();
+    expect(summary.liveEvidence).toBe(true);
+  });
+
+  it("a lane whose daily budget cannot fund another cycle is dead even with a retry armed", async () => {
+    const h = harness({
+      routes: [{ providerId: "openrouter", modelId: "m:free" }],
+      dailyBudget: 3, // one compact cycle fits; nothing remains after it
+      runner: (p, m) => receipt(p, m, true),
+    });
+    await h.svc.qualifyPending();
+
+    const summary = h.svc.qualificationSummary().find((s) => s.providerId === "openrouter")!;
+    expect(summary.pending).toBe(0);
+    expect(summary.recoveryScheduledAt).toBeDefined();
+    expect(summary.liveEvidence).toBe(false);
+  });
+
+  it("a lane whose recovery allowance is exhausted is dead — the armed timer will refuse", async () => {
+    const h = harness({
+      routes: [{ providerId: "openrouter", modelId: "m:free" }],
+      recoveryCap: 0,
+      runner: (p, m) => receipt(p, m, true),
+    });
+    await h.svc.qualifyPending();
+
+    const summary = h.svc.qualificationSummary().find((s) => s.providerId === "openrouter")!;
+    expect(summary.recoveryScheduledAt).toBeDefined();
+    expect(summary.liveEvidence).toBe(false);
+  });
+
+  it("a cooled route that re-pends before the interval is live — the recovery kick can reach it", async () => {
+    const h = harness({
+      routes: [{ providerId: "openrouter", modelId: "m:free" }],
+      cycleIntervalMs: 20 * 60_000,
+      runner: (p, m) => receipt(p, m, true),
+    });
+    await h.svc.qualifyPending();
+    h.advance(31_000); // cooldown expired; the 20-minute cycle interval has not
+
+    const summary = h.svc.qualificationSummary().find((s) => s.providerId === "openrouter")!;
+    expect(summary.pending).toBe(1);
+    expect(summary.liveEvidence).toBe(true);
+  });
+
+  it("pending routes with no recovery allowance and a fresh interval are honestly dead", async () => {
+    const h = harness({
+      routes: [{ providerId: "openrouter", modelId: "m:free" }],
+      cycleIntervalMs: 20 * 60_000,
+      recoveryCap: 0,
+      runner: (p, m) => receipt(p, m, true),
+    });
+    await h.svc.qualifyPending();
+    h.advance(31_000); // cooldown expired → pending again, but neither kick nor cycle can run
+
+    const summary = h.svc.qualificationSummary().find((s) => s.providerId === "openrouter")!;
+    expect(summary.pending).toBe(1);
+    expect(summary.liveEvidence).toBe(false);
+  });
+});
+
 describe("R59 — capacity projection explains the gate, not just UNHEALTHY", () => {
   it("a verified-free route awaiting qualification projects healthGate=CODEFORGE_QUALIFIED", () => {
     const h = harness({ routes: [{ providerId: "openrouter", modelId: "m:free" }] });

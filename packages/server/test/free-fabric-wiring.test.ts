@@ -1024,6 +1024,72 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(runtime.isInPreFlightWait("run-fabric-r59-loop")).toBe(false);
   });
 
+  it("R59: cooled routes hide from pending but an armed recovery retry is live evidence", async () => {
+    // Packaged-dogfood signature: every unqualified route on the provider sat in transient
+    // cooldown, so pendingQualification() reported 0 while a recovery timer was armed for the
+    // earliest cooldown expiry. Reading that lane as dead denied admission minutes before the
+    // scheduled retry could land a verdict.
+    let recovered = false;
+    const route = managedRoute("provider-a");
+    registerFleet("provider-a", "provider-a-model");
+    const fabric = createFreeFabric({
+      managedRoutes: () => (recovered ? [route] : []),
+      managedPools: () => (recovered ? [poolFor(route)] : []),
+      userSources: [],
+      health: authority,
+      reservations: new CapacityReservationLedger({ routes: [], pools: [] }),
+    });
+    const provider = new ScriptedRouteProvider("provider-a", "provider-a-model", () =>
+      okEvents(JSON.stringify({ summary: "Done.", findings: [], evidence: [] })));
+    catalog.register(provider);
+    const freeCloud: import("@codeforge/model-registry").FreeCloudRoutingHooks = {
+      isForgeAutoEligible: () => true,
+      canonicalIdOf: (p: string, m: string) => `${p}/${m}`,
+      sameModelAlternates: () => [],
+      recordRouteFailure: () => undefined,
+      recordRouteSuccess: () => undefined,
+      quotaRemaining: () => undefined,
+      capacityRoutingAdvice: () => ({ scoreAdjustment: 0, reasonCodes: [] }),
+      // Nothing pending — every candidate is cooled. The armed retry is what makes the lane live.
+      pendingQualification: () => [],
+      isQualifying: () => false,
+      qualificationSummary: () => [{
+        providerId: "provider-a",
+        pending: 0,
+        qualifying: false,
+        requestsSpentToday: 4,
+        dailyBudget: 24,
+        liveEvidence: !recovered,
+        recoveryScheduledAt: new Date(Date.now() + 500).toISOString(),
+      }],
+      qualifyPending: async () => [],
+    };
+    // The armed recovery timer fires: cooled routes re-enter pending, the retry runs, and the
+    // verdict lands — the lane stops being live once its evidence has arrived.
+    setTimeout(() => { recovered = true; }, 600);
+
+    const runtime = makeRuntime("sess-fabric-r59-cooled", fabric, undefined, freeCloud, {
+      qualificationWaitHorizonMs: 120,
+      qualificationRecoveryBudgetMs: 15_000,
+    });
+    await runtime.init();
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-fabric-r59-cooled", eventStore, persistence });
+    const result = await runtime.executeAgentRun({
+      runId: "run-fabric-r59-cooled",
+      agentId: "coder-cooled",
+      role: "coder",
+      goal: "Do the task",
+      workspaceId: "ws-fabric",
+      workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+      roleRouting: true,
+      adapter,
+    });
+
+    expect(result.status).toBe("completed");
+    expect(provider.callCount).toBe(1);
+  });
+
   it("R59: the recovery loop stays bounded — a lane with no live evidence denies on schedule", async () => {
     let kicks = 0;
     registerFleet("provider-x", "provider-x-model");

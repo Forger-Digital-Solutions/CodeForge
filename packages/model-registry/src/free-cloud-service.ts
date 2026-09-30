@@ -75,7 +75,7 @@ export interface FreeCloudRoutingHooks {
    * against each lane's budget. Denial-time recovery uses it to keep waiting only while a
    * lane can still produce a verdict; a lane at its daily budget is done honestly.
    */
-  qualificationSummary?(): Array<{ providerId: string; pending: number; qualifying: boolean; requestsSpentToday: number; dailyBudget: number }>;
+  qualificationSummary?(): Array<{ providerId: string; pending: number; qualifying: boolean; requestsSpentToday: number; dailyBudget: number; liveEvidence?: boolean; recoveryScheduledAt?: string }>;
   /**
    * R59: run one bounded qualification cycle over pending routes. `recovery: true` skips the
    * normal inter-cycle interval — used only when provider-stated cooldowns elapsed — but
@@ -888,12 +888,14 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     qualifying: boolean;
     requestsSpentToday: number;
     dailyBudget: number;
+    liveEvidence: boolean;
     lastCycleAt?: string;
     cycleIntervalMs: number;
     recoveryAttemptsToday: number;
     recoveryScheduledAt?: string;
   }> {
     const day = this.now().toISOString().slice(0, 10);
+    const nowMs = this.now().getTime();
     const pendingByProvider = new Map<string, number>();
     for (const r of this.pendingQualification()) {
       pendingByProvider.set(r.providerId, (pendingByProvider.get(r.providerId) ?? 0) + 1);
@@ -907,15 +909,31 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       const raw = this.qualificationSpend.get(providerId);
       const spend = raw?.day === day ? raw : undefined;
       const recovery = this.recoveryTimers.get(providerId);
+      const pending = pendingByProvider.get(providerId) ?? 0;
+      const requestsSpentToday = spend?.requests ?? 0;
+      const recoveryAttemptsToday = spend?.recoveries ?? 0;
+      const canSpend = requestsSpentToday + this.qualificationRequestsPerCycle <= this.qualificationDailyBudget;
+      const recoveryCapLeft = recoveryAttemptsToday < this.qualificationRecoveryCapPerDay;
+      const intervalElapsed = !spend || spend.lastCycleAt === 0 || nowMs - spend.lastCycleAt >= this.qualificationCycleIntervalMs;
+      // A denial is only honest once no lane can still produce a verdict inside the caller's
+      // recovery window. Pending routes are reachable now only through a recovery kick (cap +
+      // budget) or a due normal cycle. Cooled routes hide from `pending` until their armed
+      // retry fires and they re-enter it, so an armed timer with headroom left is live
+      // evidence-in-waiting — treating it as dead denied runs minutes before the retry.
+      const liveEvidence = canSpend && (
+        (pending > 0 && (recoveryCapLeft || intervalElapsed))
+        || (recovery !== undefined && recoveryCapLeft)
+      );
       return {
         providerId,
-        pending: pendingByProvider.get(providerId) ?? 0,
+        pending,
         qualifying: this.qualifying,
-        requestsSpentToday: spend?.requests ?? 0,
+        requestsSpentToday,
         dailyBudget: this.qualificationDailyBudget,
+        liveEvidence,
         ...(spend !== undefined && spend.lastCycleAt > 0 ? { lastCycleAt: new Date(spend.lastCycleAt).toISOString() } : {}),
         cycleIntervalMs: this.qualificationCycleIntervalMs,
-        recoveryAttemptsToday: spend?.recoveries ?? 0,
+        recoveryAttemptsToday,
         ...(recovery !== undefined ? { recoveryScheduledAt: recovery.at } : {}),
       };
     }).sort((a, b) => a.providerId.localeCompare(b.providerId));

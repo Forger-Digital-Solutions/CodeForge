@@ -2135,8 +2135,12 @@ export class AgentRuntime {
           routing = await selectRoute();
           if (routing.outcome !== "no_eligible_route") break;
           const lanes = this.freeCloud?.qualificationSummary?.() ?? [];
+          // `liveEvidence` is computed service-side where the spend/cap/interval constants
+          // live: a lane with everything unqualified sitting in cooldown reports pending=0
+          // even though its armed recovery retry re-enters those routes when it fires — that
+          // is evidence-in-waiting, not a dead lane. The fallback keeps older/stub hooks honest.
           const live = this.freeCloud?.isQualifying?.() === true
-            || lanes.some((lane) => lane.pending > 0 && lane.requestsSpentToday < lane.dailyBudget);
+            || lanes.some((lane) => lane.liveEvidence ?? (lane.pending > 0 && lane.requestsSpentToday < lane.dailyBudget));
           if (!live) break;
           await new Promise((resolveWait) => setTimeout(resolveWait, 1_000));
         }
