@@ -17,6 +17,8 @@ const discovery = extractFile(archive, "node_modules\\@codeforge\\model-registry
 const refresh = extractFile(archive, "node_modules\\@codeforge\\model-registry\\dist\\catalog-refresh.js").toString("utf8");
 const fabric = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\free-fabric.js").toString("utf8");
 const ledger = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\route-ledger.js").toString("utf8");
+const compact = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\qualification\\compact.js").toString("utf8");
+const roleSuite = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\qualification\\role-suite.js").toString("utf8");
 const identity = JSON.parse(extractFile(archive, "apps\\desktop\\dist\\build-identity.json").toString("utf8"));
 const certificate = JSON.parse(readFileSync(path.join(root, "docs/codeforge-forgegreen-certified-source-state.json"), "utf8"));
 
@@ -37,8 +39,14 @@ assert.match(fabric, /nextAvailableAt/);
 assert.match(ledger, /healthGate/);
 assert.match(main, /rediscoverProviderFree/);
 assert.match(main, /discoveryInflight/);
-assert.equal(certificate.materialFiles.length, 74);
-assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v1");
+// R59 v2 qualification-starvation surface: provider lanes, suite deadline, bounded probes.
+assert.match(service, /qualificationProviderConcurrency/);
+assert.match(service, /qualificationSuiteDeadlineMs/);
+assert.match(service, /capacityProbeTimeoutMs/);
+assert.match(compact, /suite deadline elapsed/);
+assert.match(roleSuite, /suite deadline elapsed/);
+assert.equal(certificate.materialFiles.length, 76);
+assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v2");
 
 const receipt = {
   schema: "r59-packaged-supply-recovery/v1",
@@ -60,6 +68,9 @@ const receipt = {
     revocationClassification: true,
     fabricNextAvailableAt: true,
     discoveryInflightJoin: true,
+    qualificationProviderLanes: true,
+    qualificationSuiteDeadline: true,
+    boundedCapacityProbe: true,
   },
 };
 const output = path.join(root, "docs/evidence/r59-supply-recovery/production-wiring.json");

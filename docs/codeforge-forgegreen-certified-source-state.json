@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "a529e102fe8096f62957dc746e6d9ca80616af413837e401c4ec6ec1e8623e78",
-  "surfaceVersion": "r59-free-supply-recovery-v1",
+  "sourceStateId": "1f2269ce86d74ac19bcb2b063ee43c9b5d8289c7cd402af8fc1faa05697ae69d",
+  "surfaceVersion": "r59-free-supply-recovery-v2",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -23,6 +23,8 @@
     "packages/eight-bit/src/failover.ts",
     "packages/eight-bit/src/free-fabric.ts",
     "packages/eight-bit/src/health.ts",
+    "packages/eight-bit/src/qualification/compact.ts",
+    "packages/eight-bit/src/qualification/role-suite.ts",
     "packages/eight-bit/src/route-ledger.ts",
     "packages/eight-bit/src/types.ts",
     "packages/forge-green/src/optimization-candidate-a.ts",
@@ -99,6 +101,8 @@
     "packages/eight-bit/src/failover.ts": "16353f67b841c121b9bbc108fe4d9cf3d93c3cd1",
     "packages/eight-bit/src/free-fabric.ts": "fb991acde7246b3f59df85b3bc34c740edbb4943",
     "packages/eight-bit/src/health.ts": "d34dc5924c335b9ab5eb3ad6a22420ca428103f6",
+    "packages/eight-bit/src/qualification/compact.ts": "0711a1576b144aa2aabb7eb19d6b8d35377c67e6",
+    "packages/eight-bit/src/qualification/role-suite.ts": "4861d214efb11aeac9a28d4a6dcc3ba8029e2dd4",
     "packages/eight-bit/src/route-ledger.ts": "a27cf80f7dfb7172e93d0898ce0330d997a5b710",
     "packages/eight-bit/src/types.ts": "2dbe10418021fc76155672723bd14ccee944ba5a",
     "packages/forge-green/src/optimization-candidate-a.ts": "67af82aaf7b9d20aac76238752c0532798a975a4",
@@ -110,7 +114,7 @@
     "packages/forge-zero/src/capacity-types.ts": "302a8807b1bbf822f2fcac3f43ac52c75e815bc5",
     "packages/model-registry/src/catalog-refresh.ts": "ba9057e3c6bfc39bbc618e5c042ed4081e2cc306",
     "packages/model-registry/src/discovery.ts": "cc024b18cdb2ce8a74d19c00379216cbfb9fa1ae",
-    "packages/model-registry/src/free-cloud-service.ts": "25f42b75ba83555f6dee03aaea5426430709ab55",
+    "packages/model-registry/src/free-cloud-service.ts": "d590d8a873fc359448a2aabce3d28681d5260a63",
     "packages/paid-auto/src/expected-cost.ts": "efe764f9fa537fa202f2d101b9f019225c3cf509",
     "packages/paid-auto/src/families.ts": "1ad554c31371a07edc475065bb3e042917d94c45",
     "packages/paid-auto/src/index.ts": "fbef7d85109e7e1bf54c2b2f6982a4b8181c0ecc",
@@ -2400,26 +2404,44 @@
       "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
       "recertifiedAt": "2026-09-30",
       "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V1_SOURCE_STATE"
+    },
+    {
+      "label": "R59 qualification starvation recertification",
+      "reason": "R59 v2 bounds the qualification path that supply recovery depends on: provider lanes run concurrently so one saturated upstream cannot serialize another provider's pending routes, a per-suite wall-clock deadline aborts in-flight probes and classifies as transient (the route stays pending and retries at cooldown rather than earning a starvation verdict), capacity probes race a fixed timeout instead of waiting on unbounded adapter calls, and a recovery timer that fires mid-cycle re-arms inside its cooldown window instead of dropping. ForgeZero, ForgeVerify, qualification gates, and completion authority are unchanged.",
+      "priorSourceStateId": "a529e102fe8096f62957dc746e6d9ca80616af413837e401c4ec6ec1e8623e78",
+      "priorSurfaceVersion": "r59-free-supply-recovery-v1",
+      "resultingSourceStateId": "1f2269ce86d74ac19bcb2b063ee43c9b5d8289c7cd402af8fc1faa05697ae69d",
+      "resultingSurfaceVersion": "r59-free-supply-recovery-v2",
+      "changes": [
+        {
+          "file": "packages/eight-bit/src/qualification/compact.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/src/qualification/role-suite.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/src/free-cloud-service.ts",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
+      "recertifiedAt": "2026-09-30",
+      "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V2_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-30T06:59:36.527Z",
+  "recertifiedAt": "2026-09-30T07:47:41.970Z",
   "recertification": {
-    "phase": "R59 free supply recovery recertification",
-    "reason": "R59 preserves verified-free routes across transient catalog/allowance probe failures, attests and re-probes account-dependent providers, joins concurrent provider discovery instead of dropping it, re-qualifies cooled routes on cooldown expiry within bounded budgets, exposes the per-route exclusion ledger at /api/free-cloud/supply, and recovers supply during runtime admission denial instead of reporting false zero capacity. ForgeZero, ForgeVerify, qualification gates, and completion authority are unchanged.",
+    "phase": "R59 qualification starvation recertification",
+    "reason": "R59 v2 bounds the qualification path that supply recovery depends on: provider lanes run concurrently so one saturated upstream cannot serialize another provider's pending routes, a per-suite wall-clock deadline aborts in-flight probes and classifies as transient (the route stays pending and retries at cooldown rather than earning a starvation verdict), capacity probes race a fixed timeout instead of waiting on unbounded adapter calls, and a recovery timer that fires mid-cycle re-arms inside its cooldown window instead of dropping. ForgeZero, ForgeVerify, qualification gates, and completion authority are unchanged.",
     "changedFiles": [
-      "apps/desktop/src/main.ts",
-      "packages/cloud-gateway/src/provider-registry.ts",
-      "packages/eight-bit/src/free-fabric.ts",
-      "packages/eight-bit/src/route-ledger.ts",
-      "packages/forge-zero/src/capacity-types.ts",
-      "packages/model-registry/src/catalog-refresh.ts",
-      "packages/model-registry/src/discovery.ts",
-      "packages/model-registry/src/free-cloud-service.ts",
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/src/index.ts"
+      "packages/eight-bit/src/qualification/compact.ts",
+      "packages/eight-bit/src/qualification/role-suite.ts",
+      "packages/model-registry/src/free-cloud-service.ts"
     ],
-    "priorSourceStateId": "193a34dc933b27e917b728219c1f004fc86c87a27a0aadd7280dca50b5607830",
+    "priorSourceStateId": "a529e102fe8096f62957dc746e6d9ca80616af413837e401c4ec6ec1e8623e78",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
