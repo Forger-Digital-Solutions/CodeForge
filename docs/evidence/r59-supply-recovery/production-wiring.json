@@ -1,0 +1,26 @@
+{
+  "schema": "r59-packaged-supply-recovery/v1",
+  "status": "PASS",
+  "artifact": {
+    "exeSha256": "fc1d1cd0b540d740a18bd7c5fa39e917f35c8358d9f1bae3b495daab829fa746",
+    "buildCommit": "b3136b9e309646711116392726b9e94a1be5110b",
+    "buildDirty": true,
+    "builtAt": "2026-09-30T12:00:03.204Z"
+  },
+  "sourceStateId": "8f96379554ecd5715f171c079b2f898e3daf90e087b1d5218cb170d0ad16a1c8",
+  "assertions": {
+    "desktopExplicitR1": true,
+    "serverDefaultsR1": true,
+    "supplyExclusionLedgerEndpoint": true,
+    "denialTimeRecovery": true,
+    "qualificationRecoveryScheduler": true,
+    "transientProbeKeepSet": true,
+    "revocationClassification": true,
+    "fabricNextAvailableAt": true,
+    "discoveryInflightJoin": true,
+    "qualificationProviderLanes": true,
+    "qualificationSuiteDeadline": true,
+    "boundedCapacityProbe": true,
+    "probePacing": true
+  }
+}

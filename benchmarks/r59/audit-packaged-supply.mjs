@@ -19,6 +19,7 @@ const fabric = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\
 const ledger = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\route-ledger.js").toString("utf8");
 const compact = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\qualification\\compact.js").toString("utf8");
 const roleSuite = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\qualification\\role-suite.js").toString("utf8");
+const definitions = extractFile(archive, "node_modules\\@codeforge\\model-registry\\dist\\provider-definitions.js").toString("utf8");
 const identity = JSON.parse(extractFile(archive, "apps\\desktop\\dist\\build-identity.json").toString("utf8"));
 const certificate = JSON.parse(readFileSync(path.join(root, "docs/codeforge-forgegreen-certified-source-state.json"), "utf8"));
 
@@ -45,8 +46,12 @@ assert.match(service, /qualificationSuiteDeadlineMs/);
 assert.match(service, /capacityProbeTimeoutMs/);
 assert.match(compact, /suite deadline elapsed/);
 assert.match(roleSuite, /suite deadline elapsed/);
-assert.equal(certificate.materialFiles.length, 76);
-assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v3");
+// R59 v4 probe pacing surface: declared-RPM spacing shared by suites and capacity probes.
+assert.match(service, /probeMinIntervalMs/);
+assert.match(service, /paceProviderAdapter/);
+assert.match(definitions, /maxRequestsPerMinute/);
+assert.equal(certificate.materialFiles.length, 78);
+assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v4");
 
 const receipt = {
   schema: "r59-packaged-supply-recovery/v1",
@@ -71,6 +76,7 @@ const receipt = {
     qualificationProviderLanes: true,
     qualificationSuiteDeadline: true,
     boundedCapacityProbe: true,
+    probePacing: true,
   },
 };
 const output = path.join(root, "docs/evidence/r59-supply-recovery/production-wiring.json");
