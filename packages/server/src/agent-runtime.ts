@@ -4747,9 +4747,16 @@ export class AgentRuntime {
       const waitMs = opts.awaitQualificationMs ?? 0;
       if (waitMs > 0) {
         const deadline = Date.now() + waitMs;
+        // Provider lanes apply receipts mid-cycle — a pending-count drop means fresh
+        // qualification or cooldown evidence exists, so re-decide immediately rather than
+        // waiting for a sibling provider's slow suite to drain the global lock.
+        let lastPending = pending;
         while (fc.isQualifying?.() === true && Date.now() < deadline) {
           opts.onTick?.();
           await new Promise((resolve) => setTimeout(resolve, 1_000));
+          const nowPending = fc.pendingQualification?.().length ?? lastPending;
+          if (nowPending < lastPending) break;
+          lastPending = nowPending;
         }
       }
     }
