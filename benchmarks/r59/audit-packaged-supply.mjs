@@ -46,7 +46,7 @@ assert.match(service, /capacityProbeTimeoutMs/);
 assert.match(compact, /suite deadline elapsed/);
 assert.match(roleSuite, /suite deadline elapsed/);
 assert.equal(certificate.materialFiles.length, 76);
-assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v2");
+assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v3");
 
 const receipt = {
   schema: "r59-packaged-supply-recovery/v1",

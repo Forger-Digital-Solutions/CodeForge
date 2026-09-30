@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "1f2269ce86d74ac19bcb2b063ee43c9b5d8289c7cd402af8fc1faa05697ae69d",
-  "surfaceVersion": "r59-free-supply-recovery-v2",
+  "sourceStateId": "f51a171639f95dbd061736bb6c1ee47e628b13fd60c5e93abf74eb702c70bdec",
+  "surfaceVersion": "r59-free-supply-recovery-v3",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -127,7 +127,7 @@
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
-    "packages/server/src/agent-runtime.ts": "7c8bf3cf8f09417f6235c5d5c4730394dc57f9b7",
+    "packages/server/src/agent-runtime.ts": "d6d9bfe25d1ecd5f7ccb2a284e86b0ec9ecbef67",
     "packages/server/src/autonomous-orchestrator.ts": "1f2d1d92420b7085e1f721755956d60cbdc3d180",
     "packages/server/src/checkpoint-service.ts": "9fc8c2328fc396a6831cb2803a8b679fbc288427",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
@@ -2429,19 +2429,34 @@
       "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
       "recertifiedAt": "2026-09-30",
       "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V2_SOURCE_STATE"
+    },
+    {
+      "label": "R59 mid-cycle receipt re-decision recertification",
+      "reason": "R59 v3 makes denial-time recovery observe mid-cycle qualification: per-provider lanes mean the global qualifying lock now spans the slowest sibling suite, so the recovery wait breaks early when the pending count drops and the caller re-decides against fresh receipts within a second instead of parking until every lane drains. ForgeZero, ForgeVerify, qualification gates, and completion authority are unchanged.",
+      "priorSourceStateId": "1f2269ce86d74ac19bcb2b063ee43c9b5d8289c7cd402af8fc1faa05697ae69d",
+      "priorSurfaceVersion": "r59-free-supply-recovery-v2",
+      "resultingSourceStateId": "f51a171639f95dbd061736bb6c1ee47e628b13fd60c5e93abf74eb702c70bdec",
+      "resultingSurfaceVersion": "r59-free-supply-recovery-v3",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
+      "recertifiedAt": "2026-09-30",
+      "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V3_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-30T07:47:41.970Z",
+  "recertifiedAt": "2026-09-30T11:30:28.049Z",
   "recertification": {
-    "phase": "R59 qualification starvation recertification",
-    "reason": "R59 v2 bounds the qualification path that supply recovery depends on: provider lanes run concurrently so one saturated upstream cannot serialize another provider's pending routes, a per-suite wall-clock deadline aborts in-flight probes and classifies as transient (the route stays pending and retries at cooldown rather than earning a starvation verdict), capacity probes race a fixed timeout instead of waiting on unbounded adapter calls, and a recovery timer that fires mid-cycle re-arms inside its cooldown window instead of dropping. ForgeZero, ForgeVerify, qualification gates, and completion authority are unchanged.",
+    "phase": "R59 mid-cycle receipt re-decision recertification",
+    "reason": "R59 v3 makes denial-time recovery observe mid-cycle qualification: per-provider lanes mean the global qualifying lock now spans the slowest sibling suite, so the recovery wait breaks early when the pending count drops and the caller re-decides against fresh receipts within a second instead of parking until every lane drains. ForgeZero, ForgeVerify, qualification gates, and completion authority are unchanged.",
     "changedFiles": [
-      "packages/eight-bit/src/qualification/compact.ts",
-      "packages/eight-bit/src/qualification/role-suite.ts",
-      "packages/model-registry/src/free-cloud-service.ts"
+      "packages/server/src/agent-runtime.ts"
     ],
-    "priorSourceStateId": "a529e102fe8096f62957dc746e6d9ca80616af413837e401c4ec6ec1e8623e78",
+    "priorSourceStateId": "1f2269ce86d74ac19bcb2b063ee43c9b5d8289c7cd402af8fc1faa05697ae69d",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
