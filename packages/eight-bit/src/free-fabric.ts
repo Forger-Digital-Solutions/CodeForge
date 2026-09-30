@@ -140,6 +140,9 @@ export interface FabricCandidateReport {
   status: FabricCandidateStatus;
   reasonCodes: string[];
   healthState?: RouteHealthCondition;
+  /** R59: authority-stated instant this exclusion expires (cooldown/quota reset), when the
+   *  blocking evidence carries one — the input a bounded capacity wait is allowed to use. */
+  retryAt?: string;
   scoreAdjustment?: number;
   /** R37 Mission AH: negative when the route was demoted to preserve oversized capacity. */
   rightFitPenalty?: number;
@@ -366,6 +369,7 @@ export class FreeFabric {
           capacityPoolId: entry.capacityPoolId,
           status: "HEALTH_EXCLUDED", reasonCodes: ["HEALTH_HARD_EXCLUDED", ...assess.reasonCodes],
           healthState: assess.state, scoreAdjustment: adjustment,
+          ...(typeof assess.expiresAt === "number" ? { retryAt: new Date(assess.expiresAt).toISOString() } : {}),
         });
         continue;
       }
@@ -524,6 +528,16 @@ export class FreeFabric {
 
     const healthBlockedOnly = !selected && ranked.length === 0
       && [...reports.values()].some((r) => r.status === "HEALTH_EXCLUDED");
+    // R59: a QUEUED verdict that exists only because every admitted route is health-blocked
+    // still knows its earliest authority-stated recovery — surface it so the caller waits on
+    // real evidence instead of instantly declaring zero supply.
+    const healthBlockedNextAt = healthBlockedOnly && queued?.nextAvailableAt === undefined
+      ? [...reports.values()]
+          .filter((r) => r.status === "HEALTH_EXCLUDED" && r.retryAt !== undefined)
+          .map((r) => Date.parse(r.retryAt!))
+          .filter((t) => Number.isFinite(t) && t > now)
+          .sort((a, b) => a - b)[0]
+      : undefined;
     // R48: verdict exclusion is permanent for this role — waiting cannot admit it, so it
     // must never masquerade as a capacity wait. The outcome distinguishes it honestly.
     const verdictExcluded = !selected && [...reports.values()].some((r) => r.reasonCodes.includes("ROLE_VERDICT_EXCLUDED"));
@@ -573,7 +587,11 @@ export class FreeFabric {
         isolationViolations: ledger.summary.isolationViolations,
         candidates: [...reports.values()],
       },
-      ...(queued?.nextAvailableAt ? { nextAvailableAt: queued.nextAvailableAt } : {}),
+      ...(queued?.nextAvailableAt !== undefined
+        ? { nextAvailableAt: queued.nextAvailableAt }
+        : healthBlockedNextAt !== undefined
+          ? { nextAvailableAt: new Date(healthBlockedNextAt).toISOString() }
+          : {}),
       suggestions,
     };
   }
@@ -614,7 +632,9 @@ export class FreeFabric {
 
   private explainExcluded(entry: RouteLedgerEntry, role: string, owned: ReadonlySet<string>): FabricCandidateReport {
     if (!entry.freeEligible) {
-      return this.reportFor(entry, "POLICY_EXCLUDED", [entry.exclusionReason ?? "NOT_FREE_ELIGIBLE"]);
+      // R59: keep the coarse policy code AND the upstream admission gate that produced it —
+      // "UNHEALTHY + CODEFORGE_QUALIFIED" is an unqualified route, not a sick one.
+      return this.reportFor(entry, "POLICY_EXCLUDED", [entry.exclusionReason ?? "NOT_FREE_ELIGIBLE", ...(entry.healthGate !== undefined ? [entry.healthGate] : [])]);
     }
     if (!entry.roleSuitability.includes(role)) {
       return this.reportFor(entry, "ROLE_INELIGIBLE", ["ROLE_NOT_QUALIFIED"]);

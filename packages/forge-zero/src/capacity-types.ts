@@ -147,6 +147,11 @@ export interface CapacityRoute {
    *  ranking uses to keep small requests off scarce large-context pools (R37 Mission AH). */
   contextWindow?: number;
   healthy: boolean;
+  /** R59: when `healthy` is false — the governing upstream admission gate and its reason
+   *  (e.g. CODEFORGE_QUALIFIED vs a real health exclusion), so a bare UNHEALTHY ledger row
+   *  is explainable instead of conflating qualification, health, and policy into one word. */
+  healthGate?: string;
+  healthReason?: string;
   enabled: boolean;
   windows: readonly CapacityWindow[];
   /** Stable, non-secret identity for the physical account that owns this route. */

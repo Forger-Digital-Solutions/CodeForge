@@ -91,6 +91,10 @@ export interface RouteLedgerEntry {
   contextWindow?: number;
   freeEligible: boolean;
   exclusionReason?: string;
+  /** R59: the upstream admission gate that made this route ineligible when
+   *  `exclusionReason === "UNHEALTHY"` (e.g. CODEFORGE_QUALIFIED, HEALTHY) — distinguishes
+   *  "never tested" from "actually failing" in denial explanations. */
+  healthGate?: string;
   onExhaustion: RouteExhaustionBehavior;
   fieldProvenance: Readonly<Record<string, LedgerFieldProvenance>>;
 }
@@ -289,6 +293,7 @@ function buildEntry(
     ...(route.contextWindow !== undefined ? { contextWindow: route.contextWindow } : {}),
     freeEligible: exclusionReason === undefined,
     exclusionReason,
+    ...(route.healthGate !== undefined ? { healthGate: route.healthGate } : {}),
     onExhaustion: exhaustionBehavior(route, wf.expiresAt, now),
     fieldProvenance: provenance,
   };

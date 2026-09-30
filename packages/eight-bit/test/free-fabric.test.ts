@@ -874,3 +874,118 @@ describe("R48 — per-role verdict floor inside fabric admission", () => {
     expect(decision.selected?.routeId).toBe("qualified");
   });
 });
+
+describe("FreeFabric — R59 health-recovery visibility", () => {
+  it("a route hard-excluded on a transient 429 reports retryAt and the queue verdict carries the earliest recovery", () => {
+    const c = clock();
+    const shared = managedRoute("shared");
+    const authority = new EightBitRouteHealthAuthority(DEFAULT_ROUTE_HEALTH_POLICY, c.now);
+    authority.observe({
+      kind: "call_failure",
+      providerId: shared.providerId,
+      modelId: shared.modelId,
+      observedAt: new Date(c.now()).toISOString(),
+      source: "runtime",
+      reason: "RATE_LIMITED",
+      status: 429,
+      retryAfterMs: 45_000,
+      message: "rate limited",
+    });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [shared],
+      managedPools: () => [poolFor(shared)],
+      health: authority,
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" });
+    // Health-only blocking is a wait state, not a supply absence — the verdict carries the
+    // provider-stated instant the exclusion expires instead of reading as zero capacity.
+    expect(decision.outcome).toBe("QUEUED_FOR_CAPACITY");
+    expect(decision.explanation.reasonCodes).toContain("ALL_ELIGIBLE_ROUTES_UNHEALTHY");
+    const report = decision.explanation.candidates.find((r) => r.routeId === "shared");
+    expect(report?.status).toBe("HEALTH_EXCLUDED");
+    expect(report?.healthState).toBe("RATE_LIMITED");
+    const expected = new Date(c.now() + 45_000).toISOString();
+    expect(report?.retryAt).toBe(expected);
+    expect(decision.nextAvailableAt).toBe(expected);
+  });
+
+  it("a permanent health exclusion carries no retryAt and no fabricated wait horizon", () => {
+    const c = clock();
+    const shared = managedRoute("shared");
+    const authority = new EightBitRouteHealthAuthority(DEFAULT_ROUTE_HEALTH_POLICY, c.now);
+    authority.observe({
+      kind: "catalog",
+      providerId: shared.providerId,
+      modelId: shared.modelId,
+      observedAt: new Date(c.now()).toISOString(),
+      source: "registry",
+      fact: "retired",
+    });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [shared],
+      managedPools: () => [poolFor(shared)],
+      health: authority,
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" });
+    const report = decision.explanation.candidates.find((r) => r.routeId === "shared");
+    expect(report?.status).toBe("HEALTH_EXCLUDED");
+    expect(report?.healthState).toBe("MODEL_RETIRED");
+    expect(report?.retryAt).toBeUndefined();
+    // A permanent exclusion must not invent a recovery time — QUEUED-for-health with no
+    // nextAvailableAt is still honest waiting, but the verdict can never claim a reset it
+    // does not have.
+    expect(decision.nextAvailableAt).toBeUndefined();
+  });
+
+  it("the same fleet admits once the authority's rate-limit condition expires — no restart needed", () => {
+    const c = clock();
+    const shared = managedRoute("shared");
+    const authority = new EightBitRouteHealthAuthority(DEFAULT_ROUTE_HEALTH_POLICY, c.now);
+    authority.observe({
+      kind: "call_failure",
+      providerId: shared.providerId,
+      modelId: shared.modelId,
+      observedAt: new Date(c.now()).toISOString(),
+      source: "runtime",
+      reason: "RATE_LIMITED",
+      status: 429,
+      retryAfterMs: 30_000,
+      message: "rate limited",
+    });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [shared],
+      managedPools: () => [poolFor(shared)],
+      health: authority,
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    expect(fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" }).outcome).toBe("QUEUED_FOR_CAPACITY");
+    c.advance(31_000);
+    const recovered = fabric.decide({ requestId: "r2", userId: "alice", role: "CODER" });
+    expect(recovered.outcome).toBe("ADMITTED");
+    expect(recovered.selected?.routeId).toBe("shared");
+  });
+
+  it("a policy-excluded route names the upstream admission gate behind the coarse UNHEALTHY code", () => {
+    const c = clock();
+    // CapacityRoute.healthy is the full ForgeAuto admission verdict; a route that fails on the
+    // qualification gate is "untested supply", not sick supply — the ledger row must say so.
+    const untested = managedRoute("untested", { healthy: false, healthGate: "CODEFORGE_QUALIFIED", healthReason: "NOT_TESTED" });
+    const fabric = createFreeFabric({
+      managedRoutes: () => [untested],
+      managedPools: () => [poolFor(untested)],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }),
+      now: c.now,
+    });
+    const decision = fabric.decide({ requestId: "r1", userId: "alice", role: "CODER" });
+    expect(decision.outcome).toBe("DENIED_NO_SUPPLY");
+    const report = decision.explanation.candidates.find((r) => r.routeId === "untested");
+    expect(report?.status).toBe("POLICY_EXCLUDED");
+    expect(report?.reasonCodes).toContain("UNHEALTHY");
+    expect(report?.reasonCodes).toContain("CODEFORGE_QUALIFIED");
+  });
+});

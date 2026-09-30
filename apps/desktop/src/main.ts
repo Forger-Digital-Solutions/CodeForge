@@ -44,6 +44,7 @@ import {
   NormalizedModelRegistry,
   discoverAndVerifyFree,
   verifyAllowanceViaProbe,
+  catalogPruneKeepSet,
   getProviderPolicy,
   createFreeCloudService,
   mergeModelsDevProviderHints,
@@ -119,8 +120,13 @@ let shutdownPromise: Promise<void> | null = null;
 /** How long a requested quit may linger after app.quit() before the process is exited outright. */
 const QUIT_GRACE_MS = 2_000;
 let cloudCatalogRefreshTimer: NodeJS.Timeout | null = null;
+let providerRediscoveryTimer: NodeJS.Timeout | null = null;
 /** Mirrors CloudProviderRegistry's own DEFAULT_REFRESH_TTL_MS on the cloud side. */
 const CLOUD_CATALOG_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+/** R59: connected BYOK/managed-free providers re-list their catalog on this cadence so a
+ * transient startup failure or a newly-appearing free model reaches the pool without waiting
+ * for an app restart or manual refresh. */
+const PROVIDER_REDISCOVERY_INTERVAL_MS = 5 * 60 * 1000;
 // Per-provider auth/health signal used by the orphan-model oracle and to exclude
 // invalid-auth providers from routing (a 401 marks a provider auth_required — it is
 // never hammered on every task; the UI prompts to reconnect).
@@ -1047,16 +1053,35 @@ function registerProviderAdapter(providerId: string): ProviderAdapter | undefine
  * verified-free records into ForgeZero. This is the ONLY path that grants "verified free"
  * — Models.dev facts alone never do. A 401 marks the provider auth_required (excluded from routing).
  */
+// True in-flight dedupe lock, distinct from `discoveringProviders` (a UI status counter that
+// callers deliberately pre-mark before scheduling). Concurrent requests join the running
+// discovery rather than doubling probe spend or being dropped.
+const discoveryInflight = new Map<string, Promise<number>>();
+
 async function discoverProviderFree(providerId: string): Promise<number> {
   if (!providerCatalog || !firewall || !modelRegistry) return 0;
   const adapter = providerCatalog.get(providerId);
   if (!adapter) return 0;
+  const running = discoveryInflight.get(providerId);
+  if (running) return running;
   discoveringProviders.add(providerId);
-  try {
-    return await discoverProviderFreeInner(providerId, adapter);
-  } finally {
+  const run = discoverProviderFreeInner(providerId, adapter).finally(() => {
+    discoveryInflight.delete(providerId);
     discoveringProviders.delete(providerId);
-  }
+  });
+  discoveryInflight.set(providerId, run);
+  return run;
+}
+
+/**
+ * Force a fresh discovery even if one is in flight: the in-flight run may have observed stale
+ * connection state (e.g. a free-plan attestation that landed mid-run), so we join it first,
+ * then re-run so the allowance probe sees the current state.
+ */
+async function rediscoverProviderFree(providerId: string): Promise<number> {
+  const running = discoveryInflight.get(providerId);
+  if (running) await running.catch(() => {});
+  return discoverProviderFree(providerId);
 }
 
 async function discoverProviderFreeInner(providerId: string, adapter: ProviderAdapter): Promise<number> {
@@ -1085,27 +1110,41 @@ async function discoverProviderFreeInner(providerId: string, adapter: ProviderAd
     const attested = definition?.freeAccess.spillover !== "ACCOUNT_DEPENDENT" || providerConnections?.planAttested(providerId) === true;
     if (result.verifiedCount === 0 && getProviderPolicy(providerId)?.hasAllowanceFree && attested) {
       const allowlist = definition?.freeAccess.allowanceScope === "allowlist" ? new Set(definition.freeAccess.allowanceModels ?? []) : null;
-      const probe = async (modelId: string): Promise<{ ok: boolean }> => {
+      const probe = async (modelId: string): Promise<{ ok: boolean; error?: string }> => {
         try {
           let ok = false;
           for await (const ev of adapter.streamChat({ model: modelId, messages: [{ role: "user", content: "hi" }], maxTokens: 5 })) {
             if (ev.type === "text_delta" || ev.type === "finish") ok = true;
           }
           return { ok };
-        } catch {
-          return { ok: false };
+        } catch (e) {
+          return { ok: false, error: e instanceof Error ? e.message : String(e) };
         }
       };
       const scoped = allowlist ? live.filter((m) => allowlist.has(m.modelId)) : live;
       const allowance = await verifyAllowanceViaProbe(modelRegistry, providerId, scoped, probe);
       for (const rec of allowance.records) firewall.register(rec);
-      pruneStaleRoutes(providerId, new Set(allowance.records.map((r) => r.modelId)));
+      // R59: a failed probe is inconclusive evidence — keep what the catalog still lists
+      // instead of erasing previously verified routes while the provider is busy.
+      pruneStaleRoutes(providerId, catalogPruneKeepSet({
+        registeredModelIds: firewall.allModels().filter((m) => m.providerId === providerId && m.freeStatus === "verified_free").map((m) => m.modelId),
+        catalogModelIds: allowance.catalogModelIds ?? [],
+        verifiedModelIds: allowance.records.map((r) => r.modelId),
+        probeFailed: allowance.probeFailed,
+        probeRevoked: allowance.probeRevoked,
+      }));
       scheduleQualification(providerId);
       return allowance.verifiedCount;
     }
     // R1 §90 dynamic removal: a route the provider no longer lists as free leaves ForgeAuto/Free
-    // on this refresh — no CodeForge release, no 7-day expiry wait.
-    pruneStaleRoutes(providerId, new Set(result.records.map((r) => r.modelId)));
+    // on this refresh — no CodeForge release, no 7-day expiry wait. An empty live listing is
+    // an inconclusive read, not a delisting (R59): never prune everything on it.
+    pruneStaleRoutes(providerId, catalogPruneKeepSet({
+      registeredModelIds: firewall.allModels().filter((m) => m.providerId === providerId && m.freeStatus === "verified_free").map((m) => m.modelId),
+      catalogModelIds: result.catalogModelIds ?? [],
+      verifiedModelIds: result.records.map((r) => r.modelId),
+      probeFailed: result.probeFailed,
+    }));
     if (result.verifiedCount > 0) scheduleQualification(providerId);
     return result.verifiedCount;
   } catch (e) {
@@ -2442,6 +2481,23 @@ async function startPrimaryInstance(): Promise<void> {
       void refresh.catch(() => {});
     }, CLOUD_CATALOG_REFRESH_INTERVAL_MS);
     cloudCatalogRefreshTimer.unref?.();
+
+    // R59: connected free providers have no other periodic refresh — a transient failure at
+    // startup would otherwise strand their catalog and qualification until the next manual
+    // refresh or app restart. Bounded rediscovery keeps the supply view current; per-provider
+    // dedupe inside discoverProviderFree keeps overlapping refreshes cheap, and the trailing
+    // qualifyPending is interval/budget-gated inside the service.
+    providerRediscoveryTimer = setInterval(() => {
+      if (!providerCatalog) return;
+      for (const adapter of providerCatalog.all()) {
+        const id = adapter.providerId;
+        if (id === "codeforge-cloud" || adapter.isTestProvider === true) continue;
+        void discoverProviderFree(id)
+          .then(() => freeCloud?.qualifyPending({ providerId: id }))
+          .catch(() => undefined);
+      }
+    }, PROVIDER_REDISCOVERY_INTERVAL_MS);
+    providerRediscoveryTimer.unref?.();
   }
 
   if (PACKAGED_SMOKE) {
@@ -2536,6 +2592,10 @@ app.on("will-quit", () => {
   if (cloudCatalogRefreshTimer) {
     clearInterval(cloudCatalogRefreshTimer);
     cloudCatalogRefreshTimer = null;
+  }
+  if (providerRediscoveryTimer) {
+    clearInterval(providerRediscoveryTimer);
+    providerRediscoveryTimer = null;
   }
 });
 
@@ -3143,7 +3203,7 @@ ipcMain.handle("provider:env:setEnabled", async (event, providerId: unknown, ena
   await requireConnections().setEnvironmentEnabled(providerId, enabled === true);
   if (enabled === true && providerCatalog?.get(providerId)) {
     discoveringProviders.add(providerId);
-    void discoverProviderFree(providerId).finally(() => {
+    void rediscoverProviderFree(providerId).finally(() => {
       discoveringProviders.delete(providerId);
       notifyProviderChanged();
     });
@@ -3206,7 +3266,7 @@ ipcMain.handle("provider:attestFreePlan", async (event, providerId: unknown, att
   await requireConnections().setPlanAttested(providerId, attested === true);
   if (attested === true && providerCatalog?.get(providerId)) {
     discoveringProviders.add(providerId);
-    void discoverProviderFree(providerId).finally(() => {
+    void rediscoverProviderFree(providerId).finally(() => {
       discoveringProviders.delete(providerId);
       notifyProviderChanged();
     });

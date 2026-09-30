@@ -62,6 +62,21 @@ export interface FreeCloudRoutingHooks {
    * existing hosts/mocks stay valid; absent means unmeasured candidates stay denied.
    */
   probeRouteCapacity?(providerId: string, modelId?: string, opts?: { capacityPoolId?: string }): Promise<boolean>;
+  /**
+   * R59: verified-free routes still awaiting a CodeForge qualification receipt — the set a
+   * denial-time recovery cycle could make eligible. Optional; absent means "nothing pending"
+   * for recovery purposes, never fabricated as qualified.
+   */
+  pendingQualification?(): ProviderRouteView[];
+  /** Whether a qualification cycle is currently in flight. */
+  isQualifying?(): boolean;
+  /**
+   * R59: run one bounded qualification cycle over pending routes. `recovery: true` skips the
+   * normal inter-cycle interval — used only when provider-stated cooldowns elapsed — but
+   * never the per-day budget or the bounded recovery allowance. Optional so existing
+   * hosts/mocks stay valid.
+   */
+  qualifyPending?(opts?: { providerId?: string; recovery?: boolean }): Promise<ModelQualificationReceipt[]>;
 }
 
 export interface FreeCloudServiceOptions {
@@ -86,6 +101,12 @@ export interface FreeCloudServiceOptions {
   qualificationRequestsPerCycle?: number;
   /** Minimum interval between qualification cycles for the same provider. Default 20 minutes. */
   qualificationCycleIntervalMs?: number;
+  /**
+   * R59: bound on cooldown-aligned recovery cycles per provider per day. A cycle that ended
+   * transient-only schedules a retry at the provider's own cooldown expiry; this cap keeps a
+   * permanently saturated upstream from being re-probed forever. Default 8.
+   */
+  qualificationRecoveryAttemptsPerProviderPerDay?: number;
   /**
    * R24: the host-shared route-health authority. When wired (or via {@link setRouteHealth}),
    * every provider response observation also lands there as a normalized `rate_limit_headers`
@@ -214,8 +235,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private readonly qualificationDailyBudget: number;
   private readonly qualificationRequestsPerCycle: number;
   private readonly qualificationCycleIntervalMs: number;
+  private readonly qualificationRecoveryCapPerDay: number;
   /** Qualification requests spent per provider, keyed by UTC day. */
-  private readonly qualificationSpend = new Map<string, { day: string; requests: number; lastCycleAt: number }>();
+  private readonly qualificationSpend = new Map<string, { day: string; requests: number; lastCycleAt: number; recoveries: number }>();
+  /** R59: cooldown-aligned recovery retries — one armed timer per provider at most. */
+  private readonly recoveryTimers = new Map<string, { timer: ReturnType<typeof setTimeout>; at: string }>();
   private qualifying = false;
   private listeners = new Set<() => void>();
   private routeHealth?: EightBitRouteHealthAuthority;
@@ -234,6 +258,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     this.qualificationRequestsPerCycle =
       options.qualificationRequestsPerCycle ?? (options.qualificationRunner ? COMPACT_SUITE_REQUESTS : ROLE_SUITE_REQUESTS);
     this.qualificationCycleIntervalMs = options.qualificationCycleIntervalMs ?? 20 * 60_000;
+    this.qualificationRecoveryCapPerDay = options.qualificationRecoveryAttemptsPerProviderPerDay ?? 8;
     this.routeHealth = options.routeHealth;
   }
 
@@ -536,11 +561,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       .sort((a, b) => urgentRoleFailure(b) - urgentRoleFailure(a) || penalty(a) - penalty(b) || score(b) - score(a));
   }
 
-  private spendFor(providerId: string): { day: string; requests: number; lastCycleAt: number } {
+  private spendFor(providerId: string): { day: string; requests: number; lastCycleAt: number; recoveries: number } {
     const day = this.now().toISOString().slice(0, 10);
     const entry = this.qualificationSpend.get(providerId);
     if (!entry || entry.day !== day) {
-      const fresh = { day, requests: 0, lastCycleAt: 0 };
+      const fresh = { day, requests: 0, lastCycleAt: 0, recoveries: 0 };
       this.qualificationSpend.set(providerId, fresh);
       return fresh;
     }
@@ -557,11 +582,18 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   /**
    * Run the compact qualification suite for pending routes, bounded per cycle. Idempotent under
    * concurrency (a second caller while a cycle runs returns immediately).
+   *
+   * R59 `recovery`: skips the inter-cycle interval — the provider-stated cooldown that just
+   * elapsed IS the cadence evidence — but never the daily budget or the bounded per-day
+   * recovery count. A cycle that observed only transient failures schedules its own recovery
+   * at the earliest cooldown expiry, so a rate-limited route returns to measurement without
+   * waiting for a restart or a manual refresh.
    */
-  async qualifyPending(opts: { budget?: number; providerId?: string } = {}): Promise<ModelQualificationReceipt[]> {
+  async qualifyPending(opts: { budget?: number; providerId?: string; recovery?: boolean } = {}): Promise<ModelQualificationReceipt[]> {
     if (this.qualifying) return [];
     this.qualifying = true;
     const produced: ModelQualificationReceipt[] = [];
+    const transientCooldowns = new Map<string, number>();
     try {
       const budget = opts.budget ?? this.maxQualificationsPerCycle;
       const cycleStarted = new Set<string>();
@@ -570,8 +602,14 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       for (const route of pending) {
         if (taken >= budget) break;
         // Shared free quota: never spend more than the daily qualification budget on a provider,
-        // and never re-enter a provider's cycle before the interval elapsed (§195).
-        if (!cycleStarted.has(route.providerId) && !this.qualificationAllowed(route.providerId)) continue;
+        // and never re-enter a provider's cycle before the interval elapsed (§195). Recovery
+        // cycles substitute the cooldown-expiry evidence for the interval.
+        if (!cycleStarted.has(route.providerId)) {
+          const allowed = opts.recovery === true
+            ? this.recoveryAllowed(route.providerId)
+            : this.qualificationAllowed(route.providerId);
+          if (!allowed) continue;
+        }
         const model = this.firewall.getModel(route.providerId, route.providerModelId);
         const adapter = this.providerCatalog.get(route.providerId);
         if (!model || !adapter) continue;
@@ -581,6 +619,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         if (spend.requests + this.qualificationRequestsPerCycle > this.qualificationDailyBudget) continue;
         cycleStarted.add(route.providerId);
         spend.lastCycleAt = this.now().getTime();
+        if (opts.recovery === true) spend.recoveries += 1;
         spend.requests += this.qualificationRequestsPerCycle;
         try {
           const receipt = await this.qualificationRunner(model, adapter);
@@ -592,6 +631,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
           // per-cycle slots, so the cycle moves on to a route that can actually be scored.
           if (receipt.metadata?.transient === true) {
             this.recordRouteFailure(route.providerId, route.providerModelId, "RATE_LIMITED");
+            const coolingUntil = this.health.get(`${route.providerId}::${route.providerModelId}`)?.cooldownUntil;
+            if (coolingUntil !== undefined) {
+              const prior = transientCooldowns.get(route.providerId);
+              transientCooldowns.set(route.providerId, prior === undefined ? coolingUntil : Math.min(prior, coolingUntil));
+            }
             continue;
           }
           taken++;
@@ -608,11 +652,89 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     } finally {
       this.qualifying = false;
     }
+    // R59: transient-only evidence schedules its own retry at the provider's cooldown expiry.
+    // A permanently saturated upstream hits the recovery cap and stops; a recovered route
+    // becomes pending again and is measured without anyone refreshing by hand.
+    for (const [providerId, until] of transientCooldowns) {
+      this.scheduleQualificationRecovery(providerId, until);
+    }
     return produced;
+  }
+
+  /**
+   * Recovery cycles bypass the cadence interval — cooldown expiry is the evidence — but never
+   * the daily request budget or the per-day recovery allowance.
+   */
+  private recoveryAllowed(providerId: string): boolean {
+    const spend = this.spendFor(providerId);
+    if (spend.recoveries >= this.qualificationRecoveryCapPerDay) return false;
+    return spend.requests + this.qualificationRequestsPerCycle <= this.qualificationDailyBudget;
+  }
+
+  /**
+   * Arm one recovery retry for a provider at the earliest transient cooldown expiry. At most
+   * one timer per provider: later evidence reschedules only when it recovers sooner.
+   */
+  private scheduleQualificationRecovery(providerId: string, cooldownUntil: number): void {
+    const now = this.now().getTime();
+    const fireAt = Math.max(now, Math.min(cooldownUntil, now + SHARED_MAX_COOLDOWN_MS)) + 250;
+    const existing = this.recoveryTimers.get(providerId);
+    if (existing && Date.parse(existing.at) <= fireAt) return;
+    if (existing) clearTimeout(existing.timer);
+    const timer = setTimeout(() => {
+      this.recoveryTimers.delete(providerId);
+      void this.qualifyPending({ providerId, recovery: true }).catch(() => undefined);
+    }, Math.max(0, fireAt - now));
+    timer.unref?.();
+    this.recoveryTimers.set(providerId, { timer, at: new Date(fireAt).toISOString() });
   }
 
   isQualifying(): boolean {
     return this.qualifying;
+  }
+
+  /**
+   * R59 diagnostic surface: per-provider qualification posture — pending count, today's spend,
+   * cycle cadence, and any armed cooldown-aligned recovery — so "why is nothing qualified yet"
+   * is answerable from data, not inference.
+   */
+  qualificationSummary(): Array<{
+    providerId: string;
+    pending: number;
+    qualifying: boolean;
+    requestsSpentToday: number;
+    dailyBudget: number;
+    lastCycleAt?: string;
+    cycleIntervalMs: number;
+    recoveryAttemptsToday: number;
+    recoveryScheduledAt?: string;
+  }> {
+    const day = this.now().toISOString().slice(0, 10);
+    const pendingByProvider = new Map<string, number>();
+    for (const r of this.pendingQualification()) {
+      pendingByProvider.set(r.providerId, (pendingByProvider.get(r.providerId) ?? 0) + 1);
+    }
+    const providerIds = new Set<string>([
+      ...this.connections.keys(),
+      ...this.qualificationSpend.keys(),
+      ...pendingByProvider.keys(),
+    ]);
+    return [...providerIds].map((providerId) => {
+      const raw = this.qualificationSpend.get(providerId);
+      const spend = raw?.day === day ? raw : undefined;
+      const recovery = this.recoveryTimers.get(providerId);
+      return {
+        providerId,
+        pending: pendingByProvider.get(providerId) ?? 0,
+        qualifying: this.qualifying,
+        requestsSpentToday: spend?.requests ?? 0,
+        dailyBudget: this.qualificationDailyBudget,
+        ...(spend !== undefined && spend.lastCycleAt > 0 ? { lastCycleAt: new Date(spend.lastCycleAt).toISOString() } : {}),
+        cycleIntervalMs: this.qualificationCycleIntervalMs,
+        recoveryAttemptsToday: spend?.recoveries ?? 0,
+        ...(recovery !== undefined ? { recoveryScheduledAt: recovery.at } : {}),
+      };
+    }).sort((a, b) => a.providerId.localeCompare(b.providerId));
   }
 
   // --- health / quota ------------------------------------------------------------------------
@@ -1048,6 +1170,15 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
           // The fabric is a ForgeAuto surface: executable-without-qualification is an explicit
           // picker privilege, not managed-supply eligibility.
           healthy: r.forgeAutoEligible,
+          // R59: when a route is ineligible, carry WHY — the governing admission gate —
+          // so "UNHEALTHY" ledger rows distinguish "awaiting qualification" from actual
+          // health failures instead of collapsing them into one opaque word.
+          ...(r.forgeAutoEligible || r.admission.failedGate === undefined
+            ? {}
+            : {
+                healthGate: r.admission.failedGate,
+                ...(r.admission.reason !== undefined ? { healthReason: r.admission.reason } : {}),
+              }),
           enabled: quarantine === undefined,
           windows: quotaWindows(quota, targetPerUser ? "USER_ACCOUNT" : "ORG", this.now),
           ...(target.identity !== undefined ? { capacityIdentity: target.identity } : {}),

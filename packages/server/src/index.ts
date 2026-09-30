@@ -21,7 +21,7 @@ import {
 } from "@codeforge/forge-zero";
 import type { FreeModelRecord } from "@codeforge/forge-zero";
 import type { FreeCloudService } from "@codeforge/model-registry";
-import { SqliteQualificationPersistence, EightBitRouteHealthLedger, createEightBitRouteHealthAuthority, FreeFabric, type EightBitRouteHealthAuthority, type FabricContextProvider } from "@codeforge/eight-bit";
+import { SqliteQualificationPersistence, EightBitRouteHealthLedger, createEightBitRouteHealthAuthority, FreeFabric, buildRouteLedger, forgeAutoSupplyPlan, type EightBitRouteHealthAuthority, type FabricContextProvider } from "@codeforge/eight-bit";
 import type { ProviderTopologyCapacity } from "@codeforge/forge-green";
 import { ForgeRouter } from "@codeforge/router";
 import type { ProviderCatalog } from "@codeforge/providers";
@@ -1053,6 +1053,11 @@ export class CodeForgeServer {
 
     if (url.pathname === "/api/free-cloud/capacity" && req.method === "GET") {
       this.handleFreeCloudCapacity(res);
+      return;
+    }
+
+    if (url.pathname === "/api/free-cloud/supply" && req.method === "GET") {
+      this.handleFreeCloudSupply(res);
       return;
     }
 
@@ -2572,6 +2577,10 @@ export class CodeForgeServer {
 
   private getOrCreateRuntime(sessionId: string, userId?: string, hostedWorker?: HostedWorkerOptions): AgentRuntime {
     const demoMode = !this.realRuntimeEnabled();
+    // A request that names no user runs as this host's local user — without it the runtime
+    // defaults to the literal "anonymous", which owns no per-user provider pools, so every
+    // user-connected free route would be invisible to fabric admission.
+    const effectiveUserId = userId ?? this.localUserId;
     if (hostedWorker) {
       return createAgentRuntime({
         sessionId,
@@ -2580,7 +2589,7 @@ export class CodeForgeServer {
         firewall: this.firewall,
         providerCatalog: this.providerCatalog,
         workspacePath: this.activeWorkspacePath ?? undefined,
-        userId,
+        userId: effectiveUserId,
         demoMode,
         userIntentHold: this.userIntentHold,
         forgeGreenCacheStore: this.forgeGreenCacheStore,
@@ -2607,7 +2616,7 @@ export class CodeForgeServer {
         firewall: this.firewall,
         providerCatalog: this.providerCatalog,
         workspacePath: this.activeWorkspacePath ?? undefined,
-        userId,
+        userId: effectiveUserId,
         demoMode,
         userIntentHold: this.userIntentHold,
         forgeGreenCacheStore: this.forgeGreenCacheStore,
@@ -2984,6 +2993,98 @@ export class CodeForgeServer {
       routes,
       reservations: snapshot ?? { activeReservations: 0 },
       dispatchTelemetry,
+    }));
+  }
+
+  /**
+   * R59 §13: the machine-readable supply ledger. For every route the registry knows — including
+   * discovered-but-unverified candidates — the full admission chain state and the exact reason
+   * it is or is not usable right now: catalog, verification, qualification, health, quota,
+   * ledger exclusion, and coder-role supply-plan membership. An empty ForgeAuto pool becomes
+   * explainable from data instead of a bare `eligible: []`.
+   */
+  private handleFreeCloudSupply(res: http.ServerResponse): void {
+    if (!this.freeCloud) {
+      res.writeHead(404, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ error: "FREE_CLOUD_UNAVAILABLE" }));
+      return;
+    }
+    const snapshot = this.freeCloud.snapshot();
+    const capacityRoutes = this.freeCloud.capacityRoutes();
+    const ledger = buildRouteLedger({ routes: capacityRoutes, pools: this.freeCloud.capacityPools() });
+    // The plan must be computed with the local user's owned capacity identities — passing none
+    // would mark every per-user entitlement route unreachable and report a false empty plan.
+    const coderPlan = new Set(
+      forgeAutoSupplyPlan(ledger.entries, "PRIMARY_CODING_AGENT", this.freeCloud.capacityIdentitiesFor(this.localUserId ?? "anonymous")).routes.map((e) => `${e.providerId}::${e.modelId}`),
+    );
+    const ledgerByRoute = new Map<string, typeof ledger.entries[number]>();
+    for (const e of ledger.entries) {
+      const key = `${e.providerId}::${e.modelId}`;
+      if (!ledgerByRoute.has(key)) ledgerByRoute.set(key, e);
+    }
+    const pending = new Set(this.freeCloud.pendingQualification().map((r) => `${r.providerId}::${r.providerModelId}`));
+    const routes = snapshot.models.flatMap((m) =>
+      m.routes.map((r) => {
+        const key = `${r.providerId}::${r.providerModelId}`;
+        const entry = ledgerByRoute.get(key);
+        return {
+          providerId: r.providerId,
+          modelId: r.providerModelId,
+          canonicalModelId: r.canonicalModelId,
+          displayName: r.displayName,
+          supplyClass: r.supplyClass,
+          connected: r.connected,
+          credentialSource: r.credentialSource,
+          verifiedFree: r.verifiedFree,
+          freeAccessClass: r.freeAccessClass,
+          toolSupport: r.toolSupport,
+          qualificationState: r.qualificationState,
+          qualificationVersion: r.qualificationVersion,
+          roles: r.roles,
+          fallbackRoles: r.fallbackRoles ?? [],
+          health: r.health,
+          capacityState: r.capacityState,
+          cooldownUntil: r.cooldownUntil,
+          lifecycle: r.lifecycle,
+          quota: r.quota !== undefined
+            ? { remainingRequests: r.quota.remainingRequests, limitRequests: r.quota.limitRequests, resetAt: r.quota.resetAt, observedAt: r.quota.observedAt }
+            : undefined,
+          lastSuccessfulRuntimeProof: r.lastSuccessfulRuntimeProof,
+          pendingQualification: pending.has(key),
+          executable: r.executable,
+          forgeAutoEligible: r.forgeAutoEligible,
+          admission: { state: r.admission.state, failedGate: r.admission.failedGate, reason: r.admission.reason },
+          fabric: entry === undefined
+            ? { inCapacityProjection: false }
+            : {
+                inCapacityProjection: true,
+                freeEligible: entry.freeEligible,
+                exclusionReason: entry.exclusionReason,
+                healthGate: entry.healthGate,
+                inCoderSupplyPlan: coderPlan.has(key),
+                quotaOwner: entry.quotaOwner,
+                resetAt: entry.resetAt,
+                expiresAt: entry.expiresAt,
+              },
+        };
+      }),
+    );
+    res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify({
+      generatedAt: new Date().toISOString(),
+      summary: snapshot.summary,
+      providers: snapshot.providers.map((p) => ({
+        providerId: p.providerId,
+        connected: p.connected,
+        credentialSource: p.credentialSource,
+        supplyClass: p.supplyClass,
+        authState: p.authState,
+        planAttested: p.planAttested,
+        discovering: p.discovering,
+        lastCatalogRefreshAt: p.lastCatalogRefreshAt,
+      })),
+      qualification: this.freeCloud.qualificationSummary(),
+      routes,
     }));
   }
 

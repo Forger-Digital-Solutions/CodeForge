@@ -202,10 +202,19 @@ export class FreeModelCatalogRefresh {
           ...zeroUnitResult.records.map((r) => r.modelId),
           ...allowanceRecords.map((r) => r.modelId),
         ]);
+        // R59: a transiently failed allowance probe is inconclusive — it proves nothing about
+        // free status (the provider may simply be rate-limiting). Catalog-listed registrations
+        // keep their last-verified records instead of being reclassified PAID on transient
+        // evidence. A probe that failed with auth/payment evidence IS conclusive — revoke.
+        const probeInconclusive = allowanceResult?.probeFailed === true && allowanceResult.probeRevoked !== true;
         const prevForAdapter = previousModels.filter((m) => m.providerId === adapter.providerId);
         for (const prev of prevForAdapter) {
           if (!verifiedIds.has(prev.modelId)) {
             const liveMatch = liveModelInfos.find((l) => l.modelId === prev.modelId);
+            if (probeInconclusive && liveMatch) {
+              refreshedRecords.push(prev);
+              continue;
+            }
             if (liveMatch && !liveMatch.isFree) {
               const known = this.registry.get(adapter.providerId, prev.modelId);
               const record = known

@@ -399,6 +399,30 @@ const CAPACITY_RESUME_DIRECTIVE = "[Capacity directive] This turn paused mid-exe
  *  horizon. Past it the run fails closed — a far-off reset is indistinguishable from denial for
  *  a bounded run, and parking a subagent indefinitely is the false-waiting failure mode. */
 const CAPACITY_WAIT_HORIZON_MS = 120_000;
+
+/**
+ * R59: "no eligible route" must name why every candidate was excluded. Groups the fabric's
+ * candidate ledger by status+primary reason into a compact, bounded tally — `3
+ * policy_excluded:UNHEALTHY, 2 health_excluded:RATE_LIMITED` — so a denial receipt carries
+ * the exclusion evidence instead of an opaque empty pool.
+ */
+function summarizeDenialCandidates(decision: FabricRouteDecision | undefined): string {
+  const candidates = decision?.explanation.candidates ?? [];
+  if (candidates.length === 0) return "";
+  const groups = new Map<string, { count: number; modelIds: string[] }>();
+  for (const c of candidates.slice(0, 32)) {
+    const key = `${c.status.toLowerCase()}${c.reasonCodes[0] !== undefined ? `:${c.reasonCodes[0]}${c.reasonCodes[1] !== undefined ? `:${c.reasonCodes[1]}` : ""}` : ""}`;
+    const group = groups.get(key) ?? { count: 0, modelIds: [] };
+    group.count += 1;
+    if (group.modelIds.length < 3) group.modelIds.push(c.modelId);
+    groups.set(key, group);
+  }
+  const parts = [...groups.entries()].map(
+    ([key, g]) => `${g.count} ${key} [${g.modelIds.join(", ")}${g.count > g.modelIds.length ? ",…" : ""}]`,
+  );
+  return `candidates: ${parts.join("; ")}`;
+}
+
 function truncateOutput(text: string, maxBytes: number, label: string): string {
   if (Buffer.byteLength(text, "utf-8") <= maxBytes) return text;
   const buf = Buffer.from(text, "utf-8");
@@ -2061,6 +2085,17 @@ export class AgentRuntime {
         if (routing.outcome === "no_eligible_route" && await this.measureUnmeasuredFreeCapacity(routing.fabric)) {
           routing = await selectRoute();
         }
+        // R59: a denial resting on pending qualification is a measurement gap, not absent
+        // supply — run (or join) one bounded recovery cycle so a route that is verified-free
+        // but merely untested does not read as "no free capacity" to the whole run. The wait
+        // is bounded by the capacity horizon and emits progress so the watchdog sees a
+        // recovery in flight, not a stall.
+        if (routing.outcome === "no_eligible_route" && await this.recoverFreeSupply(routing.fabric, {
+          awaitQualificationMs: CAPACITY_WAIT_HORIZON_MS - 15_000,
+          onTick: () => adapter.emitSubagentProgress?.(req.agentId, "Free supply recovery: measuring verified-free routes before declaring zero capacity."),
+        })) {
+          routing = await selectRoute();
+        }
         if (routing.outcome === "no_eligible_route" && routing.queued?.nextAvailableAt) {
           // R48: the fabric's QUEUED verdict is "capacity returns at a provider-stated reset",
           // not "no route exists". Failing instantly on a near-term queued verdict manufactures
@@ -2086,6 +2121,7 @@ export class AgentRuntime {
           const detail = [
             routing.reasonCodes.length > 0 ? routing.reasonCodes.join(", ") : "",
             routing.queued?.nextAvailableAt ? `next_available=${routing.queued.nextAvailableAt}` : "",
+            summarizeDenialCandidates(routing.fabric),
           ].filter(Boolean).join(", ");
           const detailText = detail.length > 0 ? ` (${detail})` : "";
           throw new Error(
@@ -4686,13 +4722,48 @@ export class AgentRuntime {
     return measured;
   }
 
+  /**
+   * R59: before any caller is told "no eligible free route", close the two gaps that are not
+   * supply facts — unmeasured quota domains and pending qualification. A route that is
+   * verified-free but never measured is not zero supply; the denial must not be issued while
+   * one bounded cycle could still produce the evidence. Returns true when the decision is
+   * stale and the caller should re-decide.
+   */
+  private async recoverFreeSupply(
+    decision: FabricRouteDecision | undefined,
+    opts: { awaitQualificationMs?: number; onTick?: () => void } = {},
+  ): Promise<boolean> {
+    if (!decision || decision.outcome === "ADMITTED") return false;
+    let stale = await this.measureUnmeasuredFreeCapacity(decision);
+    const fc = this.freeCloud;
+    if (!fc) return stale;
+    const pending = fc.pendingQualification?.().length ?? 0;
+    if (pending > 0 || fc.isQualifying?.() === true) {
+      stale = true;
+      // Recovery mode: the interval gate exists to bound spend cadence, not to freeze supply
+      // after a transient — the daily budget and per-day recovery cap still apply.
+      const kick = fc.qualifyPending?.({ recovery: true });
+      if (kick) void kick.catch(() => undefined);
+      const waitMs = opts.awaitQualificationMs ?? 0;
+      if (waitMs > 0) {
+        const deadline = Date.now() + waitMs;
+        while (fc.isQualifying?.() === true && Date.now() < deadline) {
+          opts.onTick?.();
+          await new Promise((resolve) => setTimeout(resolve, 1_000));
+        }
+      }
+    }
+    return stale;
+  }
+
   async probeCapacityWait(turnId: string): Promise<FabricOutcome | undefined> {
     const state = this.activeTurns.get(turnId);
     if (state?.status !== "waiting_for_free_capacity" || !this.eightBit.hasFreeFabric) return undefined;
     let decision = this.admitForTurn(turnId);
     if (!decision) return undefined;
-    if (decision.outcome !== "ADMITTED" && await this.measureUnmeasuredFreeCapacity(decision)) {
-      // Fresh quota may admit now — re-decide on the measured windows before reporting.
+    if (decision.outcome !== "ADMITTED" && await this.recoverFreeSupply(decision)) {
+      // Fresh quota may admit now — re-decide on the measured windows before reporting. A
+      // kicked qualification cycle resolves on later sweeps; the wait itself stays durable.
       decision = this.admitForTurn(turnId);
       if (!decision) return undefined;
     }
@@ -4767,7 +4838,7 @@ export class AgentRuntime {
         // probe's hold is released before resolveTurnModel: selectModel re-decides under the
         // same requestId, and pin paths that never reach it must not leak a reservation.
         const probe = this.admitForTurn(turnId);
-        if (probe && probe.outcome !== "ADMITTED") await this.measureUnmeasuredFreeCapacity(probe);
+        if (probe && probe.outcome !== "ADMITTED") await this.recoverFreeSupply(probe);
         if (probe?.outcome === "ADMITTED") this.eightBit.releaseFabricAdmission(`forgeauto:${turnId}`);
         model = this.resolveTurnModel(turnId);
       } catch (error) {

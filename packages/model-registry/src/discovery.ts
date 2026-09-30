@@ -22,6 +22,27 @@ export interface DiscoverResult {
   /** Overlays written into the registry as verification evidence. */
   overlays: CodeForgeOverlay[];
   verifiedCount: number;
+  /** Every model id the provider's live catalog listed this refresh — free or not — so a
+   * caller can distinguish "provider delisted it" from "the read itself was inconclusive". */
+  catalogModelIds?: string[];
+  /** The allowance probe ran and failed. A transient failure (429/5xx/network) disproves
+   * nothing about free status — callers must not prune previously verified routes on it. */
+  probeFailed?: boolean;
+  /** The probe failed with affirmative revocation evidence (401/402/403, billing/payment,
+   *  invalid key) — the account's free access is gone, not merely busy. Callers must NOT
+   *  treat this as inconclusive: reclassification/removal proceeds. */
+  probeRevoked?: boolean;
+}
+
+/**
+ * Classify a failed allowance probe. Transient failures (rate limits, timeouts, 5xx, network)
+ * are inconclusive — the free route may simply be busy. Auth/billing failures (401/402/403,
+ * "payment required", invalid key) are affirmative evidence that free access was revoked.
+ */
+export function probeFailureIsRevocation(error?: string): boolean {
+  if (!error) return false;
+  if (/\b(?:401|402|403)\b|payment|billing|unauthor|forbidden|invalid api key|permission denied/i.test(error)) return true;
+  return false;
 }
 
 function synthCaps(live: LiveModelInfo): NormalizedCapabilities {
@@ -120,7 +141,7 @@ export function discoverAndVerifyFree(
     records.push(registry.toFreeModelRecord(record, overlay));
   }
 
-  return { records, overlays, verifiedCount: records.length };
+  return { records, overlays, verifiedCount: records.length, catalogModelIds: liveModels.map((m) => m.modelId) };
 }
 
 export interface ProbeResult {
@@ -155,7 +176,7 @@ export async function verifyAllowanceViaProbe(
   const policy = getProviderPolicy(providerId);
   const records: FreeModelRecord[] = [];
   const overlays: CodeForgeOverlay[] = [];
-  if (!policy?.hasAllowanceFree) return { records, overlays, verifiedCount: 0 };
+  if (!policy?.hasAllowanceFree) return { records, overlays, verifiedCount: 0, catalogModelIds: liveModels.map((m) => m.modelId) };
 
   const candidates = liveModels.filter((m) => {
     if (NON_CHAT_RE.test(m.modelId)) return false;
@@ -164,13 +185,20 @@ export async function verifyAllowanceViaProbe(
     if (policy.paidPlanModels?.includes(m.modelId)) return false;
     return true;
   });
-  if (candidates.length === 0) return { records, overlays, verifiedCount: 0 };
+  if (candidates.length === 0) return { records, overlays, verifiedCount: 0, catalogModelIds: liveModels.map((m) => m.modelId) };
 
   const rep =
     candidates.find((m) => /llama|instant|versatile|gemma|qwen|mixtral|gpt-oss|flash|glm/i.test(m.modelId)) ??
     candidates[0]!;
   const result = await probe(rep.modelId);
-  if (!result.ok) return { records, overlays, verifiedCount: 0 };
+  if (!result.ok) {
+    return {
+      records, overlays, verifiedCount: 0,
+      catalogModelIds: liveModels.map((m) => m.modelId),
+      probeFailed: true,
+      ...(probeFailureIsRevocation(result.error) ? { probeRevoked: true } : {}),
+    };
+  }
 
   for (const m of candidates) {
     const known = registry.get(providerId, m.modelId);
@@ -184,7 +212,35 @@ export async function verifyAllowanceViaProbe(
     overlays.push(overlay);
     records.push(registry.toFreeModelRecord(record, overlay));
   }
-  return { records, overlays, verifiedCount: records.length };
+  return { records, overlays, verifiedCount: records.length, catalogModelIds: liveModels.map((m) => m.modelId) };
+}
+
+/**
+ * R59: the model ids a refresh cycle may prune the registered catalog DOWN TO. Verified-free
+ * records live and die by current evidence — but inconclusive evidence must not erase them.
+ * A failed allowance probe proves nothing about free status (the provider may simply be
+ * rate-limiting), so records the live catalog still lists are kept. A live listing that
+ * returns zero models at all is a failed read, not proof that every known model was delisted.
+ * Only an affirmative catalog — models listed, the free set computed — may prune to what
+ * re-verified. Caller supplies the currently-registered ids for this provider.
+ */
+export function catalogPruneKeepSet(input: {
+  registeredModelIds: readonly string[];
+  catalogModelIds: readonly string[];
+  verifiedModelIds: readonly string[];
+  probeFailed?: boolean;
+  /** Affirmative revocation evidence (auth/payment failure) — NOT inconclusive: prune to the
+   *  re-verified set as normal even though the probe did not succeed. */
+  probeRevoked?: boolean;
+}): Set<string> {
+  if (input.catalogModelIds.length === 0) return new Set(input.registeredModelIds);
+  if (input.probeFailed === true && input.probeRevoked !== true) {
+    const listed = new Set(input.catalogModelIds);
+    const keep = new Set(input.registeredModelIds.filter((id) => listed.has(id)));
+    for (const id of input.verifiedModelIds) keep.add(id);
+    return keep;
+  }
+  return new Set(input.verifiedModelIds);
 }
 
 /** Human-readable LIVE "Top Verified Free" report line for a bridged record. */

@@ -912,4 +912,80 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(provider.callCount).toBe(1);
     expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toBeUndefined();
   });
+
+  it("R59: a denial resting on pending qualification kicks one recovery cycle and the same turn admits the measured route", async () => {
+    // The R58 false-zero shape: verified-free routes exist but have no qualification receipt
+    // yet, so the fabric's plan is empty and admission denies. The runtime must close that
+    // measurement gap before reporting "no eligible route" — one bounded recovery cycle, not
+    // a terminal denial.
+    let recovered = false;
+    const route = managedRoute("provider-a");
+    registerFleet("provider-a", "provider-a-model");
+    const fabric = createFreeFabric({
+      managedRoutes: () => (recovered ? [route] : []),
+      managedPools: () => (recovered ? [poolFor(route)] : []),
+      userSources: [],
+      health: authority,
+      reservations: new CapacityReservationLedger({ routes: [], pools: [] }),
+    });
+    const provider = new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents());
+    catalog.register(provider);
+    const kicks: Array<{ providerId?: string; recovery?: boolean } | undefined> = [];
+    const freeCloud: import("@codeforge/model-registry").FreeCloudRoutingHooks = {
+      isForgeAutoEligible: () => true,
+      canonicalIdOf: (p: string, m: string) => `${p}/${m}`,
+      sameModelAlternates: () => [],
+      recordRouteFailure: () => undefined,
+      recordRouteSuccess: () => undefined,
+      quotaRemaining: () => undefined,
+      capacityRoutingAdvice: () => ({ scoreAdjustment: 0, reasonCodes: [] }),
+      pendingQualification: () => (recovered ? [] : [{} as import("@codeforge/model-registry").ProviderRouteView]),
+      isQualifying: () => false,
+      qualifyPending: async (opts) => {
+        kicks.push(opts);
+        recovered = true; // the cycle produced the receipt — the route is now admissible
+        return [];
+      },
+    };
+
+    const runtime = makeRuntime("sess-fabric-r59-recover", fabric, undefined, freeCloud);
+    await runtime.init();
+    const turnId = await runtime.startTurn("Say hello");
+    const final = await waitForTerminal(runtime, persistence, "sess-fabric-r59-recover", turnId);
+
+    expect(final?.status).toBe("completed");
+    expect(provider.callCount).toBe(1);
+    expect(kicks.length).toBeGreaterThan(0);
+    expect(kicks[0]?.recovery).toBe(true);
+  });
+
+  it("R59: a denial with nothing pending stays denied — recovery never fabricates supply", async () => {
+    registerFleet("provider-x", "provider-x-model");
+    const fabric = makeFabric([], []);
+    const provider = new ScriptedRouteProvider("provider-x", "provider-x-model", () => okEvents());
+    catalog.register(provider);
+    let kicks = 0;
+    const freeCloud: import("@codeforge/model-registry").FreeCloudRoutingHooks = {
+      isForgeAutoEligible: () => true,
+      canonicalIdOf: (p: string, m: string) => `${p}/${m}`,
+      sameModelAlternates: () => [],
+      recordRouteFailure: () => undefined,
+      recordRouteSuccess: () => undefined,
+      quotaRemaining: () => undefined,
+      capacityRoutingAdvice: () => ({ scoreAdjustment: 0, reasonCodes: [] }),
+      pendingQualification: () => [],
+      isQualifying: () => false,
+      qualifyPending: async () => { kicks++; return []; },
+    };
+
+    const runtime = makeRuntime("sess-fabric-r59-empty", fabric, undefined, freeCloud);
+    await runtime.init();
+    const turnId = await runtime.startTurn("Say hello");
+    const final = await waitForTerminal(runtime, persistence, "sess-fabric-r59-empty", turnId);
+
+    expect(final?.status).toBe("failed");
+    expect(provider.callCount).toBe(0);
+    expect(kicks).toBe(0); // nothing pending → no wasted probe spend
+    expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+  });
 });

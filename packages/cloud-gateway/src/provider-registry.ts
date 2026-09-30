@@ -2,6 +2,7 @@ import {
   NormalizedModelRegistry,
   discoverAndVerifyFree,
   verifyAllowanceViaProbe,
+  catalogPruneKeepSet,
   getProviderPolicy,
   PROVIDER_POLICIES,
   PROVIDER_DEFINITIONS,
@@ -343,6 +344,8 @@ export class CloudProviderRegistry {
 
     // Allowance providers (Gemini/Groq/Cloudflare) list paid unit prices, so the $0 check above finds
     // nothing. Prove the account's free tier with an actual no-charge probe request instead.
+    let probeFailed = false;
+    let probeRevoked = false;
     if (verifiedFreeCount === 0 && policy?.hasAllowanceFree) {
       const probe = async (modelId: string): Promise<{ ok: boolean; error?: string }> => {
         try {
@@ -365,14 +368,24 @@ export class CloudProviderRegistry {
         verifiedIds.add(rec.modelId);
       }
       verifiedFreeCount = allowance.verifiedCount;
+      probeFailed = allowance.probeFailed === true;
+      probeRevoked = allowance.probeRevoked === true;
     }
 
     // Owner-spend firewall — cost-transition safety: any model previously registered for this provider
     // that is NO LONGER verified-free (flipped to paid, withdrawn, or now rate-limited out of the free
     // set) is reconciled away so it can never be routed. Only runs when listModels succeeded, so a
-    // transient outage never wipes last-known-good capacity.
+    // transient outage never wipes last-known-good capacity — and R59: a failed allowance probe is
+    // inconclusive evidence too, so catalog-listed registrations survive it.
+    const keep = catalogPruneKeepSet({
+      registeredModelIds: this.firewallManager.listProviderModelIds(providerId),
+      catalogModelIds: live.map((m) => m.modelId),
+      verifiedModelIds: [...verifiedIds],
+      probeFailed,
+      probeRevoked,
+    });
     for (const existingId of this.firewallManager.listProviderModelIds(providerId)) {
-      if (!verifiedIds.has(existingId)) this.firewallManager.unregisterModel(providerId, existingId);
+      if (!keep.has(existingId)) this.firewallManager.unregisterModel(providerId, existingId);
     }
 
     if (verifiedFreeCount > 0) {
