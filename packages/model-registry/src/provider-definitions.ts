@@ -136,6 +136,14 @@ export interface FreeAccessProfile {
    * whenever a provider-wide quota observation exists — account evidence wins over declaration.
    */
   quotaDomain?: "account" | "model";
+  /**
+   * The free tier's declared request-per-minute ceiling (e.g. Groq free plan 30 RPM,
+   * OpenRouter `:free` variants 20 RPM). Qualification and capacity probes pace to this
+   * value — an unpaced suite bursts past the cap and trips its own 429 mid-measurement,
+   * burning daily spend for evidence that never lands. Absent means undeclared; callers
+   * apply a conservative floor.
+   */
+  maxRequestsPerMinute?: number;
   /** Model ids explicitly requiring a paid plan (never free on this provider). */
   paidPlanModels?: string[];
   evidence: { source: string; checkedAt: string; note?: string };
@@ -219,6 +227,7 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
     freeAccess: {
       class: "FREE_API",
       quota: "`:free` variants: 20 RPM; 50 requests/day (<10 credits purchased) or 1,000/day (>=10 credits)",
+      maxRequestsPerMinute: 20,
       spillover: "NONE",
       planDetection: "not_required",
       evidence: { source: "https://openrouter.ai/docs/api_reference/limits + live /api/v1/models pricing", checkedAt: CHECKED, note: "Free variants list prompt/completion price 0; a negative balance can 402 even free routes." },
@@ -325,6 +334,7 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
     freeAccess: {
       class: "FREE_DAILY_ALLOCATION",
       quota: "Free plan: 30 RPM / 1K RPD / 8K TPM / 200K TPD (gpt-oss, qwen)",
+      maxRequestsPerMinute: 30,
       spillover: "ACCOUNT_DEPENDENT",
       // R33 measured: every model reported an independent remaining=999 on first call.
       quotaDomain: "model",

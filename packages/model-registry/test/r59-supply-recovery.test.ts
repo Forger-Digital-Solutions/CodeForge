@@ -92,6 +92,7 @@ function harness(opts: {
   providerConcurrency?: number;
   suiteDeadlineMs?: number;
   capacityProbeTimeoutMs?: number;
+  probeMinIntervalMs?: number;
   realRunner?: boolean;
   /** ACCOUNT_DEPENDENT providers (Groq, Gemini) stay FREE_VERIFIED-gated until the user attests
    *  the free plan — the packaged harness's `attestProviderFreePlan(provider, true)` step. */
@@ -119,6 +120,7 @@ function harness(opts: {
     ...(opts.providerConcurrency !== undefined ? { qualificationProviderConcurrency: opts.providerConcurrency } : {}),
     ...(opts.suiteDeadlineMs !== undefined ? { qualificationSuiteDeadlineMs: opts.suiteDeadlineMs } : {}),
     ...(opts.capacityProbeTimeoutMs !== undefined ? { capacityProbeTimeoutMs: opts.capacityProbeTimeoutMs } : {}),
+    ...(opts.probeMinIntervalMs !== undefined ? { probeMinIntervalMs: opts.probeMinIntervalMs } : {}),
     ...(opts.realRunner === true ? {} : {
       qualificationRunner: async (model: FreeModelRecord, _adapter: unknown, runOpts?: { signal?: AbortSignal }) => {
         calls.push(`${model.providerId}/${model.modelId}`);
@@ -443,6 +445,126 @@ describe("R59 — qualification starvation: a saturated upstream cannot monopoli
       const probe = h.svc.probeRouteCapacity("groq", "m");
       await vi.advanceTimersByTimeAsync(60);
       await expect(probe).resolves.toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("R59 — provider probe pacing: measurement cannot trip the free-tier RPM cap it runs under", () => {
+  it("capacity probes on a declared-RPM provider share one paced window across probe keys", async () => {
+    vi.useFakeTimers();
+    try {
+      const stamps: number[] = [];
+      const h = harness({
+        routes: [{ providerId: "groq", modelId: "m" }],
+        attestedProviders: ["groq"],
+        adapters: {
+          groq: {
+            isTestProvider: false,
+            probeAccountQuota: async () => { stamps.push(Date.now()); return false; },
+            chat: async () => { stamps.push(Date.now()); throw new Error("ping"); },
+          },
+        },
+      });
+      // Distinct model keys measure independently — but must still share the provider's
+      // declared 30 RPM window (60s/30 + margin = 2100ms per request).
+      const p1 = h.svc.probeRouteCapacity("groq", "m");
+      const p2 = h.svc.probeRouteCapacity("groq", "n");
+      await vi.advanceTimersByTimeAsync(60_000);
+      await Promise.all([p1, p2]);
+      expect(stamps).toHaveLength(4);
+      for (let i = 1; i < stamps.length; i++) {
+        expect(stamps[i]! - stamps[i - 1]!).toBeGreaterThanOrEqual(2_100);
+      }
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("a qualification suite on a declared-RPM provider spaces its requests — measured, not bursted", async () => {
+    vi.useFakeTimers();
+    try {
+      const stamps: number[] = [];
+      const h = harness({
+        routes: [{ providerId: "groq", modelId: "m" }],
+        attestedProviders: ["groq"],
+        realRunner: true,
+        adapters: {
+          groq: {
+            isTestProvider: false,
+            streamChat: (async function* () {
+              stamps.push(Date.now());
+              yield { type: "text", text: "ok" } as import("@codeforge/providers").StreamEvent;
+            }) as never,
+          },
+        },
+      });
+      const cycle = h.svc.qualifyPending();
+      await vi.advanceTimersByTimeAsync(600_000);
+      await cycle;
+      expect(stamps.length).toBeGreaterThanOrEqual(3);
+      for (let i = 1; i < stamps.length; i++) {
+        expect(stamps[i]! - stamps[i - 1]!).toBeGreaterThanOrEqual(2_100);
+      }
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("providers without a declared RPM get the conservative floor interval", async () => {
+    vi.useFakeTimers();
+    try {
+      const stamps: number[] = [];
+      const h = harness({
+        routes: [{ providerId: "cerebras", modelId: "m" }],
+        probeMinIntervalMs: 250,
+        adapters: {
+          cerebras: {
+            isTestProvider: false,
+            chat: async () => { stamps.push(Date.now()); throw new Error("ping"); },
+          },
+        },
+      });
+      const p1 = h.svc.probeRouteCapacity("cerebras", "m");
+      const p2 = h.svc.probeRouteCapacity("cerebras", "n");
+      await vi.advanceTimersByTimeAsync(30_000);
+      await Promise.all([p1, p2]);
+      expect(stamps).toHaveLength(2);
+      expect(stamps[1]! - stamps[0]!).toBeGreaterThanOrEqual(250);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("a pace wait aborted by the suite deadline resolves transient — the adapter is never reached", async () => {
+    vi.useFakeTimers();
+    try {
+      let calls = 0;
+      const h = harness({
+        routes: [{ providerId: "openrouter", modelId: "m:free" }],
+        suiteDeadlineMs: 100,
+        realRunner: true,
+        adapters: {
+          openrouter: {
+            isTestProvider: false,
+            streamChat: (async function* () {
+              calls++;
+              yield { type: "text", text: "ok" } as import("@codeforge/providers").StreamEvent;
+            }) as never,
+          },
+        },
+      });
+      const cycle = h.svc.qualifyPending();
+      await vi.advanceTimersByTimeAsync(10_000);
+      const produced = await cycle;
+      expect(produced).toEqual([]);
+      // OpenRouter's declared 20 RPM paces subsequent calls at ~3.1s — the 100ms deadline
+      // aborts the wait before a second request reaches the provider.
+      expect(calls).toBe(1);
+      const route = h.svc.snapshot().models[0]!.routes[0]!;
+      expect(route.qualificationState).toBe("NOT_TESTED");
+      expect(route.health).toBe("COOLDOWN");
     } finally {
       vi.useRealTimers();
     }

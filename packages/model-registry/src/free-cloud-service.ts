@@ -6,7 +6,7 @@ import {
   type ProviderCapacityPool,
   type SupplyClass,
 } from "@codeforge/forge-zero";
-import type { ProviderAdapter, ProviderCatalog, ProviderResponseObservation, ProviderResponseObserver } from "@codeforge/providers";
+import type { ChatRequest, ProviderAdapter, ProviderCatalog, ProviderExecutionContext, ProviderResponseObservation, ProviderResponseObserver, StreamEvent } from "@codeforge/providers";
 import {
   runRoleAwareQualification,
   rateLimitObservationFromHeaders,
@@ -127,6 +127,13 @@ export interface FreeCloudServiceOptions {
    * admission recovery wait indefinitely. Default 30 seconds.
    */
   capacityProbeTimeoutMs?: number;
+  /**
+   * R59: floor on spacing between provider-bound probe/qualification requests for providers
+   * without a declared `freeAccess.maxRequestsPerMinute`. Free tiers rate-limit per minute —
+   * an unpaced suite bursts past the cap and trips its own 429 mid-measurement, burning the
+   * provider's daily qualification budget on evidence that never lands. Default 1.2s.
+   */
+  probeMinIntervalMs?: number;
   /**
    * R59: bound on cooldown-aligned recovery cycles per provider per day. A cycle that ended
    * transient-only schedules a retry at the provider's own cooldown expiry; this cap keeps a
@@ -270,6 +277,13 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private readonly qualificationProviderConcurrency: number;
   private readonly qualificationSuiteDeadlineMs: number;
   private readonly capacityProbeTimeoutMs: number;
+  private readonly probeMinIntervalMs: number;
+  /**
+   * Per-provider claim cursor for probe pacing. Stamping the NEXT slot at claim time (not at
+   * fire time) keeps concurrent qualification lanes and capacity probes from double-spending
+   * the same RPM window.
+   */
+  private readonly probeNextAllowedAt = new Map<string, number>();
   /** Qualification requests spent per provider, keyed by UTC day. */
   private readonly qualificationSpend = new Map<string, { day: string; requests: number; lastCycleAt: number; recoveries: number }>();
   /** R59: cooldown-aligned recovery retries — one armed timer per provider at most. */
@@ -296,6 +310,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     this.qualificationProviderConcurrency = Math.max(1, options.qualificationProviderConcurrency ?? 2);
     this.qualificationSuiteDeadlineMs = options.qualificationSuiteDeadlineMs ?? 360_000;
     this.capacityProbeTimeoutMs = options.capacityProbeTimeoutMs ?? 30_000;
+    this.probeMinIntervalMs = options.probeMinIntervalMs ?? 1_200;
     this.routeHealth = options.routeHealth;
   }
 
@@ -598,6 +613,79 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       .sort((a, b) => urgentRoleFailure(b) - urgentRoleFailure(a) || penalty(a) - penalty(b) || score(b) - score(a));
   }
 
+  /**
+   * R59: spacing between provider-bound probe requests. Free tiers rate-limit per minute
+   * (Groq free plan 30 RPM, OpenRouter `:free` 20 RPM); an unpaced qualification suite bursts
+   * ~25 requests in ~20s and trips its own 429 mid-measurement — daily budget spent, verdict
+   * never landed. Declared `maxRequestsPerMinute` wins (+100ms margin); undeclared providers
+   * get the conservative floor. Pacing spaces requests — it never changes their count.
+   */
+  private probeIntervalMs(providerId: string): number {
+    const declared = this.definitions[providerId]?.freeAccess?.maxRequestsPerMinute;
+    return typeof declared === "number" && declared > 0 ? Math.ceil(60_000 / declared) + 100 : this.probeMinIntervalMs;
+  }
+
+  /**
+   * Claim the next request slot for `providerId` and wait for it. The slot is stamped at claim
+   * time so concurrent callers (qualification lanes, capacity probes) serialize against one
+   * shared RPM window instead of each starting their own. An aborted wait rejects with a
+   * timeout-classified message — callers observe it as transient, never as a verdict.
+   */
+  private probePace(providerId: string, signal?: AbortSignal): Promise<void> {
+    const nowMs = Date.now();
+    const slot = Math.max(this.probeNextAllowedAt.get(providerId) ?? 0, nowMs);
+    this.probeNextAllowedAt.set(providerId, slot + this.probeIntervalMs(providerId));
+    const wait = slot - nowMs;
+    if (signal?.aborted) return Promise.reject(new Error("probe pace wait aborted (timed out)"));
+    if (wait <= 0) return Promise.resolve();
+    return new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(resolve, wait);
+      signal?.addEventListener("abort", () => {
+        clearTimeout(timer);
+        reject(new Error("probe pace wait aborted (timed out)"));
+      }, { once: true });
+    });
+  }
+
+  private async *pacedStream(providerId: string, open: () => AsyncIterable<StreamEvent>, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+    await this.probePace(providerId, signal);
+    yield* open();
+  }
+
+  /**
+   * Pace every provider-bound request an adapter can make inside a measurement path. Test
+   * providers are exempt — they bypass the global capacity governor for the same reason:
+   * a scripted adapter has no real rate limit to spend.
+   */
+  private paceProviderAdapter(adapter: ProviderAdapter): ProviderAdapter {
+    if (adapter.isTestProvider === true) return adapter;
+    const providerId = adapter.providerId;
+    return {
+      providerId,
+      ...(adapter.isTestProvider !== undefined ? { isTestProvider: adapter.isTestProvider } : {}),
+      ...(adapter.supportsDispatchIdentity !== undefined ? { supportsDispatchIdentity: adapter.supportsDispatchIdentity } : {}),
+      listModels: () => adapter.listModels(),
+      healthCheck: () => adapter.healthCheck(),
+      chat: async (req: ChatRequest) => {
+        await this.probePace(providerId);
+        return adapter.chat(req);
+      },
+      streamChat: (req: ChatRequest, signal?: AbortSignal) => this.pacedStream(providerId, () => adapter.streamChat(req, signal), signal),
+      ...(adapter.streamChatWithContext !== undefined ? {
+        streamChatWithContext: (req: ChatRequest, context: ProviderExecutionContext, signal?: AbortSignal) =>
+          this.pacedStream(providerId, () => adapter.streamChatWithContext!(req, context, signal), signal),
+      } : {}),
+      ...(adapter.canRoute !== undefined ? { canRoute: (modelId: string) => adapter.canRoute!(modelId) } : {}),
+      ...(adapter.getPromptCacheCapability !== undefined ? { getPromptCacheCapability: (modelId: string) => adapter.getPromptCacheCapability!(modelId) } : {}),
+      ...(adapter.probeAccountQuota !== undefined ? {
+        probeAccountQuota: async () => {
+          await this.probePace(providerId);
+          return adapter.probeAccountQuota!();
+        },
+      } : {}),
+    };
+  }
+
   private spendFor(providerId: string): { day: string; requests: number; lastCycleAt: number; recoveries: number } {
     const day = this.now().toISOString().slice(0, 10);
     const entry = this.qualificationSpend.get(providerId);
@@ -707,7 +795,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       const suiteDeadline = new AbortController();
       const deadlineTimer = setTimeout(() => suiteDeadline.abort(), this.qualificationSuiteDeadlineMs);
       try {
-        const receipt = await this.qualificationRunner(model, adapter, { signal: suiteDeadline.signal });
+        const receipt = await this.qualificationRunner(model, this.paceProviderAdapter(adapter), { signal: suiteDeadline.signal });
         if (typeof receipt.metadata?.requests === "number") {
           spend.requests += receipt.metadata.requests - this.qualificationRequestsPerCycle;
         }
@@ -1032,7 +1120,9 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     if (!adapter) return false;
     // Adapter calls carry no timeout of their own; a stalled connection must not hold an
     // admission recovery wait indefinitely. The race bounds the measurement; the underlying
-    // request still completes in the background and records its quota headers.
+    // request still completes in the background and records its quota headers. Calls run
+    // through the probe pacer so a measurement burst cannot trip the provider's RPM cap.
+    const pacedAdapter = this.paceProviderAdapter(adapter);
     const bound = <T>(call: Promise<T>): Promise<T> =>
       Promise.race([
         call,
@@ -1040,7 +1130,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       ]);
     const probe = (async (): Promise<boolean> => {
       try {
-        if (typeof adapter.probeAccountQuota === "function" && await bound(adapter.probeAccountQuota())) {
+        if (typeof pacedAdapter.probeAccountQuota === "function" && await bound(pacedAdapter.probeAccountQuota())) {
           return true;
         }
       } catch {
@@ -1048,7 +1138,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       }
       if (modelId === undefined) return this.routeCapacityObserved(providerId, modelId, accountId);
       try {
-        await bound(adapter.chat({
+        await bound(pacedAdapter.chat({
           model: modelId,
           messages: [{ role: "user", content: "ping" }],
           maxTokens: 1,
