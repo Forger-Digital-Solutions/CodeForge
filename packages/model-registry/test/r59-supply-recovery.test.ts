@@ -84,14 +84,28 @@ function receipt(providerId: string, modelId: string, transient: boolean): Model
 function harness(opts: {
   routes: Array<{ providerId: string; modelId: string }>;
   runner?: (providerId: string, modelId: string, callIndex: number) => ModelQualificationReceipt;
+  runnerAsync?: (model: FreeModelRecord, runOpts?: { signal?: AbortSignal }) => Promise<ModelQualificationReceipt>;
+  adapters?: Record<string, Partial<import("@codeforge/providers").ProviderAdapter>>;
   cycleIntervalMs?: number;
   recoveryCap?: number;
   dailyBudget?: number;
+  providerConcurrency?: number;
+  suiteDeadlineMs?: number;
+  capacityProbeTimeoutMs?: number;
+  realRunner?: boolean;
+  /** ACCOUNT_DEPENDENT providers (Groq, Gemini) stay FREE_VERIFIED-gated until the user attests
+   *  the free plan — the packaged harness's `attestProviderFreePlan(provider, true)` step. */
+  attestedProviders?: string[];
 }) {
   const fw = new ForgeZero();
   for (const r of opts.routes) fw.register(freeRecord(r.providerId, r.modelId));
   const catalog = new InMemoryProviderCatalog();
-  for (const providerId of new Set(opts.routes.map((r) => r.providerId))) catalog.register(createMockProvider({ providerId }));
+  for (const providerId of new Set(opts.routes.map((r) => r.providerId))) {
+    const adapter = createMockProvider({ providerId });
+    const override = opts.adapters?.[providerId];
+    if (override) Object.assign(adapter, override);
+    catalog.register(adapter);
+  }
   let clock = START;
   const calls: string[] = [];
   const svc = new FreeCloudService({
@@ -102,12 +116,22 @@ function harness(opts: {
     qualificationCycleIntervalMs: opts.cycleIntervalMs ?? 0,
     ...(opts.recoveryCap !== undefined ? { qualificationRecoveryAttemptsPerProviderPerDay: opts.recoveryCap } : {}),
     ...(opts.dailyBudget !== undefined ? { qualificationDailyBudgetPerProvider: opts.dailyBudget } : {}),
-    qualificationRunner: async (model) => {
-      calls.push(`${model.providerId}/${model.modelId}`);
-      return opts.runner?.(model.providerId, model.modelId, calls.length) ?? receipt(model.providerId, model.modelId, false);
-    },
+    ...(opts.providerConcurrency !== undefined ? { qualificationProviderConcurrency: opts.providerConcurrency } : {}),
+    ...(opts.suiteDeadlineMs !== undefined ? { qualificationSuiteDeadlineMs: opts.suiteDeadlineMs } : {}),
+    ...(opts.capacityProbeTimeoutMs !== undefined ? { capacityProbeTimeoutMs: opts.capacityProbeTimeoutMs } : {}),
+    ...(opts.realRunner === true ? {} : {
+      qualificationRunner: async (model: FreeModelRecord, _adapter: unknown, runOpts?: { signal?: AbortSignal }) => {
+        calls.push(`${model.providerId}/${model.modelId}`);
+        return opts.runnerAsync?.(model, runOpts) ?? opts.runner?.(model.providerId, model.modelId, calls.length) ?? receipt(model.providerId, model.modelId, false);
+      },
+    }),
   });
-  for (const providerId of new Set(opts.routes.map((r) => r.providerId))) svc.setConnection(connected(providerId, { credentialSource: "OAUTH" }));
+  for (const providerId of new Set(opts.routes.map((r) => r.providerId))) {
+    svc.setConnection(connected(providerId, {
+      credentialSource: "OAUTH",
+      ...(opts.attestedProviders?.includes(providerId) ? { planAttested: true } : {}),
+    }));
+  }
   return { svc, calls, advance: (ms: number) => { clock += ms; } };
 }
 
@@ -327,6 +351,101 @@ describe("R59 — discovery surfaces the evidence class a probe produced", () =>
     ]);
     expect(result.verifiedCount).toBe(1);
     expect(result.catalogModelIds).toEqual(["a/model:free", "paid/model"]);
+  });
+});
+
+describe("R59 — qualification starvation: a saturated upstream cannot monopolize the fleet", () => {
+  it("a suite that hits its wall-clock deadline reports transient evidence — the route stays pending, never a starvation verdict", async () => {
+    vi.useFakeTimers();
+    try {
+      // The REAL role-aware suite, driven against an adapter whose stream never yields —
+      // the saturated-upstream signature. Only the suite deadline's abort can end each probe.
+      const hung = async function* (_req: unknown, signal?: AbortSignal): AsyncIterable<import("@codeforge/providers").StreamEvent> {
+        await new Promise<never>((_resolve, reject) => {
+          if (signal?.aborted) return reject(new Error("The operation was aborted"));
+          signal?.addEventListener("abort", () => reject(new Error("The operation was aborted")), { once: true });
+        });
+      };
+      const h = harness({
+        routes: [{ providerId: "openrouter", modelId: "m:free" }],
+        adapters: { openrouter: { streamChat: hung as never } },
+        suiteDeadlineMs: 100,
+        realRunner: true,
+      });
+
+      const cycle = h.svc.qualifyPending();
+      await vi.advanceTimersByTimeAsync(1_000);
+      const produced = await cycle;
+
+      expect(produced).toEqual([]);
+      const route = h.svc.snapshot().models[0]!.routes[0]!;
+      // Deadline evidence classifies as transient — a cooldown and a pending retry,
+      // never a fabricated capability verdict.
+      expect(route.qualificationState).toBe("NOT_TESTED");
+      expect(route.health).toBe("COOLDOWN");
+      expect(h.svc.qualificationSummary().find((s) => s.providerId === "openrouter")!.recoveryScheduledAt).toBeDefined();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("per-provider lanes: a responsive provider's pending routes qualify while a saturated provider's suite is still parked", async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => { release = r; });
+    const h = harness({
+      routes: [
+        { providerId: "openrouter", modelId: "slow:free" },
+        { providerId: "groq", modelId: "fast:free" },
+      ],
+      attestedProviders: ["groq"],
+      runnerAsync: async (model) => {
+        if (model.providerId === "openrouter") await gate;
+        return receipt(model.providerId, model.modelId, false);
+      },
+    });
+
+    const cycle = h.svc.qualifyPending();
+    // Groq's lane runs to completion while OpenRouter's suite is still in flight.
+    await vi.waitFor(() => expect(h.svc.isForgeAutoEligible("groq", "fast:free")).toBe(true), { timeout: 500 });
+    expect(h.svc.isForgeAutoEligible("openrouter", "slow:free")).toBe(false);
+
+    release();
+    const produced = await cycle;
+    expect(produced.map((r) => `${r.providerId}/${r.modelId}`).sort()).toEqual(["groq/fast:free", "openrouter/slow:free"]);
+    expect(h.calls).toHaveLength(2);
+  });
+
+  it("the per-cycle slot budget binds concurrent lanes — slots are claimed before the suite awaits", async () => {
+    const h = harness({
+      routes: [
+        { providerId: "openrouter", modelId: "a:free" },
+        { providerId: "openrouter", modelId: "b:free" },
+        { providerId: "groq", modelId: "c:free" },
+        { providerId: "groq", modelId: "d:free" },
+      ],
+      attestedProviders: ["groq"],
+    });
+    const produced = await h.svc.qualifyPending({ budget: 2 });
+    expect(produced).toHaveLength(2);
+    expect(h.calls).toHaveLength(2);
+    expect(h.svc.pendingQualification()).toHaveLength(2);
+  });
+
+  it("a capacity probe that outlives its bound resolves inconclusive — never healthy, never hung", async () => {
+    vi.useFakeTimers();
+    try {
+      const h = harness({
+        routes: [{ providerId: "groq", modelId: "m" }],
+        adapters: { groq: { chat: () => new Promise<never>(() => {}) } },
+        capacityProbeTimeoutMs: 50,
+        attestedProviders: ["groq"],
+      });
+      const probe = h.svc.probeRouteCapacity("groq", "m");
+      await vi.advanceTimersByTimeAsync(60);
+      await expect(probe).resolves.toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

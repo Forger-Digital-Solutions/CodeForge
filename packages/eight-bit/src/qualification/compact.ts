@@ -24,6 +24,10 @@ export interface CompactQualificationAdapter {
 export interface CompactQualificationOptions {
   timeoutMs?: number;
   now?: () => Date;
+  /** Suite wall-clock bound set by the caller. Its abort cancels in-flight probes and the
+   *  observe records a timeout-classified transient — a saturated upstream stays pending and
+   *  retries at its cooldown rather than earning a starvation verdict it never gave evidence for. */
+  signal?: AbortSignal;
 }
 
 const READ_FILE_TOOL: ToolDefinition = {
@@ -68,15 +72,21 @@ interface ToolCallObservation {
   errorClass?: "bad_request" | "auth" | "rate_limited" | "other";
 }
 
-async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number): Promise<ToolCallObservation> {
+async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number, suiteSignal?: AbortSignal): Promise<ToolCallObservation> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const onSuiteAbort = () => controller.abort();
+  suiteSignal?.addEventListener("abort", onSuiteAbort, { once: true });
+  // A suite-deadline abort is capacity evidence, not capability: the message carries "timed out"
+  // so the suite's existing transient classification keeps the route pending for a later cycle.
+  const deadlineError = "suite deadline elapsed (timed out)";
   const calls: ToolCallObservation["toolCalls"] = [];
   let text = "";
   let finishReason: string | undefined;
   let outputTokens: number | undefined;
   try {
     for await (const ev of adapter.streamChat(req, controller.signal)) {
+      if (suiteSignal?.aborted) return { toolCalls: calls, text, finishReason, outputTokens, error: deadlineError, errorClass: "other" };
       if (ev.type === "text_delta") text += ev.delta;
       if (ev.type === "finish") finishReason = ev.finishReason;
       if (ev.type === "usage") outputTokens = ev.usage.outputTokens;
@@ -91,12 +101,15 @@ async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, t
       }
       if (ev.type === "error") return { toolCalls: calls, text, finishReason, outputTokens, error: ev.message, errorClass: classify(ev.message) };
     }
-    return { toolCalls: calls, text, finishReason, outputTokens };
+    return suiteSignal?.aborted
+      ? { toolCalls: calls, text, finishReason, outputTokens, error: deadlineError, errorClass: "other" }
+      : { toolCalls: calls, text, finishReason, outputTokens };
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const message = suiteSignal?.aborted ? deadlineError : e instanceof Error ? e.message : String(e);
     return { toolCalls: calls, text, finishReason, outputTokens, error: message, errorClass: classify(message) };
   } finally {
     clearTimeout(timer);
+    suiteSignal?.removeEventListener("abort", onSuiteAbort);
   }
 }
 
@@ -122,7 +135,7 @@ function caseResult(caseId: string, category: string, passed: boolean, startedAt
 }
 
 /** Probe 1: a native tool call with the right tool and a sensible path argument. */
-async function probeToolCall(adapter: CompactQualificationAdapter, modelId: string, timeoutMs: number): Promise<TestCaseResult> {
+async function probeToolCall(adapter: CompactQualificationAdapter, modelId: string, timeoutMs: number, suiteSignal?: AbortSignal): Promise<TestCaseResult> {
   const started = Date.now();
   const obs = await observe(
     adapter,
@@ -138,6 +151,7 @@ async function probeToolCall(adapter: CompactQualificationAdapter, modelId: stri
       maxTokens: 200,
     },
     timeoutMs,
+    suiteSignal,
   );
   if (obs.error) {
     return caseResult("compact.tool_call", "tool_call", false, started, { hardFailure: obs.errorClass === "bad_request", error: obs.error.slice(0, 200) });
@@ -153,7 +167,7 @@ async function probeToolCall(adapter: CompactQualificationAdapter, modelId: stri
  * calls): a careful model that reads the file first gets the real tool result back, exactly as the
  * CodeForge loop would give it — reading before editing is correct behaviour, not a failure.
  */
-async function probeEdit(adapter: CompactQualificationAdapter, modelId: string, timeoutMs: number, maxTokens = EDIT_PROBE_MAX_TOKENS): Promise<TestCaseResult> {
+async function probeEdit(adapter: CompactQualificationAdapter, modelId: string, timeoutMs: number, maxTokens = EDIT_PROBE_MAX_TOKENS, suiteSignal?: AbortSignal): Promise<TestCaseResult> {
   const started = Date.now();
   const messages: ChatRequest["messages"] = [
     { role: "system", content: SYSTEM },
@@ -166,7 +180,7 @@ async function probeEdit(adapter: CompactQualificationAdapter, modelId: string, 
   const turns: Array<{ toolCalls: string[]; finishReason?: string; textLength: number; outputTokens?: number }> = [];
   while (calls < 3) {
     calls++;
-    const obs = await observe(adapter, { model: modelId, messages, tools: [READ_FILE_TOOL, EDIT_FILE_TOOL], toolChoice: "auto", temperature: 0, maxTokens }, timeoutMs);
+    const obs = await observe(adapter, { model: modelId, messages, tools: [READ_FILE_TOOL, EDIT_FILE_TOOL], toolChoice: "auto", temperature: 0, maxTokens }, timeoutMs, suiteSignal);
     turns.push({ toolCalls: obs.toolCalls.map((c) => c.name), finishReason: obs.finishReason, textLength: obs.text.length, outputTokens: obs.outputTokens });
     if (obs.error) {
       return caseResult("compact.edit", "edit", false, started, { hardFailure: obs.errorClass === "bad_request", error: obs.error.slice(0, 200), details: { calls, turns } });
@@ -200,7 +214,7 @@ export async function probeCompactEditForDiagnostics(
 }
 
 /** Probe 3: structured JSON output without tools. */
-async function probeStructured(adapter: CompactQualificationAdapter, modelId: string, timeoutMs: number): Promise<TestCaseResult> {
+async function probeStructured(adapter: CompactQualificationAdapter, modelId: string, timeoutMs: number, suiteSignal?: AbortSignal): Promise<TestCaseResult> {
   const started = Date.now();
   const obs = await observe(
     adapter,
@@ -214,6 +228,7 @@ async function probeStructured(adapter: CompactQualificationAdapter, modelId: st
       maxTokens: 120,
     },
     timeoutMs,
+    suiteSignal,
   );
   if (obs.error) return caseResult("compact.structured", "structured_output", false, started, { error: obs.error.slice(0, 200) });
   // Reasoning models may wrap the answer in prose; the first balanced JSON object is the answer.
@@ -303,14 +318,15 @@ export async function runCompactQualification(
   options: CompactQualificationOptions = {},
 ): Promise<ModelQualificationReceipt> {
   const timeoutMs = options.timeoutMs ?? 45_000;
+  const suiteSignal = options.signal;
   const startedAt = (options.now ?? (() => new Date()))().toISOString();
   const t0 = Date.now();
 
-  const toolCase = await withRetry(() => probeToolCall(adapter, model.modelId, timeoutMs));
+  const toolCase = await withRetry(() => probeToolCall(adapter, model.modelId, timeoutMs, suiteSignal));
   // A rate-limited or auth-rejected first probe says nothing about the model; do not burn more.
   const abortEarly = isTransient(toolCase);
-  const editCase = abortEarly ? caseResult("compact.edit", "edit", false, Date.now(), { error: "skipped: provider unavailable during qualification" }) : await withRetry(() => probeEdit(adapter, model.modelId, timeoutMs));
-  const structuredCase = abortEarly || isTransient(editCase) ? caseResult("compact.structured", "structured_output", false, Date.now(), { error: "skipped: provider unavailable during qualification" }) : await probeStructured(adapter, model.modelId, timeoutMs);
+  const editCase = abortEarly ? caseResult("compact.edit", "edit", false, Date.now(), { error: "skipped: provider unavailable during qualification" }) : await withRetry(() => probeEdit(adapter, model.modelId, timeoutMs, EDIT_PROBE_MAX_TOKENS, suiteSignal));
+  const structuredCase = abortEarly || isTransient(editCase) ? caseResult("compact.structured", "structured_output", false, Date.now(), { error: "skipped: provider unavailable during qualification" }) : await probeStructured(adapter, model.modelId, timeoutMs, suiteSignal);
   // Any provider-side interruption leaves the suite inconclusive: the receipt is marked transient
   // and the route stays pending rather than being scored on an answer it never gave. When the
   // interruption is specifically a provider allocation wall, the receipt says QUOTA_EXHAUSTED —

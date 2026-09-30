@@ -118,10 +118,16 @@ async function main() {
     return relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative);
   };
   if (!insideRoot(workspacePath) || !insideRoot(output)) throw new Error("R58 self-dogfood paths must stay inside the CodeForge repository");
-  if (!["openrouter", "groq"].includes(providerId)) throw new Error("Only the verified-free OpenRouter and Groq lanes are supported");
-  const keyName = providerId === "groq" ? "GROQ_API_KEY" : "OPENROUTER_API_KEY";
-  const key = process.env[keyName];
-  if (!key) throw new Error(`${keyName} is required (presence only)`);
+  // A packaged user can connect several free providers at once; ForgeAuto then admits the
+  // first route that qualifies — connecting both lanes hedges transient free-tier 429 bursts.
+  const providerIds = providerId.split(",").map((p) => p.trim()).filter(Boolean);
+  for (const p of providerIds) if (!["openrouter", "groq"].includes(p)) throw new Error("Only the verified-free OpenRouter and Groq lanes are supported");
+  const providerKeys = new Map(providerIds.map((p) => [p, { keyName: p === "groq" ? "GROQ_API_KEY" : "OPENROUTER_API_KEY" }]));
+  for (const [p, rec] of providerKeys) {
+    rec.key = process.env[rec.keyName];
+    if (!rec.key) throw new Error(`${rec.keyName} is required (presence only)`);
+    void p;
+  }
   const task = JSON.parse(await readFile(goalFile, "utf8"));
   if (typeof task.goal !== "string" || !Array.isArray(task.verificationCommands)) throw new Error("Invalid goal file");
   const baselineHead = (await execFile("git", ["rev-parse", "HEAD"], { cwd: workspacePath })).stdout.trim();
@@ -187,7 +193,17 @@ async function main() {
   try {
     runtime = await metadata(profile, child.pid);
     renderer = await connectRenderer(port, runtime.runtimeEndpoint);
-    await renderer.evaluate(`window.electronAPI.setProviderCredential(${JSON.stringify(providerId)}, ${JSON.stringify(key)})`);
+    for (const [p, rec] of providerKeys) {
+      await renderer.evaluate(`window.electronAPI.setProviderCredential(${JSON.stringify(p)}, ${JSON.stringify(rec.key)})`);
+      // R59: account-dependent allowance providers (e.g. Groq) refuse to spend even a no-charge
+      // probe without the operator's free-plan attestation — the same confirmation the UI asks
+      // for. The harness asserts it because the operator supplying the key asserts it; without
+      // it the eligible catalog is correctly empty and the run exercises nothing.
+      await renderer.evaluate(`window.electronAPI.attestProviderFreePlan?.(${JSON.stringify(p)}, true)`).catch(() => undefined);
+    }
+    const supplyAtStart = await request(renderer, runtime.runtimeEndpoint, "/api/free-cloud/supply")
+      .then((r) => (r.status === 200 ? r.body : { error: r.status }))
+      .catch((e) => ({ error: String(e) }));
     const models = await request(renderer, runtime.runtimeEndpoint, "/api/models");
     assert.equal(models.status, 200, "Packaged renderer could not read models after credential setup");
     const setWorkspace = await request(renderer, runtime.runtimeEndpoint, "/api/workspace/set", "POST", { path: workspacePath });
@@ -198,7 +214,7 @@ async function main() {
     if (modelId) {
       let selection;
       for (let attempt = 0; attempt < 30; attempt++) {
-        selection = await request(renderer, runtime.runtimeEndpoint, "/api/model-selection", "POST", { sessionId, providerId, modelId, lock: "route" });
+        selection = await request(renderer, runtime.runtimeEndpoint, "/api/model-selection", "POST", { sessionId, providerId: providerIds[0], modelId, lock: "route" });
         if (selection.status === 200) break;
         if (selection.body?.error !== "MODEL_NOT_FOUND") break;
         const refreshed = await request(renderer, runtime.runtimeEndpoint, "/api/models");
@@ -217,12 +233,25 @@ async function main() {
     const deadline = Date.now() + deadlineMinutes * 60_000;
     const missingDeadline = Date.now() + 90_000;
     let run;
+    let consecutivePollFailures = 0;
     while (Date.now() < deadline) {
       if (exited) throw new Error("Packaged process exited during autonomous task");
-      const response = await request(renderer, runtime.runtimeEndpoint, `/api/orchestrator/${runId}`);
+      // A busy packaged server (qualification suites + active model turns share the loop)
+      // can stall a single DevTools evaluate past its timeout — a slow poll is not a failed
+      // run. Skip the tick; only a sustained outage (60s+) is evidence of a dead endpoint.
+      let response;
+      try {
+        response = await request(renderer, runtime.runtimeEndpoint, `/api/orchestrator/${runId}`);
+        consecutivePollFailures = 0;
+      } catch (pollError) {
+        consecutivePollFailures += 1;
+        if (consecutivePollFailures >= 12) throw pollError;
+        await delay(5_000);
+        continue;
+      }
       if (response.status === 200) run = response.body;
       if (response.status === 404) {
-        const listed = await request(renderer, runtime.runtimeEndpoint, "/api/orchestrator/list");
+        const listed = await request(renderer, runtime.runtimeEndpoint, "/api/orchestrator/list").catch(() => ({ status: 0, body: null }));
         const matching = listed.status === 200 && Array.isArray(listed.body)
           ? listed.body.find((item) => item.sessionId === sessionId && item.goal === task.goal)
           : null;
@@ -253,6 +282,9 @@ async function main() {
     }
     const session = await request(renderer, runtime.runtimeEndpoint, `/api/sessions/${sessionId}`);
     const items = session.status === 200 && Array.isArray(session.body?.workItems) ? session.body.workItems : [];
+    const supplyAtEnd = await request(renderer, runtime.runtimeEndpoint, "/api/free-cloud/supply")
+      .then((r) => (r.status === 200 ? r.body : { error: r.status }))
+      .catch((e) => ({ error: String(e) }));
     result = {
       schema: "r58-packaged-self-dogfood/v1", evidenceClass: "packaged_live_provider",
       startedAt, finishedAt: new Date().toISOString(),
@@ -260,7 +292,7 @@ async function main() {
       workspace: { baselineHead, finalHead, cleanAtStart: !baselineStatus, cleanAtFinish: !finalStatus, changedFiles: run.result?.changedFiles ?? [], diffSha256: createHash("sha256").update(diff).digest("hex") },
       task: { goalClass: task.goalClass ?? "bounded_test_utility", verificationCommands: task.verificationCommands },
       run: { id: runId, status: run.status, summary: redactProviderIdentity(run.result?.summary ?? null), completion: run.result?.completion?.outcome ?? null, integration: run.result?.integration?.status ?? null, reviewPassed: run.result?.review?.passed ?? false, verificationPassed: run.result?.verification?.map((row) => row.passed) ?? [], verification: (run.result?.verification ?? []).map((row) => ({ command: row.command, cwd: row.cwd, exitCode: row.exitCode, output: redactProviderIdentity(String(row.output ?? "")).slice(-400), failures: (row.failures ?? []).map((f) => redactProviderIdentity(String(f?.message ?? f)).slice(-200)) })), counters: run.result?.counters ?? null, error: redactProviderIdentity(run.error ?? null) },
-      provider: { sourceClass: "MANAGED_FREE", providerId, selectedModel: modelId || null, modelCount: catalog.length, eligibleCatalogSample: catalogIds },
+      provider: { sourceClass: "MANAGED_FREE", providerIds, selectedModel: modelId || null, modelCount: catalog.length, eligibleCatalogSample: catalogIds, planAttestation: "asserted via provider:attestFreePlan", supplyAtStart, supplyAtEnd },
       runtimeFlags: { CODEFORGE_SUBAGENTS_R1: "unset" },
       workers: items.filter((item) => item.kind === "subagent_run").map((item) => ({ id: item.id, role: item.role, status: item.status, executorKind: item.executorKind, model: item.model, modelRequests: item.telemetry?.modelRequests, toolCalls: item.telemetry?.toolCalls, usefulProgressEvents: item.usefulProgressEvents ?? 0, duplicateProgressChecks: item.duplicateProgressChecks ?? 0, watchdogExtensions: item.watchdogExtensions ?? 0, watchdogAbortReason: item.watchdogAbortReason ?? null, observedModelLatencyMs: item.observedModelLatencyMs ?? null })),
       modelTurns: items.filter((item) => item.kind === "agent_model_turn").map((item) => ({ runId: item.runId, state: item.state, servedProviderId: item.servedProviderId, servedModelId: item.servedModelId, modelLatencyMs: item.modelLatencyMs ?? null })),

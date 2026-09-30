@@ -88,7 +88,12 @@ export interface FreeCloudServiceOptions {
   now?: () => Date;
   /** Max routes to qualify per `qualifyPending` cycle (free quota is finite). Default 3. */
   maxQualificationsPerCycle?: number;
-  qualificationRunner?: (model: FreeModelRecord, adapter: ProviderAdapter) => Promise<ModelQualificationReceipt>;
+  /**
+   * Suite runner for one route. `runOpts.signal` aborts the suite's in-flight provider calls at
+   * the cycle's wall-clock deadline — the runner should surface that abort as a transient
+   * outcome so a saturated upstream stays pending rather than earning a capability verdict.
+   */
+  qualificationRunner?: (model: FreeModelRecord, adapter: ProviderAdapter, runOpts?: { signal?: AbortSignal }) => Promise<ModelQualificationReceipt>;
   /** Cooldown base for route failures recorded through the hooks. */
   failureCooldownMs?: number;
   /** Free quota is shared with real work: cap qualification requests per provider per day.
@@ -101,6 +106,27 @@ export interface FreeCloudServiceOptions {
   qualificationRequestsPerCycle?: number;
   /** Minimum interval between qualification cycles for the same provider. Default 20 minutes. */
   qualificationCycleIntervalMs?: number;
+  /**
+   * R59: how many providers' qualification lanes may run concurrently in one `qualifyPending`
+   * cycle. Provider quotas are independent, so a saturated provider's slow suite must not
+   * serialize a healthy provider's pending routes behind it. Routes within a provider stay
+   * serial — they share that provider's daily qualification budget. Default 2.
+   */
+  qualificationProviderConcurrency?: number;
+  /**
+   * R59: wall-clock bound for one route's qualification suite. A saturated upstream makes every
+   * case hit its per-observe timeout, stretching a suite past any admission wait; the deadline
+   * aborts in-flight probes and the suite reports transient evidence — the route stays pending
+   * and retries at its cooldown instead of producing a starvation verdict it never earned.
+   * Default 6 minutes.
+   */
+  qualificationSuiteDeadlineMs?: number;
+  /**
+   * R59: bound on one capacity-measurement probe (`probeAccountQuota` or the 1-token ping). The
+   * adapter calls carry no timeout of their own; a stalled connection must not hold an
+   * admission recovery wait indefinitely. Default 30 seconds.
+   */
+  capacityProbeTimeoutMs?: number;
   /**
    * R59: bound on cooldown-aligned recovery cycles per provider per day. A cycle that ended
    * transient-only schedules a retry at the provider's own cooldown expiry; this cap keeps a
@@ -188,6 +214,11 @@ const NO_RESET = "9999-12-31T23:59:59.999Z";
 const ROLE_SUITE_REQUESTS = 13;
 /** Legacy assumed cycle cost for injected runners that do not declare one. */
 const COMPACT_SUITE_REQUESTS = 3;
+/** A recovery fire that lands mid-cycle re-arms on this cadence instead of dropping — the
+ *  periodic rediscovery tick is interval-gated and may not re-attempt within the cooldown. */
+const RECOVERY_DEFER_RETRY_MS = 5_000;
+/** How long a deferred recovery keeps re-arming before the periodic tick becomes the backstop. */
+const RECOVERY_DEFER_WINDOW_MS = 10 * 60_000;
 
 /** Provider headers only ever report request/token buckets; everything we emit is observed
  *  evidence (`authoritative: true`) or absent — CodeForge never invents quota numbers. An
@@ -236,6 +267,9 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private readonly qualificationRequestsPerCycle: number;
   private readonly qualificationCycleIntervalMs: number;
   private readonly qualificationRecoveryCapPerDay: number;
+  private readonly qualificationProviderConcurrency: number;
+  private readonly qualificationSuiteDeadlineMs: number;
+  private readonly capacityProbeTimeoutMs: number;
   /** Qualification requests spent per provider, keyed by UTC day. */
   private readonly qualificationSpend = new Map<string, { day: string; requests: number; lastCycleAt: number; recoveries: number }>();
   /** R59: cooldown-aligned recovery retries — one armed timer per provider at most. */
@@ -252,13 +286,16 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     this.qualificationStore = options.qualificationStore ?? new InMemoryQualificationPersistence();
     this.now = options.now ?? (() => new Date());
     this.maxQualificationsPerCycle = options.maxQualificationsPerCycle ?? 3;
-    this.qualificationRunner = options.qualificationRunner ?? ((model, adapter) => runRoleAwareQualification(model, adapter, { now: this.now }));
+    this.qualificationRunner = options.qualificationRunner ?? ((model, adapter, runOpts) => runRoleAwareQualification(model, adapter, { now: this.now, signal: runOpts?.signal }));
     this.failureCooldownMs = options.failureCooldownMs ?? 30_000;
     this.qualificationDailyBudget = options.qualificationDailyBudgetPerProvider ?? 24;
     this.qualificationRequestsPerCycle =
       options.qualificationRequestsPerCycle ?? (options.qualificationRunner ? COMPACT_SUITE_REQUESTS : ROLE_SUITE_REQUESTS);
     this.qualificationCycleIntervalMs = options.qualificationCycleIntervalMs ?? 20 * 60_000;
     this.qualificationRecoveryCapPerDay = options.qualificationRecoveryAttemptsPerProviderPerDay ?? 8;
+    this.qualificationProviderConcurrency = Math.max(1, options.qualificationProviderConcurrency ?? 2);
+    this.qualificationSuiteDeadlineMs = options.qualificationSuiteDeadlineMs ?? 360_000;
+    this.capacityProbeTimeoutMs = options.capacityProbeTimeoutMs ?? 30_000;
     this.routeHealth = options.routeHealth;
   }
 
@@ -596,59 +633,25 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     const transientCooldowns = new Map<string, number>();
     try {
       const budget = opts.budget ?? this.maxQualificationsPerCycle;
-      const cycleStarted = new Set<string>();
       const pending = this.pendingQualification().filter((r) => !opts.providerId || r.providerId === opts.providerId);
-      let taken = 0;
+      // R59: provider lanes run concurrently — provider quotas are independent, so one
+      // saturated upstream's slow suite must not serialize another provider's pending routes
+      // behind it. The per-cycle slot budget is claimed before the suite awaits, so concurrent
+      // lanes still cannot overspend it. Routes within a provider stay serial: they share that
+      // provider's daily qualification budget.
+      const lanes = new Map<string, typeof pending>();
       for (const route of pending) {
-        if (taken >= budget) break;
-        // Shared free quota: never spend more than the daily qualification budget on a provider,
-        // and never re-enter a provider's cycle before the interval elapsed (§195). Recovery
-        // cycles substitute the cooldown-expiry evidence for the interval.
-        if (!cycleStarted.has(route.providerId)) {
-          const allowed = opts.recovery === true
-            ? this.recoveryAllowed(route.providerId)
-            : this.qualificationAllowed(route.providerId);
-          if (!allowed) continue;
-        }
-        const model = this.firewall.getModel(route.providerId, route.providerModelId);
-        const adapter = this.providerCatalog.get(route.providerId);
-        if (!model || !adapter) continue;
-        const spend = this.spendFor(route.providerId);
-        // Conservative pre-check at the runner's declared cycle cost; the spend is
-        // reconciled to the receipt's real request count after the run.
-        if (spend.requests + this.qualificationRequestsPerCycle > this.qualificationDailyBudget) continue;
-        cycleStarted.add(route.providerId);
-        spend.lastCycleAt = this.now().getTime();
-        if (opts.recovery === true) spend.recoveries += 1;
-        spend.requests += this.qualificationRequestsPerCycle;
-        try {
-          const receipt = await this.qualificationRunner(model, adapter);
-          if (typeof receipt.metadata?.requests === "number") {
-            spend.requests += receipt.metadata.requests - this.qualificationRequestsPerCycle;
-          }
-          // A transient (429/401) probe is not evidence about the model; keep it pending. It
-          // still counts against the provider's daily spend (conservative), but not against the
-          // per-cycle slots, so the cycle moves on to a route that can actually be scored.
-          if (receipt.metadata?.transient === true) {
-            this.recordRouteFailure(route.providerId, route.providerModelId, "RATE_LIMITED");
-            const coolingUntil = this.health.get(`${route.providerId}::${route.providerModelId}`)?.cooldownUntil;
-            if (coolingUntil !== undefined) {
-              const prior = transientCooldowns.get(route.providerId);
-              transientCooldowns.set(route.providerId, prior === undefined ? coolingUntil : Math.min(prior, coolingUntil));
-            }
-            continue;
-          }
-          taken++;
-          this.receipts.set(`${receipt.providerId}::${receipt.modelId}`, receipt);
-          await this.qualificationStore.save(receipt).catch(() => undefined);
-          this.applyReceiptToFirewall(receipt);
-          produced.push(receipt);
-          this.emit();
-        } catch {
-          // Qualification must never take the fleet down; an exception is still a spent slot.
-          taken++;
-        }
+        const lane = lanes.get(route.providerId);
+        if (lane) lane.push(route);
+        else lanes.set(route.providerId, [route]);
       }
+      const ctx = { budget, taken: 0, inflight: 0, recovery: opts.recovery === true, produced, transientCooldowns };
+      const queue = [...lanes.values()];
+      const workers = Array.from({ length: Math.min(this.qualificationProviderConcurrency, queue.length) }, async () => {
+        let lane: typeof pending | undefined;
+        while ((lane = queue.shift()) !== undefined) await this.qualifyLane(lane, ctx);
+      });
+      await Promise.all(workers);
     } finally {
       this.qualifying = false;
     }
@@ -659,6 +662,81 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       this.scheduleQualificationRecovery(providerId, until);
     }
     return produced;
+  }
+
+  /**
+   * One provider's serial qualification lane inside a cycle. Shares the cycle's slot budget
+   * through `ctx`: a slot is claimed before the suite awaits (`inflight`) and released on a
+   * transient outcome, so the global cap matches the serial loop exactly.
+   */
+  private async qualifyLane(
+    routes: readonly ProviderRouteView[],
+    ctx: {
+      budget: number;
+      taken: number;
+      inflight: number;
+      recovery: boolean;
+      produced: ModelQualificationReceipt[];
+      transientCooldowns: Map<string, number>;
+    },
+  ): Promise<void> {
+    const providerId = routes[0]?.providerId;
+    if (providerId === undefined) return;
+    let providerStarted = false;
+    for (const route of routes) {
+      if (ctx.taken + ctx.inflight >= ctx.budget) break;
+      // Shared free quota: never spend more than the daily qualification budget on a provider,
+      // and never re-enter a provider's cycle before the interval elapsed (§195). Recovery
+      // cycles substitute the cooldown-expiry evidence for the interval.
+      if (!providerStarted) {
+        const allowed = ctx.recovery ? this.recoveryAllowed(providerId) : this.qualificationAllowed(providerId);
+        if (!allowed) continue;
+      }
+      const model = this.firewall.getModel(route.providerId, route.providerModelId);
+      const adapter = this.providerCatalog.get(route.providerId);
+      if (!model || !adapter) continue;
+      const spend = this.spendFor(providerId);
+      // Conservative pre-check at the runner's declared cycle cost; the spend is
+      // reconciled to the receipt's real request count after the run.
+      if (spend.requests + this.qualificationRequestsPerCycle > this.qualificationDailyBudget) continue;
+      providerStarted = true;
+      spend.lastCycleAt = this.now().getTime();
+      if (ctx.recovery) spend.recoveries += 1;
+      spend.requests += this.qualificationRequestsPerCycle;
+      ctx.inflight++;
+      const suiteDeadline = new AbortController();
+      const deadlineTimer = setTimeout(() => suiteDeadline.abort(), this.qualificationSuiteDeadlineMs);
+      try {
+        const receipt = await this.qualificationRunner(model, adapter, { signal: suiteDeadline.signal });
+        if (typeof receipt.metadata?.requests === "number") {
+          spend.requests += receipt.metadata.requests - this.qualificationRequestsPerCycle;
+        }
+        // A transient (429/401/timeout) probe is not evidence about the model; keep it pending.
+        // It still counts against the provider's daily spend (conservative), but not against the
+        // per-cycle slots, so the lane moves on to a route that can actually be scored.
+        if (receipt.metadata?.transient === true) {
+          this.recordRouteFailure(route.providerId, route.providerModelId, "RATE_LIMITED");
+          const coolingUntil = this.health.get(`${route.providerId}::${route.providerModelId}`)?.cooldownUntil;
+          if (coolingUntil !== undefined) {
+            const prior = ctx.transientCooldowns.get(providerId);
+            ctx.transientCooldowns.set(providerId, prior === undefined ? coolingUntil : Math.min(prior, coolingUntil));
+          }
+          continue;
+        }
+        ctx.taken++;
+        this.receipts.set(`${receipt.providerId}::${receipt.modelId}`, receipt);
+        await this.qualificationStore.save(receipt).catch(() => undefined);
+        this.applyReceiptToFirewall(receipt);
+        ctx.produced.push(receipt);
+        this.emit();
+      } catch {
+        // Qualification must never take the fleet down; an exception is still a spent slot.
+        ctx.taken++;
+      } finally {
+        clearTimeout(deadlineTimer);
+        ctx.inflight--;
+      }
+    }
   }
 
   /**
@@ -681,12 +759,24 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     const existing = this.recoveryTimers.get(providerId);
     if (existing && Date.parse(existing.at) <= fireAt) return;
     if (existing) clearTimeout(existing.timer);
-    const timer = setTimeout(() => {
-      this.recoveryTimers.delete(providerId);
-      void this.qualifyPending({ providerId, recovery: true }).catch(() => undefined);
-    }, Math.max(0, fireAt - now));
-    timer.unref?.();
-    this.recoveryTimers.set(providerId, { timer, at: new Date(fireAt).toISOString() });
+    const fireAtIso = new Date(fireAt).toISOString();
+    const arm = (delay: number): void => {
+      const timer = setTimeout(() => {
+        this.recoveryTimers.delete(providerId);
+        // A cycle already in flight no-ops a second qualifyPending — dropping the fire here
+        // would strand the cooled-down route behind the next interval-gated tick. Re-arm
+        // briefly inside the cooldown window; beyond it the periodic rediscovery is the
+        // backstop and re-spamming a saturated upstream is not recovery.
+        if (this.qualifying && this.now().getTime() < fireAt + RECOVERY_DEFER_WINDOW_MS) {
+          arm(RECOVERY_DEFER_RETRY_MS);
+          return;
+        }
+        void this.qualifyPending({ providerId, recovery: true }).catch(() => undefined);
+      }, Math.max(0, delay));
+      timer.unref?.();
+      this.recoveryTimers.set(providerId, { timer, at: fireAtIso });
+    };
+    arm(fireAt - now);
   }
 
   isQualifying(): boolean {
@@ -940,9 +1030,17 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     if (this.routeCapacityObserved(providerId, modelId, accountId)) return true;
     const adapter = this.providerCatalog.get(providerId);
     if (!adapter) return false;
+    // Adapter calls carry no timeout of their own; a stalled connection must not hold an
+    // admission recovery wait indefinitely. The race bounds the measurement; the underlying
+    // request still completes in the background and records its quota headers.
+    const bound = <T>(call: Promise<T>): Promise<T> =>
+      Promise.race([
+        call,
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("capacity probe timed out")), this.capacityProbeTimeoutMs)),
+      ]);
     const probe = (async (): Promise<boolean> => {
       try {
-        if (typeof adapter.probeAccountQuota === "function" && await adapter.probeAccountQuota()) {
+        if (typeof adapter.probeAccountQuota === "function" && await bound(adapter.probeAccountQuota())) {
           return true;
         }
       } catch {
@@ -950,11 +1048,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       }
       if (modelId === undefined) return this.routeCapacityObserved(providerId, modelId, accountId);
       try {
-        await adapter.chat({
+        await bound(adapter.chat({
           model: modelId,
           messages: [{ role: "user", content: "ping" }],
           maxTokens: 1,
-        } as import("@codeforge/providers").ChatRequest);
+        } as import("@codeforge/providers").ChatRequest));
       } catch {
         // A 429 still recorded its quota headers through onResponse — measured is measured.
       }

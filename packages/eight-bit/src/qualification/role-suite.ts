@@ -35,6 +35,10 @@ import {
 export interface RoleQualificationOptions {
   caseTimeoutMs?: number;
   now?: () => Date;
+  /** Suite wall-clock bound set by the caller. Its abort cancels in-flight probes and the
+   *  observe records a timeout-classified transient — a saturated upstream stays pending and
+   *  retries at its cooldown rather than earning a starvation verdict it never gave evidence for. */
+  signal?: AbortSignal;
 }
 
 export interface RoleQualificationOutput {
@@ -80,9 +84,14 @@ interface ObserveResult {
   error?: string;
 }
 
-async function observeOnce(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number, counter?: QualificationRequestCounter): Promise<ObserveResult> {
+async function observeOnce(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number, counter?: QualificationRequestCounter, suiteSignal?: AbortSignal): Promise<ObserveResult> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const onSuiteAbort = () => controller.abort();
+  suiteSignal?.addEventListener("abort", onSuiteAbort, { once: true });
+  // A suite-deadline abort is capacity evidence, not capability: the message carries "timed out"
+  // so the suite's existing transient classification keeps the route pending for a later cycle.
+  const deadlineError = "suite deadline elapsed (timed out)";
   const calls: ObserveResult["toolCalls"] = [];
   let text = "";
   let finishReason: string | undefined;
@@ -93,6 +102,7 @@ async function observeOnce(adapter: CompactQualificationAdapter, req: ChatReques
     if (!adapter.streamChat) return { text, toolCalls: calls, error: "provider exposes no streamChat" };
     if (counter) counter.count++;
     for await (const ev of adapter.streamChat(req, controller.signal)) {
+      if (suiteSignal?.aborted) return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: deadlineError };
       if (ev.type === "text_delta") text += ev.delta;
       if (ev.type === "finish") finishReason = ev.finishReason;
       if (ev.type === "usage") {
@@ -112,16 +122,19 @@ async function observeOnce(adapter: CompactQualificationAdapter, req: ChatReques
       }
       if (ev.type === "error") return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: ev.message };
     }
-    return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens };
+    return suiteSignal?.aborted
+      ? { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: deadlineError }
+      : { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens };
   } catch (e) {
-    return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: e instanceof Error ? e.message : String(e) };
+    return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: suiteSignal?.aborted ? deadlineError : e instanceof Error ? e.message : String(e) };
   } finally {
     clearTimeout(timer);
+    suiteSignal?.removeEventListener("abort", onSuiteAbort);
   }
 }
 
-async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number, counter?: QualificationRequestCounter): Promise<ObserveResult> {
-  const first = await observeOnce(adapter, req, timeoutMs, counter);
+async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number, counter?: QualificationRequestCounter, suiteSignal?: AbortSignal): Promise<ObserveResult> {
+  const first = await observeOnce(adapter, req, timeoutMs, counter, suiteSignal);
   // Starvation signature: the call returned without error yet delivered no usable payload —
   // either the provider truncated at the cap (length) or the answer never arrived (empty
   // text, no tool calls). A reasoning-only burn surfaces as an EMPTY_COMPLETION error — a
@@ -135,7 +148,7 @@ async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, t
   const headroom = Math.max(first.reasoningTokens ?? 0, QUALIFICATION_REASONING_RESERVE_TOKENS);
   const retryMax = Math.min(QUALIFICATION_OUTPUT_HARD_CAP_TOKENS, baseline + headroom);
   if (retryMax <= baseline) return first;
-  const second = await observeOnce(adapter, { ...req, maxTokens: retryMax }, timeoutMs, counter);
+  const second = await observeOnce(adapter, { ...req, maxTokens: retryMax }, timeoutMs, counter, suiteSignal);
   return {
     ...second,
     reasoningRetried: true,
@@ -208,7 +221,7 @@ async function withRetry(run: () => Promise<TestCaseResult>): Promise<TestCaseRe
 // Explorer
 // ---------------------------------------------------------------------------
 
-async function runExplorerCase(adapter: CompactQualificationAdapter, modelId: string, caze: ExplorerCase, timeoutMs: number, counter?: QualificationRequestCounter): Promise<TestCaseResult> {
+async function runExplorerCase(adapter: CompactQualificationAdapter, modelId: string, caze: ExplorerCase, timeoutMs: number, counter?: QualificationRequestCounter, suiteSignal?: AbortSignal): Promise<TestCaseResult> {
   const started = Date.now();
   const messages: ChatRequest["messages"] = [
     {
@@ -230,7 +243,7 @@ async function runExplorerCase(adapter: CompactQualificationAdapter, modelId: st
 
   while (modelCalls < caze.maxModelCalls) {
     modelCalls++;
-    lastObs = await observe(adapter, { model: modelId, messages, tools: EXPLORER_TOOLS, toolChoice: "auto", temperature: 0, maxTokens: 800 }, timeoutMs, counter);
+    lastObs = await observe(adapter, { model: modelId, messages, tools: EXPLORER_TOOLS, toolChoice: "auto", temperature: 0, maxTokens: 800 }, timeoutMs, counter, suiteSignal);
     if (lastObs.reasoningRetried) reasoningRetries++;
     if (lastObs.error) return caseResult(caze.caseId, "explore", false, started, { error: lastObs.error.slice(0, 200) });
     totalToolCalls += lastObs.toolCalls.length;
@@ -303,7 +316,7 @@ function plannerTaskText(task: PlannerGraphTask): string {
   return `${typeof task.title === "string" ? task.title : ""} ${typeof task.objective === "string" ? task.objective : ""}`.toLowerCase();
 }
 
-async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: string, caze: PlannerCase, timeoutMs: number, counter?: QualificationRequestCounter): Promise<TestCaseResult> {
+async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: string, caze: PlannerCase, timeoutMs: number, counter?: QualificationRequestCounter, suiteSignal?: AbortSignal): Promise<TestCaseResult> {
   const started = Date.now();
   const findings = caze.findingsFiles.map((f) => `--- ${f} ---\n${EXPLORER_REPO.files[f] ?? "(missing)"}`).join("\n");
   const obs = await observe(
@@ -327,6 +340,7 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
     },
     timeoutMs,
     counter,
+    suiteSignal,
   );
   if (obs.error) return caseResult(caze.caseId, "plan", false, started, { error: obs.error.slice(0, 200) });
 
@@ -368,7 +382,7 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
 // Reviewer
 // ---------------------------------------------------------------------------
 
-async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: string, caze: ReviewerCase, timeoutMs: number, counter?: QualificationRequestCounter): Promise<TestCaseResult> {
+async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: string, caze: ReviewerCase, timeoutMs: number, counter?: QualificationRequestCounter, suiteSignal?: AbortSignal): Promise<TestCaseResult> {
   const started = Date.now();
   const obs = await observe(
     adapter,
@@ -390,6 +404,7 @@ async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: st
     },
     timeoutMs,
     counter,
+    suiteSignal,
   );
   if (obs.error) return caseResult(caze.caseId, "review", false, started, { error: obs.error.slice(0, 200) });
 
@@ -445,25 +460,26 @@ export async function runRoleQualification(
   options: RoleQualificationOptions = {},
 ): Promise<RoleQualificationOutput> {
   const timeoutMs = options.caseTimeoutMs ?? EXPLORER_PROTOCOL.caseTimeoutMs;
+  const suiteSignal = options.signal;
   const startedAt = (options.now ?? (() => new Date()))().toISOString();
   const counter = { count: 0 };
   let interrupted = false;
 
   const explorerCases: TestCaseResult[] = [];
   for (const caze of EXPLORER_CASES) {
-    const result = await withRetry(() => runExplorerCase(adapter, model.modelId, caze, timeoutMs, counter));
+    const result = await withRetry(() => runExplorerCase(adapter, model.modelId, caze, timeoutMs, counter, suiteSignal));
     explorerCases.push(result);
     if (result.error && TRANSIENT_RE.test(result.error)) { interrupted = true; break; }
   }
   const plannerCases: TestCaseResult[] = [];
   if (!interrupted) for (const caze of PLANNER_CASES) {
-    const result = await withRetry(() => runPlannerCase(adapter, model.modelId, caze, timeoutMs, counter));
+    const result = await withRetry(() => runPlannerCase(adapter, model.modelId, caze, timeoutMs, counter, suiteSignal));
     plannerCases.push(result);
     if (result.error && TRANSIENT_RE.test(result.error)) { interrupted = true; break; }
   }
   const reviewerCases: TestCaseResult[] = [];
   if (!interrupted) for (const caze of REVIEWER_CASES) {
-    const result = await withRetry(() => runReviewerCase(adapter, model.modelId, caze, timeoutMs, counter));
+    const result = await withRetry(() => runReviewerCase(adapter, model.modelId, caze, timeoutMs, counter, suiteSignal));
     reviewerCases.push(result);
     if (result.error && TRANSIENT_RE.test(result.error)) break;
   }
