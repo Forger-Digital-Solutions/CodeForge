@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "193a34dc933b27e917b728219c1f004fc86c87a27a0aadd7280dca50b5607830",
-  "surfaceVersion": "r58-progress-aware-autonomy-v1",
+  "sourceStateId": "a529e102fe8096f62957dc746e6d9ca80616af413837e401c4ec6ec1e8623e78",
+  "surfaceVersion": "r59-free-supply-recovery-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -13,6 +13,7 @@
     "packages/benchmark/src/codeforge-bench-r2.ts",
     "packages/benchmark/src/index.ts",
     "packages/benchmark/src/protected-acceptance.ts",
+    "packages/cloud-gateway/src/provider-registry.ts",
     "packages/cloud-usage/package.json",
     "packages/cloud-usage/src/index.ts",
     "packages/cloud-usage/src/managed-paid.ts",
@@ -20,7 +21,9 @@
     "packages/context/src/index.ts",
     "packages/context/src/planner.ts",
     "packages/eight-bit/src/failover.ts",
+    "packages/eight-bit/src/free-fabric.ts",
     "packages/eight-bit/src/health.ts",
+    "packages/eight-bit/src/route-ledger.ts",
     "packages/eight-bit/src/types.ts",
     "packages/forge-green/src/optimization-candidate-a.ts",
     "packages/forge-green/src/optimization-candidates-shadow.ts",
@@ -28,6 +31,9 @@
     "packages/forge-green/src/optimization-policy.ts",
     "packages/forge-green/src/optimization-types.ts",
     "packages/forge-green/src/reuse-cost-policy.ts",
+    "packages/forge-zero/src/capacity-types.ts",
+    "packages/model-registry/src/catalog-refresh.ts",
+    "packages/model-registry/src/discovery.ts",
     "packages/model-registry/src/free-cloud-service.ts",
     "packages/paid-auto/src/expected-cost.ts",
     "packages/paid-auto/src/families.ts",
@@ -77,12 +83,13 @@
     "packages/workflow/src/verification-service.ts"
   ],
   "materialFileHashes": {
-    "apps/desktop/src/main.ts": "360733f14693a022b8e2120a888e6bc3a136c336",
+    "apps/desktop/src/main.ts": "d5868e02a44423a36c56c21c1bd5ad8d0b60bd9a",
     "packages/agent/src/index.ts": "3e33c03e81390c55ef6a52153f28a1f9db5cb30c",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
     "packages/benchmark/src/index.ts": "615c02c9d77491a17e8b6a80a82cb619efd6be02",
     "packages/benchmark/src/protected-acceptance.ts": "0c1538833083910b74c98e8261e02b212753721e",
+    "packages/cloud-gateway/src/provider-registry.ts": "f7a6a0671ad66d2a46cbec65a90b720a8c041401",
     "packages/cloud-usage/package.json": "3a0e15953b516b975194bf298bea0fc905f2fdb6",
     "packages/cloud-usage/src/index.ts": "c58083bc61b29a52ae2f38b7259f9f87db1cfeba",
     "packages/cloud-usage/src/managed-paid.ts": "d249e00d7ed6ceeeffd6ea20bc3de9e838b24fc9",
@@ -90,7 +97,9 @@
     "packages/context/src/index.ts": "4f6c960147de5ddd69e6a73ddb53327d4a8bd3fc",
     "packages/context/src/planner.ts": "5cab4794355d06008e044ddd80ac1b560ec0f793",
     "packages/eight-bit/src/failover.ts": "16353f67b841c121b9bbc108fe4d9cf3d93c3cd1",
+    "packages/eight-bit/src/free-fabric.ts": "fb991acde7246b3f59df85b3bc34c740edbb4943",
     "packages/eight-bit/src/health.ts": "d34dc5924c335b9ab5eb3ad6a22420ca428103f6",
+    "packages/eight-bit/src/route-ledger.ts": "a27cf80f7dfb7172e93d0898ce0330d997a5b710",
     "packages/eight-bit/src/types.ts": "2dbe10418021fc76155672723bd14ccee944ba5a",
     "packages/forge-green/src/optimization-candidate-a.ts": "67af82aaf7b9d20aac76238752c0532798a975a4",
     "packages/forge-green/src/optimization-candidates-shadow.ts": "a3d1f7b3a5a28d46eb127ce83770d1c292053507",
@@ -98,7 +107,10 @@
     "packages/forge-green/src/optimization-policy.ts": "53dee55244eb1dc5d5ae03a4a30d96ecad0362aa",
     "packages/forge-green/src/optimization-types.ts": "1539abf45eaf618db3c2a68cf398b2320db5e7bd",
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
-    "packages/model-registry/src/free-cloud-service.ts": "afb906b2e1a38dce098c33fd38bb257fe830b239",
+    "packages/forge-zero/src/capacity-types.ts": "302a8807b1bbf822f2fcac3f43ac52c75e815bc5",
+    "packages/model-registry/src/catalog-refresh.ts": "ba9057e3c6bfc39bbc618e5c042ed4081e2cc306",
+    "packages/model-registry/src/discovery.ts": "cc024b18cdb2ce8a74d19c00379216cbfb9fa1ae",
+    "packages/model-registry/src/free-cloud-service.ts": "25f42b75ba83555f6dee03aaea5426430709ab55",
     "packages/paid-auto/src/expected-cost.ts": "efe764f9fa537fa202f2d101b9f019225c3cf509",
     "packages/paid-auto/src/families.ts": "1ad554c31371a07edc475065bb3e042917d94c45",
     "packages/paid-auto/src/index.ts": "fbef7d85109e7e1bf54c2b2f6982a4b8181c0ecc",
@@ -111,7 +123,7 @@
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
-    "packages/server/src/agent-runtime.ts": "bc6cc11902c768b81eab4c22470d16de3084a021",
+    "packages/server/src/agent-runtime.ts": "7c8bf3cf8f09417f6235c5d5c4730394dc57f9b7",
     "packages/server/src/autonomous-orchestrator.ts": "1f2d1d92420b7085e1f721755956d60cbdc3d180",
     "packages/server/src/checkpoint-service.ts": "9fc8c2328fc396a6831cb2803a8b679fbc288427",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
@@ -120,7 +132,7 @@
     "packages/server/src/forgeauto-roster.ts": "741bf73fe25e24bb1576af0ca2d778318a5f1e88",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
     "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
-    "packages/server/src/index.ts": "8104fdb877ad59b116136945aea9c561241208e0",
+    "packages/server/src/index.ts": "009ea07a49a175e00a61d702f30c516913449fc4",
     "packages/server/src/integration-service.ts": "f72e3ffc8b3087c7f3acd861eba9eb859a008dfd",
     "packages/server/src/model-execution-adapter.ts": "bc52ae7ab56484f4c69fe392c21f4fa9e7c9e4f8",
     "packages/server/src/role-output-budget.ts": "f2560f9ee66fe33d5cf9f0bb6b1d1f3bd7a441dc",
@@ -2335,23 +2347,79 @@
       "regressionEvidence": "docs/evidence/r58-progress-aware-autonomy/R58-FINAL-REPORT.md",
       "recertifiedAt": "2026-09-29",
       "sourceStateConstant": "CODEFORGE_R58_PROGRESS_AWARE_AUTONOMY_V1_SOURCE_STATE"
+    },
+    {
+      "label": "R59 free supply recovery recertification",
+      "reason": "R59 preserves verified-free routes across transient catalog/allowance probe failures, attests and re-probes account-dependent providers, joins concurrent provider discovery instead of dropping it, re-qualifies cooled routes on cooldown expiry within bounded budgets, exposes the per-route exclusion ledger at /api/free-cloud/supply, and recovers supply during runtime admission denial instead of reporting false zero capacity. ForgeZero, ForgeVerify, qualification gates, and completion authority are unchanged.",
+      "priorSourceStateId": "193a34dc933b27e917b728219c1f004fc86c87a27a0aadd7280dca50b5607830",
+      "priorSurfaceVersion": "r58-progress-aware-autonomy-v1",
+      "resultingSourceStateId": "a529e102fe8096f62957dc746e6d9ca80616af413837e401c4ec6ec1e8623e78",
+      "resultingSurfaceVersion": "r59-free-supply-recovery-v1",
+      "changes": [
+        {
+          "file": "apps/desktop/src/main.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/cloud-gateway/src/provider-registry.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/src/free-fabric.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/src/route-ledger.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/forge-zero/src/capacity-types.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/src/catalog-refresh.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/src/discovery.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/src/free-cloud-service.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/index.ts",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
+      "recertifiedAt": "2026-09-30",
+      "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V1_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-29T16:49:21.145Z",
+  "recertifiedAt": "2026-09-30T06:59:36.527Z",
   "recertification": {
-    "phase": "R58 progress-aware autonomy recertification",
-    "reason": "R58 promotes the real packaged subagent runtime, removes the no-op coder success path, measures distinct tool effects and route latency for bounded coder leases, and checkpoints one sequential continuation after productive lease expiry. ForgeZero, ForgeVerify, and completion authority are unchanged.",
+    "phase": "R59 free supply recovery recertification",
+    "reason": "R59 preserves verified-free routes across transient catalog/allowance probe failures, attests and re-probes account-dependent providers, joins concurrent provider discovery instead of dropping it, re-qualifies cooled routes on cooldown expiry within bounded budgets, exposes the per-route exclusion ledger at /api/free-cloud/supply, and recovers supply during runtime admission denial instead of reporting false zero capacity. ForgeZero, ForgeVerify, qualification gates, and completion authority are unchanged.",
     "changedFiles": [
       "apps/desktop/src/main.ts",
-      "packages/protocol/src/subagent-runtime.ts",
+      "packages/cloud-gateway/src/provider-registry.ts",
+      "packages/eight-bit/src/free-fabric.ts",
+      "packages/eight-bit/src/route-ledger.ts",
+      "packages/forge-zero/src/capacity-types.ts",
+      "packages/model-registry/src/catalog-refresh.ts",
+      "packages/model-registry/src/discovery.ts",
+      "packages/model-registry/src/free-cloud-service.ts",
       "packages/server/src/agent-runtime.ts",
-      "packages/server/src/autonomous-orchestrator.ts",
-      "packages/server/src/index.ts",
-      "packages/server/src/role-progress.ts",
-      "packages/server/src/subagent-manager.ts"
+      "packages/server/src/index.ts"
     ],
-    "priorSourceStateId": "16d40300ecc8b7c91e998239dcfd932847d13c8bf285a74e71501923ed84cc97",
+    "priorSourceStateId": "193a34dc933b27e917b728219c1f004fc86c87a27a0aadd7280dca50b5607830",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
