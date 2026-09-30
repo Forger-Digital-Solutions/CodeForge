@@ -20,6 +20,7 @@ const ledger = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\
 const compact = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\qualification\\compact.js").toString("utf8");
 const roleSuite = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\qualification\\role-suite.js").toString("utf8");
 const definitions = extractFile(archive, "node_modules\\@codeforge\\model-registry\\dist\\provider-definitions.js").toString("utf8");
+const subagentManager = extractFile(archive, "node_modules\\@codeforge\\server\\dist\\subagent-manager.js").toString("utf8");
 const identity = JSON.parse(extractFile(archive, "apps\\desktop\\dist\\build-identity.json").toString("utf8"));
 const certificate = JSON.parse(readFileSync(path.join(root, "docs/codeforge-forgegreen-certified-source-state.json"), "utf8"));
 
@@ -54,8 +55,13 @@ assert.match(definitions, /maxRequestsPerMinute/);
 assert.match(runtime, /qualificationRecoveryBudgetMs/);
 assert.match(runtime, /qualificationWaitHorizonMs/);
 assert.match(service, /qualificationSummary/);
-assert.equal(certificate.materialFiles.length, 79);
-assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v5");
+// R59 v6 watchdog pre-flight surface: the runtime marks bounded pre-first-turn phases and
+// the watchdog reads the mark as liveness instead of accruing stale checks.
+assert.match(runtime, /preFlightRunIds/);
+assert.match(runtime, /isInPreFlightWait/);
+assert.match(subagentManager, /isInPreFlightWait/);
+assert.equal(certificate.materialFiles.length, 80);
+assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v6");
 
 const receipt = {
   schema: "r59-packaged-supply-recovery/v1",
@@ -82,6 +88,7 @@ const receipt = {
     boundedCapacityProbe: true,
     probePacing: true,
     denialRecoveryLoop: true,
+    watchdogPreFlightLiveness: true,
   },
 };
 const output = path.join(root, "docs/evidence/r59-supply-recovery/production-wiring.json");

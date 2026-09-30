@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "2e7fe8e4a1aedddc5c5664e7e525ed9ddaa5d12b28bf1406cff626742c1cbd51",
-  "surfaceVersion": "r59-free-supply-recovery-v5",
+  "sourceStateId": "2d3955fd43cf7f01e821e039009fa66d2a38b451226f7a56d8b59eaec1bdf2eb",
+  "surfaceVersion": "r59-free-supply-recovery-v6",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -73,6 +73,7 @@
     "packages/server/src/workflow-service.ts",
     "packages/server/src/workspace-service.ts",
     "packages/server/test/free-fabric-wiring.test.ts",
+    "packages/server/test/progress-watchdog.test.ts",
     "packages/sessions/src/persistence.ts",
     "packages/sessions/src/postgres-persistence.ts",
     "packages/sessions/src/session-state.ts",
@@ -132,7 +133,7 @@
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
-    "packages/server/src/agent-runtime.ts": "ff6c98bc9b0188cc47f6fc4563da8b609413c68d",
+    "packages/server/src/agent-runtime.ts": "48a045f7add0dbf2971a444382e3f9a8817dd156",
     "packages/server/src/autonomous-orchestrator.ts": "1f2d1d92420b7085e1f721755956d60cbdc3d180",
     "packages/server/src/checkpoint-service.ts": "9fc8c2328fc396a6831cb2803a8b679fbc288427",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
@@ -148,12 +149,13 @@
     "packages/server/src/role-progress.ts": "4aa4c3e8f85ab55b9e315662363264614e1f1279",
     "packages/server/src/run-failure.ts": "c3758e6b652cf2b8b6051425e6655095c7bef52e",
     "packages/server/src/strategy-novelty.ts": "79af053d023fdbd6f67719377eefe05b583f22ba",
-    "packages/server/src/subagent-manager.ts": "279d57d368efc000e23b6a18b1706e6db8cb657a",
+    "packages/server/src/subagent-manager.ts": "4f6684273c80bdd9b1d91153d232f5cf4c9ef2c4",
     "packages/server/src/turn-state-machine.ts": "bd79b984c832d8ad7020b58b2f4991c747abafd6",
     "packages/server/src/user-intelligence.ts": "9324dc19fccea0eb945c07700c23a0966d759604",
     "packages/server/src/workflow-service.ts": "a6fa8ae76d908fe503ba6050d8afdf9d2e239b23",
     "packages/server/src/workspace-service.ts": "77850591109fb5867cd96bf687cb3eb60b1a0a7c",
-    "packages/server/test/free-fabric-wiring.test.ts": "0c7613dff9bdf27af5afc838b9fc529456b80416",
+    "packages/server/test/free-fabric-wiring.test.ts": "044b8fcef059cf9afeaf0ea08ae7e776ef193b8d",
+    "packages/server/test/progress-watchdog.test.ts": "35b8ec1225cc4a63fc6666351263f11eb419b4f0",
     "packages/sessions/src/persistence.ts": "5832703ed9a300702e585be80d8886b6d8be2612",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "0ce91821620263f0371f7886a20157ad5dc083f7",
@@ -2502,19 +2504,49 @@
       "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
       "recertifiedAt": "2026-09-30",
       "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V5_SOURCE_STATE"
+    },
+    {
+      "label": "R59 watchdog pre-flight liveness recertification",
+      "reason": "R59 v6 closes the watchdog blindness the v5 packaged run exposed: a real QUALIFIED verdict (groq gpt-oss-120b) existed, but the coder spent its whole window in cold workspace indexing and pre-first-turn admission — phases that emit no durable tool-trace — and was aborted as 'stalled'. The runtime now marks runs inside bounded pre-first-turn phases; the subagent watchdog reads the mark as liveness, keeps the two-window stall check honest afterward, and the existing hard deadline still bounds a phase that genuinely wedges. No admission, qualification, billing, or completion authority changed.",
+      "priorSourceStateId": "2e7fe8e4a1aedddc5c5664e7e525ed9ddaa5d12b28bf1406cff626742c1cbd51",
+      "priorSurfaceVersion": "r59-free-supply-recovery-v5",
+      "resultingSourceStateId": "2d3955fd43cf7f01e821e039009fa66d2a38b451226f7a56d8b59eaec1bdf2eb",
+      "resultingSurfaceVersion": "r59-free-supply-recovery-v6",
+      "changes": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/subagent-manager.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/test/free-fabric-wiring.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/test/progress-watchdog.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
+      "recertifiedAt": "2026-09-30",
+      "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V6_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-30T12:35:50.324Z",
+  "recertifiedAt": "2026-09-30T13:50:23.706Z",
   "recertification": {
-    "phase": "R59 denial-recovery loop recertification",
-    "reason": "R59 v5 closes the admission-vs-qualification race the v4 packaged run exposed: the paced suite produced a real QUALIFIED verdict (groq gpt-oss-120b) seconds after the coder's single recovery wait expired. Route admission now re-decides in bounded rounds while a lane is in flight or has pending routes with spend headroom; an exhausted lane ends the wait honestly. qualificationSummary joins the routing hooks; wait horizon and recovery budget are injectable options. ForgeZero, ForgeVerify, qualification gates, and completion authority are unchanged.",
+    "phase": "R59 watchdog pre-flight liveness recertification",
+    "reason": "R59 v6 closes the watchdog blindness the v5 packaged run exposed: a real QUALIFIED verdict (groq gpt-oss-120b) existed, but the coder spent its whole window in cold workspace indexing and pre-first-turn admission — phases that emit no durable tool-trace — and was aborted as 'stalled'. The runtime now marks runs inside bounded pre-first-turn phases; the subagent watchdog reads the mark as liveness, keeps the two-window stall check honest afterward, and the existing hard deadline still bounds a phase that genuinely wedges. No admission, qualification, billing, or completion authority changed.",
     "changedFiles": [
-      "packages/model-registry/src/free-cloud-service.ts",
       "packages/server/src/agent-runtime.ts",
-      "packages/server/test/free-fabric-wiring.test.ts"
+      "packages/server/src/subagent-manager.ts",
+      "packages/server/test/free-fabric-wiring.test.ts",
+      "packages/server/test/progress-watchdog.test.ts"
     ],
-    "priorSourceStateId": "8f96379554ecd5715f171c079b2f898e3daf90e087b1d5218cb170d0ad16a1c8",
+    "priorSourceStateId": "2e7fe8e4a1aedddc5c5664e7e525ed9ddaa5d12b28bf1406cff626742c1cbd51",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
