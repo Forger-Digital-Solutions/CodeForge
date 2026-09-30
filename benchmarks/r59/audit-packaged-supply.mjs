@@ -60,8 +60,12 @@ assert.match(service, /qualificationSummary/);
 assert.match(runtime, /preFlightRunIds/);
 assert.match(runtime, /isInPreFlightWait/);
 assert.match(subagentManager, /isInPreFlightWait/);
+// R59 v7 cooled-lane liveness: qualificationSummary reports liveEvidence so a lane whose
+// routes sit in transient cooldown with an armed recovery retry is not read as dead.
+assert.match(service, /liveEvidence/);
+assert.match(runtime, /liveEvidence/);
 assert.equal(certificate.materialFiles.length, 80);
-assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v6");
+assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v7");
 
 const receipt = {
   schema: "r59-packaged-supply-recovery/v1",
@@ -89,6 +93,7 @@ const receipt = {
     probePacing: true,
     denialRecoveryLoop: true,
     watchdogPreFlightLiveness: true,
+    cooledLaneLiveEvidence: true,
   },
 };
 const output = path.join(root, "docs/evidence/r59-supply-recovery/production-wiring.json");
