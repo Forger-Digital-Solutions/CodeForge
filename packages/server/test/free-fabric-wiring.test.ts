@@ -215,7 +215,7 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
       reservations: new CapacityReservationLedger({ routes: [], pools: [] }),
     });
 
-  const makeRuntime = (sessionId: string, fabric: FreeFabric, userId?: string, freeCloud?: import("@codeforge/model-registry").FreeCloudRoutingHooks) =>
+  const makeRuntime = (sessionId: string, fabric: FreeFabric, userId?: string, freeCloud?: import("@codeforge/model-registry").FreeCloudRoutingHooks, extra?: { qualificationWaitHorizonMs?: number; qualificationRecoveryBudgetMs?: number }) =>
     createAgentRuntime({
       sessionId,
       eventStore,
@@ -227,6 +227,7 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
       routeHealth: authority,
       freeFabric: fabric,
       freeCloud,
+      ...(extra ?? {}),
       fabricContext: ({ userId: uid }) => {
         const resolved = uid ?? "anonymous";
         return { userId: resolved, userIdentities: uid ? [`hash-${resolved}`] : [] };
@@ -957,6 +958,108 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(provider.callCount).toBe(1);
     expect(kicks.length).toBeGreaterThan(0);
     expect(kicks[0]?.recovery).toBe(true);
+  });
+
+  it("R59: a receipt landing between recovery rounds still admits — the loop re-decides on live qualification evidence", async () => {
+    // The packaged dogfood signature: the lane's suite was in flight when the admission's
+    // single recovery wait expired, and the verdict persisted seconds later — too late. The
+    // bounded loop must keep re-deciding while a lane is live so landed evidence admits.
+    let recovered = false;
+    let qualifying = true;
+    const route = managedRoute("provider-a");
+    registerFleet("provider-a", "provider-a-model");
+    const fabric = createFreeFabric({
+      managedRoutes: () => (recovered ? [route] : []),
+      managedPools: () => (recovered ? [poolFor(route)] : []),
+      userSources: [],
+      health: authority,
+      reservations: new CapacityReservationLedger({ routes: [], pools: [] }),
+    });
+    const provider = new ScriptedRouteProvider("provider-a", "provider-a-model", () =>
+      okEvents(JSON.stringify({ summary: "Done.", findings: [], evidence: [] })));
+    catalog.register(provider);
+    const freeCloud: import("@codeforge/model-registry").FreeCloudRoutingHooks = {
+      isForgeAutoEligible: () => true,
+      canonicalIdOf: (p: string, m: string) => `${p}/${m}`,
+      sameModelAlternates: () => [],
+      recordRouteFailure: () => undefined,
+      recordRouteSuccess: () => undefined,
+      quotaRemaining: () => undefined,
+      capacityRoutingAdvice: () => ({ scoreAdjustment: 0, reasonCodes: [] }),
+      pendingQualification: () => (recovered ? [] : [{} as import("@codeforge/model-registry").ProviderRouteView]),
+      isQualifying: () => qualifying,
+      qualificationSummary: () => [{ providerId: "provider-a", pending: recovered ? 0 : 1, qualifying, requestsSpentToday: 1, dailyBudget: 24 }],
+      qualifyPending: async () => {
+        // The in-flight suite persists its receipt mid-recovery, after the first wait round.
+        setTimeout(() => { recovered = true; qualifying = false; }, 400);
+        return [];
+      },
+    };
+
+    const runtime = makeRuntime("sess-fabric-r59-loop", fabric, undefined, freeCloud, {
+      qualificationWaitHorizonMs: 120,
+      qualificationRecoveryBudgetMs: 15_000,
+    });
+    await runtime.init();
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-fabric-r59-loop", eventStore, persistence });
+    const result = await runtime.executeAgentRun({
+      runId: "run-fabric-r59-loop",
+      agentId: "coder-loop",
+      role: "coder",
+      goal: "Do the task",
+      workspaceId: "ws-fabric",
+      workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+      roleRouting: true,
+      adapter,
+    });
+
+    expect(result.status).toBe("completed");
+    expect(provider.callCount).toBe(1);
+  });
+
+  it("R59: the recovery loop stays bounded — a lane with no live evidence denies on schedule", async () => {
+    let kicks = 0;
+    registerFleet("provider-x", "provider-x-model");
+    const fabric = makeFabric([], []);
+    const provider = new ScriptedRouteProvider("provider-x", "provider-x-model", () => okEvents());
+    catalog.register(provider);
+    const freeCloud: import("@codeforge/model-registry").FreeCloudRoutingHooks = {
+      isForgeAutoEligible: () => true,
+      canonicalIdOf: (p: string, m: string) => `${p}/${m}`,
+      sameModelAlternates: () => [],
+      recordRouteFailure: () => undefined,
+      recordRouteSuccess: () => undefined,
+      quotaRemaining: () => undefined,
+      capacityRoutingAdvice: () => ({ scoreAdjustment: 0, reasonCodes: [] }),
+      // Pending forever, never in flight, budget spent — nothing can land a verdict.
+      pendingQualification: () => [{} as import("@codeforge/model-registry").ProviderRouteView],
+      isQualifying: () => false,
+      qualificationSummary: () => [{ providerId: "provider-x", pending: 1, qualifying: false, requestsSpentToday: 24, dailyBudget: 24 }],
+      qualifyPending: async () => { kicks++; return []; },
+    };
+
+    const runtime = makeRuntime("sess-fabric-r59-bounded", fabric, undefined, freeCloud, {
+      qualificationWaitHorizonMs: 120,
+      qualificationRecoveryBudgetMs: 15_000,
+    });
+    await runtime.init();
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-fabric-r59-bounded", eventStore, persistence });
+    const result = await runtime.executeAgentRun({
+      runId: "run-fabric-r59-bounded",
+      agentId: "coder-bounded",
+      role: "coder",
+      goal: "Do the task",
+      workspaceId: "ws-fabric",
+      workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+      roleRouting: true,
+      adapter,
+    });
+
+    expect(result.status).toBe("failed");
+    expect(provider.callCount).toBe(0);
+    expect(kicks).toBeLessThanOrEqual(1);
   });
 
   it("R59: a denial with nothing pending stays denied — recovery never fabricates supply", async () => {

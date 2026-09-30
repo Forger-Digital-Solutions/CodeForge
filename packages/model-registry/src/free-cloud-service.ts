@@ -71,6 +71,12 @@ export interface FreeCloudRoutingHooks {
   /** Whether a qualification cycle is currently in flight. */
   isQualifying?(): boolean;
   /**
+   * Per-provider qualification posture — pending counts, in-flight state, and daily spend
+   * against each lane's budget. Denial-time recovery uses it to keep waiting only while a
+   * lane can still produce a verdict; a lane at its daily budget is done honestly.
+   */
+  qualificationSummary?(): Array<{ providerId: string; pending: number; qualifying: boolean; requestsSpentToday: number; dailyBudget: number }>;
+  /**
    * R59: run one bounded qualification cycle over pending routes. `recovery: true` skips the
    * normal inter-cycle interval — used only when provider-stated cooldowns elapsed — but
    * never the per-day budget or the bounded recovery allowance. Optional so existing

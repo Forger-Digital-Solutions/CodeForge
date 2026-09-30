@@ -399,6 +399,14 @@ const CAPACITY_RESUME_DIRECTIVE = "[Capacity directive] This turn paused mid-exe
  *  horizon. Past it the run fails closed — a far-off reset is indistinguishable from denial for
  *  a bounded run, and parking a subagent indefinitely is the false-waiting failure mode. */
 const CAPACITY_WAIT_HORIZON_MS = 120_000;
+/**
+ * R59: how long one route admission may keep recovering a supply denial that still has live
+ * qualification evidence behind it. Qualification lanes apply receipts per-route mid-cycle,
+ * so a single fixed wait can expire a heartbeat before the first verdict persists — the loop
+ * below keeps re-deciding while a lane is in flight or has pending routes with spend headroom,
+ * and ends honestly the moment every lane is done for the day.
+ */
+const QUALIFICATION_RECOVERY_BUDGET_MS = 10 * 60_000;
 
 /**
  * R59: "no eligible route" must name why every candidate was excluded. Groups the fabric's
@@ -631,6 +639,18 @@ export interface AgentRuntimeOptions {
    * drive `resumeTurn` explicitly so waits stay deterministic).
    */
   capacityWaitRetryMs?: number;
+  /**
+   * R59: bound on a single admission's denial-recovery wait — how long one decision may wait
+   * on in-flight qualification evidence before the round re-decides. Default 105s (the
+   * capacity-wait horizon minus its re-decide margin). Tests shrink it so loops stay fast.
+   */
+  qualificationWaitHorizonMs?: number;
+  /**
+   * R59: total budget across recovery rounds for one route admission whose denial still has
+   * live qualification evidence — a lane in flight, or pending routes with daily headroom.
+   * Default 10 minutes. Tests shrink it so the bounded loop terminates quickly.
+   */
+  qualificationRecoveryBudgetMs?: number;
   /**
    * Task-scoped authority lookup. When supplied, every tool action resolves
    * through the shared TaskPermissionLease (modes + grant patterns) so plan
@@ -990,6 +1010,8 @@ export class AgentRuntime {
   /** Lazy interval that re-polls the fabric for parked capacity waits (production resume path). */
   private capacityWaitTimer?: NodeJS.Timeout;
   private readonly capacityWaitRetryMs: number;
+  private readonly qualificationWaitHorizonMs: number;
+  private readonly qualificationRecoveryBudgetMs: number;
   private turnCount = 0;
   private maxIterations = 50;
   private readonly approvalService: ApprovalService;
@@ -1061,6 +1083,8 @@ export class AgentRuntime {
     this.authorityFor = options.authorityFor;
     this.externalTools = options.externalTools;
     this.capacityWaitRetryMs = options.capacityWaitRetryMs ?? 0;
+    this.qualificationWaitHorizonMs = options.qualificationWaitHorizonMs ?? CAPACITY_WAIT_HORIZON_MS - 15_000;
+    this.qualificationRecoveryBudgetMs = options.qualificationRecoveryBudgetMs ?? QUALIFICATION_RECOVERY_BUDGET_MS;
   }
 
   /**
@@ -2086,15 +2110,27 @@ export class AgentRuntime {
           routing = await selectRoute();
         }
         // R59: a denial resting on pending qualification is a measurement gap, not absent
-        // supply — run (or join) one bounded recovery cycle so a route that is verified-free
-        // but merely untested does not read as "no free capacity" to the whole run. The wait
-        // is bounded by the capacity horizon and emits progress so the watchdog sees a
-        // recovery in flight, not a stall.
-        if (routing.outcome === "no_eligible_route" && await this.recoverFreeSupply(routing.fabric, {
-          awaitQualificationMs: CAPACITY_WAIT_HORIZON_MS - 15_000,
-          onTick: () => adapter.emitSubagentProgress?.(req.agentId, "Free supply recovery: measuring verified-free routes before declaring zero capacity."),
-        })) {
+        // supply — run (or join) bounded recovery cycles so a route that is verified-free
+        // but merely untested does not read as "no free capacity" to the whole run. The
+        // suite persists receipts per-route mid-cycle, so a single fixed wait can expire a
+        // heartbeat before the first verdict lands; keep re-deciding while some lane is in
+        // flight or still has pending routes with daily-budget headroom. The budget bounds
+        // the total wait; each round emits progress so the watchdog sees recovery, not a stall.
+        const qualificationRecoveryDeadline = Date.now() + this.qualificationRecoveryBudgetMs;
+        while (routing.outcome === "no_eligible_route" && Date.now() < qualificationRecoveryDeadline) {
+          await this.recoverFreeSupply(routing.fabric, {
+            awaitQualificationMs: Math.min(this.qualificationWaitHorizonMs, Math.max(0, qualificationRecoveryDeadline - Date.now())),
+            onTick: () => adapter.emitSubagentProgress?.(req.agentId, "Free supply recovery: measuring verified-free routes before declaring zero capacity."),
+          });
+          // The receipt may have persisted between rounds while the probe reported nothing
+          // stale — re-decide unconditionally so landed evidence is never missed.
           routing = await selectRoute();
+          if (routing.outcome !== "no_eligible_route") break;
+          const lanes = this.freeCloud?.qualificationSummary?.() ?? [];
+          const live = this.freeCloud?.isQualifying?.() === true
+            || lanes.some((lane) => lane.pending > 0 && lane.requestsSpentToday < lane.dailyBudget);
+          if (!live) break;
+          await new Promise((resolveWait) => setTimeout(resolveWait, 1_000));
         }
         if (routing.outcome === "no_eligible_route" && routing.queued?.nextAvailableAt) {
           // R48: the fabric's QUEUED verdict is "capacity returns at a provider-stated reset",
