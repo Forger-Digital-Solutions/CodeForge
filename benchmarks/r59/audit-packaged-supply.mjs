@@ -25,6 +25,7 @@ const reservations = extractFile(archive, "node_modules\\@codeforge\\forge-zero\
 const quota = extractFile(archive, "node_modules\\@codeforge\\model-registry\\dist\\quota.js").toString("utf8");
 const eightBitRuntime = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\runtime.js").toString("utf8");
 const contextBudget = extractFile(archive, "node_modules\\@codeforge\\context\\dist\\budget.js").toString("utf8");
+const contextIndex = extractFile(archive, "node_modules\\@codeforge\\context\\dist\\index.js").toString("utf8");
 const identity = JSON.parse(extractFile(archive, "apps\\desktop\\dist\\build-identity.json").toString("utf8"));
 const certificate = JSON.parse(readFileSync(path.join(root, "docs/codeforge-forgegreen-certified-source-state.json"), "utf8"));
 
@@ -95,8 +96,14 @@ assert.match(runtime, /servingInputTokenCeiling/);
 assert.match(eightBitRuntime, /awaitQualification/);
 assert.match(eightBitRuntime, /qualificationAwaited/);
 assert.match(runtime, /laneWasLive/);
-assert.equal(certificate.materialFiles.length, 93);
-assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v11");
+// R59 v12 wire-survival: the planner's kernel-must-fit capacity is the repository slice ON
+// TOP of the already-charged kernel cost (a zero slice yields a kernel-only plan, not a
+// CONTEXT_CAPACITY_UNKNOWN fault), and the serialized-wire bound is the raw serving ceiling —
+// not the window-minus-overhead assembly budget.
+assert.match(contextIndex, /repository \* 0\.8\) \+ estimateTokens\(contextSections\[0\]\)/);
+assert.match(runtime, /dispatchWireTokenLimit/);
+assert.equal(certificate.materialFiles.length, 94);
+assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v12");
 
 const receipt = {
   schema: "r59-packaged-supply-recovery/v1",
@@ -134,6 +141,7 @@ const receipt = {
     servingWindowContextSizing: true,
     failoverQualificationAwait: true,
     landedEvidenceReDecide: true,
+    servingWindowWireSurvival: true,
   },
 };
 const output = path.join(root, "docs/evidence/r59-supply-recovery/production-wiring.json");

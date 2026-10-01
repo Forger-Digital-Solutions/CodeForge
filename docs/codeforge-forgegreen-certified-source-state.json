@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "334f477da0f102ae7a9e0c231f072e42e33886326097cbac02af868dfa11aedd",
-  "surfaceVersion": "r59-free-supply-recovery-v11",
+  "sourceStateId": "9d7b9495fbd3baa05885ebb6493be61b6af55a515db12674c5571e54be6922be",
+  "surfaceVersion": "r59-free-supply-recovery-v12",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -21,6 +21,7 @@
     "packages/context/src/budget.ts",
     "packages/context/src/index.ts",
     "packages/context/src/planner.ts",
+    "packages/context/test/cf14-context.test.ts",
     "packages/context/test/fg3-budget.test.ts",
     "packages/eight-bit/src/failover.ts",
     "packages/eight-bit/src/free-fabric.ts",
@@ -114,8 +115,9 @@
     "packages/cloud-usage/src/managed-paid.ts": "d249e00d7ed6ceeeffd6ea20bc3de9e838b24fc9",
     "packages/cloud-usage/src/shillings.ts": "c6452afd5da5ee2001bbadeca4a2e3b09a588999",
     "packages/context/src/budget.ts": "cb805ff4471556031650680de30148d8508ac393",
-    "packages/context/src/index.ts": "4f6c960147de5ddd69e6a73ddb53327d4a8bd3fc",
+    "packages/context/src/index.ts": "c1bbde5fc38d06704c10178899fcc56141444ed1",
     "packages/context/src/planner.ts": "5cab4794355d06008e044ddd80ac1b560ec0f793",
+    "packages/context/test/cf14-context.test.ts": "aaf1dbdfabeaf6406e37c0fc258ba3a9fd89d7a5",
     "packages/context/test/fg3-budget.test.ts": "ee99da9a7bbc0438dbf62814bcf8940274f74375",
     "packages/eight-bit/src/failover.ts": "cdaf62b4cb7578692e14407663b046a68347900d",
     "packages/eight-bit/src/free-fabric.ts": "fb991acde7246b3f59df85b3bc34c740edbb4943",
@@ -157,7 +159,7 @@
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
-    "packages/server/src/agent-runtime.ts": "647c3254f4d067268588ebde37ebe3d5fc86801c",
+    "packages/server/src/agent-runtime.ts": "4333119da8612e1e7f290daa8b7fef730d2de441",
     "packages/server/src/autonomous-orchestrator.ts": "1f2d1d92420b7085e1f721755956d60cbdc3d180",
     "packages/server/src/checkpoint-service.ts": "9fc8c2328fc396a6831cb2803a8b679fbc288427",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
@@ -178,7 +180,7 @@
     "packages/server/src/user-intelligence.ts": "9324dc19fccea0eb945c07700c23a0966d759604",
     "packages/server/src/workflow-service.ts": "a6fa8ae76d908fe503ba6050d8afdf9d2e239b23",
     "packages/server/src/workspace-service.ts": "77850591109fb5867cd96bf687cb3eb60b1a0a7c",
-    "packages/server/test/free-fabric-wiring.test.ts": "a4d31d3f721c8e21fbc8a2a42c2185575c5cc8ea",
+    "packages/server/test/free-fabric-wiring.test.ts": "8006f2693fa252d38522350d78de49e814e672d8",
     "packages/server/test/progress-watchdog.test.ts": "35b8ec1225cc4a63fc6666351263f11eb419b4f0",
     "packages/server/test/role-output-budget.test.ts": "d012b2b6fc81acea22e4c7187b492f4bbc225579",
     "packages/server/test/role-routing.test.ts": "a003d793764f810ee1d61f7e1d0119f9dca0f750",
@@ -2728,24 +2730,49 @@
       "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
       "recertifiedAt": "2026-10-01",
       "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V11_SOURCE_STATE"
+    },
+    {
+      "label": "R59 serving-window wire-survival recertification",
+      "reason": "R59 v12 makes the v11 serving-window cap survivable to the wire. The first v11 packaged dogfood (persistent profile, groq/gpt-oss-120b QUALIFIED with a stamped 8000-token input window) died before dispatch with CONTEXT_CAPACITY_UNKNOWN — 228 kernel tokens against a zero budget. Two real faults, both in the new wiring, both fixed without touching admission, qualification, cost, or completion policy. (1) assemble() passed the repository-page slice (repository*0.8) to planNarrow as capacity, but the planner's fail-closed contract is 'capacity must hold the plan's prompt' — which starts with the kernel the caller already rendered and charged upstream. A serving window smaller than the fixed reserves resolves that slice to zero and falsely faults the kernel; the slice is now added on top of the kernel's own cost, so a zero slice honestly produces a kernel-only plan (BUDGET_EXHAUSTED_BY_KERNEL, zero pages, L0 truncation receipt) instead of a crashed run. (2) The R41 serialized-wire bound inherited resolvedMaxContextTokens — now the assembly bound (window minus tool/transcript overhead) — which would fail closed AGENT_CONTEXT_BUDGET_EXCEEDED on every request whose tool surface legitimately rides on top. The wire bound is now min(roleOrModelBound, servingCeiling): the reserve the assembly subtracted is exactly what the tool surface occupies. Regression tests pin both units — assemble under a window smaller than the fixed reserves yields the kernel-only plan rather than faulting, and a free-routed request whose wire measures inside (ceiling minus overhead, ceiling] dispatches instead of failing closed. No free-only, qualification, billing, quota, ownership, or completion-gate policy changed; unknown windows still leave the budget unbounded and impossibly small windows still fail closed.",
+      "priorSourceStateId": "334f477da0f102ae7a9e0c231f072e42e33886326097cbac02af868dfa11aedd",
+      "priorSurfaceVersion": "r59-free-supply-recovery-v11",
+      "resultingSourceStateId": "9d7b9495fbd3baa05885ebb6493be61b6af55a515db12674c5571e54be6922be",
+      "resultingSurfaceVersion": "r59-free-supply-recovery-v12",
+      "changes": [
+        {
+          "file": "packages/context/src/index.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/context/test/cf14-context.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/test/free-fabric-wiring.test.ts",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
+      "recertifiedAt": "2026-10-01",
+      "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V12_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-10-01T07:26:30.798Z",
+  "recertifiedAt": "2026-10-01T08:51:39.092Z",
   "recertification": {
-    "phase": "R59 serving-window dispatch + failover qualification-await recertification",
-    "reason": "R59 v11 closes the three residual honest-supply gaps the v10 packaged dogfood exposed end-to-end (admit -> wire -> truthful Groq 413, Requested ~8.9k > 8000 TPM -> blocked): (1) dispatch sizing — resolveContextCapacity now consumes a servingInputBudget bound, the smallest stamped input-token window across the user's fabric-admissible routes minus the tool/transcript overhead the assembler does not budget, reported as capacity source serving_window; a prompt past the provider's per-request ingest ceiling was a guaranteed wire rejection, so context is packed to the physical window instead of paying a doomed dispatch, unstamped fleets stay unbounded, and an impossibly small window still fails closed on the kernel check. (2) Failover joins one bounded qualification recovery before declaring no_replacement while a lane is live — the awaitQualification hook is once-guarded like R51's capacityMeasured, and a lane at its daily budget returns false so the denial stays terminal. (3) The denial-recovery loop re-decides once when a previously-live lane dies during the wait — an armed retry landing inside the sleep window flipped liveEvidence false and exited the while-gate before the decide that would have seen the receipt; a lane never live never enters the loop and never pays the extra call. No free-only, qualification, billing, qualification-budget, ownership, or completion policy changed.",
+    "phase": "R59 serving-window wire-survival recertification",
+    "reason": "R59 v12 makes the v11 serving-window cap survivable to the wire. The first v11 packaged dogfood (persistent profile, groq/gpt-oss-120b QUALIFIED with a stamped 8000-token input window) died before dispatch with CONTEXT_CAPACITY_UNKNOWN — 228 kernel tokens against a zero budget. Two real faults, both in the new wiring, both fixed without touching admission, qualification, cost, or completion policy. (1) assemble() passed the repository-page slice (repository*0.8) to planNarrow as capacity, but the planner's fail-closed contract is 'capacity must hold the plan's prompt' — which starts with the kernel the caller already rendered and charged upstream. A serving window smaller than the fixed reserves resolves that slice to zero and falsely faults the kernel; the slice is now added on top of the kernel's own cost, so a zero slice honestly produces a kernel-only plan (BUDGET_EXHAUSTED_BY_KERNEL, zero pages, L0 truncation receipt) instead of a crashed run. (2) The R41 serialized-wire bound inherited resolvedMaxContextTokens — now the assembly bound (window minus tool/transcript overhead) — which would fail closed AGENT_CONTEXT_BUDGET_EXCEEDED on every request whose tool surface legitimately rides on top. The wire bound is now min(roleOrModelBound, servingCeiling): the reserve the assembly subtracted is exactly what the tool surface occupies. Regression tests pin both units — assemble under a window smaller than the fixed reserves yields the kernel-only plan rather than faulting, and a free-routed request whose wire measures inside (ceiling minus overhead, ceiling] dispatches instead of failing closed. No free-only, qualification, billing, quota, ownership, or completion-gate policy changed; unknown windows still leave the budget unbounded and impossibly small windows still fail closed.",
     "changedFiles": [
-      "packages/context/src/budget.ts",
-      "packages/context/test/fg3-budget.test.ts",
-      "packages/eight-bit/src/failover.ts",
-      "packages/eight-bit/src/runtime.ts",
-      "packages/eight-bit/test/runtime.test.ts",
-      "packages/model-registry/src/free-cloud-service.ts",
-      "packages/model-registry/test/free-cloud-registry.test.ts",
-      "packages/server/src/agent-runtime.ts"
+      "packages/context/src/index.ts",
+      "packages/context/test/cf14-context.test.ts",
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/test/free-fabric-wiring.test.ts"
     ],
-    "priorSourceStateId": "6ed8bbdcc2c7c358e5a4846f422bfc060817b4902da9aea4afc1a7e7f8d06e75",
+    "priorSourceStateId": "334f477da0f102ae7a9e0c231f072e42e33886326097cbac02af868dfa11aedd",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
