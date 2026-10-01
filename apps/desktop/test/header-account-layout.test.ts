@@ -18,14 +18,14 @@ describe("desktop account header layout", () => {
     expect(css).toContain(".cloud-account-menu");
   });
 
-  it("uses the server's 30-day allowance wording across onboarding and account UI", () => {
+  it("uses the server's UTC-month allowance wording across onboarding and account UI", () => {
     // R16: the sign-in screen answers a new user's questions in product language — no API key is
     // needed for the free models, and providers are an optional later step, never "configuration".
     const auth = renderer("AuthScreen.tsx");
     expect(auth).toContain("No API key required");
     expect(auth).toContain("your own AI providers later");
     expect(auth).not.toContain("Provider configuration");
-    expect(renderer("settings/sections/ProfileSection.tsx")).toContain("30-day period");
+    expect(renderer("settings/sections/ProfileSection.tsx")).toContain("UTC calendar month");
     expect(auth).not.toContain("500,000 monthly credits");
   });
 
