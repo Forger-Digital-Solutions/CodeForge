@@ -3047,7 +3047,16 @@ export class CodeForgeServer {
           cooldownUntil: r.cooldownUntil,
           lifecycle: r.lifecycle,
           quota: r.quota !== undefined
-            ? { remainingRequests: r.quota.remainingRequests, limitRequests: r.quota.limitRequests, resetAt: r.quota.resetAt, observedAt: r.quota.observedAt }
+            ? {
+                remainingRequests: r.quota.remainingRequests,
+                limitRequests: r.quota.limitRequests,
+                remainingTokens: r.quota.remainingTokens,
+                limitTokens: r.quota.limitTokens,
+                requestResetAt: r.quota.requestResetAt,
+                tokenResetAt: r.quota.tokenResetAt,
+                resetAt: r.quota.resetAt,
+                observedAt: r.quota.observedAt,
+              }
             : undefined,
           lastSuccessfulRuntimeProof: r.lastSuccessfulRuntimeProof,
           pendingQualification: pending.has(key),

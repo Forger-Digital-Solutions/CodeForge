@@ -493,6 +493,27 @@ describe("quota capture", () => {
     ).toBe(0);
   });
 
+  it("parses Groq millisecond reset durations so an exhausted token window actually refills", () => {
+    // Groq reports short token windows as "547ms" — a parser without ms support silently drops
+    // the reset; the low `remainingTokens` stamp then freezes indefinitely (no new calls arrive
+    // while denied), which is a false zero-capacity state while the minute window has refilled.
+    const q = parseRouteQuota(
+      [
+        ["x-ratelimit-limit-requests", "1000"],
+        ["x-ratelimit-remaining-requests", "969"],
+        ["x-ratelimit-reset-requests", "44m38.4s"],
+        ["x-ratelimit-limit-tokens", "8000"],
+        ["x-ratelimit-remaining-tokens", "0"],
+        ["x-ratelimit-reset-tokens", "547ms"],
+      ],
+      () => NOW,
+    )!;
+    expect(new Date(q.tokenResetAt!).getTime() - NOW.getTime()).toBeCloseTo(547, -2);
+    const afterReset = effectiveQuota(q, () => new Date(NOW.getTime() + 1_000))!;
+    expect(afterReset.remainingTokens).toBe(8000);
+    expect(afterReset.remainingRequests).toBe(969);
+  });
+
   it("keeps request and token resets independent — each window refills only on its own reset", () => {
     const q = parseRouteQuota(
       [

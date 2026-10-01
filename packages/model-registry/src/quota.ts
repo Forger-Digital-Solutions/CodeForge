@@ -70,12 +70,13 @@ function parseRetryAfterMs(value: string | undefined, now: () => Date): number |
   return undefined;
 }
 
-/** Groq-style "2m59.56s" / "7.66s" durations, epoch millis, or ISO timestamps. */
+/** Groq-style "2m59.56s" / "7.66s" / "547ms" durations, epoch millis, or ISO timestamps. */
 function parseResetAt(value: string | undefined, now: () => Date): string | undefined {
   if (!value) return undefined;
-  const duration = value.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+(?:\.\d+)?)s)?$/);
+  const duration = value.match(/^(?:(\d+(?:\.\d+)?)h)?(?:(\d+(?:\.\d+)?)m)?(?:(\d+(?:\.\d+)?)s)?(?:(\d+(?:\.\d+)?)ms)?$/);
   if (duration && value.length > 0) {
-    const ms = (Number(duration[1] ?? 0) * 3600 + Number(duration[2] ?? 0) * 60 + Number(duration[3] ?? 0)) * 1000;
+    const ms = (Number(duration[1] ?? 0) * 3600 + Number(duration[2] ?? 0) * 60 + Number(duration[3] ?? 0)) * 1000
+      + Number(duration[4] ?? 0);
     return new Date(now().getTime() + ms).toISOString();
   }
   const n = Number(value);
