@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "6ed8bbdcc2c7c358e5a4846f422bfc060817b4902da9aea4afc1a7e7f8d06e75",
-  "surfaceVersion": "r59-free-supply-recovery-v10",
+  "sourceStateId": "334f477da0f102ae7a9e0c231f072e42e33886326097cbac02af868dfa11aedd",
+  "surfaceVersion": "r59-free-supply-recovery-v11",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -18,18 +18,22 @@
     "packages/cloud-usage/src/index.ts",
     "packages/cloud-usage/src/managed-paid.ts",
     "packages/cloud-usage/src/shillings.ts",
+    "packages/context/src/budget.ts",
     "packages/context/src/index.ts",
     "packages/context/src/planner.ts",
+    "packages/context/test/fg3-budget.test.ts",
     "packages/eight-bit/src/failover.ts",
     "packages/eight-bit/src/free-fabric.ts",
     "packages/eight-bit/src/health.ts",
     "packages/eight-bit/src/qualification/compact.ts",
     "packages/eight-bit/src/qualification/role-suite.ts",
     "packages/eight-bit/src/route-ledger.ts",
+    "packages/eight-bit/src/runtime.ts",
     "packages/eight-bit/src/types.ts",
     "packages/eight-bit/test/free-fabric.test.ts",
     "packages/eight-bit/test/r24-multi-pool.test.ts",
     "packages/eight-bit/test/role-quality.test.ts",
+    "packages/eight-bit/test/runtime.test.ts",
     "packages/forge-green/src/optimization-candidate-a.ts",
     "packages/forge-green/src/optimization-candidates-shadow.ts",
     "packages/forge-green/src/optimization-decision.ts",
@@ -109,18 +113,22 @@
     "packages/cloud-usage/src/index.ts": "c58083bc61b29a52ae2f38b7259f9f87db1cfeba",
     "packages/cloud-usage/src/managed-paid.ts": "d249e00d7ed6ceeeffd6ea20bc3de9e838b24fc9",
     "packages/cloud-usage/src/shillings.ts": "c6452afd5da5ee2001bbadeca4a2e3b09a588999",
+    "packages/context/src/budget.ts": "cb805ff4471556031650680de30148d8508ac393",
     "packages/context/src/index.ts": "4f6c960147de5ddd69e6a73ddb53327d4a8bd3fc",
     "packages/context/src/planner.ts": "5cab4794355d06008e044ddd80ac1b560ec0f793",
-    "packages/eight-bit/src/failover.ts": "16353f67b841c121b9bbc108fe4d9cf3d93c3cd1",
+    "packages/context/test/fg3-budget.test.ts": "ee99da9a7bbc0438dbf62814bcf8940274f74375",
+    "packages/eight-bit/src/failover.ts": "cdaf62b4cb7578692e14407663b046a68347900d",
     "packages/eight-bit/src/free-fabric.ts": "fb991acde7246b3f59df85b3bc34c740edbb4943",
     "packages/eight-bit/src/health.ts": "d34dc5924c335b9ab5eb3ad6a22420ca428103f6",
     "packages/eight-bit/src/qualification/compact.ts": "0711a1576b144aa2aabb7eb19d6b8d35377c67e6",
     "packages/eight-bit/src/qualification/role-suite.ts": "4861d214efb11aeac9a28d4a6dcc3ba8029e2dd4",
     "packages/eight-bit/src/route-ledger.ts": "a27cf80f7dfb7172e93d0898ce0330d997a5b710",
+    "packages/eight-bit/src/runtime.ts": "0e9768b6e220b790293d74822efa163565138dfb",
     "packages/eight-bit/src/types.ts": "2dbe10418021fc76155672723bd14ccee944ba5a",
     "packages/eight-bit/test/free-fabric.test.ts": "1f604b5049629d4fa9b024978fe37f1e7bc76316",
     "packages/eight-bit/test/r24-multi-pool.test.ts": "9c7b12896e2e5e437408df4db565b7b90812272b",
     "packages/eight-bit/test/role-quality.test.ts": "3cdca370a2a3a9aed84c7a89f7218092888f74eb",
+    "packages/eight-bit/test/runtime.test.ts": "6e2e308f9c6cc19553dbbb1c1d9eca4e1c125f4c",
     "packages/forge-green/src/optimization-candidate-a.ts": "67af82aaf7b9d20aac76238752c0532798a975a4",
     "packages/forge-green/src/optimization-candidates-shadow.ts": "a3d1f7b3a5a28d46eb127ce83770d1c292053507",
     "packages/forge-green/src/optimization-decision.ts": "940ab41951d0cae123e82decb8f9d4b0c2e40e05",
@@ -132,10 +140,10 @@
     "packages/forge-zero/test/capacity-transition-chaos.test.ts": "1c08ae0a53585d261944f31ed99b51fc74b86d9c",
     "packages/model-registry/src/catalog-refresh.ts": "ba9057e3c6bfc39bbc618e5c042ed4081e2cc306",
     "packages/model-registry/src/discovery.ts": "cc024b18cdb2ce8a74d19c00379216cbfb9fa1ae",
-    "packages/model-registry/src/free-cloud-service.ts": "839aa1b39e85074143e6d09c0b40ea4f85632998",
+    "packages/model-registry/src/free-cloud-service.ts": "ecdbc1f4f98ac91c25aa4907576753fb73e0c356",
     "packages/model-registry/src/provider-definitions.ts": "9d9173707f191cdceb6549e92d08bf2ea12d730c",
     "packages/model-registry/src/quota.ts": "fefd97ce8648a0edd6a809fa366ec9e6a7a2d03a",
-    "packages/model-registry/test/free-cloud-registry.test.ts": "c7cccc736b8bc64e0be565fb1f66984bf128561d",
+    "packages/model-registry/test/free-cloud-registry.test.ts": "279745e3cce42ca7cda9936e5e16957e5f44b393",
     "packages/model-registry/test/r59-supply-recovery.test.ts": "b7aa5c925f276029b2ea7e8d5f379a7eb9c08fca",
     "packages/paid-auto/src/expected-cost.ts": "efe764f9fa537fa202f2d101b9f019225c3cf509",
     "packages/paid-auto/src/families.ts": "1ad554c31371a07edc475065bb3e042917d94c45",
@@ -149,7 +157,7 @@
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
-    "packages/server/src/agent-runtime.ts": "da4ab31c10aacb736af360f58ae8445eac0ca589",
+    "packages/server/src/agent-runtime.ts": "647c3254f4d067268588ebde37ebe3d5fc86801c",
     "packages/server/src/autonomous-orchestrator.ts": "1f2d1d92420b7085e1f721755956d60cbdc3d180",
     "packages/server/src/checkpoint-service.ts": "9fc8c2328fc396a6831cb2803a8b679fbc288427",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
@@ -2675,24 +2683,69 @@
       "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
       "recertifiedAt": "2026-10-01",
       "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V10_SOURCE_STATE"
+    },
+    {
+      "label": "R59 serving-window dispatch + failover qualification-await recertification",
+      "reason": "R59 v11 closes the three residual honest-supply gaps the v10 packaged dogfood exposed end-to-end (admit -> wire -> truthful Groq 413, Requested ~8.9k > 8000 TPM -> blocked): (1) dispatch sizing — resolveContextCapacity now consumes a servingInputBudget bound, the smallest stamped input-token window across the user's fabric-admissible routes minus the tool/transcript overhead the assembler does not budget, reported as capacity source serving_window; a prompt past the provider's per-request ingest ceiling was a guaranteed wire rejection, so context is packed to the physical window instead of paying a doomed dispatch, unstamped fleets stay unbounded, and an impossibly small window still fails closed on the kernel check. (2) Failover joins one bounded qualification recovery before declaring no_replacement while a lane is live — the awaitQualification hook is once-guarded like R51's capacityMeasured, and a lane at its daily budget returns false so the denial stays terminal. (3) The denial-recovery loop re-decides once when a previously-live lane dies during the wait — an armed retry landing inside the sleep window flipped liveEvidence false and exited the while-gate before the decide that would have seen the receipt; a lane never live never enters the loop and never pays the extra call. No free-only, qualification, billing, qualification-budget, ownership, or completion policy changed.",
+      "priorSourceStateId": "6ed8bbdcc2c7c358e5a4846f422bfc060817b4902da9aea4afc1a7e7f8d06e75",
+      "priorSurfaceVersion": "r59-free-supply-recovery-v10",
+      "resultingSourceStateId": "334f477da0f102ae7a9e0c231f072e42e33886326097cbac02af868dfa11aedd",
+      "resultingSurfaceVersion": "r59-free-supply-recovery-v11",
+      "changes": [
+        {
+          "file": "packages/context/src/budget.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/context/test/fg3-budget.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/src/failover.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/eight-bit/src/runtime.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/test/runtime.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/src/free-cloud-service.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/model-registry/test/free-cloud-registry.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
+      "recertifiedAt": "2026-10-01",
+      "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V11_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-10-01T05:52:51.610Z",
+  "recertifiedAt": "2026-10-01T07:26:30.798Z",
   "recertification": {
-    "phase": "R59 whole-window provider-arbitration recertification",
-    "reason": "R59 v10 closes the permanent-queue false zero the v9 run exposed end-to-end: the coder's measured demand (assembled context ~27.3k chars -> estimatedPromptTokens ~8.7k, inflated by the borrowed tokenizer ratio and 1.15 reserve margin to ~10-15k) exceeded Groq's declared 8k token-window limit, so every reserve() verdict classified a structurally unfittable ESTIMATE as transient CAPACITY_EXHAUSTED and queued on a reset that could never satisfy it — ~5 minutes of re-decides ending in an honest-looking blocked run while the real billed prompt (~0.83 observed ratio, ~7.2k tokens) would have fit. Reservation semantics now mirror the pacing governor's tokenBucketDecision rule for need>limit: an over-limit hold on an arbitrable unit clamps to the window's limit and admits exactly when the window is unspent and unheld, reserving the whole window so a second request serializes honestly; a partially spent window still denies on its own real reset; hard-count units (requests, concurrency) never clamp and still fail closed. The provider's wire verdict arbitrates the estimate — success proves usable capacity, a real 429 stamps real exhaustion. Denial horizons now bind to the denying dimension (window-short units report their own reset; hold-short units report the earlier of lease expiry or reset), so a queued verdict never again advertises a deadline that cannot serve it. The R59 qualification-recovery loop is also gated on a live lane before its first round so DENIED verdicts and dead fleets fail fast instead of consuming a spurious re-decide. No free-only, qualification, billing, qualification-budget, ownership, or completion policy changed.",
+    "phase": "R59 serving-window dispatch + failover qualification-await recertification",
+    "reason": "R59 v11 closes the three residual honest-supply gaps the v10 packaged dogfood exposed end-to-end (admit -> wire -> truthful Groq 413, Requested ~8.9k > 8000 TPM -> blocked): (1) dispatch sizing — resolveContextCapacity now consumes a servingInputBudget bound, the smallest stamped input-token window across the user's fabric-admissible routes minus the tool/transcript overhead the assembler does not budget, reported as capacity source serving_window; a prompt past the provider's per-request ingest ceiling was a guaranteed wire rejection, so context is packed to the physical window instead of paying a doomed dispatch, unstamped fleets stay unbounded, and an impossibly small window still fails closed on the kernel check. (2) Failover joins one bounded qualification recovery before declaring no_replacement while a lane is live — the awaitQualification hook is once-guarded like R51's capacityMeasured, and a lane at its daily budget returns false so the denial stays terminal. (3) The denial-recovery loop re-decides once when a previously-live lane dies during the wait — an armed retry landing inside the sleep window flipped liveEvidence false and exited the while-gate before the decide that would have seen the receipt; a lane never live never enters the loop and never pays the extra call. No free-only, qualification, billing, qualification-budget, ownership, or completion policy changed.",
     "changedFiles": [
-      "packages/eight-bit/test/free-fabric.test.ts",
-      "packages/eight-bit/test/r24-multi-pool.test.ts",
-      "packages/eight-bit/test/role-quality.test.ts",
-      "packages/forge-zero/src/capacity-reservations.ts",
-      "packages/forge-zero/test/capacity-transition-chaos.test.ts",
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/test/role-output-budget.test.ts",
-      "packages/server/test/role-routing.test.ts"
+      "packages/context/src/budget.ts",
+      "packages/context/test/fg3-budget.test.ts",
+      "packages/eight-bit/src/failover.ts",
+      "packages/eight-bit/src/runtime.ts",
+      "packages/eight-bit/test/runtime.test.ts",
+      "packages/model-registry/src/free-cloud-service.ts",
+      "packages/model-registry/test/free-cloud-registry.test.ts",
+      "packages/server/src/agent-runtime.ts"
     ],
-    "priorSourceStateId": "b6511c2747db31aec46aab1fa894e7c731b8f7df197847623e82447faa72f80c",
+    "priorSourceStateId": "6ed8bbdcc2c7c358e5a4846f422bfc060817b4902da9aea4afc1a7e7f8d06e75",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

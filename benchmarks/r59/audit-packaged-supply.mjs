@@ -23,6 +23,8 @@ const definitions = extractFile(archive, "node_modules\\@codeforge\\model-regist
 const subagentManager = extractFile(archive, "node_modules\\@codeforge\\server\\dist\\subagent-manager.js").toString("utf8");
 const reservations = extractFile(archive, "node_modules\\@codeforge\\forge-zero\\dist\\capacity-reservations.js").toString("utf8");
 const quota = extractFile(archive, "node_modules\\@codeforge\\model-registry\\dist\\quota.js").toString("utf8");
+const eightBitRuntime = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\runtime.js").toString("utf8");
+const contextBudget = extractFile(archive, "node_modules\\@codeforge\\context\\dist\\budget.js").toString("utf8");
 const identity = JSON.parse(extractFile(archive, "apps\\desktop\\dist\\build-identity.json").toString("utf8"));
 const certificate = JSON.parse(readFileSync(path.join(root, "docs/codeforge-forgegreen-certified-source-state.json"), "utf8"));
 
@@ -83,8 +85,18 @@ assert.match(server, /remainingTokens/);
 assert.match(reservations, /clampToLimit/);
 assert.match(reservations, /bindingHorizons/);
 assert.match(runtime, /Gated BEFORE the first round/);
-assert.equal(certificate.materialFiles.length, 89);
-assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v10");
+// R59 v11 serving-window dispatch + failover qualification-await + landed-evidence re-decide:
+// the packaged bundle sizes assembled context to the fleet's stamped input-token window and
+// retries failover once on a live qualification lane instead of terminalizing mid-measurement.
+assert.match(service, /servingInputTokenCeiling/);
+assert.match(contextBudget, /serving_window/);
+assert.match(contextBudget, /servingInputBudget/);
+assert.match(runtime, /servingInputTokenCeiling/);
+assert.match(eightBitRuntime, /awaitQualification/);
+assert.match(eightBitRuntime, /qualificationAwaited/);
+assert.match(runtime, /laneWasLive/);
+assert.equal(certificate.materialFiles.length, 93);
+assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v11");
 
 const receipt = {
   schema: "r59-packaged-supply-recovery/v1",
@@ -119,6 +131,9 @@ const receipt = {
     wholeWindowProviderArbitration: true,
     bindingDenialHorizon: true,
     recoveryLoopLiveLaneGate: true,
+    servingWindowContextSizing: true,
+    failoverQualificationAwait: true,
+    landedEvidenceReDecide: true,
   },
 };
 const output = path.join(root, "docs/evidence/r59-supply-recovery/production-wiring.json");
