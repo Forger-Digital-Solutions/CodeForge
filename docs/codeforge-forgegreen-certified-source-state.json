@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "883611157fc6c09ad6e9f6a9846268a4e67dd56698dacb7f811dd46bd247a917",
-  "surfaceVersion": "r59-free-supply-recovery-v8",
+  "sourceStateId": "b6511c2747db31aec46aab1fa894e7c731b8f7df197847623e82447faa72f80c",
+  "surfaceVersion": "r59-free-supply-recovery-v9",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -40,6 +40,8 @@
     "packages/model-registry/src/discovery.ts",
     "packages/model-registry/src/free-cloud-service.ts",
     "packages/model-registry/src/provider-definitions.ts",
+    "packages/model-registry/src/quota.ts",
+    "packages/model-registry/test/free-cloud-registry.test.ts",
     "packages/model-registry/test/r59-supply-recovery.test.ts",
     "packages/paid-auto/src/expected-cost.ts",
     "packages/paid-auto/src/families.ts",
@@ -124,6 +126,8 @@
     "packages/model-registry/src/discovery.ts": "cc024b18cdb2ce8a74d19c00379216cbfb9fa1ae",
     "packages/model-registry/src/free-cloud-service.ts": "839aa1b39e85074143e6d09c0b40ea4f85632998",
     "packages/model-registry/src/provider-definitions.ts": "9d9173707f191cdceb6549e92d08bf2ea12d730c",
+    "packages/model-registry/src/quota.ts": "fefd97ce8648a0edd6a809fa366ec9e6a7a2d03a",
+    "packages/model-registry/test/free-cloud-registry.test.ts": "c7cccc736b8bc64e0be565fb1f66984bf128561d",
     "packages/model-registry/test/r59-supply-recovery.test.ts": "b7aa5c925f276029b2ea7e8d5f379a7eb9c08fca",
     "packages/paid-auto/src/expected-cost.ts": "efe764f9fa537fa202f2d101b9f019225c3cf509",
     "packages/paid-auto/src/families.ts": "1ad554c31371a07edc475065bb3e042917d94c45",
@@ -146,7 +150,7 @@
     "packages/server/src/forgeauto-roster.ts": "741bf73fe25e24bb1576af0ca2d778318a5f1e88",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
     "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
-    "packages/server/src/index.ts": "009ea07a49a175e00a61d702f30c516913449fc4",
+    "packages/server/src/index.ts": "8991c35bc34f65b93aa9e177099f48a47e4661d6",
     "packages/server/src/integration-service.ts": "f72e3ffc8b3087c7f3acd861eba9eb859a008dfd",
     "packages/server/src/model-execution-adapter.ts": "bc52ae7ab56484f4c69fe392c21f4fa9e7c9e4f8",
     "packages/server/src/role-output-budget.ts": "f2560f9ee66fe33d5cf9f0bb6b1d1f3bd7a441dc",
@@ -2591,19 +2595,44 @@
       "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
       "recertifiedAt": "2026-10-01",
       "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V8_SOURCE_STATE"
+    },
+    {
+      "label": "R59 millisecond-reset false-zero recertification",
+      "reason": "R59 v9 closes the false-zero defect the v8 packaged denial made legible once the horizon surfaced: groq::openai/gpt-oss-120b was QUALIFIED/HEALTHY with 7927/8000 tokens live, yet the coder denied USER_QUOTA_EXHAUSTED across the whole recovery loop. Live header capture shows Groq reports short token windows as millisecond durations (x-ratelimit-reset-tokens: 547ms); parseResetAt had no ms group so tokenResetAt was dropped, effectiveQuota could never see the token window's reset (with requestResetAt present the aggregate fallback no longer applies), and a low mid-suite remainingTokens stamp froze the route exhausted until another call refreshed it — while denied, no call ever came: self-sealing false zero capacity. The window's own reset also inherited the ~45min request reset, so every queued verdict surfaced a wait horizon ~50x past the true refill. Parsing ms restores the real reset so low stamps refill on elapsed time and queued verdicts report the actual recovery instant; the supply projection now also surfaces token fields so a denial's binding dimension is directly evidenced. No admission, qualification, billing, or completion policy changed.",
+      "priorSourceStateId": "883611157fc6c09ad6e9f6a9846268a4e67dd56698dacb7f811dd46bd247a917",
+      "priorSurfaceVersion": "r59-free-supply-recovery-v8",
+      "resultingSourceStateId": "b6511c2747db31aec46aab1fa894e7c731b8f7df197847623e82447faa72f80c",
+      "resultingSurfaceVersion": "r59-free-supply-recovery-v9",
+      "changes": [
+        {
+          "file": "packages/model-registry/src/quota.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/test/free-cloud-registry.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/index.ts",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
+      "recertifiedAt": "2026-10-01",
+      "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V9_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-10-01T03:03:39.525Z",
+  "recertifiedAt": "2026-10-01T04:34:39.076Z",
   "recertification": {
-    "phase": "R59 queued-reset horizon recertification",
-    "reason": "R59 v8 closes the two admission-evidence defects the v7 packaged run exposed: groq::openai/gpt-oss-120b reached QUALIFIED/HEALTHY/executable yet the coder's admission denied QUEUED with USER_QUOTA_EXHAUSTED and no recovery horizon. (1) CapacityReservationLedger.nextReset consulted pools.get()?.windows ?? route.windows — an empty-window per-user pool row (a connection with no stamped userConnectedFree declares no pool quota dimensions) is not nullish, so the route's real window resets were swallowed and every queued verdict surfaced nextAvailableAt=undefined; the deny path already falls back to route windows, and the reset lookup now mirrors that non-empty-pool-wins rule so honest capacity waits report when supply returns. (2) summarizeDenialCandidates sliced the fabric report's first 32 rows — all policy-excluded catalog noise — while the ranked rows that actually decided the denial (CAPACITY_DENIED on the qualified route) are appended last and never reached the failure summary; non-excluded candidates now order first. No admission, quota, qualification, billing, or completion policy changed — the denial was truthful (the suite's own token spend exhausted the window); these fixes make the evidence say so instead of looking like zero capacity.",
+    "phase": "R59 millisecond-reset false-zero recertification",
+    "reason": "R59 v9 closes the false-zero defect the v8 packaged denial made legible once the horizon surfaced: groq::openai/gpt-oss-120b was QUALIFIED/HEALTHY with 7927/8000 tokens live, yet the coder denied USER_QUOTA_EXHAUSTED across the whole recovery loop. Live header capture shows Groq reports short token windows as millisecond durations (x-ratelimit-reset-tokens: 547ms); parseResetAt had no ms group so tokenResetAt was dropped, effectiveQuota could never see the token window's reset (with requestResetAt present the aggregate fallback no longer applies), and a low mid-suite remainingTokens stamp froze the route exhausted until another call refreshed it — while denied, no call ever came: self-sealing false zero capacity. The window's own reset also inherited the ~45min request reset, so every queued verdict surfaced a wait horizon ~50x past the true refill. Parsing ms restores the real reset so low stamps refill on elapsed time and queued verdicts report the actual recovery instant; the supply projection now also surfaces token fields so a denial's binding dimension is directly evidenced. No admission, qualification, billing, or completion policy changed.",
     "changedFiles": [
-      "packages/forge-zero/src/capacity-reservations.ts",
-      "packages/forge-zero/test/capacity-transition-chaos.test.ts",
-      "packages/server/src/agent-runtime.ts"
+      "packages/model-registry/src/quota.ts",
+      "packages/model-registry/test/free-cloud-registry.test.ts",
+      "packages/server/src/index.ts"
     ],
-    "priorSourceStateId": "f570564c7ca18b9dc3eae96c7eafb9e3d4e3724c7f39b7ed4db0e96e1207d13c",
+    "priorSourceStateId": "883611157fc6c09ad6e9f6a9846268a4e67dd56698dacb7f811dd46bd247a917",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

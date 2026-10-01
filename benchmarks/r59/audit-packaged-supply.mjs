@@ -22,6 +22,7 @@ const roleSuite = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dis
 const definitions = extractFile(archive, "node_modules\\@codeforge\\model-registry\\dist\\provider-definitions.js").toString("utf8");
 const subagentManager = extractFile(archive, "node_modules\\@codeforge\\server\\dist\\subagent-manager.js").toString("utf8");
 const reservations = extractFile(archive, "node_modules\\@codeforge\\forge-zero\\dist\\capacity-reservations.js").toString("utf8");
+const quota = extractFile(archive, "node_modules\\@codeforge\\model-registry\\dist\\quota.js").toString("utf8");
 const identity = JSON.parse(extractFile(archive, "apps\\desktop\\dist\\build-identity.json").toString("utf8"));
 const certificate = JSON.parse(readFileSync(path.join(root, "docs/codeforge-forgegreen-certified-source-state.json"), "utf8"));
 
@@ -70,8 +71,13 @@ assert.match(runtime, /liveEvidence/);
 assert.match(reservations, /length > 0/);
 assert.match(reservations, /route\.windows/);
 assert.match(runtime, /POLICY_EXCLUDED/);
-assert.equal(certificate.materialFiles.length, 82);
-assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v8");
+// R59 v9 millisecond-reset surface: "547ms" durations must parse, or a low token stamp can
+// never refill and a usable route freezes as exhausted — the packaged quota parser carries it.
+assert.match(quota, /ms/);
+assert.match(quota, /tokenResetAt/);
+assert.match(server, /remainingTokens/);
+assert.equal(certificate.materialFiles.length, 84);
+assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v9");
 
 const receipt = {
   schema: "r59-packaged-supply-recovery/v1",
@@ -101,6 +107,8 @@ const receipt = {
     watchdogPreFlightLiveness: true,
     cooledLaneLiveEvidence: true,
     emptyPoolResetFallback: true,
+    millisecondResetParse: true,
+    supplyTokenFieldProjection: true,
   },
 };
 const output = path.join(root, "docs/evidence/r59-supply-recovery/production-wiring.json");
