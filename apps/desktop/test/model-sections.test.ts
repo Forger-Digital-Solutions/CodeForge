@@ -54,6 +54,13 @@ describe("buildModelSections", () => {
     expect(allIds).toEqual(["auto"]);
   });
 
+  it("hides the public logical ForgeAuto Free ID as an internal selector sentinel", () => {
+    const apiModels = [makeModel({ id: "codeforge/forgeauto-free", providerId: "codeforge-cloud", displayName: "ForgeAuto Free" })];
+    const sections = buildModelSections(apiModels, autoModels);
+    const allIds = sections.flatMap((s) => s.models.map((m) => m.id));
+    expect(allIds).toEqual(["auto"]);
+  });
+
   it("keeps a BYOK-connected provider's own free-of-charge model under that provider's section, not CodeForge Free", () => {
     const apiModels = [
       makeModel({ id: "or-free-1", providerId: "openrouter", displayName: "Some OpenRouter Free Model", accessClass: "FREE_NATIVE" }),

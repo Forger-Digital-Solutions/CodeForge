@@ -3,6 +3,9 @@ import {
   resolveCloudProviderCredentials,
   type CloudKillSwitchConfig,
   type ResolvedProviderCredentials,
+  type FirstPartyWorkerFleetConfig,
+  QwenWorkerQualificationCandidateSchema,
+  QwenWorkerConfigSchema,
 } from "@codeforge/cloud-gateway";
 import { createSecretEnvelopeService, KeyProviderError, type SecretEnvelopeRuntime } from "@codeforge/crypto";
 
@@ -85,6 +88,9 @@ export interface CloudRuntimeConfig {
   /** Server-owned provider credentials resolved from env (never logged, never sent to clients). */
   providerCredentials: ResolvedProviderCredentials;
 
+  /** Optional CodeForge-owned Qwen workers; credentials stay server-side and are never logged. */
+  qwenWorkerFleet?: FirstPartyWorkerFleetConfig;
+
   /**
    * Envelope encryption for reversible secrets the Cloud stores at rest (today: the server-owned
    * GitHub PKCE verifier). Built from CODEFORGE_DATA_ENCRYPTION_KEYS; REQUIRED in staging and
@@ -136,6 +142,8 @@ const EnvSchema = z.object({
   CODEFORGE_DATA_ENCRYPTION_KEYS: z.string().optional(),
   CODEFORGE_DATA_ENCRYPTION_ACTIVE_KEY: z.string().optional(),
   CODEFORGE_SECURITY_CONTACT: z.string().optional(),
+  CODEFORGE_QWEN_WORKERS_JSON: z.string().optional(),
+  CODEFORGE_QWEN_QUALIFICATION_JSON: z.string().optional(),
 });
 
 function parseBool(v: string | undefined, dflt: boolean): boolean {
@@ -170,6 +178,35 @@ function parseNum(v: string | undefined, dflt: number): number {
   if (v === undefined) return dflt;
   const n = Number(v);
   return Number.isFinite(n) ? n : dflt;
+}
+
+function resolveQwenWorkerFleet(
+  workersJson: string | undefined,
+  qualificationJson: string | undefined,
+  environment: CloudRuntimeConfig["environment"],
+): FirstPartyWorkerFleetConfig | undefined {
+  if (!workersJson) return undefined;
+  try {
+    const rawWorkers: unknown = JSON.parse(workersJson);
+    const parsedWorkers = z.array(QwenWorkerConfigSchema).min(1).safeParse(rawWorkers);
+    if (!parsedWorkers.success) return undefined;
+    if (environment !== "development" && parsedWorkers.data.some((worker) => new URL(worker.baseUrl).protocol !== "https:")) {
+      return undefined;
+    }
+    const workerIds = new Set(parsedWorkers.data.map((worker) => worker.workerId));
+    const workerTokens = new Set(parsedWorkers.data.map((worker) => worker.token));
+    if (workerIds.size !== parsedWorkers.data.length || workerTokens.size !== parsedWorkers.data.length) {
+      return undefined;
+    }
+    const candidateQualification = qualificationJson
+      ? QwenWorkerQualificationCandidateSchema.safeParse(JSON.parse(qualificationJson))
+      : undefined;
+    if (candidateQualification && !candidateQualification.success) return { workers: parsedWorkers.data };
+    const qualification = candidateQualification?.success ? candidateQualification.data : undefined;
+    return { workers: parsedWorkers.data, ...(qualification ? { qualification } : {}) };
+  } catch {
+    return undefined;
+  }
 }
 
 export class CloudConfigError extends Error {
@@ -377,6 +414,7 @@ export function loadCloudRuntimeConfig(env: Record<string, string | undefined> =
           ],
     logLevel: e.CODEFORGE_LOG_LEVEL ?? (isProdLike ? "info" : "debug"),
     providerCredentials: resolveCloudProviderCredentials(env),
+    qwenWorkerFleet: resolveQwenWorkerFleet(e.CODEFORGE_QWEN_WORKERS_JSON, e.CODEFORGE_QWEN_QUALIFICATION_JSON, environment),
     trustProxy: parseOptionalBool("CODEFORGE_TRUST_PROXY", e.CODEFORGE_TRUST_PROXY) ?? false,
     trustedRegionHeaderName: e.CODEFORGE_TRUSTED_REGION_HEADER || undefined,
     secretEnvelope,
@@ -397,6 +435,7 @@ export function describeConfig(config: CloudRuntimeConfig): string {
     `githubAppPublication=${config.gitHub.app ? "configured" : "disabled"}`,
     `stripe=${config.stripe ? "test-mode" : "disabled"}`,
     `providers=[${providers.join(",") || "none"}]`,
+    `qwenWorkers=${config.qwenWorkerFleet?.workers.length ?? 0}`,
     `hostedInference=${config.killSwitches.hostedInferenceEnabled}`,
     `hostedFree=${config.killSwitches.hostedFreeEnabled}`,
     `dailyLimitUsd=${config.killSwitches.globalDailySpendLimitUsd}`,

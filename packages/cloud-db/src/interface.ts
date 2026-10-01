@@ -40,6 +40,7 @@ import type {
   HostedFanOutLimits,
   HostedExecutionEvent,
   HostedExecutionEventSubscription,
+  HostedExecutionStreamEventRecord,
   HostedExecutionTreeStats,
 } from "./types.js";
 
@@ -143,6 +144,10 @@ export interface ICloudDatabase {
     providerId: string;
     modelId: string;
     reservedCredits: number;
+    /** When set, reserve against this UTC Free allowance period instead of the paid credit ledger. */
+    usagePeriodId?: string;
+    /** Maximum credits permitted for this single request in the selected period. */
+    maxTaskSpendCredits?: number;
     description?: string;
     metadata?: Record<string, unknown>;
     maxConcurrentTasks?: number;
@@ -235,6 +240,9 @@ export interface ICloudDatabase {
   listHostedExecutionsByStatus(status: HostedExecutionStatus, limit?: number): Promise<HostedExecutionRecord[]>;
   /** Owner-scoped aggregate orchestration metadata for a root execution tree — counts, not payloads. */
   getHostedExecutionTreeStats(rootExecutionId: string, userId: string): Promise<HostedExecutionTreeStats | undefined>;
+  /** Durable, owner-scoped inference deltas for genuine streaming across API/worker processes. */
+  appendHostedExecutionStreamEvent(params: { executionId: string; userId: string; payload: string; createdAt?: string }): Promise<number>;
+  listHostedExecutionStreamEvents(params: { executionId: string; userId: string; afterSequence: number; limit?: number }): Promise<HostedExecutionStreamEventRecord[]>;
   /**
    * Cross-process hosted execution event channel. On PostgreSQL this is LISTEN/NOTIFY — a
    * notification is ONLY a wake-up hint carrying correlation identifiers; consumers must verify
@@ -248,6 +256,7 @@ export interface ICloudDatabase {
 
   // Usage Periods
   getOrCreateCurrentUsagePeriod(userId: string, allowanceAmount?: number, now?: Date): Promise<{ period: UsagePeriodRecord; grantedNewAllowance: boolean }>;
+  getUsagePeriodReservedCredits(periodId: string): Promise<number>;
 
   // OAuth Transactions
   /**

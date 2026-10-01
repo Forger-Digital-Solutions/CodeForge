@@ -98,11 +98,11 @@ describe("Zero-setup real hosted capacity (deterministic, injected provider)", (
     );
   });
 
-  it("exposes the discovered provider model via /v1/hosted/models", async () => {
+  it("exposes only the CodeForge logical Free model via /v1/hosted/models", async () => {
     const models = await (await fetch(`${baseUrl}/v1/hosted/models`)).json();
     const ids = models.map((m: { modelId: string }) => m.modelId);
-    expect(ids).toContain("meta-llama/llama-3.1-8b-instruct:free");
-    const free = models.find((m: { modelId: string }) => m.modelId.endsWith(":free"));
+    expect(ids).toEqual(["codeforge/forgeauto-free"]);
+    const free = models[0];
     expect(free.isEligibleFree).toBe(true);
     expect(free.accessClass).toBe("free");
   });
@@ -131,8 +131,11 @@ describe("Zero-setup real hosted capacity (deterministic, injected provider)", (
     expect(sse).toContain("turn.completed");
 
     const usage = await (await fetch(`${baseUrl}/v1/usage`, { headers: auth })).json();
-    expect(usage.creditBalance).toBeLessThan(500_000);
+    expect(usage.creditBalance).toBe(0);
     expect(usage.recentEvents.length).toBeGreaterThan(0);
+    expect(usage.freeAllowanceCredits).toBe(500_000);
+    expect(usage.freeUsedCredits).toBeGreaterThan(0);
+    expect(usage.freeReservedCredits).toBe(0);
   });
 
   it("never leaks the server provider credential across the cloud→desktop boundary", async () => {

@@ -68,19 +68,18 @@ export function selectorAvailability(m: ApiModel): { available: boolean; unavail
 }
 
 // Muse Spark is a promotional model excluded from normal routing entirely — hide any stray record.
-// "codeforge-auto" is the hosted adapter's alias for automatic routing, which the picker already
-// represents as the pinned ForgeAuto/Free row; a second "Auto" row would only confuse.
-const HIDDEN_MODEL_RE = /muse[-\s]?spark|(^|\/|::)codeforge-auto$/i;
+// These are the hosted gateway's logical auto aliases, already represented by the pinned row.
+const HIDDEN_MODEL_RE = /muse[-\s]?spark|(^|\/|::)(codeforge-auto|codeforge\/forgeauto-free)$/i;
 export function isHiddenModel(id: string): boolean {
   return HIDDEN_MODEL_RE.test(id);
 }
 
 /**
  * Internal routing sentinels that must never surface as a second, confusing row next to the
- * pinned "ForgeAuto/Free" Recommended entry. "codeforge-auto" is the hosted-adapter's own alias
- * for the same automatic-routing concept the UI already represents via the "auto" model id.
+ * pinned "ForgeAuto/Free" Recommended entry. The cloud gateway returns its logical model ID
+ * `codeforge/forgeauto-free`; the selector represents the same choice with its stable `auto` row.
  */
-const INTERNAL_SENTINEL_MODEL_IDS = new Set(["codeforge-auto"]);
+const INTERNAL_SENTINEL_MODEL_IDS = new Set(["codeforge-auto", "codeforge/forgeauto-free"]);
 
 /**
  * CodeForge's own no-credential-required providers: the bundled generic free record

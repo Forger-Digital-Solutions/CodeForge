@@ -45,6 +45,7 @@ import type {
   HostedFanOutLimits,
   HostedExecutionEvent,
   HostedExecutionEventSubscription,
+  HostedExecutionStreamEventRecord,
   HostedExecutionTreeStats,
 } from "./types.js";
 
@@ -494,6 +495,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       providerId: String(row.provider_id),
       modelId: String(row.model_id),
       reservedCredits: Number(row.reserved_credits),
+      usagePeriodId: row.usage_period_id ? String(row.usage_period_id) : null,
       actualCredits: Number(row.actual_credits),
       status: row.status as ReservationRecord["status"],
       createdAt: String(row.created_at),
@@ -1076,7 +1078,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
 
   private async insertReservationWithClient(
     client: pg.PoolClient | pg.Pool,
-    params: { id?: string; requestId: string; userId: string; providerId: string; modelId: string; reservedCredits: number },
+    params: { id?: string; requestId: string; userId: string; providerId: string; modelId: string; reservedCredits: number; usagePeriodId?: string },
   ): Promise<ReservationRecord> {
     const now = new Date().toISOString();
     const id = params.id ?? randomUUID();
@@ -1087,6 +1089,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
       providerId: params.providerId,
       modelId: params.modelId,
       reservedCredits: params.reservedCredits,
+      usagePeriodId: params.usagePeriodId ?? null,
       actualCredits: 0,
       status: "reserved",
       createdAt: now,
@@ -1095,8 +1098,8 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     };
 
     await client.query(
-      `INSERT INTO reservations (id, request_id, user_id, provider_id, model_id, reserved_credits, actual_credits, status, created_at, committed_at, released_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      `INSERT INTO reservations (id, request_id, user_id, provider_id, model_id, reserved_credits, usage_period_id, actual_credits, status, created_at, committed_at, released_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
       [
         record.id,
         record.requestId,
@@ -1104,6 +1107,7 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         record.providerId,
         record.modelId,
         record.reservedCredits,
+        record.usagePeriodId,
         record.actualCredits,
         record.status,
         record.createdAt,
@@ -1224,13 +1228,20 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     description?: string;
     metadata?: Record<string, unknown>;
     maxConcurrentTasks?: number;
+    usagePeriodId?: string;
+    maxTaskSpendCredits?: number;
   }): Promise<{ reservation: ReservationRecord; balanceAfter: number; created: boolean }> {
     const existing = await this.getReservationByRequestId(params.requestId);
     if (existing) {
       if (existing.userId !== params.userId) {
         throw new Error("Request ID is already associated with another user account");
       }
-      const currentBalance = await this.getCreditBalance(params.userId);
+      if (Boolean(existing.usagePeriodId) !== Boolean(params.usagePeriodId)) {
+        throw new Error("Request ID is already reserved under a different allowance scope");
+      }
+      const currentBalance = existing.usagePeriodId
+        ? await this.getUsagePeriodRemainingWithClient(this.pool, existing.usagePeriodId)
+        : await this.getCreditBalance(params.userId);
       return { reservation: existing, balanceAfter: currentBalance, created: false };
     }
 
@@ -1243,7 +1254,12 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         if (existingInTx.userId !== params.userId) {
           throw new Error("Request ID is already associated with another user account");
         }
-        const balance = await this.getCreditBalanceWithClient(client, params.userId);
+        if (Boolean(existingInTx.usagePeriodId) !== Boolean(params.usagePeriodId)) {
+          throw new Error("Request ID is already reserved under a different allowance scope");
+        }
+        const balance = existingInTx.usagePeriodId
+          ? await this.getUsagePeriodRemainingWithClient(client, existingInTx.usagePeriodId)
+          : await this.getCreditBalanceWithClient(client, params.userId);
         return { reservation: existingInTx, balanceAfter: balance, created: false };
       }
 
@@ -1258,7 +1274,28 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         }
       }
 
+      let balance: number;
+      if (params.usagePeriodId) {
+        const periodRes = await client.query(`SELECT * FROM usage_periods WHERE id = $1 AND user_id = $2 FOR UPDATE`, [params.usagePeriodId, params.userId]);
+        if (periodRes.rows.length === 0) throw new Error("Free allowance period not found for authenticated account");
+        const period = this.mapUsagePeriodRow(periodRes.rows[0]);
+        const taskLimit = params.maxTaskSpendCredits ?? 50_000;
+        if (params.reservedCredits > taskLimit) throw new Error(`Free task credit limit exceeded (limit: ${taskLimit}, requested: ${params.reservedCredits})`);
+        const activeRes = await client.query(`SELECT COALESCE(SUM(reserved_credits), 0) AS credits FROM reservations WHERE usage_period_id = $1 AND status = 'reserved'`, [params.usagePeriodId]);
+        const reserved = Number(activeRes.rows[0]?.credits ?? 0);
+        if (period.creditsUsed + reserved + params.reservedCredits > period.freeAllowanceGranted) {
+          throw new Error(`Free allowance exhausted (available: ${Math.max(0, period.freeAllowanceGranted - period.creditsUsed - reserved)}, required: ${params.reservedCredits})`);
+        }
+        balance = period.freeAllowanceGranted - period.creditsUsed - reserved - params.reservedCredits;
+      } else {
+        balance = await this.getCreditBalanceWithClient(client, params.userId);
+        if (balance < params.reservedCredits) {
+          throw new Error(`Insufficient credit balance for reservation (available: ${balance}, required: ${params.reservedCredits})`);
+        }
+      }
+
       const reservation = await this.insertReservationWithClient(client, params);
+      if (params.usagePeriodId) return { reservation, balanceAfter: balance, created: true };
       const ledger = await this.appendLedgerWithClient(client, {
         userId: params.userId,
         amount: -params.reservedCredits,
@@ -1293,14 +1330,19 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         throw new Error(`Cannot commit reservation ${params.requestId} because it has already been released`);
       }
       if (res.status === "committed") {
-        const balance = await this.getCreditBalanceWithClient(client, params.userId);
+        const balance = res.usagePeriodId
+          ? await this.getUsagePeriodRemainingWithClient(client, res.usagePeriodId)
+          : await this.getCreditBalanceWithClient(client, params.userId);
         return { reservation: res, transitioned: false, balanceAfter: balance };
       }
 
       await client.query(`SELECT id FROM users WHERE id = $1 FOR UPDATE`, [params.userId]);
       const availableBalance = await this.getCreditBalanceWithClient(client, params.userId);
       const additionalCredits = Math.max(0, params.actualCredits - res.reservedCredits);
-      if (additionalCredits > availableBalance) throw new Error(`Insufficient credit balance to settle request ${params.requestId}`);
+      if (res.usagePeriodId && params.actualCredits > res.reservedCredits) {
+        throw new Error(`Free request actual usage exceeds its reservation (${params.actualCredits} > ${res.reservedCredits})`);
+      }
+      if (!res.usagePeriodId && additionalCredits > availableBalance) throw new Error(`Insufficient credit balance to settle request ${params.requestId}`);
 
       const now = new Date().toISOString();
       const updateRes = await client.query(
@@ -1313,13 +1355,25 @@ export class PostgresCloudDatabase implements ICloudDatabase {
 
       if (updateRes.rows.length === 0) {
         const currentRes = await this.getReservationByRequestIdWithClient(client, params.requestId);
-        const balance = await this.getCreditBalanceWithClient(client, params.userId);
+        const balance = currentRes?.usagePeriodId
+          ? await this.getUsagePeriodRemainingWithClient(client, currentRes.usagePeriodId)
+          : await this.getCreditBalanceWithClient(client, params.userId);
         return { reservation: currentRes!, transitioned: false, balanceAfter: balance };
       }
 
       const updatedReservation = this.mapReservationRow(updateRes.rows[0]);
       const diff = updatedReservation.reservedCredits - params.actualCredits;
       let balanceAfter = availableBalance;
+
+      if (updatedReservation.usagePeriodId) {
+        const usageRes = await client.query(
+          `UPDATE usage_periods SET credits_used = credits_used + $1, updated_at = $2 WHERE id = $3 AND user_id = $4 RETURNING id`,
+          [params.actualCredits, now, updatedReservation.usagePeriodId, params.userId],
+        );
+        if (usageRes.rows.length === 0) throw new Error("Free allowance period disappeared during settlement");
+        balanceAfter = await this.getUsagePeriodRemainingWithClient(client, updatedReservation.usagePeriodId);
+        return { reservation: updatedReservation, transitioned: true, balanceAfter };
+      }
 
       if (diff > 0) {
         const release = await this.appendLedgerWithClient(client, {
@@ -1368,7 +1422,9 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         throw new Error(`Cannot release reservation ${params.requestId} because it has already been committed`);
       }
       if (res.status === "released") {
-        const balance = await this.getCreditBalanceWithClient(client, params.userId);
+        const balance = res.usagePeriodId
+          ? await this.getUsagePeriodRemainingWithClient(client, res.usagePeriodId)
+          : await this.getCreditBalanceWithClient(client, params.userId);
         return { reservation: res, transitioned: false, refundedCredits: res.reservedCredits, balanceAfter: balance };
       }
 
@@ -1385,11 +1441,17 @@ export class PostgresCloudDatabase implements ICloudDatabase {
 
       if (updateRes.rows.length === 0) {
         const currentRes = await this.getReservationByRequestIdWithClient(client, params.requestId);
-        const balance = await this.getCreditBalanceWithClient(client, params.userId);
+        const balance = currentRes?.usagePeriodId
+          ? await this.getUsagePeriodRemainingWithClient(client, currentRes.usagePeriodId)
+          : await this.getCreditBalanceWithClient(client, params.userId);
         return { reservation: currentRes!, transitioned: false, refundedCredits: currentRes?.reservedCredits ?? res.reservedCredits, balanceAfter: balance };
       }
 
       const updatedReservation = this.mapReservationRow(updateRes.rows[0]);
+      if (updatedReservation.usagePeriodId) {
+        const balance = await this.getUsagePeriodRemainingWithClient(client, updatedReservation.usagePeriodId);
+        return { reservation: updatedReservation, transitioned: true, refundedCredits: updatedReservation.reservedCredits, balanceAfter: balance };
+      }
       const release = await this.appendLedgerWithClient(client, {
         userId: params.userId,
         amount: updatedReservation.reservedCredits,
@@ -1793,6 +1855,34 @@ export class PostgresCloudDatabase implements ICloudDatabase {
     return { rootExecutionId, totalExecutions, byStatus, activeDescendants, providerDispatchAttempts, maxDepth };
   }
 
+  async appendHostedExecutionStreamEvent(params: { executionId: string; userId: string; payload: string; createdAt?: string }): Promise<number> {
+    if (params.payload.length > 64 * 1024) throw new Error("Hosted stream event exceeds the 64 KiB event limit");
+    const result = await this.pool.query(
+      `INSERT INTO hosted_execution_stream_events (execution_id, user_id, payload, created_at)
+       SELECT id, user_id, $3, COALESCE($4::timestamptz, NOW()) FROM hosted_executions WHERE id = $1 AND user_id = $2
+       RETURNING sequence`,
+      [params.executionId, params.userId, params.payload, params.createdAt ?? null],
+    );
+    if (!result.rows[0]) throw new Error("Hosted execution not found for user");
+    return Number(result.rows[0].sequence);
+  }
+
+  async listHostedExecutionStreamEvents(params: { executionId: string; userId: string; afterSequence: number; limit?: number }): Promise<HostedExecutionStreamEventRecord[]> {
+    const limit = Math.min(Math.max(params.limit ?? 128, 1), 512);
+    const result = await this.pool.query(
+      `SELECT e.sequence, e.payload, e.created_at FROM hosted_execution_stream_events e
+       JOIN hosted_executions h ON h.id = e.execution_id AND h.user_id = e.user_id
+       WHERE e.execution_id = $1 AND e.user_id = $2 AND h.user_id = $2 AND e.sequence > $3
+       ORDER BY e.sequence ASC LIMIT $4`,
+      [params.executionId, params.userId, params.afterSequence, limit],
+    );
+    if (result.rows.length === 0) {
+      const owned = await this.pool.query(`SELECT 1 FROM hosted_executions WHERE id = $1 AND user_id = $2`, [params.executionId, params.userId]);
+      if (owned.rows.length === 0) throw new Error("Hosted execution not found for user");
+    }
+    return result.rows.map((row) => ({ sequence: Number(row.sequence), payload: String(row.payload), createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at) }));
+  }
+
   /**
    * LISTEN/NOTIFY wake-up channel on a dedicated connection (never the shared pool — a LISTEN
    * client is occupied for its whole lifetime). Reconnects with bounded backoff; every reconnect
@@ -1963,14 +2053,21 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         };
       }
 
+      const historicalUsageRes = await client.query(
+        `SELECT COALESCE(SUM(credits_consumed), 0) AS credits
+         FROM usage_events
+         WHERE user_id = $1 AND access_class = 'free' AND created_at >= $2 AND created_at < $3`,
+        [userId, periodStart, periodEnd],
+      );
+      const creditsUsed = Number(historicalUsageRes.rows[0]?.credits ?? 0);
       const id = randomUUID();
       const nowIso = now.toISOString();
       const insertRes = await client.query(
         `INSERT INTO usage_periods (id, user_id, period_start, period_end, free_allowance_granted, credits_used, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, 0, $6, $7)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          ON CONFLICT (user_id, period_start) DO NOTHING
          RETURNING *`,
-        [id, userId, periodStart, periodEnd, allowanceAmount, nowIso, nowIso],
+        [id, userId, periodStart, periodEnd, allowanceAmount, creditsUsed, nowIso, nowIso],
       );
 
       if (insertRes.rows.length === 0) {
@@ -1984,21 +2081,28 @@ export class PostgresCloudDatabase implements ICloudDatabase {
         };
       }
 
-      if (allowanceAmount > 0) {
-        await this.appendLedgerWithClient(client, {
-          userId,
-          amount: allowanceAmount,
-          eventType: "FREE_ALLOWANCE_GRANTED",
-          description: `Monthly Free Tier Allowance for period ${periodStart.slice(0, 10)} to ${periodEnd.slice(0, 10)}`,
-          metadata: { usagePeriodId: id },
-        });
-      }
-
       return {
         period: this.mapUsagePeriodRow(insertRes.rows[0]),
         grantedNewAllowance: true,
       };
     });
+  }
+
+  private async getUsagePeriodRemainingWithClient(client: pg.PoolClient | pg.Pool, periodId: string): Promise<number> {
+    const res = await client.query(
+      `SELECT p.free_allowance_granted, p.credits_used,
+        COALESCE((SELECT SUM(r.reserved_credits) FROM reservations r WHERE r.usage_period_id = p.id AND r.status = 'reserved'), 0) AS reserved_credits
+       FROM usage_periods p WHERE p.id = $1`,
+      [periodId],
+    );
+    const row = res.rows[0];
+    if (!row) return 0;
+    return Math.max(0, Number(row.free_allowance_granted) - Number(row.credits_used) - Number(row.reserved_credits));
+  }
+
+  async getUsagePeriodReservedCredits(periodId: string): Promise<number> {
+    const res = await this.pool.query(`SELECT COALESCE(SUM(reserved_credits), 0) AS credits FROM reservations WHERE usage_period_id = $1 AND status = 'reserved'`, [periodId]);
+    return Number(res.rows[0]?.credits ?? 0);
   }
 
   // --- OAuth Transactions ---

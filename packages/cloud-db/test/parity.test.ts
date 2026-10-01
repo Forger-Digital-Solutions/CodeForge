@@ -228,18 +228,21 @@ export function defineDatabaseParityTests(suiteName: string, getDb: () => Promis
       expect(userSpend).toBeGreaterThanOrEqual(0.0025);
     });
 
-    it("manages usage periods and grants allowances idempotently", async () => {
+    it("manages UTC calendar-month usage periods without credit-wallet rollover", async () => {
       const user = await db.createUser({ displayName: "Period User", primaryIdentity: `github:per-${randomUUID()}` });
       const now = new Date("2026-03-01T12:00:00Z");
 
       const { period: p1, grantedNewAllowance: g1 } = await db.getOrCreateCurrentUsagePeriod(user.id, 500_000, now);
       expect(g1).toBe(true);
       expect(p1.freeAllowanceGranted).toBe(500_000);
+      expect(p1.periodStart).toBe("2026-03-01T00:00:00.000Z");
+      expect(p1.periodEnd).toBe("2026-04-01T00:00:00.000Z");
 
       // Repeated call in same period does not re-grant allowance
       const { period: p2, grantedNewAllowance: g2 } = await db.getOrCreateCurrentUsagePeriod(user.id, 500_000, now);
       expect(g2).toBe(false);
       expect(p2.id).toBe(p1.id);
+      expect(await db.getCreditBalance(user.id)).toBe(0);
     });
 
     it("manages server-owned OAuth transactions with single-use consumption", async () => {

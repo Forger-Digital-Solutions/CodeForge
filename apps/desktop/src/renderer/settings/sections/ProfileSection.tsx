@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSettings } from "../settings-context.js";
 import { Avatar, SettingsGroup, SettingsRow, SettingsButton, StatusBadge } from "../settings-controls.js";
+import type { CloudUsage } from "../../../cloud-account.js";
 
 /**
  * Profile & Account. Every value comes from the authenticated cloud account snapshot; missing
@@ -15,6 +16,19 @@ export function ProfileSection(): React.ReactElement {
   const [deleteStep, setDeleteStep] = useState<"idle" | "confirm" | "deleting">("idle");
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [reconnecting, setReconnecting] = useState(false);
+  const [usage, setUsage] = useState<CloudUsage | null>(null);
+
+  useEffect(() => {
+    let current = true;
+    if (!account || account.offline || ctx.isFixtureAccount) {
+      setUsage(null);
+      return () => { current = false; };
+    }
+    void window.electronAPI?.getCloudUsage().then((result) => {
+      if (current) setUsage(result);
+    });
+    return () => { current = false; };
+  }, [account?.user?.id, account?.offline, ctx.isFixtureAccount]);
 
   if (!account) {
     return (
@@ -27,7 +41,7 @@ export function ProfileSection(): React.ReactElement {
         <SettingsGroup>
           <SettingsRow
             title="CodeForge Cloud"
-            description="Sign in with GitHub for zero-setup hosted inference with an allowance that resets each 30-day period."
+            description="Sign in with GitHub for zero-setup hosted inference with 500,000 included Free credits each UTC calendar month."
             control={
               <SettingsButton
                 variant="primary"
@@ -126,7 +140,7 @@ export function ProfileSection(): React.ReactElement {
             account.offline
               ? "CodeForge Cloud could not be reached, so your plan and credits are unknown right now. Local and BYOK routes keep working; Cloud-hosted models are unavailable until it is back."
               : account.planId === "free"
-                ? "ForgeAuto/Free and CodeForge Free models don't use credits — they run on verified $0 routes."
+                ? "CodeForge Free has no end-user monetary charge. Hosted inference consumes the included monthly Free allowance shown below."
                 : "Manage payment details from your billing portal."
           }
           control={<span className="settings-value">{account.offline ? "Unknown (offline)" : account.planName ?? "CodeForge Free"}</span>}
@@ -134,13 +148,25 @@ export function ProfileSection(): React.ReactElement {
         {typeof account.creditBalance === "number" ? (
           <SettingsRow
             title="Credits"
-            description="Credits are only consumed by premium or GEMS models, never by verified-free routes."
+            description="Purchased or plan credits are separate from the monthly CodeForge Free allowance."
             control={<span className="settings-value">{account.creditBalance.toLocaleString()}</span>}
           />
         ) : null}
+        {usage && typeof usage.freeAllowanceCredits === "number" ? (
+          <>
+            <SettingsRow
+              title="Free allowance"
+              description={`$0 end-user charge. Resets ${usage.freeResetAt ? new Date(usage.freeResetAt).toLocaleString() : "at the next UTC month"}.`}
+              control={<span className="settings-value">{usage.freeAllowanceCredits.toLocaleString()}</span>}
+            />
+            <SettingsRow title="Used" description="Weighted credits consumed by hosted Free inference this month." control={<span className="settings-value">{(usage.freeUsedCredits ?? 0).toLocaleString()}</span>} />
+            <SettingsRow title="Reserved / in progress" description="Credits held for active hosted Free requests." control={<span className="settings-value">{(usage.freeReservedCredits ?? 0).toLocaleString()}</span>} />
+            <SettingsRow title="Remaining" description="Available Free allowance after settled usage and active reservations." control={<span className="settings-value">{(usage.freeRemainingCredits ?? 0).toLocaleString()}</span>} />
+          </>
+        ) : null}
         <SettingsRow
-          title="ForgeZero Free Access"
-          description="Verified-free routing does not require credits. Availability depends on at least one currently executable provider route."
+          title="Free service routes"
+          description="Route availability reflects serving capacity and health. It is separate from your account allowance."
           control={<StatusBadge kind={eligibleFreeRoutes > 0 ? "ok" : "warn"}>{eligibleFreeRoutes > 0 ? `${eligibleFreeRoutes} available` : "No route"}</StatusBadge>}
         />
         <SettingsRow

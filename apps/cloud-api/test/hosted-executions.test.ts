@@ -32,10 +32,17 @@ class MockHostedProvider implements ProviderAdapter {
   readonly isTestProvider = true;
   calls = 0;
   peakConcurrent = 0;
+  lastRequest?: ChatRequest;
   private inFlight = 0;
+  holdAfterFirstDelta = false;
+  private releaseAfterFirstDelta?: () => void;
   constructor(private readonly holdUntilAbort = false) {}
-  async *streamChat(_req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+  releaseStream() {
+    this.releaseAfterFirstDelta?.();
+  }
+  async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
     this.calls++;
+    this.lastRequest = req;
     this.inFlight++;
     this.peakConcurrent = Math.max(this.peakConcurrent, this.inFlight);
     try {
@@ -47,6 +54,12 @@ class MockHostedProvider implements ProviderAdapter {
         return;
       }
       yield { type: "text_delta", delta: "DURABLE_HOSTED_OK" };
+      if (this.holdAfterFirstDelta) {
+        await new Promise<void>((resolve, reject) => {
+          this.releaseAfterFirstDelta = resolve;
+          signal?.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+        });
+      }
       yield { type: "usage", usage: { inputTokens: 10, outputTokens: 5 } };
       yield { type: "finish", finishReason: "stop" };
     } finally {
@@ -170,6 +183,91 @@ describe("Durable hosted executions over HTTP", () => {
     const list = await (await fetch(`${baseUrl}/v1/hosted/executions`, { headers: { Authorization: `Bearer ${accessToken}` } })).json();
     expect(list).toHaveLength(1);
     expect(provider.calls).toBe(1);
+  });
+
+  it("delivers provider deltas before the inference reaches a terminal state", async () => {
+    await boot();
+    provider.holdAfterFirstDelta = true;
+    const { accessToken, user } = await loginToCloud(baseUrl, { loopbackPort: 8765 });
+    const response = await post(baseUrl, accessToken, inferenceBody(randomUUID()), "text/event-stream");
+    expect(response.status).toBe(200);
+    const reader = response.body!.getReader();
+    const decoder = new TextDecoder();
+    let received = "";
+    const deadline = Date.now() + 5_000;
+    while (!received.includes('"type":"assistant.message.delta"') && Date.now() < deadline) {
+      let timeoutHandle: NodeJS.Timeout;
+      const result = await Promise.race([
+        reader.read(),
+        new Promise<{ timeout: true }>((resolve) => { timeoutHandle = setTimeout(() => resolve({ timeout: true }), 5_000); }),
+      ]);
+      clearTimeout(timeoutHandle!);
+      if ("timeout" in result) {
+        provider.releaseStream();
+        const executionId = received.match(/"executionId":"([^"]+)/)?.[1];
+        const events = executionId ? await server.hostedRuntime.streamEvents(executionId, user.id, 0).catch((error) => String(error)) : [];
+        throw new Error(`Timed out waiting for an incremental provider delta; calls=${provider.calls}; rows=${JSON.stringify(events)}; received: ${received}`);
+      }
+      if (result.done) break;
+      received += decoder.decode(result.value, { stream: true });
+    }
+    expect(received).toContain('"type":"assistant.message.delta"');
+    expect(provider.calls).toBe(1);
+    provider.releaseStream();
+    while (true) {
+      const result = await reader.read();
+      if (result.done) break;
+      received += decoder.decode(result.value, { stream: true });
+    }
+    expect(received).toContain('"type":"turn.completed"');
+  });
+
+  it("serves authenticated OpenAI-compatible logical chat requests and replays idempotently", async () => {
+    await boot();
+    const { accessToken } = await loginToCloud(baseUrl, { loopbackPort: 8765 });
+    const headers = { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json", "Idempotency-Key": "oai-chat-request-1" };
+    const body = JSON.stringify({
+      model: "codeforge/forgeauto-free",
+      messages: [{ role: "system", content: "Be concise" }, { role: "user", content: "hi" }],
+      max_completion_tokens: 64,
+      temperature: 0.2,
+      tool_choice: "none",
+      stop: ["END"],
+    });
+    const response = await fetch(`${baseUrl}/v1/chat/completions`, { method: "POST", headers, body });
+    expect(response.status).toBe(200);
+    const completion = await response.json();
+    expect(completion.model).toBe("codeforge/forgeauto-free");
+    expect(completion.choices[0].message.content).toBe("DURABLE_HOSTED_OK");
+    expect(completion.usage.total_tokens).toBe(15);
+    expect(provider.lastRequest?.messages[0]).toMatchObject({ role: "system", content: "Be concise" });
+    expect(provider.lastRequest).toMatchObject({ maxTokens: 64, temperature: 0.2, toolChoice: "none", stop: ["END"] });
+    const replay = await fetch(`${baseUrl}/v1/chat/completions`, { method: "POST", headers, body });
+    expect(replay.status).toBe(200);
+    expect((await replay.json()).id).toBe(completion.id);
+    expect(provider.calls).toBe(1);
+  });
+
+  it("streams OpenAI chat completion deltas and rejects unauthenticated clients", async () => {
+    await boot();
+    const unauthenticated = await fetch(`${baseUrl}/v1/chat/completions`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "codeforge/forgeauto-free", messages: [{ role: "user", content: "hi" }] }),
+    });
+    expect(unauthenticated.status).toBe(401);
+    expect(provider.calls).toBe(0);
+
+    const { accessToken } = await loginToCloud(baseUrl, { loopbackPort: 8765 });
+    const streamed = await fetch(`${baseUrl}/v1/chat/completions`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "codeforge/forgeauto-free", messages: [{ role: "user", content: "hi" }], stream: true, stream_options: { include_usage: true } }),
+    });
+    expect(streamed.headers.get("content-type")).toContain("text/event-stream");
+    const content = await streamed.text();
+    expect(content).toContain('"content":"DURABLE_HOSTED_OK"');
+    expect(content).toContain('"prompt_tokens":10');
+    expect(content).toContain("data: [DONE]");
   });
 
   it("isolates status, result, and cancellation across users", async () => {

@@ -50,6 +50,7 @@ export interface HostedRuntimeOptions {
    * operator raises the durable ceiling explicitly after measuring real headroom.
    */
   defaultRouteCapacity?: number;
+  maxConcurrentDispatches?: number;
   onError?: (error: unknown, execution?: HostedExecutionRecord) => void;
 }
 
@@ -63,11 +64,13 @@ export class HostedRuntime {
   private readonly db: ICloudDatabase;
   private readonly gateway: GatewayService;
   private readonly defaultRouteCapacity: number;
+  private readonly maxConcurrentDispatches: number;
   private readonly worker: HostedQueueWorker;
   private readonly reconcileMs: number;
   private readonly fanOutLimits: Required<HostedFanOutLimits>;
   private eventSubscription?: HostedExecutionEventSubscription;
   private reconcileTimer?: NodeJS.Timeout;
+  private capacitySyncTimer?: NodeJS.Timeout;
   private runLoop?: Promise<void>;
   private running = false;
 
@@ -75,6 +78,7 @@ export class HostedRuntime {
     this.db = options.db;
     this.gateway = options.gateway;
     this.defaultRouteCapacity = options.defaultRouteCapacity ?? 1;
+    this.maxConcurrentDispatches = Math.max(1, Math.floor(options.maxConcurrentDispatches ?? 1));
     this.authority = new HostedAdmissionAuthority({
       db: options.db,
       workerId: options.workerId ?? `hosted-worker-${randomUUID()}`,
@@ -96,6 +100,7 @@ export class HostedRuntime {
       heartbeatMs: options.heartbeatMs,
       idleWaitMs: options.idleWaitMs,
       cancelObserveMs: options.cancelObserveMs,
+      maxConcurrentDispatches: this.maxConcurrentDispatches,
       // The dispatch identity is the execution's own id — stable across retries, so a provider
       // that dedupes on it can never double-execute a requeued dispatch. Only minted for routes
       // whose adapter actually transmits it; every other route stays null → ambiguous recovery.
@@ -113,6 +118,7 @@ export class HostedRuntime {
   async enqueue(userId: string, request: HostedInferenceRequest, region: RegionResolution = REGION_UNKNOWN): Promise<HostedEnqueueResult> {
     const route = await this.gateway.resolveHostedRoute(userId, request, region);
     const payload: PersistedHostedRequest = { request, region, route };
+    await this.syncProviderCapacity();
     // Ensure the resolved route is claimable; never overwrites an operator-tuned ceiling.
     await this.db.ensureHostedProviderCapacity({ providerId: route.providerId, modelId: route.modelId, maxConcurrent: this.defaultRouteCapacity });
     const { execution, created } = await this.authority.enqueue({
@@ -132,6 +138,7 @@ export class HostedRuntime {
     if (!parent) throw new Error("Parent hosted execution not found");
     const route = await this.gateway.resolveHostedRoute(userId, request, region);
     const payload: PersistedHostedRequest = { request, region, route };
+    await this.syncProviderCapacity();
     await this.db.ensureHostedProviderCapacity({ providerId: route.providerId, modelId: route.modelId, maxConcurrent: this.defaultRouteCapacity });
     const { execution, created } = await this.authority.enqueue({
       executionId: randomUUID(),
@@ -157,6 +164,11 @@ export class HostedRuntime {
     if (!execution) return undefined;
     const result = execution.resultPayload ? (JSON.parse(execution.resultPayload) as HostedExecutionResultPayload) : undefined;
     return { execution, result };
+  }
+
+  async streamEvents(executionId: string, userId: string, afterSequence: number) {
+    const rows = await this.db.listHostedExecutionStreamEvents({ executionId, userId, afterSequence });
+    return rows.map((row) => ({ sequence: row.sequence, event: JSON.parse(row.payload) as HostedStreamEvent }));
   }
 
   /**
@@ -200,6 +212,8 @@ export class HostedRuntime {
       else void sub.close().catch(() => undefined);
     }).catch(() => undefined);
     void this.authority.reconcile().catch(() => undefined);
+    this.capacitySyncTimer = setInterval(() => void this.syncProviderCapacity().catch(() => undefined), 5_000);
+    this.capacitySyncTimer.unref();
     this.reconcileTimer = setInterval(() => void this.authority.reconcile().catch(() => undefined), this.reconcileMs);
     this.reconcileTimer.unref();
     this.runLoop = this.worker.run().catch(() => undefined);
@@ -208,10 +222,16 @@ export class HostedRuntime {
   async stop(): Promise<void> {
     this.running = false;
     if (this.reconcileTimer) clearInterval(this.reconcileTimer);
+    if (this.capacitySyncTimer) clearInterval(this.capacitySyncTimer);
     if (this.eventSubscription) await this.eventSubscription.close().catch(() => undefined);
     this.eventSubscription = undefined;
     this.worker.stop(new Error("Hosted runtime shutting down"));
     await this.runLoop;
+  }
+
+  async syncProviderCapacity(): Promise<void> {
+    const snapshots = this.gateway.capacitySnapshot();
+    await Promise.all(snapshots.map((route) => this.db.setHostedProviderCapacity(route)));
   }
 
   private async executePersisted(execution: HostedExecutionRecord, signal: AbortSignal) {
@@ -222,6 +242,13 @@ export class HostedRuntime {
     const route = persisted.route ?? { providerId: execution.providerId, modelId: execution.modelId, planId: "free", maxConcurrent: 1, estimatedCredits: 5_000 };
 
     const events: HostedStreamEvent[] = [];
+    let eventWrites = Promise.resolve();
+    const emit = (event: HostedStreamEvent) => {
+      events.push(event);
+      eventWrites = eventWrites.then(async () => {
+        await this.db.appendHostedExecutionStreamEvent({ executionId: execution.id, userId: execution.userId, payload: JSON.stringify(event) });
+      }).catch(() => undefined);
+    };
     const terminalize = (status: "completed" | "failed", error?: string, outcome?: HostedInferenceOutcome) => {
       const payload: HostedExecutionResultPayload = { outcome, events, error };
       let resultPayload = JSON.stringify(payload);
@@ -237,12 +264,14 @@ export class HostedRuntime {
       // Re-run the fail-closed eligibility gate at dispatch time: the model may have left the
       // verified-free pool, or the operator may have thrown a kill switch, since enqueue.
       this.gateway.assertRouteEligible(route, request, region);
-      const outcome = await this.gateway.runResolvedHostedInference(execution.userId, request, route, (event) => events.push(event), signal, execution.providerDispatchId ?? undefined);
-      events.push({ type: "turn.completed", turnId: request.turnId ?? request.requestId });
+      const outcome = await this.gateway.runResolvedHostedInference(execution.userId, request, route, emit, signal, execution.providerDispatchId ?? undefined);
+      emit({ type: "turn.completed", turnId: request.turnId ?? request.requestId });
+      await eventWrites;
       return terminalize("completed", undefined, outcome);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      events.push({ type: "turn.failed", turnId: request.turnId ?? request.requestId, error: message });
+      emit({ type: "turn.failed", turnId: request.turnId ?? request.requestId, error: message });
+      await eventWrites;
       return terminalize("failed", message);
     }
   }

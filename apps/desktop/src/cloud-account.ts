@@ -66,4 +66,13 @@ export function offlineCloudAccount(rememberedUser: unknown): CloudAccount | nul
 export interface CloudUsage {
   creditBalance: number;
   recentEvents: unknown[];
+  freeAllowanceCredits?: number;
+  freeUsedCredits?: number;
+  freeReservedCredits?: number;
+  freeRemainingCredits?: number;
+  freePeriodStart?: string;
+  freePeriodEnd?: string;
+  freeResetAt?: string;
+  freeConcurrentTaskLimit?: number;
+  freePerTaskCreditLimit?: number;
 }

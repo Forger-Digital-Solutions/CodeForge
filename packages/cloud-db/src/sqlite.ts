@@ -46,6 +46,7 @@ import type {
   HostedFanOutLimits,
   HostedExecutionEvent,
   HostedExecutionEventSubscription,
+  HostedExecutionStreamEventRecord,
   HostedExecutionTreeStats,
 } from "./types.js";
 
@@ -895,6 +896,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       providerId: String(row.provider_id),
       modelId: String(row.model_id),
       reservedCredits: Number(row.reserved_credits),
+      usagePeriodId: row.usage_period_id ? String(row.usage_period_id) : null,
       actualCredits: Number(row.actual_credits),
       status: row.status as ReservationRecord["status"],
       createdAt: String(row.created_at),
@@ -903,7 +905,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     };
   }
 
-  private insertReservationSync(params: { id?: string; requestId: string; userId: string; providerId: string; modelId: string; reservedCredits: number }): ReservationRecord {
+  private insertReservationSync(params: { id?: string; requestId: string; userId: string; providerId: string; modelId: string; reservedCredits: number; usagePeriodId?: string }): ReservationRecord {
     const now = new Date().toISOString();
     const id = params.id ?? randomUUID();
     const record: ReservationRecord = {
@@ -913,6 +915,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       providerId: params.providerId,
       modelId: params.modelId,
       reservedCredits: params.reservedCredits,
+      usagePeriodId: params.usagePeriodId ?? null,
       actualCredits: 0,
       status: "reserved",
       createdAt: now,
@@ -921,8 +924,8 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     };
 
     this.db.prepare(`
-      INSERT INTO reservations (id, request_id, user_id, provider_id, model_id, reserved_credits, actual_credits, status, created_at, committed_at, released_at)
-      VALUES (@id, @requestId, @userId, @providerId, @modelId, @reservedCredits, @actualCredits, @status, @createdAt, @committedAt, @releasedAt)
+      INSERT INTO reservations (id, request_id, user_id, provider_id, model_id, reserved_credits, usage_period_id, actual_credits, status, created_at, committed_at, released_at)
+      VALUES (@id, @requestId, @userId, @providerId, @modelId, @reservedCredits, @usagePeriodId, @actualCredits, @status, @createdAt, @committedAt, @releasedAt)
     `).run({
       id: record.id,
       requestId: record.requestId,
@@ -930,6 +933,7 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       providerId: record.providerId,
       modelId: record.modelId,
       reservedCredits: record.reservedCredits,
+      usagePeriodId: record.usagePeriodId,
       actualCredits: record.actualCredits,
       status: record.status,
       createdAt: record.createdAt,
@@ -1038,6 +1042,8 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     description?: string;
     metadata?: Record<string, unknown>;
     maxConcurrentTasks?: number;
+    usagePeriodId?: string;
+    maxTaskSpendCredits?: number;
   }): Promise<{ reservation: ReservationRecord; balanceAfter: number; created: boolean }> {
 
     const existing = this.getReservationByRequestIdSync(params.requestId);
@@ -1045,7 +1051,11 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       if (existing.userId !== params.userId) {
         throw new Error("Request ID is already associated with another user account");
       }
-      return { reservation: existing, balanceAfter: this.getCreditBalanceSync(params.userId), created: false };
+      if (Boolean(existing.usagePeriodId) !== Boolean(params.usagePeriodId)) {
+        throw new Error("Request ID is already reserved under a different allowance scope");
+      }
+      const balanceAfter = existing.usagePeriodId ? this.getUsagePeriodRemainingSync(existing.usagePeriodId) : this.getCreditBalanceSync(params.userId);
+      return { reservation: existing, balanceAfter, created: false };
     }
 
     return this.txSync(() => {
@@ -1054,7 +1064,11 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
         if (existingInTx.userId !== params.userId) {
           throw new Error("Request ID is already associated with another user account");
         }
-        return { reservation: existingInTx, balanceAfter: this.getCreditBalanceSync(params.userId), created: false };
+        if (Boolean(existingInTx.usagePeriodId) !== Boolean(params.usagePeriodId)) {
+          throw new Error("Request ID is already reserved under a different allowance scope");
+        }
+        const balanceAfter = existingInTx.usagePeriodId ? this.getUsagePeriodRemainingSync(existingInTx.usagePeriodId) : this.getCreditBalanceSync(params.userId);
+        return { reservation: existingInTx, balanceAfter, created: false };
       }
 
       if (params.maxConcurrentTasks !== undefined && params.maxConcurrentTasks > 0) {
@@ -1064,12 +1078,31 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
         }
       }
 
-      const balance = this.getCreditBalanceSync(params.userId);
-      if (balance < params.reservedCredits) {
-        throw new Error(`Insufficient credit balance for reservation (available: ${balance}, required: ${params.reservedCredits})`);
+      let balance: number;
+      if (params.usagePeriodId) {
+        const period = this.db.prepare(`SELECT * FROM usage_periods WHERE id = @periodId AND user_id = @userId`).get({ periodId: params.usagePeriodId, userId: params.userId }) as Record<string, unknown> | undefined;
+        if (!period) throw new Error("Free allowance period not found for authenticated account");
+        const taskLimit = params.maxTaskSpendCredits ?? 50_000;
+        if (params.reservedCredits > taskLimit) throw new Error(`Free task credit limit exceeded (limit: ${taskLimit}, requested: ${params.reservedCredits})`);
+        const active = this.db.prepare(`SELECT COALESCE(SUM(reserved_credits), 0) AS credits FROM reservations WHERE usage_period_id = @periodId AND status = 'reserved'`).get({ periodId: params.usagePeriodId }) as { credits?: number } | undefined;
+        const used = Number(period.credits_used);
+        const reserved = Number(active?.credits ?? 0);
+        const allowance = Number(period.free_allowance_granted);
+        if (used + reserved + params.reservedCredits > allowance) {
+          throw new Error(`Free allowance exhausted (available: ${Math.max(0, allowance - used - reserved)}, required: ${params.reservedCredits})`);
+        }
+        balance = allowance - used - reserved - params.reservedCredits;
+      } else {
+        balance = this.getCreditBalanceSync(params.userId);
+        if (balance < params.reservedCredits) {
+          throw new Error(`Insufficient credit balance for reservation (available: ${balance}, required: ${params.reservedCredits})`);
+        }
       }
 
       const reservation = this.insertReservationSync(params);
+      if (params.usagePeriodId) {
+        return { reservation, balanceAfter: balance, created: true };
+      }
       const ledger = this.appendLedgerSync({
         userId: params.userId,
         amount: -params.reservedCredits,
@@ -1101,18 +1134,32 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       throw new Error(`Cannot commit reservation ${params.requestId} because it has already been released`);
     }
     if (res.status === "committed") {
-      return { reservation: res, transitioned: false, balanceAfter: this.getCreditBalanceSync(params.userId) };
+      return { reservation: res, transitioned: false, balanceAfter: res.usagePeriodId ? this.getUsagePeriodRemainingSync(res.usagePeriodId) : this.getCreditBalanceSync(params.userId) };
     }
 
     return this.txSync(() => {
       const current = this.getReservationByRequestIdSync(params.requestId);
       if (!current) throw new Error(`Reservation for request ${params.requestId} not found`);
       const additionalCredits = Math.max(0, params.actualCredits - current.reservedCredits);
+      if (current.usagePeriodId && params.actualCredits > current.reservedCredits) {
+        throw new Error(`Free request actual usage exceeds its reservation (${params.actualCredits} > ${current.reservedCredits})`);
+      }
       const availableBalance = this.getCreditBalanceSync(params.userId);
-      if (additionalCredits > availableBalance) throw new Error(`Insufficient credit balance to settle request ${params.requestId}`);
+      if (!current.usagePeriodId && additionalCredits > availableBalance) throw new Error(`Insufficient credit balance to settle request ${params.requestId}`);
       const reservation = this.commitReservationSync(params.requestId, params.userId, params.actualCredits);
       const diff = reservation.reservedCredits - params.actualCredits;
       let balanceAfter = availableBalance;
+
+      if (reservation.usagePeriodId) {
+        this.db.prepare(`UPDATE usage_periods SET credits_used = credits_used + @actualCredits, updated_at = @now WHERE id = @periodId AND user_id = @userId`).run({
+          actualCredits: params.actualCredits,
+          now: new Date().toISOString(),
+          periodId: reservation.usagePeriodId,
+          userId: params.userId,
+        });
+        balanceAfter = this.getUsagePeriodRemainingSync(reservation.usagePeriodId);
+        return { reservation, transitioned: true, balanceAfter };
+      }
 
       if (diff > 0) {
         const release = this.appendLedgerSync({
@@ -1159,11 +1206,14 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
       throw new Error(`Cannot release reservation ${params.requestId} because it has already been committed`);
     }
     if (res.status === "released") {
-      return { reservation: res, transitioned: false, refundedCredits: res.reservedCredits, balanceAfter: this.getCreditBalanceSync(params.userId) };
+      return { reservation: res, transitioned: false, refundedCredits: res.reservedCredits, balanceAfter: res.usagePeriodId ? this.getUsagePeriodRemainingSync(res.usagePeriodId) : this.getCreditBalanceSync(params.userId) };
     }
 
     return this.txSync(() => {
       const reservation = this.releaseReservationSync(params.requestId, params.userId);
+      if (reservation.usagePeriodId) {
+        return { reservation, transitioned: true, refundedCredits: reservation.reservedCredits, balanceAfter: this.getUsagePeriodRemainingSync(reservation.usagePeriodId) };
+      }
       const release = this.appendLedgerSync({
         userId: params.userId,
         amount: reservation.reservedCredits,
@@ -1570,6 +1620,23 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     return { rootExecutionId, totalExecutions, byStatus, activeDescendants, providerDispatchAttempts, maxDepth };
   }
 
+  async appendHostedExecutionStreamEvent(params: { executionId: string; userId: string; payload: string; createdAt?: string }): Promise<number> {
+    if (params.payload.length > 64 * 1024) throw new Error("Hosted stream event exceeds the 64 KiB event limit");
+    return this.txSync(() => {
+      const owned = this.db.prepare(`SELECT 1 FROM hosted_executions WHERE id = @executionId AND user_id = @userId`).get({ executionId: params.executionId, userId: params.userId });
+      if (!owned) throw new Error("Hosted execution not found for user");
+      const result = this.db.prepare(`INSERT INTO hosted_execution_stream_events (execution_id, user_id, payload, created_at) VALUES (@executionId, @userId, @payload, @createdAt)`).run({ ...params, createdAt: params.createdAt ?? new Date().toISOString() });
+      return Number(result.lastInsertRowid);
+    });
+  }
+
+  async listHostedExecutionStreamEvents(params: { executionId: string; userId: string; afterSequence: number; limit?: number }): Promise<HostedExecutionStreamEventRecord[]> {
+    const owned = this.db.prepare(`SELECT 1 FROM hosted_executions WHERE id = @executionId AND user_id = @userId`).get({ executionId: params.executionId, userId: params.userId });
+    if (!owned) throw new Error("Hosted execution not found for user");
+    const rows = this.db.prepare(`SELECT sequence, payload, created_at FROM hosted_execution_stream_events WHERE execution_id = @executionId AND user_id = @userId AND sequence > @afterSequence ORDER BY sequence ASC LIMIT @limit`).all({ ...params, limit: Math.min(Math.max(params.limit ?? 128, 1), 512) }) as Record<string, unknown>[];
+    return rows.map((row) => ({ sequence: Number(row.sequence), payload: String(row.payload), createdAt: String(row.created_at) }));
+  }
+
   private readonly hostedEventEmitter = new EventEmitter();
 
   private emitHostedEvent(event: HostedExecutionEvent): void {
@@ -1616,11 +1683,13 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
 
   async getOrCreateCurrentUsagePeriod(userId: string, allowanceAmount = 500_000, now: Date = new Date()): Promise<{ period: UsagePeriodRecord; grantedNewAllowance: boolean }> {
     const nowIso = now.toISOString();
+    const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+    const periodEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
     const activeRow = this.db.prepare(`
       SELECT * FROM usage_periods
-      WHERE user_id = @userId AND period_start <= @nowIso AND period_end > @nowIso
-      ORDER BY period_start DESC LIMIT 1
-    `).get({ userId, nowIso }) as Record<string, unknown> | undefined;
+      WHERE user_id = @userId AND period_start = @periodStart
+      LIMIT 1
+    `).get({ userId, periodStart }) as Record<string, unknown> | undefined;
 
     if (activeRow) {
       return {
@@ -1639,32 +1708,44 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
     }
 
     return this.txSync(() => {
-      // Create new usage period (e.g. 30 days) and grant recurring allowance
-      const periodStart = nowIso;
-      const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      const existingPeriod = this.db.prepare(`SELECT * FROM usage_periods WHERE user_id = @userId AND period_start = @periodStart LIMIT 1`).get({ userId, periodStart }) as Record<string, unknown> | undefined;
+      if (existingPeriod) {
+        return {
+          period: {
+            id: String(existingPeriod.id),
+            userId: String(existingPeriod.user_id),
+            periodStart: String(existingPeriod.period_start),
+            periodEnd: String(existingPeriod.period_end),
+            freeAllowanceGranted: Number(existingPeriod.free_allowance_granted),
+            creditsUsed: Number(existingPeriod.credits_used),
+            createdAt: String(existingPeriod.created_at),
+            updatedAt: String(existingPeriod.updated_at),
+          },
+          grantedNewAllowance: false,
+        };
+      }
+
+      // Carry forward only usage already consumed during this UTC month, never unused grants.
+      const historicalUsage = this.db.prepare(`
+        SELECT COALESCE(SUM(credits_consumed), 0) AS credits
+        FROM usage_events
+        WHERE user_id = @userId AND access_class = 'free' AND created_at >= @periodStart AND created_at < @periodEnd
+      `).get({ userId, periodStart, periodEnd }) as { credits?: number } | undefined;
+      const creditsUsed = Number(historicalUsage?.credits ?? 0);
       const id = randomUUID();
 
       this.db.prepare(`
         INSERT INTO usage_periods (id, user_id, period_start, period_end, free_allowance_granted, credits_used, created_at, updated_at)
-        VALUES (@id, @userId, @periodStart, @periodEnd, @freeAllowanceGranted, 0, @nowIso, @nowIso)
+        VALUES (@id, @userId, @periodStart, @periodEnd, @freeAllowanceGranted, @creditsUsed, @nowIso, @nowIso)
       `).run({
         id,
         userId,
         periodStart,
         periodEnd,
         freeAllowanceGranted: allowanceAmount,
+        creditsUsed,
         nowIso,
       });
-
-      if (allowanceAmount > 0) {
-        this.appendLedgerSync({
-          userId,
-          amount: allowanceAmount,
-          eventType: "FREE_ALLOWANCE_GRANTED",
-          description: `Monthly Free Tier Allowance for period ${periodStart.slice(0, 10)} to ${periodEnd.slice(0, 10)}`,
-          metadata: { usagePeriodId: id },
-        });
-      }
 
       const newRow = this.db.prepare(`SELECT * FROM usage_periods WHERE id = @id`).get({ id }) as Record<string, unknown>;
       return {
@@ -1681,6 +1762,18 @@ export class SQLiteCloudDatabase implements ICloudDatabase {
         grantedNewAllowance: true,
       };
     });
+  }
+
+  private getUsagePeriodRemainingSync(periodId: string): number {
+    const period = this.db.prepare(`SELECT free_allowance_granted, credits_used FROM usage_periods WHERE id = @periodId`).get({ periodId }) as { free_allowance_granted?: number; credits_used?: number } | undefined;
+    if (!period) return 0;
+    const active = this.db.prepare(`SELECT COALESCE(SUM(reserved_credits), 0) AS credits FROM reservations WHERE usage_period_id = @periodId AND status = 'reserved'`).get({ periodId }) as { credits?: number } | undefined;
+    return Math.max(0, Number(period.free_allowance_granted ?? 0) - Number(period.credits_used ?? 0) - Number(active?.credits ?? 0));
+  }
+
+  async getUsagePeriodReservedCredits(periodId: string): Promise<number> {
+    const row = this.db.prepare(`SELECT COALESCE(SUM(reserved_credits), 0) AS credits FROM reservations WHERE usage_period_id = @periodId AND status = 'reserved'`).get({ periodId }) as { credits?: number } | undefined;
+    return Number(row?.credits ?? 0);
   }
 
   // --- OAuth Transactions ---

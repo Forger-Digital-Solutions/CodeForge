@@ -49,6 +49,15 @@ export class EntitlementService {
         };
       }
 
+      const tier = params.modelTier ?? "free";
+      const freePeriod = planId === "free" && tier === "free"
+        ? (await this.db.getOrCreateCurrentUsagePeriod(params.userId, plan.monthlyCreditAllowance)).period
+        : undefined;
+      const freeReserved = freePeriod ? await this.db.getUsagePeriodReservedCredits(freePeriod.id) : 0;
+      const balance = freePeriod
+        ? Math.max(0, freePeriod.freeAllowanceGranted - freePeriod.creditsUsed - freeReserved)
+        : await this.db.getCreditBalance(params.userId);
+
       // Check subscription status
       if (planId !== "free" && subscription?.status !== "active" && subscription?.status !== "trialing") {
         return {
@@ -63,7 +72,6 @@ export class EntitlementService {
       // Check concurrency
       const activeCount = params.activeConcurrency ?? 0;
       if (activeCount >= plan.maxConcurrentTasks) {
-        const balance = await this.db.getCreditBalance(params.userId);
         return {
           allowed: false,
           reason: `Concurrent task limit reached (${activeCount}/${plan.maxConcurrentTasks})`,
@@ -74,12 +82,10 @@ export class EntitlementService {
       }
 
       // Check model tier access
-      const tier = params.modelTier ?? "free";
       if (tier === "paid" || tier === "gems_paid") {
         const hasPaid = await this.hasFeature(params.userId, "HOSTED_PAID");
         const hasPremium = await this.hasFeature(params.userId, "PREMIUM_MODELS");
         if (!hasPaid && !hasPremium) {
-          const balance = await this.db.getCreditBalance(params.userId);
           return {
             allowed: false,
             reason: "Selected premium model requires a CodeForge Pro subscription",
@@ -91,12 +97,11 @@ export class EntitlementService {
       }
 
       // Check credit balance
-      const balance = await this.db.getCreditBalance(params.userId);
       const requested = params.requestedEstimatedCredits ?? 1_000;
       if (balance <= 0 || balance < requested) {
         return {
           allowed: false,
-          reason: "You have used your included CodeForge hosted usage",
+          reason: freePeriod ? "Your monthly CodeForge Free allowance is exhausted or reserved" : "You have used your included CodeForge hosted usage",
           maxEstimatedCredits: plan.maxTaskSpendCredits,
           availableCredits: balance,
           planId,

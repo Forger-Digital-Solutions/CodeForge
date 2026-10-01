@@ -337,7 +337,7 @@ export class CloudProviderRegistry {
     const zeroUnit = discoverAndVerifyFree(this.registry, providerId, live, { now: this.now });
     const verifiedIds = new Set<string>();
     for (const rec of zeroUnit.records) {
-      this.firewallManager.registerModel(rec);
+      this.firewallManager.registerModel({ ...rec, supplyClass: "CODEFORGE_ZERO_COST_EXTERNAL" });
       verifiedIds.add(rec.modelId);
     }
     let verifiedFreeCount = zeroUnit.verifiedCount;
@@ -364,7 +364,7 @@ export class CloudProviderRegistry {
       };
       const allowance = await verifyAllowanceViaProbe(this.registry, providerId, live, probe, { now: this.now });
       for (const rec of allowance.records) {
-        this.firewallManager.registerModel(rec);
+        this.firewallManager.registerModel({ ...rec, supplyClass: "CODEFORGE_ZERO_COST_EXTERNAL" });
         verifiedIds.add(rec.modelId);
       }
       verifiedFreeCount = allowance.verifiedCount;

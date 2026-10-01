@@ -1,6 +1,10 @@
 import type { ICloudDatabase, UsageEventRecord } from "@codeforge/cloud-db";
 import { calculateTokensAndCredits } from "./types.js";
 
+export const FREE_MONTHLY_ALLOWANCE_CREDITS = 500_000;
+export const FREE_PER_TASK_CREDIT_LIMIT = 50_000;
+export const FREE_CONCURRENT_TASK_LIMIT = 1;
+
 function assertPositiveSafeInteger(value: number, name: string): void {
   if (!Number.isSafeInteger(value) || value <= 0) throw new Error(`${name} must be a positive safe integer`);
 }
@@ -16,6 +20,8 @@ export interface ReserveBudgetParams {
   providerId: string;
   modelId: string;
   maxConcurrentTasks?: number;
+  /** Reserve against the authenticated account's UTC Free entitlement, isolated from the credit wallet. */
+  freeAllowance?: boolean;
 }
 
 export interface CommitUsageParams {
@@ -54,14 +60,19 @@ export class UsageEngine {
       }
     }
 
-    // 2. Atomically reserve credits and enforce concurrency in DB (handles idempotency, row locking, and ledger deduction)
+    const period = params.freeAllowance
+      ? (await this.db.getOrCreateCurrentUsagePeriod(params.userId, FREE_MONTHLY_ALLOWANCE_CREDITS)).period
+      : undefined;
+
+    // 2. Atomically reserve either the period allowance or the separate credit wallet.
     const { reservation, balanceAfter } = await this.db.reserveCredits({
       requestId: params.requestId,
       userId: params.userId,
       providerId: params.providerId,
       modelId: params.modelId,
       reservedCredits: params.estimatedCredits,
-      maxConcurrentTasks: params.maxConcurrentTasks,
+      maxConcurrentTasks: params.freeAllowance ? FREE_CONCURRENT_TASK_LIMIT : params.maxConcurrentTasks,
+      ...(period ? { usagePeriodId: period.id, maxTaskSpendCredits: FREE_PER_TASK_CREDIT_LIMIT } : {}),
     });
 
 
@@ -190,12 +201,35 @@ export class UsageEngine {
     return { reconciled, refundedCredits };
   }
 
-  async getUserUsageSummary(userId: string): Promise<{ creditBalance: number; recentEvents: UsageEventRecord[] }> {
+  async getUserUsageSummary(userId: string): Promise<{
+    creditBalance: number;
+    recentEvents: UsageEventRecord[];
+    freeAllowanceCredits: number;
+    freeUsedCredits: number;
+    freeReservedCredits: number;
+    freeRemainingCredits: number;
+    freePeriodStart: string;
+    freePeriodEnd: string;
+    freeResetAt: string;
+    freeConcurrentTaskLimit: number;
+    freePerTaskCreditLimit: number;
+  }> {
     const creditBalance = await this.db.getCreditBalance(userId);
     const recentEvents = await this.db.listUsageEvents(userId, 20);
+    const period = (await this.db.getOrCreateCurrentUsagePeriod(userId, FREE_MONTHLY_ALLOWANCE_CREDITS)).period;
+    const freeReservedCredits = await this.db.getUsagePeriodReservedCredits(period.id);
     return {
       creditBalance,
       recentEvents,
+      freeAllowanceCredits: period.freeAllowanceGranted,
+      freeUsedCredits: period.creditsUsed,
+      freeReservedCredits,
+      freeRemainingCredits: Math.max(0, period.freeAllowanceGranted - period.creditsUsed - freeReservedCredits),
+      freePeriodStart: period.periodStart,
+      freePeriodEnd: period.periodEnd,
+      freeResetAt: period.periodEnd,
+      freeConcurrentTaskLimit: FREE_CONCURRENT_TASK_LIMIT,
+      freePerTaskCreditLimit: FREE_PER_TASK_CREDIT_LIMIT,
     };
   }
 }

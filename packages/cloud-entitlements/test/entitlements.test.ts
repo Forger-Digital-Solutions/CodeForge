@@ -26,12 +26,6 @@ describe("Cloud Entitlement Service", () => {
       currentPeriodEnd: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
       cancelAtPeriodEnd: false,
     });
-    await db.appendLedgerEvent({
-      userId: user.id,
-      amount: 50_000,
-      eventType: "FREE_ALLOWANCE_GRANTED",
-    });
-
     // Allowed free task
     const allowed = await service.evaluateTaskExecution({
       userId: user.id,
@@ -40,7 +34,7 @@ describe("Cloud Entitlement Service", () => {
       activeConcurrency: 0,
     });
     expect(allowed.allowed).toBe(true);
-    expect(allowed.availableCredits).toBe(50_000);
+    expect(allowed.availableCredits).toBe(500_000);
 
     // Blocked on concurrency cap (free limit is 1)
     const concurrencyBlocked = await service.evaluateTaskExecution({
@@ -74,7 +68,13 @@ describe("Cloud Entitlement Service", () => {
       currentPeriodEnd: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
       cancelAtPeriodEnd: false,
     });
-    // Balance is 0
+    const period = (await db.getOrCreateCurrentUsagePeriod(user.id, 500_000)).period;
+    for (let index = 0; index < 10; index++) {
+      const requestId = `exhaust-free-${index}`;
+      await db.reserveCredits({ requestId, userId: user.id, providerId: "codeforge", modelId: "codeforge/forgeauto-free", reservedCredits: 50_000, usagePeriodId: period.id, maxTaskSpendCredits: 50_000 });
+      await db.settleReservation({ requestId, userId: user.id, actualCredits: 50_000 });
+    }
+
     const check = await service.evaluateTaskExecution({
       userId: user.id,
       modelTier: "free",
@@ -82,7 +82,7 @@ describe("Cloud Entitlement Service", () => {
       activeConcurrency: 0,
     });
     expect(check.allowed).toBe(false);
-    expect(check.reason).toContain("used your included CodeForge hosted usage");
+    expect(check.reason).toContain("monthly CodeForge Free allowance is exhausted");
   });
 
   it("allows premium models and higher concurrency for Pro subscribers", async () => {

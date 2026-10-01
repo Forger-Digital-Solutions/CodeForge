@@ -164,6 +164,7 @@ export const ReservationRecordSchema = z.object({
   providerId: z.string(),
   modelId: z.string(),
   reservedCredits: z.number().int().nonnegative(),
+  usagePeriodId: z.string().uuid().nullable().optional(),
   actualCredits: z.number().int().nonnegative().default(0),
   status: ReservationStatusSchema,
   createdAt: z.string(),
@@ -273,6 +274,12 @@ export interface HostedExecutionEvent {
 
 export interface HostedExecutionEventSubscription {
   close(): Promise<void>;
+}
+
+export interface HostedExecutionStreamEventRecord {
+  sequence: number;
+  payload: string;
+  createdAt: string;
 }
 
 /**

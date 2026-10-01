@@ -148,6 +148,26 @@ export const AccessClassSchema = z.enum([
 ]);
 export type AccessClass = z.infer<typeof AccessClassSchema>;
 
+/** Internal serving-source classification; independent of user-facing billing eligibility. */
+export const FreeModelSupplyClassSchema = z.enum([
+  "CODEFORGE_OWNED",
+  "CODEFORGE_SPONSORED",
+  "CODEFORGE_ZERO_COST_EXTERNAL",
+  "USER_CONNECTED_FREE",
+  "BYOK_PAID",
+  "CODEFORGE_PAID",
+  "PURE_MANAGED_FREE",
+  "DISTRIBUTED_USER_FREE",
+  "DEPOSIT_UNLOCKED_FREE",
+  "PROMOTIONAL_FREE",
+  "SPONSORED_FREE",
+  "OWNER_DEV_FREE",
+  "TRIAL_CREDIT",
+  "OWNER_CREDIT_RESERVE",
+  "PAID",
+]);
+export type FreeModelSupplyClass = z.infer<typeof FreeModelSupplyClassSchema>;
+
 /** $0-unit access classes: provider/gateway lists the model's unit price as zero. */
 export const ZERO_UNIT_ACCESS: readonly AccessClass[] = ["FREE_NATIVE", "FREE_ROUTED"] as const;
 /** Access classes that count as "free" for Auto routing when independently verified. */
@@ -238,6 +258,7 @@ export const FreeModelRecordSchema = z.object({
   // --- Normalized-registry overlay (optional; upstream facts + CodeForge trust) ---
   /** CodeForge free-access classification. Absent = treat as a legacy $0-unit free model. */
   accessClass: AccessClassSchema.optional(),
+  supplyClass: FreeModelSupplyClassSchema.optional(),
   /** Provider authentication mode. */
   authMode: AuthModeSchema.optional(),
   /** Privacy characteristic of the serving endpoint (routing constraint). */

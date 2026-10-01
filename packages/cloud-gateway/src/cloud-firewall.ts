@@ -186,6 +186,7 @@ export class CloudFirewallManager {
     capabilities: Record<string, boolean>;
     contextWindow: number;
     accessClass: "free" | "paid" | "gems_paid";
+    supplyClass?: string;
     isEligibleFree: boolean;
   }> {
     const records = this.firewall.allModels();
@@ -208,6 +209,7 @@ export class CloudFirewallManager {
         contextWindow: m.contextWindow ?? 128000,
         accessClass: m.tier === "gems_paid" ? ("gems_paid" as const) : isFreeClass ? ("free" as const) : ("paid" as const),
         isEligibleFree: eligibleKeys.has(`${m.providerId}::${m.modelId}`) && m.tier !== "gems_paid",
+        ...(m.supplyClass ? { supplyClass: m.supplyClass } : {}),
       };
     });
   }

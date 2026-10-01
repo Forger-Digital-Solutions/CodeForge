@@ -44,6 +44,8 @@ export interface ProviderAdapter {
   healthCheck(): Promise<ProviderHealthResponse>;
   /** Optional local admission gate for providers with account-level spend ceilings. */
   canRoute?(modelId: string): boolean;
+  /** Optional authoritative serving concurrency by logical model; used to tune durable admission. */
+  capacitySnapshot?(): Array<{ modelId: string; maxConcurrent: number }>;
   /**
    * Declares that the adapter transmits `ChatRequest.dispatchId` to the provider as its
    * idempotency/dedupe key, so a retried dispatch of the same hosted execution cannot produce a

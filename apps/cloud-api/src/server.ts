@@ -1,5 +1,5 @@
 import http from "node:http";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { URL } from "node:url";
 import { isIP, type AddressInfo } from "node:net";
 import { z } from "zod";
@@ -152,7 +152,49 @@ const HostedInferenceSchema = z.object({
     .min(1),
   tools: z.array(HostedToolDefinitionSchema).optional(),
   maxTokens: z.number().int().positive().optional(),
+  temperature: z.number().min(0).max(2).optional(),
+  toolChoice: z.enum(["auto", "none", "required"]).optional(),
+  stop: z.array(z.string()).optional(),
 });
+
+const OpenAIChatCompletionsSchema = z.object({
+  model: z.string().min(1).max(128),
+  messages: z.array(z.object({
+    role: z.enum(["system", "user", "assistant", "tool"]),
+    content: z.string(),
+    name: z.string().max(128).optional(),
+    tool_call_id: z.string().max(256).optional(),
+    tool_calls: z.array(z.object({
+      id: z.string().max(256),
+      type: z.literal("function"),
+      function: z.object({ name: z.string().max(128), arguments: z.string().max(64 * 1024) }),
+    })).optional(),
+  })).min(1).max(256),
+  stream: z.boolean().optional(),
+  stream_options: z.object({ include_usage: z.boolean().optional() }).optional(),
+  max_tokens: z.number().int().positive().optional(),
+  max_completion_tokens: z.number().int().positive().optional(),
+  temperature: z.number().min(0).max(2).optional(),
+  tools: z.array(z.object({
+    type: z.literal("function"),
+    function: z.object({
+      name: z.string().min(1).max(128),
+      description: z.string().max(4096).optional(),
+      parameters: z.object({ type: z.literal("object"), properties: z.record(z.unknown()), required: z.array(z.string()).optional() }).optional(),
+    }),
+  })).max(128).optional(),
+  tool_choice: z.enum(["auto", "none", "required"]).optional(),
+  stop: z.union([z.string(), z.array(z.string()).min(1).max(16)]).optional(),
+}).strict();
+
+function idempotentRequestId(userId: string, key: string | undefined): string {
+  if (!key) return randomUUID();
+  const hex = createHash("sha256").update(`${userId}\u0000${key}`).digest("hex").slice(0, 32).split("");
+  hex[12] = "5";
+  hex[16] = ((Number.parseInt(hex[16]!, 16) & 0x3) | 0x8).toString(16);
+  const value = hex.join("");
+  return `${value.slice(0, 8)}-${value.slice(8, 12)}-${value.slice(12, 16)}-${value.slice(16, 20)}-${value.slice(20)}`;
+}
 
 const HostedWorkflowCreateSchema = z.object({
   workerId: z.string().min(1).max(128),
@@ -184,9 +226,23 @@ function publicHostedExecution(execution: HostedExecutionRecord, created?: boole
 
 function hostedAdmissionErrorStatus(error: unknown): number {
   const message = error instanceof Error ? error.message : String(error);
+  if (/capacity|queue full|saturat|worker unavailable/i.test(message)) return 503;
+  if (/free allowance|monthly allowance|allowance exhausted|credit allowance/i.test(message)) return 429;
   if (/not permitted|insufficient|credits|concurrent task limit/i.test(message)) return 402;
   if (/disabled|spend limit|no verified free model|not currently available|not available under current provider policy|not permitted under your|could not resolve/i.test(message)) return 503;
   return 500;
+}
+
+function openAIError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  const code = /free allowance|monthly allowance|allowance exhausted/i.test(message)
+    ? "FREE_ALLOWANCE_EXHAUSTED"
+    : /capacity|queue full|saturat|worker unavailable/i.test(message)
+      ? "CODEFORGE_CAPACITY_SATURATED"
+      : /provider|backend|429|rate limit/i.test(message)
+        ? "BACKEND_RATE_LIMITED"
+        : "CODEFORGE_INFERENCE_ERROR";
+  return { error: { message: message.slice(0, 512), type: code === "FREE_ALLOWANCE_EXHAUSTED" ? "quota_exceeded" : "server_error", code } };
 }
 
 export interface CodeForgeCloudServerConfig {
@@ -270,6 +326,7 @@ export interface CodeForgeCloudServerConfig {
     reconcileMs?: number;
     maxUserConcurrent?: number;
     defaultRouteCapacity?: number;
+    maxConcurrentDispatches?: number;
   };
   logLevel?: "debug" | "info" | "warn" | "error" | "silent";
 }
@@ -450,6 +507,7 @@ export class CodeForgeCloudServer {
       reconcileMs: config.hostedRuntime?.reconcileMs,
       maxUserConcurrent: config.hostedRuntime?.maxUserConcurrent,
       defaultRouteCapacity: config.hostedRuntime?.defaultRouteCapacity,
+      maxConcurrentDispatches: config.hostedRuntime?.maxConcurrentDispatches,
       onError: (error) => this.logger.warn("hosted queue worker error", { error: error instanceof Error ? error.message : String(error) }),
     });
 
@@ -526,6 +584,8 @@ export class CodeForgeCloudServer {
         // Discovery never throws by contract; guard defensively so boot is deterministic.
       }
     }
+
+    await this.hostedRuntime.syncProviderCapacity();
 
     // Durable hosted queue worker: starts only after schema init, crash recovery, and provider
     // discovery so the first claim pass observes a consistent ledger and a populated catalog.
@@ -940,7 +1000,7 @@ export class CodeForgeCloudServer {
             apiVersion: "1.0.0",
             serverVersion: "0.4.0",
             hostedInferenceReady: availableFreeCount > 0,
-            features: ["HOSTED_FREE", "DYNAMIC_MODELS", "HOSTED_TOOLS", ...(this.billing ? ["STRIPE_BILLING"] : [])],
+            features: ["HOSTED_FREE", "DYNAMIC_MODELS", "HOSTED_TOOLS", "OPENAI_CHAT_COMPLETIONS", ...(this.billing ? ["STRIPE_BILLING"] : [])],
           },
           corsOrigin,
         );
@@ -949,8 +1009,32 @@ export class CodeForgeCloudServer {
 
       if (url.pathname === "/v1/hosted/models" && method === "GET") {
         this.triggerLazyRefresh();
-        const models = this.firewallManager.listHostedModels();
-        this.sendJson(res, 200, models, corsOrigin);
+        const eligible = this.firewallManager.listHostedModels().filter((model) => model.isEligibleFree && model.accessClass === "free");
+        const available = eligible.length > 0;
+        const capabilities = eligible.reduce<Record<string, boolean>>((result, model) => {
+          for (const [key, enabled] of Object.entries(model.capabilities)) result[key] = (result[key] ?? false) || enabled;
+          return result;
+        }, { text: true, coding: true, toolCalling: false, vision: false, structuredOutput: false, longContext: false });
+        this.sendJson(res, 200, available ? [{
+          providerId: "codeforge-cloud",
+          modelId: "codeforge/forgeauto-free",
+          displayName: "ForgeAuto Free",
+          availability: "available",
+          capabilities,
+          contextWindow: Math.min(...eligible.map((model) => model.contextWindow)),
+          accessClass: "free",
+          isEligibleFree: true,
+        }] : [], corsOrigin);
+        return;
+      }
+
+      if (url.pathname === "/v1/models" && method === "GET") {
+        await this.authenticateRequest(req);
+        const available = this.firewallManager.listHostedModels().some((model) => model.isEligibleFree);
+        this.sendJson(res, 200, {
+          object: "list",
+          data: available ? [{ id: "codeforge/forgeauto-free", object: "model", created: 0, owned_by: "codeforge" }] : [],
+        }, corsOrigin);
         return;
       }
 
@@ -1227,9 +1311,182 @@ export class CodeForgeCloudServer {
       // returns the same execution. Two wire modes:
       //   - Accept: application/json → async handle (202/200 { executionId, status, created });
       //     the owner polls status/result and may cancel via the executions routes below.
-      //   - default (SSE) → the handler durably enqueues, waits for the worker's terminal state,
-      //     then replays the persisted event stream. Client disconnect cancels the execution,
-      //     matching the legacy inline-stream contract.
+      //   - default (SSE) → the handler durably enqueues and streams persisted provider deltas as
+      //     they arrive. Client disconnect cancels the execution, matching the inline-stream contract.
+      if (url.pathname === "/v1/chat/completions" && method === "POST") {
+        const userId = await this.authenticateRequest(req);
+        const body = await this.readJson(req, OpenAIChatCompletionsSchema);
+        const publicModelId = "codeforge/forgeauto-free";
+        if (![publicModelId, "codeforge-auto", "auto"].includes(body.model)) {
+          this.sendJson(res, 404, { error: { message: "Only the logical model codeforge/forgeauto-free is available on the Free gateway", type: "invalid_request_error", code: "MODEL_NOT_FOUND" } }, corsOrigin);
+          return;
+        }
+        if (body.max_tokens !== undefined && body.max_completion_tokens !== undefined && body.max_tokens !== body.max_completion_tokens) {
+          this.sendJson(res, 400, { error: { message: "max_tokens and max_completion_tokens must match when both are supplied", type: "invalid_request_error", code: "INVALID_TOKEN_LIMIT" } }, corsOrigin);
+          return;
+        }
+        const maxTokens = body.max_completion_tokens ?? body.max_tokens ?? 2000;
+        if (maxTokens > 8000) {
+          this.sendJson(res, 400, { error: { message: "max completion tokens exceeds the CodeForge hosted limit of 8,000", type: "invalid_request_error", code: "OUTPUT_LIMIT_EXCEEDED" } }, corsOrigin);
+          return;
+        }
+        const idempotencyHeader = req.headers["idempotency-key"];
+        const idempotencyKey = Array.isArray(idempotencyHeader) ? idempotencyHeader[0] : idempotencyHeader;
+        if (idempotencyKey && (idempotencyKey.length > 200 || idempotencyKey.trim().length === 0)) {
+          this.sendJson(res, 400, { error: { message: "Idempotency-Key must contain 1 to 200 non-whitespace characters", type: "invalid_request_error", code: "INVALID_IDEMPOTENCY_KEY" } }, corsOrigin);
+          return;
+        }
+        const requestId = idempotentRequestId(userId, idempotencyKey);
+        const request: HostedInferenceRequest = {
+          requestId,
+          modelId: "auto",
+          taskType: "coding",
+          estimatedContextTokens: Math.max(1, Math.ceil(body.messages.reduce((total, message) => total + message.content.length, 0) / 4)),
+          messages: body.messages.map((message) => ({
+            role: message.role,
+            content: message.content,
+            ...(message.name ? { name: message.name } : {}),
+            ...(message.tool_call_id ? { toolCallId: message.tool_call_id } : {}),
+            ...(message.tool_calls ? { toolCalls: message.tool_calls.map((call) => ({ id: call.id, type: call.type, function: call.function })) } : {}),
+          })),
+          ...(body.tools?.length ? { tools: body.tools.map((tool) => ({ type: "function" as const, function: { name: tool.function.name, description: tool.function.description ?? "", ...(tool.function.parameters ? { parameters: tool.function.parameters } : {}) } })) } : {}),
+          maxTokens,
+          ...(body.temperature !== undefined ? { temperature: body.temperature } : {}),
+          ...(body.tool_choice ? { toolChoice: body.tool_choice } : {}),
+          ...(body.stop ? { stop: typeof body.stop === "string" ? [body.stop] : body.stop } : {}),
+        };
+
+        let admission: { execution: HostedExecutionRecord; created: boolean };
+        try {
+          admission = await this.hostedRuntime.enqueue(userId, request, this.resolveRegionEvidence(req));
+        } catch (error) {
+          this.sendJson(res, hostedAdmissionErrorStatus(error), openAIError(error), corsOrigin);
+          return;
+        }
+
+        const { execution } = admission;
+        const isStreaming = body.stream === true;
+        let clientGone = false;
+        const onDisconnect = () => { if (!res.writableEnded) clientGone = true; };
+        if (isStreaming) {
+          res.writeHead(200, {
+            "Content-Type": "text/event-stream; charset=utf-8",
+            "Cache-Control": "no-cache, no-transform",
+            Connection: "keep-alive",
+            "X-Content-Type-Options": "nosniff",
+            "X-Accel-Buffering": "no",
+            ...this.corsHeaders(corsOrigin),
+          });
+          res.flushHeaders();
+        }
+        res.on("close", onDisconnect);
+        req.on("aborted", onDisconnect);
+
+        const created = Math.floor(Date.now() / 1000);
+        const chunk = (choices: unknown[], usage?: unknown) => ({
+          id: `chatcmpl-${execution.id}`,
+          object: "chat.completion.chunk",
+          created,
+          model: publicModelId,
+          choices,
+          ...(usage ? { usage } : {}),
+        });
+        const writeChunk = (choices: unknown[], usage?: unknown) => {
+          if (res.writableEnded) return;
+          res.write(`data: ${JSON.stringify(chunk(choices, usage))}\n\n`);
+        };
+
+        let cursor = 0;
+        let sentEventCount = 0;
+        const toolCallIndices = new Map<string, number>();
+        let finishReason: "stop" | "tool_calls" | "length" = "stop";
+        const deadline = Date.now() + (this.requestTimeoutMs ?? 120_000);
+        let current: HostedExecutionRecord | undefined;
+        while (!clientGone && Date.now() < deadline) {
+          const deltas = await this.hostedRuntime.streamEvents(execution.id, userId, cursor).catch(() => []);
+          for (const item of deltas) {
+            cursor = item.sequence;
+            sentEventCount++;
+            const event = item.event;
+            if (!isStreaming) continue;
+            if (event.type === "assistant.message.delta") {
+              writeChunk([{ index: 0, delta: { content: event.delta }, finish_reason: null }]);
+            } else if (event.type === "assistant.tool_call.started") {
+              const index = toolCallIndices.size;
+              toolCallIndices.set(event.toolCallId, index);
+              writeChunk([{ index: 0, delta: { tool_calls: [{ index, id: event.toolCallId, type: "function", function: { name: event.toolName, arguments: "" } }] }, finish_reason: null }]);
+            } else if (event.type === "assistant.tool_call.delta") {
+              const index = toolCallIndices.get(event.toolCallId);
+              if (index !== undefined) writeChunk([{ index: 0, delta: { tool_calls: [{ index, function: { arguments: event.delta } }] }, finish_reason: null }]);
+            } else if (event.type === "assistant.message.completed") {
+              finishReason = event.finishReason === "tool_calls" ? "tool_calls" : event.finishReason;
+              writeChunk([{ index: 0, delta: {}, finish_reason: finishReason }]);
+              if (body.stream_options?.include_usage) {
+                writeChunk([], { prompt_tokens: event.usage.inputTokens, completion_tokens: event.usage.outputTokens, total_tokens: event.usage.inputTokens + event.usage.outputTokens });
+              }
+            } else if (event.type === "turn.failed") {
+              if (!res.writableEnded) res.write(`data: ${JSON.stringify(openAIError(new Error(event.error)))}\n\n`);
+            }
+          }
+          current = await this.hostedRuntime.status(execution.id, userId).catch(() => undefined);
+          if (!current || ["completed", "failed", "cancelled"].includes(current.status)) break;
+          await new Promise<void>((resolve) => setTimeout(resolve, 75));
+        }
+
+        if (clientGone) {
+          await this.hostedRuntime.cancel(execution.id, userId).catch(() => undefined);
+          if (!res.writableEnded) res.end();
+          return;
+        }
+        const trailing = await this.hostedRuntime.streamEvents(execution.id, userId, cursor).catch(() => []);
+        for (const item of trailing) {
+          cursor = item.sequence;
+          sentEventCount++;
+          const event = item.event;
+          if (!isStreaming) continue;
+          if (event.type === "assistant.message.delta") writeChunk([{ index: 0, delta: { content: event.delta }, finish_reason: null }]);
+          else if (event.type === "assistant.tool_call.started") {
+            const index = toolCallIndices.size;
+            toolCallIndices.set(event.toolCallId, index);
+            writeChunk([{ index: 0, delta: { tool_calls: [{ index, id: event.toolCallId, type: "function", function: { name: event.toolName, arguments: "" } }] }, finish_reason: null }]);
+          } else if (event.type === "assistant.tool_call.delta") {
+            const index = toolCallIndices.get(event.toolCallId);
+            if (index !== undefined) writeChunk([{ index: 0, delta: { tool_calls: [{ index, function: { arguments: event.delta } }] }, finish_reason: null }]);
+          } else if (event.type === "assistant.message.completed") {
+            finishReason = event.finishReason === "tool_calls" ? "tool_calls" : event.finishReason;
+            writeChunk([{ index: 0, delta: {}, finish_reason: finishReason }]);
+            if (body.stream_options?.include_usage) writeChunk([], { prompt_tokens: event.usage.inputTokens, completion_tokens: event.usage.outputTokens, total_tokens: event.usage.inputTokens + event.usage.outputTokens });
+          } else if (event.type === "turn.failed" && !res.writableEnded) res.write(`data: ${JSON.stringify(openAIError(new Error(event.error)))}\n\n`);
+        }
+        const found = await this.hostedRuntime.result(execution.id, userId).catch(() => undefined);
+        current = found?.execution ?? current;
+        if (isStreaming) {
+          if (current?.status !== "completed" && !res.writableEnded) {
+            res.write(`data: ${JSON.stringify(openAIError(new Error(current?.resultError ?? "CodeForge inference did not complete")))}\n\n`);
+          }
+          if (!res.writableEnded) {
+            res.write("data: [DONE]\n\n");
+            res.end();
+          }
+          return;
+        }
+        if (!current || current.status !== "completed" || !found?.result?.outcome) {
+          this.sendJson(res, current?.status === "failed" ? 502 : 504, openAIError(new Error(current?.resultError ?? "CodeForge inference did not complete")), corsOrigin);
+          return;
+        }
+        const outcome = found.result.outcome;
+        const toolCalls = (found.result.events ?? []).filter((event) => event.type === "assistant.tool_call.completed").map((event) => event.type === "assistant.tool_call.completed" ? ({ id: event.toolCallId, type: "function", function: { name: event.toolName, arguments: event.arguments } }) : null).filter(Boolean);
+        this.sendJson(res, 200, {
+          id: `chatcmpl-${execution.id}`,
+          object: "chat.completion",
+          created,
+          model: publicModelId,
+          choices: [{ index: 0, message: { role: "assistant", content: toolCalls.length ? null : outcome.fullText, ...(toolCalls.length ? { tool_calls: toolCalls } : {}) }, finish_reason: outcome.finishReason }],
+          usage: { prompt_tokens: outcome.usage.inputTokens, completion_tokens: outcome.usage.outputTokens, total_tokens: outcome.usage.inputTokens + outcome.usage.outputTokens },
+        }, corsOrigin);
+        return;
+      }
+
       if (url.pathname === "/v1/hosted/inference" && method === "POST") {
         const userId = await this.authenticateRequest(req);
         const body = await this.readJson(req, HostedInferenceSchema);
@@ -1276,6 +1533,8 @@ export class CodeForgeCloudServer {
         // the RESPONSE, not the request: by this point the request body has been fully consumed,
         // so `req` is already complete and its 'close' does not track the client at all.
         let clientGone = false;
+        let sentEventCount = 0;
+        let streamCursor = 0;
         const onDisconnect = () => {
           if (!res.writableEnded) clientGone = true;
         };
@@ -1284,9 +1543,15 @@ export class CodeForgeCloudServer {
 
         const deadline = Date.now() + (this.requestTimeoutMs ?? 120_000);
         while (!clientGone && Date.now() < deadline) {
+          const deltas = await this.hostedRuntime.streamEvents(execution.id, userId, streamCursor).catch(() => []);
+          for (const item of deltas) {
+            streamCursor = item.sequence;
+            sentEventCount++;
+            if (!res.writableEnded) res.write(`data: ${JSON.stringify(item.event)}\n\n`);
+          }
           const current = await this.hostedRuntime.status(execution.id, userId).catch(() => undefined);
           if (!current || current.status === "completed" || current.status === "failed" || current.status === "cancelled") break;
-          await new Promise<void>((resolve) => setTimeout(resolve, 150));
+          await new Promise<void>((resolve) => setTimeout(resolve, 75));
         }
 
         if (clientGone) {
@@ -1295,15 +1560,21 @@ export class CodeForgeCloudServer {
           return;
         }
 
+        const finalDeltas = await this.hostedRuntime.streamEvents(execution.id, userId, streamCursor).catch(() => []);
+        for (const item of finalDeltas) {
+          streamCursor = item.sequence;
+          sentEventCount++;
+          if (!res.writableEnded) res.write(`data: ${JSON.stringify(item.event)}\n\n`);
+        }
         const found = await this.hostedRuntime.result(execution.id, userId).catch(() => undefined);
         const replay = found?.result?.events ?? [];
-        for (const event of replay) {
-          if (!res.writableEnded) res.write(`data: ${JSON.stringify(event)}\n\n`);
-        }
+        // Older executions may have only the terminal result payload. If a persistence outage
+        // interrupted delta writes, replay only the unsent suffix after the worker has finished.
+        for (const event of replay.slice(sentEventCount)) if (!res.writableEnded) res.write(`data: ${JSON.stringify(event)}\n\n`);
         if (!res.writableEnded) {
           if (!found || !["completed", "failed", "cancelled"].includes(found.execution.status)) {
             res.write(`data: ${JSON.stringify({ type: "turn.failed", turnId: body.turnId ?? body.requestId, error: "Hosted execution timed out before reaching a terminal state" })}\n\n`);
-          } else if (replay.length === 0) {
+          } else if (replay.length === 0 && sentEventCount === 0) {
             res.write(`data: ${JSON.stringify({ type: "turn.failed", turnId: body.turnId ?? body.requestId, error: found.execution.resultError ?? `Hosted execution ${found.execution.status}` })}\n\n`);
           }
           res.end();
@@ -1608,6 +1879,10 @@ export class CodeForgeCloudServer {
 
       this.sendJson(res, 404, { error: "Endpoint not found" }, corsOrigin);
     } catch (err) {
+      if (res.headersSent) {
+        if (!res.writableEnded) res.end();
+        return;
+      }
       const msg = err instanceof Error ? err.message : String(err);
       const isAuthError = msg.includes("Bearer token") || msg.includes("browser session") || msg.includes("JWT") || msg.includes("expired") || msg.includes("revoked") || msg.includes("Session has been");
       const isPayloadTooLarge = msg.includes("Payload Too Large");

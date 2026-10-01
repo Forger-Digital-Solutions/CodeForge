@@ -217,23 +217,49 @@ describe("CloudDatabase", () => {
     await expect(async () => await db.releaseReservation("req-res-1", user.id)).rejects.toThrow(/already been committed/);
   });
 
-  it("manages recurring monthly usage periods idempotently", async () => {
+  it("creates UTC calendar-month allowance periods without adding Free credits to the wallet", async () => {
     const user = await db.createUser({ displayName: "Usage User", primaryIdentity: "github:555" });
 
-    // Initial period creation grants allowance
+    // The entitlement is period-scoped, separate from purchased credits.
     const period1 = await db.getOrCreateCurrentUsagePeriod(user.id, 500_000, new Date("2026-01-01T00:00:00Z"));
     expect(period1.grantedNewAllowance).toBe(true);
-    expect(await db.getCreditBalance(user.id)).toBe(500_000);
+    expect(period1.period.periodStart).toBe("2026-01-01T00:00:00.000Z");
+    expect(period1.period.periodEnd).toBe("2026-02-01T00:00:00.000Z");
+    expect(await db.getCreditBalance(user.id)).toBe(0);
 
     // Second call in same period does not grant extra allowance
     const period1Same = await db.getOrCreateCurrentUsagePeriod(user.id, 500_000, new Date("2026-01-15T00:00:00Z"));
     expect(period1Same.grantedNewAllowance).toBe(false);
-    expect(await db.getCreditBalance(user.id)).toBe(500_000);
+    expect(await db.getCreditBalance(user.id)).toBe(0);
 
-    // Call in new period (e.g. 35 days later) grants new monthly allowance
+    // A new UTC calendar month creates fresh allowance; prior-period credits do not accumulate.
     const period2 = await db.getOrCreateCurrentUsagePeriod(user.id, 500_000, new Date("2026-02-05T00:00:00Z"));
     expect(period2.grantedNewAllowance).toBe(true);
-    expect(await db.getCreditBalance(user.id)).toBe(1_000_000);
+    expect(period2.period.periodStart).toBe("2026-02-01T00:00:00.000Z");
+    expect(period2.period.periodEnd).toBe("2026-03-01T00:00:00.000Z");
+    expect(await db.getCreditBalance(user.id)).toBe(0);
+  });
+
+  it("backfills current-month Free usage when an existing account is upgraded to period-scoped accounting", async () => {
+    const user = await db.createUser({ displayName: "Migrated Usage User", primaryIdentity: "github:migrated-usage" });
+    await db.recordUsageEvent({
+      requestId: "legacy-free-usage",
+      userId: user.id,
+      providerId: "groq",
+      modelId: "legacy-free-model",
+      accessClass: "free",
+      inputTokens: 600,
+      outputTokens: 200,
+      cachedTokens: 0,
+      providerCostUsd: 0,
+      creditsConsumed: 1_000,
+      latencyMs: 1,
+      status: "completed",
+    });
+
+    const { period } = await db.getOrCreateCurrentUsagePeriod(user.id, 500_000);
+    expect(period.creditsUsed).toBe(1_000);
+    expect(await db.getCreditBalance(user.id)).toBe(0);
   });
 
   it("validates database driver configuration and rejects inconsistent settings", () => {

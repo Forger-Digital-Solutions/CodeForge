@@ -76,6 +76,45 @@ describe("HostedQueueWorker", () => {
     expect((await db.getHostedAdmissionMetrics()).activeReservations).toBe(0);
   });
 
+  it("executes distinct accounts concurrently up to the configured durable pool capacity", async () => {
+    await db.setHostedProviderCapacity({ ...route, maxConcurrent: 2 });
+    const otherUser = (await db.createUser({ displayName: "Second Worker User", primaryIdentity: `worker:${randomUUID()}` })).id;
+    await authority.enqueue({ executionId: "execution-concurrent-a", idempotencyKey: "key-concurrent-a", userId, taskId: "task-concurrent-a", ...route });
+    await authority.enqueue({ executionId: "execution-concurrent-b", idempotencyKey: "key-concurrent-b", userId: otherUser, taskId: "task-concurrent-b", ...route });
+    let active = 0;
+    let peak = 0;
+    let startedCount = 0;
+    let release!: () => void;
+    const releaseExecutions = new Promise<void>((resolve) => { release = resolve; });
+    const worker = new HostedQueueWorker({
+      authority,
+      maxConcurrentDispatches: 2,
+      execute: async () => {
+        active++;
+        peak = Math.max(peak, active);
+        startedCount++;
+        await releaseExecutions;
+        active--;
+        return { status: "completed" };
+      },
+    });
+    const running = worker.run();
+    try {
+      await vi.waitFor(() => expect(startedCount).toBe(2), { timeout: 5_000, interval: 10 });
+      expect(worker.activeCount()).toBe(2);
+      expect(peak).toBe(2);
+      release();
+      await vi.waitFor(async () => {
+        expect(await db.getHostedExecution("execution-concurrent-a", userId)).toMatchObject({ status: "completed" });
+        expect(await db.getHostedExecution("execution-concurrent-b", otherUser)).toMatchObject({ status: "completed" });
+      }, { timeout: 5_000, interval: 10 });
+    } finally {
+      release();
+      worker.stop();
+      await running;
+    }
+  });
+
   it("aborts an in-flight execution after observeCancellations verifies durable terminal state", async () => {
     const queued = await enqueue("observed-cancel");
     let started!: () => void;

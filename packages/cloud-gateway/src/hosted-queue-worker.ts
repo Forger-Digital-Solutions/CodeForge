@@ -20,6 +20,8 @@ export interface HostedQueueWorkerOptions {
    * notification can never make a cancellation disappear.
    */
   cancelObserveMs?: number;
+  /** Maximum independent durable dispatches this process may execute at once. */
+  maxConcurrentDispatches?: number;
   /**
    * Resolves the provider-side dispatch identity for an execution when the route's adapter
    * declares idempotent dispatch semantics. Persisted at dispatch so a post-dispatch recovery can
@@ -35,6 +37,7 @@ export class HostedQueueWorker {
   private readonly heartbeatMs: number;
   private readonly idleWaitMs: number;
   private readonly cancelObserveMs: number;
+  private readonly maxConcurrentDispatches: number;
   private readonly resolveDispatchIdentity?: HostedQueueWorkerOptions["resolveDispatchIdentity"];
   private readonly onError?: HostedQueueWorkerOptions["onError"];
   private readonly active = new Map<string, AbortController>();
@@ -49,6 +52,7 @@ export class HostedQueueWorker {
     this.heartbeatMs = options.heartbeatMs ?? 20_000;
     this.idleWaitMs = options.idleWaitMs ?? 100;
     this.cancelObserveMs = options.cancelObserveMs ?? 2_000;
+    this.maxConcurrentDispatches = Math.max(1, Math.floor(options.maxConcurrentDispatches ?? 1));
     this.resolveDispatchIdentity = options.resolveDispatchIdentity;
     this.onError = options.onError;
   }
@@ -100,14 +104,25 @@ export class HostedQueueWorker {
       this.cancelTimer = setInterval(() => void this.observeCancellations("*"), this.cancelObserveMs);
       this.cancelTimer.unref();
     }
+    const inFlight = new Set<Promise<void>>();
     try {
       while (!this.stopped && !signal?.aborted) {
-        const result = await this.runOnce();
-        if (result === "idle") await new Promise<void>((resolve) => setTimeout(resolve, this.idleWaitMs));
+        while (!this.stopped && !signal?.aborted && inFlight.size < this.maxConcurrentDispatches) {
+          let task!: Promise<void>;
+          task = this.runOnce()
+            .then(async (result) => {
+              if (result === "idle") await new Promise<void>((resolve) => setTimeout(resolve, this.idleWaitMs));
+            })
+            .catch((error) => { this.onError?.(error); })
+            .finally(() => { inFlight.delete(task); });
+          inFlight.add(task);
+        }
+        if (inFlight.size > 0) await Promise.race(inFlight);
       }
     } finally {
       if (this.cancelTimer) clearInterval(this.cancelTimer);
       this.cancelTimer = undefined;
+      await Promise.allSettled(inFlight);
     }
   }
 

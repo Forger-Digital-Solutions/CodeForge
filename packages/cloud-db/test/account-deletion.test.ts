@@ -21,7 +21,7 @@ async function seedFullAccountGraph(db: ICloudDatabase, tag: string) {
   const planId = plans[0]!.id;
   await db.upsertSubscription({ userId: user.id, planId, status: "active", currentPeriodStart: new Date().toISOString(), currentPeriodEnd: new Date().toISOString(), cancelAtPeriodEnd: false });
   await db.setEntitlement(user.id, "HOSTED_FREE", "true");
-  await db.getOrCreateCurrentUsagePeriod(user.id, 500_000); // seeds usage_periods + a credit_ledger grant
+  await db.getOrCreateCurrentUsagePeriod(user.id, 500_000); // seeds the account's period-scoped Free allowance
   await db.recordUsageEvent({ requestId: `req-${tag}`, userId: user.id, providerId: "groq", modelId: "test-model", inputTokens: 10, outputTokens: 10, cachedTokens: 0, providerCostUsd: 0, creditsConsumed: 100, latencyMs: 50, status: "completed" });
   await db.createReservation({ requestId: `resv-${tag}`, userId: user.id, providerId: "groq", modelId: "test-model", reservedCredits: 50 });
   await db.createHostedRequest({ id: `hosted-${tag}`, userId: user.id, providerId: "groq", modelId: "test-model", estimatedCredits: 50 });

@@ -150,6 +150,66 @@ describe("loadCloudRuntimeConfig", () => {
     expect(config.providerCredentials.providerIds.sort()).toEqual(["groq", "openrouter"]);
   });
 
+  it("keeps qualified first-party Qwen worker credentials server-side and redacts fleet details", () => {
+    const qualification = {
+      schemaVersion: 1,
+      modelId: "codeforge/qwen-coder-free",
+      upstreamModelId: "Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8",
+      modelRevision: "dcaee4d4dfc5ee71ad501f01f530e5652438fde0",
+      license: "Apache-2.0",
+      commercialUseAuthorized: true,
+      multiUserAuthorized: true,
+      qualificationState: "QUALIFIED",
+      suiteVersion: "R41_ROLE_QUALIFICATION_V3",
+      completedAt: "2026-09-30T12:00:00.000Z",
+      expiresAt: "2026-10-30T12:00:00.000Z",
+      runtimeProfileId: "vllm-0.30-qwen3coder-fp8-v1",
+      evidenceRef: "docs/evidence/r60/qwen-qualification.json",
+      roleResults: { CODER: { status: "QUALIFIED" }, TOOL_AGENT: { status: "QUALIFIED" } },
+    };
+    const workerToken = "synthetic-worker-token-that-must-never-be-logged";
+    const config = loadCloudRuntimeConfig({
+      CODEFORGE_QWEN_WORKERS_JSON: JSON.stringify([{
+        workerId: "qwen-worker-01",
+        baseUrl: "https://qwen-worker.example.test",
+        token: workerToken,
+        runtimeProfileId: "vllm-0.30-qwen3coder-fp8-v1",
+      }]),
+      CODEFORGE_QWEN_QUALIFICATION_JSON: JSON.stringify(qualification),
+    });
+    expect(config.qwenWorkerFleet?.workers).toHaveLength(1);
+    const summary = describeConfig(config);
+    expect(summary).toContain("qwenWorkers=1");
+    expect(summary).not.toContain(workerToken);
+  });
+
+  it("keeps malformed or unauthorized Qwen workers out of the pool without disabling hosted service configuration", () => {
+    expect(loadCloudRuntimeConfig({ CODEFORGE_QWEN_WORKERS_JSON: "[]" }).qwenWorkerFleet).toBeUndefined();
+    const qualification = JSON.stringify({
+      schemaVersion: 1,
+      modelId: "codeforge/qwen-coder-free",
+      upstreamModelId: "Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8",
+      modelRevision: "dcaee4d4dfc5ee71ad501f01f530e5652438fde0",
+      license: "Apache-2.0",
+      commercialUseAuthorized: true,
+      multiUserAuthorized: true,
+      qualificationState: "QUALIFIED",
+      suiteVersion: "R41_ROLE_QUALIFICATION_V3",
+      completedAt: "2026-09-30T12:00:00.000Z",
+      expiresAt: "2026-10-30T12:00:00.000Z",
+      runtimeProfileId: "vllm-0.30-qwen3coder-fp8-v1",
+      evidenceRef: "docs/evidence/r60/qwen-qualification.json",
+      roleResults: { CODER: { status: "QUALIFIED" }, TOOL_AGENT: { status: "QUALIFIED" } },
+    });
+    const workers = JSON.stringify([{
+      workerId: "qwen-worker-01",
+      baseUrl: "http://qwen-worker.example.test",
+      token: "synthetic-worker-token-that-must-never-be-logged",
+      runtimeProfileId: "vllm-0.30-qwen3coder-fp8-v1",
+    }]);
+    expect(loadCloudRuntimeConfig({ ...prodBase, CODEFORGE_QWEN_WORKERS_JSON: workers, CODEFORGE_QWEN_QUALIFICATION_JSON: qualification }).qwenWorkerFleet).toBeUndefined();
+  });
+
   it("produces a redacted, secret-free startup summary", () => {
     const summary = describeConfig(loadCloudRuntimeConfig({ ...prodBase, OPENROUTER_API_KEY: "or-secret-value" }));
     expect(summary).toContain("env=production");

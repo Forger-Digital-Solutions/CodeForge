@@ -9,6 +9,7 @@ const HOSTED_CONTROL_REQUEST_TIMEOUT_MS = 10_000;
 const COMPATIBILITY_OK_TTL_MS = 10 * 60_000;
 /** A Cloud that answered but is too old is re-probed this often (it may be redeployed). */
 const COMPATIBILITY_RETRY_MS = 60_000;
+const FORGEAUTO_FREE_MODEL_ID = "codeforge/forgeauto-free";
 
 export interface HostedProviderOptions {
   cloudApiUrl?: string;
@@ -102,48 +103,25 @@ export class HostedProviderAdapter implements ProviderAdapter {
     try {
       await this.requireCompatibleCloud();
       const res = await this.fetchFn(`${this.cloudApiUrl}/v1/hosted/models`);
-      if (res.ok) {
-        const models = (await res.json()) as Array<{
-          providerId: string;
-          modelId: string;
-          displayName: string;
-          availability: "available" | "offline" | "degraded";
-          capabilities: Record<string, boolean>;
-          contextWindow: number;
-          accessClass: "free" | "paid" | "gems_paid";
-          isEligibleFree: boolean;
-        }>;
-
-        const eligible = models.filter((m) => m.isEligibleFree && m.accessClass === "free");
-        if (eligible.length === 0) return [];
-        return [
-          {
-            modelId: "codeforge-auto",
-            displayName: "CodeForge Auto",
-            contextWindow: 128000,
-            capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true },
-            isFree: true,
-            freeStatus: "verified_free",
-          },
-          ...eligible.map((m) => ({
-            modelId: `${m.providerId}::${m.modelId}`,
-            // The route is identified by its provider ("codeforge-cloud"); the picker badges it as
-            // CodeForge Free. Decorating the name would stop it merging with the same model elsewhere.
-            displayName: m.displayName.trim(),
-            contextWindow: m.contextWindow || 128000,
-            capabilities: {
-              text: m.capabilities?.text ?? true,
-              coding: m.capabilities?.coding ?? true,
-              toolCalling: m.capabilities?.toolCalling ?? true,
-              vision: m.capabilities?.vision ?? false,
-              structuredOutput: m.capabilities?.structuredOutput ?? true,
-              longContext: m.capabilities?.longContext ?? true,
-            },
-            isFree: m.accessClass === "free",
-            freeStatus: (m.isEligibleFree ? "verified_free" : "unknown") as ProviderModel["freeStatus"],
-          })),
-        ];
-      }
+      if (!res.ok) return [];
+      const models = (await res.json()) as Array<{
+        modelId?: string;
+        displayName?: string;
+        contextWindow?: number;
+        capabilities?: ProviderModel["capabilities"];
+        isEligibleFree?: boolean;
+        accessClass?: string;
+      }>;
+      const model = models.find((candidate) => candidate.modelId === FORGEAUTO_FREE_MODEL_ID && candidate.isEligibleFree && candidate.accessClass === "free");
+      if (!model) return [];
+      return [{
+        modelId: FORGEAUTO_FREE_MODEL_ID,
+        displayName: model.displayName ?? "ForgeAuto Free",
+        contextWindow: model.contextWindow ?? 32768,
+        capabilities: model.capabilities ?? { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: false },
+        isFree: true,
+        freeStatus: "verified_free",
+      }];
     } catch {}
 
     return [];
@@ -195,39 +173,24 @@ export class HostedProviderAdapter implements ProviderAdapter {
     };
   }
 
-  private splitModel(model: string): { exactProviderId?: string; modelId: string } {
-    const separator = model.indexOf("::");
-    return {
-      exactProviderId: separator > 0 ? model.slice(0, separator) : undefined,
-      modelId: separator > 0 ? model.slice(separator + 2) : model === "codeforge-auto" ? "auto" : model,
-    };
+  private splitModel(_model: string): { modelId: string } {
+    return { modelId: FORGEAUTO_FREE_MODEL_ID };
   }
 
   private async postInference(body: string, signal: AbortSignal | undefined): Promise<Response> {
-    const makeRequest = async (authToken: string | null) => {
-      const headers: Record<string, string> = {
+    const headers = new Headers({
         "Content-Type": "application/json",
         Accept: "text/event-stream",
-      };
-      if (authToken) {
-        headers["Authorization"] = `Bearer ${authToken}`;
-      }
-      return this.inferenceFetch(`${this.cloudApiUrl}/v1/hosted/inference`, {
-        method: "POST",
-        headers,
-        body,
-        signal,
       });
+    const send = (token: string | null) => {
+      const requestHeaders = new Headers(headers);
+      if (token) requestHeaders.set("Authorization", `Bearer ${token}`);
+      return this.inferenceFetch(`${this.cloudApiUrl}/v1/hosted/inference`, { method: "POST", headers: requestHeaders, body, signal });
     };
-
-    let res = await makeRequest(this.getAccessToken ? await this.getAccessToken() : null);
-
-    // Auth recovery: if 401 and onAuthExpired provided, refresh token and retry ONCE
+    let res = await send(this.getAccessToken ? await this.getAccessToken() : null);
     if (res.status === 401 && this.onAuthExpired) {
       const newToken = await this.onAuthExpired();
-      if (newToken) {
-        res = await makeRequest(newToken);
-      }
+      if (newToken) res = await send(newToken);
     }
 
     if (!res.ok) {
@@ -252,7 +215,7 @@ export class HostedProviderAdapter implements ProviderAdapter {
       (req.tools?.length ?? 0) > 0 ||
       req.messages.some((m) => m.role === "tool" || (Array.isArray(m.toolCalls) && m.toolCalls.length > 0));
 
-    const { exactProviderId, modelId } = this.splitModel(req.model);
+    const { modelId } = this.splitModel(req.model);
     const messages = req.messages.map((m) => ({
       role: m.role,
       content: m.content,
@@ -262,13 +225,15 @@ export class HostedProviderAdapter implements ProviderAdapter {
     }));
 
     const body = JSON.stringify({
-      requestId: randomUUID(),
+      requestId: req.dispatchId ?? randomUUID(),
       messages,
       modelId,
-      ...(exactProviderId ? { providerId: exactProviderId } : {}),
       taskType: "coding",
       ...(needsToolTransport && req.tools?.length ? { tools: req.tools } : {}),
-      ...(needsToolTransport && req.maxTokens ? { maxTokens: req.maxTokens } : {}),
+      ...(req.maxTokens ? { maxTokens: req.maxTokens } : {}),
+      ...(req.temperature !== undefined ? { temperature: req.temperature } : {}),
+      ...(req.toolChoice ? { toolChoice: req.toolChoice } : {}),
+      ...(req.stop?.length ? { stop: req.stop } : {}),
     });
 
     const res = await this.postInference(body, signal);

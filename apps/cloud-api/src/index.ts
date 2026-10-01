@@ -15,7 +15,7 @@ export * from "./github-pr-client.js";
 async function main() {
   const { loadCloudRuntimeConfig, describeConfig } = await import("./config.js");
   const { CodeForgeCloudServer } = await import("./server.js");
-  const { CloudFirewallManager, CloudProviderRegistry } = await import("@codeforge/cloud-gateway");
+  const { CloudFirewallManager, CloudProviderRegistry, FirstPartyWorkerFleet } = await import("@codeforge/cloud-gateway");
 
   const config = loadCloudRuntimeConfig(process.env);
   console.log(`[CodeForge Cloud API] config: ${describeConfig(config)}`);
@@ -31,8 +31,18 @@ async function main() {
     providerIds.length > 0
       ? new CloudProviderRegistry({ firewallManager, credentialStore: store, providerIds })
       : undefined;
-  if (providerIds.length === 0) {
-    console.warn("[CodeForge Cloud API] no server provider credentials present — Hosted Free will report unavailable until a provider key is configured.");
+  const qwenFleet = config.qwenWorkerFleet
+    ? new FirstPartyWorkerFleet({ firewallManager, config: config.qwenWorkerFleet })
+    : undefined;
+  let qwenReadyCount = 0;
+  if (qwenFleet) {
+    await qwenFleet.start();
+    const workers = qwenFleet.listWorkers();
+    qwenReadyCount = workers.filter((worker) => worker.state === "READY").length;
+    console.log(`[CodeForge Cloud API] first-party Qwen workers: ${qwenReadyCount}/${workers.length} READY; qualification and model identity are enforced`);
+  }
+  if (providerIds.length === 0 && qwenReadyCount === 0) {
+    console.warn("[CodeForge Cloud API] no verified server-owned Free capacity is ready; hosted Free will report unavailable until an authorized route becomes healthy.");
   }
 
   const server = new CodeForgeCloudServer({
@@ -57,6 +67,7 @@ async function main() {
     stripeConfig: config.stripe,
     firewallManager,
     providerRegistry,
+    hostedRuntime: { maxConcurrentDispatches: qwenFleet ? 4 : 1 },
     allowedOrigins: config.allowedOrigins,
     maxRequestsPerMinute: config.rateLimits.maxRequestsPerMinute,
     requestTimeoutMs: config.requestTimeoutMs,
@@ -77,6 +88,7 @@ async function main() {
 
   const shutdown = async () => {
     console.log("[CodeForge Cloud API] shutting down...");
+    qwenFleet?.stop();
     await server.stop();
     process.exit(0);
   };

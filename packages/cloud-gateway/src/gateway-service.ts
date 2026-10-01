@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { ICloudDatabase } from "@codeforge/cloud-db";
 import { EntitlementService } from "@codeforge/cloud-entitlements";
-import { UsageEngine } from "@codeforge/cloud-usage";
+import { FREE_PER_TASK_CREDIT_LIMIT, UsageEngine } from "@codeforge/cloud-usage";
 import { REGION_UNKNOWN, type RegionResolution } from "@codeforge/legal-policy";
 import { CloudFirewallManager } from "./cloud-firewall.js";
 import type { HostedFinishReason, HostedInferenceRequest, HostedStreamEvent } from "./types.js";
@@ -77,7 +77,15 @@ export class GatewayService {
    * so it only claims executions it can actually dispatch.
    */
   claimableProviderIds(): string[] {
-    return this.firewallManager.providerCatalog.all().map((adapter) => adapter.providerId);
+    return this.firewallManager.providerCatalog.all()
+      .filter((adapter) => !adapter.capacitySnapshot || adapter.capacitySnapshot().some((route) => route.maxConcurrent > 0))
+      .map((adapter) => adapter.providerId);
+  }
+
+  capacitySnapshot(): Array<{ providerId: string; modelId: string; maxConcurrent: number }> {
+    return this.firewallManager.providerCatalog.all().flatMap((adapter) =>
+      adapter.capacitySnapshot?.().map((route) => ({ providerId: adapter.providerId, ...route })) ?? [],
+    );
   }
 
   /**
@@ -114,20 +122,28 @@ export class GatewayService {
     const activeLocalCount = this.activeUserLeases.get(userId)?.size ?? 0;
     const activeCount = Math.max(activeDbCount, activeLocalCount);
 
+    const estimatedInputTokens = Math.max(
+      request.estimatedContextTokens || 4000,
+      request.messages.reduce((total, message) => total + message.content.length, 0) + (request.tools?.length ? JSON.stringify(request.tools).length : 0),
+    );
+    const estimatedOutputTokens = Math.min(request.maxTokens ?? 2000, MAX_HOSTED_OUTPUT_TOKENS);
+    const estimatedCredits = estimatedInputTokens + 2 * estimatedOutputTokens;
     const permission = await this.entitlementService.evaluateTaskExecution({
       userId,
-      requestedEstimatedCredits: 5_000,
+      requestedEstimatedCredits: estimatedCredits,
       activeConcurrency: activeCount,
     });
     if (!permission.allowed) {
       throw new Error(permission.reason ?? "Hosted execution not permitted");
+    }
+    if (permission.planId === "free" && estimatedCredits > FREE_PER_TASK_CREDIT_LIMIT) {
+      throw new Error(`Request estimate exceeds the 50,000 credit per-task limit (${estimatedCredits})`);
     }
 
     if (permission.planId === "free" && !killSwitches.hostedFreeEnabled) {
       throw new Error("CodeForge Hosted Free tier is currently disabled by operator policy");
     }
 
-    const estimatedCredits = 5_000;
     const maxConcurrent = permission.planId === "pro" ? 4 : 1;
 
     // Server-side ForgeZero model selection
@@ -141,7 +157,7 @@ export class GatewayService {
     const privacyEligible = () =>
       privacyMode ? this.firewallManager.firewall.eligibleModels({ privacyMode }) : this.firewallManager.firewall.eligibleModels();
 
-    if (!selectedModelId || selectedModelId === "auto" || selectedModelId === "codeforge-auto") {
+    if (!selectedModelId || selectedModelId === "auto" || selectedModelId === "codeforge-auto" || selectedModelId === "codeforge/forgeauto-free") {
       const decision = this.firewallManager.router.route({
         taskType: request.taskType || "coding",
         estimatedContextTokens: request.estimatedContextTokens || 4000,
@@ -158,7 +174,9 @@ export class GatewayService {
       // candidate is chosen here, so a wrong guess here is never a compliance risk, only a UX one.
       const rankedCandidates = [decision.model, ...decision.alternatives];
       const policyEligible = rankedCandidates.find(
-        (m) => this.firewallManager.checkProviderPolicy({ providerId: m.providerId, serviceTier: m.costProfile.isFree ? "FREE" : "PAID" }, region).decision !== "DENY",
+        (m) =>
+          (request.maxTokens === undefined || m.maxOutput === undefined || request.maxTokens <= m.maxOutput) &&
+          this.firewallManager.checkProviderPolicy({ providerId: m.providerId, serviceTier: m.costProfile.isFree ? "FREE" : "PAID" }, region).decision !== "DENY",
       );
       if (!policyEligible) {
         throw new Error("No provider-policy-eligible free model is currently available for your region");
@@ -191,6 +209,11 @@ export class GatewayService {
       throw new Error("Could not resolve an eligible model for hosted request");
     }
 
+    const selectedRecord = this.firewallManager.firewall.getModel(selectedProviderId, selectedModelId);
+    if (selectedRecord?.maxOutput !== undefined && request.maxTokens !== undefined && request.maxTokens > selectedRecord.maxOutput) {
+      throw new Error(`Requested max_tokens exceeds the selected model limit of ${selectedRecord.maxOutput}`);
+    }
+
     const resolution: HostedRouteResolution = {
       providerId: selectedProviderId,
       modelId: selectedModelId,
@@ -210,7 +233,7 @@ export class GatewayService {
    */
   assertRouteEligible(
     resolution: Pick<HostedRouteResolution, "providerId" | "modelId">,
-    request: Pick<HostedInferenceRequest, "estimatedContextTokens">,
+    request: Pick<HostedInferenceRequest, "estimatedContextTokens" | "maxTokens">,
     region: RegionResolution = REGION_UNKNOWN,
   ): void {
     const killSwitches = this.firewallManager.getKillSwitches();
@@ -222,6 +245,10 @@ export class GatewayService {
     const verifiedModel = this.firewallManager.firewall.getModel(resolution.providerId, resolution.modelId);
     if (!verifiedModel) {
       throw new Error(`Model ${resolution.providerId}::${resolution.modelId} is not present in the ForgeZero catalog`);
+    }
+
+    if (verifiedModel.maxOutput !== undefined && request.maxTokens !== undefined && request.maxTokens > verifiedModel.maxOutput) {
+      throw new Error(`Requested max_tokens exceeds the selected model limit of ${verifiedModel.maxOutput}`);
     }
 
     // Product/provider-policy eligibility (R1 remediation spec §8) runs before ForgeZero's
@@ -279,6 +306,7 @@ export class GatewayService {
         providerId: selectedProviderId,
         modelId: selectedModelId,
         maxConcurrentTasks: maxConcurrent,
+        freeAllowance: resolution.planId === "free",
       });
       reservationCreated = true;
 
@@ -322,6 +350,9 @@ export class GatewayService {
             messages: request.messages,
             ...(request.tools?.length ? { tools: request.tools } : {}),
             maxTokens: Math.min(request.maxTokens ?? 2000, MAX_HOSTED_OUTPUT_TOKENS),
+            ...(request.temperature !== undefined ? { temperature: request.temperature } : {}),
+            ...(request.toolChoice ? { toolChoice: request.toolChoice } : {}),
+            ...(request.stop?.length ? { stop: request.stop } : {}),
             ...(dispatchId ? { dispatchId } : {}),
           },
           combinedSignal,

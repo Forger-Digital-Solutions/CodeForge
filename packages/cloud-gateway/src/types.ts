@@ -57,6 +57,9 @@ export const HostedInferenceRequestSchema = z.object({
   // negotiated the feature via /v1/meta.
   tools: z.array(HostedToolDefinitionSchema).optional(),
   maxTokens: z.number().int().positive().optional(),
+  temperature: z.number().min(0).max(2).optional(),
+  toolChoice: z.enum(["auto", "none", "required"]).optional(),
+  stop: z.array(z.string()).optional(),
 });
 export type HostedInferenceRequest = z.infer<typeof HostedInferenceRequestSchema>;
 

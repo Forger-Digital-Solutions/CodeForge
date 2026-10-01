@@ -13,6 +13,7 @@ describe("UsageEngine — stale reservation recovery (crash recovery)", () => {
     const user = await db.createUser({ displayName: "Recovery User", primaryIdentity: "github:stale-1" });
     userId = user.id;
     await db.getOrCreateCurrentUsagePeriod(userId, 500_000);
+    await db.appendLedgerEvent({ userId, amount: 50_000, eventType: "CREDIT_PURCHASED" });
   });
 
   afterEach(() => db.close());
@@ -55,6 +56,18 @@ describe("UsageEngine — stale reservation recovery (crash recovery)", () => {
     const later = new Date(Date.now() + 20 * 60 * 1000);
     const result = await usage2.reconcileStaleReservations({ now: later, timeoutMs: 10 * 60 * 1000 });
     expect(result.reconciled).toBe(1);
+  });
+
+  it("releases an abandoned Free reservation without consuming the period allowance", async () => {
+    await usage.reserveBudget({ userId, estimatedCredits: 5_000, requestId: "req-free-stale", providerId: "codeforge", modelId: "codeforge/forgeauto-free", freeAllowance: true });
+    const before = await usage.getUserUsageSummary(userId);
+    expect(before.freeReservedCredits).toBe(5_000);
+    const result = await usage.reconcileStaleReservations({ now: new Date(Date.now() + 20 * 60 * 1000), timeoutMs: 10 * 60 * 1000 });
+    expect(result.reconciled).toBe(1);
+    const after = await usage.getUserUsageSummary(userId);
+    expect(after.freeUsedCredits).toBe(0);
+    expect(after.freeReservedCredits).toBe(0);
+    expect(after.freeRemainingCredits).toBe(500_000);
   });
 });
 

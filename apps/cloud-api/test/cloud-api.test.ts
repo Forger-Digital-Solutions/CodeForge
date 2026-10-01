@@ -168,7 +168,7 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     const account = await accountRes.json();
     expect(account.user.displayName).toBe("Alice Cloud");
     expect(account.planId).toBe("free");
-    expect(account.creditBalance).toBe(500_000);
+    expect(account.creditBalance).toBe(0);
     // Connected GitHub identity surfaces for the desktop profile UI: the login comes from the
     // stored identity, and the email is the primary VERIFIED authorized address (which the mock
     // deliberately reports as different from the public profile email).
@@ -203,8 +203,17 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     const usageRes = await fetch(`${baseUrl}/v1/usage`, { headers: authHeaders });
     expect(usageRes.status).toBe(200);
     const usage = await usageRes.json();
-    expect(usage.creditBalance).toBeLessThan(500_000);
+    expect(usage.creditBalance).toBe(0);
     expect(usage.recentEvents).toHaveLength(1);
+    expect(usage.freeAllowanceCredits).toBe(500_000);
+    expect(usage.freeUsedCredits).toBeGreaterThan(0);
+    expect(usage.freeReservedCredits).toBe(0);
+    expect(usage.freeRemainingCredits).toBe(500_000 - usage.freeUsedCredits);
+    expect(usage.freeResetAt).toBe(usage.freePeriodEnd);
+
+    const spoofedUsageRes = await fetch(`${baseUrl}/v1/usage?userId=another-account`, { headers: authHeaders });
+    const spoofedUsage = await spoofedUsageRes.json();
+    expect(spoofedUsage.freeUsedCredits).toBe(usage.freeUsedCredits);
 
     // 6. Refresh Auth Session
     const refreshRes = await fetch(`${baseUrl}/v1/auth/refresh`, {

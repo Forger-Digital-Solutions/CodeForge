@@ -122,7 +122,7 @@ describe("AuthService — server-brokered GitHub OAuth", () => {
 
   // --- Happy path -------------------------------------------------------------------------------
 
-  it("completes the full flow and grants the initial Free tier allowance", async () => {
+  it("completes the full flow and provisions period-scoped Free allowance", async () => {
     const { callback, session } = await fullLogin({ deviceName: "Test Device" });
 
     expect(callback.redirectTo.startsWith(`${LOOPBACK}?`)).toBe(true);
@@ -133,7 +133,9 @@ describe("AuthService — server-brokered GitHub OAuth", () => {
 
     const account = await auth.getAccount(session.user.id);
     expect(account.planId).toBe("free");
-    expect(account.creditBalance).toBe(500_000);
+    expect(account.creditBalance).toBe(0);
+    const usage = await db.getOrCreateCurrentUsagePeriod(session.user.id, 500_000);
+    expect(usage.period.freeAllowanceGranted).toBe(500_000);
     expect(account.entitlements.some((e) => e.featureKey === "HOSTED_FREE")).toBe(true);
   });
 
@@ -332,7 +334,7 @@ describe("AuthService — server-brokered GitHub OAuth", () => {
     expect(second.session.isNewUser).toBe(false);
 
     const account = await auth.getAccount(second.session.user.id);
-    expect(account.creditBalance).toBe(500_000);
+    expect(account.creditBalance).toBe(0);
   });
 
   it("verifies and rejects tampered or expired JWT access tokens", () => {

@@ -69,6 +69,28 @@ describe("OpenAICompatibleAdapter transport", () => {
     expect(events.at(-1)!.type).toBe("finish");
   });
 
+  it("requests provider usage on streaming only when the adapter capability is enabled", async () => {
+    const bodies: Array<Record<string, unknown>> = [];
+    const fetchFn = (async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(init.body as string) as Record<string, unknown>;
+      bodies.push(body);
+      if (body.stream === true) {
+        return sseResponse([
+          'data: {"choices":[{"delta":{"content":"ok"}}]}',
+          'data: {"choices":[],"usage":{"prompt_tokens":3,"completion_tokens":2,"total_tokens":5}}',
+          "data: [DONE]",
+        ]);
+      }
+      return jsonResponse({ id: "one", model: "m", choices: [{ message: { role: "assistant", content: "ok" }, finish_reason: "stop" }], usage: { prompt_tokens: 3, completion_tokens: 2 } });
+    }) as unknown as typeof fetch;
+    const adapter = new OpenAICompatibleAdapter({ providerId: "qwen", baseUrl: "https://example/v1", apiKey: "k", fetchFn, includeUsageInStream: true });
+    await adapter.chat({ model: "m", messages: [{ role: "user", content: "hi" }] });
+    const events = await collect(adapter.streamChat({ model: "m", messages: [{ role: "user", content: "hi" }] }));
+    expect(bodies[0]?.stream_options).toBeUndefined();
+    expect(bodies[1]?.stream_options).toEqual({ include_usage: true });
+    expect(events.find((event) => event.type === "usage")).toMatchObject({ usage: { inputTokens: 3, outputTokens: 2 } });
+  });
+
   it("streams a tool call (started → delta → completed)", async () => {
     const fetchFn = (async () => sseResponse([
       'data: {"choices":[{"delta":{"tool_calls":[{"id":"c1","function":{"name":"read_file"}}]}}]}',

@@ -27,6 +27,8 @@ export interface OpenAICompatibleConfig {
   defaultHeaders?: Record<string, string>;
   /** Provider-specific request fields that are safe for every model behind this adapter. */
   requestBodyExtras?: Record<string, unknown>;
+  /** Request provider-reported usage in the terminal event of SSE streams when supported. */
+  includeUsageInStream?: boolean;
   /** Builds the auth header(s) from the resolved key. Defaults to `Authorization: Bearer <key>`. */
   authHeader?: (key: string) => Record<string, string>;
   /** Path for model listing relative to baseUrl. Default "/models". */
@@ -432,6 +434,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       max_tokens: req.maxTokens,
       stop: req.stop,
       stream,
+      ...(stream && this.cfg.includeUsageInStream ? { stream_options: { include_usage: true } } : {}),
     };
     for (const field of this.cfg.omitRequestFields ?? []) delete body[field];
     return body;

@@ -5,3 +5,5 @@ export * from "./provider-registry.js";
 export * from "./hosted-admission.js";
 export * from "./hosted-queue-worker.js";
 export * from "./hosted-runtime.js";
+export * from "./first-party-worker-fleet.js";
+export * from "./autoscaling.js";

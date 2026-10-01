@@ -15,31 +15,14 @@ async function collect(stream: AsyncIterable<StreamEvent>): Promise<StreamEvent[
 }
 
 describe("HostedProviderAdapter", () => {
-  it("uses only the dynamic verified-free catalog and preserves exact provider identity", async () => {
+  it("exposes only the logical ForgeAuto Free identity and never routes by physical provider choice", async () => {
     let inferenceBody: Record<string, unknown> | undefined;
     const fetchFn = (async (url: string | URL | Request, init?: RequestInit) => {
-      if (url.toString().endsWith("/v1/meta")) return new Response(JSON.stringify(compatibleMetadata));
-      if (url.toString().endsWith("/v1/hosted/models")) {
-        return new Response(JSON.stringify([
-          {
-            providerId: "openrouter",
-            modelId: "acme/coder:free",
-            displayName: "Acme Coder",
-            contextWindow: 64000,
-            capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: false },
-            accessClass: "free",
-            isEligibleFree: true,
-          },
-          {
-            providerId: "gems",
-            modelId: "gems-topaz",
-            displayName: "GEMS Topaz",
-            contextWindow: 64000,
-            capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: false },
-            accessClass: "gems_paid",
-            isEligibleFree: false,
-          },
-        ]));
+      const requestUrl = url.toString();
+      if (requestUrl.endsWith("/v1/meta")) return new Response(JSON.stringify(compatibleMetadata));
+      if (requestUrl.endsWith("/v1/hosted/models")) {
+        expect(new Headers(init?.headers).get("authorization")).toBeNull();
+        return new Response(JSON.stringify([{ providerId: "codeforge-cloud", modelId: "codeforge/forgeauto-free", displayName: "ForgeAuto Free", contextWindow: 32768, capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: false }, accessClass: "free", isEligibleFree: true }]));
       }
       inferenceBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
       return new Response('data: {"type":"assistant.message.completed","usage":{"inputTokens":2,"outputTokens":1}}\n\n');
@@ -47,11 +30,11 @@ describe("HostedProviderAdapter", () => {
     const adapter = new HostedProviderAdapter({ cloudApiUrl: "https://staging.example", getAccessToken: () => "token", fetchFn });
 
     const models = await adapter.listModels();
-    expect(models.map((model) => model.modelId)).toEqual(["codeforge-auto", "openrouter::acme/coder:free"]);
+    expect(models.map((model) => model.modelId)).toEqual(["codeforge/forgeauto-free"]);
 
     const events = await collect(adapter.streamChat({ model: "openrouter::acme/coder:free", messages: [{ role: "user", content: "hi" }] }));
-    expect(inferenceBody?.providerId).toBe("openrouter");
-    expect(inferenceBody?.modelId).toBe("acme/coder:free");
+    expect(inferenceBody?.providerId).toBeUndefined();
+    expect(inferenceBody?.modelId).toBe("codeforge/forgeauto-free");
     expect(events.at(-1)?.type).toBe("finish");
   });
 
@@ -167,7 +150,7 @@ describe("HostedProviderAdapter — offline recovery without restart (R16)", () 
       if (!reachable) throw new TypeError("fetch failed: ENOTFOUND");
       if (u.endsWith("/v1/meta")) { metaProbes++; return new Response(JSON.stringify(compatibleMetadata)); }
       if (u.endsWith("/v1/hosted/models")) {
-        return new Response(JSON.stringify([{ providerId: "groq", modelId: "openai/gpt-oss-120b", displayName: "GPT OSS 120B", contextWindow: 128000, capabilities: { text: true, coding: true, toolCalling: true }, accessClass: "free", isEligibleFree: true }]));
+        return new Response(JSON.stringify([{ providerId: "codeforge-cloud", modelId: "codeforge/forgeauto-free", displayName: "ForgeAuto Free", contextWindow: 32768, capabilities: { text: true, coding: true, toolCalling: true }, accessClass: "free", isEligibleFree: true }]));
       }
       if (u.endsWith("/health/ready")) return new Response(JSON.stringify({ hostedInferenceReady: true }));
       return new Response("nope", { status: 404 });
@@ -182,8 +165,7 @@ describe("HostedProviderAdapter — offline recovery without restart (R16)", () 
     // Network comes back: the same adapter instance must serve the catalog again.
     reachable = true;
     const models = await adapter.listModels();
-    expect(models.map((m) => m.modelId)).toEqual(["codeforge-auto", "groq::openai/gpt-oss-120b"]);
-    expect(models[1]!.displayName).toBe("GPT OSS 120B");
+    expect(models.map((m) => m.modelId)).toEqual(["codeforge/forgeauto-free"]);
     expect((await adapter.healthCheck()).status).toBe("available");
     // A compatible verdict is cached: the second listing does not re-probe /v1/meta.
     expect(metaProbes).toBe(1);
