@@ -335,4 +335,38 @@ describe("ForgeWorkspaces — Structured Identity, Leases & Git Worktrees", () =
 
     await persistenceB.close();
   });
+
+  it("R59: a stale persisted worktree never captures its parent's repository root on restart", async () => {
+    const persistenceA = createSessionPersistence({ dbPath: dbFile });
+    const wsServiceA = createWorkspaceService({
+      persistence: persistenceA,
+      worktreeParentDir: worktreeBaseDir,
+    });
+    const parentWs = await wsServiceA.registerLocalWorkspace(parentRepo);
+    const wt = await wsServiceA.createWorktree({
+      parentWorkspaceId: parentWs.id,
+      runId: "run-stale-wt",
+    });
+    await persistenceA.close();
+
+    // Partial cleanup: the directory survives but its .git marker is gone — every git op
+    // inside it resolves upward into the enclosing repository.
+    await rm(join(wt.rootPath, ".git"), { force: true });
+
+    const persistenceB = createSessionPersistence({ dbPath: dbFile });
+    const wsServiceB = createWorkspaceService({
+      persistence: persistenceB,
+      worktreeParentDir: worktreeBaseDir,
+    });
+    await wsServiceB.init();
+
+    expect(wsServiceB.getWorkspace(wt.id)?.status).toBe("missing");
+    // Registering the parent repo must resolve to the parent workspace — a worktree record's
+    // repositoryRoot is its parent's identity, never a claim on that path.
+    const reRegistered = await wsServiceB.registerLocalWorkspace(parentRepo);
+    expect(reRegistered.id).toBe(parentWs.id);
+    expect(reRegistered.kind).toBe("local");
+
+    await persistenceB.close();
+  });
 });

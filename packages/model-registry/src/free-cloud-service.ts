@@ -1545,14 +1545,19 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     // structural supply evidence, so transient cooldown/qualification states do not remove a
     // route from the bound. Role-declared routes bound first; when none declare the role the
     // probation path can still pick any enabled route, so the whole eligible set bounds.
+    // Only a DECLARED limit is structural: quotaWindows lets `limit` fall back to the live
+    // `remainingTokens` (the reservation clamp's dispense bound), but a mid-window remainder
+    // is not the window size — a route observed at 20 remaining tokens still serves its full
+    // declared window on the next refill. Read `limitTokens` at the tracker (the same
+    // `(providerId, modelId)` resolution `capacityRoutes` uses for its `r.quota` input) so
+    // remaining-only evidence never collapses the ceiling.
     const eligible = this.routesForUser(userId).filter((route) => route.enabled);
     const roleMatched = eligible.filter(
       (route) => route.roles.includes(role) || route.fallbackRoles?.includes(role) === true,
     );
     const limits = (roleMatched.length > 0 ? roleMatched : eligible)
-      .flatMap((route) => route.windows)
-      .filter((w) => w.unit === "input_tokens" && Number.isFinite(w.limit) && w.limit > 0)
-      .map((w) => w.limit);
+      .map((route) => this.quota.get(route.providerId, route.modelId)?.limitTokens)
+      .filter((limit): limit is number => limit !== undefined && Number.isFinite(limit) && limit > 0);
     return limits.length === 0 ? undefined : Math.min(...limits);
   }
 

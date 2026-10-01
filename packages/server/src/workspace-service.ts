@@ -143,9 +143,10 @@ export class WorkspaceService {
     const repoRoot = gitInfo.repositoryRoot;
     const canonicalRepoRoot = getCanonicalWorkspacePath(repoRoot);
 
-    // Look for existing registered workspace for this canonical root
+    // Look for existing registered workspace for this canonical root. A workspace that went
+    // missing (worktree cleaned from disk, marker gone) is not a live target — re-register.
     const existingId = this.pathToWorkspaceId.get(canonicalPath) || this.pathToWorkspaceId.get(canonicalRepoRoot);
-    if (existingId && this.workspaces.has(existingId)) {
+    if (existingId && this.workspaces.has(existingId) && this.workspaces.get(existingId)!.status !== "missing") {
       const existing = this.workspaces.get(existingId)!;
       existing.branch = gitInfo.branch;
       existing.headSha = gitInfo.headSha;
@@ -376,6 +377,12 @@ export class WorkspaceService {
       await this.gitCommand(baseCwd, ["worktree", "add", "-b", branchName, canonicalWorktreePath, baseCommitSha]);
     }
 
+    // A worktree that lacks its own .git marker is not a worktree — `rev-parse` inside it
+    // resolves upward into the enclosing repo and would return the PARENT's HEAD, silently
+    // registering a workspace whose git ops mutate the parent. Fail closed instead.
+    if (!existsSync(path.join(canonicalWorktreePath, ".git"))) {
+      throw new Error(`Worktree created without a .git marker — refusing to register "${canonicalWorktreePath}"`);
+    }
     const { stdout: childHead } = await this.gitCommand(canonicalWorktreePath, ["rev-parse", "HEAD"]);
 
     const now = new Date().toISOString();
@@ -558,16 +565,24 @@ export class WorkspaceService {
             updatedAt: raw.updatedAt,
           };
 
-          // Revalidate worktree state if missing from disk
+          // Revalidate worktree state if missing from disk. A surviving directory is not
+          // enough — a partially removed worktree (checkout cleaned, .git marker gone) still
+          // resolves upward into an ENCLOSING repo, so anything operating on it would read
+          // and mutate the parent working tree.
           if (ws.kind === "git-worktree") {
-            if (!existsSync(ws.rootPath)) {
+            if (!existsSync(ws.rootPath) || !existsSync(path.join(ws.rootPath, ".git"))) {
               ws.status = "missing";
             }
           }
 
           this.workspaces.set(ws.id, ws);
           this.pathToWorkspaceId.set(ws.rootPath, ws.id);
-          this.pathToWorkspaceId.set(ws.repositoryRoot, ws.id);
+          // Only a local workspace claims its repository root: for a git-worktree the
+          // repositoryRoot IS the parent workspace — mapping it would make a later
+          // registration of the parent path resolve to this (possibly stale) worktree.
+          if (ws.kind === "local") {
+            this.pathToWorkspaceId.set(ws.repositoryRoot, ws.id);
+          }
         }
       }
     } catch {}

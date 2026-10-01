@@ -1010,6 +1010,46 @@ describe("FreeCloudService — Free Fabric capacity projection", () => {
     expect(svc.servingInputTokenCeiling("bob", "PRIMARY_CODING_AGENT")).toBeUndefined();
   });
 
+  it("R59: a remaining-only token observation is live headroom, not a serving ceiling", async () => {
+    const { svc } = service();
+    svc.setConnection(connected("groq", { planAttested: true, ownerUserId: "alice" }));
+    svc.setConnection(connected("openrouter", { credentialSource: "OAUTH", ownerUserId: "alice" }));
+
+    // The packaged regression: a probe mid-window stamped only `remainingTokens` — quota
+    // windows fall back to it as `limit` so admission can clamp, but a live remainder is not
+    // the window size and must never collapse the serving ceiling (the packaged failure was
+    // CONTEXT_CAPACITY_UNKNOWN 228>0 against a route whose real window was 8000).
+    svc.onProviderResponse({
+      providerId: "groq",
+      modelId: "openai/gpt-oss-120b",
+      status: 200,
+      headers: [["x-ratelimit-remaining-tokens", "20"]],
+      observedAt: NOW.getTime(),
+    });
+    expect(svc.servingInputTokenCeiling("alice", "PRIMARY_CODING_AGENT")).toBeUndefined();
+
+    // A declared window still bounds — and survives a later low-remainder observation on a
+    // sibling route that never declared one.
+    svc.onProviderResponse({
+      providerId: "groq",
+      modelId: "openai/gpt-oss-120b",
+      status: 200,
+      headers: [
+        ["x-ratelimit-limit-tokens", "8000"],
+        ["x-ratelimit-remaining-tokens", "8000"],
+      ],
+      observedAt: NOW.getTime(),
+    });
+    svc.onProviderResponse({
+      providerId: "groq",
+      modelId: "openai/gpt-oss-20b",
+      status: 200,
+      headers: [["x-ratelimit-remaining-tokens", "37"]],
+      observedAt: NOW.getTime(),
+    });
+    expect(svc.servingInputTokenCeiling("alice", "PRIMARY_CODING_AGENT")).toBe(8000);
+  });
+
   it("R34 Mission C: model-domain providers shard into independent physical pools — reservations on one model do not deny another", () => {
     const fw = new ForgeZero();
     fw.register(freeRecord("groq", "openai/gpt-oss-120b", { accessClass: "FREE_ALLOWANCE" }));

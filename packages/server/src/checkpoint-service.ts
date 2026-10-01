@@ -52,6 +52,7 @@ export class CheckpointService {
   private readonly workspaceRoot: string;
   private readonly persistence?: ISessionPersistence;
   private readonly checkpoints: Map<string, CheckpointInfo> = new Map();
+  private repoVerified = false;
 
   constructor(workspaceRoot: string, persistence?: ISessionPersistence) {
     this.workspaceRoot = path.resolve(workspaceRoot);
@@ -507,11 +508,21 @@ export class CheckpointService {
   }
 
   private async verifyGitRepo(): Promise<void> {
+    // Verified once per service instance — the workspace path cannot silently become a
+    // different repository mid-service, and each probe is a process spawn.
+    if (this.repoVerified) return;
     try {
-      const { stdout } = await this.gitCommandArgs(["rev-parse", "--is-inside-work-tree"]);
-      if (stdout.trim() !== "true") {
-        throw new Error("Not a git repository");
+      // A directory merely nested inside a repo resolves upward to the enclosing working
+      // tree — `git stash -u` / `checkout` here would snapshot and clobber the PARENT repo
+      // (observed: a stale worktree dir missing its own .git resolved to the developer's
+      // main checkout and nearly stashed unrelated uncommitted work). --show-prefix fails
+      // outside a repo, is empty exactly at a toplevel (repo root or linked worktree
+      // root), and is non-empty for anything nested — one probe covers both checks.
+      const { stdout: prefix } = await this.gitCommandArgs(["rev-parse", "--show-prefix"]);
+      if (prefix.trim() !== "") {
+        throw new Error("Not a repository root");
       }
+      this.repoVerified = true;
     } catch  {
       throw new Error(`Workspace is not a valid Git repository: ${this.workspaceRoot}`);
     }

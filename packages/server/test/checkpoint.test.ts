@@ -73,6 +73,22 @@ describe("CheckpointService — Real Immutable Git Snapshots & Recovery", () => 
     }
   });
 
+  it("fails closed when the workspace is only nested inside a repo — never checkpoints the enclosing tree", async () => {
+    // A directory inside a repo resolves to the ENCLOSING work tree: --is-inside-work-tree
+    // passes, and a stash/checkout would then snapshot or clobber the parent repository.
+    const nested = join(ws, "pkg", "sub");
+    await mkdir(nested, { recursive: true });
+    const svc = createCheckpointService(nested);
+    await expect(
+      svc.createCheckpoint({
+        checkpointId: "chk-nested-1",
+        label: "Nested checkpoint",
+        adapter,
+      }),
+    ).rejects.toThrow(/not a valid Git repository/i);
+    expect(svc.getCheckpoint("chk-nested-1")).toBeUndefined();
+  });
+
   it("creation is non-mutating: dirty workspace before == immediately after checkpoint creation", async () => {
     // Initial commit
     await mkdir(join(ws, "src"), { recursive: true });
