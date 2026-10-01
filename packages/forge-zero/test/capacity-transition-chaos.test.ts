@@ -154,8 +154,10 @@ describe("capacity-transition chaos — unmeasured and malformed windows", () =>
     const ledger = new CapacityReservationLedger({ routes: [garbage], pools: [pool({ windows: garbage.windows })], now: () => NOW });
     const decision = ledger.reserve(request("r1", ["r-a"]));
     expect(decision.admitted).toBe(false);
-    // The garbage reset is skipped; the other window's parseable reset still surfaces.
-    expect(decision.nextAvailableAt).toBe(RESET);
+    // The denied unit is requests at limit:0 — a structural zero no reset can serve, and its
+    // own resetAt is unparseable anyway. The route contributes no horizon rather than
+    // borrowing the healthy token window's reset for a denial that reset cannot cure.
+    expect(decision.nextAvailableAt).toBeUndefined();
   });
 
   it("nextAvailableAt is absent when every window's resetAt is unparseable", () => {
@@ -202,21 +204,62 @@ describe("capacity-transition chaos — unmeasured and malformed windows", () =>
 });
 
 describe("capacity-transition chaos — demand boundary and pool precedence", () => {
-  it("a demand exactly at the window boundary admits; one token over denies", () => {
-    const ledger = new CapacityReservationLedger({ routes: [route()], pools: [pool()], now: () => NOW });
-    expect(ledger.reserve(request("r1", ["r-a"], { inputTokens: 16_000 })).admitted).toBe(true);
-    expect(ledger.reserve(request("r2", ["r-a"], { inputTokens: 16_001 })).reason).toBe("CAPACITY_EXHAUSTED");
+  it("a demand exactly at the window boundary admits; one over the limit is provider-arbitrated, never fabricated-exhausted", () => {
+    // R59: the token demand is an estimate (chars/4 × a borrowed tokenizer ratio); past the
+    // window's declared limit no refill can satisfy it, but the estimate cannot prove the
+    // real request won't fit either. With the window unheld the provider's wire response is
+    // the honest arbiter — the reservation admits (tokenBucketDecision's rule), and a real
+    // success or a real 429 replaces the estimate with evidence.
+    expect(new CapacityReservationLedger({ routes: [route()], pools: [pool()], now: () => NOW })
+      .reserve(request("r1", ["r-a"], { inputTokens: 16_000 })).admitted).toBe(true);
+    expect(new CapacityReservationLedger({ routes: [route()], pools: [pool()], now: () => NOW })
+      .reserve(request("r2", ["r-a"], { inputTokens: 16_001 })).admitted).toBe(true);
   });
 
-  it("a 16k-token turn demand cannot fit an 8k TPM pool even with requests to spare", () => {
-    // Live finding: Groq's measured 8k TPM pools are inadmissible for agent turns whose
-    // honest demand is 16k input tokens — the broker refuses rather than over-promising.
+  it("an over-limit turn demand admits only while the window is unheld — a live hold serializes the retry on the lease, not a reset", () => {
+    // Groq's measured 8k TPM pools see turn demands above their limit. The first request is
+    // provider-arbitrated; the SECOND must not double-book the same window — it waits for
+    // the live lease to free, which is the horizon that can actually serve it.
     const narrow = route({ windows: [
       win({ limit: 1_000, remaining: 1_000 }),
       win({ unit: "input_tokens", limit: 8_000, remaining: 8_000 }),
     ] });
     const ledger = new CapacityReservationLedger({ routes: [narrow], pools: [pool({ windows: narrow.windows })], now: () => NOW });
-    expect(ledger.reserve(request("r1", ["r-a"], { inputTokens: 16_000 })).reason).toBe("CAPACITY_EXHAUSTED");
+    const first = ledger.reserve(request("r1", ["r-a"], { inputTokens: 16_000 }));
+    expect(first.admitted).toBe(true);
+    const second = ledger.reserve(request("r2", ["r-a"], { inputTokens: 16_000 }));
+    expect(second.admitted).toBe(false);
+    expect(second.reason).toBe("CAPACITY_EXHAUSTED");
+    // The horizon is the live lease (NOW + 60s), not either window's reset — a refill cannot
+    // serve an over-limit demand but a freed window lets the provider arbitrate it.
+    expect(second.nextAvailableAt).toBe(new Date(NOW + 60_000).toISOString());
+  });
+
+  it("a token-short denial reports the token reset, not an earlier request reset — the horizon names the blocking dimension", () => {
+    // R59 live finding: min-over-all-window-resets advertised the requests window's earlier
+    // reset while the input_tokens window was the one that actually denied — a horizon that
+    // arrives and still cannot serve the demand.
+    const tokenReset = "2026-09-25T13:00:00.000Z";
+    const tight = route({ windows: [
+      win({ limit: 1_000, remaining: 0, resetAt: "2026-09-25T12:05:00.000Z" }),
+      win({ unit: "input_tokens", limit: 8_000, remaining: 0, resetAt: tokenReset }),
+    ] });
+    const ledger = new CapacityReservationLedger({ routes: [tight], pools: [pool({ windows: tight.windows })], now: () => NOW });
+    const decision = ledger.reserve(request("r1", ["r-a"], { inputTokens: 4_000 }));
+    expect(decision.reason).toBe("CAPACITY_EXHAUSTED");
+    expect(decision.nextAvailableAt).toBe(tokenReset);
+  });
+
+  it("real exhaustion still denies truthfully — a demand inside the limit but over remaining queues on its own reset", () => {
+    const depleted = route({ windows: [
+      win({ limit: 1_000, remaining: 900 }),
+      win({ unit: "input_tokens", limit: 8_000, remaining: 3_000, resetAt: RESET }),
+    ] });
+    const ledger = new CapacityReservationLedger({ routes: [depleted], pools: [pool({ windows: depleted.windows })], now: () => NOW });
+    const decision = ledger.reserve(request("r1", ["r-a"], { inputTokens: 5_000 }));
+    expect(decision.admitted).toBe(false);
+    expect(decision.reason).toBe("CAPACITY_EXHAUSTED");
+    expect(decision.nextAvailableAt).toBe(RESET);
   });
 
   it("pool windows override route windows — the physical pool is the accounting authority", () => {

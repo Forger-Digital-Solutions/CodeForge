@@ -1,6 +1,7 @@
 import {
   type CapacityLedgerOptions,
   type CapacityLedgerSnapshot,
+  type CapacityWindow,
   type CapacityReservation,
   type CapacityReservationDecision,
   type CapacityReservationRequest,
@@ -126,6 +127,7 @@ export class CapacityReservationLedger {
     let sawUnmeasured = false;
     let sawMeasuredDenial = false;
     let protectedByFirstRunReserve = false;
+    let bindingResetMs: number | undefined;
     for (const routeId of request.routeIds) {
       const route = this.routes.get(routeId);
       // R37: probation-tier roles reserve capacity too — the fabric only ranks them behind
@@ -186,14 +188,35 @@ export class CapacityReservationLedger {
       const availableConcurrency = concurrencyRemaining === undefined ? undefined : concurrencyRemaining - active.count;
       const availableCredits = creditRemaining === undefined ? undefined : creditRemaining - active.credits;
       const availableProviderUnits = providerUnitsRemaining === undefined ? undefined : providerUnitsRemaining - active.providerUnits;
+      const unitLimit = (unitWindows: readonly CapacityWindow[]): number | undefined =>
+        unitWindows.length === 0 ? undefined : Math.min(...unitWindows.map((window) => window.limit));
+      const inputLimit = unitLimit(inputWindows);
+      const outputLimit = unitLimit(outputWindows) ?? inputLimit;
+      const creditLimit = unitLimit(creditWindows);
+      const providerUnitLimit = unitLimit(providerUnitWindows);
+      // R59: an estimated demand past the window's declared limit can never be satisfied by
+      // a refill — but cannot be disproven by one either (chars/4 × a borrowed tokenizer
+      // ratio inflates what the provider will actually bill, so the estimate alone cannot
+      // prove the request infeasible). The reservation clamps to what the window can
+      // dispense: an over-limit demand needs the WHOLE window, so it is admissible exactly
+      // when the window is currently unspent — and the provider's wire response (the rule
+      // the pacing governor's tokenBucketDecision already applies) arbitrates fit. A
+      // partially spent window denies until its own reset, when it could serve again.
+      // Hard-count units (requests, concurrency) never clamp.
+      const clampToLimit = (demand: number, limit: number | undefined): number =>
+        limit === undefined ? demand : Math.min(demand, limit);
+      const effectiveInput = clampToLimit(request.inputTokens, inputLimit);
+      const effectiveOutput = clampToLimit(request.outputTokens, outputLimit);
+      const effectiveCredits = clampToLimit(request.credits ?? 0, creditLimit);
+      const effectiveProviderUnits = clampToLimit(request.providerUnits ?? 0, providerUnitLimit);
       if (request.requests <= availableRequests
-        && request.inputTokens <= availableInputTokens
-        && request.outputTokens <= availableOutputTokens
+        && effectiveInput <= availableInputTokens
+        && effectiveOutput <= availableOutputTokens
         && (availableConcurrency === undefined || availableConcurrency >= 1)
-        && (availableCredits === undefined || (request.credits ?? 0) <= availableCredits)
-        && (availableProviderUnits === undefined || (request.providerUnits ?? 0) <= availableProviderUnits)) {
+        && (availableCredits === undefined || effectiveCredits <= availableCredits)
+        && (availableProviderUnits === undefined || effectiveProviderUnits <= availableProviderUnits)) {
         this.addIndexed({
-          request,
+          request: { ...request, inputTokens: effectiveInput, outputTokens: effectiveOutput, credits: effectiveCredits, providerUnits: effectiveProviderUnits },
           routeId,
           poolId: route.capacityPoolId,
           expiresAtMs: Date.parse(request.leaseUntil),
@@ -202,6 +225,49 @@ export class CapacityReservationLedger {
         return { admitted: true, reservationId: request.reservationId, routeId, reason: "ADMITTED" };
       }
       sawMeasuredDenial = true;
+      // R59: the recovery horizon must be the reset of the dimension that actually denied —
+      // a request-window reset does not speak for a token-window denial (the old
+      // min-over-all-windows advertised a horizon that could never serve the demand). A
+      // route serves when EVERY denied unit recovers, so per route the horizon is the
+      // latest denied-unit horizon; the request is servable at the earliest such route
+      // horizon. Window-short units recover at their declared reset; hold-short units when
+      // the pool's current leases free. A denied unit with no declared horizon (unparseable
+      // reset, permanent hold, a floor that never frees) means the route cannot be
+      // scheduled — it contributes no horizon rather than a fabricated one.
+      const bindingHorizons: number[] = [];
+      let routeUnschedulable = false;
+      const collectHorizon = (
+        demand: number,
+        unitWindows: readonly CapacityWindow[],
+        available: number | undefined,
+        remaining: number,
+      ): void => {
+        if (available === undefined || demand <= available) return;
+        const binding = [...unitWindows].sort((a, b) => a.remaining - b.remaining)[0]?.resetAt;
+        const resetMs = binding === undefined ? Number.NaN : Date.parse(binding);
+        if (demand <= remaining) {
+          // The window itself can hold it — the shortage is live holds (or a floor). The
+          // unit recovers when current leases free OR the window refills, whichever is
+          // first; a unit with neither cannot be scheduled on this route.
+          const leaseEnd = this.lastPoolLeaseMs(route.capacityPoolId);
+          const horizons = [leaseEnd, ...(Number.isFinite(resetMs) ? [resetMs] : [])].filter((h): h is number => h !== undefined);
+          if (horizons.length === 0) routeUnschedulable = true;
+          else bindingHorizons.push(Math.min(...horizons));
+          return;
+        }
+        if (Number.isFinite(resetMs)) bindingHorizons.push(resetMs);
+        else routeUnschedulable = true;
+      };
+      collectHorizon(request.requests, requestWindow === undefined ? [] : [requestWindow], availableRequests, requestRemaining);
+      collectHorizon(effectiveInput, inputWindows, availableInputTokens, inputRemaining);
+      collectHorizon(effectiveOutput, outputWindows.length > 0 ? outputWindows : inputWindows, availableOutputTokens, outputRemaining);
+      collectHorizon(1, concurrencyWindows, availableConcurrency, concurrencyRemaining ?? 0);
+      collectHorizon(effectiveCredits, creditWindows, availableCredits, creditRemaining ?? 0);
+      collectHorizon(effectiveProviderUnits, providerUnitWindows, availableProviderUnits, providerUnitsRemaining ?? 0);
+      if (!routeUnschedulable && bindingHorizons.length > 0) {
+        const serveAtMs = Math.max(...bindingHorizons);
+        bindingResetMs = bindingResetMs === undefined ? serveAtMs : Math.min(bindingResetMs, serveAtMs);
+      }
       if (!request.isNewUser
         && (this.firstRunReserveRequests > 0 || this.firstRunReserveTokens > 0)
         && requestRemaining - active.requests >= request.requests
@@ -222,7 +288,7 @@ export class CapacityReservationLedger {
       admitted: false,
       reservationId: request.reservationId,
       reason: protectedByFirstRunReserve ? "FIRST_RUN_RESERVE_PROTECTED" : "CAPACITY_EXHAUSTED",
-      nextAvailableAt: this.nextReset(request.routeIds),
+      nextAvailableAt: bindingResetMs === undefined ? undefined : new Date(bindingResetMs).toISOString(),
     };
   }
 
@@ -313,17 +379,16 @@ export class CapacityReservationLedger {
     this.expiryTimes.splice(lo, 0, time);
   }
 
-  private nextReset(routeIds: readonly string[]): string | undefined {
-    const resets = routeIds.flatMap((routeId) => {
-      const route = this.routes.get(routeId);
-      if (!route) return [];
-      // Same non-empty-pool-wins rule reserve() applies: a pool row with no windows
-      // carries no observation — it must not swallow the route's own reset horizon
-      // ([] is not nullish, so `?? route.windows` alone never falls through).
-      const poolWindows = this.pools.get(route.capacityPoolId)?.windows;
-      return (poolWindows !== undefined && poolWindows.length > 0 ? poolWindows : route.windows).map((window) => Date.parse(window.resetAt));
-    }).filter(Number.isFinite);
-    const next = Math.min(...resets);
-    return Number.isFinite(next) ? new Date(next).toISOString() : undefined;
+  /** Latest lease expiry among reservations holding this pool — the point at which a
+   *  hold-short or whole-window-demand request can be retried. Undefined when a live
+   *  lease never expires (a permanent hold is no horizon) or nothing holds the pool. */
+  private lastPoolLeaseMs(poolId: string): number | undefined {
+    let latest: number | undefined;
+    for (const reservation of this.reservations.values()) {
+      if (reservation.poolId !== poolId) continue;
+      if (!Number.isFinite(reservation.expiresAtMs)) return undefined;
+      if (latest === undefined || reservation.expiresAtMs > latest) latest = reservation.expiresAtMs;
+    }
+    return latest;
   }
 }

@@ -785,7 +785,7 @@ describe("R48 — bounded capacity wait on QUEUED fabric verdicts", () => {
 
   it("a near-term QUEUED verdict waits once then re-decides — no false failure", async () => {
     const { runtime, adapter, provider, selectInitialRoute } = runtimeWithScriptedEightBit([
-      { outcome: "no_eligible_route", reasonCodes: ["FABRIC_QUEUED_FOR_CAPACITY"], queuedWaitMs: 5_000 },
+      { outcome: "no_eligible_route", reasonCodes: ["FABRIC_QUEUED_FOR_CAPACITY"], queuedWaitMs: 900 },
       { outcome: "selected", model: { providerId: "fleet-a", modelId: "model-a" }, score: 80, reasons: ["ADMITTED"] },
     ]);
 

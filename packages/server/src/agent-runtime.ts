@@ -2132,7 +2132,16 @@ export class AgentRuntime {
         // flight or still has pending routes with daily-budget headroom. The budget bounds
         // the total wait; each round emits progress so the watchdog sees recovery, not a stall.
         const qualificationRecoveryDeadline = Date.now() + this.qualificationRecoveryBudgetMs;
-        while (routing.outcome === "no_eligible_route" && Date.now() < qualificationRecoveryDeadline) {
+        // `liveEvidence` is computed service-side where the spend/cap/interval constants
+        // live: a lane with everything unqualified sitting in cooldown reports pending=0
+        // even though its armed recovery retry re-enters those routes when it fires — that
+        // is evidence-in-waiting, not a dead lane. The fallback keeps older/stub hooks honest.
+        // Gated BEFORE the first round: with no live lane the kick is a no-op and an extra
+        // re-decide over identical state only delays an honest DENIED/QUEUED verdict.
+        const qualificationLaneLive = (): boolean =>
+          this.freeCloud?.isQualifying?.() === true
+          || (this.freeCloud?.qualificationSummary?.() ?? []).some((lane) => lane.liveEvidence ?? (lane.pending > 0 && lane.requestsSpentToday < lane.dailyBudget));
+        while (routing.outcome === "no_eligible_route" && qualificationLaneLive() && Date.now() < qualificationRecoveryDeadline) {
           await this.recoverFreeSupply(routing.fabric, {
             awaitQualificationMs: Math.min(this.qualificationWaitHorizonMs, Math.max(0, qualificationRecoveryDeadline - Date.now())),
             onTick: () => adapter.emitSubagentProgress?.(req.agentId, "Free supply recovery: measuring verified-free routes before declaring zero capacity."),
@@ -2141,14 +2150,7 @@ export class AgentRuntime {
           // stale — re-decide unconditionally so landed evidence is never missed.
           routing = await selectRoute();
           if (routing.outcome !== "no_eligible_route") break;
-          const lanes = this.freeCloud?.qualificationSummary?.() ?? [];
-          // `liveEvidence` is computed service-side where the spend/cap/interval constants
-          // live: a lane with everything unqualified sitting in cooldown reports pending=0
-          // even though its armed recovery retry re-enters those routes when it fires — that
-          // is evidence-in-waiting, not a dead lane. The fallback keeps older/stub hooks honest.
-          const live = this.freeCloud?.isQualifying?.() === true
-            || lanes.some((lane) => lane.liveEvidence ?? (lane.pending > 0 && lane.requestsSpentToday < lane.dailyBudget));
-          if (!live) break;
+          if (!qualificationLaneLive()) break;
           await new Promise((resolveWait) => setTimeout(resolveWait, 1_000));
         }
         if (routing.outcome === "no_eligible_route" && routing.queued?.nextAvailableAt) {

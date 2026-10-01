@@ -512,17 +512,18 @@ describe("R41 output budgeting — per-candidate admission demand through the Fr
   });
 
   it("admits a qualifying non-reasoning candidate under a tight output window instead of false-waiting on the worst case", async () => {
-    // Both pools hold a 1500-token output window. Route A ranks first on quality but carries
-    // a live measured reasoning profile, so this dispatch would place a 2048-token hold on
-    // it — denied by its pool. Route B is unprofiled: the same dispatch reserves only the
-    // 1024 it would actually request, which fits, so B admits and serves. Under the flat
-    // worst-case demand both holds would deny and the run would wait on capacity it never
-    // needed (the R34 false-wait regression).
+    // Both pools hold a 1500-token output window with one token already spent (1499
+    // remaining). Route A ranks first on quality but carries a live measured reasoning
+    // profile, so this dispatch's 2048-token hold clamps to the 1500 limit — and a whole-
+    // window hold cannot fit a partial window: denied. Route B is unprofiled: the same
+    // dispatch reserves only the 1024 it would actually request, which fits, so B admits
+    // and serves. Under the flat worst-case demand both holds would deny and the run would
+    // wait on capacity it never needed (the R34 false-wait regression).
     const authority = createEightBitRouteHealthAuthority();
     const tightWindows = (): CapacityWindow[] => [
       quotaWindow(),
       quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 }),
-      quotaWindow({ unit: "output_tokens", limit: 1_500, remaining: 1_500 }),
+      quotaWindow({ unit: "output_tokens", limit: 1_500, remaining: 1_499 }),
     ];
     const routeA = fabricRoute("reasoning-a", { qualityScore: 95, windows: tightWindows() });
     const routeB = fabricRoute("plain-b", { qualityScore: 70, windows: tightWindows() });

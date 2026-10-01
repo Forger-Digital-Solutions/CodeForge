@@ -483,11 +483,12 @@ describe("roleQualityAdjustment — Free Fabric effective score", () => {
   });
 
   it("an output-capacity-blocked high-score route yields to a qualified less-preferred route without false wait or lease leak", () => {
-    // Preferred route ranks first (score 95) but its pool holds only a 500-token output
-    // window and this dispatch would place a 2048-token hold on it — denied. The qualified
-    // 70-score route reserves the honest 1024 it will actually request and serves.
-    // Outcome is ADMITTED, not QUEUED: no false wait on capacity that never applied.
-    const tightOutput = quotaWindow({ unit: "output_tokens", limit: 1_500, remaining: 1_500 });
+    // Preferred route ranks first (score 95) but its pool's output window is partially
+    // spent: the 2048-token hold clamps to the 1500 limit and one already-spent token
+    // (1499 remaining) denies it — a whole-window demand cannot run on a partial window.
+    // The qualified 70-score route reserves the honest 1024 it will actually request and
+    // serves. Outcome is ADMITTED, not QUEUED: no false wait on capacity that never applied.
+    const tightOutput = quotaWindow({ unit: "output_tokens", limit: 1_500, remaining: 1_499 });
     const hi = fabricRoute("hi-blocked", { qualityScore: 95, windows: [quotaWindow(), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 }), tightOutput] });
     const lo = fabricRoute("lo-fits", { qualityScore: 70, windows: [quotaWindow(), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 }), tightOutput] });
     const receipts = new Map<string, ModelQualificationReceipt>([

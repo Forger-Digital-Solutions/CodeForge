@@ -216,8 +216,10 @@ describe("R24 multi-pool — shared-pool fairness under multi-user contention", 
     const carol = fabric.decide({ requestId: "c1", userId: "carol", role: "CODER", demand });
     expect(carol.outcome).toBe("QUEUED_FOR_CAPACITY");
     expect(carol.explanation.reasonCodes).toContain("CAPACITY_EXHAUSTED");
-    // The wait is honest: the earliest window reset, not a guess.
-    expect(carol.nextAvailableAt).toBe(RESET);
+    // The wait is honest: the window can hold the demand (4 ≤ 10 remaining) — the shortage
+    // is the 8 live holds, so the horizon is when those leases free (the default 10-minute
+    // lease), which arrives well before the window's own reset.
+    expect(carol.nextAvailableAt).toBe("2026-10-06T00:10:00.000Z");
   });
 
   it("two routes backed by one provider account contend for the same reservation budget", () => {
