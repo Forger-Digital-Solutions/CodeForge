@@ -418,7 +418,14 @@ function summarizeDenialCandidates(decision: FabricRouteDecision | undefined): s
   const candidates = decision?.explanation.candidates ?? [];
   if (candidates.length === 0) return "";
   const groups = new Map<string, { count: number; modelIds: string[] }>();
-  for (const c of candidates.slice(0, 32)) {
+  // Policy-excluded rows are catalog noise — the actionable rows are the ones the
+  // admission loop actually ranked and attempted (SELECTED/CAPACITY_DENIED/QUEUED
+  // states are appended last in the fabric's report order, so a naive first-N slice
+  // hides exactly the candidates that decided the denial).
+  const ordered = [...candidates].sort(
+    (a, b) => Number(a.status === "POLICY_EXCLUDED") - Number(b.status === "POLICY_EXCLUDED"),
+  );
+  for (const c of ordered.slice(0, 32)) {
     const key = `${c.status.toLowerCase()}${c.reasonCodes[0] !== undefined ? `:${c.reasonCodes[0]}${c.reasonCodes[1] !== undefined ? `:${c.reasonCodes[1]}` : ""}` : ""}`;
     const group = groups.get(key) ?? { count: 0, modelIds: [] };
     group.count += 1;

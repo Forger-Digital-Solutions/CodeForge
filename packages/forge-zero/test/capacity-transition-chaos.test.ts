@@ -176,6 +176,29 @@ describe("capacity-transition chaos — unmeasured and malformed windows", () =>
     const ledger = new CapacityReservationLedger({ routes: [zeroed], pools: [pool({ windows: zeroed.windows })], now: () => NOW });
     expect(ledger.reserve(request("r1", ["r-a"])).reason).toBe("CAPACITY_EXHAUSTED");
   });
+
+  it("an empty-window pool must not swallow the route's reset horizon — nextAvailableAt falls back to route windows", () => {
+    // Live finding (R59): a per-user pool row exists even when the connection declares no
+    // quota dimensions (userConnectedFree unstamped → windows: []). reserve() already falls
+    // back to route windows for the deny decision, but nextReset() consulted
+    // `pools.get(...)?.windows ?? route.windows` — [] is not nullish, so the empty pool hid
+    // the route's real reset and the queued verdict surfaced with no recovery horizon.
+    const exhausted = route({
+      windows: [
+        win({ limit: 100, remaining: 0, resetAt: RESET }),
+        win({ unit: "input_tokens", limit: 16_000, remaining: 16_000, resetAt: RESET }),
+      ],
+    });
+    const ledger = new CapacityReservationLedger({
+      routes: [exhausted],
+      pools: [pool({ windows: [] })],
+      now: () => NOW,
+    });
+    const decision = ledger.reserve(request("r1", ["r-a"]));
+    expect(decision.admitted).toBe(false);
+    expect(decision.reason).toBe("CAPACITY_EXHAUSTED");
+    expect(decision.nextAvailableAt).toBe(RESET);
+  });
 });
 
 describe("capacity-transition chaos — demand boundary and pool precedence", () => {

@@ -317,7 +317,11 @@ export class CapacityReservationLedger {
     const resets = routeIds.flatMap((routeId) => {
       const route = this.routes.get(routeId);
       if (!route) return [];
-      return (this.pools.get(route.capacityPoolId)?.windows ?? route.windows).map((window) => Date.parse(window.resetAt));
+      // Same non-empty-pool-wins rule reserve() applies: a pool row with no windows
+      // carries no observation — it must not swallow the route's own reset horizon
+      // ([] is not nullish, so `?? route.windows` alone never falls through).
+      const poolWindows = this.pools.get(route.capacityPoolId)?.windows;
+      return (poolWindows !== undefined && poolWindows.length > 0 ? poolWindows : route.windows).map((window) => Date.parse(window.resetAt));
     }).filter(Number.isFinite);
     const next = Math.min(...resets);
     return Number.isFinite(next) ? new Date(next).toISOString() : undefined;
