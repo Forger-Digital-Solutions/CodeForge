@@ -2,12 +2,12 @@
   "schema": "r59-packaged-supply-recovery/v1",
   "status": "PASS",
   "artifact": {
-    "exeSha256": "ed1d4963f48cfd6187f95df9a30117e0abdffdfaa4c850a1cd2188d4135de3ae",
-    "buildCommit": "beaa4b52879c3fe5c9e2ab2e3bf681412764d6f1",
+    "exeSha256": "ae1b92fab5f906fcd63af7c9aaff2934b6146d68df100888ac99026d0099c181",
+    "buildCommit": "0ccc313203bdd985c0d40626eaf56a0385b86f5a",
     "buildDirty": true,
-    "builtAt": "2026-10-01T04:35:59.491Z"
+    "builtAt": "2026-10-01T09:34:06.761Z"
   },
-  "sourceStateId": "b6511c2747db31aec46aab1fa894e7c731b8f7df197847623e82447faa72f80c",
+  "sourceStateId": "20d8df1c910504c76355e82f25a002ca4050c844e4c491b62ef8e6362214a1b2",
   "assertions": {
     "desktopExplicitR1": true,
     "serverDefaultsR1": true,
@@ -27,6 +27,16 @@
     "cooledLaneLiveEvidence": true,
     "emptyPoolResetFallback": true,
     "millisecondResetParse": true,
-    "supplyTokenFieldProjection": true
+    "supplyTokenFieldProjection": true,
+    "wholeWindowProviderArbitration": true,
+    "bindingDenialHorizon": true,
+    "recoveryLoopLiveLaneGate": true,
+    "servingWindowContextSizing": true,
+    "failoverQualificationAwait": true,
+    "landedEvidenceReDecide": true,
+    "servingWindowWireSurvival": true,
+    "worktreeIdentityIsolation": true,
+    "checkpointToplevelGuard": true,
+    "declaredLimitServingCeiling": true
   }
 }
