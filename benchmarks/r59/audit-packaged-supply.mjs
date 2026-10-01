@@ -76,8 +76,15 @@ assert.match(runtime, /POLICY_EXCLUDED/);
 assert.match(quota, /ms/);
 assert.match(quota, /tokenResetAt/);
 assert.match(server, /remainingTokens/);
-assert.equal(certificate.materialFiles.length, 84);
-assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v9");
+// R59 v10 whole-window provider arbitration: an over-limit estimated demand clamps to the
+// window's limit instead of queueing on a reset that can never satisfy it; the denial
+// horizon binds to the dimension that actually denied, and the recovery loop is gated on
+// a live qualification lane before its first round.
+assert.match(reservations, /clampToLimit/);
+assert.match(reservations, /bindingHorizons/);
+assert.match(runtime, /Gated BEFORE the first round/);
+assert.equal(certificate.materialFiles.length, 89);
+assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v10");
 
 const receipt = {
   schema: "r59-packaged-supply-recovery/v1",
@@ -109,6 +116,9 @@ const receipt = {
     emptyPoolResetFallback: true,
     millisecondResetParse: true,
     supplyTokenFieldProjection: true,
+    wholeWindowProviderArbitration: true,
+    bindingDenialHorizon: true,
+    recoveryLoopLiveLaneGate: true,
   },
 };
 const output = path.join(root, "docs/evidence/r59-supply-recovery/production-wiring.json");

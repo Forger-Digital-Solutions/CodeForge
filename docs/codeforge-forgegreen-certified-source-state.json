@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "b6511c2747db31aec46aab1fa894e7c731b8f7df197847623e82447faa72f80c",
-  "surfaceVersion": "r59-free-supply-recovery-v9",
+  "sourceStateId": "6ed8bbdcc2c7c358e5a4846f422bfc060817b4902da9aea4afc1a7e7f8d06e75",
+  "surfaceVersion": "r59-free-supply-recovery-v10",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -27,6 +27,9 @@
     "packages/eight-bit/src/qualification/role-suite.ts",
     "packages/eight-bit/src/route-ledger.ts",
     "packages/eight-bit/src/types.ts",
+    "packages/eight-bit/test/free-fabric.test.ts",
+    "packages/eight-bit/test/r24-multi-pool.test.ts",
+    "packages/eight-bit/test/role-quality.test.ts",
     "packages/forge-green/src/optimization-candidate-a.ts",
     "packages/forge-green/src/optimization-candidates-shadow.ts",
     "packages/forge-green/src/optimization-decision.ts",
@@ -78,6 +81,8 @@
     "packages/server/src/workspace-service.ts",
     "packages/server/test/free-fabric-wiring.test.ts",
     "packages/server/test/progress-watchdog.test.ts",
+    "packages/server/test/role-output-budget.test.ts",
+    "packages/server/test/role-routing.test.ts",
     "packages/sessions/src/persistence.ts",
     "packages/sessions/src/postgres-persistence.ts",
     "packages/sessions/src/session-state.ts",
@@ -113,15 +118,18 @@
     "packages/eight-bit/src/qualification/role-suite.ts": "4861d214efb11aeac9a28d4a6dcc3ba8029e2dd4",
     "packages/eight-bit/src/route-ledger.ts": "a27cf80f7dfb7172e93d0898ce0330d997a5b710",
     "packages/eight-bit/src/types.ts": "2dbe10418021fc76155672723bd14ccee944ba5a",
+    "packages/eight-bit/test/free-fabric.test.ts": "1f604b5049629d4fa9b024978fe37f1e7bc76316",
+    "packages/eight-bit/test/r24-multi-pool.test.ts": "9c7b12896e2e5e437408df4db565b7b90812272b",
+    "packages/eight-bit/test/role-quality.test.ts": "3cdca370a2a3a9aed84c7a89f7218092888f74eb",
     "packages/forge-green/src/optimization-candidate-a.ts": "67af82aaf7b9d20aac76238752c0532798a975a4",
     "packages/forge-green/src/optimization-candidates-shadow.ts": "a3d1f7b3a5a28d46eb127ce83770d1c292053507",
     "packages/forge-green/src/optimization-decision.ts": "940ab41951d0cae123e82decb8f9d4b0c2e40e05",
     "packages/forge-green/src/optimization-policy.ts": "53dee55244eb1dc5d5ae03a4a30d96ecad0362aa",
     "packages/forge-green/src/optimization-types.ts": "1539abf45eaf618db3c2a68cf398b2320db5e7bd",
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
-    "packages/forge-zero/src/capacity-reservations.ts": "6c6c4fe0d026722ae020d8d6c1f344d823fcf43e",
+    "packages/forge-zero/src/capacity-reservations.ts": "32a3bd17d84f073e37bedc97428ccb975ce1f067",
     "packages/forge-zero/src/capacity-types.ts": "302a8807b1bbf822f2fcac3f43ac52c75e815bc5",
-    "packages/forge-zero/test/capacity-transition-chaos.test.ts": "cfa02be071846c71c8972b9f118c17df07946a12",
+    "packages/forge-zero/test/capacity-transition-chaos.test.ts": "1c08ae0a53585d261944f31ed99b51fc74b86d9c",
     "packages/model-registry/src/catalog-refresh.ts": "ba9057e3c6bfc39bbc618e5c042ed4081e2cc306",
     "packages/model-registry/src/discovery.ts": "cc024b18cdb2ce8a74d19c00379216cbfb9fa1ae",
     "packages/model-registry/src/free-cloud-service.ts": "839aa1b39e85074143e6d09c0b40ea4f85632998",
@@ -141,7 +149,7 @@
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
-    "packages/server/src/agent-runtime.ts": "790591f68090f7342d34f5a213d96582acef0038",
+    "packages/server/src/agent-runtime.ts": "da4ab31c10aacb736af360f58ae8445eac0ca589",
     "packages/server/src/autonomous-orchestrator.ts": "1f2d1d92420b7085e1f721755956d60cbdc3d180",
     "packages/server/src/checkpoint-service.ts": "9fc8c2328fc396a6831cb2803a8b679fbc288427",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
@@ -164,6 +172,8 @@
     "packages/server/src/workspace-service.ts": "77850591109fb5867cd96bf687cb3eb60b1a0a7c",
     "packages/server/test/free-fabric-wiring.test.ts": "a4d31d3f721c8e21fbc8a2a42c2185575c5cc8ea",
     "packages/server/test/progress-watchdog.test.ts": "35b8ec1225cc4a63fc6666351263f11eb419b4f0",
+    "packages/server/test/role-output-budget.test.ts": "d012b2b6fc81acea22e4c7187b492f4bbc225579",
+    "packages/server/test/role-routing.test.ts": "a003d793764f810ee1d61f7e1d0119f9dca0f750",
     "packages/sessions/src/persistence.ts": "5832703ed9a300702e585be80d8886b6d8be2612",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "0ce91821620263f0371f7886a20157ad5dc083f7",
@@ -2620,19 +2630,69 @@
       "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
       "recertifiedAt": "2026-10-01",
       "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V9_SOURCE_STATE"
+    },
+    {
+      "label": "R59 whole-window provider-arbitration recertification",
+      "reason": "R59 v10 closes the permanent-queue false zero the v9 run exposed end-to-end: the coder's measured demand (assembled context ~27.3k chars -> estimatedPromptTokens ~8.7k, inflated by the borrowed tokenizer ratio and 1.15 reserve margin to ~10-15k) exceeded Groq's declared 8k token-window limit, so every reserve() verdict classified a structurally unfittable ESTIMATE as transient CAPACITY_EXHAUSTED and queued on a reset that could never satisfy it — ~5 minutes of re-decides ending in an honest-looking blocked run while the real billed prompt (~0.83 observed ratio, ~7.2k tokens) would have fit. Reservation semantics now mirror the pacing governor's tokenBucketDecision rule for need>limit: an over-limit hold on an arbitrable unit clamps to the window's limit and admits exactly when the window is unspent and unheld, reserving the whole window so a second request serializes honestly; a partially spent window still denies on its own real reset; hard-count units (requests, concurrency) never clamp and still fail closed. The provider's wire verdict arbitrates the estimate — success proves usable capacity, a real 429 stamps real exhaustion. Denial horizons now bind to the denying dimension (window-short units report their own reset; hold-short units report the earlier of lease expiry or reset), so a queued verdict never again advertises a deadline that cannot serve it. The R59 qualification-recovery loop is also gated on a live lane before its first round so DENIED verdicts and dead fleets fail fast instead of consuming a spurious re-decide. No free-only, qualification, billing, qualification-budget, ownership, or completion policy changed.",
+      "priorSourceStateId": "b6511c2747db31aec46aab1fa894e7c731b8f7df197847623e82447faa72f80c",
+      "priorSurfaceVersion": "r59-free-supply-recovery-v9",
+      "resultingSourceStateId": "6ed8bbdcc2c7c358e5a4846f422bfc060817b4902da9aea4afc1a7e7f8d06e75",
+      "resultingSurfaceVersion": "r59-free-supply-recovery-v10",
+      "changes": [
+        {
+          "file": "packages/eight-bit/test/free-fabric.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/test/r24-multi-pool.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/test/role-quality.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/forge-zero/src/capacity-reservations.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/forge-zero/test/capacity-transition-chaos.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/test/role-output-budget.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/role-routing.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
+      "recertifiedAt": "2026-10-01",
+      "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V10_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-10-01T04:34:39.076Z",
+  "recertifiedAt": "2026-10-01T05:52:51.610Z",
   "recertification": {
-    "phase": "R59 millisecond-reset false-zero recertification",
-    "reason": "R59 v9 closes the false-zero defect the v8 packaged denial made legible once the horizon surfaced: groq::openai/gpt-oss-120b was QUALIFIED/HEALTHY with 7927/8000 tokens live, yet the coder denied USER_QUOTA_EXHAUSTED across the whole recovery loop. Live header capture shows Groq reports short token windows as millisecond durations (x-ratelimit-reset-tokens: 547ms); parseResetAt had no ms group so tokenResetAt was dropped, effectiveQuota could never see the token window's reset (with requestResetAt present the aggregate fallback no longer applies), and a low mid-suite remainingTokens stamp froze the route exhausted until another call refreshed it — while denied, no call ever came: self-sealing false zero capacity. The window's own reset also inherited the ~45min request reset, so every queued verdict surfaced a wait horizon ~50x past the true refill. Parsing ms restores the real reset so low stamps refill on elapsed time and queued verdicts report the actual recovery instant; the supply projection now also surfaces token fields so a denial's binding dimension is directly evidenced. No admission, qualification, billing, or completion policy changed.",
+    "phase": "R59 whole-window provider-arbitration recertification",
+    "reason": "R59 v10 closes the permanent-queue false zero the v9 run exposed end-to-end: the coder's measured demand (assembled context ~27.3k chars -> estimatedPromptTokens ~8.7k, inflated by the borrowed tokenizer ratio and 1.15 reserve margin to ~10-15k) exceeded Groq's declared 8k token-window limit, so every reserve() verdict classified a structurally unfittable ESTIMATE as transient CAPACITY_EXHAUSTED and queued on a reset that could never satisfy it — ~5 minutes of re-decides ending in an honest-looking blocked run while the real billed prompt (~0.83 observed ratio, ~7.2k tokens) would have fit. Reservation semantics now mirror the pacing governor's tokenBucketDecision rule for need>limit: an over-limit hold on an arbitrable unit clamps to the window's limit and admits exactly when the window is unspent and unheld, reserving the whole window so a second request serializes honestly; a partially spent window still denies on its own real reset; hard-count units (requests, concurrency) never clamp and still fail closed. The provider's wire verdict arbitrates the estimate — success proves usable capacity, a real 429 stamps real exhaustion. Denial horizons now bind to the denying dimension (window-short units report their own reset; hold-short units report the earlier of lease expiry or reset), so a queued verdict never again advertises a deadline that cannot serve it. The R59 qualification-recovery loop is also gated on a live lane before its first round so DENIED verdicts and dead fleets fail fast instead of consuming a spurious re-decide. No free-only, qualification, billing, qualification-budget, ownership, or completion policy changed.",
     "changedFiles": [
-      "packages/model-registry/src/quota.ts",
-      "packages/model-registry/test/free-cloud-registry.test.ts",
-      "packages/server/src/index.ts"
+      "packages/eight-bit/test/free-fabric.test.ts",
+      "packages/eight-bit/test/r24-multi-pool.test.ts",
+      "packages/eight-bit/test/role-quality.test.ts",
+      "packages/forge-zero/src/capacity-reservations.ts",
+      "packages/forge-zero/test/capacity-transition-chaos.test.ts",
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/test/role-output-budget.test.ts",
+      "packages/server/test/role-routing.test.ts"
     ],
-    "priorSourceStateId": "883611157fc6c09ad6e9f6a9846268a4e67dd56698dacb7f811dd46bd247a917",
+    "priorSourceStateId": "b6511c2747db31aec46aab1fa894e7c731b8f7df197847623e82447faa72f80c",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
