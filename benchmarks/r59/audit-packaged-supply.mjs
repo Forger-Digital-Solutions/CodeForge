@@ -26,6 +26,8 @@ const quota = extractFile(archive, "node_modules\\@codeforge\\model-registry\\di
 const eightBitRuntime = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\runtime.js").toString("utf8");
 const contextBudget = extractFile(archive, "node_modules\\@codeforge\\context\\dist\\budget.js").toString("utf8");
 const contextIndex = extractFile(archive, "node_modules\\@codeforge\\context\\dist\\index.js").toString("utf8");
+const checkpointService = extractFile(archive, "node_modules\\@codeforge\\server\\dist\\checkpoint-service.js").toString("utf8");
+const workspaceService = extractFile(archive, "node_modules\\@codeforge\\server\\dist\\workspace-service.js").toString("utf8");
 const identity = JSON.parse(extractFile(archive, "apps\\desktop\\dist\\build-identity.json").toString("utf8"));
 const certificate = JSON.parse(readFileSync(path.join(root, "docs/codeforge-forgegreen-certified-source-state.json"), "utf8"));
 
@@ -102,8 +104,18 @@ assert.match(runtime, /laneWasLive/);
 // not the window-minus-overhead assembly budget.
 assert.match(contextIndex, /repository \* 0\.8\) \+ estimateTokens\(contextSections\[0\]\)/);
 assert.match(runtime, /dispatchWireTokenLimit/);
-assert.equal(certificate.materialFiles.length, 94);
-assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v12");
+// R59 v13 workspace identity + declared-ceiling: a stale persisted worktree can never
+// reclaim its parent's repositoryRoot, a nested directory can never checkpoint the
+// enclosing repo (--show-prefix rejects anything that isn't a toplevel), and the serving
+// ceiling reads declared limitTokens at the tracker — never a mid-window remaining.
+assert.match(workspaceService, /kind === "git-worktree"/);
+assert.match(workspaceService, /\.git"\)\)/);
+assert.match(workspaceService, /"missing"/);
+assert.match(checkpointService, /--show-prefix/);
+assert.match(checkpointService, /repoVerified/);
+assert.match(service, /\.limitTokens/);
+assert.equal(certificate.materialFiles.length, 96);
+assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v13");
 
 const receipt = {
   schema: "r59-packaged-supply-recovery/v1",
@@ -142,6 +154,9 @@ const receipt = {
     failoverQualificationAwait: true,
     landedEvidenceReDecide: true,
     servingWindowWireSurvival: true,
+    worktreeIdentityIsolation: true,
+    checkpointToplevelGuard: true,
+    declaredLimitServingCeiling: true,
   },
 };
 const output = path.join(root, "docs/evidence/r59-supply-recovery/production-wiring.json");

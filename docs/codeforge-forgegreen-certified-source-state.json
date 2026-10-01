@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "9d7b9495fbd3baa05885ebb6493be61b6af55a515db12674c5571e54be6922be",
-  "surfaceVersion": "r59-free-supply-recovery-v12",
+  "sourceStateId": "20d8df1c910504c76355e82f25a002ca4050c844e4c491b62ef8e6362214a1b2",
+  "surfaceVersion": "r59-free-supply-recovery-v13",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -84,6 +84,8 @@
     "packages/server/src/user-intelligence.ts",
     "packages/server/src/workflow-service.ts",
     "packages/server/src/workspace-service.ts",
+    "packages/server/test/checkpoint.test.ts",
+    "packages/server/test/forge-workspaces.test.ts",
     "packages/server/test/free-fabric-wiring.test.ts",
     "packages/server/test/progress-watchdog.test.ts",
     "packages/server/test/role-output-budget.test.ts",
@@ -142,10 +144,10 @@
     "packages/forge-zero/test/capacity-transition-chaos.test.ts": "1c08ae0a53585d261944f31ed99b51fc74b86d9c",
     "packages/model-registry/src/catalog-refresh.ts": "ba9057e3c6bfc39bbc618e5c042ed4081e2cc306",
     "packages/model-registry/src/discovery.ts": "cc024b18cdb2ce8a74d19c00379216cbfb9fa1ae",
-    "packages/model-registry/src/free-cloud-service.ts": "ecdbc1f4f98ac91c25aa4907576753fb73e0c356",
+    "packages/model-registry/src/free-cloud-service.ts": "3165e5825591c83953aa2b27a8c12b2f486b81bf",
     "packages/model-registry/src/provider-definitions.ts": "9d9173707f191cdceb6549e92d08bf2ea12d730c",
     "packages/model-registry/src/quota.ts": "fefd97ce8648a0edd6a809fa366ec9e6a7a2d03a",
-    "packages/model-registry/test/free-cloud-registry.test.ts": "279745e3cce42ca7cda9936e5e16957e5f44b393",
+    "packages/model-registry/test/free-cloud-registry.test.ts": "deb4dc899aae4b341ce89ef982ef3af59187e8e5",
     "packages/model-registry/test/r59-supply-recovery.test.ts": "b7aa5c925f276029b2ea7e8d5f379a7eb9c08fca",
     "packages/paid-auto/src/expected-cost.ts": "efe764f9fa537fa202f2d101b9f019225c3cf509",
     "packages/paid-auto/src/families.ts": "1ad554c31371a07edc475065bb3e042917d94c45",
@@ -161,7 +163,7 @@
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
     "packages/server/src/agent-runtime.ts": "4333119da8612e1e7f290daa8b7fef730d2de441",
     "packages/server/src/autonomous-orchestrator.ts": "1f2d1d92420b7085e1f721755956d60cbdc3d180",
-    "packages/server/src/checkpoint-service.ts": "9fc8c2328fc396a6831cb2803a8b679fbc288427",
+    "packages/server/src/checkpoint-service.ts": "667fe270d9c832b7c9bef217e6796a0bcbb82eb1",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
     "packages/server/src/experience-learning.ts": "4b2412fac97695e1568fdef4c0490c0f26446723",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
@@ -179,7 +181,9 @@
     "packages/server/src/turn-state-machine.ts": "bd79b984c832d8ad7020b58b2f4991c747abafd6",
     "packages/server/src/user-intelligence.ts": "9324dc19fccea0eb945c07700c23a0966d759604",
     "packages/server/src/workflow-service.ts": "a6fa8ae76d908fe503ba6050d8afdf9d2e239b23",
-    "packages/server/src/workspace-service.ts": "77850591109fb5867cd96bf687cb3eb60b1a0a7c",
+    "packages/server/src/workspace-service.ts": "814dc45e7865b2d6459089101e591caf00f2cb20",
+    "packages/server/test/checkpoint.test.ts": "17057d94868e0b2b9613fa12027c1023c77e2af9",
+    "packages/server/test/forge-workspaces.test.ts": "c330801734b71527ff521bddfec4e6fdc9f57ddf",
     "packages/server/test/free-fabric-wiring.test.ts": "8006f2693fa252d38522350d78de49e814e672d8",
     "packages/server/test/progress-watchdog.test.ts": "35b8ec1225cc4a63fc6666351263f11eb419b4f0",
     "packages/server/test/role-output-budget.test.ts": "d012b2b6fc81acea22e4c7187b492f4bbc225579",
@@ -2759,20 +2763,59 @@
       "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
       "recertifiedAt": "2026-10-01",
       "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V12_SOURCE_STATE"
+    },
+    {
+      "label": "R59 workspace-identity and declared-ceiling recertification",
+      "reason": "R59 v13 closes the workspace-identity and quota-projection faults the v12 packaged dogfood surfaced, without touching admission, qualification, cost, or completion policy. (1) Workspace identity: hydration aliased every workspace's repositoryRoot to its id, so a stale persisted git worktree whose checkout had been partially removed reclaimed its parent's root; the next run registering that path resolved to the dead worktree, and checkpoint ran `git stash -u` inside a directory that resolved upward to the enclosing repository. Now only local workspaces alias repositoryRoot, persisted worktrees missing their directory or .git marker are marked missing and never returned as live registration targets, worktree creation verifies the .git marker materialized before persisting, and checkpoint verification requires the workspace to be a repository toplevel via `git rev-parse --show-prefix` (empty at a root, non-empty when nested, error outside a repo — no Windows 8.3 path compare; result cached per service). (2) Serving ceiling: servingInputTokenCeiling previously consumed the conflated CapacityWindow.limit, whose quotaWindows projection falls back to remainingTokens when limitTokens is absent — a mid-window Groq observation (remaining 122-528 against an 8000-token window) collapsed the ceiling toward zero. The ceiling now reads declared limitTokens directly from RouteQuotaTracker with identical provider/model/bucket resolution, so only provider-declared windows bound context assembly while admission keeps arbitrating on live remaining and reset evidence. Regression tests pin both invariants: a stale persisted worktree never captures its parent's repository root on restart, a nested directory can never checkpoint the enclosing tree, and remaining-only quota observations leave the serving ceiling unbounded rather than fabricating a limit. No free-only, qualification, billing, quota, ownership, or completion-gate policy changed; missing or unqualified capacity still fails closed.",
+      "priorSourceStateId": "9d7b9495fbd3baa05885ebb6493be61b6af55a515db12674c5571e54be6922be",
+      "priorSurfaceVersion": "r59-free-supply-recovery-v12",
+      "resultingSourceStateId": "20d8df1c910504c76355e82f25a002ca4050c844e4c491b62ef8e6362214a1b2",
+      "resultingSurfaceVersion": "r59-free-supply-recovery-v13",
+      "changes": [
+        {
+          "file": "packages/model-registry/src/free-cloud-service.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/model-registry/test/free-cloud-registry.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/checkpoint-service.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workspace-service.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/test/checkpoint.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/forge-workspaces.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
+      "recertifiedAt": "2026-10-01",
+      "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V13_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-10-01T08:51:39.092Z",
+  "recertifiedAt": "2026-10-01T09:32:26.352Z",
   "recertification": {
-    "phase": "R59 serving-window wire-survival recertification",
-    "reason": "R59 v12 makes the v11 serving-window cap survivable to the wire. The first v11 packaged dogfood (persistent profile, groq/gpt-oss-120b QUALIFIED with a stamped 8000-token input window) died before dispatch with CONTEXT_CAPACITY_UNKNOWN — 228 kernel tokens against a zero budget. Two real faults, both in the new wiring, both fixed without touching admission, qualification, cost, or completion policy. (1) assemble() passed the repository-page slice (repository*0.8) to planNarrow as capacity, but the planner's fail-closed contract is 'capacity must hold the plan's prompt' — which starts with the kernel the caller already rendered and charged upstream. A serving window smaller than the fixed reserves resolves that slice to zero and falsely faults the kernel; the slice is now added on top of the kernel's own cost, so a zero slice honestly produces a kernel-only plan (BUDGET_EXHAUSTED_BY_KERNEL, zero pages, L0 truncation receipt) instead of a crashed run. (2) The R41 serialized-wire bound inherited resolvedMaxContextTokens — now the assembly bound (window minus tool/transcript overhead) — which would fail closed AGENT_CONTEXT_BUDGET_EXCEEDED on every request whose tool surface legitimately rides on top. The wire bound is now min(roleOrModelBound, servingCeiling): the reserve the assembly subtracted is exactly what the tool surface occupies. Regression tests pin both units — assemble under a window smaller than the fixed reserves yields the kernel-only plan rather than faulting, and a free-routed request whose wire measures inside (ceiling minus overhead, ceiling] dispatches instead of failing closed. No free-only, qualification, billing, quota, ownership, or completion-gate policy changed; unknown windows still leave the budget unbounded and impossibly small windows still fail closed.",
+    "phase": "R59 workspace-identity and declared-ceiling recertification",
+    "reason": "R59 v13 closes the workspace-identity and quota-projection faults the v12 packaged dogfood surfaced, without touching admission, qualification, cost, or completion policy. (1) Workspace identity: hydration aliased every workspace's repositoryRoot to its id, so a stale persisted git worktree whose checkout had been partially removed reclaimed its parent's root; the next run registering that path resolved to the dead worktree, and checkpoint ran `git stash -u` inside a directory that resolved upward to the enclosing repository. Now only local workspaces alias repositoryRoot, persisted worktrees missing their directory or .git marker are marked missing and never returned as live registration targets, worktree creation verifies the .git marker materialized before persisting, and checkpoint verification requires the workspace to be a repository toplevel via `git rev-parse --show-prefix` (empty at a root, non-empty when nested, error outside a repo — no Windows 8.3 path compare; result cached per service). (2) Serving ceiling: servingInputTokenCeiling previously consumed the conflated CapacityWindow.limit, whose quotaWindows projection falls back to remainingTokens when limitTokens is absent — a mid-window Groq observation (remaining 122-528 against an 8000-token window) collapsed the ceiling toward zero. The ceiling now reads declared limitTokens directly from RouteQuotaTracker with identical provider/model/bucket resolution, so only provider-declared windows bound context assembly while admission keeps arbitrating on live remaining and reset evidence. Regression tests pin both invariants: a stale persisted worktree never captures its parent's repository root on restart, a nested directory can never checkpoint the enclosing tree, and remaining-only quota observations leave the serving ceiling unbounded rather than fabricating a limit. No free-only, qualification, billing, quota, ownership, or completion-gate policy changed; missing or unqualified capacity still fails closed.",
     "changedFiles": [
-      "packages/context/src/index.ts",
-      "packages/context/test/cf14-context.test.ts",
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/test/free-fabric-wiring.test.ts"
+      "packages/model-registry/src/free-cloud-service.ts",
+      "packages/model-registry/test/free-cloud-registry.test.ts",
+      "packages/server/src/checkpoint-service.ts",
+      "packages/server/src/workspace-service.ts",
+      "packages/server/test/checkpoint.test.ts",
+      "packages/server/test/forge-workspaces.test.ts"
     ],
-    "priorSourceStateId": "334f477da0f102ae7a9e0c231f072e42e33886326097cbac02af868dfa11aedd",
+    "priorSourceStateId": "9d7b9495fbd3baa05885ebb6493be61b6af55a515db12674c5571e54be6922be",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."
