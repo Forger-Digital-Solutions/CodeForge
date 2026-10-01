@@ -174,4 +174,67 @@ describe("EightBitRuntime — end-to-end facade", () => {
     // CAPACITY_UNMEASURED never masquerades as a capacity wait — there is no reset to wait for.
     expect((outcome as { capacityWait?: unknown }).capacityWait).toBeUndefined();
   });
+
+  it("R59: failover joins a live qualification lane once, then the re-decide admits the landed route", async () => {
+    // provider-b exists but its role verdict has not landed yet (roles: [] — the fabric cannot
+    // admit it). The host's awaitQualification hook runs the bounded recovery wait; once the
+    // receipt lands mid-wait the same re-decide rotates onto the now-admissible route.
+    fw.register(makeModel({ providerId: "dead", modelId: "dead-model" }));
+    fw.register(makeModel({ providerId: "provider-b", modelId: "provider-b-model" }));
+    let receiptLanded = false;
+    const fabric = createFreeFabric({
+      managedRoutes: () => [fabricRoute("provider-b", receiptLanded ? {} : { roles: [] })],
+      managedPools: () => [],
+      reservations: new CapacityReservationLedger({ routes: [], now: () => Date.now() }),
+    });
+    const fabricRuntime = new EightBitRuntime({ firewall: fw, persistence, freeFabric: fabric });
+    let awaits = 0;
+    const outcome = await fabricRuntime.handleTurnFailure({
+      sessionId: "s1",
+      turnId: "t-qual",
+      role: "CODER",
+      current: { providerId: "dead", modelId: "dead-model" },
+      isExactPin: false,
+      policyMode: "adaptive",
+      error: new Error("quota exhausted"),
+      hasAdapter: () => true,
+      awaitQualification: async () => {
+        awaits++;
+        receiptLanded = true;
+        return true;
+      },
+    });
+    expect(outcome.action).toBe("rotate");
+    expect(awaits).toBe(1);
+    if (outcome.action === "rotate") {
+      expect(outcome.replacement).toEqual({ providerId: "provider-b", modelId: "provider-b-model" });
+    }
+  });
+
+  it("R59: a spent qualification lane leaves no_replacement terminal — awaitQualification false means no retry", async () => {
+    fw.register(makeModel({ providerId: "dead", modelId: "dead-model" }));
+    fw.register(makeModel({ providerId: "provider-b", modelId: "provider-b-model" }));
+    const fabric = createFreeFabric({
+      managedRoutes: () => [fabricRoute("provider-b", { roles: [] })],
+      managedPools: () => [],
+      reservations: new CapacityReservationLedger({ routes: [], now: () => Date.now() }),
+    });
+    const fabricRuntime = new EightBitRuntime({ firewall: fw, persistence, freeFabric: fabric });
+    let awaits = 0;
+    const outcome = await fabricRuntime.handleTurnFailure({
+      sessionId: "s1",
+      turnId: "t-qual-dead",
+      role: "CODER",
+      current: { providerId: "dead", modelId: "dead-model" },
+      isExactPin: false,
+      policyMode: "adaptive",
+      error: new Error("quota exhausted"),
+      hasAdapter: () => true,
+      // The lane is at its daily budget — nothing live to wait on, so the hook declines
+      // and the denial must stay terminal rather than re-deciding over identical state.
+      awaitQualification: async () => { awaits++; return false; },
+    });
+    expect(outcome.action).toBe("no_replacement");
+    expect(awaits).toBe(1);
+  });
 });

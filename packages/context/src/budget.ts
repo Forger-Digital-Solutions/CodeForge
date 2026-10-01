@@ -7,7 +7,7 @@
  * (e.g. `FreeModelRecord.contextWindow`) when the caller supplies one.
  */
 
-export type ContextCapacitySource = "model_catalog" | "role_default";
+export type ContextCapacitySource = "model_catalog" | "role_default" | "serving_window";
 
 export interface ContextCapacity {
   maxContextTokens: number;
@@ -27,6 +27,11 @@ export interface ResolveContextCapacityInput {
   /** The routed model's catalog-declared context window. Pass `undefined` — never a guess —
    * when the real value is not known; FG-3 must never fabricate model capacity (§25). */
   declaredModelContextWindow?: number;
+  /** R59: the largest sys+context budget every admissible free route can physically ingest
+   * in one request — the fleet's smallest stamped input-token serving window minus the
+   * tool/transcript overhead the assembler does not account for. `undefined` means no route
+   * stamped a token window, so nothing bounds the prompt below the model/role budget. */
+  servingInputBudget?: number;
 }
 
 /**
@@ -40,13 +45,21 @@ export interface ResolveContextCapacityInput {
  */
 export function resolveContextCapacity(input: ResolveContextCapacityInput): ContextCapacity {
   const declared = input.declaredModelContextWindow;
+  const serving = input.servingInputBudget;
+  const limits: Array<{ tokens: number; source: ContextCapacitySource }> = [];
   if (typeof declared === "number" && Number.isFinite(declared) && declared > 0) {
-    if (declared < input.requestedTokens) {
-      return { maxContextTokens: Math.max(0, Math.floor(declared)), source: "model_catalog", clampedToModel: true };
-    }
-    return { maxContextTokens: input.requestedTokens, source: "model_catalog", clampedToModel: false };
+    limits.push({ tokens: Math.floor(declared), source: "model_catalog" });
   }
-  return { maxContextTokens: input.requestedTokens, source: "role_default", clampedToModel: false };
+  if (typeof serving === "number" && Number.isFinite(serving) && serving >= 0) {
+    limits.push({ tokens: Math.floor(serving), source: "serving_window" });
+  }
+  // The smallest stamped constraint binds — a prompt that fits the model window but not the
+  // provider's per-request serving window is a guaranteed wire rejection, not capacity.
+  const binding = limits.filter((l) => l.tokens < input.requestedTokens).sort((a, b) => a.tokens - b.tokens)[0];
+  if (binding) {
+    return { maxContextTokens: Math.max(0, binding.tokens), source: binding.source, clampedToModel: binding.source === "model_catalog" };
+  }
+  return { maxContextTokens: input.requestedTokens, source: limits[0]?.source ?? "role_default", clampedToModel: false };
 }
 
 export const CONTEXT_CAPACITY_UNKNOWN = "CONTEXT_CAPACITY_UNKNOWN" as const;

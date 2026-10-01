@@ -438,7 +438,19 @@ export class EightBitRuntime {
         measured = true;
       }
     }
-    if (!measured && outcome.action === "no_replacement" && lastFabricDecision?.outcome === "QUEUED_FOR_CAPACITY") {
+    // R59: a no_replacement declared while a qualification lane is still live is the same
+    // kind of premature verdict R51's measurement gap covers — verified-free routes earn
+    // receipts mid-cycle, so join one bounded recovery wait and re-decide on whatever landed.
+    // Bounded: qualificationAwaited guards the re-entry; a lane at budget returns false and
+    // the denial stays terminal.
+    let awaited = false;
+    if (outcome.action === "no_replacement" && req.awaitQualification && !req.qualificationAwaited) {
+      if (await req.awaitQualification(lastFabricDecision).catch(() => false)) {
+        outcome = await this.handleTurnFailure({ ...req, qualificationAwaited: true });
+        awaited = true;
+      }
+    }
+    if (!measured && !awaited && outcome.action === "no_replacement" && lastFabricDecision?.outcome === "QUEUED_FOR_CAPACITY") {
       return {
         ...outcome,
         capacityWait: {

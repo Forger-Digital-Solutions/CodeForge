@@ -72,7 +72,7 @@ import {
   type NormalizedIdentity,
 } from "@codeforge/forge-green";
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
-import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, roleQualityAdvice, roleQualificationStatusFor, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider, type FabricOutcome, type FabricRouteDecision, type ModelQualificationReceipt, type RoleQualificationStatus, type RoleQualificationTier, type RoleOutcomeKind, type RoleFailureClass, type ToolCallOutcome } from "@codeforge/eight-bit";
+import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, FABRIC_MODEL_ROLE, roleQualityAdvice, roleQualificationStatusFor, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider, type FabricOutcome, type FabricRouteDecision, type ModelQualificationReceipt, type RoleQualificationStatus, type RoleQualificationTier, type RoleOutcomeKind, type RoleFailureClass, type ToolCallOutcome } from "@codeforge/eight-bit";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { compressToolOutput } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
@@ -1405,9 +1405,22 @@ export class AgentRuntime {
     // WHICH model runs this role; this only decides how much context fits into it. A smaller
     // real capacity clamps down; a larger one never causes gratuitous expansion (FG-3 §59).
     const routedModel = req.modelSelection ? this.firewall.getModel(req.modelSelection.providerId, req.modelSelection.modelId) : undefined;
+    // R59: a free tier's stamped input-token window is a physical per-request ceiling the
+    // model's catalog context window does not see — dispatching a larger prompt is a
+    // guaranteed provider rejection, not a routing problem. Bound the assembled sys+context
+    // by the serving window minus the tool/transcript overhead the assembler does not budget
+    // (measured tool surface ~1.4K tokens + estimation headroom). Routes that stamp no token
+    // window leave the budget unbounded; an impossibly small window resolves to a capacity
+    // the kernel check fails closed on rather than silently truncating authority context.
+    const SERVING_PROMPT_OVERHEAD_TOKENS = 2_400;
+    const servingCeiling = this.freeCloud?.servingInputTokenCeiling?.(
+      req.userId ?? this.userId,
+      FABRIC_MODEL_ROLE[eightBitRoleForAgentRole(req.role)],
+    );
     const contextCapacity = resolveContextCapacity({
       requestedTokens: budget.maxContextTokens,
       declaredModelContextWindow: routedModel?.contextWindow,
+      servingInputBudget: servingCeiling === undefined ? undefined : Math.max(0, servingCeiling - SERVING_PROMPT_OVERHEAD_TOKENS),
     });
     const resolvedMaxContextTokens = contextCapacity.maxContextTokens;
 
@@ -2141,7 +2154,9 @@ export class AgentRuntime {
         const qualificationLaneLive = (): boolean =>
           this.freeCloud?.isQualifying?.() === true
           || (this.freeCloud?.qualificationSummary?.() ?? []).some((lane) => lane.liveEvidence ?? (lane.pending > 0 && lane.requestsSpentToday < lane.dailyBudget));
+        let laneWasLive = false;
         while (routing.outcome === "no_eligible_route" && qualificationLaneLive() && Date.now() < qualificationRecoveryDeadline) {
+          laneWasLive = true;
           await this.recoverFreeSupply(routing.fabric, {
             awaitQualificationMs: Math.min(this.qualificationWaitHorizonMs, Math.max(0, qualificationRecoveryDeadline - Date.now())),
             onTick: () => adapter.emitSubagentProgress?.(req.agentId, "Free supply recovery: measuring verified-free routes before declaring zero capacity."),
@@ -2152,6 +2167,13 @@ export class AgentRuntime {
           if (routing.outcome !== "no_eligible_route") break;
           if (!qualificationLaneLive()) break;
           await new Promise((resolveWait) => setTimeout(resolveWait, 1_000));
+        }
+        // A lane that was live when the loop started can die mid-wait: its recovery fired and
+        // finished inside the sleep, so the last pre-death decision never saw the landed
+        // verdict. Re-decide once on the settled lane state — a lane never live never enters
+        // the loop and never pays this extra call.
+        if (routing.outcome === "no_eligible_route" && laneWasLive && !qualificationLaneLive()) {
+          routing = await selectRoute();
         }
         if (routing.outcome === "no_eligible_route" && routing.queued?.nextAvailableAt) {
           // R48: the fabric's QUEUED verdict is "capacity returns at a provider-stated reset",
@@ -6214,6 +6236,22 @@ export class AgentRuntime {
       // gap, not busy supply, so the re-decide should see real windows before failing.
       measureCapacity: this.freeCloud?.probeRouteCapacity
         ? (providerId: string, modelId: string, opts?: { capacityPoolId?: string }) => this.freeCloud!.probeRouteCapacity!(providerId, modelId, opts)
+        : undefined,
+      // R59: a no_replacement while a qualification lane is live is a premature verdict —
+      // verified-free routes earn receipts mid-cycle, so run one bounded recovery wait and
+      // let the re-decide see whatever landed. A lane at its daily budget returns false and
+      // the denial stays terminal.
+      awaitQualification: this.freeCloud
+        ? async (decision) => {
+          const laneLive = this.freeCloud!.isQualifying?.() === true
+            || (this.freeCloud!.qualificationSummary?.() ?? []).some((lane) => lane.liveEvidence ?? (lane.pending > 0 && lane.requestsSpentToday < lane.dailyBudget));
+          if (!laneLive) return false;
+          await this.recoverFreeSupply(decision, {
+            awaitQualificationMs: this.qualificationWaitHorizonMs,
+            onTick: () => adapter.emitSubagentProgress?.(agentId, "Free supply recovery: measuring verified-free routes before declaring zero capacity."),
+          });
+          return true;
+        }
         : undefined,
       // The user sees the wait as it happens, not as a silent pause in the stream.
       onWait: ({ waitMs, reason }) => adapter.emitEightBitStatus(

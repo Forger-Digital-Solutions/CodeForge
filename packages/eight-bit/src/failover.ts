@@ -2,6 +2,7 @@ import type { EightBitHealthTracker } from "./health.js";
 import { classifyFailure, shortRateLimitWaitMs, SHORT_RATE_LIMIT_MAX_WAIT_MS } from "./health.js";
 import { classifyProviderFailure } from "@codeforge/forge-zero";
 import type { EightBitRouter, SelectRouteOptions } from "./router.js";
+import type { FabricRouteDecision } from "./free-fabric.js";
 import type { EightBitDecisionStore } from "./persistence.js";
 import { newReceiptId } from "./persistence.js";
 import type { DecisionReceipt, EightBitRole, FailureReason, RouteKey } from "./types.js";
@@ -107,6 +108,16 @@ export interface FailoverRequest {
   measureCapacity?: (providerId: string, modelId: string, opts?: { capacityPoolId?: string }) => Promise<boolean>;
   /** Internal once-guard — the runtime sets it on the measure-then-retry re-entry. */
   capacityMeasured?: boolean;
+  /**
+   * R59: bounded wait on a live qualification lane, returning true when the caller ran
+   * (or joined) a recovery cycle and the re-decide is worth re-running — a no_replacement
+   * declared while verified-free routes are still earning receipts is a premature verdict,
+   * the same measurement gap R51 covers for unmeasured quota. Absent means the host has no
+   * qualification machinery and the denial stays terminal. Bounded to one retry pass.
+   */
+  awaitQualification?: (decision: FabricRouteDecision | undefined) => Promise<boolean>;
+  /** Internal once-guard — the runtime sets it on the qualification-then-retry re-entry. */
+  qualificationAwaited?: boolean;
 }
 
 export type FailoverOutcome =

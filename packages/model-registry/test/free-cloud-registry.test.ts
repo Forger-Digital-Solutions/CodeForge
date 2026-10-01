@@ -982,6 +982,34 @@ describe("FreeCloudService — Free Fabric capacity projection", () => {
     expect(svc.routesForUser("mallory").every((r) => r.providerId !== "groq")).toBe(true);
   });
 
+  it("R59: servingInputTokenCeiling is the smallest stamped input-token window the user's routes carry — undefined when nothing stamps one", async () => {
+    const { svc } = service();
+    svc.setConnection(connected("groq", { planAttested: true, ownerUserId: "alice" }));
+    svc.setConnection(connected("openrouter", { credentialSource: "OAUTH", ownerUserId: "alice" }));
+
+    // No provider has stamped a token window yet — unbounded, never a fabricated ceiling.
+    expect(svc.servingInputTokenCeiling("alice", "PRIMARY_CODING_AGENT")).toBeUndefined();
+
+    svc.onProviderResponse({
+      providerId: "groq",
+      modelId: "openai/gpt-oss-120b",
+      status: 200,
+      headers: [
+        ["x-ratelimit-limit-requests", "30"],
+        ["x-ratelimit-remaining-requests", "29"],
+        ["x-ratelimit-limit-tokens", "8000"],
+        ["x-ratelimit-remaining-tokens", "7990"],
+      ],
+      observedAt: NOW.getTime(),
+    });
+    // OpenRouter routes stamp no token window, so Groq's 8K is the fleet bound — and the
+    // bound survives no declared-role match: with nothing qualified yet, every enabled route
+    // bounds because the probation path can still pick any of them.
+    expect(svc.servingInputTokenCeiling("alice", "PRIMARY_CODING_AGENT")).toBe(8000);
+    // Another user's supply never bounds alice's ceiling.
+    expect(svc.servingInputTokenCeiling("bob", "PRIMARY_CODING_AGENT")).toBeUndefined();
+  });
+
   it("R34 Mission C: model-domain providers shard into independent physical pools — reservations on one model do not deny another", () => {
     const fw = new ForgeZero();
     fw.register(freeRecord("groq", "openai/gpt-oss-120b", { accessClass: "FREE_ALLOWANCE" }));

@@ -83,6 +83,14 @@ export interface FreeCloudRoutingHooks {
    * hosts/mocks stay valid.
    */
   qualifyPending?(opts?: { providerId?: string; recovery?: boolean }): Promise<ModelQualificationReceipt[]>;
+  /**
+   * R59: the smallest stamped input-token serving window across this user's routes the fabric
+   * could admit for a role — the largest single-request prompt the fleet can physically
+   * ingest. `undefined` when no candidate route stamps a token window (unbounded upstreams
+   * never clamp context). `role` is the fabric's model-role vocabulary (e.g.
+   * PRIMARY_CODING_AGENT). Optional so existing hosts/mocks stay valid.
+   */
+  servingInputTokenCeiling?(userId: string, role: string): number | undefined;
 }
 
 export interface FreeCloudServiceOptions {
@@ -1530,6 +1538,22 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     return this.capacityPools().filter(
       (pool) => pool.scope === "PER_USER_POOL" && this.connections.get(pool.providerId)?.ownerUserId === userId,
     );
+  }
+
+  servingInputTokenCeiling(userId: string, role: string): number | undefined {
+    // A provider-stamped token window bounds every request the route will ever serve — it is
+    // structural supply evidence, so transient cooldown/qualification states do not remove a
+    // route from the bound. Role-declared routes bound first; when none declare the role the
+    // probation path can still pick any enabled route, so the whole eligible set bounds.
+    const eligible = this.routesForUser(userId).filter((route) => route.enabled);
+    const roleMatched = eligible.filter(
+      (route) => route.roles.includes(role) || route.fallbackRoles?.includes(role) === true,
+    );
+    const limits = (roleMatched.length > 0 ? roleMatched : eligible)
+      .flatMap((route) => route.windows)
+      .filter((w) => w.unit === "input_tokens" && Number.isFinite(w.limit) && w.limit > 0)
+      .map((w) => w.limit);
+    return limits.length === 0 ? undefined : Math.min(...limits);
   }
 
   /**
