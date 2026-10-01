@@ -210,6 +210,11 @@ describe("CodeForge Cloud Server API End-to-End", () => {
     expect(usage.freeReservedCredits).toBe(0);
     expect(usage.freeRemainingCredits).toBe(500_000 - usage.freeUsedCredits);
     expect(usage.freeResetAt).toBe(usage.freePeriodEnd);
+    expect(usage.freeConcurrentTaskLimit).toBe(1);
+    expect(usage.freePerTaskCreditLimit).toBe(50_000);
+
+    const unauthenticatedUsageRes = await fetch(`${baseUrl}/v1/usage`);
+    expect(unauthenticatedUsageRes.status).toBe(401);
 
     const spoofedUsageRes = await fetch(`${baseUrl}/v1/usage?userId=another-account`, { headers: authHeaders });
     const spoofedUsage = await spoofedUsageRes.json();
