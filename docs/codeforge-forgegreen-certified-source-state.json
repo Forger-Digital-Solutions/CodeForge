@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "f570564c7ca18b9dc3eae96c7eafb9e3d4e3724c7f39b7ed4db0e96e1207d13c",
-  "surfaceVersion": "r59-free-supply-recovery-v7",
+  "sourceStateId": "883611157fc6c09ad6e9f6a9846268a4e67dd56698dacb7f811dd46bd247a917",
+  "surfaceVersion": "r59-free-supply-recovery-v8",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -33,7 +33,9 @@
     "packages/forge-green/src/optimization-policy.ts",
     "packages/forge-green/src/optimization-types.ts",
     "packages/forge-green/src/reuse-cost-policy.ts",
+    "packages/forge-zero/src/capacity-reservations.ts",
     "packages/forge-zero/src/capacity-types.ts",
+    "packages/forge-zero/test/capacity-transition-chaos.test.ts",
     "packages/model-registry/src/catalog-refresh.ts",
     "packages/model-registry/src/discovery.ts",
     "packages/model-registry/src/free-cloud-service.ts",
@@ -115,7 +117,9 @@
     "packages/forge-green/src/optimization-policy.ts": "53dee55244eb1dc5d5ae03a4a30d96ecad0362aa",
     "packages/forge-green/src/optimization-types.ts": "1539abf45eaf618db3c2a68cf398b2320db5e7bd",
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
+    "packages/forge-zero/src/capacity-reservations.ts": "6c6c4fe0d026722ae020d8d6c1f344d823fcf43e",
     "packages/forge-zero/src/capacity-types.ts": "302a8807b1bbf822f2fcac3f43ac52c75e815bc5",
+    "packages/forge-zero/test/capacity-transition-chaos.test.ts": "cfa02be071846c71c8972b9f118c17df07946a12",
     "packages/model-registry/src/catalog-refresh.ts": "ba9057e3c6bfc39bbc618e5c042ed4081e2cc306",
     "packages/model-registry/src/discovery.ts": "cc024b18cdb2ce8a74d19c00379216cbfb9fa1ae",
     "packages/model-registry/src/free-cloud-service.ts": "839aa1b39e85074143e6d09c0b40ea4f85632998",
@@ -133,7 +137,7 @@
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
-    "packages/server/src/agent-runtime.ts": "b61bc8a8b33960682b83c52640e6398669add5e5",
+    "packages/server/src/agent-runtime.ts": "790591f68090f7342d34f5a213d96582acef0038",
     "packages/server/src/autonomous-orchestrator.ts": "1f2d1d92420b7085e1f721755956d60cbdc3d180",
     "packages/server/src/checkpoint-service.ts": "9fc8c2328fc396a6831cb2803a8b679fbc288427",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
@@ -2562,20 +2566,44 @@
       "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
       "recertifiedAt": "2026-09-30",
       "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V7_SOURCE_STATE"
+    },
+    {
+      "label": "R59 queued-reset horizon recertification",
+      "reason": "R59 v8 closes the two admission-evidence defects the v7 packaged run exposed: groq::openai/gpt-oss-120b reached QUALIFIED/HEALTHY/executable yet the coder's admission denied QUEUED with USER_QUOTA_EXHAUSTED and no recovery horizon. (1) CapacityReservationLedger.nextReset consulted pools.get()?.windows ?? route.windows — an empty-window per-user pool row (a connection with no stamped userConnectedFree declares no pool quota dimensions) is not nullish, so the route's real window resets were swallowed and every queued verdict surfaced nextAvailableAt=undefined; the deny path already falls back to route windows, and the reset lookup now mirrors that non-empty-pool-wins rule so honest capacity waits report when supply returns. (2) summarizeDenialCandidates sliced the fabric report's first 32 rows — all policy-excluded catalog noise — while the ranked rows that actually decided the denial (CAPACITY_DENIED on the qualified route) are appended last and never reached the failure summary; non-excluded candidates now order first. No admission, quota, qualification, billing, or completion policy changed — the denial was truthful (the suite's own token spend exhausted the window); these fixes make the evidence say so instead of looking like zero capacity.",
+      "priorSourceStateId": "f570564c7ca18b9dc3eae96c7eafb9e3d4e3724c7f39b7ed4db0e96e1207d13c",
+      "priorSurfaceVersion": "r59-free-supply-recovery-v7",
+      "resultingSourceStateId": "883611157fc6c09ad6e9f6a9846268a4e67dd56698dacb7f811dd46bd247a917",
+      "resultingSurfaceVersion": "r59-free-supply-recovery-v8",
+      "changes": [
+        {
+          "file": "packages/forge-zero/src/capacity-reservations.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/forge-zero/test/capacity-transition-chaos.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r59-supply-recovery/R59-FINAL-REPORT.md",
+      "recertifiedAt": "2026-10-01",
+      "sourceStateConstant": "CODEFORGE_R59_FREE_SUPPLY_RECOVERY_V8_SOURCE_STATE"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R44 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, and R44 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-09-30T14:33:22.418Z",
+  "recertifiedAt": "2026-10-01T03:03:39.525Z",
   "recertification": {
-    "phase": "R59 cooldown live-evidence recertification",
-    "reason": "R59 v7 closes the cooled-lane blindness the v6 packaged run exposed: every unqualified route on a provider sitting in transient cooldown reports pending=0, so the denial-time recovery loop read the lane as dead and denied PROVIDER_UNAVAILABLE minutes before the provider-stated recovery retry — already armed with budget headroom — could land a verdict. qualificationSummary now computes liveEvidence service-side where the spend/cap/interval constants live: a lane is live while pending work is reachable (a recovery kick or a due cycle) or a cooled-route retry is armed with headroom left. A lane past its daily budget or recovery cap still denies on schedule. No admission, qualification, billing, or completion authority changed.",
+    "phase": "R59 queued-reset horizon recertification",
+    "reason": "R59 v8 closes the two admission-evidence defects the v7 packaged run exposed: groq::openai/gpt-oss-120b reached QUALIFIED/HEALTHY/executable yet the coder's admission denied QUEUED with USER_QUOTA_EXHAUSTED and no recovery horizon. (1) CapacityReservationLedger.nextReset consulted pools.get()?.windows ?? route.windows — an empty-window per-user pool row (a connection with no stamped userConnectedFree declares no pool quota dimensions) is not nullish, so the route's real window resets were swallowed and every queued verdict surfaced nextAvailableAt=undefined; the deny path already falls back to route windows, and the reset lookup now mirrors that non-empty-pool-wins rule so honest capacity waits report when supply returns. (2) summarizeDenialCandidates sliced the fabric report's first 32 rows — all policy-excluded catalog noise — while the ranked rows that actually decided the denial (CAPACITY_DENIED on the qualified route) are appended last and never reached the failure summary; non-excluded candidates now order first. No admission, quota, qualification, billing, or completion policy changed — the denial was truthful (the suite's own token spend exhausted the window); these fixes make the evidence say so instead of looking like zero capacity.",
     "changedFiles": [
-      "packages/model-registry/src/free-cloud-service.ts",
-      "packages/model-registry/test/r59-supply-recovery.test.ts",
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/test/free-fabric-wiring.test.ts"
+      "packages/forge-zero/src/capacity-reservations.ts",
+      "packages/forge-zero/test/capacity-transition-chaos.test.ts",
+      "packages/server/src/agent-runtime.ts"
     ],
-    "priorSourceStateId": "2d3955fd43cf7f01e821e039009fa66d2a38b451226f7a56d8b59eaec1bdf2eb",
+    "priorSourceStateId": "f570564c7ca18b9dc3eae96c7eafb9e3d4e3724c7f39b7ed4db0e96e1207d13c",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

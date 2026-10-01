@@ -21,6 +21,7 @@ const compact = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\
 const roleSuite = extractFile(archive, "node_modules\\@codeforge\\eight-bit\\dist\\qualification\\role-suite.js").toString("utf8");
 const definitions = extractFile(archive, "node_modules\\@codeforge\\model-registry\\dist\\provider-definitions.js").toString("utf8");
 const subagentManager = extractFile(archive, "node_modules\\@codeforge\\server\\dist\\subagent-manager.js").toString("utf8");
+const reservations = extractFile(archive, "node_modules\\@codeforge\\forge-zero\\dist\\capacity-reservations.js").toString("utf8");
 const identity = JSON.parse(extractFile(archive, "apps\\desktop\\dist\\build-identity.json").toString("utf8"));
 const certificate = JSON.parse(readFileSync(path.join(root, "docs/codeforge-forgegreen-certified-source-state.json"), "utf8"));
 
@@ -64,8 +65,13 @@ assert.match(subagentManager, /isInPreFlightWait/);
 // routes sit in transient cooldown with an armed recovery retry is not read as dead.
 assert.match(service, /liveEvidence/);
 assert.match(runtime, /liveEvidence/);
-assert.equal(certificate.materialFiles.length, 80);
-assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v7");
+// R59 v8 queued-reset horizon: an empty-window pool must not shadow the route's own
+// reset — nextReset falls back to route windows when the pool row carries none.
+assert.match(reservations, /length > 0/);
+assert.match(reservations, /route\.windows/);
+assert.match(runtime, /POLICY_EXCLUDED/);
+assert.equal(certificate.materialFiles.length, 82);
+assert.equal(certificate.surfaceVersion, "r59-free-supply-recovery-v8");
 
 const receipt = {
   schema: "r59-packaged-supply-recovery/v1",
@@ -94,6 +100,7 @@ const receipt = {
     denialRecoveryLoop: true,
     watchdogPreFlightLiveness: true,
     cooledLaneLiveEvidence: true,
+    emptyPoolResetFallback: true,
   },
 };
 const output = path.join(root, "docs/evidence/r59-supply-recovery/production-wiring.json");
