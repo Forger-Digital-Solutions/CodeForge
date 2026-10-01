@@ -1,0 +1,14 @@
+{
+  "evidenceType": "REAL_MODEL_INFERENCE",
+  "status": "NOT_RUN",
+  "model": "Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8",
+  "revision": "dcaee4d4dfc5ee71ad501f01f530e5652438fde0",
+  "gateway": "CodeForge authenticated gateway",
+  "firstTokenMs": null,
+  "inputTokensPerSecond": null,
+  "outputTokensPerSecond": null,
+  "vramUsedMb": null,
+  "prefixCacheHitRate": null,
+  "reason": "The local Quadro T2000 has 4096 MiB VRAM against a 48000 MiB planning minimum; the Docker daemon is unavailable; no authorized first-party GPU worker or write-capable deployment credential for the pinned model was identified.",
+  "classification": "NO_REAL_INFERENCE_CLAIM"
+}

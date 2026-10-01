@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "r60-cache/v1",
+  "evidenceClass": "REAL_SERVING_MEASUREMENT",
+  "capturedAt": "2026-10-01T16:05:20.000Z",
+  "status": "PARTIAL_CONFIGURATION_ONLY",
+  "prefixCachingConfigured": true,
+  "runtime": "vLLM 0.30.0",
+  "measuredPrefixCacheHitRate": null,
+  "measuredLatencyImpactMs": null,
+  "reason": "The worker enables vLLM prefix caching and exposes metrics, but no physical worker served requests. Runtime support is not evidence of cache hits or benefit."
+}

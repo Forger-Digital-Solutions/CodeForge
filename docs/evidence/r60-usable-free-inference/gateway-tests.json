@@ -1,0 +1,61 @@
+{
+  "evidenceType": "SIMULATION_AND_LOCAL_CONTROL_PLANE_TESTS",
+  "capturedAt": "2026-10-01T16:05:20.000Z",
+  "logicalModel": "codeforge/forgeauto-free",
+  "results": [
+    {
+      "command": "node node_modules/vitest/vitest.mjs run packages/providers/test/hosted.test.ts packages/providers/test/openai-compatible.test.ts packages/cloud-gateway/test/first-party-worker-fleet.test.ts packages/cloud-gateway/test/hosted-queue-worker.test.ts apps/desktop/test/model-sections.test.ts",
+      "status": "PASS",
+      "testFilesPassed": 5,
+      "testsPassed": 70
+    },
+    {
+      "command": "node node_modules/vitest/vitest.mjs run packages/cloud-gateway/test/autoscaling.test.ts packages/cloud-gateway/test/first-party-worker-fleet.test.ts packages/cloud-gateway/test/hosted-queue-worker.test.ts packages/providers/test/hosted.test.ts packages/providers/test/openai-compatible.test.ts apps/desktop/test/model-sections.test.ts",
+      "status": "PASS",
+      "testFilesPassed": 6,
+      "testsPassed": 75
+    },
+    {
+      "command": "node node_modules/vitest/vitest.mjs run apps/cloud-api/test/hosted-capacity.test.ts apps/cloud-api/test/cloud-api.test.ts apps/cloud-api/test/hosted-executions.test.ts packages/providers/test/hosted.test.ts apps/desktop/test/cloud-catalog-sync.test.ts apps/desktop/test/model-sections.test.ts",
+      "status": "PASS",
+      "testFilesPassed": 6,
+      "testsPassed": 67
+    },
+    {
+      "command": "node node_modules/vitest/vitest.mjs run apps/cloud-api/test/hosted-capacity.test.ts apps/cloud-api/test/cloud-api.test.ts apps/cloud-api/test/hosted-executions.test.ts packages/providers/test/hosted.test.ts packages/providers/test/openai-compatible.test.ts apps/desktop/test/cloud-catalog-sync.test.ts apps/desktop/test/model-sections.test.ts packages/cloud-gateway/test/autoscaling.test.ts packages/cloud-gateway/test/first-party-worker-fleet.test.ts packages/cloud-gateway/test/hosted-queue-worker.test.ts",
+      "status": "PASS",
+      "testFilesPassed": 10,
+      "testsPassed": 106
+    },
+    {
+      "command": "node node_modules/vitest/vitest.mjs run packages/cloud-db/test/database.test.ts packages/cloud-db/test/parity.test.ts packages/cloud-usage/test/usage.test.ts packages/cloud-usage/test/stale-reservation.test.ts packages/cloud-entitlements/test/entitlements.test.ts packages/cloud-auth/test/auth.test.ts apps/cloud-api/test/cloud-api.test.ts apps/cloud-api/test/hosted-capacity.test.ts apps/cloud-api/test/hosted-executions.test.ts",
+      "status": "PASS",
+      "testFilesPassed": 9,
+      "testsPassed": 95
+    },
+    {
+      "command": "node node_modules/typescript/bin/tsc -b --force",
+      "status": "PASS"
+    },
+    {
+      "command": "bundled Python ast.parse on deploy/inference/qwen-coder-free/worker.py; parse deployment JSON and compare parser name to worker configuration",
+      "status": "PASS",
+      "evidenceType": "STATIC_DEPLOYMENT_CONFIG_CHECK"
+    }
+  ],
+  "covered": [
+    "public catalog exposes only logical ForgeAuto Free identity while inference remains authenticated",
+    "logical identity is sent without physical provider selection",
+    "OpenAI-compatible streaming usage handling and native hosted stream transport",
+    "authenticated chat completion endpoint and durable execution streaming/cancellation",
+    "durable request admission, reservation and account-scoped usage response"
+  ],
+  "not_proven": [
+    "live deployed inference",
+    "complete OpenAI compatibility for every field and tool-call streaming behavior",
+    "first-token latency or incremental delivery against a real model",
+    "four simultaneous real authenticated users",
+    "packaged application coding completion",
+    "Docker image build; the daemon pipe is unavailable on this host"
+  ]
+}

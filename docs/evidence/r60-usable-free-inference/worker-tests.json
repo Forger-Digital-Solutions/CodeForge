@@ -1,0 +1,30 @@
+{
+  "evidenceType": "CONTROL_PLANE_SIMULATION",
+  "capturedAt": "2026-10-01T13:48:16.000Z",
+  "worker": "deploy/inference/qwen-coder-free/",
+  "candidateModel": "Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8",
+  "revision": "dcaee4d4dfc5ee71ad501f01f530e5652438fde0",
+  "status": "CONTROL_PLANE_AND_STATIC_CONFIG_CHECKS_PASS; PHYSICAL_WORKER_NOT_BUILT_OR_RUN",
+  "mockedScenarios": [
+    "current qualification and exact model revision admission",
+    "wrong revision and stale qualification fail closed",
+    "worker sequence capacity enforcement",
+    "draining worker exclusion",
+    "pre-generation failure marks worker unavailable and can yield to a healthy peer",
+    "model input/output ceilings"
+  ],
+  "physicalChecks": {
+    "pythonSyntax": "PASS; parsed with bundled Python ast.parse",
+    "containerBuild": "NOT_RUN; Docker CLI is present but daemon pipe is unavailable",
+    "modelLoad": "NOT_RUN",
+    "realInference": "NOT_RUN",
+    "streamCancellationAgainstWorker": "NOT_RUN",
+    "VRAM": "4 GiB Quadro T2000 detected; insufficient for the 48 GiB planning minimum",
+    "deploymentManifestJson": "PASS",
+    "toolParserConfig": "PASS; qwen3_xml per pinned vLLM 0.30 docs"
+  },
+  "limitations": [
+    "Mock transport tests are not worker health or serving proof.",
+    "No real worker credential, qualification receipt, or authorized first-party GPU capacity was configured."
+  ]
+}

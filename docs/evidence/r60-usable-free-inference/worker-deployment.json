@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "r60-worker-deployment/v1",
+  "evidenceClass": "DEPLOYMENT_CONFIGURATION_AND_CAPACITY_INVENTORY",
+  "capturedAt": "2026-10-01T16:05:20.000Z",
+  "status": "STAGED_NOT_DEPLOYED",
+  "workerArtifact": "deploy/inference/qwen-coder-free/",
+  "model": "Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8",
+  "revision": "dcaee4d4dfc5ee71ad501f01f530e5652438fde0",
+  "runtime": {
+    "name": "vLLM",
+    "image": "vllm/vllm-openai:v0.30.0",
+    "toolParser": "qwen3_xml",
+    "servingContextTokens": 32768,
+    "maximumOutputTokens": 4096,
+    "maxConcurrentSequences": 4,
+    "maxBatchTokens": 4096,
+    "prefixCachingConfigured": true
+  },
+  "acceleratorRequirement": {
+    "minimumVramMb": 48000,
+    "preferredVramMb": 80000,
+    "basis": "Planning estimates from checkpoint size; neither figure is measured or qualified."
+  },
+  "staticChecks": {
+    "workerPythonAst": "PASS",
+    "manifestJson": "PASS",
+    "parserConfigMatchesPinnedRuntimeDocs": "PASS",
+    "dockerBuild": "NOT_RUN_DAEMON_UNAVAILABLE"
+  },
+  "authorizedCapacitySearch": {
+    "renderWorkspace": "CodeForge",
+    "renderServices": "Existing CPU/RAM service plans only; no GPU worker or GPU resource found.",
+    "cloudflareCredentials": "Account ID and API key variable names are configured; no first-party deployment resource or custom-model serving authorization was identified.",
+    "cloudflareWorkersAIAlternative": {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "classification": "CLOUDFLARE_HOSTED_PAID_MODEL; NOT THE PINNED QWEN3-CODER REVISION OR A CODEFORGE_OWNED_WORKER",
+      "unitPricingUsdPerMillionTokens": { "input": 0.0509, "output": 0.335 },
+      "decision": "NOT_USED"
+    },
+    "runpodDeploymentCredentialPresent": false,
+    "authorizedFirstPartyGpuCapacity": false
+  },
+  "deploymentRecipe": {
+    "build": "docker build -t codeforge/qwen-coder-free:dcaee4d4dfc5 .",
+    "run": "docker run --gpus all --rm -p 127.0.0.1:8000:8000 with CODEFORGE_WORKER_ID, CODEFORGE_WORKER_TOKEN, CODEFORGE_WORKER_ADMIN_TOKEN, CODEFORGE_MODEL_REVISION, and CODEFORGE_ACCELERATOR/VRAM metadata",
+    "network": "Private-network TLS; inference and admin tokens remain server-side."
+  },
+  "blocker": "NO_AUTHORIZED_REMOTE_GPU_CAPACITY",
+  "sources": [
+    "https://developers.cloudflare.com/workers-ai/models/qwen3-30b-a3b-fp8/",
+    "https://developers.cloudflare.com/workers-ai/",
+    "https://render.com/docs/compute-plans",
+    "https://www.runpod.io/pricing"
+  ]
+}

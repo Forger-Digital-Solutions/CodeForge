@@ -1,0 +1,20 @@
+{
+  "evidenceType": "LOCAL_TESTS_AND_REVIEW",
+  "capturedAt": "2026-10-01T13:48:16.000Z",
+  "status": "PARTIAL",
+  "coveredByTests": [
+    "authenticated Cloud API routes derive owner identity from the CodeForge session",
+    "usage endpoint ignores caller-supplied account selectors",
+    "durable hosted execution result and cancellation APIs scope reads/actions to the owner",
+    "worker credentials are held in server configuration and omitted from worker snapshots",
+    "worker health/model/metrics probes use the worker-scoped bearer token",
+    "worker admin drain token is distinct from inference token in the worker implementation"
+  ],
+  "not_run_or_incomplete": [
+    "live invalid and revoked worker credential against a deployed worker",
+    "worker-registration control endpoint; fleet membership is currently server-configured",
+    "abuse anomaly response, admin kill switch, and user suspension flow",
+    "production request-size and rate-anomaly campaign",
+    "packaged application secret scan for a release build"
+  ]
+}

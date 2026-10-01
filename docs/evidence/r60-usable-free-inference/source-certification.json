@@ -1,0 +1,445 @@
+{
+  "state": "CANDIDATE_PINNED_NOT_SERVING",
+  "model": "Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8",
+  "revision": "dcaee4d4dfc5ee71ad501f01f530e5652438fde0",
+  "sources": [
+    {
+      "claim": "Official upstream identity, architecture, parameter estimate, context, and vLLM serving instructions",
+      "url": "https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8/tree/dcaee4d4dfc5ee71ad501f01f530e5652438fde0",
+      "status": "VERIFIED_FROM_OFFICIAL_MODEL_CARD"
+    },
+    {
+      "claim": "Apache-2.0 license and redistribution notice obligations",
+      "url": "https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8/blob/dcaee4d4dfc5ee71ad501f01f530e5652438fde0/LICENSE",
+      "status": "VERIFIED_FROM_PINNED_LICENSE_FILE"
+    },
+    {
+      "claim": "Official Qwen FP8 checkpoint supports OpenAI-compatible vLLM serving; pinned repository files total 31.2 GB",
+      "url": "https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8/blob/dcaee4d4dfc5ee71ad501f01f530e5652438fde0/config.json",
+      "status": "VERIFIED_FROM_OFFICIAL_MODEL_CARD"
+    },
+    {
+      "claim": "vLLM v0.30 supports Qwen3 Coder tool calling and documents FP8 execution requirements",
+      "url": "https://docs.vllm.ai/en/v0.30.0/features/tool_calling/",
+      "status": "VERIFIED_FROM_OFFICIAL_RUNTIME_DOCUMENTATION"
+    },
+    {
+      "claim": "Qwen3-Coder uses the qwen3_xml tool parser in the pinned vLLM 0.30 runtime documentation",
+      "url": "https://docs.vllm.ai/en/v0.30.0/features/tool_calling/#qwen3-coder-models-qwen3_xml",
+      "status": "VERIFIED_FROM_OFFICIAL_RUNTIME_DOCUMENTATION"
+    },
+    {
+      "claim": "The pinned model card documents 262144 native context tokens and recommends 65536 output tokens; CodeForge applies tighter unqualified serving caps",
+      "url": "https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8/tree/dcaee4d4dfc5ee71ad501f01f530e5652438fde0",
+      "status": "VERIFIED_FROM_PINNED_OFFICIAL_MODEL_CARD"
+    },
+    {
+      "claim": "vLLM release image tag v0.30.0 exists",
+      "url": "https://github.com/vllm-project/vllm/releases/tag/v0.30.0",
+      "status": "VERIFIED_FROM_OFFICIAL_RELEASE"
+    }
+  ],
+  "commercialUse": "Allowed under Apache-2.0; comply with license text, notices, and any applicable trademark rules.",
+  "redistribution": "Allowed under Apache-2.0 subject to section 4 conditions; include license text and preserve applicable notices.",
+  "servingRequirements": {
+    "candidatePrecision": "FP8 official Qwen checkpoint",
+    "candidateQuantization": "FP8; A100 uses vLLM W8A16 Marlin, newer GPUs use backend-qualified FP8 path",
+    "minimumVramMb": 48000,
+    "preferredVramMb": 80000,
+    "vramEvidence": "UNMEASURED_PLANNING_ESTIMATE_FROM_OFFICIAL_31.2GB_CHECKPOINT; runtime and KV cache overhead must be measured",
+    "servingRuntime": "vLLM v0.30.0",
+    "continuousBatching": "Runtime feature configured; physical behavior not measured",
+    "prefixCache": "Enabled in candidate config; hit rate not measured",
+    "throughputTokensPerSecond": null,
+    "qualification": "NOT_QUALIFIED"
+  },
+  "environment": {
+    "localAccelerator": "Quadro T2000, 4 GB; below estimated worker requirement and not used for inference",
+    "deployableGpuCredentialsPresent": false,
+    "cloudflareAccountCredentialVariableNamesPresent": true,
+    "authorizedPinnedModelGpuCapacityIdentified": false,
+    "cloudflareHostedAlternative": "@cf/qwen/qwen3-30b-a3b-fp8; paid and not the pinned Qwen3-Coder revision; not used",
+    "dockerDaemonAvailable": false,
+    "realInferencePerformed": false
+  },
+  "r60SourceState": {
+    "schemaVersion": "r60-source-state-certificate/v1",
+    "certificationStatus": "CERTIFIED_INCOMPLETE",
+    "productStatus": "CODEFORGE_R60_INCOMPLETE",
+    "baseHead": "6b8fbada0e5367301974bc319f76f7281ce84dd0",
+    "codeCommits": [
+      "f92b99f4b082f6ea86f4879f4b7a6fc9494d8357",
+      "a88011cac6993c1fa27f52f590e514142b62e459",
+      "e68c3a5c60e3e786dad0670e532ca37d7eb322d7"
+    ],
+    "scope": "R60 implementation files from the listed code commits plus all files in this evidence directory except this self-referential certificate file. Unrelated R57/R59 changes are excluded and preserved.",
+    "hashAlgorithm": "SHA-256",
+    "canonicalization": "Sort repository-relative POSIX paths in ordinal order, then hash UTF-8 lines formatted as <path><space><lowercase file SHA-256><LF>.",
+    "sourceStateHash": "1b6c85c1b956b44a9cdfa274cd22b94ebcf65d7d4184ca7382c82a65598a33e9",
+    "includedFileCount": 74,
+    "includedFiles": [
+      {
+        "path": "apps/cloud-api/src/config.ts",
+        "sha256": "1457be8ea61d404a1fdf9ca79ae38ccf1beba78c908e2db56dd6359a1fde7b7f"
+      },
+      {
+        "path": "apps/cloud-api/src/index.ts",
+        "sha256": "be87a13fb55683802bce50bf1c500845436216aecf2c37d82ecd2c2178d028e2"
+      },
+      {
+        "path": "apps/cloud-api/src/server.ts",
+        "sha256": "7c7ac82f4f787d7492a2837e86d9ec845ca561c90f86eef48e251f6b6b8dde77"
+      },
+      {
+        "path": "apps/cloud-api/test/cloud-api.test.ts",
+        "sha256": "10f4425f2396a9d70bc82836cabb07c5cfafcf77ca610140ab8846eca7396106"
+      },
+      {
+        "path": "apps/cloud-api/test/config.test.ts",
+        "sha256": "bf65b7006f0b7888ce2f0568b2305fc866b73a1d8edc0639ed3a8978075ad9fd"
+      },
+      {
+        "path": "apps/cloud-api/test/hosted-capacity.test.ts",
+        "sha256": "a482e70903caf46f1cc2b13d6631c376c9d7cbeb2053ebcd70c63eddf71a90eb"
+      },
+      {
+        "path": "apps/cloud-api/test/hosted-executions.test.ts",
+        "sha256": "a5369ea4c5d22bfd21b5f7644b17d9d3d3b33609a29dce301e61f0cfb06226c8"
+      },
+      {
+        "path": "apps/desktop/src/cloud-account.ts",
+        "sha256": "df42cd71d582d353b501cefbb8928f569626be7ba740c29fb1f1814d075f37b6"
+      },
+      {
+        "path": "apps/desktop/src/renderer/model-sections.ts",
+        "sha256": "cc3e95151cf7efe2632e9b05606745f2622c45743d9b2b7075c0dcd4662065ff"
+      },
+      {
+        "path": "apps/desktop/src/renderer/settings/sections/ProfileSection.tsx",
+        "sha256": "fa5091b4da102b38102d01a1793fb134100e65702d460df31205f74868388c2d"
+      },
+      {
+        "path": "apps/desktop/test/header-account-layout.test.ts",
+        "sha256": "93cded9ed148e24c9b8897cfeaa99c99ecc2383e7a3f8692ff8d8ca9023113b5"
+      },
+      {
+        "path": "apps/desktop/test/model-sections.test.ts",
+        "sha256": "0dee024ffe9f6e424932935a4776980e28d299a67184ef03c834fb2c99566f76"
+      },
+      {
+        "path": "deploy/inference/qwen-coder-free/Dockerfile",
+        "sha256": "5b3a522d7bd168708e2bdf58ff8bccfef55fd30e828ba0aae322d1e4c6746aa1"
+      },
+      {
+        "path": "deploy/inference/qwen-coder-free/README.md",
+        "sha256": "eccd716f5ca8a117c18d8c44054d38d62737704a5577d0e876373439b98c7022"
+      },
+      {
+        "path": "deploy/inference/qwen-coder-free/manifest.json",
+        "sha256": "2e9ff15293a8cd919147b37f6b88e39077540d1b65afad3d7406ad33f827c070"
+      },
+      {
+        "path": "deploy/inference/qwen-coder-free/worker.py",
+        "sha256": "ad34a87d4d143b696772e478a9a02446e40227c753eea9ae020bb544cbe0e7d1"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md",
+        "sha256": "e1521ca31087d9f0f2bc22a031231684bd9dddc534350f652f81b9d8bc201bdc"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/architecture.md",
+        "sha256": "09aca53290fb04fd98eb7b7c2d621646b1b1843ca72ea96b6eb4dc6fa4ebc0ef"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/autoscaling-results.json",
+        "sha256": "f8f0c67cf3558034d34f58124edb8a9706ab451ed4b10decc2f1593d239bdb57"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/batching-results.json",
+        "sha256": "286724b87f3857df2756ec2a5009b20c8500531044d83f579a2a353f2a58ba16"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/broad-regression-results.json",
+        "sha256": "17ba87fc03e3f4e7323d9dfb45c86c09ab4f915d10839a656480d2998ddf49b3"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/cache-results.json",
+        "sha256": "7279a6d1936f05c56ae3f786d0e3aaf9b4d1b77150204d9b670ee7af330dbdc6"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/concurrency-results.json",
+        "sha256": "f3bdd8b24a8ae2ff853057b539fabf720d2686145bd70bc4db1506a2545cc599"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/cost-model.json",
+        "sha256": "3e72ddbd3d38f57728c6f38e2315c3b7e2eaffa2b1110c1f9be93ad63efc3255"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/dogfood-run-1.json",
+        "sha256": "69bd4982166ab2a8525e11e363229fdda926facd3ffe516456375cdc05749efa"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/dogfood-run-2.json",
+        "sha256": "69bd4982166ab2a8525e11e363229fdda926facd3ffe516456375cdc05749efa"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/dogfood-run-3.json",
+        "sha256": "69bd4982166ab2a8525e11e363229fdda926facd3ffe516456375cdc05749efa"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/fault-injection-results.json",
+        "sha256": "8f5e95b6946eb136bb281df99399dc15b930d3e6504d98cc747071f2286aaa52"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/forgeverify-results.json",
+        "sha256": "c0c1c3e30f14431b9fa15fb51dd26bc40932fc98141b01d56996b358c8826d2b"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/gateway-tests.json",
+        "sha256": "8190ff49f4c758080554cbc6ec661b7e8a1bb12cd50dac7b99193683663b9d66"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/load-results.json",
+        "sha256": "76b42e16dc20b0834899eacec800395a2ecd894079b0d43b9ed9c0fa74ee7e19"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/model-manifest.json",
+        "sha256": "2e9ff15293a8cd919147b37f6b88e39077540d1b65afad3d7406ad33f827c070"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/postgres-parity.json",
+        "sha256": "97c004b509153aab21091f49f9544011bea94550099cf4c561ab31da27f27e05"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/real-inference-results.json",
+        "sha256": "6e4f97c519f67916786f48d87d82a95168c0bdab93b1c7e0856b37063ddbbc6c"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/routing-tests.json",
+        "sha256": "f61216aa38855b5f0e600f3867f6741003f22076f0f47ce2c960da76535e8015"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/security-tests.json",
+        "sha256": "32d388df13e4a7ed129f2293648a2ed7dee6dca8c5ee0a7d665893ae7c5fe9cf"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/usage-accounting-tests.json",
+        "sha256": "b4c99c4032b73b5c560bb197553ff88aca29a52e150eba5b1737f28e9a5a0d22"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/utc-reset-tests.json",
+        "sha256": "ee1d1eec5ec5735fd65567a1453e29e7a17921d85be2e0b5093ee1b5bbd48673"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/worker-deployment.json",
+        "sha256": "e2367778dcd78829ae2d1100a37742ca45bc9e79188837a6183af0bb7388d568"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/worker-qualification.json",
+        "sha256": "e7481a00032f6b6f95a85e44f5c47fc2211142b06c168122dc87d600a41c6524"
+      },
+      {
+        "path": "docs/evidence/r60-usable-free-inference/worker-tests.json",
+        "sha256": "4c6a932436df8c34609ae35d1c6223204fe9504d7ef6ea07dfa779b51c506a80"
+      },
+      {
+        "path": "packages/cloud-auth/test/auth.test.ts",
+        "sha256": "80c75fe911fc0f9a50e8fd8d3bb892ab5d932d61285c6602e3fab65e5a299c4c"
+      },
+      {
+        "path": "packages/cloud-db/src/interface.ts",
+        "sha256": "7f85ef9268c0d0ee8b0c0a6a57382b549229297bdf330fc96b635c00cd655eda"
+      },
+      {
+        "path": "packages/cloud-db/src/migrations.ts",
+        "sha256": "a5736c1b28ad25d5ffa807d4021229a5bb46e75846bea1c6c971de59bf43d8b7"
+      },
+      {
+        "path": "packages/cloud-db/src/postgres.ts",
+        "sha256": "ff6648ec4f213ea308b8fde29658e16f7bddbfb09ca0f089ac17f2ca0fa9ce6c"
+      },
+      {
+        "path": "packages/cloud-db/src/sqlite.ts",
+        "sha256": "34c39f74beb318012e275dc9fd4d4087d79dc0adc6a76a1d0a654fdefe18a5d6"
+      },
+      {
+        "path": "packages/cloud-db/src/types.ts",
+        "sha256": "20884e952990d5f1eefb17d3b5ebe603a169530a5c3db8a8a0667b4e1ac7aaf8"
+      },
+      {
+        "path": "packages/cloud-db/test/account-deletion.test.ts",
+        "sha256": "184137f504ff60a6a611b5cb390b81ca8041ccdd746d1d48e212858136ece15c"
+      },
+      {
+        "path": "packages/cloud-db/test/database.test.ts",
+        "sha256": "da01deb2130b9b36c60d32b3155c4e4663133c2164eb1971cfd92cf47ca1d4f1"
+      },
+      {
+        "path": "packages/cloud-db/test/parity.test.ts",
+        "sha256": "6ddcaab906237610ef3591e4d269fc2077b0f905f1aa73cdc8030c44fcddf26f"
+      },
+      {
+        "path": "packages/cloud-entitlements/src/entitlement-service.ts",
+        "sha256": "5c23d584888d4708bf469dcd24051e4684fb67ec2d59d45b30a1c21343b6a8e4"
+      },
+      {
+        "path": "packages/cloud-entitlements/test/entitlements.test.ts",
+        "sha256": "cb26118a2f9314df247e30fa3d1a238622cdc89b46af241b58e90c41267697c8"
+      },
+      {
+        "path": "packages/cloud-gateway/src/autoscaling.ts",
+        "sha256": "48d64980c58ca8d8ef9346ad9cc699547066bb84d19999e9eeeade4abdd01e8b"
+      },
+      {
+        "path": "packages/cloud-gateway/src/cloud-firewall.ts",
+        "sha256": "310427bdb1844a3efecf8e823aa00dc30101ab35fe833f497ae7bf3249ed3d20"
+      },
+      {
+        "path": "packages/cloud-gateway/src/first-party-worker-fleet.ts",
+        "sha256": "edc8f82fd00a5a5c233731b34a048031bf9ec7e9565d6e1378ff262ae7a8831b"
+      },
+      {
+        "path": "packages/cloud-gateway/src/gateway-service.ts",
+        "sha256": "c0518b7ebcb3784d183d1d08df2ce9b35c1a2a1e255c92376111e69994071afc"
+      },
+      {
+        "path": "packages/cloud-gateway/src/hosted-queue-worker.ts",
+        "sha256": "c0b17ffe64ec5512f62ed3ddfe8c5606325f8430788780c5bfc342b204f16331"
+      },
+      {
+        "path": "packages/cloud-gateway/src/hosted-runtime.ts",
+        "sha256": "1c6a7ecf4ea7ec8255bf85e18dd33c4bacfe5e5b41b845fa22c8c7f4162a5f43"
+      },
+      {
+        "path": "packages/cloud-gateway/src/index.ts",
+        "sha256": "53cb2dc5d6fee384df5f57a757aae5dfe2551a0350c0c6b041aa62f7982453da"
+      },
+      {
+        "path": "packages/cloud-gateway/src/provider-registry.ts",
+        "sha256": "5e1ec55d7864252540b634e28c5b32efadb0e5261d948afcadcda2d5842000a8"
+      },
+      {
+        "path": "packages/cloud-gateway/src/types.ts",
+        "sha256": "f4185d42a430663327079b879754ed39733e90c2f97224fa285dc91fb7bae88b"
+      },
+      {
+        "path": "packages/cloud-gateway/test/autoscaling.test.ts",
+        "sha256": "f24877378bd433c69a5e4fd4b2e94e649510c5d5b8ab47c7e328d23de7b89723"
+      },
+      {
+        "path": "packages/cloud-gateway/test/first-party-worker-fleet.test.ts",
+        "sha256": "923891fddd7f1c5b261ab3e9a708bcce9bc26d7c2a32a773ace5ed62baf8b1dc"
+      },
+      {
+        "path": "packages/cloud-gateway/test/hosted-queue-worker.test.ts",
+        "sha256": "2bd0a6f096fdc097c5e7c64d286ab84c96aa6b3e73f2deec793fb94732a627b2"
+      },
+      {
+        "path": "packages/cloud-usage/src/usage-engine.ts",
+        "sha256": "e0bbd3620908dc82853d6416993c7d21ded409d84d5e9483dd9b996c492f7043"
+      },
+      {
+        "path": "packages/cloud-usage/test/stale-reservation.test.ts",
+        "sha256": "cbf96f5aba27c59877d1df4ae20c1af5c75a55743c765d7916f94c13bb9a6951"
+      },
+      {
+        "path": "packages/cloud-usage/test/usage.test.ts",
+        "sha256": "219356e7e213bca30204ac1752aaad8e066360982e0c7295d5eaa95bed5dea49"
+      },
+      {
+        "path": "packages/forge-zero/src/types.ts",
+        "sha256": "67d42ce9896880ff0c6e09dd98b19e946072b171a3ce42646ebac0ea2a7728b9"
+      },
+      {
+        "path": "packages/providers/src/hosted.ts",
+        "sha256": "56d07a5d3466ae90d39e34d05d1478498b76c16cead14b046911d16669549e2f"
+      },
+      {
+        "path": "packages/providers/src/index.ts",
+        "sha256": "900477b63745fd624445ed83d1dfb47246e66e3597227e21e3bfb100cb8e7856"
+      },
+      {
+        "path": "packages/providers/src/openai-compatible.ts",
+        "sha256": "cb897791565859c1eca21cef1b46d8e79f44253d3491bc87c717ec80ab77560c"
+      },
+      {
+        "path": "packages/providers/test/hosted.test.ts",
+        "sha256": "279143458d75bb2cf5f606e03c17246a732bf0358f4f6f9539b3085534b7c96a"
+      },
+      {
+        "path": "packages/providers/test/openai-compatible.test.ts",
+        "sha256": "7bc9428ce00dc83d50eb6e5bb47f7b3965874e0bc3892187a42daddd1e5e222e"
+      },
+      {
+        "path": "scripts/r60-cost-model.mjs",
+        "sha256": "a430cbc362fd44fda412a9cce266f32fad1cee57963dd9db733caa6df76d29d8"
+      }
+    ],
+    "excludedPaths": [
+      "docs/evidence/r60-usable-free-inference/source-certification.json",
+      "All pre-existing R57/R59 unrelated dirty and untracked work"
+    ],
+    "verification": {
+      "sqliteAccountingAuthAdmission": {
+        "status": "PASS",
+        "testFiles": 9,
+        "tests": 95
+      },
+      "gatewayFleetAutoscalingAndCatalog": {
+        "status": "PASS",
+        "testFiles": 10,
+        "tests": 106
+      },
+      "eightBitWorkflowAndForgeVerify": {
+        "status": "PASS",
+        "testFiles": 58,
+        "tests": 576,
+        "skippedTests": 3
+      },
+      "desktopPackage": {
+        "status": "PASS",
+        "testFiles": 40,
+        "tests": 348
+      },
+      "forgeAutoFailoverAndCompletionPaths": {
+        "status": "PASS",
+        "testFiles": 8,
+        "tests": 58
+      },
+      "usageApiFocusedRerun": {
+        "status": "PASS",
+        "testFiles": 1,
+        "tests": 8
+      },
+      "typescriptBuild": "PASS",
+      "workerPythonManifestParserStaticChecks": "PASS",
+      "broadRepositoryRun": "INTERRUPTED_INCONCLUSIVE",
+      "livePostgreSQL": "NOT_VERIFIED",
+      "realInference": "NOT_PERFORMED",
+      "packagedDogfood": "0_OF_3"
+    },
+    "closure": {
+      "A": "PARTIAL",
+      "B": "PASS",
+      "C": "PARTIAL",
+      "D": "NOT_PASS",
+      "E": "NOT_PASS",
+      "F": "NOT_PASS",
+      "G": "NOT_PASS",
+      "H": "PARTIAL",
+      "I": "PARTIAL",
+      "J": "PARTIAL",
+      "K": "NOT_PASS",
+      "L": "NOT_MEASURED",
+      "M": "PARTIAL",
+      "N": "PARTIAL",
+      "O": "PARTIAL",
+      "P": "PARTIAL",
+      "Q": "NOT_PASS",
+      "R": "NOT_PASS",
+      "S": "NOT_PROVEN",
+      "T": "PASS",
+      "U": "PASS"
+    }
+  }
+}

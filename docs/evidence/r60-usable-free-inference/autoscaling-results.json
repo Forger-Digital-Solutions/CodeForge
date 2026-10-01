@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "r60-autoscaling/v1",
+  "evidenceClass": "CONTROL_PLANE_TESTS_AND_DEPLOYMENT_ACTION",
+  "capturedAt": "2026-10-01T16:05:20.000Z",
+  "status": "PARTIAL_NO_DEPLOYMENT_ACTION",
+  "decisionSeam": "PASS_LOCAL_TESTS",
+  "providerAction": false,
+  "scaleOutObserved": false,
+  "scaleInObserved": false,
+  "drainObserved": false,
+  "reason": "The provider-neutral autoscaling decision/callback seam is covered by local tests. No GPU deployment provider or authorized GPU capacity exists for an actual scale action."
+}

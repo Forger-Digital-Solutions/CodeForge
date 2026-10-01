@@ -1,0 +1,54 @@
+{
+  "logicalModelId": "codeforge/qwen-coder-free",
+  "upstreamFamily": "Qwen3-Coder MoE",
+  "upstreamModelId": "Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8",
+  "exactRevision": "dcaee4d4dfc5ee71ad501f01f530e5652438fde0",
+  "source": "https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8/tree/dcaee4d4dfc5ee71ad501f01f530e5652438fde0",
+  "license": "Apache-2.0",
+  "licenseUrl": "https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8/blob/dcaee4d4dfc5ee71ad501f01f530e5652438fde0/LICENSE",
+  "commercialUse": "Allowed under Apache-2.0; include the license and retain applicable notices when redistributing weights.",
+  "parameterCount": {
+    "total": 30500000000,
+    "activePerToken": 3300000000,
+    "source": "Official Qwen model card; approximate values"
+  },
+  "upstreamContextWindow": 262144,
+  "servingContextWindow": 32768,
+  "upstreamRecommendedMaximumOutput": 65536,
+  "codeForgeRecommendedMaximumInput": 24576,
+  "codeForgeMaximumOutput": 4096,
+  "precision": "FP8 checkpoint weights; runtime activation precision depends on accelerator backend",
+  "quantization": "Official Qwen FP8 checkpoint (31.2 GB upstream repository); vLLM uses W8A8 on supported Ada/Hopper/Blackwell and W8A16 Marlin on Ampere",
+  "vram": {
+    "minimumMb": 48000,
+    "preferredMb": 80000,
+    "basis": "Planning estimate only: the official FP8 checkpoint repository is 31.2 GB; minimum leaves limited KV/runtime headroom, preferred 80 GB allows more batching. Not measured; must be qualified on target GPUs."
+  },
+  "servingRuntime": {
+    "name": "vLLM",
+    "image": "vllm/vllm-openai:v0.30.0",
+    "upstreamRelease": "https://github.com/vllm-project/vllm/releases/tag/v0.30.0",
+    "continuousBatching": true,
+    "maxConcurrentSequences": 4,
+    "maxBatchTokens": 4096,
+    "prefixCache": "enabled; hit rate and latency impact unmeasured"
+  },
+  "warmupRequirements": [
+    "Load the exact model revision and wait for vLLM readiness.",
+    "Run the pinned qualification prompts before worker admission.",
+    "Keep the worker out of READY until model identity and revision match this manifest."
+  ],
+  "healthCheck": "/health",
+  "readinessCheck": "/ready",
+  "metricsEndpoint": "/metrics",
+  "toolUseCapability": "OpenAI-compatible function tools using vLLM qwen3_xml parser; must pass CodeForge role qualification before routing",
+  "qualificationStatus": "NOT_QUALIFIED_NO_PHYSICAL_WORKER",
+  "lifecycleState": "STAGED",
+  "evidence": {
+    "realInference": false,
+    "measuredThroughputTokensPerSecond": null,
+    "measuredTimeToFirstTokenMs": null,
+    "measuredVramMb": null,
+    "measuredPrefixCacheHitRate": null
+  }
+}

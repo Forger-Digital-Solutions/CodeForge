@@ -1,0 +1,21 @@
+{
+  "evidenceType": "CONTROL_PLANE_SIMULATION",
+  "capturedAt": "2026-10-01T13:48:16.000Z",
+  "status": "PARTIAL",
+  "implemented": [
+    "Qwen candidate enters ForgeZero only after exact pinned identity, current qualification/authorization receipt, and live ready worker identity",
+    "Qwen worker supplies CODEFORGE_OWNED classification",
+    "discovered external zero-cost candidates are classified separately as CODEFORGE_ZERO_COST_EXTERNAL",
+    "ForgeAuto Free alias resolves through logical routing rather than exposing a physical model to the desktop",
+    "BYOK/paid paths remain excluded by the existing Free firewall"
+  ],
+  "tested": [
+    "first-party qualification gating, wrong revision, stale receipt, draining worker, peer failover, and capacity saturation through mocked fleet tests"
+  ],
+  "not_run": [
+    "live Groq/OpenRouter/Cloudflare failure with a healthy peer serving the same request",
+    "qualification evidence expiry against a production database",
+    "fairness across four or more independent real sessions",
+    "real first-party versus external route cost/latency comparison"
+  ]
+}

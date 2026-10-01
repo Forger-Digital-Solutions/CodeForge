@@ -1,0 +1,24 @@
+{
+  "evidenceType": "LOCAL_SQLITE_INTEGRATION_TESTS",
+  "capturedAt": "2026-10-01T16:23:52.000Z",
+  "policy": {
+    "allowanceCredits": 500000,
+    "period": "UTC calendar month",
+    "periodStart": "00:00:00 UTC on the first day of the month",
+    "periodEnd": "00:00:00 UTC on the first day of the next month",
+    "rollover": false
+  },
+  "sqlite": {
+    "status": "PASS",
+    "coverage": [
+      "January period is 2026-01-01T00:00:00.000Z through 2026-02-01T00:00:00.000Z",
+      "February creates an independent allowance period",
+      "settled January usage remains in the January period",
+      "unused Free allowance does not enter the general credit wallet"
+    ]
+  },
+  "postgres": {
+    "status": "NOT_RUN",
+    "reason": "No DATABASE_URL or CODEFORGE_TEST_POSTGRES_URL was configured, and the local WSL PostgreSQL harness could not start."
+  }
+}

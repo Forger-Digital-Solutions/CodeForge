@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "r60-batching/v1",
+  "evidenceClass": "REAL_SERVING_MEASUREMENT",
+  "capturedAt": "2026-10-01T16:05:20.000Z",
+  "status": "NOT_MEASURED_NO_PHYSICAL_WORKER",
+  "configured": {
+    "continuousBatching": true,
+    "maxConcurrentSequences": 4,
+    "maxBatchTokens": 4096
+  },
+  "measured": {
+    "concurrentPhysicalRequests": 0,
+    "throughputTokensPerSecond": null,
+    "queueDepth": null,
+    "latencyByBatchSize": null
+  },
+  "classification": "Configuration is not physical batching evidence."
+}

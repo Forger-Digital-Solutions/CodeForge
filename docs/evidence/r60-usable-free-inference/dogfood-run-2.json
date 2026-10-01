@@ -1,0 +1,16 @@
+{
+  "evidenceType": "PACKAGED_APPLICATION_PROOF",
+  "status": "NOT_RUN",
+  "endUserChargeUsd": null,
+  "authenticatedCodeForgeAccount": false,
+  "logicalModel": "codeforge/forgeauto-free",
+  "byokUsed": null,
+  "paidRescueUsed": null,
+  "realInference": false,
+  "repositoryEdit": false,
+  "testsRun": false,
+  "independentReview": false,
+  "forgeVerify": false,
+  "completionReceipt": false,
+  "reason": "No qualifying first-party worker is serving; packaged end-to-end dogfood cannot be truthfully completed."
+}

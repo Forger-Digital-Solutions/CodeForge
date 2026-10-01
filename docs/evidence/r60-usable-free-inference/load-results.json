@@ -1,0 +1,15 @@
+{
+  "evidenceType": "CONTROL_PLANE_SIMULATION",
+  "capturedAt": "2026-10-01T13:48:16.000Z",
+  "status": "NOT_RUN",
+  "requiredScenarios": [1, 10, 25, 50, 100, 250, 500, 1000],
+  "completedScenarios": [],
+  "reason": "No R60 gateway load harness has been completed. The queue test exercises two distinct accounts at a configured capacity of two and is a unit test, not a load campaign.",
+  "mustMeasure": [
+    "account and allowance isolation",
+    "weighted queue fairness",
+    "reservation races",
+    "queue age and capacity allocation",
+    "failover and autoscaling decisions"
+  ]
+}

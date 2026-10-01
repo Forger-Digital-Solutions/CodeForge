@@ -1,0 +1,39 @@
+{
+  "classification": "PRICE_REFERENCE_AND_CALCULATOR_ONLY; NO_MEASURED_THROUGHPUT",
+  "hardwareReference": {
+    "accelerator": "NVIDIA A100 SXM, 80 GB",
+    "hourlyPriceUsd": 1.59,
+    "provider": "Runpod Secure Cloud public on-demand Pod rate",
+    "source": "https://www.runpod.io/pricing",
+    "checkedAt": "2026-10-01",
+    "availability": "Not checked; public listed rate can change and is not a reserved-capacity quote",
+    "excluded": ["tax", "storage", "network transfer", "control-plane compute", "monitoring", "support"]
+  },
+  "baseline": {
+    "minimumWarmWorkers": 1,
+    "hoursPerMonth": 730,
+    "estimatedMonthlyGpuCostUsd": 1160.7,
+    "label": "Price-based arithmetic for one continuously running A100; not a deployed service estimate"
+  },
+  "measuredInputs": {
+    "weightedCreditsPerSecond": null,
+    "averageUtilization": null,
+    "averageInputTokensPerRequest": null,
+    "averageOutputTokensPerRequest": null,
+    "cacheHitRate": null,
+    "batchEfficiency": null,
+    "idlePercentage": null,
+    "workerCount": null,
+    "concurrentAgentsPerWorker": null
+  },
+  "perMillionInputCreditsUsd": null,
+  "perMillionOutputEquivalentUsd": null,
+  "perRequestUsd": null,
+  "perActiveDeveloperHourUsd": null,
+  "usersPerWorker": null,
+  "concurrentAgentsPerWorker": null,
+  "monthlyInfrastructureAt100UsersUsd": null,
+  "monthlyInfrastructureAt1000UsersUsd": null,
+  "monthlyInfrastructureAt10000UsersUsd": null,
+  "whyScenarioCostsAreNull": "No physical worker or measured throughput, utilization, cache-hit rate, workload mix, or request volume has been observed. scripts/r60-cost-model.mjs calculates these scenarios from operator-provided measured inputs."
+}

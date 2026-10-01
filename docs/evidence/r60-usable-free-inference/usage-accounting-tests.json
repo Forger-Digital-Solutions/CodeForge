@@ -1,0 +1,34 @@
+{
+  "evidenceType": "SQLITE_AND_AUTHENTICATED_API_INTEGRATION_TESTS",
+  "capturedAt": "2026-10-01T16:23:52.000Z",
+  "baseHead": "6b8fbada0e5367301974bc319f76f7281ce84dd0",
+  "scope": "SQLite-backed accounting, authenticated local cloud API integration, and TypeScript project validation",
+  "results": {
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc -b --force",
+      "status": "PASS"
+    },
+    "tests": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/cloud-db/test/database.test.ts packages/cloud-db/test/parity.test.ts packages/cloud-usage/test/usage.test.ts packages/cloud-usage/test/stale-reservation.test.ts packages/cloud-entitlements/test/entitlements.test.ts packages/cloud-auth/test/auth.test.ts apps/cloud-api/test/cloud-api.test.ts apps/cloud-api/test/hosted-capacity.test.ts apps/cloud-api/test/hosted-executions.test.ts",
+      "status": "PASS",
+      "testFilesPassed": 9,
+      "testsPassed": 95
+    }
+  },
+  "coveredScenarios": [
+    "500000-credit UTC monthly period creation and no wallet grant",
+    "50000-credit per-task reservation ceiling",
+    "exact remaining balance succeeds and one-credit overspend is rejected",
+    "concurrent reservations cannot oversubscribe one account period",
+    "settlement consumes actual weighted credits and releases unused reservation",
+    "replayed settlement does not double charge",
+    "cancellation and stale reservation recovery release unused allowance",
+    "separate accounts retain independent allowance",
+    "historical current-month Free usage is backfilled from usage events",
+    "authenticated GET /v1/usage returns authoritative allowance fields and ignores a spoofed account query"
+  ],
+  "limitations": [
+    "This is control-plane/database test evidence, not physical inference evidence.",
+    "PostgreSQL was not available in this environment; its implementation typechecks, but live PostgreSQL parity remains unverified."
+  ]
+}

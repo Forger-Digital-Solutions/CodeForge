@@ -1,0 +1,13 @@
+{
+  "evidenceType": "CONTROL_PLANE_SIMULATION",
+  "status": "PARTIAL",
+  "requiredPhysicalSessions": 4,
+  "physicalSessionsServed": 0,
+  "unitTest": {
+    "file": "packages/cloud-gateway/test/hosted-queue-worker.test.ts",
+    "scenario": "two distinct accounts execute concurrently with configured durable pool capacity two",
+    "status": "PASS",
+    "physicalInference": false
+  },
+  "acceptanceGate": "FAIL_NOT_DEMONSTRATED"
+}

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "r60-forgeverify/v1",
+  "evidenceClass": "PACKAGED_APPLICATION_PROOF",
+  "capturedAt": "2026-10-01T16:05:20.000Z",
+  "status": "NOT_RUN_NO_PACKAGED_DOGFOOD",
+  "qualifyingDogfoods": 0,
+  "requiredDogfoods": 3,
+  "forgeVerifyPassed": false,
+  "completionReceipts": [],
+  "reason": "No packaged ForgeAuto Free coding task ran through a qualified real worker; there is no task result for ForgeVerify to validate."
+}

@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "r60-broad-regression/v1",
+  "evidenceClass": "UNIT_AND_INTEGRATION_TESTS",
+  "capturedAt": "2026-10-01T16:23:52.000Z",
+  "status": "INTERRUPTED_INCONCLUSIVE",
+  "focusedR60Results": {
+    "accountingAuthAdmission": {
+      "status": "PASS",
+      "testFiles": 9,
+      "tests": 95
+    },
+    "gatewayFleetAndDesktop": {
+      "status": "PASS",
+      "testFiles": 10,
+      "tests": 106
+    },
+    "typescriptBuild": "PASS",
+    "workerAstAndManifestChecks": "PASS",
+    "eightBitAndWorkflowForgeVerify": {
+      "command": "node node_modules/vitest/vitest.mjs run packages/eight-bit/test packages/workflow/test",
+      "status": "PASS",
+      "testFilesPassed": 58,
+      "testsPassed": 576,
+      "skippedFiles": 1,
+      "skippedTests": 3,
+      "durationSeconds": 148.67
+    },
+    "desktopPackage": {
+      "command": "node node_modules/vitest/vitest.mjs run apps/desktop/test --maxWorkers=2",
+      "status": "PASS",
+      "testFilesPassed": 40,
+      "testsPassed": 348,
+      "durationSeconds": 15.75
+    },
+    "forgeAutoGatewayAndVerificationPaths": {
+      "command": "node node_modules/vitest/vitest.mjs run apps/desktop/test/header-account-layout.test.ts packages/server/test/forgeauto-roster.test.ts packages/server/test/free-cloud-supply.test.ts packages/server/test/free-fabric-wiring.test.ts packages/server/test/eight-bit-active-run-failover.test.ts packages/server/test/eight-bit-restart-and-exact-pin.test.ts packages/server/test/cf17-forgeverify-replan.test.ts packages/server/test/r21-autonomous-completion-binding.test.ts --maxWorkers=2",
+      "status": "PASS",
+      "testFilesPassed": 8,
+      "testsPassed": 58
+    }
+  },
+  "broadRun": {
+    "command": "node node_modules/vitest/vitest.mjs run",
+    "status": "INTERRUPTED_AFTER_WALL_CLOCK_SENSITIVE_FAILURES",
+    "completeSummaryAvailable": false,
+    "observedFailures": [
+      {
+        "file": "packages/server/test/autonomous-orchestrator.test.ts",
+        "failedTests": 1,
+        "testDurationMs": 32313,
+        "fileDurationMs": 303660
+      },
+      {
+        "file": "packages/server/test/agent-orchestrator-integration.test.ts",
+        "failedTests": 1,
+        "testDurationMs": 32506,
+        "fileDurationMs": 157521
+      },
+      {
+        "file": "packages/server/test/parallel-orchestrator-integration.test.ts",
+        "failedTests": 2,
+        "testDurationMsEach": 32300,
+        "fileDurationMs": 106991
+      },
+      {
+        "file": "packages/server/test/remote-publication.test.ts",
+        "failedTests": 1,
+        "testDurationMs": 31463,
+        "fileDurationMs": 144302
+      },
+      {
+        "file": "packages/repo-intelligence/test/fg2-efficiency.test.ts",
+        "failedTests": 1,
+        "failedTestDurationMs": 190565,
+        "fileDurationMs": 211335
+      },
+      {
+        "file": "packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts",
+        "failedTests": 1,
+        "failedTestDurationMs": 185159,
+        "fileDurationMs": 185186
+      },
+      {
+        "file": "packages/forgegreen-campaign/test/fg12d-trial-runner.test.ts",
+        "failedTests": 4,
+        "fileDurationMs": 84151
+      }
+    ],
+    "isolationCheck": {
+      "file": "packages/server/test/autonomous-orchestrator.test.ts",
+      "test": "uses repeated abstract prior outcomes to advise a later revision without changing completion authority",
+      "status": "PASS_STANDALONE",
+      "passed": 1,
+      "skipped": 21
+    },
+    "classification": "The full suite was not completed. The isolated rerun passed for one reported timeout; remaining reported failures were not isolated and are not attributed to R60."
+  },
+  "postgresHarness": {
+    "status": "NOT_RUN_LOCAL_WSL_BOOTSTRAP_FAILED",
+    "directHarnessProcessExitCode": 4294967295,
+    "renderSqlToolReadOnly": true
+  },
+  "followUpVerification": {
+    "usageApi": {
+      "command": "node node_modules/vitest/vitest.mjs run apps/cloud-api/test/cloud-api.test.ts",
+      "status": "PASS",
+      "testFilesPassed": 1,
+      "testsPassed": 8,
+      "assertionsIncludeUnauthenticated401AndPublishedFreeLimits": true
+    },
+    "correctedDesktopAllowanceAssertion": {
+      "status": "PASS",
+      "detail": "Updated the legacy 30-day wording expectation to the specified UTC calendar-month contract; all 40 desktop test files pass."
+    }
+  }
+}

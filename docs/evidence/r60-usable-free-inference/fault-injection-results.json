@@ -1,0 +1,27 @@
+{
+  "evidenceType": "CONTROL_PLANE_SIMULATION",
+  "status": "PARTIAL",
+  "tested": [
+    {
+      "fault": "first-party worker fails before generation",
+      "behavior": "mark worker unavailable and route to another ready qualified peer",
+      "result": "PASS_IN_MOCKED_FLEET_TEST"
+    },
+    {
+      "fault": "worker is draining",
+      "behavior": "exclude it from new capacity",
+      "result": "PASS_IN_MOCKED_FLEET_TEST"
+    },
+    {
+      "fault": "hosted task provider error or cancellation",
+      "behavior": "durable task terminalization releases capacity and propagates cancellation",
+      "result": "PASS_IN_LOCAL_CONTROL_PLANE_TESTS"
+    }
+  ],
+  "not_tested": [
+    "worker killed during real active generation",
+    "real request recovery with replacement physical worker",
+    "Groq, OpenRouter, or Cloudflare outage while another real permitted route continues",
+    "four-session accounting during worker failure"
+  ]
+}

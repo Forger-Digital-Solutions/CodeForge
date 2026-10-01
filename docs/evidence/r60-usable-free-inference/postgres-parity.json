@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "r60-postgres-parity/v1",
+  "evidenceClass": "LIVE_POSTGRESQL_SCHEMA_INSPECTION",
+  "capturedAt": "2026-10-01T16:05:20.000Z",
+  "status": "BLOCKED_NOT_VERIFIED",
+  "requiredMigrationVersion": 18,
+  "observedDatabase": {
+    "provider": "Render",
+    "resourceName": "codeforge-cloud",
+    "resourceId": "dpg-dafn19pt0dsc73erflh0-a",
+    "databaseName": "codeforge_cloud",
+    "postgresMajorVersion": 16,
+    "resourceStatus": "available",
+    "plan": "free",
+    "expiresAt": "2026-10-08T02:19:19.694412Z",
+    "observedCloudSchemaMigrationVersion": 9,
+    "observedTables": [
+      "cloud_schema_migrations",
+      "reservations",
+      "usage_events",
+      "usage_periods"
+    ]
+  },
+  "targetSafety": {
+    "dedicatedTestDatabaseIdentified": false,
+    "existingResourceIsNamedForCodeForgeCloud": true,
+    "activeCodeForgeCloudServiceInSameWorkspaceAndRegion": true,
+    "databaseAttachmentConfirmed": false,
+    "connectedSqlToolReadOnly": true,
+    "migrationsApplied": false,
+    "reason": "The existing Render resource is not labeled as a test database and is in the same workspace and region as an active CodeForge cloud service. The connected SQL tool enforces read-only transactions. No migration or reservation write was attempted against it."
+  },
+  "localAccess": {
+    "CODEFORGE_TEST_POSTGRES_URLConfigured": false,
+    "DATABASE_URLConfigured": false,
+    "postgresServicePresent": false,
+    "windowsPort5432Listening": false,
+    "psqlInstalled": false,
+    "repositoryHarnessAttempt": {
+      "command": "node scripts/postgres-test-harness.mjs -- node node_modules/vitest/vitest.mjs run <Postgres integration suite>",
+      "status": "FAILED_TO_START_LOCAL_WSL_POSTGRES",
+      "processExitCode": 4294967295
+    }
+  },
+  "sqliteComparison": {
+    "status": "SQLITE_PASS_POSTGRES_NOT_RUN",
+    "currentSQLiteEvidence": "usage-accounting-tests.json",
+    "sameVectorsRunAgainstPostgres": false,
+    "vectors": {
+      "utcMonthAndNoRollover": "NOT_RUN",
+      "allowanceAndTaskLimit": "NOT_RUN",
+      "reservationBeforeDispatchAndAvailableBalance": "NOT_RUN",
+      "concurrentReservationRace": "NOT_RUN",
+      "exactLimitAndOneCreditShort": "NOT_RUN",
+      "partialSettlementAndUnusedRelease": "NOT_RUN",
+      "failureAndCancellationRelease": "NOT_RUN",
+      "reservationAndSettlementIdempotency": "NOT_RUN",
+      "accountIsolationAndHistory": "NOT_RUN",
+      "authenticatedUsageApi": "NOT_RUN"
+    }
+  },
+  "nextRequiredInput": "A dedicated writable test PostgreSQL URL in CODEFORGE_TEST_POSTGRES_URL, or equivalent temporary isolated database access; do not point tests at the active CodeForge cloud resource."
+}
