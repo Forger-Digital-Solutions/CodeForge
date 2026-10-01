@@ -10,6 +10,7 @@ import {
   type ChatResponse,
   type StreamEvent,
   InMemoryProviderCatalog,
+  estimatePromptOnlyTokens,
 } from "@codeforge/providers";
 import { EventStore, createSessionPersistence, type ISessionPersistence } from "@codeforge/sessions";
 import {
@@ -912,6 +913,60 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(probeCalls).toBe(1);
     expect(provider.callCount).toBe(1);
     expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toBeUndefined();
+  });
+
+  it("R59: a serving-window ceiling bounds assembly to window-minus-overhead while the dispatch wire check uses the raw ceiling", async () => {
+    // A 5,000-token stamped serving window resolves the assembly budget to 2,600 (window
+    // minus the tool/transcript reserve). The serialized request — assembly plus the real
+    // tool surface — lands between 2,600 and 5,000. The R41 wire check must compare against
+    // the ceiling, not the reduced assembly budget: the reserve the assembly subtracted is
+    // precisely what the tools occupy.
+    const route = managedRoute("provider-a");
+    registerFleet("provider-a", "provider-a-model");
+    const fabric = makeFabric([route], [poolFor(route)]);
+    const provider = new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents());
+    catalog.register(provider);
+    const freeCloud: import("@codeforge/model-registry").FreeCloudRoutingHooks = {
+      isForgeAutoEligible: () => true,
+      canonicalIdOf: (p: string, m: string) => `${p}/${m}`,
+      sameModelAlternates: () => [],
+      recordRouteFailure: () => undefined,
+      recordRouteSuccess: () => undefined,
+      quotaRemaining: () => undefined,
+      capacityRoutingAdvice: () => ({ scoreAdjustment: 0, reasonCodes: [] }),
+      servingInputTokenCeiling: () => 5_000,
+    };
+
+    const runtime = makeRuntime("sess-serving-window", fabric, undefined, freeCloud);
+    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-serving-window", eventStore, persistence });
+    const result = await runtime.executeAgentRun({
+      runId: "run-serving-window",
+      agentId: "coder",
+      role: "coder",
+      goal: "Fix the handler dispatch logic",
+      workspaceId: "ws-serving-window",
+      workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+      roleRouting: true,
+      // Pads sys+context to the 2,600 assembly bound so the wire lands in (2600, 5000) —
+      // dispatched under the wire-ceiling check, declined under the assembly-bound check.
+      explorerEvidence: Array.from({ length: 6 }, (_, i) => ({
+        kind: "file",
+        ref: `src/module-${i}.ts`,
+        description: "handler dispatch context ".repeat(120),
+      })),
+      adapter,
+    });
+
+    expect(provider.callCount).toBe(1);
+    // The test only discriminates if the serialized request actually landed between the
+    // reduced assembly bound (5,600) and the raw serving window (8,000) — measure the real
+    // wire request with the same estimator the dispatch gate uses.
+    const wireTokens = estimatePromptOnlyTokens(provider.requests[0]!);
+    expect(wireTokens).toBeGreaterThan(5_000 - 2_400);
+    expect(wireTokens).toBeLessThanOrEqual(5_000);
+    expect(result.summary + ((result as { error?: string }).error ?? "")).not.toContain("AGENT_CONTEXT_BUDGET_EXCEEDED");
+    expect(result.status).toBe("completed");
   });
 
   it("R59: a denial resting on pending qualification kicks one recovery cycle and the same turn admits the measured route", async () => {

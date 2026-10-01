@@ -123,6 +123,36 @@ describe("CF-14 Context Assembly & Provenance", () => {
     await intel.closeWorkspace();
   });
 
+  it("[R59] a serving-window-capped window zeroes the repository slice but still assembles kernel+goal (no false capacity fault)", async () => {
+    const { root, cache } = fixture();
+    const intel = createRepositoryIntelligence({ cacheRoot: cache });
+    await intel.openWorkspace(root);
+    await intel.indexWorkspace();
+
+    const assembler = createContextAssembler(32_000);
+    // 8_000-token provider serving window minus the 2_400-token tool/transcript overhead the
+    // runtime reserves — calculateContextBudget's fixed reserves exceed the whole window, so
+    // the repository slice resolves to 0. The kernel was already admitted upstream; the run
+    // must degrade to a kernel-only plan (tools carry repo access), never fault on it.
+    const assembled = await assembler.assemble({
+      role: "coder",
+      goal: "Implement ActionHandler enhancements",
+      workspacePath: root,
+      intelligence: intel,
+      taskPlan: "1. Update ActionHandler",
+      contextWindow: 5_600,
+    });
+
+    expect(assembled.contextPrompt).toContain("Objective:");
+    expect(assembled.contextPrompt).toContain("Implementation Plan");
+    expect(assembled.progressive).toBeDefined();
+    expect(assembled.progressive!.level).toBe("L0");
+    expect(assembled.progressive!.pagesPulled).toBe(0);
+    expect(assembled.budget.repository).toBe(0);
+
+    await intel.closeWorkspace();
+  });
+
   it("bounds context strictly within budget and never dumps entire repository", async () => {
     const { root, cache } = fixture();
     // Add multiple additional large files

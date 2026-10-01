@@ -1417,12 +1417,21 @@ export class AgentRuntime {
       req.userId ?? this.userId,
       FABRIC_MODEL_ROLE[eightBitRoleForAgentRole(req.role)],
     );
+    // The serving ceiling caps the whole serialized request (sys+ctx+tools+transcript), so
+    // the assembly budget below gets the ceiling minus that overhead. The dispatch-time wire
+    // check needs the raw ceiling itself — not the reduced assembly budget — or the tool
+    // surface it legitimately carries would read as over-limit.
+    const roleOrModelBound = resolveContextCapacity({
+      requestedTokens: budget.maxContextTokens,
+      declaredModelContextWindow: routedModel?.contextWindow,
+    });
     const contextCapacity = resolveContextCapacity({
       requestedTokens: budget.maxContextTokens,
       declaredModelContextWindow: routedModel?.contextWindow,
       servingInputBudget: servingCeiling === undefined ? undefined : Math.max(0, servingCeiling - SERVING_PROMPT_OVERHEAD_TOKENS),
     });
     const resolvedMaxContextTokens = contextCapacity.maxContextTokens;
+    const dispatchWireTokenLimit = Math.min(roleOrModelBound.maxContextTokens, servingCeiling ?? roleOrModelBound.maxContextTokens);
 
     /** FG-8: directly-measured run wall-clock, used only for the sustainability receipt's timing
      * accounting. Never read by any permission/verification/completion path. */
@@ -2329,8 +2338,8 @@ export class AgentRuntime {
             // gets its measured headroom; an unprofiled one gets the role baseline; a coder
             // keeps the full 4k its patches rely on.
             const dispatchContextLimit = Math.min(
-              resolvedMaxContextTokens,
-              (activeSelection ? this.firewall.getModel(activeSelection.providerId, activeSelection.modelId)?.contextWindow : undefined) ?? resolvedMaxContextTokens,
+              dispatchWireTokenLimit,
+              (activeSelection ? this.firewall.getModel(activeSelection.providerId, activeSelection.modelId)?.contextWindow : undefined) ?? dispatchWireTokenLimit,
             );
             const dispatchPromptTokens = estimatePromptOnlyTokens({
               model: activeSelection?.modelId ?? "",

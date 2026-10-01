@@ -286,8 +286,14 @@ export class ContextAssembler {
           // structural neighbors, rather than the pre-FG-3 eager ~80%-of-budget broad grab. The
           // broad grab itself is unchanged and still available verbatim via `buildContextPack`
           // (used directly by the `repo_context` pull tool for callers that want it).
+          // The kernel was already rendered and charged upstream (contextSections[0], before
+          // any role section), but the planner's own fail-closed contract is "capacity must
+          // hold the plan's prompt" — and that prompt STARTS with the kernel. The slice handed
+          // over is therefore repository-room ON TOP of the kernel's cost, not instead of it:
+          // a serving-window-bounded budget can resolve the repository slice to 0, and the
+          // honest result is a kernel-only plan (BUDGET_EXHAUSTED_BY_KERNEL), not a faulted run.
           const capacity = resolveContextCapacity({
-            requestedTokens: Math.floor(budget.repository * 0.8),
+            requestedTokens: Math.floor(budget.repository * 0.8) + estimateTokens(contextSections[0]!) + 32,
             declaredModelContextWindow: options.modelContextWindow,
           });
           const explorerPaths = (options.explorerEvidence ?? [])

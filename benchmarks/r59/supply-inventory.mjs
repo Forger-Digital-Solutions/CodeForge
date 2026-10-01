@@ -130,7 +130,12 @@ async function main() {
   if (process.platform !== "win32") throw new Error("Live supply inventory requires the packaged Windows build");
   const providers = ["openrouter", "groq"].filter((p) => process.env[p === "groq" ? "GROQ_API_KEY" : "OPENROUTER_API_KEY"]);
   if (providers.length === 0) throw new Error("OPENROUTER_API_KEY and/or GROQ_API_KEY required (presence only)");
-  const profile = await mkdtemp(path.join(os.tmpdir(), "codeforge-r59-supply-"));
+  // --profile=<dir> reuses a persistent profile so qualification receipts accumulate
+  // across runs (a returning user keeps them); the caller then owns cleanup.
+  const profileOption = option("profile", "");
+  const profileReused = profileOption !== "";
+  const profile = profileReused ? path.resolve(profileOption) : await mkdtemp(path.join(os.tmpdir(), "codeforge-r59-supply-"));
+  if (profileReused) await mkdir(profile, { recursive: true });
   const localAppData = path.join(profile, "localappdata");
   const port = await freePort();
   const childEnv = { ...process.env, LOCALAPPDATA: localAppData };
@@ -189,7 +194,7 @@ async function main() {
       await delay(2_000);
       if (!exited) await execFile("taskkill", ["/F", "/PID", String(child.pid), "/T"], { windowsHide: true }).catch(() => {});
     }
-    await rm(profile, { recursive: true, force: true }).catch(() => {});
+    if (!profileReused) await rm(profile, { recursive: true, force: true }).catch(() => {});
   }
   await mkdir(path.dirname(output), { recursive: true });
   const result = { schema: "r59-live-supply-inventory/v1", evidenceClass: "packaged_live_provider", startedAt, finishedAt: new Date().toISOString(), providers, samples, failure };

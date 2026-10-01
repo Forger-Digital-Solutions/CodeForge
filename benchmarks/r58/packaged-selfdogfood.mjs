@@ -142,9 +142,14 @@ async function main() {
   }
   const profileRoot = path.join(root, "benchmarks", "r58", "tmp");
   await mkdir(profileRoot, { recursive: true });
-  const profile = await mkdtemp(path.join(profileRoot, "codeforge-r58-packaged-dogfood-"));
+  // --profile=<dir> reuses a persistent profile (a returning user's accumulated
+  // qualification/quota evidence) instead of a throwaway one; the caller then owns cleanup.
+  const profileOption = option("profile", "");
+  const profileReused = profileOption !== "";
+  const profile = profileReused ? path.resolve(profileOption) : await mkdtemp(path.join(profileRoot, "codeforge-r58-packaged-dogfood-"));
   const relative = path.relative(path.resolve(profileRoot), path.resolve(profile));
-  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) throw new Error("Temporary profile escaped the R58 workspace root");
+  if (!profileReused && (!relative || relative.startsWith("..") || path.isAbsolute(relative))) throw new Error("Temporary profile escaped the R58 workspace root");
+  if (profileReused) await mkdir(profile, { recursive: true });
   const localAppData = path.join(profile, "localappdata");
   const worktreesRoot = path.join(localAppData, "CodeForge", "worktrees", path.basename(workspacePath));
   const worktreeDependencyLink = path.join(worktreesRoot, "node_modules");
@@ -331,7 +336,7 @@ async function main() {
     await unlink(worktreeDependencyLink).catch(() => {});
     const resolvedProfile = path.resolve(profile);
     const profileRelative = path.relative(path.resolve(profileRoot), resolvedProfile);
-    if (profileRelative && !profileRelative.startsWith("..") && !path.isAbsolute(profileRelative)) {
+    if (!profileReused && profileRelative && !profileRelative.startsWith("..") && !path.isAbsolute(profileRelative)) {
       cleanup.profileRemoved = await rm(resolvedProfile, { recursive: true, force: true }).then(() => true, () => false);
     }
   }
