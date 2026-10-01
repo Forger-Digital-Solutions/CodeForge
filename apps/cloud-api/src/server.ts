@@ -1341,6 +1341,7 @@ export class CodeForgeCloudServer {
           requestId,
           modelId: "auto",
           taskType: "coding",
+          privacyMode: (await this.db.getAccountSettings(userId)).privacyMode,
           estimatedContextTokens: Math.max(1, Math.ceil(body.messages.reduce((total, message) => total + message.content.length, 0) / 4)),
           messages: body.messages.map((message) => ({
             role: message.role,
