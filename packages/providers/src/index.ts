@@ -449,6 +449,7 @@ export {
 export { AnthropicAdapter, type AnthropicOptions, createAnthropicAdapter } from "./anthropic.js";
 export {
   createZaiAdapter,
+  createKiloFreeDirectAdapter,
   createGroqAdapter,
   createMistralAdapter,
   createCerebrasAdapter,

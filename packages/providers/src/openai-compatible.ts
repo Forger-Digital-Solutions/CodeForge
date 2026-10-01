@@ -19,6 +19,8 @@ import { createFailClosedGeminiFreePolicyGate, type GeminiFreePolicyGate } from 
 export interface OpenAICompatibleConfig {
   providerId: string;
   baseUrl: string;
+  /** Only the pinned Kilo anonymous Free transport may omit credentials. */
+  anonymousFree?: boolean;
   credentialStore?: CredentialStore;
   /** Direct API key (overrides the credential store when set). */
   apiKey?: string;
@@ -72,6 +74,13 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
   private readonly geminiServiceTier: "UNPAID" | "PAID";
 
   constructor(cfg: OpenAICompatibleConfig) {
+    if (cfg.anonymousFree && (cfg.providerId !== "kilo-free-direct"
+      || cfg.baseUrl !== "https://api.kilo.ai/api/gateway"
+      || cfg.apiKey !== undefined || cfg.defaultHeaders !== undefined
+      || cfg.authHeader !== undefined || cfg.resolveBaseUrl !== undefined
+      || cfg.modelsPath !== undefined || cfg.requestBodyExtras !== undefined)) {
+      throw new Error("ANONYMOUS_FREE_TRANSPORT_NOT_ALLOWLISTED");
+    }
     // Match OpenRouterAdapter: absent an explicit store, resolve `<PROVIDER>_API_KEY` from the
     // environment — otherwise factory-built adapters fail with MISSING_API_KEY even when the
     // documented env var is set. `credentialStore` may arrive explicitly undefined via the
@@ -95,6 +104,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
   }
 
   private getApiKey(): string {
+    if (this.cfg.anonymousFree) return "";
     const key = this.cfg.apiKey ?? this.cfg.credentialStore?.get(this.providerId);
     if (!key) {
       throw new ProviderError(
@@ -106,8 +116,16 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
   }
 
   private headers(key: string): Record<string, string> {
+    if (this.cfg.anonymousFree) return { "Content-Type": "application/json" };
     const auth = this.cfg.authHeader ? this.cfg.authHeader(key) : { Authorization: `Bearer ${key}` };
     return { "Content-Type": "application/json", ...this.cfg.defaultHeaders, ...auth };
+  }
+
+  private assertAnonymousFreeModel(model: string): void {
+    if (!this.cfg.anonymousFree) return;
+    if (model !== "kilo-auto/free" && !/^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*:free$/.test(model)) {
+      throw new ProviderError("Kilo anonymous transport accepts documented Free model IDs only", "MODEL_NOT_ALLOWED");
+    }
   }
 
   async listModels(): Promise<ProviderModel[]> {
@@ -117,7 +135,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     let res: Response;
     try {
-      res = await this.fetchFn(url, { headers: this.headers(key), signal: controller.signal });
+      res = await this.fetchFn(url, { headers: this.headers(key), signal: controller.signal, ...(this.cfg.anonymousFree ? { redirect: "manual" as const } : {}) });
     } catch (e) {
       if (e instanceof Error && e.name === "AbortError") {
         throw new ProviderError(`${this.providerId} model discovery timed out`, "TIMEOUT", true);
@@ -138,13 +156,14 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     const out: ProviderModel[] = [];
     for (const raw of list) {
       const m = mapper(raw);
-      if (m) out.push(m);
+      if (m && (!this.cfg.anonymousFree || m.modelId === "kilo-auto/free" || /^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*:free$/.test(m.modelId))) out.push(m);
     }
     return out;
   }
 
   async chat(req: ChatRequest): Promise<ChatResponse> {
     this.assertGeminiRouteAllowed();
+    this.assertAnonymousFreeModel(req.model);
     const key = this.getApiKey();
     const reservation = await this.reserveCloudflare(req);
     let usage: ChatResponse["usage"];
@@ -156,6 +175,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         headers: this.headers(key),
         body: JSON.stringify(this.toRequest(req, false)),
         signal: controller.signal,
+        ...(this.cfg.anonymousFree ? { redirect: "manual" as const } : {}),
       });
       this.observe(res, req.model);
       if (!res.ok) throw this.handleError(res.status, await safeText(res), res);
@@ -181,6 +201,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
 
   async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
     this.assertGeminiRouteAllowed();
+    this.assertAnonymousFreeModel(req.model);
     const key = this.getApiKey();
     const reservation = await this.reserveCloudflare(req);
     let usage: ChatResponse["usage"];
@@ -197,6 +218,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         headers: this.headers(key),
         body: JSON.stringify(this.toRequest(req, true)),
         signal: controller.signal,
+        ...(this.cfg.anonymousFree ? { redirect: "manual" as const } : {}),
       });
       this.observe(res, req.model);
       if (!res.ok) throw this.handleError(res.status, await safeText(res), res);
@@ -399,7 +421,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
-      const res = await this.fetchFn(`${this.baseUrl()}${this.cfg.modelsPath ?? "/models"}`, { headers: this.headers(key), signal: controller.signal });
+      const res = await this.fetchFn(`${this.baseUrl()}${this.cfg.modelsPath ?? "/models"}`, { headers: this.headers(key), signal: controller.signal, ...(this.cfg.anonymousFree ? { redirect: "manual" as const } : {}) });
       const latencyMs = Date.now() - start;
       if (res.ok) return { status: "available", latencyMs };
       if (res.status === 401 || res.status === 403) return { status: "auth_required", latencyMs };

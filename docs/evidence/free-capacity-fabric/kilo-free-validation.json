@@ -1,0 +1,57 @@
+{
+  "checkedAt": "2026-10-01T20:05:00Z",
+  "officialDocuments": {
+    "api": "https://kilo.ai/docs/gateway/api-reference",
+    "authentication": "https://kilo.ai/docs/gateway/authentication",
+    "catalog": "https://kilo.ai/docs/gateway/models-and-providers",
+    "pricingAndLimits": "https://kilo.ai/docs/gateway/usage-and-billing",
+    "privacy": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+    "terms": "https://kilo.ai/terms"
+  },
+  "anonymousRequest": {
+    "httpStatus": 200,
+    "model": "kilo-auto/free",
+    "resolvedModel": "stealth/space-bunny-alpha",
+    "usageCostUsd": 0,
+    "upstreamInferenceCostUsd": 0,
+    "isByok": false
+  },
+  "codeForgeAdapterRequest": {
+    "status": "PASS",
+    "response": "READY",
+    "inputTokens": 161,
+    "outputTokens": 2
+  },
+  "codeForgeAdapterStream": {
+    "status": "PASS",
+    "toolName": "record_result",
+    "toolArguments": {
+      "value": 7
+    },
+    "inputTokens": 398,
+    "outputTokens": 27
+  },
+  "liveCatalog": {
+    "autoFreeListed": true,
+    "autoFreePromptPrice": 0,
+    "autoFreeCompletionPrice": 0
+  },
+  "privacyAdmission": "PUBLIC_CODE_ONLY",
+  "fullCodingTask": {
+    "status": "completed",
+    "runId": "run-638de4fc-e276-4921-95f1-f707be31fdc3",
+    "receipt": "kilo-autonomous-live.json"
+  },
+  "qualification": {
+    "state": "QUALIFIED",
+    "roles": {
+      "CODER": "QUALIFIED",
+      "TOOL_AGENT": "QUALIFIED",
+      "ANALYST": "QUALIFIED",
+      "EXPLORER": "PROBATION",
+      "PLANNER": "QUALIFIED",
+      "REVIEWER": "QUALIFIED"
+    },
+    "receipt": "kilo-live-qualification.json"
+  }
+}

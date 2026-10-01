@@ -1,0 +1,44 @@
+{
+  "startedAt": "2026-10-01T22:19:25.202Z",
+  "finishedAt": "2026-10-01T22:22:05.758Z",
+  "entrypoint": "benchmarks/free-capacity-fabric/kilo-direct-autonomous.mjs",
+  "providerId": "kilo-free-direct",
+  "logicalModel": "kilo-auto/free",
+  "quotaDomainType": "PUBLIC_IP",
+  "egressMode": "CLIENT_DIRECT",
+  "status": "completed",
+  "changedFiles": [
+    "math.ts"
+  ],
+  "review": true,
+  "testsPassed": 3,
+  "forgeVerify": [
+    {
+      "recordType": "plan"
+    },
+    {
+      "recordType": "attempt",
+      "status": "passed"
+    },
+    {
+      "recordType": "evidence",
+      "status": "passed"
+    },
+    {
+      "recordType": "coverage_receipt",
+      "status": "SUFFICIENT"
+    }
+  ],
+  "completion": {
+    "outcome": "completed",
+    "blockers": [],
+    "advisories": [],
+    "rationale": "All required completion checks passed."
+  },
+  "integration": "integrated",
+  "endUserInferenceCostUsd": 0,
+  "codeForgeMarginalInferenceCostUsd": 0,
+  "costEvidence": "Pinned anonymous transport; live zero-price catalog; official Kilo billing policy; earlier raw response usage.cost=0. No credential or paid fallback.",
+  "receipt": "kilo-autonomous-live.json",
+  "actualPhysicalSupplyDomainsProven": 1
+}

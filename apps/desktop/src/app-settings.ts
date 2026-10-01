@@ -13,6 +13,7 @@
  * no node/electron imports — pure schema + pure functions over plain data.
  */
 import { z } from "zod";
+import type { RouteDataContext } from "@codeforge/forge-zero";
 
 export const APP_SETTINGS_KEY = "codeforge:app-settings";
 export const CLOSE_BEHAVIOR_KEY = "codeforge:close-behavior";
@@ -78,6 +79,9 @@ const PrivacySettingsSchema = z.object({
    * holds it in memory only); the main process re-applies it after the server starts.
    */
   routingMode: PrivacyRoutingModeSchema.default("STANDARD"),
+  /** User attests the active repository is public before provider Free routes with broader data use may receive it. */
+  freeCodeSharing: z.enum(["PRIVATE", "PUBLIC_AND_CONSENTED"]).default("PRIVATE"),
+  freeCodeSharingWorkspace: z.string().max(1024).optional(),
 });
 
 const WorkspaceSettingsSchema = z.object({
@@ -120,6 +124,13 @@ export const AppSettingsPatchSchema = z.object({
   workspace: WorkspaceSettingsSchema.partial().optional(),
 }).strict();
 export type AppSettingsPatch = z.infer<typeof AppSettingsPatchSchema>;
+
+export function freeCodeContextForWorkspace(settings: AppSettings, workspacePath: string | null): RouteDataContext {
+  return settings.privacy.freeCodeSharing === "PUBLIC_AND_CONSENTED" && workspacePath !== null
+    && settings.privacy.freeCodeSharingWorkspace === workspacePath
+    ? { dataClass: "PUBLIC_CODE", userConsented: true }
+    : { dataClass: "PRIVATE_CODE" };
+}
 
 /**
  * Parse an unknown stored value into full settings. Corrupt/unknown shapes degrade field-by-field

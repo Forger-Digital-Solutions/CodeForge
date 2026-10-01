@@ -3,6 +3,7 @@ import { ForgeZero, CapacityReservationLedger, type CapacityRoute, type Capacity
 import { createSessionPersistence, type ISessionPersistence } from "@codeforge/sessions";
 import { EightBitRuntime } from "../src/runtime.js";
 import { createFreeFabric } from "../src/free-fabric.js";
+import { EightBitRouteHealthAuthority } from "../src/route-health-authority.js";
 import { makeModel } from "./fixtures.js";
 
 const OBSERVED_AT = new Date(Date.now() - 60_000).toISOString();
@@ -50,6 +51,23 @@ beforeEach(async () => {
 });
 
 describe("EightBitRuntime — end-to-end facade", () => {
+  it("rotates between same-model independent pools without cooling the healthy pool or global model", async () => {
+    fw.register(makeModel({ providerId: "provider-a", modelId: "provider-a-model" }));
+    const primary = fabricRoute("provider-a", { routeId: "account-a", capacityPoolId: "account-a", qualityScore: 90 });
+    const standby = { ...primary, routeId: "account-b", capacityPoolId: "account-b", qualityScore: 70 };
+    const health = new EightBitRouteHealthAuthority();
+    const fabric = createFreeFabric({ managedRoutes: () => [primary, standby], health, reservations: new CapacityReservationLedger({ routes: [] }) });
+    const fabricRuntime = new EightBitRuntime({ firewall: fw, persistence, freeFabric: fabric, routeHealth: health });
+    const initial = await fabricRuntime.selectInitialRoute({ sessionId: "s1", role: "CODER" }, { policyMode: "adaptive", hasAdapter: () => true }, { runId: "domain-run" });
+    expect(initial.fabric?.selected?.capacityPoolId).toBe("account-a");
+    const outcome = await fabricRuntime.handleTurnFailure({ sessionId: "s1", turnId: "domain-turn", runId: "domain-run", role: "CODER", policyMode: "adaptive", current: { providerId: "provider-a", modelId: "provider-a-model" }, currentCapacityPoolId: "account-a", preferIndependentFromPoolId: "account-a", isExactPin: false, hasAdapter: () => true, error: Object.assign(new Error("429 rate limited"), { status: 429, retryAfter: 60 }) });
+    expect(outcome.action).toBe("rotate");
+    expect(outcome.capacityPoolId).toBe("account-b");
+    expect(outcome.receipt?.evidence).toMatchObject({ previousCapacityPoolId: "account-a", capacityPoolId: "account-b" });
+    expect(health.assess("provider-a", "provider-a-model", { quotaDomainId: "account-a" }).hardExclude).toBe(true);
+    expect(health.assess("provider-a", "provider-a-model", { quotaDomainId: "account-b" }).hardExclude).toBe(false);
+    expect(fw.eligibleModels().some((model) => model.modelId === "provider-a-model")).toBe(true);
+  });
   it("[PASS] initial selection persists a route binding and a decision receipt", async () => {
     fw.register(makeModel({ modelId: "primary" }));
     fw.register(makeModel({ modelId: "secondary" }));

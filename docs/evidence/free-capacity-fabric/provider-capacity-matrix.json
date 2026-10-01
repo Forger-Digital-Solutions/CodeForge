@@ -1,0 +1,63 @@
+{
+  "checkedAt": "2026-10-01T20:05:00Z",
+  "routes": [
+    {
+      "provider": "Kilo Gateway",
+      "route": "kilo-auto/free",
+      "state": "LIVE_QUALIFIED_AUTONOMOUS_COMPLETION_PROVEN",
+      "supplyClass": "PACKAGED_FREE_DIRECT",
+      "quotaDomainType": "PUBLIC_IP",
+      "egressMode": "CLIENT_DIRECT",
+      "authMode": "NONE",
+      "documentedLimit": "200 free-model requests/hour/IP; NAT users share it",
+      "endUserCostUsd": 0,
+      "codeForgeMarginalInferenceCostUsd": 0,
+      "privacy": "PUBLIC_CODE_ONLY",
+      "trainingUse": "YES_OR_PROVIDER_DEPENDENT",
+      "sources": [
+        "https://kilo.ai/docs/gateway/authentication",
+        "https://kilo.ai/docs/gateway/usage-and-billing",
+        "https://kilo.ai/docs/gateway/models-and-providers",
+        "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+        "https://kilo.ai/terms"
+      ],
+      "qualificationReceipt": "kilo-live-qualification.json",
+      "completionReceipt": "kilo-autonomous-live.json"
+    },
+    {
+      "provider": "OpenCode Zen",
+      "state": "REFERENCE_ONLY",
+      "quotaDomainType": "PROVIDER_ACCOUNT",
+      "egressMode": "USER_DELEGATED",
+      "reason": "Zen requires its own login/API key; limited-time free models are a sponsorship pattern, not zero-setup CodeForge supply.",
+      "source": "https://opencode.ai/docs/en/zen/"
+    },
+    {
+      "provider": "Gemini Developer API",
+      "state": "USER_ENTITLEMENT_CANDIDATE_NOT_ZERO_SETUP",
+      "quotaDomainType": "PROVIDER_PROJECT",
+      "reason": "Free tier requires a user's project and sanctioned key; quotas are per project, and free-tier data may be used to improve products.",
+      "sources": [
+        "https://ai.google.dev/gemini-api/docs/rate-limits",
+        "https://ai.google.dev/gemini-api/docs/pricing"
+      ]
+    },
+    {
+      "provider": "GitHub Copilot Free",
+      "state": "SANCTIONED_USER_ENTITLEMENT_CANDIDATE_NOT_ADMITTED",
+      "quotaDomainType": "USER_ACCOUNT",
+      "reason": "Official Copilot SDK exposes authenticated account quota and model billing. Free-only eligibility and overage hard stop must be proven per account; existing managed relay terms remain gated, and no new integration was added.",
+      "source": "https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/usage-and-billing"
+    },
+    {
+      "provider": "Cline public API",
+      "state": "OFFICIAL_API_CANDIDATE_NOT_ADMITTED",
+      "quotaDomainType": "UNKNOWN",
+      "reason": "Public OpenAI-compatible API and Free model example documented, but requires a user account/API key. Actual quota scope, privacy, commercial terms and no-paid-fallback proof were not admitted in this round.",
+      "sources": [
+        "https://github.com/cline/cline/blob/main/docs/api/getting-started.mdx",
+        "https://github.com/cline/cline/blob/main/docs/api/models.mdx"
+      ]
+    }
+  ]
+}

@@ -2453,9 +2453,10 @@ export class AgentRuntime {
                   inputTokens: response.usage.inputTokens,
                   outputTokens: response.usage.outputTokens,
                   correlationId: req.runId,
+                  quotaDomainId: servedPoolId,
                 });
                 this.observeGovernorPressure(activeSelection.providerId, activeSelection.modelId, req.runId);
-                this.freeCloud?.recordRouteSuccess(activeSelection.providerId, activeSelection.modelId);
+                this.freeCloud?.recordRouteSuccess(activeSelection.providerId, activeSelection.modelId, servedPoolId);
               } else {
                 // R41: an empty or cap-truncated payload is not provider-outage evidence —
                 // a call_failure would poison availability and churn quota on a route that
@@ -2624,6 +2625,7 @@ export class AgentRuntime {
               // The pool that served this failed call — lets the fabric re-decide prefer an
               // independent pool; stays undefined when admission never recorded one.
               preferIndependentFromPoolId: servedPoolId,
+              currentCapacityPoolId: servedPoolId,
               isExactPin: pinned,
               pinMode: pinned ? "route" : "auto",
               sameModelAlternates: pinned ? [] : this.freeCloud?.sameModelAlternates(failing.providerId, failing.modelId),
@@ -2682,7 +2684,7 @@ export class AgentRuntime {
             if (outcome.action !== "retry_same" && outcome.action !== "surface") {
               const retryAfter = (err as { retryAfter?: unknown }).retryAfter;
               const retryAfterMs = typeof retryAfter === "number" ? Math.max(0, retryAfter - Date.now()) : undefined;
-              this.freeCloud?.recordRouteFailure(failing.providerId, failing.modelId, outcome.reason, retryAfterMs);
+              this.freeCloud?.recordRouteFailure(failing.providerId, failing.modelId, outcome.reason, retryAfterMs, servedPoolId);
             }
             if (outcome.action === "retry_same" || outcome.action === "rotate") {
               forgeGreenR0Telemetry.recordRetry(outcome.reason);
@@ -2945,6 +2947,8 @@ export class AgentRuntime {
             ...(turnResponse ? {
               servedProviderId: turnResponse.providerId,
               servedModelId: turnResponse.modelId,
+              ...(turnResponse.servedModel ? { physicalModelId: turnResponse.servedModel } : {}),
+              ...(servedPoolId ? { quotaDomainId: servedPoolId } : {}),
               usageSource: turnResponse.usageSource,
               inputTokens: turnResponse.usage.inputTokens,
               outputTokens: turnResponse.usage.outputTokens,
@@ -5731,9 +5735,10 @@ export class AgentRuntime {
           inputTokens: _usage?.inputTokens,
           outputTokens: _usage?.outputTokens,
           correlationId: turnId,
+          quotaDomainId: okState.capacityPoolId,
         });
         this.observeGovernorPressure(okState.providerId, okState.modelId, turnId);
-        this.freeCloud?.recordRouteSuccess(okState.providerId, okState.modelId);
+        this.freeCloud?.recordRouteSuccess(okState.providerId, okState.modelId, okState.capacityPoolId);
       }
     }
 
@@ -6227,6 +6232,7 @@ export class AgentRuntime {
       // The pool the interactive turn's admission recorded — the fabric re-decide prefers an
       // independent pool after a transport failure; undefined when the route never held one.
       preferIndependentFromPoolId: state.capacityPoolId,
+      currentCapacityPoolId: state.capacityPoolId,
       isExactPin,
       pinMode,
       sameModelAlternates,
@@ -6285,7 +6291,7 @@ export class AgentRuntime {
     if (outcome.action !== "retry_same" && outcome.action !== "surface") {
       const retryAfter = (error as { retryAfter?: unknown })?.retryAfter;
       const retryAfterMs = typeof retryAfter === "number" ? Math.max(0, retryAfter - Date.now()) : undefined;
-      this.freeCloud?.recordRouteFailure(state.providerId, state.modelId, outcome.reason, retryAfterMs);
+      this.freeCloud?.recordRouteFailure(state.providerId, state.modelId, outcome.reason, retryAfterMs, state.capacityPoolId);
     }
 
     if (outcome.action === "retry_same") {

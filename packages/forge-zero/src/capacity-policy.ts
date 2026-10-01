@@ -28,7 +28,7 @@ export const DEFAULT_PRIVATE_CODE_CONTEXT: RouteDataContext = { dataClass: "PRIV
 
 export function isDataPolicyEligible(profile: DataPolicyProfile, context: RouteDataContext = DEFAULT_PRIVATE_CODE_CONTEXT): boolean {
   if (profile === "DISALLOWED") return false;
-  if (context.dataClass === "PRIVATE_CODE") return profile === "PRIVATE_CODE_ALLOWED";
+  if (context.dataClass === "PRIVATE_CODE") return profile === "PRIVATE_CODE_ALLOWED" || (profile === "USER_CONSENT_REQUIRED" && context.userConsented === true);
   if (context.dataClass === "PUBLIC_CODE" || context.dataClass === "SYNTHETIC") {
     return profile === "PRIVATE_CODE_ALLOWED" || profile === "PUBLIC_CODE_ONLY" || (profile === "USER_CONSENT_REQUIRED" && context.userConsented === true);
   }
@@ -36,6 +36,10 @@ export function isDataPolicyEligible(profile: DataPolicyProfile, context: RouteD
 }
 
 function supplyEligible(route: CapacityRoute, policy: FreeCapacityPolicy): boolean {
+  if (route.supplyClass === "PACKAGED_FREE_PROVIDER_FUNDED") return route.capacityPoolScope === "SHARED_OWNER_POOL";
+  if (route.supplyClass === "PACKAGED_FREE_DIRECT") return route.capacityPoolScope === "PER_USER_POOL";
+  if (route.supplyClass === "PACKAGED_FREE_SPONSORED") return policy.allowSponsoredFree && route.capacityPoolScope === "SHARED_OWNER_POOL";
+  if (route.supplyClass === "USER_ENTITLED_FREE") return policy.allowUserConnectedFree && route.capacityPoolScope === "PER_USER_POOL" && route.freeOnlyAdmissionProven === true;
   if (route.supplyClass === "PURE_MANAGED_FREE") return route.capacityPoolScope === "SHARED_OWNER_POOL";
   if (route.supplyClass === "USER_CONNECTED_FREE") return policy.allowUserConnectedFree && route.capacityPoolScope === "PER_USER_POOL";
   if (route.supplyClass === "DISTRIBUTED_USER_FREE") return policy.allowDistributedUserFree && route.capacityPoolScope === "PER_USER_POOL";
@@ -62,9 +66,29 @@ export function freeRouteExclusionReason(
   policy: FreeCapacityPolicy = DEFAULT_FREE_CAPACITY_POLICY,
   dataContext: RouteDataContext = DEFAULT_PRIVATE_CODE_CONTEXT,
 ): string | undefined {
+  const newSupply = route.supplyClass === "PACKAGED_FREE_PROVIDER_FUNDED" || route.supplyClass === "PACKAGED_FREE_DIRECT"
+    || route.supplyClass === "PACKAGED_FREE_SPONSORED" || route.supplyClass === "USER_ENTITLED_FREE";
+  if (newSupply) {
+    if (route.marginalCostToCodeForge !== 0) return "CODEFORGE_MARGINAL_COST_NOT_ZERO";
+    if (route.quotaDomainType === undefined || route.quotaDomainType === "UNKNOWN" || !route.quotaDomainId) return "QUOTA_DOMAIN_UNVERIFIED";
+    if (route.egressMode === undefined) return "EGRESS_MODE_UNVERIFIED";
+    if (route.supplyClass === "PACKAGED_FREE_DIRECT" && (route.egressMode !== "CLIENT_DIRECT" || route.quotaDomainType !== "PUBLIC_IP")) return "DIRECT_ROUTE_SCOPE_INVALID";
+    if (route.freePrivacyClass === undefined || route.freePrivacyClass === "UNKNOWN" || route.trainingUse === undefined || route.trainingUse === "UNKNOWN") return "PRIVACY_UNVERIFIED";
+    if (route.freePrivacyClass === "PRIVATE_SAFE" && route.trainingUse !== "NO") return "PRIVACY_EVIDENCE_INCONSISTENT";
+    if (route.freePrivacyClass !== "PRIVATE_SAFE" && dataContext.dataClass === "PRIVATE_CODE" && dataContext.userConsented !== true) return "PRIVATE_CODE_CONSENT_REQUIRED";
+    const receipt = route.admissionReceipt;
+    if (!receipt || !receipt.sourceDocumentation || !receipt.termsEvidence || !receipt.priceEvidence || !receipt.privacyEvidence || !receipt.qualificationAt) return "ADMISSION_RECEIPT_MISSING";
+    const now = Date.now();
+    if (!Number.isFinite(Date.parse(receipt.verifiedAt)) || Date.parse(receipt.verifiedAt) > now
+      || !Number.isFinite(Date.parse(receipt.qualificationAt)) || Date.parse(receipt.qualificationAt) > now
+      || !Number.isFinite(Date.parse(receipt.recheckAt)) || Date.parse(receipt.recheckAt) <= now) return "ADMISSION_EVIDENCE_STALE";
+    if (route.startsAt && (!Number.isFinite(Date.parse(route.startsAt)) || Date.parse(route.startsAt) > now)) return "ROUTE_NOT_STARTED";
+    if (route.expiresAt && (!Number.isFinite(Date.parse(route.expiresAt)) || Date.parse(route.expiresAt) <= now)) return "ROUTE_EXPIRED";
+  }
+  if (route.supplyClass === "PROMOTIONAL_CODEFORGE_FUNDED" || route.supplyClass === "CODEFORGE_PAID" || route.supplyClass === "BYOK_PAID") return "PAID_OR_PROMOTIONAL_NOT_PACKAGED_FREE";
   if (!route.enabled) return "DISABLED";
   if (!route.healthy) return "UNHEALTHY";
-  if (!route.explicitZeroPrice && !(route.supplyClass === "USER_CONNECTED_FREE" && route.freeOnlyAdmissionProven === true)) return "PRICE_NOT_EXPLICITLY_ZERO";
+  if (!route.explicitZeroPrice && !((route.supplyClass === "USER_CONNECTED_FREE" || route.supplyClass === "USER_ENTITLED_FREE") && route.freeOnlyAdmissionProven === true)) return "PRICE_NOT_EXPLICITLY_ZERO";
   if (!route.paidFallbackDisabled) return "PAID_FALLBACK_NOT_DISABLED";
   if (!route.managedMultiUserAllowed) return "MANAGED_MULTI_USER_TERMS_NOT_CLEARED";
   if (route.lifecycle !== "APPROVED") return `LIFECYCLE_${route.lifecycle}`;
@@ -88,5 +112,5 @@ export function freeRouteExclusionReason(
 export function supplyClassIsZeroCash(source: SupplyClass): boolean {
   // SPONSORED_FREE is deliberately absent: a sponsor pays real money upstream, so the class is
   // $0 to the user but not zero-cash. Eligibility is governed by allowSponsoredFree instead.
-  return source === "PURE_MANAGED_FREE" || source === "USER_CONNECTED_FREE" || source === "DISTRIBUTED_USER_FREE" || source === "DEPOSIT_UNLOCKED_FREE" || source === "PROMOTIONAL_FREE" || source === "OWNER_DEV_FREE";
+  return source === "PACKAGED_FREE_PROVIDER_FUNDED" || source === "PACKAGED_FREE_DIRECT" || source === "USER_ENTITLED_FREE" || source === "PACKAGED_FREE_SPONSORED" || source === "PURE_MANAGED_FREE" || source === "USER_CONNECTED_FREE" || source === "DISTRIBUTED_USER_FREE" || source === "DEPOSIT_UNLOCKED_FREE" || source === "PROMOTIONAL_FREE" || source === "OWNER_DEV_FREE";
 }

@@ -71,6 +71,22 @@ function userRoute(identity: string, overrides: Partial<CapacityRoute> = {}): Ca
   };
 }
 
+function kiloRoute(identity: string, remaining: number): CapacityRoute {
+  return userRoute(identity, {
+    routeId: `kilo-${identity}`, providerId: "kilo-free-direct", modelId: "kilo-auto/free",
+    supplyClass: "PACKAGED_FREE_DIRECT", capacityPoolId: `kilo:ip:${identity}`,
+    capacityScope: "SOURCE_IP", quotaDomainType: "PUBLIC_IP", quotaDomainId: `kilo:ip:${identity}`,
+    egressMode: "CLIENT_DIRECT", marginalCostToCodeForge: 0, freePrivacyClass: "DATA_COLLECTION_ALLOWED", trainingUse: "YES",
+    dataPolicyProfile: "PUBLIC_CODE_ONLY", explicitZeroPrice: true, qualityScore: 60,
+    admissionReceipt: {
+      sourceDocumentation: "https://kilo.ai/docs/gateway/models-and-providers", termsEvidence: "https://kilo.ai/terms",
+      priceEvidence: "https://kilo.ai/docs/gateway/usage-and-billing", privacyEvidence: "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      verifiedAt: new Date().toISOString(), recheckAt: new Date(Date.now() + 86_400_000).toISOString(), qualificationAt: new Date().toISOString(),
+    },
+    windows: [quotaWindow({ scope: "SOURCE_IP", remaining })],
+  });
+}
+
 function poolFor(route: CapacityRoute, overrides: Partial<ProviderCapacityPool> = {}): ProviderCapacityPool {
   return {
     poolId: route.capacityPoolId,
@@ -102,6 +118,24 @@ function saturate(authority: EightBitRouteHealthAuthority, route: CapacityRoute,
 }
 
 describe("FreeFabric — supply composition + fair admission", () => {
+  it("prefers isolated direct Free and fails over when that user's IP domain exhausts", () => {
+    const c = clock();
+    const shared = managedRoute("shared");
+    const direct = kiloRoute("alicehash", 10);
+    const fabric = createFreeFabric({
+      managedRoutes: () => [shared],
+      userSources: [{ routesForUser: (userId) => userId === "alice" ? [direct] : [kiloRoute("bobhash", 10)], poolsForUser: () => [] }],
+      reservations: new CapacityReservationLedger({ routes: [], now: c.now }), now: c.now,
+    });
+    const dataContext = { dataClass: "PUBLIC_CODE" as const, userConsented: true };
+    expect(fabric.decide({ requestId: "a1", userId: "alice", userIdentities: ["alicehash"], role: "CODER", dataContext }).selected?.routeId).toBe("kilo-alicehash");
+    direct.windows = [quotaWindow({ scope: "SOURCE_IP", remaining: 0 })];
+    const failedOver = fabric.decide({ requestId: "a2", userId: "alice", userIdentities: ["alicehash"], role: "CODER", dataContext });
+    expect(failedOver.selected?.routeId).toBe("shared");
+    expect(failedOver.explanation.candidates.find((r) => r.routeId === "kilo-alicehash")?.status).toBe("CAPACITY_DENIED");
+    expect(fabric.decide({ requestId: "b1", userId: "bob", userIdentities: ["bobhash"], role: "CODER", dataContext }).selected?.routeId).toBe("kilo-bobhash");
+    expect(fabric.decide({ requestId: "a3", userId: "alice", userIdentities: ["alicehash"], role: "CODER" }).selected?.routeId).toBe("shared");
+  });
   it("admits shared managed capacity first and conserves the user's own entitlement", () => {
     const c = clock();
     const shared = managedRoute("shared");

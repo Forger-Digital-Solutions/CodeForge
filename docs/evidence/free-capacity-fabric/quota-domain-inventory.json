@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-01T22:38:46.225Z",
+  "registrationPopulationCeiling": null,
+  "liveNewDomains": [
+    {
+      "providerId": "kilo-free-direct",
+      "logicalModel": "kilo-auto/free",
+      "type": "PUBLIC_IP",
+      "egress": "CLIENT_DIRECT",
+      "ownership": "installed user host",
+      "documentedRequestsPerHour": 200,
+      "measuredRemainingRequests": null,
+      "physicalDomain": "Provider determines actual public egress IP; users behind one NAT share it",
+      "probeReservationRequests": 1,
+      "totalInferenceIsUnlimited": false
+    }
+  ],
+  "simulationOnlyDomains": [
+    "test:fault-pool"
+  ],
+  "liveSponsoredGrants": []
+}

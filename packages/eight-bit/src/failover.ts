@@ -38,6 +38,7 @@ export interface FailoverRequest {
   runId?: string;
   agentId?: string;
   current: RouteKey;
+  currentCapacityPoolId?: string;
   /** Legacy: true = exact route pin (no automatic replacement). Superseded by `pinMode`. */
   isExactPin: boolean;
   /**
@@ -93,7 +94,7 @@ export interface FailoverRequest {
    * identifies the admitted replacement's physical quota pool so callers can keep pool
    * identity truthful across a migration.
    */
-  fabricReplacement?: (exclude: RouteKey) => { route: RouteKey; reasonCodes: string[]; capacityPoolId?: string } | undefined;
+  fabricReplacement?: (exclude: RouteKey) => { route: RouteKey; reasonCodes: string[]; capacityPoolId?: string; evidence?: Record<string, string | number | boolean> } | undefined;
   /**
    * The physical capacity pool that served the failed call. Forwarded into the fabric re-decide
    * so an auto-mode rotation prefers a different pool — retrying the same pool after a
@@ -181,7 +182,7 @@ export class EightBitFailoverCoordinator {
     }
     // The bounded wait is the cooldown: the route (and ForgeZero's provider projection) must be
     // eligible again by the time the retry issues its next model call.
-    this.health.shortenCooldown(req.current.providerId, req.current.modelId, now + waitMs);
+    this.health.shortenCooldown(req.current.providerId, req.current.modelId, now + waitMs, req.currentCapacityPoolId);
     const receipt = this.buildReceipt(req, "COOLDOWN", reasonCodes);
     receipt.evidence = { ...receipt.evidence, waitMs, consecutiveFailures };
     await this.store.recordReceipt(receipt);
@@ -199,6 +200,7 @@ export class EightBitFailoverCoordinator {
     const classified = classifyProviderFailure(errorMessage);
     const health = this.health.recordFailure(req.current.providerId, req.current.modelId, reason, {
       scope: classified?.scope,
+      quotaDomainId: req.currentCapacityPoolId,
       ...(classified?.retryAfter !== undefined && Number.isFinite(classified.retryAfter) ? { cooldownUntil: classified.retryAfter } : {}),
     });
     const policy = this.health.policyFor(reason);
@@ -279,6 +281,7 @@ export class EightBitFailoverCoordinator {
         return { action: "no_replacement", reason, receipt };
       }
       const receipt = this.buildReceipt(req, "ROTATE", [reason, "FABRIC_ADMITTED_REPLACEMENT", ...replacement.reasonCodes], replacement.route);
+      receipt.evidence = { ...replacement.evidence, ...(req.currentCapacityPoolId ? { previousCapacityPoolId: req.currentCapacityPoolId } : {}) };
       await this.store.recordReceipt(receipt);
       return { action: "rotate", reason, replacement: replacement.route, ...(replacement.capacityPoolId ? { capacityPoolId: replacement.capacityPoolId } : {}), receipt };
     }

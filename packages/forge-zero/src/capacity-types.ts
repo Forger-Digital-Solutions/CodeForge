@@ -7,6 +7,13 @@ import type { FreeCapacityPolicy } from "./capacity-policy.js";
  * same product capacity as a recurring $0 provider allowance.
  */
 export type SupplyClass =
+  | "PACKAGED_FREE_PROVIDER_FUNDED"
+  | "PACKAGED_FREE_SPONSORED"
+  | "PACKAGED_FREE_DIRECT"
+  | "USER_ENTITLED_FREE"
+  | "PROMOTIONAL_CODEFORGE_FUNDED"
+  | "CODEFORGE_PAID"
+  | "BYOK_PAID"
   | "PURE_MANAGED_FREE"
   | "USER_CONNECTED_FREE"
   | "DISTRIBUTED_USER_FREE"
@@ -38,6 +45,21 @@ export type QuotaPeriod =
 
 /** Who naturally owns an independently consumable capacity pool. */
 export type CapacityPoolScope = "SHARED_OWNER_POOL" | "PER_USER_POOL";
+
+export type QuotaDomainType = "USER_ACCOUNT" | "PUBLIC_IP" | "PROVIDER_PROJECT" | "PROVIDER_ACCOUNT" | "SPONSOR_POOL" | "CODEFORGE_ACCOUNT" | "GLOBAL_SHARED" | "UNKNOWN";
+export type EgressMode = "CLIENT_DIRECT" | "CODEFORGE_GATEWAY" | "USER_DELEGATED" | "SERVER_SPONSORED";
+export type FreeRoutePrivacyClass = "PRIVATE_SAFE" | "PROVIDER_RETENTION" | "DATA_COLLECTION_ALLOWED" | "PUBLIC_CODE_ONLY" | "UNKNOWN";
+export type TrainingUse = "YES" | "NO" | "UNKNOWN";
+
+export interface FreeAdmissionReceipt {
+  sourceDocumentation: string;
+  termsEvidence: string;
+  priceEvidence: string;
+  privacyEvidence: string;
+  verifiedAt: string;
+  recheckAt: string;
+  qualificationAt: string;
+}
 
 /** The strongest data class a route may receive without an additional user decision. */
 export type DataPolicyProfile =
@@ -125,6 +147,15 @@ export interface CapacityRoute {
   gateway: string;
   upstreamProvider?: string;
   supplyClass: SupplyClass;
+  quotaDomainType?: QuotaDomainType;
+  quotaDomainId?: string;
+  egressMode?: EgressMode;
+  marginalCostToCodeForge?: number;
+  freePrivacyClass?: FreeRoutePrivacyClass;
+  trainingUse?: TrainingUse;
+  admissionReceipt?: FreeAdmissionReceipt;
+  startsAt?: string;
+  expiresAt?: string;
   capacityPoolId: string;
   capacityPoolScope: CapacityPoolScope;
   capacityScope: CapacityScope;

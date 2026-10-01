@@ -156,6 +156,7 @@ export function routeKeyOf(providerId: string, modelId: string): string {
 export interface EightBitRouteHealth {
   providerId: string;
   modelId: string;
+  quotaDomainId?: string;
   consecutiveFailures: number;
   lastFailureReason?: FailureReason;
   lastFailureAt?: string;

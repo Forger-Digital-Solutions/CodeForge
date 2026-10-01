@@ -150,6 +150,9 @@ export const SETTING_DEFS: SettingDef[] = [
     keywords: ["login", "autostart", "boot"], scope: "application", storage: "none" },
 
   // ---- Data & Privacy (application) ----
+  { id: "free-code-sharing", sectionId: "privacy", title: "Free route code sharing",
+    keywords: ["public repository", "private code", "consent", "kilo", "free routes", "training"],
+    scope: "workspace", storage: "app-settings", keyPath: "privacy.freeCodeSharing" },
   { id: "privacy-routing", sectionId: "privacy", title: "Provider routing privacy mode",
     keywords: ["strict", "standard", "maximum free", "retention", "training", "forgezero"],
     scope: "application", storage: "app-settings", keyPath: "privacy.routingMode" },

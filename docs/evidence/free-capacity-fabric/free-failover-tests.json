@@ -1,0 +1,65 @@
+{
+  "checkedAt": "2026-10-01T22:38:46.223Z",
+  "status": "completed",
+  "fault": {
+    "enabled": true,
+    "isTestProvider": true,
+    "requests": 1,
+    "domain": "test:fault-pool",
+    "provesSecondLiveIndependentDomain": false
+  },
+  "rotations": [
+    {
+      "kind": "eight_bit_decision_receipt",
+      "id": "eight-bit-receipt-79af27f2-a2e0-43f2-bfb8-c5a3fb633769",
+      "sessionId": "kilo-autonomous-1790894102754",
+      "receipt": {
+        "receiptId": "79af27f2-a2e0-43f2-bfb8-c5a3fb633769",
+        "createdAt": "2026-10-01T22:35:03.905Z",
+        "sessionId": "kilo-autonomous-1790894102754",
+        "runId": "child-03db4644-f20c-4e84-b760-639d751b3da8",
+        "agentId": "explorer",
+        "turnId": "child-03db4644-f20c-4e84-b760-639d751b3da8",
+        "role": "EXPLORER",
+        "action": "ROTATE",
+        "policyMode": "adaptive",
+        "previous": {
+          "providerId": "test-fault-domain",
+          "modelId": "test-free-model"
+        },
+        "selected": {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        },
+        "reasonCodes": [
+          "RATE_LIMITED",
+          "FABRIC_ADMITTED_REPLACEMENT",
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED",
+          "INDEPENDENT_POOL_PREFERRED",
+          "ROLE_RUNTIME_EVIDENCE_ABSENT"
+        ]
+      },
+      "createdAt": "2026-10-01T22:35:03.905Z"
+    }
+  ],
+  "reviewPassed": true,
+  "testsPassed": 3,
+  "completion": {
+    "outcome": "completed",
+    "blockers": [],
+    "advisories": [],
+    "rationale": "All required completion checks passed."
+  },
+  "receipt": "kilo-autonomous-controlled-failover.json",
+  "limits": "Failure domain is synthetic and explicitly isTestProvider=true. Continuation, edits, Reviewer and ForgeVerify use real Kilo inference. Two live independent providers are not proven.",
+  "regressions": [
+    "same-model independent pool rotation",
+    "alias cooldown shares physical pool",
+    "other user domain isolated",
+    "scoped cooldown survives hydration",
+    "private/public context policy"
+  ]
+}

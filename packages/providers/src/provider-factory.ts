@@ -9,6 +9,8 @@ import type { CloudflareNeuronBudgetGuard } from "./cloudflare-neuron-budget.js"
 import type { GeminiFreePolicyGate } from "@codeforge/legal-policy";
 
 export interface ProviderFactoryOptions {
+  /** Trusted installed-client process, never supplied by route metadata or a cloud request. */
+  clientDirectAuthorized?: boolean;
   credentialStore?: CredentialStore;
   apiKey?: string;
   timeoutMs?: number;
@@ -46,6 +48,36 @@ export function createZaiAdapter(opts: ProviderFactoryOptions = {}): OpenAICompa
     providerId: "zai",
     baseUrl: "https://api.z.ai/api/paas/v4",
     ...common(opts),
+  });
+}
+
+/** Anonymous Kilo Free requests leave from the installed host, with no CodeForge or user key. */
+export function createKiloFreeDirectAdapter(opts: Pick<ProviderFactoryOptions, "timeoutMs" | "fetchFn" | "onResponse"> = {}): OpenAICompatibleAdapter {
+  return new OpenAICompatibleAdapter({
+    providerId: "kilo-free-direct",
+    baseUrl: "https://api.kilo.ai/api/gateway",
+    anonymousFree: true,
+    mapModel: (raw) => {
+      if (typeof raw !== "object" || raw === null) return null;
+      const m = raw as Record<string, unknown>;
+      const id = typeof m.id === "string" ? m.id : "";
+      const price = typeof m.pricing === "object" && m.pricing !== null ? m.pricing as Record<string, unknown> : undefined;
+      const explicitZero = (value: unknown): boolean => value === 0 || (typeof value === "string" && /^0(?:\.0+)?(?:[eE][+-]?\d+)?$/.test(value.trim()));
+      const zero = (id === "kilo-auto/free" || id.endsWith(":free"))
+        && price !== undefined && explicitZero(price.prompt) && explicitZero(price.completion);
+      if (!zero) return null;
+      return {
+        modelId: id,
+        displayName: typeof m.name === "string" ? m.name : id,
+        contextWindow: typeof m.context_length === "number" ? m.context_length : undefined,
+        capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: false },
+        isFree: true,
+        freeStatus: "verified_free",
+      };
+    },
+    timeoutMs: opts.timeoutMs,
+    fetchFn: opts.fetchFn,
+    onResponse: opts.onResponse,
   });
 }
 
@@ -292,6 +324,7 @@ function mapOllamaModel(raw: unknown): ProviderModel | null {
  * credential store (`providerId:fieldId`) and then from the environment.
  */
 export function createProviderAdapterFromDefinition(def: ProviderTransportDefinition, opts: ProviderFactoryOptions = {}): ProviderAdapter | undefined {
+  if (def.id === "kilo-free-direct") return opts.clientDirectAuthorized ? createKiloFreeDirectAdapter(opts) : undefined;
   if (def.id === "alibaba") return createAlibabaAdapter(opts);
   if (def.id === "deepseek") return createDeepSeekAdapter(opts);
   switch (def.apiStyle) {
@@ -355,6 +388,8 @@ export function createProviderAdapterFromDefinition(def: ProviderTransportDefini
  */
 export function createProviderAdapterById(providerId: string, opts: ProviderFactoryOptions = {}): ProviderAdapter | undefined {
   switch (providerId) {
+    case "kilo-free-direct":
+      return opts.clientDirectAuthorized ? createKiloFreeDirectAdapter(opts) : undefined;
     case "zai":
       return createZaiAdapter(opts);
     case "groq":

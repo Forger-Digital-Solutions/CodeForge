@@ -61,9 +61,9 @@ describe("isDataPolicyEligible — consent and data-class matrix", () => {
     expect(isDataPolicyEligible("PUBLIC_CODE_ONLY", PRIVATE)).toBe(false);
   });
 
-  it("private code stays private even when userConsented is true — consent cannot widen the class", () => {
+  it("private code requires explicit consent before using a consent-gated route", () => {
     const ctx: RouteDataContext = { dataClass: "PRIVATE_CODE", userConsented: true };
-    expect(isDataPolicyEligible("USER_CONSENT_REQUIRED", ctx)).toBe(false);
+    expect(isDataPolicyEligible("USER_CONSENT_REQUIRED", ctx)).toBe(true);
     expect(isDataPolicyEligible("PUBLIC_CODE_ONLY", ctx)).toBe(false);
   });
 
@@ -109,5 +109,38 @@ describe("freeRouteExclusionReason — data policy on otherwise-eligible managed
     for (const ctx of [PRIVATE, SYNTHETIC_NO_CONSENT, SYNTHETIC_CONSENTED, PUBLIC_CONSENTED]) {
       expect(freeRouteExclusionReason(privateOk, DEFAULT_FREE_CAPACITY_POLICY, ctx)).toBeUndefined();
     }
+  });
+});
+
+describe("packaged direct admission", () => {
+  const direct = (): CapacityRoute => ({
+    ...managedRoute("USER_CONSENT_REQUIRED"),
+    routeId: "kilo-direct", providerId: "kilo-free-direct", modelId: "kilo-auto/free",
+    supplyClass: "PACKAGED_FREE_DIRECT", capacityPoolId: "kilo:ip:user-a",
+    capacityPoolScope: "PER_USER_POOL", capacityScope: "SOURCE_IP", capacityIdentity: "user-a",
+    quotaDomainType: "PUBLIC_IP", quotaDomainId: "kilo:ip:user-a", egressMode: "CLIENT_DIRECT",
+    marginalCostToCodeForge: 0, freePrivacyClass: "DATA_COLLECTION_ALLOWED", trainingUse: "YES",
+    admissionReceipt: {
+      sourceDocumentation: "https://kilo.ai/docs/gateway/models-and-providers",
+      termsEvidence: "https://kilo.ai/terms",
+      priceEvidence: "https://kilo.ai/docs/gateway/usage-and-billing",
+      privacyEvidence: "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      verifiedAt: new Date().toISOString(), recheckAt: new Date(Date.now() + 86_400_000).toISOString(),
+      qualificationAt: new Date().toISOString(),
+    },
+  });
+
+  it("keeps private code off a data-collecting direct route by default", () => {
+    expect(freeRouteExclusionReason(direct())).toBe("PRIVATE_CODE_CONSENT_REQUIRED");
+    expect(isFreeRouteEligible(direct(), DEFAULT_FREE_CAPACITY_POLICY, { dataClass: "PUBLIC_CODE", userConsented: true })).toBe(true);
+  });
+
+  it("fails closed on cost, scope, and stale evidence", () => {
+    expect(freeRouteExclusionReason({ ...direct(), marginalCostToCodeForge: 1 })).toBe("CODEFORGE_MARGINAL_COST_NOT_ZERO");
+    expect(freeRouteExclusionReason({ ...direct(), egressMode: "CODEFORGE_GATEWAY" })).toBe("DIRECT_ROUTE_SCOPE_INVALID");
+    const stale = direct();
+    stale.admissionReceipt = { ...stale.admissionReceipt!, recheckAt: "2020-01-01T00:00:00Z" };
+    expect(freeRouteExclusionReason(stale, DEFAULT_FREE_CAPACITY_POLICY, { dataClass: "PUBLIC_CODE", userConsented: true })).toBe("ADMISSION_EVIDENCE_STALE");
+    expect(freeRouteExclusionReason({ ...direct(), supplyClass: "CODEFORGE_PAID" })).toBe("PAID_OR_PROMOTIONAL_NOT_PACKAGED_FREE");
   });
 });

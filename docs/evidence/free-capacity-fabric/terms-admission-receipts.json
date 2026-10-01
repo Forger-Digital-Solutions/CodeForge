@@ -1,0 +1,22 @@
+{
+  "routes": [
+    {
+      "providerId": "kilo-free-direct",
+      "logicalModel": "kilo-auto/free",
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "freePriceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "authRequirements": "Anonymous, no API key, no CodeForge token",
+      "quotaSemantics": "200 free-model requests/hour/public-IP; aliases share upstream allowance",
+      "quotaDomain": "PUBLIC_IP",
+      "egressMode": "CLIENT_DIRECT",
+      "verifiedAt": "2026-10-01T00:00:00Z",
+      "recheckAt": "2026-10-08T00:00:00Z",
+      "qualificationAt": "2026-10-01T22:19:31.197Z",
+      "qualificationReceipt": "kilo-live-qualification.json",
+      "dataPolicy": "PUBLIC_CODE_ONLY",
+      "termsStatus": "CLEARED_FOR_THIRD_PARTY_END_USER_APPLICATION_SUBJECT_TO_TERMS"
+    }
+  ]
+}

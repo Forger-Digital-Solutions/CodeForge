@@ -1,0 +1,78 @@
+{
+  "checkedAt": "2026-10-01T23:00:00Z",
+  "baseHead": "24ecf1dd0cae5d78e6ee661efb779118b28387e1",
+  "repositoryWideGreen": false,
+  "build": {
+    "command": "npm run build",
+    "status": "PASS",
+    "scope": "All workspace TypeScript builds, desktop main and renderer, web renderer"
+  },
+  "affectedRegression": {
+    "command": "vitest run packages/forge-zero/test packages/providers/test packages/eight-bit/test packages/model-registry/test packages/server/test/autonomous-orchestrator.test.ts packages/server/test/model-execution-adapter.test.ts packages/sessions/test apps/desktop/test/app-settings.test.ts apps/desktop/test/provider-connections.test.ts apps/desktop/test/settings-defs.test.ts",
+    "status": "PASS",
+    "passedFiles": 100,
+    "skippedFiles": 1,
+    "passedTests": 1051,
+    "skippedTests": 3,
+    "durationSeconds": 137.28
+  },
+  "finalHardeningRegression": {
+    "files": [
+      "packages/forge-zero/test/sponsored-routes.test.ts",
+      "packages/forge-zero/test/capacity-policy.test.ts",
+      "packages/providers/test/kilo-free-direct.test.ts",
+      "packages/eight-bit/test/runtime.test.ts",
+      "packages/eight-bit/test/route-health-authority.test.ts",
+      "apps/desktop/test/settings-defs.test.ts",
+      "apps/desktop/test/app-settings.test.ts"
+    ],
+    "status": "PASS",
+    "passedFiles": 7,
+    "passedTests": 72,
+    "durationSeconds": 2.55
+  },
+  "fullSuite": {
+    "command": "npm test",
+    "status": "FAIL",
+    "passedFiles": 496,
+    "failedFiles": 14,
+    "skippedFiles": 9,
+    "passedTests": 4298,
+    "failedTests": 16,
+    "skippedTests": 50,
+    "durationSeconds": 802,
+    "workerErrors": ["Heap exhaustion in tests/direct-byok-cloud-outage.test.ts"],
+    "limitations": [
+      "Modules were edited while this run was active; stale implementation assertions subsequently pass in fresh affected runs.",
+      "The introduced missing settings registry entry was corrected and the fresh settings tests pass.",
+      "Four cloud credit/account tests reproduce unchanged on exported base HEAD.",
+      "Frozen source-identity campaign failures and other remaining full-suite failures were not recertified; no full-suite success is asserted."
+    ]
+  },
+  "baselineAudit": {
+    "receipt": "baseline-credit-audit.json",
+    "source": "Unmodified git archive of base HEAD; current node_modules used only as dependency runtime",
+    "failedTests": 4,
+    "passedTests": 11,
+    "skippedTests": 1,
+    "reproducedFiles": [
+      "tests/cloud-e2e.test.ts",
+      "tests/reservation-ordering.test.ts",
+      "packages/cloud-db/test/account-deletion.test.ts",
+      "packages/cloud-billing/test/billing.test.ts"
+    ]
+  },
+  "evidenceScan": {
+    "status": "PASS",
+    "scope": ["docs/evidence/free-capacity-fabric", "benchmarks/free-capacity-fabric"],
+    "checks": ["No common OpenAI, GitHub or Google API-key patterns or PEM private keys found", "git diff --check passed"],
+    "limitation": "Pattern scan, not proof of absence of every possible secret format"
+  },
+  "liveDogfood": {
+    "qualification": "kilo-live-qualification.json",
+    "completion": "kilo-autonomous-live.json",
+    "controlledFailover": "kilo-autonomous-controlled-failover.json",
+    "completionGateChanged": false,
+    "twoLiveIndependentUpstreamsProven": false
+  }
+}

@@ -19,7 +19,7 @@ import {
   PAID_CATALOG,
   CapacityReservationLedger,
 } from "@codeforge/forge-zero";
-import type { FreeModelRecord } from "@codeforge/forge-zero";
+import type { FreeModelRecord, RouteDataContext } from "@codeforge/forge-zero";
 import type { FreeCloudService } from "@codeforge/model-registry";
 import { SqliteQualificationPersistence, EightBitRouteHealthLedger, createEightBitRouteHealthAuthority, FreeFabric, buildRouteLedger, forgeAutoSupplyPlan, type EightBitRouteHealthAuthority, type FabricContextProvider } from "@codeforge/eight-bit";
 import type { ProviderTopologyCapacity } from "@codeforge/forge-green";
@@ -158,6 +158,8 @@ export interface ServerOptions {
    * qualification receipts persist in this server's session database.
    */
   freeCloud?: FreeCloudService;
+  /** Trusted host privacy choice, read at each admission so Settings changes apply immediately. */
+  freeDataContext?: () => RouteDataContext;
   /**
    * R24: the host-shared temporal route-health authority. When supplied (e.g. the desktop host
    * shares one with the Free Cloud registry), this server uses it instead of creating its own;
@@ -379,7 +381,7 @@ export class CodeForgeServer {
       });
       this.fabricContext = ({ userId }) => {
         const uid = userId ?? this.localUserId ?? "anonymous";
-        return { userId: uid, userIdentities: freeCloud.capacityIdentitiesFor(uid) };
+        return { userId: uid, userIdentities: freeCloud.capacityIdentitiesFor(uid), dataContext: options.freeDataContext?.() ?? { dataClass: "PRIVATE_CODE" } };
       };
     }
     if (!options.paidAuto) {

@@ -63,7 +63,7 @@ export class EightBitRouteHealthLedger {
   async saveSnapshot(snapshot: RouteHealthSnapshot): Promise<void> {
     const item: WorkItem = {
       kind: "eight_bit_route_health_authority",
-      id: routeHealthAuthorityId(snapshot.providerId, snapshot.modelId),
+      id: routeHealthAuthorityId(snapshot.providerId, snapshot.modelId, snapshot.quotaDomainId),
       sessionId: this.options.sessionId,
       providerId: snapshot.providerId,
       modelId: snapshot.modelId,
@@ -97,8 +97,8 @@ export class EightBitRouteHealthLedger {
   }
 }
 
-export function routeHealthAuthorityId(providerId: string, modelId: string): string {
-  return `eight-bit-route-health-authority-${providerId}-${modelId}`;
+export function routeHealthAuthorityId(providerId: string, modelId: string, quotaDomainId?: string): string {
+  return `eight-bit-route-health-authority-${providerId}-${modelId}${quotaDomainId === undefined ? "" : `-domain-${crypto.createHash("sha256").update(quotaDomainId).digest("hex")}`}`;
 }
 
 export function createEightBitRouteHealthLedger(persistence: ISessionPersistence, options?: { sessionId?: string; persistObservations?: boolean }): EightBitRouteHealthLedger {

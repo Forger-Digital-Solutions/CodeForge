@@ -31,7 +31,7 @@ import { exhaustedQuotaResetAt } from "./quota.js";
  * so diagnostics can show exactly why a route is not in ForgeAuto/Free.
  */
 
-export type CredentialSource = "OAUTH" | "DEVICE_CODE" | "USER_CONNECTED_FREE_API_KEY" | "ENVIRONMENT" | "SECURE_STORAGE" | "MANUAL_BYOK" | "FDS_GATEWAY" | "NONE";
+export type CredentialSource = "OAUTH" | "DEVICE_CODE" | "USER_CONNECTED_FREE_API_KEY" | "ENVIRONMENT" | "SECURE_STORAGE" | "MANUAL_BYOK" | "FDS_GATEWAY" | "ANONYMOUS_DIRECT" | "NONE";
 export type FreePolicyState = "ALLOW" | "DENY" | "UNKNOWN";
 
 export interface ProviderConnectionState {
@@ -293,6 +293,7 @@ function bestAuthClass(def: ProviderDefinition | undefined, conn: ProviderConnec
     if (conn.credentialSource === "OAUTH") return "OAUTH_PKCE";
     if (conn.credentialSource === "USER_CONNECTED_FREE_API_KEY") return "ASSISTED_KEY";
     if (conn.credentialSource === "FDS_GATEWAY") return "ZERO_TOUCH";
+    if (conn.credentialSource === "ANONYMOUS_DIRECT") return "ZERO_TOUCH";
     if (conn.credentialSource === "ENVIRONMENT") return "ENVIRONMENT_CREDENTIAL";
     return "ASSISTED_KEY";
   }
@@ -624,6 +625,7 @@ export function supplyClassFor(
   def: ProviderDefinition | undefined,
   conn: Pick<ProviderConnectionState, "credentialSource" | "connected"> | undefined,
 ): SupplyClass | undefined {
+  if (def?.id === "kilo-free-direct" && conn?.credentialSource === "ANONYMOUS_DIRECT" && conn.connected) return "PACKAGED_FREE_DIRECT";
   if (def?.userConnectedFree) return def.userConnectedFree.supplyClass;
   if (conn?.credentialSource === "FDS_GATEWAY" || def?.apiStyle === "hosted" || def?.kind === "fds-gateway") {
     return "PURE_MANAGED_FREE";

@@ -93,6 +93,8 @@ export type ObservationSource = "runtime" | "probe" | "registry" | "bench" | "go
 interface ObservationBase {
   providerId: string;
   modelId: string;
+  /** Capacity facts are scoped to the pool that actually served the call. */
+  quotaDomainId?: string;
   /** ISO-8601 time the fact was observed (not ingested). */
   observedAt: string;
   source: ObservationSource;
@@ -389,6 +391,7 @@ interface RouteState {
 export interface RouteHealthSnapshot {
   providerId: string;
   modelId: string;
+  quotaDomainId?: string;
   conditions: RouteCondition[];
   /** R50 §27: durable per-role graded evidence (timestamps serialized ISO). */
   roleEvidence?: Array<Omit<RoleOutcomeSample, "at"> & { at: string }>;
@@ -472,6 +475,7 @@ function isDailyQuotaMessage(message: string | undefined): boolean {
  */
 export class EightBitRouteHealthAuthority {
   private readonly routes = new Map<string, RouteState>();
+  private readonly domains = new Map<string, EightBitRouteHealthAuthority>();
   private readonly listeners = new Set<(observation: NormalizedObservation, snapshot: RouteHealthSnapshot) => void>();
 
   constructor(
@@ -483,6 +487,20 @@ export class EightBitRouteHealthAuthority {
   subscribe(listener: (observation: NormalizedObservation, snapshot: RouteHealthSnapshot) => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
+  }
+
+  private domainAuthority(quotaDomainId: string): EightBitRouteHealthAuthority {
+    let authority = this.domains.get(quotaDomainId);
+    if (!authority) {
+      authority = new EightBitRouteHealthAuthority(this.policy, this.now);
+      authority.subscribe((observation, snapshot) => {
+        for (const listener of this.listeners) {
+          try { listener({ ...observation, quotaDomainId }, { ...snapshot, quotaDomainId }); } catch { /* Observers cannot break routing. */ }
+        }
+      });
+      this.domains.set(quotaDomainId, authority);
+    }
+    return authority;
   }
 
   private stateFor(providerId: string, modelId: string): RouteState {
@@ -538,6 +556,14 @@ export class EightBitRouteHealthAuthority {
 
   /** Ingest one normalized observation. Returns the route's post-ingest snapshot. */
   observe(observation: NormalizedObservation): RouteHealthSnapshot {
+    if (observation.quotaDomainId) {
+      const { quotaDomainId, ...scoped } = observation;
+      const capacityFact = observation.kind === "rate_limit_headers" || observation.kind === "daily_allowance"
+        || observation.kind === "governor_pressure"
+        || (observation.kind === "call_failure" && ["RATE_LIMITED", "QUOTA_EXHAUSTED", "TEMPORARY_CAPACITY", "PROVIDER_OUTAGE", "AUTH_FAILURE", "TIMEOUT", "TRANSIENT_NETWORK"].includes(observation.reason));
+      const snapshot = this.domainAuthority(quotaDomainId).observe({ ...scoped, ...(capacityFact ? { modelId: "__quota_domain__" } : {}) });
+      return { ...snapshot, quotaDomainId };
+    }
     const state = this.stateFor(observation.providerId, observation.modelId);
     const at = Date.parse(observation.observedAt);
     const now = Number.isFinite(at) ? at : this.now();
@@ -902,7 +928,16 @@ export class EightBitRouteHealthAuthority {
    * governing condition; the score delta blends the governing state, role-specific penalties,
    * latency and freshness. Absent evidence is UNKNOWN — mildly penalised so known-good routes win.
    */
-  assess(providerId: string, modelId: string, options: { role?: EightBitRole; now?: number } = {}): RouteHealthAssessment {
+  assess(providerId: string, modelId: string, options: { role?: EightBitRole; now?: number; quotaDomainId?: string } = {}): RouteHealthAssessment {
+    if (options.quotaDomainId) {
+      const { quotaDomainId, ...unscoped } = options;
+      const global = this.assess(providerId, modelId, unscoped);
+      const authority = this.domains.get(quotaDomainId);
+      if (!authority) return global;
+      const assessments = [global, authority.assess(providerId, modelId, unscoped), authority.assess(providerId, "__quota_domain__", unscoped)];
+      const observed = assessments.filter((assessment) => assessment.state !== "UNKNOWN");
+      return observed.sort((a, b) => Number(b.hardExclude) - Number(a.hardExclude) || a.scoreAdjustment - b.scoreAdjustment)[0] ?? global;
+    }
     const now = options.now ?? this.now();
     const state = this.routes.get(routeKeyOf(providerId, modelId));
     const empty: RouteWindowStats = { calls: 0, successes: 0, failures: 0, rateLimits: 0, capacityErrors: 0, malformedToolCalls: 0, toolCalls: 0, latencyP50Ms: null, latencyP95Ms: null };
@@ -1080,6 +1115,7 @@ export class EightBitRouteHealthAuthority {
 
   /** A catalog refresh proved the route is served again (or the provider policy changed). */
   catalogChanged(providerId: string, modelId: string, reason = "CATALOG_REFRESH"): void {
+    for (const authority of this.domains.values()) authority.catalogChanged(providerId, modelId, reason);
     const state = this.routes.get(routeKeyOf(providerId, modelId));
     if (!state) return;
     for (const name of PERMANENT_STATES) state.conditions.delete(name);
@@ -1121,7 +1157,9 @@ export class EightBitRouteHealthAuthority {
   }
 
   snapshot(now: number = this.now()): RouteHealthSnapshot[] {
-    return [...this.routes.values()].map((state) => this.snapshotRoute(state, now));
+    return [...this.routes.values()].map((state) => this.snapshotRoute(state, now)).concat(
+      [...this.domains.entries()].flatMap(([quotaDomainId, authority]) => authority.snapshot(now).map((snapshot) => ({ ...snapshot, quotaDomainId }))),
+    );
   }
 
   get(providerId: string, modelId: string, now: number = this.now()): RouteHealthSnapshot | undefined {
@@ -1136,6 +1174,11 @@ export class EightBitRouteHealthAuthority {
    * fresh while the durable conditions carry over.
    */
   hydrate(snapshot: RouteHealthSnapshot): void {
+    if (snapshot.quotaDomainId) {
+      const { quotaDomainId, ...scoped } = snapshot;
+      this.domainAuthority(quotaDomainId).hydrate(scoped);
+      return;
+    }
     const state = this.stateFor(snapshot.providerId, snapshot.modelId);
     for (const condition of snapshot.conditions) {
       if (condition.expiresAt !== null && condition.expiresAt <= this.now()) continue;

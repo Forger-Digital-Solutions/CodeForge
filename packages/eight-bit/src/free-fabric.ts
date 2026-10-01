@@ -6,6 +6,8 @@ import {
   type ProviderCapacityPool,
   type RouteDataContext,
   type SupplyClass,
+  type QuotaDomainType,
+  type EgressMode,
 } from "@codeforge/forge-zero";
 import {
   buildRouteLedger,
@@ -137,6 +139,9 @@ export interface FabricCandidateReport {
   /** Physical quota domain this candidate would draw on — carried so an unmeasured
    *  candidate can be measured under the same account the reservation would have used. */
   capacityPoolId?: string;
+  quotaDomainType?: QuotaDomainType;
+  egressMode?: EgressMode;
+  marginalCostToCodeForge?: number;
   status: FabricCandidateStatus;
   reasonCodes: string[];
   healthState?: RouteHealthCondition;
@@ -171,6 +176,10 @@ export interface FabricRouteDecision {
     supplyClass: SupplyClass;
     quotaOwner: QuotaOwnerKind;
     capacityPoolId: string;
+    quotaDomainType?: QuotaDomainType;
+    quotaDomainId?: string;
+    egressMode?: EgressMode;
+    marginalCostToCodeForge?: number;
     reservationId?: string;
   };
   explanation: {
@@ -359,7 +368,7 @@ export class FreeFabric {
         reports.set(entry.routeId, this.reportFor(entry, "ROLE_INELIGIBLE", ["ROLE_VERDICT_EXCLUDED"], undefined));
         continue;
       }
-      const assess = this.opts.health?.assess(entry.providerId, entry.modelId, { role: healthRole });
+      const assess = this.opts.health?.assess(entry.providerId, entry.modelId, { role: healthRole, quotaDomainId: entry.capacityPoolId });
       const adjustment = assess?.scoreAdjustment ?? 0;
       if (assess?.hardExclude) {
         reports.set(entry.routeId, {
@@ -375,7 +384,8 @@ export class FreeFabric {
       }
       // A deeply unhealthy route is demoted behind every undemoted supply domain — a saturated
       // shared route yields to the user's own healthy pool, not just to sponsored supply.
-      const domainRank = FORGEAUTO_DOMAIN_ORDER.indexOf(entry.quotaOwner)
+      const isolatedPackaged = entry.supplyClass === "PACKAGED_FREE_DIRECT" || entry.supplyClass === "USER_ENTITLED_FREE";
+      const domainRank = (isolatedPackaged && (entry.quotaDomainType === "PUBLIC_IP" || entry.quotaDomainType === "USER_ACCOUNT") ? -1 : FORGEAUTO_DOMAIN_ORDER.indexOf(entry.quotaOwner))
         + (adjustment <= this.opts.domainDemotionScore ? FORGEAUTO_DOMAIN_ORDER.length : 0);
       const fit = rightFitPenalty(entry);
       // Probation-tier admission: the route reached the plan via fallbackRoles, not full
@@ -429,6 +439,7 @@ export class FreeFabric {
           routeId: entry.routeId, providerId: entry.providerId, modelId: entry.modelId,
           canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
           quotaOwner: entry.quotaOwner, capacityPoolId: entry.capacityPoolId,
+          quotaDomainType: entry.quotaDomainType, quotaDomainId: entry.quotaDomainId, egressMode: entry.egressMode, marginalCostToCodeForge: entry.marginalCostToCodeForge,
         };
         reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", candidate.roleFallback ? "ROLE_PROBATION_FALLBACK" : "ROLE_QUALIFIED", "HEALTH_ACCEPTED", ...this.independenceReason(request, entry), ...candidate.roleReasons], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
         break;
@@ -462,6 +473,7 @@ export class FreeFabric {
           canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
           quotaOwner: entry.quotaOwner, capacityPoolId: entry.capacityPoolId,
           reservationId: decision.reservationId,
+          quotaDomainType: entry.quotaDomainType, quotaDomainId: entry.quotaDomainId, egressMode: entry.egressMode, marginalCostToCodeForge: entry.marginalCostToCodeForge,
         };
         reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", candidate.roleFallback ? "ROLE_PROBATION_FALLBACK" : "ROLE_QUALIFIED", "QUOTA_RESERVED", decision.reason, ...this.independenceReason(request, entry), ...candidate.roleReasons], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
         break;
@@ -555,7 +567,7 @@ export class FreeFabric {
     const summary = selected
       ? `Selected ${supplyLabel(selected.quotaOwner)} route ${selected.providerId}/${selected.modelId}: ` +
         `role-qualified${candidateHealthSuffix(ranked, selected.routeId)}; quota reserved; ` +
-        (selected.quotaOwner === "USER_ENTITLEMENT" ? "shared managed pool could not serve — using your own quota" : "your personal entitlement is preserved")
+        (selected.egressMode === "CLIENT_DIRECT" ? "using your authorized client-direct Free capacity" : selected.quotaOwner === "USER_ENTITLEMENT" ? "using your own quota" : "your personal entitlement is preserved")
       : outcome === "QUEUED_FOR_CAPACITY"
         ? concurrencyLimited
           ? "You already hold the maximum concurrent free reservations — queued, not sent to a paid route."
@@ -602,6 +614,7 @@ export class FreeFabric {
       canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
       quotaOwner: entry.quotaOwner, quotaOwnerIdentity: entry.quotaOwnerIdentity,
       capacityPoolId: entry.capacityPoolId,
+      quotaDomainType: entry.quotaDomainType, egressMode: entry.egressMode, marginalCostToCodeForge: entry.marginalCostToCodeForge,
       status, reasonCodes, healthState, scoreAdjustment,
       ...(rightFitPenalty !== undefined && rightFitPenalty !== 0 ? { rightFitPenalty } : {}),
     };

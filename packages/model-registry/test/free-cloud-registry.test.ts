@@ -126,6 +126,24 @@ describe("canonical model identity", () => {
   });
 });
 
+describe("Kilo direct Free projection", () => {
+  it("keeps the public-IP pool user-scoped and private code excluded", async () => {
+    const fw = new ForgeZero();
+    fw.setPrivacyMode("MAXIMUM_FREE");
+    fw.register(freeRecord("kilo-free-direct", "kilo-auto/free", { accessClass: "FREE_ROUTED", privacyClass: "permissive" }));
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(createMockProvider({ providerId: "kilo-free-direct" }));
+    const svc = new FreeCloudService({ firewall: fw, providerCatalog: catalog, registry: new NormalizedModelRegistry(), now: () => NOW });
+    svc.setConnection(connected("kilo-free-direct", { credentialSource: "ANONYMOUS_DIRECT", ownerUserId: "alice" }));
+    await svc.recordReceipt(receipt("kilo-free-direct", "kilo-auto/free"));
+    const route = svc.routesForUser("alice").find((r) => r.modelId === "kilo-auto/free");
+    expect(route).toMatchObject({ supplyClass: "PACKAGED_FREE_DIRECT", quotaDomainType: "PUBLIC_IP", egressMode: "CLIENT_DIRECT", capacityScope: "SOURCE_IP", marginalCostToCodeForge: 0 });
+    expect(svc.routesForUser("bob")).toEqual([]);
+    expect(freeRouteExclusionReason(route!)).toBe("PRIVATE_CODE_CONSENT_REQUIRED");
+    expect(freeRouteExclusionReason(route!, undefined, { dataClass: "PUBLIC_CODE", userConsented: true })).toBeUndefined();
+  });
+});
+
 describe("provider definitions and derived policies", () => {
   it("derives the legacy policy view from definitions without losing existing semantics", () => {
     expect(getProviderPolicy("openrouter")?.authMode).toBe("OAUTH_PKCE");

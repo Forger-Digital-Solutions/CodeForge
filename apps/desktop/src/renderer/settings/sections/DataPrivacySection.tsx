@@ -34,6 +34,25 @@ export function DataPrivacySection(): React.ReactElement {
 
       <SettingsGroup title="Code & content handling">
         <SettingsRow
+          settingId="free-code-sharing"
+          title="Free route code sharing"
+          description="Choose Public only after confirming your active repository contains no confidential code or personal data. Kilo Auto Free may send prompts to providers that log or use them to improve services. Consent applies only to this workspace."
+          control={
+            <CfSelect
+              label="Free route code sharing"
+              value={ctx.settings.privacy.freeCodeSharing}
+              options={[
+                { value: "PRIVATE", label: "Private code · safe routes only" },
+                { value: "PUBLIC_AND_CONSENTED", label: "Public code · allow broader Free routes" },
+              ]}
+              onChange={(next) => void ctx.update({ settings: { privacy: {
+                freeCodeSharing: next as "PRIVATE" | "PUBLIC_AND_CONSENTED",
+                ...(next === "PUBLIC_AND_CONSENTED" ? { routingMode: "MAXIMUM_FREE" as const } : {}),
+              } } })}
+            />
+          }
+        />
+        <SettingsRow
           settingId="privacy-routing"
           title="Provider routing"
           description="ForgeAuto only uses ForgeZero-verified $0 routes. The privacy mode below controls which free endpoints qualify: Strict excludes endpoints whose free tiers may train on or retain your prompts (for example Gemini's free tier)."

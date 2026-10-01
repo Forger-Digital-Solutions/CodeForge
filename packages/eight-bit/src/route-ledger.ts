@@ -5,6 +5,8 @@ import {
   type CapacityRoute,
   type CapacityScope,
   type CapacityWindow,
+  type EgressMode,
+  type QuotaDomainType,
   type FreeCapacityPolicy,
   type FreeProviderLifecycle,
   type ProviderCapacityPool,
@@ -54,6 +56,10 @@ export interface RouteLedgerEntry {
   modelId: string;
   canonicalModelId: string;
   supplyClass: SupplyClass;
+  quotaDomainType: QuotaDomainType;
+  quotaDomainId?: string;
+  egressMode?: EgressMode;
+  marginalCostToCodeForge?: number;
   capacityPoolId: string;
   quotaScope: CapacityScope;
   quotaPoolScope: CapacityPoolScope;
@@ -156,7 +162,7 @@ function minNullable(values: readonly number[]): number | null {
 function ownerKindFor(route: CapacityRoute): QuotaOwnerKind {
   if (route.capacityPoolScope === "PER_USER_POOL") return "USER_ENTITLEMENT";
   if (route.supplyClass === "OWNER_DEV_FREE" || route.supplyClass === "OWNER_CREDIT_RESERVE") return "OWNER_DEV";
-  if (route.supplyClass === "SPONSORED_FREE") return "SPONSORED";
+  if (route.supplyClass === "SPONSORED_FREE" || route.supplyClass === "PACKAGED_FREE_SPONSORED") return "SPONSORED";
   if (route.capacityPoolScope === "SHARED_OWNER_POOL") return "SHARED_CODEFORGE_POOL";
   return "UNKNOWN";
 }
@@ -166,7 +172,7 @@ function exhaustionBehavior(route: CapacityRoute, expiresAt: string | undefined,
     || route.supplyClass === "OWNER_CREDIT_RESERVE" || route.supplyClass === "OWNER_DEV_FREE") {
     return "NOT_FREE_ELIGIBLE";
   }
-  if (route.supplyClass === "USER_CONNECTED_FREE" || route.supplyClass === "DISTRIBUTED_USER_FREE") {
+  if (route.supplyClass === "USER_CONNECTED_FREE" || route.supplyClass === "DISTRIBUTED_USER_FREE" || route.supplyClass === "PACKAGED_FREE_DIRECT" || route.supplyClass === "USER_ENTITLED_FREE") {
     return "ROTATE_OWNED_THEN_YIELD";
   }
   const expired = expiresAt !== undefined && Date.parse(expiresAt) <= now;
@@ -259,6 +265,10 @@ function buildEntry(
     modelId: route.modelId,
     canonicalModelId: route.canonicalModelId,
     supplyClass: route.supplyClass,
+    quotaDomainType: route.quotaDomainType ?? (route.capacityPoolScope === "PER_USER_POOL" ? "USER_ACCOUNT" : "GLOBAL_SHARED"),
+    ...(route.quotaDomainId !== undefined ? { quotaDomainId: route.quotaDomainId } : {}),
+    ...(route.egressMode !== undefined ? { egressMode: route.egressMode } : {}),
+    ...(route.marginalCostToCodeForge !== undefined ? { marginalCostToCodeForge: route.marginalCostToCodeForge } : {}),
     capacityPoolId: route.capacityPoolId,
     quotaScope: route.capacityScope,
     quotaPoolScope: route.capacityPoolScope,
@@ -400,6 +410,7 @@ export function forgeAutoSupplyPlan(
   // they own is theirs to schedule on, and every identity they do not own is unreachable.
   const owned = new Set(typeof userIdentity === "string" ? [userIdentity] : userIdentity ?? []);
   const domainRank = (e: RouteLedgerEntry): number => {
+    if (e.quotaDomainType === "PUBLIC_IP" && e.quotaOwnerIdentity !== undefined && owned.has(e.quotaOwnerIdentity)) return -2;
     const owner = e.quotaOwner === "USER_ENTITLEMENT" && !(e.quotaOwnerIdentity !== undefined && owned.has(e.quotaOwnerIdentity))
       ? "UNKNOWN" // never schedulable: someone else's entitlement
       : e.quotaOwner;

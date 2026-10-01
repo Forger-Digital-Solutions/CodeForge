@@ -234,17 +234,17 @@ export class EightBitRuntime {
     this.observe({ kind: "tool_outcome", providerId, modelId, observedAt: new Date(this.now()).toISOString(), source: "runtime", outcome, role: context.role, correlationId: context.correlationId });
   }
 
-  recordSuccess(providerId: string, modelId: string, context: { latencyMs?: number; role?: EightBitRole; inputTokens?: number; outputTokens?: number; correlationId?: string; requestShape?: "bare" | "production" } = {}): void {
-    this.health.recordSuccess(providerId, modelId);
-    this.observe({ kind: "call_success", providerId, modelId, observedAt: new Date(this.now()).toISOString(), source: "runtime", latencyMs: context.latencyMs ?? 0, role: context.role, inputTokens: context.inputTokens, outputTokens: context.outputTokens, correlationId: context.correlationId, requestShape: context.requestShape ?? "production" });
+  recordSuccess(providerId: string, modelId: string, context: { latencyMs?: number; role?: EightBitRole; inputTokens?: number; outputTokens?: number; correlationId?: string; requestShape?: "bare" | "production"; quotaDomainId?: string } = {}): void {
+    this.health.recordSuccess(providerId, modelId, context.quotaDomainId);
+    this.observe({ kind: "call_success", providerId, modelId, quotaDomainId: context.quotaDomainId, observedAt: new Date(this.now()).toISOString(), source: "runtime", latencyMs: context.latencyMs ?? 0, role: context.role, inputTokens: context.inputTokens, outputTokens: context.outputTokens, correlationId: context.correlationId, requestShape: context.requestShape ?? "production" });
   }
 
   /** Feed a classified model-turn failure to the authority (the failover path calls this itself). */
-  recordFailure(providerId: string, modelId: string, error: unknown, context: { role?: EightBitRole; correlationId?: string; retryAfterMs?: number } = {}): void {
+  recordFailure(providerId: string, modelId: string, error: unknown, context: { role?: EightBitRole; correlationId?: string; retryAfterMs?: number; quotaDomainId?: string } = {}): void {
     const reason = classifyFailure(error);
     const status = typeof (error as { status?: unknown })?.status === "number" ? (error as { status: number }).status : undefined;
     const message = error instanceof Error ? error.message : String(error ?? "");
-    this.observe({ kind: "call_failure", providerId, modelId, observedAt: new Date(this.now()).toISOString(), source: "runtime", reason, status, retryAfterMs: context.retryAfterMs, message: message.slice(0, 300), role: context.role, correlationId: context.correlationId, requestShape: "production" });
+    this.observe({ kind: "call_failure", providerId, modelId, quotaDomainId: context.quotaDomainId, observedAt: new Date(this.now()).toISOString(), source: "runtime", reason, status, retryAfterMs: context.retryAfterMs, message: message.slice(0, 300), role: context.role, correlationId: context.correlationId, requestShape: "production" });
   }
 
   /** Generic sink for every producer (probe gates, headers, allowances, catalog, entitlement, governor). */
@@ -353,11 +353,13 @@ export class EightBitRuntime {
     // currentBinding() must see the same route the fabric admitted.
     this.router.hydrateBinding(scope, { providerId: selected.providerId, modelId: selected.modelId });
     await this.store.recordReceipt(
-      this.receipt(scope, context, "INITIAL_SELECTION", options.policyMode, undefined,
+      { ...this.receipt(scope, context, "INITIAL_SELECTION", options.policyMode, undefined,
         { providerId: selected.providerId, modelId: selected.modelId },
         ["FABRIC_ADMITTED", `SUPPLY_${selected.supplyClass}`, `OWNER_${selected.quotaOwner}`, ...reasonCodes]),
+        evidence: fabricDecisionEvidence(selected),
+      },
     );
-    const assessment = this.routeHealth.assess(selected.providerId, selected.modelId, { role: scope.role });
+    const assessment = this.routeHealth.assess(selected.providerId, selected.modelId, { role: scope.role, quotaDomainId: selected.capacityPoolId });
     return {
       outcome: "selected",
       model,
@@ -372,7 +374,7 @@ export class EightBitRuntime {
   async handleTurnFailure(req: FailoverRequest & { policyMode: EightBitPolicyMode }): Promise<FailoverOutcome> {
     // R24: every turn failure is health evidence, whatever the failover decides.
     const retryAfter = (req.error as { retryAfter?: unknown })?.retryAfter;
-    this.recordFailure(req.current.providerId, req.current.modelId, req.error, { role: req.role, correlationId: req.runId ?? req.turnId, retryAfterMs: typeof retryAfter === "number" ? Math.max(0, retryAfter > 1e12 ? retryAfter - this.now() : retryAfter * 1000) : undefined });
+    this.recordFailure(req.current.providerId, req.current.modelId, req.error, { role: req.role, correlationId: req.runId ?? req.turnId, quotaDomainId: req.currentCapacityPoolId, retryAfterMs: typeof retryAfter === "number" ? Math.max(0, retryAfter > 1e12 ? retryAfter - this.now() : retryAfter * 1000) : undefined });
     // R24 Mission C: auto-mode rotation re-decides through the Free Fabric — the failed
     // route's hold is replaced atomically by the next admissible route's reservation (same
     // requestId), so a failover can never execute unadmitted or double-spend the pool.
@@ -411,13 +413,13 @@ export class EightBitRuntime {
             this.releaseFabricAdmission(requestId);
             return undefined;
           }
-          if (sel.providerId === exclude.providerId && sel.modelId === exclude.modelId) {
+          if (sel.providerId === exclude.providerId && sel.modelId === exclude.modelId && (req.currentCapacityPoolId === undefined || sel.capacityPoolId === req.currentCapacityPoolId)) {
             // The failed route re-won admission (demoted but not excluded, and nothing
             // better is admissible). Keep its hold — the bounded same-route retry below
             // executes under exactly this reservation.
             return undefined;
           }
-          return { route: { providerId: sel.providerId, modelId: sel.modelId }, reasonCodes: decision.explanation.reasonCodes, capacityPoolId: sel.capacityPoolId };
+          return { route: { providerId: sel.providerId, modelId: sel.modelId }, reasonCodes: decision.explanation.reasonCodes, capacityPoolId: sel.capacityPoolId, evidence: fabricDecisionEvidence(sel) };
         },
       }
       : req;
@@ -515,4 +517,14 @@ export class EightBitRuntime {
 
 export function createEightBitRuntime(options: EightBitRuntimeOptions): EightBitRuntime {
   return new EightBitRuntime(options);
+}
+
+function fabricDecisionEvidence(selected: NonNullable<FabricRouteDecision["selected"]>): Record<string, string | number | boolean> {
+  return {
+    routeId: selected.routeId, capacityPoolId: selected.capacityPoolId, supplyClass: selected.supplyClass,
+    ...(selected.quotaDomainType ? { quotaDomainType: selected.quotaDomainType } : {}),
+    ...(selected.quotaDomainId ? { quotaDomainId: selected.quotaDomainId } : {}),
+    ...(selected.egressMode ? { egressMode: selected.egressMode } : {}),
+    ...(selected.marginalCostToCodeForge !== undefined ? { marginalCostToCodeForge: selected.marginalCostToCodeForge } : {}),
+  };
 }

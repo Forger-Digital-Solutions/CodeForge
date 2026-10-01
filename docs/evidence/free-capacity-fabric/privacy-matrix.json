@@ -1,0 +1,15 @@
+{
+  "defaultDataClass": "PRIVATE_CODE",
+  "routes": [
+    {
+      "providerId": "kilo-free-direct",
+      "privacyClass": "DATA_COLLECTION_ALLOWED",
+      "trainingUse": "YES",
+      "admissionProfile": "PUBLIC_CODE_ONLY",
+      "privateDefault": "DENIED",
+      "privateWithConsent": "DENIED_BY_PROVIDER_PUBLIC_CODE_ONLY_POLICY",
+      "publicWorkspaceWithConsent": "ALLOWED_AFTER_QUALIFICATION",
+      "consentScope": "one workspace path; main process stamps it; switching workspace clears it"
+    }
+  ]
+}

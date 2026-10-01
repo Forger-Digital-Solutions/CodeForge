@@ -2,12 +2,20 @@ import { describe, it, expect } from "vitest";
 import {
   APP_SETTINGS_SCHEMA_VERSION,
   applySettingsPatch,
+  freeCodeContextForWorkspace,
   migrateLegacyAppSettings,
   parseAppSettings,
   parseAppSettingsPatch,
 } from "../src/app-settings.js";
 
 describe("canonical app settings schema", () => {
+  it("binds broader Free data consent to one workspace and fails closed without that binding", () => {
+    const settings = parseAppSettings({ privacy: { freeCodeSharing: "PUBLIC_AND_CONSENTED", freeCodeSharingWorkspace: "G:\\public-fixture" } });
+    expect(freeCodeContextForWorkspace(settings, "G:\\public-fixture")).toEqual({ dataClass: "PUBLIC_CODE", userConsented: true });
+    expect(freeCodeContextForWorkspace(settings, "G:\\private-project")).toEqual({ dataClass: "PRIVATE_CODE" });
+    expect(freeCodeContextForWorkspace(settings, null)).toEqual({ dataClass: "PRIVATE_CODE" });
+    expect(freeCodeContextForWorkspace(parseAppSettings({ privacy: { freeCodeSharing: "PUBLIC_AND_CONSENTED" } }), "G:\\public-fixture")).toEqual({ dataClass: "PRIVATE_CODE" });
+  });
   it("falls back to documented defaults for an empty store", () => {
     const settings = parseAppSettings(undefined);
     expect(settings.schemaVersion).toBe(APP_SETTINGS_SCHEMA_VERSION);

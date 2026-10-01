@@ -44,8 +44,8 @@ export interface FreeCloudRoutingHooks {
   canonicalIdOf(providerId: string, modelId: string): string;
   /** Other ForgeAuto-eligible routes serving the same canonical model (same-model failover first). */
   sameModelAlternates(providerId: string, modelId: string): Array<{ providerId: string; modelId: string }>;
-  recordRouteFailure(providerId: string, modelId: string, reason: string, retryAfterMs?: number): void;
-  recordRouteSuccess(providerId: string, modelId: string): void;
+  recordRouteFailure(providerId: string, modelId: string, reason: string, retryAfterMs?: number, quotaDomainId?: string): void;
+  recordRouteSuccess(providerId: string, modelId: string, quotaDomainId?: string): void;
   quotaRemaining(providerId: string, modelId: string): number | undefined;
   /** Deterministic 8-Bit advice for choosing among already-admitted free routes. */
   capacityRoutingAdvice(providerId: string, modelId: string): { scoreAdjustment: number; reasonCodes: string[] };
@@ -245,7 +245,7 @@ const RECOVERY_DEFER_WINDOW_MS = 10 * 60_000;
  *  evidence (`authoritative: true`) or absent — CodeForge never invents quota numbers. An
  *  elapsed reset refills to the declared limit (`effectiveQuota`) — a stale zero otherwise
  *  strands the pool forever because no traffic flows to refresh the headers. */
-function quotaWindows(quota: RouteQuota | undefined, scope: "ORG" | "USER_ACCOUNT", now: () => Date): CapacityWindow[] {
+function quotaWindows(quota: RouteQuota | undefined, scope: "ORG" | "USER_ACCOUNT" | "SOURCE_IP", now: () => Date): CapacityWindow[] {
   const effective = effectiveQuota(quota, now);
   const windows: CapacityWindow[] = [];
   if (effective?.remainingRequests !== undefined || effective?.limitRequests !== undefined) {
@@ -255,6 +255,12 @@ function quotaWindows(quota: RouteQuota | undefined, scope: "ORG" | "USER_ACCOUN
     windows.push({ unit: "input_tokens", limit: effective.limitTokens ?? effective.remainingTokens ?? 0, remaining: effective.remainingTokens ?? 0, resetAt: effective.tokenResetAt ?? effective.resetAt ?? NO_RESET, scope, observedAt: effective.observedAt, authoritative: true });
   }
   return windows;
+}
+
+function directProbeWindows(windows: CapacityWindow[], now: () => Date): CapacityWindow[] {
+  if (windows.length > 0) return windows;
+  const observedAt = now().toISOString();
+  return [{ unit: "requests", limit: 1, remaining: 1, resetAt: observedAt, scope: "SOURCE_IP", observedAt, authoritative: false, period: "UNKNOWN" }];
 }
 
 /**
@@ -1000,7 +1006,9 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     return { status: entry.status, cooldownUntil: entry.cooldownUntil };
   };
 
-  recordRouteFailure(providerId: string, modelId: string, reason: string, retryAfterMs?: number): void {
+  recordRouteFailure(providerId: string, modelId: string, reason: string, retryAfterMs?: number, quotaDomainId?: string): void {
+    // Scoped runtime/header observations already reached the authority; a model-wide mark here would cool other accounts.
+    if (quotaDomainId !== undefined && this.routeHealth) { this.emit(); return; }
     const key = `${providerId}::${modelId}`;
     const prev = this.health.get(key);
     const failures = (prev?.consecutiveFailures ?? 0) + 1;
@@ -1022,7 +1030,8 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     this.emit();
   }
 
-  recordRouteSuccess(providerId: string, modelId: string): void {
+  recordRouteSuccess(providerId: string, modelId: string, quotaDomainId?: string): void {
+    if (quotaDomainId !== undefined && this.routeHealth) { this.emit(); return; }
     const key = `${providerId}::${modelId}`;
     this.health.set(key, { status: "HEALTHY", consecutiveFailures: 0, lastSuccessAt: this.now().toISOString() });
     this.emit();
@@ -1075,7 +1084,10 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     // R24: the same header stream is the authority's quota evidence. One observation enters
     // once — no re-parsed copy (§16-17 provenance). Provider-scoped responses (no modelId) have
     // no route to attribute to; the authority keys conditions per route.
-    if (this.routeHealth && obs.modelId) {
+    const observedPool = obs.accountId === undefined ? undefined : this.managedPoolsFor(obs.providerId).find((pool) => pool.accountId === obs.accountId);
+    const directConnection = this.connections.get(obs.providerId);
+    const quotaDomainId = observedPool?.poolId ?? (directConnection?.credentialSource === "ANONYMOUS_DIRECT" ? `${obs.providerId}:user:localconn:${obs.providerId}` : undefined);
+    if (this.routeHealth && obs.modelId && (!managed || attributed)) {
       const observation = rateLimitObservationFromHeaders({
         providerId: obs.providerId,
         modelId: obs.modelId,
@@ -1084,13 +1096,13 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         observedAt: obs.observedAt,
         source: "registry",
       });
-      if (observation) this.routeHealth.observe(observation);
+      if (observation) this.routeHealth.observe({ ...observation, quotaDomainId });
     }
     if (obs.status === 429 && obs.modelId) {
       // Providers commonly omit Retry-After but expose an absolute X-RateLimit-Reset value.
       // The reset is equally authoritative; discarding it caused R12 to retry an OpenRouter
       // route after a short synthetic cooldown even though its daily free allowance was gone.
-      this.recordRouteFailure(obs.providerId, obs.modelId, "RATE_LIMITED", retryDelayMs(quota?.retryAfterMs, exhaustedQuotaResetAt(quota), this.now()));
+      if (!managed || attributed) this.recordRouteFailure(obs.providerId, obs.modelId, "RATE_LIMITED", retryDelayMs(quota?.retryAfterMs, exhaustedQuotaResetAt(quota), this.now()), quotaDomainId);
     } else if (obs.status === 402 && obs.modelId) {
       this.recordRouteFailure(obs.providerId, obs.modelId, "PAID_PLAN_REQUIRED");
     }
@@ -1300,7 +1312,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         if (supplyClass === undefined || !supplyClassIsZeroCash(supplyClass)) continue;
         const conn = this.connections.get(r.providerId);
         const def = this.definitions[r.providerId];
-        const perUser = supplyClass === "USER_CONNECTED_FREE" || supplyClass === "DISTRIBUTED_USER_FREE";
+        const perUser = supplyClass === "USER_CONNECTED_FREE" || supplyClass === "DISTRIBUTED_USER_FREE" || supplyClass === "PACKAGED_FREE_DIRECT";
         // A plain BYOK connection carries no account hash — the local-connection sentinel keeps
         // its pool claimable by the owning host's fabric plan (and only that plan) instead of
         // collapsing every same-provider key into one shared "unclaimed" identity.
@@ -1361,12 +1373,31 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
           family: model.family,
           gateway: r.providerId,
           supplyClass: target.supply,
+          ...(target.supply === "PACKAGED_FREE_DIRECT" ? {
+            quotaDomainType: "PUBLIC_IP" as const,
+            quotaDomainId: target.poolId,
+            egressMode: "CLIENT_DIRECT" as const,
+            marginalCostToCodeForge: 0,
+            freePrivacyClass: "DATA_COLLECTION_ALLOWED" as const,
+            trainingUse: "YES" as const,
+            ...(this.receipts.get(`${r.providerId}::${r.providerModelId}`) ? {
+              admissionReceipt: {
+                sourceDocumentation: "https://kilo.ai/docs/gateway/models-and-providers",
+                termsEvidence: "https://kilo.ai/terms",
+                priceEvidence: "https://kilo.ai/docs/gateway/usage-and-billing",
+                privacyEvidence: "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+                verifiedAt: "2026-10-01T00:00:00Z",
+                recheckAt: "2026-10-08T00:00:00Z",
+                qualificationAt: this.receipts.get(`${r.providerId}::${r.providerModelId}`)!.completedAt,
+              },
+            } : {}),
+          } : {}),
           capacityPoolId: target.poolId,
           capacityPoolScope: target.poolScope,
-          capacityScope: target.capScope,
+          capacityScope: target.supply === "PACKAGED_FREE_DIRECT" ? "SOURCE_IP" : target.capScope,
           // A permissive provider may train on what it sees: private code requires an explicit
           // user consent decision, not a silent routing default.
-          dataPolicyProfile: r.privacyClass === "permissive" ? "USER_CONSENT_REQUIRED" : "PRIVATE_CODE_ALLOWED",
+          dataPolicyProfile: target.supply === "PACKAGED_FREE_DIRECT" ? "PUBLIC_CODE_ONLY" : r.privacyClass === "permissive" ? "USER_CONSENT_REQUIRED" : "PRIVATE_CODE_ALLOWED",
           lifecycle: r.lifecycle === "RETIRED" ? "REJECTED" : quarantine ? "QUARANTINED" : "APPROVED",
           explicitZeroPrice: r.verifiedFree,
           // USER_CONNECTED_FREE needs proof the account cannot silently bill: a managed
@@ -1400,7 +1431,9 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
                 ...(r.admission.reason !== undefined ? { healthReason: r.admission.reason } : {}),
               }),
           enabled: quarantine === undefined,
-          windows: quotaWindows(quota, targetPerUser ? "USER_ACCOUNT" : "ORG", this.now),
+          windows: target.supply === "PACKAGED_FREE_DIRECT"
+            ? directProbeWindows(quotaWindows(quota, "SOURCE_IP", this.now), this.now)
+            : quotaWindows(quota, targetPerUser ? "USER_ACCOUNT" : "ORG", this.now),
           ...(target.identity !== undefined ? { capacityIdentity: target.identity } : {}),
         });
         }
@@ -1420,7 +1453,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       const def = this.definitions[conn.providerId];
       const supplyClass = supplyClassFor(def, conn);
       if (supplyClass === undefined || !supplyClassIsZeroCash(supplyClass)) continue;
-      const perUser = supplyClass === "USER_CONNECTED_FREE" || supplyClass === "DISTRIBUTED_USER_FREE";
+      const perUser = supplyClass === "USER_CONNECTED_FREE" || supplyClass === "DISTRIBUTED_USER_FREE" || supplyClass === "PACKAGED_FREE_DIRECT";
       const capacityIdentity = conn.userConnectedFree?.capacityIdentity ?? (perUser ? `localconn:${conn.providerId}` : undefined);
       const poolId = perUser
         ? conn.userConnectedFree?.capacityPoolId ?? `${conn.providerId}:user:${capacityIdentity}`
@@ -1432,7 +1465,9 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       // pools exist — the fleet owns the supply, and counting both would double-admit.
       const gatewaySupplanted = conn.credentialSource === "FDS_GATEWAY" && this.managedPoolsFor(conn.providerId).length > 0;
       if (pools.has(poolId) || modelDomain || gatewaySupplanted) continue;
-      const windows: CapacityWindow[] = quotaWindows(this.quota.get(conn.providerId, ""), perUser ? "USER_ACCOUNT" : "ORG", this.now);
+      const windows: CapacityWindow[] = supplyClass === "PACKAGED_FREE_DIRECT"
+        ? directProbeWindows(quotaWindows(this.quota.get(conn.providerId, ""), "SOURCE_IP", this.now), this.now)
+        : quotaWindows(this.quota.get(conn.providerId, ""), perUser ? "USER_ACCOUNT" : "ORG", this.now);
       if (conn.userConnectedFree) {
         windows.push({ unit: "concurrency", limit: conn.userConnectedFree.concurrencyLimit, remaining: conn.userConnectedFree.concurrencyLimit, resetAt: NO_RESET, scope: "USER_ACCOUNT", observedAt, authoritative: true });
         if (conn.userConnectedFree.includedUsageRemainingUsd !== undefined) {
@@ -1572,7 +1607,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     for (const conn of this.connections.values()) {
       if (conn.ownerUserId !== userId) continue;
       const supplyClass = supplyClassFor(this.definitions[conn.providerId], conn);
-      if (supplyClass !== "USER_CONNECTED_FREE" && supplyClass !== "DISTRIBUTED_USER_FREE") continue;
+      if (supplyClass !== "USER_CONNECTED_FREE" && supplyClass !== "DISTRIBUTED_USER_FREE" && supplyClass !== "PACKAGED_FREE_DIRECT") continue;
       identities.push(conn.userConnectedFree?.capacityIdentity ?? `localconn:${conn.providerId}`);
     }
     return identities;

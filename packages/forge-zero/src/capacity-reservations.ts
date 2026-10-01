@@ -169,7 +169,8 @@ export class CapacityReservationLedger {
         sawUnmeasured = true;
         continue;
       }
-      const hasUnitAccounting = creditWindows.length > 0 || providerUnitWindows.length > 0 || requestWindow?.authoritative === true;
+      const hasUnitAccounting = creditWindows.length > 0 || providerUnitWindows.length > 0 || requestWindow?.authoritative === true
+        || (route.supplyClass === "PACKAGED_FREE_DIRECT" && requestWindow !== undefined);
       const inputRemaining = inputWindows.length === 0
         ? (hasUnitAccounting ? Number.MAX_SAFE_INTEGER : 0)
         : Math.min(...inputWindows.map((window) => window.remaining));

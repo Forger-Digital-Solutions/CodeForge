@@ -192,8 +192,8 @@ export class EightBitHealthTracker {
 
   constructor(private readonly firewall: ForgeZero, private readonly now: () => number = () => Date.now()) {}
 
-  getHealth(providerId: string, modelId: string): EightBitRouteHealth {
-    const key = routeKeyOf(providerId, modelId);
+  getHealth(providerId: string, modelId: string, quotaDomainId?: string): EightBitRouteHealth {
+    const key = this.healthKey(providerId, modelId, quotaDomainId);
     return (
       this.routes.get(key) ?? {
         providerId,
@@ -204,6 +204,10 @@ export class EightBitHealthTracker {
     );
   }
 
+  private healthKey(providerId: string, modelId: string, quotaDomainId?: string): string {
+    return quotaDomainId === undefined ? routeKeyOf(providerId, modelId) : JSON.stringify([providerId, modelId, quotaDomainId]);
+  }
+
   isInCooldown(providerId: string, modelId: string): boolean {
     const h = this.getHealth(providerId, modelId);
     if (h.permanentlySuspended) return true;
@@ -212,7 +216,7 @@ export class EightBitHealthTracker {
 
   /** Restore a previously-persisted health snapshot (e.g. after a process restart). */
   hydrate(snapshot: EightBitRouteHealth): void {
-    this.routes.set(routeKeyOf(snapshot.providerId, snapshot.modelId), snapshot);
+    this.routes.set(this.healthKey(snapshot.providerId, snapshot.modelId, snapshot.quotaDomainId), snapshot);
     this.applyToFirewall(snapshot);
   }
 
@@ -223,9 +227,9 @@ export class EightBitHealthTracker {
    * to the reason's default scope, never to a guessed marking. `opts.cooldownUntil` carries
    * the classified reset horizon (a TPD wall holds until its daily reset rather than
    * re-probing the route every generic cooldown tick and burning a request each time). */
-  recordFailure(providerId: string, modelId: string, reason: FailureReason, opts?: { scope?: "model" | "provider"; cooldownUntil?: number }): EightBitRouteHealth {
-    const key = routeKeyOf(providerId, modelId);
-    const prior = this.getHealth(providerId, modelId);
+  recordFailure(providerId: string, modelId: string, reason: FailureReason, opts?: { scope?: "model" | "provider"; cooldownUntil?: number; quotaDomainId?: string }): EightBitRouteHealth {
+    const key = this.healthKey(providerId, modelId, opts?.quotaDomainId);
+    const prior = this.getHealth(providerId, modelId, opts?.quotaDomainId);
     // A route already permanently suspended stays that way — credentials don't become valid
     // again just because another request was attempted against them.
     if (prior.permanentlySuspended) return prior;
@@ -235,6 +239,7 @@ export class EightBitHealthTracker {
     const updated: EightBitRouteHealth = {
       providerId,
       modelId,
+      quotaDomainId: opts?.quotaDomainId,
       consecutiveFailures,
       lastFailureReason: reason,
       lastFailureAt: new Date(this.now()).toISOString(),
@@ -270,12 +275,12 @@ export class EightBitHealthTracker {
 
   /** A successful call clears the consecutive-failure streak (bounded retry succeeded /
    * route recovered) without erasing history of what happened — just the live streak. */
-  recordSuccess(providerId: string, modelId: string): void {
-    const key = routeKeyOf(providerId, modelId);
+  recordSuccess(providerId: string, modelId: string, quotaDomainId?: string): void {
+    const key = this.healthKey(providerId, modelId, quotaDomainId);
     const prior = this.routes.get(key);
     if (!prior || prior.consecutiveFailures === 0) return;
-    this.routes.set(key, { providerId, modelId, consecutiveFailures: 0, status: "HEALTHY" });
-    this.firewall.markModelHealth(providerId, modelId, "available");
+    this.routes.set(key, { providerId, modelId, quotaDomainId, consecutiveFailures: 0, status: "HEALTHY" });
+    if (quotaDomainId === undefined) this.firewall.markModelHealth(providerId, modelId, "available");
   }
 
   /**
@@ -283,8 +288,8 @@ export class EightBitHealthTracker {
    * has waited that long: the wait *is* the cooldown. ForgeZero's projection follows, since the
    * agent loop re-verifies eligibility before every model call.
    */
-  shortenCooldown(providerId: string, modelId: string, until: number): void {
-    const key = routeKeyOf(providerId, modelId);
+  shortenCooldown(providerId: string, modelId: string, until: number, quotaDomainId?: string): void {
+    const key = this.healthKey(providerId, modelId, quotaDomainId);
     const prior = this.routes.get(key);
     if (!prior || prior.cooldownUntil === undefined || prior.cooldownUntil <= until) return;
     const next: EightBitRouteHealth = { ...prior, cooldownUntil: until };
@@ -301,6 +306,7 @@ export class EightBitHealthTracker {
   }
 
   private applyToFirewall(health: EightBitRouteHealth): void {
+    if (health.quotaDomainId !== undefined) return;
     const status: ModelHealthState["status"] =
       health.status === "RATE_LIMITED"
         ? "rate_limited"

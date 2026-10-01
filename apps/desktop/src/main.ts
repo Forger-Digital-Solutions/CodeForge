@@ -13,6 +13,7 @@ import {
   APP_SETTINGS_KEY,
   CloseBehaviorSchema,
   applySettingsPatch,
+  freeCodeContextForWorkspace,
   parseAppSettings,
   parseAppSettingsPatch,
   type AppSettings,
@@ -478,6 +479,12 @@ function saveRecentProject(project: ProjectInfo): void {
   const filtered = recent.filter((p) => typeof p.path === "string" && p.path !== project.path);
   settings[RECENT_PROJECTS_KEY] = [project, ...filtered].slice(0, 10);
   if (!writeSettingsAtomic(settings)) throw new Error("Could not save the recent workspace. Check that the CodeForge data folder is writable.");
+  const appSettings = readAppSettings();
+  if (appSettings.privacy.freeCodeSharingWorkspace !== project.path) {
+    appSettings.privacy.freeCodeSharing = "PRIVATE";
+    appSettings.privacy.freeCodeSharingWorkspace = undefined;
+    writeAppSettings(appSettings);
+  }
 }
 
 /** Explicit secure-storage credentials only (safeStorage-encrypted). Environment credentials are
@@ -1036,6 +1043,7 @@ function registerProviderAdapter(providerId: string): ProviderAdapter | undefine
   const def = providerConnections?.definition(providerId) ?? PROVIDER_DEFINITIONS[providerId];
   if (!def || !def.implemented) return undefined;
   const adapter = createProviderAdapterFromDefinition(def, {
+    clientDirectAuthorized: true,
     credentialStore: desktopCredentialStore,
     onResponse: freeCloud?.onProviderResponse,
     cloudflareNeuronGuard: providerId === "cloudflare-workers-ai" ? buildCloudflareNeuronGuard() : undefined,
@@ -1088,6 +1096,26 @@ async function discoverProviderFreeInner(providerId: string, adapter: ProviderAd
   if (!firewall || !modelRegistry) return 0;
   try {
     const models = await adapter.listModels();
+    if (providerId === "kilo-free-direct") {
+      const verifiedAt = new Date().toISOString();
+      const freeIds = new Set(models.filter((m) => m.isFree && m.freeStatus === "verified_free").map((m) => m.modelId));
+      for (const model of models) {
+        if (!freeIds.has(model.modelId)) continue;
+        firewall.register({
+          providerId, modelId: model.modelId, displayName: model.displayName, tier: "free",
+          accessClass: "FREE_ROUTED", freeStatus: "verified_free", freeStatusVerifiedAt: verifiedAt,
+          verificationSource: "https://kilo.ai/docs/gateway/models-and-providers + live /models pricing",
+          isRemote: true, isCloudHosted: true, contextWindow: model.contextWindow,
+          capabilities: model.capabilities, privacyClass: "permissive",
+          costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, freeTierVerifiedAt: verifiedAt, paidFallbackPossible: false, paidFallbackDisabled: true, source: "kilo:anonymous-free-catalog" },
+          health: { status: "available", lastCheckedAt: verifiedAt },
+        });
+      }
+      pruneStaleRoutes(providerId, freeIds);
+      freeCloud?.updateConnection(providerId, { authState: "ok", lastCatalogRefreshAt: verifiedAt });
+      if (freeIds.size > 0) scheduleQualification(providerId);
+      return freeIds.size;
+    }
     const live: LiveModelInfo[] = models.map((m) => ({
       modelId: m.modelId,
       isFree: m.isFree,
@@ -1261,6 +1289,7 @@ async function initializeServer(dbPath: string): Promise<void> {
       subagentsR1Enabled: true,
       controlPlaneToken,
       freeCloud: freeCloud ?? undefined,
+      freeDataContext: () => freeCodeContextForWorkspace(readAppSettings(), currentWorkspacePath),
       // R24 Mission C: the embedded server is a single-user host — requests that carry no
       // explicit userId admit through the Free Fabric as this local user, which is also the
       // stamped owner of its per-user provider pools.
@@ -2398,6 +2427,13 @@ async function startPrimaryInstance(): Promise<void> {
       if (credentials[id] || providerConnections.credentialSourceOf(id) !== "NONE") registerProviderAdapter(id);
     }
     providerConnections.publishAll();
+    if (registerProviderAdapter("kilo-free-direct")) {
+      freeCloud?.setConnection({
+        providerId: "kilo-free-direct", connected: true, credentialSource: "ANONYMOUS_DIRECT",
+        supplyClass: "PACKAGED_FREE_DIRECT", authState: "ok", ownerUserId: userConnectedFreeScopeId(),
+      });
+      void discoverProviderFree("kilo-free-direct").then(() => scheduleQualification("kilo-free-direct")).catch(() => {});
+    }
     const cloudTokens = getStoredCloudTokens();
     if (resolveCloudCatalogSyncMode(Boolean(cloudTokens.accessToken)) === "register-adapter-and-sync") {
       // Signed-in: register the hosted adapter and sync its catalog in the background. Awaiting it
@@ -2857,6 +2893,12 @@ ipcMain.handle("settings:set", async (event, payload: { settings?: unknown; clos
   if (payload.settings !== undefined) {
     const patch = parseAppSettingsPatch(payload.settings);
     const next = applySettingsPatch(previous, patch);
+    if (patch.privacy?.freeCodeSharing !== undefined) {
+      if (patch.privacy.freeCodeSharing === "PUBLIC_AND_CONSENTED" && !currentWorkspacePath) throw new Error("Open a public workspace before allowing broader Free routes.");
+      next.privacy.freeCodeSharingWorkspace = patch.privacy.freeCodeSharing === "PUBLIC_AND_CONSENTED" ? currentWorkspacePath! : undefined;
+    } else {
+      next.privacy.freeCodeSharingWorkspace = previous.privacy.freeCodeSharingWorkspace;
+    }
     await applyRuntimeSettings(next, previous);
     writeAppSettings(next);
     appSettingsFreshAtStartup = false;

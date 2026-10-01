@@ -33,6 +33,24 @@ function iso(t: number): string {
 const SATURATION_MESSAGE = "OpenRouter stream error (502): Upstream error from Nvidia: ResourceExhausted: Worker local total request limit reached (16/16)";
 
 describe("EightBitRouteHealthAuthority — temporal health (§6, §7)", () => {
+  it("persists a pool cooldown across aliases while isolating another user's domain", async () => {
+    const authority = new EightBitRouteHealthAuthority(DEFAULT_ROUTE_HEALTH_POLICY, () => T0);
+    const persistence = createSessionPersistence({ dbPath: ":memory:" });
+    await persistence.init();
+    const ledger = new EightBitRouteHealthLedger(persistence);
+    ledger.attach(authority);
+    authority.observe({ kind: "call_failure", providerId: "kilo-free-direct", modelId: "kilo-auto/free", quotaDomainId: "ip-a", observedAt: new Date(T0).toISOString(), source: "runtime", reason: "RATE_LIMITED", status: 429, retryAfterMs: 60_000 });
+    authority.observe({ kind: "call_success", providerId: "kilo-free-direct", modelId: "lab/free:free", quotaDomainId: "ip-b", observedAt: new Date(T0).toISOString(), source: "runtime", latencyMs: 100 });
+    await ledger.flush();
+    const restored = new EightBitRouteHealthAuthority(DEFAULT_ROUTE_HEALTH_POLICY, () => T0);
+    await ledger.hydrate(restored);
+    expect(restored.assess("kilo-free-direct", "lab/free:free", { quotaDomainId: "ip-a" }).hardExclude).toBe(true);
+    expect(restored.assess("kilo-free-direct", "lab/free:free", { quotaDomainId: "ip-b" }).hardExclude).toBe(false);
+    expect(restored.assess("kilo-free-direct", "kilo-auto/free").hardExclude).toBe(false);
+    expect(restored.assess("kilo-free-direct", "kilo-auto/free", { quotaDomainId: "ip-a", now: T0 + 61_000 }).hardExclude).toBe(false);
+    ledger.detach();
+    await persistence.close();
+  });
   it("[R23 F3 replay] nemotron: gate OPEN at 14:43 → SATURATED at 14:45 → decays after the saturation TTL", () => {
     const c = clock();
     const authority = new EightBitRouteHealthAuthority(DEFAULT_ROUTE_HEALTH_POLICY, c.now);

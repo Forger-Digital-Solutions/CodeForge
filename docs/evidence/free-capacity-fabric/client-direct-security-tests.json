@@ -1,0 +1,17 @@
+{
+  "result": "PASS",
+  "testFile": "packages/providers/test/kilo-free-direct.test.ts",
+  "validated": [
+    "HTTPS pinned endpoint",
+    "no credentials forwarded",
+    "no CodeForge token",
+    "unapproved hostname rejected",
+    "HTTP downgrade rejected",
+    "arbitrary modelsPath rejected by anonymous constructor",
+    "redirect not followed",
+    "paid model rejected",
+    "null or blank pricing excluded",
+    "normalized chat and streaming tools through live adapter"
+  ],
+  "liveProtocolReceipt": "kilo-free-validation.json"
+}
