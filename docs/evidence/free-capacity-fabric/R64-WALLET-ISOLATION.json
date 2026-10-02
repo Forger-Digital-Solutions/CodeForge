@@ -1,0 +1,10 @@
+{
+  "status": "DETERMINISTIC_PASS_AND_KILO_ONLY_LIVE_OBSERVATION",
+  "purchasedCreditLeakage": "NONE_OBSERVED",
+  "paidAutoLeakage": "NONE_OBSERVED",
+  "byokLeakage": "NONE_OBSERVED",
+  "paidInferenceForDiagnosis": 0,
+  "unknownCostNotReportedAsMeasuredZero": true,
+  "allFreeExhaustionAndRecovery": "DETERMINISTIC_ONLY",
+  "liveTwoDomainWalletProof": "BLOCKED"
+}

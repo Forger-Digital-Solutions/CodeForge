@@ -1,0 +1,8 @@
+{
+  "status": "DETERMINISTIC_COVERAGE_ONLY",
+  "liveTwoDomainExhaustion": "NOT_PROVEN",
+  "admissionPolicy": "FAIL_CLOSED_WITHOUT_VERIFIED_FREE_CAPACITY",
+  "paidFallbackObservedInKiloFixture": 0,
+  "byokFallbackObservedInKiloFixture": 0,
+  "falseWaitsLive": null
+}

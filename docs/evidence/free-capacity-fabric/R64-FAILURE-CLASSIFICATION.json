@@ -17,5 +17,13 @@
   },
   "heapExhaustion": false,
   "epipe": false,
-  "paidInferenceUsedForDiagnosis": false
+  "paidInferenceUsedForDiagnosis": false,
+  "userWorkPreservation": {
+    "classification": "TEST_GENERATED_PREEXISTING_DIRTY_EVIDENCE_OVERWRITTEN",
+    "path": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+    "originalSha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+    "currentSha256": "813a39d49affa3ce9e8590fadf5179c042a7118ecd004b8c1c291da171ff1eaf",
+    "restored": false,
+    "resolution": "No exact initial-byte backup exists. File left unstaged; preservation failure explicitly reported. Other five modified files retain original hashes."
+  }
 }

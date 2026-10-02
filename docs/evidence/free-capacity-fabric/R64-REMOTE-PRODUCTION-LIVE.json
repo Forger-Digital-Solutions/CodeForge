@@ -1,0 +1,132 @@
+{
+  "evidenceSource": "R64-PRODUCTION-REMOTE-TRANSPORT.json",
+  "startedAt": "2026-10-02T17:32:46.554Z",
+  "status": "CONTROL_TRANSPORT_VERIFIED_EXECUTION_UNPROVEN",
+  "inferenceCalls": 0,
+  "credentialPersistence": "MEMORY_ONLY",
+  "checks": [
+    {
+      "name": "normal_pkce_exchange",
+      "httpStatus": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "name": "deployed_health",
+      "httpStatus": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "name": "unauthenticated_bootstrap",
+      "httpStatus": 401,
+      "expected": 401,
+      "passed": true
+    },
+    {
+      "name": "wildcard_scope_denied",
+      "httpStatus": 409,
+      "expected": 409,
+      "passed": true
+    },
+    {
+      "name": "unregistered_workspace_denied",
+      "httpStatus": 409,
+      "expected": 409,
+      "passed": true
+    },
+    {
+      "name": "owner_workflow_scope_created",
+      "httpStatus": 201,
+      "expected": 201,
+      "passed": true
+    },
+    {
+      "name": "authenticated_owner_bootstrap",
+      "httpStatus": 201,
+      "expected": 201,
+      "passed": true
+    },
+    {
+      "name": "authenticated_poll",
+      "httpStatus": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "name": "authenticated_heartbeat",
+      "httpStatus": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "name": "malformed_ack_denied",
+      "httpStatus": 400,
+      "expected": 400,
+      "passed": true
+    },
+    {
+      "name": "malformed_result_denied",
+      "httpStatus": 400,
+      "expected": 400,
+      "passed": true
+    },
+    {
+      "name": "malformed_feedback_denied",
+      "httpStatus": 400,
+      "expected": 400,
+      "passed": true
+    },
+    {
+      "name": "session_revoke",
+      "httpStatus": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "name": "revoked_session_poll_denied",
+      "httpStatus": 409,
+      "expected": 409,
+      "passed": true
+    },
+    {
+      "name": "probe_workflow_cancel",
+      "httpStatus": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "name": "probe_device_logout",
+      "httpStatus": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "name": "logged_out_access_denied",
+      "httpStatus": 401,
+      "expected": 401,
+      "passed": true
+    }
+  ],
+  "assignment": "NOT_PROVEN",
+  "acknowledgement": "NOT_PROVEN",
+  "result": "NOT_PROVEN",
+  "feedback": "NOT_PROVEN",
+  "codingCompletion": "NOT_PROVEN",
+  "deployment": {
+    "commit": "84c08956d61c143c65f0c147a78fed94648a2254",
+    "serviceId": "srv-dam6f83m8hqs73clo5ig"
+  },
+  "transport": {
+    "transportAvailable": true,
+    "dispatchConfigured": false
+  },
+  "sessionId": "remote-session-30aa0c1c-ce57-4c62-8117-e44792402aee",
+  "assignmentCount": 0,
+  "blockers": [
+    "Production entrypoint has no configured Capacity Fabric remote dispatch composition.",
+    "No independent Domain B Free account was authorized.",
+    "No second real user was available for live cross-owner isolation."
+  ],
+  "finishedAt": "2026-10-02T17:33:25.972Z"
+}

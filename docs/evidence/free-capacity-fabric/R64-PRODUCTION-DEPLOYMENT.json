@@ -1,0 +1,26 @@
+{
+  "status": "LIVE_EXACT_VALIDATED_REVISION",
+  "serviceId": "srv-dam6f83m8hqs73clo5ig",
+  "workspaceId": "tea-daa3l35g1s2s73c1t8mg",
+  "publicUrl": "https://codeforge-cloud-va.onrender.com",
+  "previousCommit": "1b34b4bbda4bf7904c09cbd72c3c546013d93c3d",
+  "previousDeployId": "dep-daqrg3m1egvs73dc4cb0",
+  "failedFirstDeployId": "dep-davuah2d0e5s739dmtfg",
+  "liveDeployment": {
+    "commit": {
+      "createdAt": "2026-10-02T17:18:46Z",
+      "id": "84c08956d61c143c65f0c147a78fed94648a2254",
+      "message": "fix: build server dependencies before clean cloud deployment (R64)"
+    },
+    "createdAt": "2026-10-02T17:25:32.389529Z",
+    "finishedAt": "2026-10-02T17:27:27.46257Z",
+    "id": "dep-davui349v7es73989kt0",
+    "startedAt": "2026-10-02T17:25:32.364877Z",
+    "status": "live",
+    "trigger": "manual",
+    "updatedAt": "2026-10-02T17:27:51.996508Z"
+  },
+  "environmentChanges": 0,
+  "billingChanges": 0,
+  "remoteDispatchConfigured": false
+}

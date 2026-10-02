@@ -1,0 +1,164 @@
+{
+  "benchmark": "r34-context-efficiency-medium-task",
+  "generatedAt": "2026-10-02T16:52:49.222Z",
+  "roleRun": {
+    "note": "role transcripts already invalidate stale reads durably; compaction must not regress",
+    "before": {
+      "requests": [
+        {
+          "index": 0,
+          "estimatedPromptTokens": 2896,
+          "messageCount": 2,
+          "toolMessageBytes": 0
+        },
+        {
+          "index": 1,
+          "estimatedPromptTokens": 3300,
+          "messageCount": 4,
+          "toolMessageBytes": 1572
+        },
+        {
+          "index": 2,
+          "estimatedPromptTokens": 2523,
+          "messageCount": 6,
+          "toolMessageBytes": 155
+        },
+        {
+          "index": 3,
+          "estimatedPromptTokens": 2927,
+          "messageCount": 8,
+          "toolMessageBytes": 1727
+        },
+        {
+          "index": 4,
+          "estimatedPromptTokens": 2611,
+          "messageCount": 10,
+          "toolMessageBytes": 387
+        },
+        {
+          "index": 5,
+          "estimatedPromptTokens": 2631,
+          "messageCount": 12,
+          "toolMessageBytes": 409
+        }
+      ],
+      "totalInputTokens": 16888
+    },
+    "after": {
+      "requests": [
+        {
+          "index": 0,
+          "estimatedPromptTokens": 2896,
+          "messageCount": 2,
+          "toolMessageBytes": 0
+        },
+        {
+          "index": 1,
+          "estimatedPromptTokens": 3300,
+          "messageCount": 4,
+          "toolMessageBytes": 1572
+        },
+        {
+          "index": 2,
+          "estimatedPromptTokens": 2523,
+          "messageCount": 6,
+          "toolMessageBytes": 155
+        },
+        {
+          "index": 3,
+          "estimatedPromptTokens": 2927,
+          "messageCount": 8,
+          "toolMessageBytes": 1727
+        },
+        {
+          "index": 4,
+          "estimatedPromptTokens": 2611,
+          "messageCount": 10,
+          "toolMessageBytes": 387
+        },
+        {
+          "index": 5,
+          "estimatedPromptTokens": 2631,
+          "messageCount": 12,
+          "toolMessageBytes": 409
+        }
+      ],
+      "totalInputTokens": 16888
+    }
+  },
+  "interactiveTurn": {
+    "note": "interactive messageHistory had no stale-read handling before R34",
+    "before": {
+      "requests": [
+        {
+          "index": 0,
+          "estimatedPromptTokens": 2019,
+          "messageCount": 2,
+          "toolMessageBytes": 0
+        },
+        {
+          "index": 1,
+          "estimatedPromptTokens": 2423,
+          "messageCount": 4,
+          "toolMessageBytes": 1572
+        },
+        {
+          "index": 2,
+          "estimatedPromptTokens": 2442,
+          "messageCount": 6,
+          "toolMessageBytes": 1594
+        },
+        {
+          "index": 3,
+          "estimatedPromptTokens": 2514,
+          "messageCount": 8,
+          "toolMessageBytes": 1800
+        },
+        {
+          "index": 4,
+          "estimatedPromptTokens": 2917,
+          "messageCount": 10,
+          "toolMessageBytes": 3372
+        }
+      ],
+      "totalInputTokens": 12315
+    },
+    "after": {
+      "requests": [
+        {
+          "index": 0,
+          "estimatedPromptTokens": 2019,
+          "messageCount": 2,
+          "toolMessageBytes": 0
+        },
+        {
+          "index": 1,
+          "estimatedPromptTokens": 2423,
+          "messageCount": 4,
+          "toolMessageBytes": 1572
+        },
+        {
+          "index": 2,
+          "estimatedPromptTokens": 2442,
+          "messageCount": 6,
+          "toolMessageBytes": 1594
+        },
+        {
+          "index": 3,
+          "estimatedPromptTokens": 2155,
+          "messageCount": 8,
+          "toolMessageBytes": 366
+        },
+        {
+          "index": 4,
+          "estimatedPromptTokens": 2557,
+          "messageCount": 10,
+          "toolMessageBytes": 1930
+        }
+      ],
+      "totalInputTokens": 11596
+    },
+    "deltaInputTokens": 719,
+    "deltaPct": 5.8
+  }
+}

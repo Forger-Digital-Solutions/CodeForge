@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-02T17:03:29.148Z",
+  "observedAt": "2026-10-02T17:37:05.186Z",
   "unchanged": false,
   "files": [
     {
@@ -32,5 +32,6 @@
       "sha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd",
       "currentSha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd"
     }
-  ]
+  ],
+  "limitation": "The full test suite regenerated the pre-existing modified R34 benchmark. Exact initial bytes were not backed up and could not be recovered. Other five modified files remain byte-identical and none of the six were staged."
 }

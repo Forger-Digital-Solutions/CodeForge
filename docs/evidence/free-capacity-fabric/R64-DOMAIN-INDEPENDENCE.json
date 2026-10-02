@@ -1,0 +1,10 @@
+{
+  "status": "ONE_LIVE_GROUP_ONLY",
+  "domainA": {
+    "provider": "Kilo",
+    "quotaOwnerType": "EGRESS_IP",
+    "independence": "SHARED_OR_UNKNOWN_EGRESS_ONE_GROUP"
+  },
+  "domainB": null,
+  "twoIndependentLiveGroups": false
+}

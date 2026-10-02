@@ -1,0 +1,14 @@
+{
+  "evidenceSource": "R64-MULTI-USER-INDEPENDENCE.json",
+  "generatedAt": "2026-10-02T17:03:29.148Z",
+  "status": "BLOCKED",
+  "liveConcurrentUsers": 0,
+  "userADomain": "Kilo EGRESS_IP shared-unverified",
+  "userBDomain": null,
+  "overlap": "Same or unknown Kilo egress is one independence group.",
+  "credentialIsolation": "DETERMINISTIC_ONLY",
+  "quotaIsolation": "DETERMINISTIC_ONLY",
+  "healthIsolation": "DETERMINISTIC_ONLY",
+  "accountingIsolation": "DETERMINISTIC_ONLY",
+  "reason": "No second real user with independently owned Free quota was authorized."
+}

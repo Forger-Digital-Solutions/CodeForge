@@ -1,0 +1,11 @@
+{
+  "status": "BLOCKED",
+  "liveProbes": 0,
+  "reason": "No eligible independently owned Free account was authorized.",
+  "roles": {
+    "Explorer": "NOT_RUN",
+    "Planner": "NOT_RUN",
+    "Coder": "NOT_RUN",
+    "Reviewer": "NOT_RUN"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "evidenceSource": "R64-DOMAIN-B.json",
+  "generatedAt": "2026-10-02T17:03:29.148Z",
+  "status": "BLOCKED",
+  "admitted": false,
+  "provider": null,
+  "liveCoding": "NOT_RUN",
+  "reason": "No eligible independently owned Free account was authorized. Paid and unknown existing credentials remain denied."
+}
