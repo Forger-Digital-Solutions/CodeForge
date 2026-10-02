@@ -14,11 +14,12 @@ export class HostedWorkflowAuthority {
 
   async init(): Promise<void> { await this.persistence.init(); }
 
-  async create(input: { ownerUserId: string; workerId: string; workspaceId: string; task: string }): Promise<HostedWorkflow> {
+  async create(input: { ownerUserId: string; workerId: string; workspaceId: string; task: string; publicCodeConsent?: boolean }): Promise<HostedWorkflow> {
     const now = new Date().toISOString();
     const id = `hosted-${randomUUID()}`;
     await this.persistence.upsertSession({ id, title: input.task.slice(0, 80), taskTitle: input.task, createdAt: now, updatedAt: now, status: "running" });
     const workflow: HostedWorkflow = { kind: "hosted_workflow", id, sessionId: id, ownerUserId: input.ownerUserId, workerId: input.workerId, workspaceId: input.workspaceId, revision: 0, status: "active", createdAt: now, updatedAt: now };
+    if (input.publicCodeConsent === true) workflow.execution = { remoteDirectDataContext: { dataClass: "PUBLIC_CODE", userConsented: true } };
     await this.persistence.insertIfAbsent(workflow);
     return workflow;
   }
@@ -72,7 +73,8 @@ export class HostedWorkflowAuthority {
     const action = await this.persistence.getWorkItem(result.actionId);
     if (!action || action.kind !== "desktop_worker_action") throw new Error("Unknown hosted worker action");
     const workflow = await this.get(action.workflowId, ownerUserId);
-    if (!workflow || workflow.workerId !== result.workerId || (workflow.status !== "awaiting_worker" && !action.result)) throw new Error("Hosted worker result is stale or unauthorized");
+    if (!workflow || workflow.workerId !== result.workerId || ["cancelled", "blocked", "completed", "failed"].includes(workflow.status)
+      || (workflow.status !== "awaiting_worker" && !action.result)) throw new Error("Hosted worker result is stale or unauthorized");
     const recorded = await this.workerBridge.recordResult(result);
     await this.continuationStore.markResultAvailable(result.actionId);
     await this.persistence.upsertWorkItem({ ...workflow, status: result.status === "succeeded" ? "active" : "blocked", ...(result.status === "succeeded" ? {} : { failureReason: result.status }), updatedAt: new Date().toISOString() });

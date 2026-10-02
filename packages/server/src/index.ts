@@ -3520,6 +3520,7 @@ export * from "./agent-runtime.js";
 export * from "./remote-client-direct.js";
 export * from "./remote-direct-transport.js";
 export * from "./remote-direct-provider.js";
+export * from "./remote-direct-cloud-provider.js";
 export * from "./remote-direct-client.js";
 export * from "./remote-direct-admission.js";
 export * from "./duplicate-suppression.js";

@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-10-02T20:55:00.000Z",
+  "run": "R65-REPOSITORY-TESTS.json",
+  "totals": { "files": 538, "passed": 4449, "failed": 1, "skipped": 50, "pending": 0, "todo": 0, "durationSeconds": 2887.904 },
+  "failures": [
+    {
+      "file": "packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts",
+      "test": "indexes a deterministic 1,000,000+ line repository and measures all query latencies",
+      "assertion": "ctx.ms < max(500, sym.ms * 6 + spawnAllowance)",
+      "classification": "ENVIRONMENTAL_WALL_CLOCK",
+      "measurements": [526.88, 591.86, 585.57, 567.52, 602.8],
+      "instrumentedDecomposition": { "symMs": 4.2, "probeMs": 76.4, "ctxMs": 602.8, "bound": 500 },
+      "rootCause": "buildContextPack issues 4 synchronous git process spawns per call (pack.ts rev-parse/branch/diff). On this machine git process spawn currently costs ~66-102ms (measured in isolation), so ctx carries ~300ms of spawn time plus ~300ms of in-process assembly over a 1M-line index. The in-situ probe measured 76.4ms so spawnAllowance could not lift the 500ms floor. The correctness assertions inside the test all pass; only the latency bound is exceeded.",
+      "regressionCheck": "git diff on packages/repo-intelligence, packages/context, and all dependencies of the measured path is empty — the mechanism is byte-identical to the R64 run where this test passed on the same machine (R64-suite-serial-heavy-3.json status passed). Four consecutive measurements cluster at 527-603ms on today's machine; earlier in the session the identical bound held.",
+      "disposition": "NOT a code regression; not relaxed; not hidden. The bound is a wall-clock benchmark assertion sensitive to process-spawn cost — the environment drifted. The recertification gate requires a fully green bounded run, so R65 certificate regeneration remains blocked until a run passes this test.",
+      "attempts": [
+        { "context": "bounded-main suite, 2 workers under parallel load", "ctxMs": 526.88 },
+        { "context": "standalone, maxWorkers=1", "ctxMs": 591.86 },
+        { "context": "standalone after 120s settle", "ctxMs": 585.57 },
+        { "context": "standalone, JSON rerun recorded to R65-suite-cf14-rerun.json", "ctxMs": 567.52 },
+        { "context": "standalone instrumented (component breakdown)", "ctxMs": 602.8 }
+      ]
+    }
+  ],
+  "noGateRelaxed": true
+}

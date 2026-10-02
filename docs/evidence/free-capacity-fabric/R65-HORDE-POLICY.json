@@ -1,0 +1,23 @@
+{
+  "status": "VERIFIED",
+  "checkedAt": "2026-10-02T19:24:16.605Z",
+  "receipt": {
+    "sourceDocumentation": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/README.md",
+    "termsEvidence": "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/definitions.md",
+    "privacyEvidence": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/FAQ.md",
+    "priceEvidence": "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/kudos.md",
+    "verifiedAt": "2026-10-02T19:24:16.605Z",
+    "recheckAt": "2026-10-09T19:24:16.605Z",
+    "qualificationAt": "2026-10-02T19:24:16.605Z",
+    "termsVerifiedAt": "2026-10-02T19:24:16.605Z",
+    "termsEvidenceHash": "c187030e08f828054eb1ccfbc9f14fd45002d856d4f46a95e953d2c8420c86ac",
+    "termsExpiresAt": "2026-10-09T19:24:16.605Z",
+    "privacyVerifiedAt": "2026-10-02T19:24:16.605Z",
+    "privacyEvidenceHash": "15f0ea5ba9298a6f2100685eb79f66df8882105c87c8c461768f6498471884b2",
+    "privacyExpiresAt": "2026-10-09T19:24:16.605Z",
+    "priceVerifiedAt": "2026-10-02T19:24:16.605Z",
+    "priceEvidenceHash": "b50fb2ad2f38d414fc953a13f1f742c267c3a6aea82d9f643abb043070db819a",
+    "priceExpiresAt": "2026-10-09T19:24:16.605Z",
+    "nextReverifyAt": "2026-10-03T01:24:16.605Z"
+  }
+}

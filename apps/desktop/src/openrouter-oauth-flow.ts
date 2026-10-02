@@ -1,4 +1,7 @@
 import http from "node:http";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { spawn } from "node:child_process";
 import { AddressInfo } from "node:net";
 import { shell } from "electron";
 import { OpenRouterOAuth } from "@codeforge/providers";
@@ -17,9 +20,25 @@ import { OpenRouterOAuth } from "@codeforge/providers";
  */
 export interface OpenRouterOAuthOptions {
   timeoutMs?: number;
+  browser?: "default" | "firefox";
   /** Injectable opener/exchanger for tests (defaults to shell.openExternal + real exchange). */
   openExternal?: (url: string) => Promise<void>;
   exchange?: typeof OpenRouterOAuth.exchangeCodeForKey;
+}
+
+export function installedFirefoxPath(env: NodeJS.ProcessEnv = process.env, exists: (file: string) => boolean = existsSync): string | undefined {
+  const directories = [env.ProgramFiles, env["ProgramFiles(x86)"], env.LOCALAPPDATA].filter((directory): directory is string => !!directory && path.isAbsolute(directory));
+  return directories.map((directory) => path.join(directory, "Mozilla Firefox", "firefox.exe")).find(exists);
+}
+
+function openInFirefox(url: string): Promise<void> {
+  const executable = installedFirefoxPath();
+  if (!executable) return Promise.reject(new Error("Firefox is not installed in a supported location. Use Connect OpenRouter Free to open your default browser."));
+  return new Promise((resolve, reject) => {
+    const child = spawn(executable, ["-new-tab", url], { detached: true, stdio: "ignore", windowsHide: false });
+    child.once("error", () => reject(new Error("Firefox could not open the authorization page.")));
+    child.once("spawn", () => { child.unref(); resolve(); });
+  });
 }
 
 const SUCCESS_HTML = `<!doctype html><html><head><meta charset="utf-8"><title>CodeForge</title>
@@ -42,7 +61,7 @@ export async function runOpenRouterOAuth(opts: OpenRouterOAuthOptions = {}): Pro
 
 function receiveOpenRouterAuthorization(opts: OpenRouterOAuthOptions): Promise<string> {
   const timeoutMs = opts.timeoutMs ?? 180000;
-  const openExternal = opts.openExternal ?? ((url: string) => shell.openExternal(url));
+  const openExternal = opts.openExternal ?? (opts.browser === "firefox" ? openInFirefox : (url: string) => shell.openExternal(url));
   const exchange = opts.exchange ?? OpenRouterOAuth.exchangeCodeForKey;
 
   return new Promise<string>((resolve, reject) => {

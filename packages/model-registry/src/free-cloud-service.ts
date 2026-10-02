@@ -3,6 +3,7 @@ import {
   supplyClassIsZeroCash,
   migrateLegacyFreeRoute,
   capacityIndependenceKey,
+  hashQuotaScope,
   type CapacityRoute,
   type CapacityWindow,
   type FreeAdmissionReceipt,
@@ -248,7 +249,7 @@ const RECOVERY_DEFER_WINDOW_MS = 10 * 60_000;
  *  evidence (`authoritative: true`) or absent — CodeForge never invents quota numbers. An
  *  elapsed reset refills to the declared limit (`effectiveQuota`) — a stale zero otherwise
  *  strands the pool forever because no traffic flows to refresh the headers. */
-function quotaWindows(quota: RouteQuota | undefined, scope: "ORG" | "USER_ACCOUNT" | "SOURCE_IP", now: () => Date): CapacityWindow[] {
+function quotaWindows(quota: RouteQuota | undefined, scope: "GLOBAL" | "ORG" | "USER_ACCOUNT" | "SOURCE_IP", now: () => Date): CapacityWindow[] {
   const effective = effectiveQuota(quota, now);
   const windows: CapacityWindow[] = [];
   if (effective?.remainingRequests !== undefined || effective?.limitRequests !== undefined) {
@@ -257,7 +258,21 @@ function quotaWindows(quota: RouteQuota | undefined, scope: "ORG" | "USER_ACCOUN
   if (effective?.remainingTokens !== undefined || effective?.limitTokens !== undefined) {
     windows.push({ unit: "input_tokens", limit: effective.limitTokens ?? effective.remainingTokens ?? 0, remaining: effective.remainingTokens ?? 0, resetAt: effective.tokenResetAt ?? effective.resetAt ?? NO_RESET, scope, observedAt: effective.observedAt, authoritative: true });
   }
+  // A standing parallel-slot meter never resets — remaining moves only with live holds.
+  if (effective?.remainingConcurrency !== undefined || effective?.limitConcurrency !== undefined) {
+    windows.push({ unit: "concurrency", limit: effective.limitConcurrency ?? effective.remainingConcurrency ?? 0, remaining: effective.remainingConcurrency ?? 0, resetAt: NO_RESET, scope, observedAt: effective.observedAt, authoritative: true, period: "CONTINUOUS" });
+  }
   return windows;
+}
+
+/**
+ * COMMUNITY_ANONYMOUS_FREE windows: one globally shared community account meters parallel
+ * generation slots (e.g. AI Horde's anonymous account `concurrency` less live in-flight
+ * generations). Requests/tokens stay unmetered — the provider's queue position, not a budget,
+ * is the throttle; the ledger's concurrency hold count does the bounding.
+ */
+function communityQuotaWindows(quota: RouteQuota | undefined, now: () => Date): CapacityWindow[] {
+  return quotaWindows(quota, "GLOBAL", now);
 }
 
 function delegatedQuotaWindows(receipt: OpenRouterEntitlementReceipt, quota: RouteQuota | undefined, now: () => Date): CapacityWindow[] {
@@ -294,6 +309,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private qualificationStore: QualificationPersistence;
   private readonly receipts = new Map<string, ModelQualificationReceipt>();
   private kiloPolicyReceipt?: FreeAdmissionReceipt;
+  private hordePolicyReceipt?: FreeAdmissionReceipt;
   private readonly connections = new Map<string, ProviderConnectionState>();
   private readonly managedPools = new Map<string, ManagedPoolRecord>();
   /** Instant-disable set for ANY poolId (shared, per-user, managed). A quarantined pool's
@@ -395,6 +411,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
 
   setKiloPolicyReceipt(receipt: FreeAdmissionReceipt | undefined): void {
     this.kiloPolicyReceipt = receipt;
+    this.emit();
+  }
+
+  setHordePolicyReceipt(receipt: FreeAdmissionReceipt | undefined): void {
+    this.hordePolicyReceipt = receipt;
     this.emit();
   }
 
@@ -1109,7 +1130,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     // once — no re-parsed copy (§16-17 provenance). Provider-scoped responses (no modelId) have
     // no route to attribute to; the authority keys conditions per route.
     const observedPool = obs.accountId === undefined ? undefined : this.managedPoolsFor(obs.providerId).find((pool) => pool.accountId === obs.accountId);
-    const quotaDomainId = observedPool?.poolId ?? (delegatedIdentity ? `${obs.providerId}:user:${delegatedIdentity}` : directConnection?.credentialSource === "ANONYMOUS_DIRECT" ? `${obs.providerId}:user:localconn:${obs.providerId}` : undefined);
+    // An anonymous community connection's evidence belongs to the provider's one global pool —
+    // there is no per-user domain to stamp, and the kilo `localconn:` identity would fabricate one.
+    const community = directConnection?.credentialSource === "ANONYMOUS_DIRECT"
+      && supplyClassFor(this.definitions[obs.providerId], directConnection) === "COMMUNITY_ANONYMOUS_FREE";
+    const quotaDomainId = observedPool?.poolId ?? (community ? `shared:${obs.providerId}` : delegatedIdentity ? `${obs.providerId}:user:${delegatedIdentity}` : directConnection?.credentialSource === "ANONYMOUS_DIRECT" ? `${obs.providerId}:user:localconn:${obs.providerId}` : undefined);
     if (this.routeHealth && obs.modelId && (!managed || attributed)) {
       const observation = rateLimitObservationFromHeaders({
         providerId: obs.providerId,
@@ -1430,12 +1455,39 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
               },
             } : {}),
           } : {}),
+          ...(target.supply === "COMMUNITY_ANONYMOUS_FREE" ? {
+            // One provider-owned anonymous account serves every caller: the quota domain is the
+            // global community pool, verified from the account endpoint — never a per-user claim.
+            quotaDomainType: "GLOBAL_SHARED" as const,
+            quotaDomainId: target.poolId,
+            egressMode: "CLIENT_DIRECT" as const,
+            marginalCostToCodeForge: 0,
+            freePrivacyClass: "DATA_COLLECTION_ALLOWED" as const,
+            trainingUse: "YES" as const,
+            ...(quota?.observedAt !== undefined ? {
+              quotaScopeEvidence: {
+                scope: "GLOBAL" as const,
+                identityHash: hashQuotaScope(r.providerId, "GLOBAL", `${r.providerId}:anonymous-account`),
+                source: `${r.providerId} account endpoint (anonymous account)`,
+                verifiedAt: quota.observedAt,
+                recheckAt: new Date(Date.parse(quota.observedAt) + 6 * 60 * 60_000).toISOString(),
+              },
+            } : {}),
+            ...(this.hordePolicyReceipt && this.receipts.get(`${r.providerId}::${r.providerModelId}`) ? {
+              admissionReceipt: {
+                ...this.hordePolicyReceipt,
+                qualificationAt: this.receipts.get(`${r.providerId}::${r.providerModelId}`)!.completedAt,
+              },
+            } : {}),
+          } : {}),
           capacityPoolId: target.poolId,
           capacityPoolScope: target.poolScope,
-          capacityScope: target.supply === "PACKAGED_FREE_DIRECT" ? "SOURCE_IP" : target.capScope,
+          capacityScope: target.supply === "COMMUNITY_ANONYMOUS_FREE" ? "GLOBAL" : target.supply === "PACKAGED_FREE_DIRECT" ? "SOURCE_IP" : target.capScope,
           // A permissive provider may train on what it sees: private code requires an explicit
-          // user consent decision, not a silent routing default.
-          dataPolicyProfile: target.supply === "PACKAGED_FREE_DIRECT" ? "PUBLIC_CODE_ONLY" : target.supply === "USER_ENTITLED_FREE" || r.privacyClass === "permissive" ? "USER_CONSENT_REQUIRED" : "PRIVATE_CODE_ALLOWED",
+          // user consent decision, not a silent routing default. Community workers can
+          // technically read prompts, so anonymous community capacity is public-code only —
+          // no consent gesture can change what a third-party worker host sees.
+          dataPolicyProfile: target.supply === "COMMUNITY_ANONYMOUS_FREE" ? "PUBLIC_CODE_ONLY" : target.supply === "PACKAGED_FREE_DIRECT" ? "PUBLIC_CODE_ONLY" : target.supply === "USER_ENTITLED_FREE" || r.privacyClass === "permissive" ? "USER_CONSENT_REQUIRED" : "PRIVATE_CODE_ALLOWED",
           lifecycle: r.lifecycle === "RETIRED" ? "REJECTED" : quarantine ? "QUARANTINED" : "APPROVED",
           explicitZeroPrice: r.verifiedFree,
           // USER_CONNECTED_FREE needs proof the account cannot silently bill: a managed
@@ -1475,6 +1527,8 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
             ? delegatedQuotaWindows(delegated, quota, this.now)
             : target.supply === "PACKAGED_FREE_DIRECT"
             ? directProbeWindows(quotaWindows(quota, "SOURCE_IP", this.now), this.now)
+            : target.supply === "COMMUNITY_ANONYMOUS_FREE"
+            ? communityQuotaWindows(quota, this.now)
             : quotaWindows(quota, targetPerUser ? "USER_ACCOUNT" : "ORG", this.now),
           ...(target.identity !== undefined ? { capacityIdentity: target.identity } : {}),
         });
@@ -1486,7 +1540,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
 
   productionCapacityRoutes(): CapacityRoute[] {
     return this.capacityRoutes().map((route) => {
-      if (["PACKAGED_FREE_DIRECT", "PACKAGED_FREE_PROVIDER_FUNDED", "PACKAGED_FREE_SPONSORED", "USER_ENTITLED_FREE"].includes(route.supplyClass)) return route;
+      if (["PACKAGED_FREE_DIRECT", "PACKAGED_FREE_PROVIDER_FUNDED", "PACKAGED_FREE_SPONSORED", "USER_ENTITLED_FREE", "COMMUNITY_ANONYMOUS_FREE"].includes(route.supplyClass)) return route;
       const decision = migrateLegacyFreeRoute(route, undefined, { dataClass: "SYNTHETIC" });
       return decision.migrated ?? { ...route, enabled: false, lifecycle: "QUARANTINED", healthy: false, healthGate: decision.reason, healthReason: decision.state };
     });
@@ -1516,11 +1570,14 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       // pools exist — the fleet owns the supply, and counting both would double-admit.
       const gatewaySupplanted = conn.credentialSource === "FDS_GATEWAY" && this.managedPoolsFor(conn.providerId).length > 0;
       if (pools.has(poolId) || modelDomain || gatewaySupplanted) continue;
+      const communityQuota = this.quota.get(conn.providerId, "");
       const windows: CapacityWindow[] = supplyClass === "USER_ENTITLED_FREE" && delegated
         ? delegatedQuotaWindows(delegated, this.quota.get(conn.providerId, "", delegated.accountIdentityHash), this.now)
         : supplyClass === "PACKAGED_FREE_DIRECT"
-        ? directProbeWindows(quotaWindows(this.quota.get(conn.providerId, ""), "SOURCE_IP", this.now), this.now)
-        : quotaWindows(this.quota.get(conn.providerId, ""), perUser ? "USER_ACCOUNT" : "ORG", this.now);
+        ? directProbeWindows(quotaWindows(communityQuota, "SOURCE_IP", this.now), this.now)
+        : supplyClass === "COMMUNITY_ANONYMOUS_FREE"
+        ? communityQuotaWindows(communityQuota, this.now)
+        : quotaWindows(communityQuota, perUser ? "USER_ACCOUNT" : "ORG", this.now);
       if (conn.userConnectedFree) {
         windows.push({ unit: "concurrency", limit: conn.userConnectedFree.concurrencyLimit, remaining: conn.userConnectedFree.concurrencyLimit, resetAt: NO_RESET, scope: "USER_ACCOUNT", observedAt, authoritative: true });
         if (conn.userConnectedFree.includedUsageRemainingUsd !== undefined) {
@@ -1536,7 +1593,17 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         observedAt,
         authoritative: windows.length > 0,
         ...(capacityIdentity !== undefined ? { capacityIdentity } : {}),
+        ...(supplyClass === "COMMUNITY_ANONYMOUS_FREE" ? { capacityIdentity: `community:${conn.providerId}` } : {}),
         ...(delegated?.quotaScopeEvidence ? { quotaScopeEvidence: delegated.quotaScopeEvidence } : {}),
+        ...(supplyClass === "COMMUNITY_ANONYMOUS_FREE" && communityQuota?.observedAt !== undefined ? {
+          quotaScopeEvidence: {
+            scope: "GLOBAL" as const,
+            identityHash: hashQuotaScope(conn.providerId, "GLOBAL", `${conn.providerId}:anonymous-account`),
+            source: `${conn.providerId} account endpoint (anonymous account)`,
+            verifiedAt: communityQuota.observedAt,
+            recheckAt: new Date(Date.parse(communityQuota.observedAt) + 6 * 60 * 60_000).toISOString(),
+          },
+        } : {}),
       });
     }
 

@@ -68,6 +68,8 @@ describe("OpenRouter delegated Free entitlement", () => {
       ? Response.json({ data }) : new Response(`Terms of Service Privacy Policy September 30, 2026 free_model_daily_requests current UTC day ${"policy ".repeat(90)}`) });
     expect(receipt.admissionEvidence).toBeUndefined();
     expect(receipt.reason).toBe("FREE_POLICY_REVERIFICATION_REQUIRED");
+    expect(receipt.accountClass).toBe("UNKNOWN");
+    expect(isOpenRouterEntitlementCurrent(receipt, binding.ownerUserId, binding.key, now)).toBe(false);
   });
 
   it("rechecks recurring quota before the UTC daily boundary", () => {

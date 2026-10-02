@@ -1,0 +1,453 @@
+{
+  "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+  "providerId": "ai-horde",
+  "modelId": "aphrodite/DeepSeek-V4.1-Flash",
+  "modelDisplayName": "AI Horde aphrodite/DeepSeek-V4.1-Flash",
+  "accessClass": "FREE_ROUTED",
+  "freeStatus": "verified_free",
+  "roleResults": {
+    "CODER": {
+      "role": "CODER",
+      "status": "PROBATION",
+      "testCases": [
+        {
+          "caseId": "compact.tool_call",
+          "category": "tool_call",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 8048,
+          "retries": 0,
+          "details": {
+            "toolCalls": [
+              "read_file"
+            ],
+            "path": "src/calc.ts"
+          }
+        },
+        {
+          "caseId": "compact.edit",
+          "category": "edit",
+          "passed": false,
+          "hardFailure": false,
+          "latencyMs": 7147,
+          "retries": 1,
+          "details": {
+            "calls": 1,
+            "toolCalls": [],
+            "turns": [
+              {
+                "toolCalls": [],
+                "finishReason": "stop",
+                "textLength": 167
+              }
+            ],
+            "firstAttempt": {
+              "calls": 1,
+              "toolCalls": [],
+              "turns": [
+                {
+                  "toolCalls": [],
+                  "finishReason": "stop",
+                  "textLength": 132
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "hardFailures": [],
+      "overallScore": 0.5,
+      "startedAt": "2026-10-02T19:08:11.959Z",
+      "completedAt": "2026-10-02T19:08:37.273Z"
+    },
+    "TOOL_AGENT": {
+      "role": "TOOL_AGENT",
+      "status": "PROBATION",
+      "testCases": [
+        {
+          "caseId": "compact.tool_call",
+          "category": "tool_call",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 8048,
+          "retries": 0,
+          "details": {
+            "toolCalls": [
+              "read_file"
+            ],
+            "path": "src/calc.ts"
+          }
+        },
+        {
+          "caseId": "compact.edit",
+          "category": "edit",
+          "passed": false,
+          "hardFailure": false,
+          "latencyMs": 7147,
+          "retries": 1,
+          "details": {
+            "calls": 1,
+            "toolCalls": [],
+            "turns": [
+              {
+                "toolCalls": [],
+                "finishReason": "stop",
+                "textLength": 167
+              }
+            ],
+            "firstAttempt": {
+              "calls": 1,
+              "toolCalls": [],
+              "turns": [
+                {
+                  "toolCalls": [],
+                  "finishReason": "stop",
+                  "textLength": 132
+                }
+              ]
+            }
+          }
+        },
+        {
+          "caseId": "compact.structured",
+          "category": "structured_output",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 4426,
+          "retries": 0,
+          "details": {
+            "textLength": 61,
+            "parsed": true
+          }
+        }
+      ],
+      "hardFailures": [],
+      "overallScore": 0.6666666666666666,
+      "startedAt": "2026-10-02T19:08:11.959Z",
+      "completedAt": "2026-10-02T19:08:37.273Z"
+    },
+    "ANALYST": {
+      "role": "ANALYST",
+      "status": "QUALIFIED",
+      "testCases": [
+        {
+          "caseId": "compact.structured",
+          "category": "structured_output",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 4426,
+          "retries": 0,
+          "details": {
+            "textLength": 61,
+            "parsed": true
+          }
+        }
+      ],
+      "hardFailures": [],
+      "overallScore": 1,
+      "startedAt": "2026-10-02T19:08:11.959Z",
+      "completedAt": "2026-10-02T19:08:37.273Z"
+    },
+    "EXPLORER": {
+      "role": "EXPLORER",
+      "status": "PROBATION",
+      "testCases": [
+        {
+          "caseId": "explorer.route_execution",
+          "category": "explore",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 17435,
+          "retries": 1,
+          "details": {
+            "modelCalls": 3,
+            "filesRead": [
+              "src/router.ts",
+              "src/provider/client.ts"
+            ],
+            "relevantFilesRead": [
+              "src/router.ts",
+              "src/provider/client.ts"
+            ],
+            "searches": 0,
+            "totalToolCalls": 3,
+            "validCalls": 3,
+            "validToolCallRate": 1,
+            "readPrecision": 1,
+            "hallucinatedPaths": [],
+            "mutationAttempts": 0,
+            "reportedFiles": [
+              "src/router.ts",
+              "src/provider/client.ts"
+            ],
+            "answerFiles": [
+              "src/router.ts",
+              "src/provider/client.ts"
+            ],
+            "recall": 1,
+            "reasoningRetries": 0,
+            "firstAttempt": {
+              "modelCalls": 6,
+              "filesRead": [],
+              "relevantFilesRead": [],
+              "searches": 3,
+              "totalToolCalls": 4,
+              "validCalls": 4,
+              "validToolCallRate": 1,
+              "readPrecision": 0,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [],
+              "answerFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "recall": 0,
+              "reasoningRetries": 0
+            }
+          }
+        },
+        {
+          "caseId": "explorer.reservation_release",
+          "category": "explore",
+          "passed": false,
+          "hardFailure": false,
+          "latencyMs": 49038,
+          "retries": 1,
+          "details": {
+            "modelCalls": 6,
+            "filesRead": [],
+            "relevantFilesRead": [],
+            "searches": 3,
+            "totalToolCalls": 4,
+            "validCalls": 4,
+            "validToolCallRate": 1,
+            "readPrecision": 0,
+            "hallucinatedPaths": [],
+            "mutationAttempts": 0,
+            "reportedFiles": [],
+            "answerFiles": [
+              "src/fabric/admission.ts",
+              "src/fabric/ledger.ts"
+            ],
+            "recall": 0,
+            "reasoningRetries": 1,
+            "firstAttempt": {
+              "modelCalls": 6,
+              "filesRead": [
+                "src/fabric/admission.ts"
+              ],
+              "relevantFilesRead": [
+                "src/fabric/admission.ts"
+              ],
+              "searches": 6,
+              "totalToolCalls": 8,
+              "validCalls": 8,
+              "validToolCallRate": 1,
+              "readPrecision": 1,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [],
+              "answerFiles": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "recall": 0,
+              "reasoningRetries": 0
+            }
+          }
+        }
+      ],
+      "hardFailures": [],
+      "overallScore": 0.5,
+      "startedAt": "2026-10-02T19:08:37.274Z",
+      "completedAt": "2026-10-02T19:11:56.374Z"
+    },
+    "PLANNER": {
+      "role": "PLANNER",
+      "status": "HARD_FAILURE",
+      "testCases": [
+        {
+          "caseId": "planner.release_callsite",
+          "category": "plan",
+          "passed": false,
+          "hardFailure": true,
+          "latencyMs": 8773,
+          "retries": 0,
+          "details": {
+            "tasks": 0,
+            "roles": [],
+            "requiredRolesPresent": false,
+            "dependencyOrderValid": false,
+            "inventedPaths": [],
+            "verificationStepPresent": false,
+            "scopeWithinBudget": true,
+            "schemaValid": false,
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "planner.schema",
+          "category": "plan",
+          "passed": false,
+          "hardFailure": true,
+          "latencyMs": 8182,
+          "retries": 0,
+          "details": {
+            "tasks": 0,
+            "roles": [],
+            "requiredRolesPresent": false,
+            "dependencyOrderValid": false,
+            "inventedPaths": [],
+            "verificationStepPresent": false,
+            "scopeWithinBudget": true,
+            "schemaValid": false,
+            "reasoningRetried": false
+          }
+        }
+      ],
+      "hardFailures": [
+        "planner.release_callsite",
+        "planner.schema"
+      ],
+      "overallScore": 0,
+      "startedAt": "2026-10-02T19:08:37.274Z",
+      "completedAt": "2026-10-02T19:11:56.374Z"
+    },
+    "REVIEWER": {
+      "role": "REVIEWER",
+      "status": "HARD_FAILURE",
+      "testCases": [
+        {
+          "caseId": "reviewer.one_bug",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 8282,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "reject",
+            "expectedApproved": false,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [
+              "add() still does not return the sum of its arguments; it now returns the product instead of a - b."
+            ],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.clean",
+          "category": "review",
+          "passed": false,
+          "hardFailure": true,
+          "latencyMs": 10521,
+          "retries": 0,
+          "details": {
+            "schemaValid": false,
+            "expectedApproved": true,
+            "verdictCorrect": false,
+            "findingLocalized": true,
+            "findings": [],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.clean_comment",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 5164,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "approve",
+            "expectedApproved": true,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.swallowed_failure",
+          "category": "review",
+          "passed": false,
+          "hardFailure": true,
+          "latencyMs": 7368,
+          "retries": 0,
+          "details": {
+            "schemaValid": false,
+            "expectedApproved": false,
+            "verdictCorrect": false,
+            "findingLocalized": false,
+            "findings": [],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.reservation_leak",
+          "category": "review",
+          "passed": false,
+          "hardFailure": true,
+          "latencyMs": 7938,
+          "retries": 0,
+          "details": {
+            "schemaValid": false,
+            "expectedApproved": false,
+            "verdictCorrect": false,
+            "findingLocalized": false,
+            "findings": [],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.test_cheat",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 7698,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "reject",
+            "expectedApproved": false,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [
+              "The test no longer calls run(), so it does not exercise the router and the assertion is tautological. This makes the test pass by disabling its coverage rather than fixing the flaky router behavior."
+            ],
+            "reasoningRetried": false
+          }
+        }
+      ],
+      "hardFailures": [
+        "reviewer.clean",
+        "reviewer.swallowed_failure",
+        "reviewer.reservation_leak"
+      ],
+      "overallScore": 0.5,
+      "startedAt": "2026-10-02T19:08:37.274Z",
+      "completedAt": "2026-10-02T19:11:56.374Z"
+    }
+  },
+  "startedAt": "2026-10-02T19:08:11.959Z",
+  "completedAt": "2026-10-02T19:08:37.273Z",
+  "totalLatencyMs": 25314,
+  "qualificationState": "QUALIFIED",
+  "hardFailureRoles": [
+    "PLANNER",
+    "REVIEWER"
+  ],
+  "metadata": {
+    "compact": true,
+    "requests": 34,
+    "transient": false,
+    "quotaExhausted": false,
+    "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+    "roleSuiteVersion": "R41_ROLE_QUALIFICATION_V3",
+    "roleTransientCases": 0
+  },
+  "r65QualificationSource": "CURRENT_INHERITED_ROLE_RECEIPT"
+}

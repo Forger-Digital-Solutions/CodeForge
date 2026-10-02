@@ -1,0 +1,130 @@
+{
+  "generatedAt": "2026-10-02T18:16:07.169Z",
+  "classification": "EXACT_ORIGINAL_BYTES_RECOVERED",
+  "file": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+  "originalStatus": "Pre-existing tracked modification before R64; remains unstaged user work.",
+  "originalHashAuthority": "docs/evidence/free-capacity-fabric/R64-START-STATE.json; R64-PRESERVED-USER-WORK.json",
+  "originalSha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+  "r65StartingSha256": "813a39d49affa3ce9e8590fadf5179c042a7118ecd004b8c1c291da171ff1eaf",
+  "restoredSha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+  "recovery": {
+    "source": "Git object database, including objects outside ordinary referenced commit history",
+    "blob": "3a9d1568b153ecdcfa6e7459078abe5ea603a3ef",
+    "recoveredBytes": 3949,
+    "sha256MatchedBeforeWrite": true,
+    "currentCopyGuardedBeforeWrite": true,
+    "sha256MatchedAfterWrite": true,
+    "staged": false,
+    "unrelatedFilesRestoredOrReset": false,
+    "snapshotOfReplacedCopy": "benchmarks/r65/tmp/preservation/context-efficiency-benchmark.json.r65-start"
+  },
+  "cause": "packages/server/test/context-efficiency.test.ts wrote each validation receipt into the tracked historical evidence file, regenerating generatedAt during the R64 full suite.",
+  "semanticComparison": {
+    "changedJsonPaths": [
+      "/generatedAt"
+    ],
+    "benchmarkMeasurementsEquivalent": true,
+    "originalRecoveredRatherThanReconstructed": true
+  },
+  "investigation": {
+    "gitObjectDatabase": {
+      "scannedBlobs": 9844,
+      "scannedBlobBytes": 1703930187,
+      "exactMatches": [
+        {
+          "source": "git-object-database",
+          "oid": "3a9d1568b153ecdcfa6e7459078abe5ea603a3ef",
+          "sha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b"
+        }
+      ]
+    },
+    "stashEntriesInspected": 1,
+    "referencedPathHistoryInspected": true,
+    "reflogInspected": true,
+    "temporaryGitObjectsInspected": 8,
+    "repositoryBackupCandidates": [
+      {
+        "path": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+        "sha256": "813a39d49affa3ce9e8590fadf5179c042a7118ecd004b8c1c291da171ff1eaf",
+        "matchesOriginal": false
+      },
+      {
+        "path": "benchmarks/r64/tmp/clean-production-build/docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+        "sha256": "4a8dca475e4dd452f3f066441055853fab4938644ab20d13a5aa4bc18cc739fc",
+        "matchesOriginal": false
+      },
+      {
+        "path": "benchmarks/r58/tmp/codeforge-r58-packaged-dogfood-ucaCTS/localappdata/CodeForge/worktrees/workspace/wt-767d49e8/docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+        "sha256": "4a8dca475e4dd452f3f066441055853fab4938644ab20d13a5aa4bc18cc739fc",
+        "matchesOriginal": false
+      },
+      {
+        "path": "benchmarks/r59/tmp/workspace/docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+        "sha256": "4a8dca475e4dd452f3f066441055853fab4938644ab20d13a5aa4bc18cc739fc",
+        "matchesOriginal": false
+      }
+    ],
+    "temporaryDirectorySearched": true,
+    "previousEvidenceInspected": [
+      "R64-START-STATE.json",
+      "R64-PRESERVED-USER-WORK.json",
+      "R64-R34-GENERATED-BENCHMARK.json"
+    ]
+  },
+  "harness": {
+    "changedFile": "packages/server/test/context-efficiency.test.ts",
+    "output": "Existing mkdtemp benchmark fixture directory, removed in finally",
+    "trackedReceiptWritesRemoved": true,
+    "regressionCoverage": "Runs the real benchmark; verifies generated temporary receipt round-trip and exact historical bytes before and after fixture cleanup.",
+    "otherTestEvidenceWriters": "Searched active TypeScript tests for repository docs/evidence output paths; no other active writer to this historical benchmark was found."
+  },
+  "validation": {
+    "command": "node node_modules/vitest/vitest.mjs run packages/server/test/context-efficiency.test.ts --maxWorkers=1 --reporter=json --outputFile=benchmarks/r65/tmp/preservation/restored-byte-preservation-tests.json",
+    "testFiles": 1,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "durationSeconds": 12.02909521484375,
+    "workers": 1,
+    "recoveredDirtyBytesPreserved": true
+  },
+  "preexistingModifiedFiles": [
+    {
+      "path": "apps/desktop/scripts/packaged-endurance.mjs",
+      "r65StartingSha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c",
+      "currentSha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c",
+      "action": "BYTE_IDENTICAL"
+    },
+    {
+      "path": "benchmarks/r57/extract-packaged-repeat.mjs",
+      "r65StartingSha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7",
+      "currentSha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7",
+      "action": "BYTE_IDENTICAL"
+    },
+    {
+      "path": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+      "r65StartingSha256": "813a39d49affa3ce9e8590fadf5179c042a7118ecd004b8c1c291da171ff1eaf",
+      "currentSha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+      "action": "EXACT_ORIGINAL_RECOVERED"
+    },
+    {
+      "path": "docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md",
+      "r65StartingSha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497",
+      "currentSha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497",
+      "action": "BYTE_IDENTICAL"
+    },
+    {
+      "path": "docs/evidence/r60-usable-free-inference/postgres-parity.json",
+      "r65StartingSha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243",
+      "currentSha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243",
+      "action": "BYTE_IDENTICAL"
+    },
+    {
+      "path": "packages/server/test/fixtures/run-recovery-worker.mjs",
+      "r65StartingSha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd",
+      "currentSha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd",
+      "action": "BYTE_IDENTICAL"
+    }
+  ]
+}

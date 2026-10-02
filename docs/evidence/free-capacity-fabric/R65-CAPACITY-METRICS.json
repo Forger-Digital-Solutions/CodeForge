@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-10-02T19:50:00.000Z",
+  "measurement": "R65 live public fixtures; not global production capacity",
+  "admittedFreeDomains": 2,
+  "independentGroups": 2,
+  "healthyCodingGroupsObservedDuringRun": 2,
+  "liveCodingDomains": 1,
+  "successfulLiveFailovers": 2,
+  "failoverDetail": "R65-CROSS-DOMAIN-FAILOVER.json: kilo-free-direct quota-exhausted (injected 429+Retry-After on the real adapter); fabric emitted ROTATE twice (EXPLORER turn, CODER turn) to ai-horde/google/gemma-4-31b; run completed with review+completion gates passed",
+  "domainBLiveCoding": "R65-DOMAIN-B-LIVE.json: ai-horde anonymous community pool served the full fixture — 9 model turns, math.ts corrected to a+b, 4 verification records, review passed, completion gate passed",
+  "multiUserIsolation": "R65-MULTIUSER-ISOLATION.json: 11/11 checks on the live-probed shared pool — per-user caps isolated, release scoped, private code denied for both users",
+  "paidFallbacksInLiveFixture": 0,
+  "byokFallbacksInLiveFixture": 0,
+  "falseWaits": null,
+  "falseWaitsReason": "Bounded same-route retry on transient failure observed correctly (503 path exercised in an earlier aborted run before the quota-exhaust fault ran); no fabricated wait horizons recorded in the completed runs.",
+  "providerBillTotal": "UNKNOWN",
+  "zeroBillingAuthority": "Kilo Free public policy + Haidra kudos/zero-cash documentation + Fabric admission; no fabricated billing measurement"
+}

@@ -1,0 +1,112 @@
+{
+  "observedAt": "2026-10-02T19:21:50.623Z",
+  "previousRevision": "1b34b4bbda4bf7904c09cbd72c3c546013d93c3d",
+  "build": "Dockerfile.cloud",
+  "start": "Dockerfile CMD apps/cloud-api/dist/index.js",
+  "autoDeploy": false,
+  "migrationCompatibility": [
+    {
+      "version": 1,
+      "sameChecksum": true
+    },
+    {
+      "version": 2,
+      "sameChecksum": true
+    },
+    {
+      "version": 3,
+      "sameChecksum": true
+    },
+    {
+      "version": 4,
+      "sameChecksum": true
+    },
+    {
+      "version": 5,
+      "sameChecksum": true
+    },
+    {
+      "version": 6,
+      "sameChecksum": true
+    },
+    {
+      "version": 7,
+      "sameChecksum": true
+    },
+    {
+      "version": 8,
+      "sameChecksum": true
+    },
+    {
+      "version": 9,
+      "sameChecksum": true
+    }
+  ],
+  "incompatible": [],
+  "addedMigrationVersions": [
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "endpoints": [
+    {
+      "path": "/health/live",
+      "httpStatus": 200,
+      "body": {
+        "status": "ok",
+        "version": "0.4.0",
+        "deployment": {
+          "commit": "84c08956d61c143c65f0c147a78fed94648a2254",
+          "serviceId": "srv-dam6f83m8hqs73clo5ig"
+        },
+        "remoteDirect": {
+          "transportAvailable": true,
+          "dispatchConfigured": false
+        }
+      }
+    },
+    {
+      "path": "/health/ready",
+      "httpStatus": 200,
+      "body": {
+        "status": "ready",
+        "database": "connected",
+        "hostedInferenceReady": true,
+        "availableModelsCount": 10,
+        "availableFreeCount": 6,
+        "killSwitches": {
+          "hostedInferenceEnabled": true,
+          "hostedFreeEnabled": true,
+          "maxRequestCostUsd": 2,
+          "globalDailySpendLimitUsd": 1000
+        },
+        "providerCapacity": [
+          {
+            "providerId": "openrouter",
+            "status": "policy_blocked",
+            "verifiedFreeCount": 0
+          },
+          {
+            "providerId": "groq",
+            "status": "healthy",
+            "verifiedFreeCount": 6
+          }
+        ]
+      }
+    },
+    {
+      "path": "/v1/remote-direct/sessions",
+      "httpStatus": 401,
+      "body": {
+        "error": "Missing or invalid [REDACTED]",
+        "code": "UNAUTHENTICATED"
+      }
+    }
+  ]
+}

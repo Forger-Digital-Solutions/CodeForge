@@ -142,6 +142,13 @@ export interface RouteQuota {
   limitRequests?: number;
   remainingTokens?: number;
   limitTokens?: number;
+  /**
+   * Standing concurrency meter for providers whose capacity is measured in parallel slots,
+   * not request/token budgets (e.g. a community pool's max parallel generations). Never a
+   * request-count substitute — carries only what the provider actually reported.
+   */
+  remainingConcurrency?: number;
+  limitConcurrency?: number;
   /** Provider reset for the request-count window. */
   requestResetAt?: string;
   /** Provider reset for the token window. */
@@ -636,6 +643,7 @@ export function supplyClassFor(
   conn: Pick<ProviderConnectionState, "credentialSource" | "connected"> & Partial<Pick<ProviderConnectionState, "delegatedEntitlement">> | undefined,
 ): SupplyClass | undefined {
   if (def?.id === "kilo-free-direct" && conn?.credentialSource === "ANONYMOUS_DIRECT" && conn.connected) return "PACKAGED_FREE_DIRECT";
+  if (def?.id === "ai-horde" && conn?.credentialSource === "ANONYMOUS_DIRECT" && conn.connected) return "COMMUNITY_ANONYMOUS_FREE";
   if (def?.userConnectedFree) return def.userConnectedFree.supplyClass;
   if (conn?.credentialSource === "FDS_GATEWAY" || def?.apiStyle === "hosted" || def?.kind === "fds-gateway") {
     return "PURE_MANAGED_FREE";

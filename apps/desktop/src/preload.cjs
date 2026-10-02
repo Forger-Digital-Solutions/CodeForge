@@ -44,8 +44,8 @@ const api = {
   setProviderCredential: (providerId, apiKey) => {
     return ipcRenderer.invoke("provider:setCredential", providerId, apiKey);
   },
-  connectOpenRouter: () => {
-    return ipcRenderer.invoke("oauth:openrouter:start");
+  connectOpenRouter: (browser) => {
+    return ipcRenderer.invoke("oauth:openrouter:start", browser);
   },
   deleteProviderCredential: (providerId) => {
     return ipcRenderer.invoke("provider:deleteCredential", providerId);

@@ -24,13 +24,19 @@ export function parseRouteQuota(headers: Iterable<[string, string]>, now: () => 
   const limitRequests = num("x-ratelimit-limit-requests", "x-ratelimit-limit", "x-ratelimit-limit-req-minute");
   const remainingTokens = num("x-ratelimit-remaining-tokens", "x-ratelimit-remaining-tokens-minute");
   const limitTokens = num("x-ratelimit-limit-tokens", "x-ratelimit-limit-tokens-minute");
+  // Concurrency-metered providers (community pools metered in parallel slots, not request
+  // budgets) publish a translated observation under x-capacity-*-concurrency — real provider
+  // figures, never invented. Distinct names keep a standing slot ceiling from masquerading as
+  // a request-rate window.
+  const remainingConcurrency = num("x-capacity-remaining-concurrency");
+  const limitConcurrency = num("x-capacity-limit-concurrency");
   const retryAfterMs = parseRetryAfterMs(h.get("retry-after"), now);
   // Request and token windows reset independently — providers publish separate reset headers.
   // A generic `x-ratelimit-reset` is the provider's request-window reset.
   const requestResetAt = parseResetAt(h.get("x-ratelimit-reset-requests") ?? h.get("x-ratelimit-reset"), now);
   const tokenResetAt = parseResetAt(h.get("x-ratelimit-reset-tokens"), now);
   const resetAt = earliestReset(requestResetAt, tokenResetAt);
-  if (remainingRequests === undefined && limitRequests === undefined && remainingTokens === undefined && retryAfterMs === undefined && resetAt === undefined) {
+  if (remainingRequests === undefined && limitRequests === undefined && remainingTokens === undefined && remainingConcurrency === undefined && retryAfterMs === undefined && resetAt === undefined) {
     return undefined;
   }
   return {
@@ -38,6 +44,8 @@ export function parseRouteQuota(headers: Iterable<[string, string]>, now: () => 
     limitRequests,
     remainingTokens,
     limitTokens,
+    remainingConcurrency,
+    limitConcurrency,
     requestResetAt,
     tokenResetAt,
     resetAt,

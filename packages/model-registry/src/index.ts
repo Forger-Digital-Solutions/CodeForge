@@ -30,6 +30,7 @@ export * from "./env-discovery.js";
 export * from "./free-cloud-registry.js";
 export * from "./free-cloud-service.js";
 export * from "./kilo-policy-reverification.js";
+export * from "./horde-policy-reverification.js";
 export * from "./quota.js";
 export { MODELS_DEV_SNAPSHOT, MODELS_DEV_SNAPSHOT_CAPTURED_AT } from "./snapshot.js";
 

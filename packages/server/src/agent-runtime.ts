@@ -481,6 +481,14 @@ class FreeCapacityQueued extends Error {
   }
 }
 
+/** A local admission-policy rejection after fabric ADMITTED — no provider request ran, so it
+ * must not reach the call_failure path (its message would misread as provider quota evidence). */
+class FreeSupplyDomainNotAdmittedError extends Error {
+  constructor() {
+    super("FREE_SUPPLY_DOMAIN_NOT_ADMITTED");
+  }
+}
+
 /**
  * R33: per-turn admission hints a dispatcher may attach. `role`/`healthRole` let a review
  * turn admit on REVIEWER-scoped evidence; `fallbackRole` widens to coding-capable supply
@@ -2488,6 +2496,9 @@ export class AgentRuntime {
             // R41: a context-fit verdict is a local admission decision — no provider request
             // was made, so there is no failure evidence to record and no route to rotate.
             if (err instanceof RoleContextOverflowError) throw err;
+            // R65: a free-supply-domain admission rejection is likewise local policy — it says
+            // nothing about the provider's availability, so it must not record call_failure.
+            if (err instanceof FreeSupplyDomainNotAdmittedError) throw err;
             // R55 wave 2: allowance verdicts are terminal policy failures — exhaustion or an
             // unpriceable route must end a paid-only role before the wire, never rotate into
             // a route the policy did not authorize.
@@ -5348,9 +5359,9 @@ export class AgentRuntime {
     if (decision?.outcome === "QUEUED_FOR_CAPACITY") throw new FreeCapacityQueued(decision.explanation.reasonCodes, decision.nextAvailableAt);
     const admitted = decision?.outcome === "ADMITTED" ? decision.selected : undefined;
     if (!admitted?.quotaDomainId || !admitted.quotaDomainType || admitted.quotaDomainType === "UNKNOWN" || admitted.marginalCostToCodeForge !== 0 || !admitted.reservationId
-      || !["PACKAGED_FREE_DIRECT", "PACKAGED_FREE_PROVIDER_FUNDED", "PACKAGED_FREE_SPONSORED", "USER_ENTITLED_FREE"].includes(admitted.supplyClass)) {
+      || !["PACKAGED_FREE_DIRECT", "PACKAGED_FREE_PROVIDER_FUNDED", "PACKAGED_FREE_SPONSORED", "USER_ENTITLED_FREE", "COMMUNITY_ANONYMOUS_FREE"].includes(admitted.supplyClass)) {
       this.eightBit.releaseFabricAdmission(requestId);
-      throw new Error("FREE_QUOTA_DOMAIN_NOT_ADMITTED");
+      throw new FreeSupplyDomainNotAdmittedError();
     }
   }
 

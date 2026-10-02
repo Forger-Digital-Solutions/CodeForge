@@ -134,10 +134,10 @@ export async function setEnabledModels(providerId: string, modelIds: string[] | 
   await bridge()?.setProviderEnabledModels?.(providerId, modelIds);
 }
 
-export async function connectOpenRouterOAuth(): Promise<{ ok: boolean; verifiedFree?: number; error?: string }> {
+export async function connectOpenRouterOAuth(browser?: "default" | "firefox"): Promise<{ ok: boolean; verifiedFree?: number; error?: string }> {
   const api = bridge();
   if (!api?.connectOpenRouter) return { ok: false, error: "OAuth bridge unavailable" };
-  return api.connectOpenRouter();
+  return api.connectOpenRouter(browser);
 }
 
 export async function importEnvironmentCredential(providerId: string): Promise<{ ok: boolean; error?: string }> {

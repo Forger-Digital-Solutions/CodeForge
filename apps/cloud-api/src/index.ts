@@ -17,7 +17,7 @@ export * from "./github-pr-client.js";
 
 async function main() {
   const { loadCloudRuntimeConfig, describeConfig } = await import("./config.js");
-  const { CodeForgeCloudServer } = await import("./server.js");
+  const { createProductionRemoteDirectHost } = await import("./production-remote-direct.js");
   const { CloudFirewallManager, CloudProviderRegistry, FirstPartyWorkerFleet } = await import("@codeforge/cloud-gateway");
 
   const config = loadCloudRuntimeConfig(process.env);
@@ -48,7 +48,7 @@ async function main() {
     console.warn("[CodeForge Cloud API] no verified server-owned Free capacity is ready; hosted Free will report unavailable until an authorized route becomes healthy.");
   }
 
-  const server = new CodeForgeCloudServer({
+  const remoteHost = createProductionRemoteDirectHost({
     host: config.host,
     port: config.port,
     driver: config.database.driver,
@@ -80,9 +80,11 @@ async function main() {
     securityContact: config.securityContact,
     logLevel: config.logLevel,
   });
+  const server = remoteHost.cloud;
 
   const actualPort = await server.start(config.port, config.host);
   console.log(`[CodeForge Cloud API] running on http://${config.host}:${actualPort}`);
+  void remoteHost.startSupply().catch(() => console.warn("[CodeForge Cloud API] remote Free supply verification unavailable; assignments remain denied."));
   if (providerRegistry) {
     for (const r of providerRegistry.getReports()) {
       console.log(`[CodeForge Cloud API] provider ${r.providerId}: ${r.status} (${r.verifiedFreeCount} verified-free)`);
@@ -92,6 +94,7 @@ async function main() {
   const shutdown = async () => {
     console.log("[CodeForge Cloud API] shutting down...");
     qwenFleet?.stop();
+    remoteHost.stopSupply();
     await server.stop();
     process.exit(0);
   };

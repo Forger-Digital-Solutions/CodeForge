@@ -170,7 +170,11 @@ export class CapacityReservationLedger {
         continue;
       }
       const hasUnitAccounting = creditWindows.length > 0 || providerUnitWindows.length > 0 || requestWindow?.authoritative === true
-        || (route.supplyClass === "PACKAGED_FREE_DIRECT" && requestWindow !== undefined);
+        || (route.supplyClass === "PACKAGED_FREE_DIRECT" && requestWindow !== undefined)
+        // Community pools are metered by standing concurrency (the account's max parallel
+        // generations), not request/token budgets; an authoritative concurrency window is the
+        // real meter. Requests/tokens are then honestly unmetered — the queue is the throttle.
+        || (route.supplyClass === "COMMUNITY_ANONYMOUS_FREE" && concurrencyWindows.some((window) => window.authoritative));
       const inputRemaining = inputWindows.length === 0
         ? (hasUnitAccounting ? Number.MAX_SAFE_INTEGER : 0)
         : Math.min(...inputWindows.map((window) => window.remaining));

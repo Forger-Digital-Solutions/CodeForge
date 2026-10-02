@@ -1,0 +1,460 @@
+{
+  "suiteVersion": "R41_ROLE_QUALIFICATION_V3",
+  "providerId": "ai-horde",
+  "modelId": "google/gemma-4-31b",
+  "modelDisplayName": "AI Horde google/gemma-4-31b",
+  "accessClass": "FREE_ROUTED",
+  "freeStatus": "verified_free",
+  "roleResults": {
+    "CODER": {
+      "role": "CODER",
+      "status": "QUALIFIED",
+      "testCases": [
+        {
+          "caseId": "compact.tool_call",
+          "category": "tool_call",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 7615,
+          "retries": 0,
+          "details": {
+            "toolCalls": [
+              "read_file"
+            ],
+            "path": "src/calc.ts"
+          }
+        },
+        {
+          "caseId": "compact.edit",
+          "category": "edit",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 13148,
+          "retries": 0,
+          "details": {
+            "calls": 2,
+            "path": "src/calc.ts",
+            "oldTextMatches": true,
+            "oldTextHasBug": true,
+            "newTextOk": true,
+            "turns": [
+              {
+                "toolCalls": [
+                  "read_file"
+                ],
+                "finishReason": "tool_calls",
+                "textLength": 0
+              },
+              {
+                "toolCalls": [
+                  "edit_file"
+                ],
+                "finishReason": "tool_calls",
+                "textLength": 0
+              }
+            ]
+          }
+        }
+      ],
+      "hardFailures": [],
+      "overallScore": 1,
+      "startedAt": "2026-10-02T19:19:25.856Z",
+      "completedAt": "2026-10-02T19:19:55.882Z"
+    },
+    "TOOL_AGENT": {
+      "role": "TOOL_AGENT",
+      "status": "QUALIFIED",
+      "testCases": [
+        {
+          "caseId": "compact.tool_call",
+          "category": "tool_call",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 7615,
+          "retries": 0,
+          "details": {
+            "toolCalls": [
+              "read_file"
+            ],
+            "path": "src/calc.ts"
+          }
+        },
+        {
+          "caseId": "compact.edit",
+          "category": "edit",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 13148,
+          "retries": 0,
+          "details": {
+            "calls": 2,
+            "path": "src/calc.ts",
+            "oldTextMatches": true,
+            "oldTextHasBug": true,
+            "newTextOk": true,
+            "turns": [
+              {
+                "toolCalls": [
+                  "read_file"
+                ],
+                "finishReason": "tool_calls",
+                "textLength": 0
+              },
+              {
+                "toolCalls": [
+                  "edit_file"
+                ],
+                "finishReason": "tool_calls",
+                "textLength": 0
+              }
+            ]
+          }
+        },
+        {
+          "caseId": "compact.structured",
+          "category": "structured_output",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 9261,
+          "retries": 0,
+          "details": {
+            "textLength": 83,
+            "parsed": true
+          }
+        }
+      ],
+      "hardFailures": [],
+      "overallScore": 1,
+      "startedAt": "2026-10-02T19:19:25.856Z",
+      "completedAt": "2026-10-02T19:19:55.882Z"
+    },
+    "ANALYST": {
+      "role": "ANALYST",
+      "status": "QUALIFIED",
+      "testCases": [
+        {
+          "caseId": "compact.structured",
+          "category": "structured_output",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 9261,
+          "retries": 0,
+          "details": {
+            "textLength": 83,
+            "parsed": true
+          }
+        }
+      ],
+      "hardFailures": [],
+      "overallScore": 1,
+      "startedAt": "2026-10-02T19:19:25.856Z",
+      "completedAt": "2026-10-02T19:19:55.882Z"
+    },
+    "EXPLORER": {
+      "role": "EXPLORER",
+      "status": "QUALIFIED",
+      "testCases": [
+        {
+          "caseId": "explorer.route_execution",
+          "category": "explore",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 35062,
+          "retries": 0,
+          "details": {
+            "modelCalls": 5,
+            "filesRead": [
+              "src/router.ts",
+              "src/provider/client.ts"
+            ],
+            "relevantFilesRead": [
+              "src/router.ts",
+              "src/provider/client.ts"
+            ],
+            "searches": 3,
+            "totalToolCalls": 6,
+            "validCalls": 6,
+            "validToolCallRate": 1,
+            "readPrecision": 1,
+            "hallucinatedPaths": [],
+            "mutationAttempts": 0,
+            "reportedFiles": [
+              "src/router.ts",
+              "src/provider/client.ts"
+            ],
+            "answerFiles": [
+              "src/router.ts",
+              "src/provider/client.ts"
+            ],
+            "recall": 1,
+            "reasoningRetries": 0
+          }
+        },
+        {
+          "caseId": "explorer.reservation_release",
+          "category": "explore",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 50356,
+          "retries": 1,
+          "details": {
+            "modelCalls": 6,
+            "filesRead": [
+              "src/fabric/admission.ts",
+              "src/fabric/ledger.ts",
+              "src/provider/client.ts"
+            ],
+            "relevantFilesRead": [
+              "src/fabric/admission.ts",
+              "src/fabric/ledger.ts"
+            ],
+            "searches": 4,
+            "totalToolCalls": 8,
+            "validCalls": 8,
+            "validToolCallRate": 1,
+            "readPrecision": 0.6666666666666666,
+            "hallucinatedPaths": [],
+            "mutationAttempts": 0,
+            "reportedFiles": [
+              "src/fabric/admission.ts"
+            ],
+            "answerFiles": [
+              "src/fabric/admission.ts",
+              "src/fabric/ledger.ts"
+            ],
+            "recall": 0.5,
+            "reasoningRetries": 0,
+            "firstAttempt": {
+              "modelCalls": 6,
+              "filesRead": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "relevantFilesRead": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "searches": 5,
+              "totalToolCalls": 8,
+              "validCalls": 8,
+              "validToolCallRate": 1,
+              "readPrecision": 1,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [],
+              "answerFiles": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "recall": 0,
+              "reasoningRetries": 0
+            }
+          }
+        }
+      ],
+      "hardFailures": [],
+      "overallScore": 1,
+      "startedAt": "2026-10-02T19:19:55.883Z",
+      "completedAt": "2026-10-02T19:23:57.214Z"
+    },
+    "PLANNER": {
+      "role": "PLANNER",
+      "status": "QUALIFIED",
+      "testCases": [
+        {
+          "caseId": "planner.release_callsite",
+          "category": "plan",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 4400,
+          "retries": 0,
+          "details": {
+            "protocol": "task_graph_v1",
+            "tasks": 2,
+            "roles": [
+              "coder",
+              "reviewer"
+            ],
+            "requiredRolesPresent": true,
+            "dependencyOrderValid": true,
+            "inventedPaths": [],
+            "verificationStepPresent": true,
+            "scopeWithinBudget": true,
+            "schemaValid": true,
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "planner.schema",
+          "category": "plan",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 4717,
+          "retries": 0,
+          "details": {
+            "protocol": "task_graph_v1",
+            "tasks": 2,
+            "roles": [
+              "coder",
+              "reviewer"
+            ],
+            "requiredRolesPresent": true,
+            "dependencyOrderValid": true,
+            "inventedPaths": [],
+            "verificationStepPresent": true,
+            "scopeWithinBudget": true,
+            "schemaValid": true,
+            "reasoningRetried": false
+          }
+        }
+      ],
+      "hardFailures": [],
+      "overallScore": 1,
+      "startedAt": "2026-10-02T19:19:55.883Z",
+      "completedAt": "2026-10-02T19:23:57.214Z"
+    },
+    "REVIEWER": {
+      "role": "REVIEWER",
+      "status": "QUALIFIED",
+      "testCases": [
+        {
+          "caseId": "reviewer.one_bug",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 7819,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "reject",
+            "expectedApproved": false,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [
+              "The add() function is incorrectly implemented to multiply arguments instead of summing them."
+            ],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.clean",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 9553,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "approve",
+            "expectedApproved": true,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.clean_comment",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 5349,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "approve",
+            "expectedApproved": true,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.swallowed_failure",
+          "category": "review",
+          "passed": false,
+          "hardFailure": false,
+          "latencyMs": 5251,
+          "retries": 1,
+          "details": {
+            "schemaValid": true,
+            "verdict": "approve",
+            "expectedApproved": false,
+            "verdictCorrect": false,
+            "findingLocalized": false,
+            "findings": [],
+            "reasoningRetried": false,
+            "firstAttempt": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "reasoningRetried": false
+            }
+          }
+        },
+        {
+          "caseId": "reviewer.reservation_leak",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 13760,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "reject",
+            "expectedApproved": false,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [
+              "The function does not return any value or signal the 'early return' mentioned in the intent; it simply executes a reserve call and then potentially returns undefined, making the fast path logic incomplete or ineffective."
+            ],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.test_cheat",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 24291,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "reject",
+            "expectedApproved": false,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [
+              "The change removes the actual logic being tested (`run()`) and replaces it with a tautology, which masks the flakiness rather than fixing the underlying issue."
+            ],
+            "reasoningRetried": false
+          }
+        }
+      ],
+      "hardFailures": [],
+      "overallScore": 0.8333333333333334,
+      "startedAt": "2026-10-02T19:19:55.883Z",
+      "completedAt": "2026-10-02T19:23:57.214Z"
+    }
+  },
+  "startedAt": "2026-10-02T19:19:25.856Z",
+  "completedAt": "2026-10-02T19:19:55.882Z",
+  "totalLatencyMs": 30027,
+  "qualificationState": "QUALIFIED",
+  "hardFailureRoles": [],
+  "metadata": {
+    "compact": true,
+    "requests": 29,
+    "transient": false,
+    "quotaExhausted": false,
+    "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+    "roleSuiteVersion": "R41_ROLE_QUALIFICATION_V3",
+    "roleTransientCases": 0
+  },
+  "qualifiedAt": "2026-10-02T19:19:25.302Z",
+  "r65QualificationSource": "CURRENT_INHERITED_ROLE_RECEIPT"
+}

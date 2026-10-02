@@ -22,7 +22,7 @@ import { ConsoleSecurityAuditSink, SecurityAuditLog, createRedactingLogger, reda
 import { buildSecurityTxt } from "./security-txt.js";
 import { isAllowedBillingReturnUrl } from "./billing-return-url.js";
 import { RemoteDirectTransport, type RemoteDirectBinding, type RemoteDirectPrincipal } from "@codeforge/server";
-import type { ChatRequest } from "@codeforge/providers";
+import { ChatRequestSchema, type ChatRequest } from "@codeforge/providers";
 import { handleRemoteDirectHttp } from "./remote-direct-http.js";
 import { deploymentIdentity } from "./deployment-identity.js";
 import { SponsorOperatorService, type SponsorOperatorPolicy } from "./sponsor-operator-service.js";
@@ -206,6 +206,7 @@ const HostedWorkflowCreateSchema = z.object({
   workerId: z.string().min(1).max(128),
   workspaceId: z.string().min(1).max(128),
   task: z.string().min(1).max(20_000),
+  publicCodeConsent: z.boolean().optional(),
 });
 
 const WorkerIdSchema = z.string().min(1).max(128);
@@ -336,6 +337,7 @@ export interface CodeForgeCloudServerConfig {
   };
   logLevel?: "debug" | "info" | "warn" | "error" | "silent";
   remoteDirectAdmission?: (binding: RemoteDirectBinding, request: ChatRequest) => boolean | Promise<boolean>;
+  remoteDirectSubmit?: (accountId: string, workflowId: string, request: ChatRequest, role: string) => Promise<string>;
   remoteDirectScopeAuthorization?: (principal: RemoteDirectPrincipal, scope: { deviceId: string; workspaceId: string }) => boolean | Promise<boolean>;
   sponsorOperatorPolicy?: SponsorOperatorPolicy;
 }
@@ -358,8 +360,9 @@ export class CodeForgeCloudServer {
   public readonly remoteDirectTransport: RemoteDirectTransport;
   private readonly deployment = deploymentIdentity(process.env);
   private readonly remoteDirectDispatchConfigured: boolean;
+  private readonly remoteDirectSubmit?: CodeForgeCloudServerConfig["remoteDirectSubmit"];
   public readonly sponsorOperators?: SponsorOperatorService;
-  private readonly sessionPersistence: ISessionPersistence;
+  public readonly sessionPersistence: ISessionPersistence;
   private readonly ownsSessionPersistence: boolean;
   private readonly discoverOnStart: boolean;
   private readonly allowedOrigins: Set<string>;
@@ -456,6 +459,7 @@ export class CodeForgeCloudServer {
     });
     this.hostedWorkflowAuthority = new HostedWorkflowAuthority(this.sessionPersistence);
     this.remoteDirectDispatchConfigured = config.remoteDirectAdmission !== undefined;
+    this.remoteDirectSubmit = config.remoteDirectSubmit;
     if (config.sponsorOperatorPolicy) this.sponsorOperators = new SponsorOperatorService(this.sessionPersistence, secretEnvelope, config.sponsorOperatorPolicy);
     this.remoteDirectTransport = new RemoteDirectTransport({ persistence: this.sessionPersistence, envelope: secretEnvelope,
       admit: config.remoteDirectAdmission ?? (() => false), authorizeSessionScope: config.remoteDirectScopeAuthorization ?? (async (principal, scope) =>
@@ -1709,6 +1713,32 @@ export class CodeForgeCloudServer {
         return;
       }
 
+      const remoteSubmitRoute = url.pathname.match(/^\/v1\/workflows\/([^/]+)\/remote-direct$/);
+      if (remoteSubmitRoute && method === "POST") {
+        const ownerUserId = await this.authenticateRequest(req);
+        if (!this.remoteDirectSubmit) { this.sendJson(res, 503, { error: "REMOTE_DISPATCH_UNAVAILABLE" }, corsOrigin); return; }
+        const body = await this.readJson(req, z.object({ request: ChatRequestSchema,
+          role: z.enum(["CODER", "EXPLORER", "TOOL_AGENT", "PLANNER", "REVIEWER"]).default("CODER") }).strict());
+        try {
+          const jobId = await this.remoteDirectSubmit(ownerUserId, remoteSubmitRoute[1]!, body.request, body.role ?? "CODER");
+          this.sendJson(res, 201, { jobId }, corsOrigin);
+        } catch { this.sendJson(res, 409, { error: "REMOTE_DISPATCH_DENIED" }, corsOrigin); }
+        return;
+      }
+
+      const remoteStatusRoute = url.pathname.match(/^\/v1\/workflows\/([^/]+)\/remote-direct\/([^/]+)$/);
+      if (remoteStatusRoute && method === "GET") {
+        const ownerUserId = await this.authenticateRequest(req);
+        const workflow = await this.hostedWorkflowAuthority.get(remoteStatusRoute[1]!, ownerUserId);
+        const job = await this.sessionPersistence.getWorkItem(remoteStatusRoute[2]!);
+        if (!workflow || job?.kind !== "remote_direct_job" || job.ownerUserId !== ownerUserId
+          || job.runId !== workflow.id || job.workspaceId !== workflow.workspaceId || job.deviceId !== workflow.workerId) {
+          this.sendJson(res, 404, { error: "Remote assignment not found" }, corsOrigin); return;
+        }
+        this.sendJson(res, 200, await this.remoteDirectTransport.status(ownerUserId, job.id), corsOrigin);
+        return;
+      }
+
       if (url.pathname === "/v1/workflows" && method === "POST") {
         const ownerUserId = await this.authenticateRequest(req);
         const body = await this.readJson(req, HostedWorkflowCreateSchema);
@@ -1730,7 +1760,11 @@ export class CodeForgeCloudServer {
           this.sendJson(res, 404, { error: "Hosted workflow not found" }, corsOrigin);
           return;
         }
-        this.sendJson(res, 200, await this.hostedWorkflowAuthority.cancel(ownerUserId, workflowId), corsOrigin);
+        const cancelled = await this.hostedWorkflowAuthority.cancel(ownerUserId, workflowId);
+        for (const job of await this.sessionPersistence.getWorkItemsByKind("remote_direct_job")) {
+          if (job.kind === "remote_direct_job" && job.ownerUserId === ownerUserId && job.runId === workflowId) await this.remoteDirectTransport.cancel(ownerUserId, job.id);
+        }
+        this.sendJson(res, 200, cancelled, corsOrigin);
         return;
       }
 

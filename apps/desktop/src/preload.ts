@@ -57,8 +57,8 @@ const api = {
   setProviderCredential: (providerId: string, apiKey: string): Promise<void> => {
     return ipcRenderer.invoke("provider:setCredential", providerId, apiKey);
   },
-  connectOpenRouter: (): Promise<{ ok: boolean; verifiedFree?: number; error?: string }> => {
-    return ipcRenderer.invoke("oauth:openrouter:start");
+  connectOpenRouter: (browser?: "default" | "firefox"): Promise<{ ok: boolean; verifiedFree?: number; error?: string }> => {
+    return ipcRenderer.invoke("oauth:openrouter:start", browser);
   },
   deleteProviderCredential: (providerId: string): Promise<void> => {
     return ipcRenderer.invoke("provider:deleteCredential", providerId);

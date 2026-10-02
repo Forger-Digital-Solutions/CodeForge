@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "24ed80d52717fa147540dd4063f0306e66ab9738611e0b54590c643a550bd5ae",
-  "surfaceVersion": "r64-free-capacity-fabric-v1",
+  "sourceStateId": "660c6d898ed3ef26356cea3b1e73e7ff2611ecbfcec3e54bd3af1618ab2f3b61",
+  "surfaceVersion": "r65-free-capacity-fabric-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -8,17 +8,25 @@
   "idAlgorithm": "sha256(JSON.stringify(materialFiles sorted lexicographically, each as [path, gitBlobHash]))",
   "materialFiles": [
     "apps/cloud-api/src/deployment-identity.ts",
+    "apps/cloud-api/src/hosted-workflow-authority.ts",
+    "apps/cloud-api/src/index.ts",
+    "apps/cloud-api/src/production-remote-direct.ts",
     "apps/cloud-api/src/remote-direct-host.ts",
     "apps/cloud-api/src/remote-direct-http.ts",
     "apps/cloud-api/src/server.ts",
     "apps/cloud-api/src/sponsor-operator-http.ts",
     "apps/cloud-api/src/sponsor-operator-service.ts",
     "apps/cloud-api/test/deployment-identity.test.ts",
+    "apps/cloud-api/test/remote-direct-dispatch.test.ts",
     "apps/cloud-api/test/remote-direct-http.test.ts",
     "apps/cloud-api/test/sponsor-operator.test.ts",
     "apps/desktop/src/main.ts",
+    "apps/desktop/src/openrouter-oauth-flow.ts",
+    "apps/desktop/src/preload.cjs",
+    "apps/desktop/src/preload.ts",
     "apps/desktop/src/provider-connection-types.ts",
     "apps/desktop/src/provider-connections.ts",
+    "apps/desktop/src/renderer/provider-connections-client.ts",
     "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx",
     "apps/desktop/src/renderer/settings/settings-registry.tsx",
     "apps/desktop/test/free-capacity-settings.test.tsx",
@@ -59,13 +67,16 @@
     "packages/forge-green/src/optimization-types.ts",
     "packages/forge-green/src/reuse-cost-policy.ts",
     "packages/forge-zero/src/capacity-independence.ts",
+    "packages/forge-zero/src/capacity-policy.ts",
     "packages/forge-zero/src/capacity-reservations.ts",
     "packages/forge-zero/src/capacity-types.ts",
     "packages/forge-zero/test/capacity-independence.test.ts",
     "packages/forge-zero/test/capacity-transition-chaos.test.ts",
     "packages/model-registry/src/catalog-refresh.ts",
     "packages/model-registry/src/discovery.ts",
+    "packages/model-registry/src/free-cloud-registry.ts",
     "packages/model-registry/src/free-cloud-service.ts",
+    "packages/model-registry/src/index.ts",
     "packages/model-registry/src/provider-definitions.ts",
     "packages/model-registry/src/quota.ts",
     "packages/model-registry/test/free-cloud-registry.test.ts",
@@ -79,6 +90,7 @@
     "packages/providers/src/capacity-governor.ts",
     "packages/providers/src/index.ts",
     "packages/providers/src/openrouter-entitlement.ts",
+    "packages/providers/src/provider-factory.ts",
     "packages/providers/test/openrouter-entitlement.test.ts",
     "packages/router/package.json",
     "packages/router/src/index.ts",
@@ -98,6 +110,7 @@
     "packages/server/src/model-execution-adapter.ts",
     "packages/server/src/remote-direct-admission.ts",
     "packages/server/src/remote-direct-client.ts",
+    "packages/server/src/remote-direct-cloud-provider.ts",
     "packages/server/src/remote-direct-provider.ts",
     "packages/server/src/remote-direct-transport.ts",
     "packages/server/src/role-output-budget.ts",
@@ -110,6 +123,7 @@
     "packages/server/src/workflow-service.ts",
     "packages/server/src/workspace-service.ts",
     "packages/server/test/checkpoint.test.ts",
+    "packages/server/test/context-efficiency.test.ts",
     "packages/server/test/forge-workspaces.test.ts",
     "packages/server/test/free-fabric-wiring.test.ts",
     "packages/server/test/free-routing-authority.test.ts",
@@ -135,20 +149,28 @@
   ],
   "materialFileHashes": {
     "apps/cloud-api/src/deployment-identity.ts": "32c53c574fa91345bd4f0ddd43c940687b039aa3",
-    "apps/cloud-api/src/remote-direct-host.ts": "26a0dbf54e88b13780bfcf5b442ab03e0b77900e",
+    "apps/cloud-api/src/hosted-workflow-authority.ts": "59c9a05a90be1e436c8f75bbea9aa725c1083e69",
+    "apps/cloud-api/src/index.ts": "ee5a0f5c8eafb3056a1a5a9523e4ac0d73548d09",
+    "apps/cloud-api/src/production-remote-direct.ts": "47df322a09a2e481498ee98621b123e571f639b0",
+    "apps/cloud-api/src/remote-direct-host.ts": "681816aa36a8451e66a60df4c755334e65f9856f",
     "apps/cloud-api/src/remote-direct-http.ts": "812c17a19f7900b46d425e9b5053c4bff73c3f97",
-    "apps/cloud-api/src/server.ts": "7b5d93a9193fdfeb1635b20adc94ceb7c436adec",
+    "apps/cloud-api/src/server.ts": "d8218a805183c23d3d5cb0db646e860bb7c9bbfd",
     "apps/cloud-api/src/sponsor-operator-http.ts": "c34043c2ef493230b2446ec34474fb9e790c037b",
     "apps/cloud-api/src/sponsor-operator-service.ts": "136c6d5764c5492be13b94963889b0414ef9da8d",
     "apps/cloud-api/test/deployment-identity.test.ts": "22dc3f791f6ee72d8e50822d4044cab39ee82f77",
+    "apps/cloud-api/test/remote-direct-dispatch.test.ts": "347dc3175189cb2f3cf2f72b2dcdea1b708abcd0",
     "apps/cloud-api/test/remote-direct-http.test.ts": "70a27c52a6d70e0af88c855ed9bffafc01fc3e30",
     "apps/cloud-api/test/sponsor-operator.test.ts": "7fadf44233b191e3fe915d432bb3498c3b9b03e9",
-    "apps/desktop/src/main.ts": "1d720d697eef8d9c9988da72c2a1ca9bbf228081",
+    "apps/desktop/src/main.ts": "689fbb784b1e7c30352aa8e3526c72925239e31a",
+    "apps/desktop/src/openrouter-oauth-flow.ts": "440b944599b079119c91df72a4553cf940bd8e35",
+    "apps/desktop/src/preload.cjs": "fcf88ea298027fef8e504665879ca9e7b7ddfbb6",
+    "apps/desktop/src/preload.ts": "bbb0e6bb39db5abc8ee211c26165c385ed9216c7",
     "apps/desktop/src/provider-connection-types.ts": "3d6a07df277fa69cc9c2785e2bb84123265aa558",
-    "apps/desktop/src/provider-connections.ts": "10a4c3c20163f372dc4fa5745a16cef15eca9fb8",
-    "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx": "47a9f05c1ef1be04dc62d42af20c921a825205a1",
+    "apps/desktop/src/provider-connections.ts": "1f40619ce6ace554d7ae881ac1b7ca5fb18a7137",
+    "apps/desktop/src/renderer/provider-connections-client.ts": "a55183a92057dc80cd3ba89daf72cadfac646647",
+    "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx": "b0543328417950a3aadbd554a4f1d98166fab830",
     "apps/desktop/src/renderer/settings/settings-registry.tsx": "9b92ae44af823b0fc25045a04b49403bce31de4f",
-    "apps/desktop/test/free-capacity-settings.test.tsx": "cd61f4ae15abca1114c594fee6dbeaaf8ab5e85a",
+    "apps/desktop/test/free-capacity-settings.test.tsx": "d5a9ca903e7090bbad6a47fbb6d95bf737623992",
     "apps/desktop/test/provider-connections.test.ts": "bc461d63c560b3a21c762b71113524b1788868e8",
     "apps/desktop/test/settings-registry.test.tsx": "55c1c61fcf282eac9f0372af83bfab06ae6af8c8",
     "Dockerfile.cloud": "7d855b5403d6adb696a88f3a87595d2871d0ac1c",
@@ -186,15 +208,18 @@
     "packages/forge-green/src/optimization-types.ts": "1539abf45eaf618db3c2a68cf398b2320db5e7bd",
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
     "packages/forge-zero/src/capacity-independence.ts": "9bcf9beb30fde3f49704b4017fe441f96b80c809",
-    "packages/forge-zero/src/capacity-reservations.ts": "4b2d485520e19a5d4f6781fa0c60f190e3d23142",
-    "packages/forge-zero/src/capacity-types.ts": "6c9b213dceda7c0336fb9c5f266c4871351f56f8",
+    "packages/forge-zero/src/capacity-policy.ts": "f2ca813fecdd31620b85988e478361ef44f2d619",
+    "packages/forge-zero/src/capacity-reservations.ts": "74a549828f0b14fd468724c2d714a1e07cf3113d",
+    "packages/forge-zero/src/capacity-types.ts": "1325587360dc8901f09a41e0a7d52a7b787a7a31",
     "packages/forge-zero/test/capacity-independence.test.ts": "641e3c12731da2d9a5f8141a510ed0f0a75d9ebc",
     "packages/forge-zero/test/capacity-transition-chaos.test.ts": "1c08ae0a53585d261944f31ed99b51fc74b86d9c",
     "packages/model-registry/src/catalog-refresh.ts": "ba9057e3c6bfc39bbc618e5c042ed4081e2cc306",
     "packages/model-registry/src/discovery.ts": "cc024b18cdb2ce8a74d19c00379216cbfb9fa1ae",
-    "packages/model-registry/src/free-cloud-service.ts": "693d1d4c30f5ebc83e0f5831a5076b73b8534576",
-    "packages/model-registry/src/provider-definitions.ts": "309059509a063fe876f413a3ac05585ece1f0e85",
-    "packages/model-registry/src/quota.ts": "fefd97ce8648a0edd6a809fa366ec9e6a7a2d03a",
+    "packages/model-registry/src/free-cloud-registry.ts": "70331fab1ed05263dc2b7ef35813979a262149db",
+    "packages/model-registry/src/free-cloud-service.ts": "e434962b04554db8bc43dd91803c89403f509612",
+    "packages/model-registry/src/index.ts": "3d6e7ad6361d22b02444ceec76729f99e4056006",
+    "packages/model-registry/src/provider-definitions.ts": "ce51dc9a32ba846eaa68ab94578fe85a8a8ff7e4",
+    "packages/model-registry/src/quota.ts": "dc393fd54d3a860aa15a16f5de4ba1c76c00dd11",
     "packages/model-registry/test/free-cloud-registry.test.ts": "c8e469561d0ed235c3c5dc03050cba42eb5a6e22",
     "packages/model-registry/test/r59-supply-recovery.test.ts": "7db749abea2172f2bcc06080cca9c20d495b2442",
     "packages/paid-auto/src/expected-cost.ts": "efe764f9fa537fa202f2d101b9f019225c3cf509",
@@ -204,14 +229,15 @@
     "packages/paid-auto/src/service.ts": "2f6ebdcbb71f8b2f9fbf00e949b19e274b2a111c",
     "packages/protocol/src/subagent-runtime.ts": "76dfee10cf2a6d686f28aff4bb25edad39f6a443",
     "packages/providers/src/capacity-governor.ts": "6ce663b4f03303d91c1e54c2a8b6f3fd0c35e68f",
-    "packages/providers/src/index.ts": "257bbaf74464e7ced912abd970af9303a004ac7e",
-    "packages/providers/src/openrouter-entitlement.ts": "9b3eaf48a2d47b6b6bfdcc39bfe651a8d087e477",
-    "packages/providers/test/openrouter-entitlement.test.ts": "43fd6265b5240988023b5e5202ad5736b418d1ff",
+    "packages/providers/src/index.ts": "86b0bcb15e10660c62bd9512adce31b07563ab02",
+    "packages/providers/src/openrouter-entitlement.ts": "a76d496122d0533f166006c4b548cae5ca340603",
+    "packages/providers/src/provider-factory.ts": "3d535a7acfcebc3d62f11235ed226786781cf413",
+    "packages/providers/test/openrouter-entitlement.test.ts": "445efcfd73aa5b25a2db14f51bf646e042df0f8d",
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
-    "packages/server/src/agent-runtime.ts": "57ab2c91931276998db3c152f76dacac8e08aec2",
+    "packages/server/src/agent-runtime.ts": "5bd30e3b901432eafd981f2f59dc0381198b06cf",
     "packages/server/src/autonomous-orchestrator.ts": "1f2d1d92420b7085e1f721755956d60cbdc3d180",
     "packages/server/src/checkpoint-service.ts": "667fe270d9c832b7c9bef217e6796a0bcbb82eb1",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
@@ -220,11 +246,12 @@
     "packages/server/src/forgeauto-roster.ts": "741bf73fe25e24bb1576af0ca2d778318a5f1e88",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
     "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
-    "packages/server/src/index.ts": "578c4d58e18f43a7fc20dd1577a89f98dfc89425",
+    "packages/server/src/index.ts": "90e1a7e63cfed3dd48c53b585d9e9a2deb6edcbf",
     "packages/server/src/integration-service.ts": "f72e3ffc8b3087c7f3acd861eba9eb859a008dfd",
     "packages/server/src/model-execution-adapter.ts": "812f665abca771aa4dce7be18cfee121520dbf0e",
     "packages/server/src/remote-direct-admission.ts": "f81a024ce861999b4e7134e5bcee1e0dbfe21474",
     "packages/server/src/remote-direct-client.ts": "af9ccae1d57a7c306df21329bb23685fa4f7c497",
+    "packages/server/src/remote-direct-cloud-provider.ts": "cee5ba4c75051ffcac02036172fd775a17911f01",
     "packages/server/src/remote-direct-provider.ts": "77b80df75c90055bd24b0ced4a98af7c8bccd5b7",
     "packages/server/src/remote-direct-transport.ts": "858f2eed159a314843152a31471cf0bb24dc781f",
     "packages/server/src/role-output-budget.ts": "f2560f9ee66fe33d5cf9f0bb6b1d1f3bd7a441dc",
@@ -237,6 +264,7 @@
     "packages/server/src/workflow-service.ts": "a6fa8ae76d908fe503ba6050d8afdf9d2e239b23",
     "packages/server/src/workspace-service.ts": "814dc45e7865b2d6459089101e591caf00f2cb20",
     "packages/server/test/checkpoint.test.ts": "17057d94868e0b2b9613fa12027c1023c77e2af9",
+    "packages/server/test/context-efficiency.test.ts": "1d7c0c1cfbb18db237cbc999dfb83ac2f1959fb3",
     "packages/server/test/forge-workspaces.test.ts": "c330801734b71527ff521bddfec4e6fdc9f57ddf",
     "packages/server/test/free-fabric-wiring.test.ts": "8006f2693fa252d38522350d78de49e814e672d8",
     "packages/server/test/free-routing-authority.test.ts": "42742440525c739189baabb148c40d7d8b3e5e7c",
@@ -3382,18 +3410,178 @@
         }
       ],
       "regressionEvidence": "docs/evidence/free-capacity-fabric/R64-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R65 production dispatch and Free authorization",
+      "reason": "R65 connects authenticated owner-scoped remote assignment production to the governed client runtime, verifies public-code consent and role-qualified Free supply on each admission, keeps cancellation monotone, and isolates benchmark generation from existing user work. Provider authorization remains fail closed on paid or ambiguous capacity; verification and completion policies are unchanged.",
+      "priorSourceStateId": "24ed80d52717fa147540dd4063f0306e66ab9738611e0b54590c643a550bd5ae",
+      "priorSurfaceVersion": "r64-free-capacity-fabric-v1",
+      "resultingSourceStateId": "660c6d898ed3ef26356cea3b1e73e7ff2611ecbfcec3e54bd3af1618ab2f3b61",
+      "resultingSurfaceVersion": "r65-free-capacity-fabric-v1",
+      "recertifiedAt": "2026-10-02",
+      "changedFiles": [
+        {
+          "file": "apps/cloud-api/src/hosted-workflow-authority.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/cloud-api/src/index.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/cloud-api/src/production-remote-direct.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/cloud-api/src/remote-direct-host.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/cloud-api/src/server.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/cloud-api/test/remote-direct-dispatch.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/desktop/src/main.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/desktop/src/openrouter-oauth-flow.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/desktop/src/preload.cjs",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/desktop/src/preload.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/desktop/src/provider-connections.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/desktop/src/renderer/provider-connections-client.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/desktop/test/free-capacity-settings.test.tsx",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/forge-zero/src/capacity-policy.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/forge-zero/src/capacity-reservations.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/forge-zero/src/capacity-types.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/src/free-cloud-registry.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/src/free-cloud-service.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/src/index.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/src/provider-definitions.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/src/quota.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/providers/src/index.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/providers/src/openrouter-entitlement.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/providers/src/provider-factory.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/providers/test/openrouter-entitlement.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/index.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/remote-direct-cloud-provider.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/context-efficiency.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/free-capacity-fabric/R65-REPOSITORY-TESTS.json"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R63 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, R44, R59, and R63 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
   "recertifiedAt": "2026-10-02",
   "recertification": {
-    "phase": "R64 external entitlement acquisition",
-    "reason": "R64 adds a dedicated Free Capacity authorization screen backed by Fabric admission, safe rejected-account status, owner-scoped metrics, default hosted-workflow authorization for remote session scope and validated Render revision provenance. It also corrects server project references so clean Docker builds compile cloud usage, browser, computer use and MCP declarations before the server. No Free eligibility, privacy, billing, role qualification, verification or completion policy is relaxed. Production dispatch remains denied unless a Fabric admission authority is configured; its absence is exposed in health metadata.",
+    "phase": "R65 production dispatch and Domain B",
+    "reason": "R65 connects authenticated owner-scoped remote assignment production to the governed client runtime, verifies public-code consent and role-qualified Free supply on each admission, keeps cancellation monotone, and isolates benchmark generation from existing user work. Provider authorization remains fail closed on paid or ambiguous capacity; verification and completion policies are unchanged.",
     "changedFiles": [
-      "Dockerfile.cloud",
-      "packages/server/tsconfig.json"
+      "apps/cloud-api/src/hosted-workflow-authority.ts",
+      "apps/cloud-api/src/index.ts",
+      "apps/cloud-api/src/production-remote-direct.ts",
+      "apps/cloud-api/src/remote-direct-host.ts",
+      "apps/cloud-api/src/server.ts",
+      "apps/cloud-api/test/remote-direct-dispatch.test.ts",
+      "apps/desktop/src/main.ts",
+      "apps/desktop/src/openrouter-oauth-flow.ts",
+      "apps/desktop/src/preload.cjs",
+      "apps/desktop/src/preload.ts",
+      "apps/desktop/src/provider-connections.ts",
+      "apps/desktop/src/renderer/provider-connections-client.ts",
+      "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx",
+      "apps/desktop/test/free-capacity-settings.test.tsx",
+      "packages/forge-zero/src/capacity-policy.ts",
+      "packages/forge-zero/src/capacity-reservations.ts",
+      "packages/forge-zero/src/capacity-types.ts",
+      "packages/model-registry/src/free-cloud-registry.ts",
+      "packages/model-registry/src/free-cloud-service.ts",
+      "packages/model-registry/src/index.ts",
+      "packages/model-registry/src/provider-definitions.ts",
+      "packages/model-registry/src/quota.ts",
+      "packages/providers/src/index.ts",
+      "packages/providers/src/openrouter-entitlement.ts",
+      "packages/providers/src/provider-factory.ts",
+      "packages/providers/test/openrouter-entitlement.test.ts",
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/index.ts",
+      "packages/server/src/remote-direct-cloud-provider.ts",
+      "packages/server/test/context-efficiency.test.ts"
     ],
-    "priorSourceStateId": "b7d3470cadb30aa89be9148d64b76521f66b0418d59ee0d517128aff03cd83dd",
+    "priorSourceStateId": "24ed80d52717fa147540dd4063f0306e66ab9738611e0b54590c643a550bd5ae",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-10-02T19:45:00.000Z",
+  "status": "TWO_INDEPENDENT_LIVE_GROUPS",
+  "domainA": {
+    "provider": "Kilo",
+    "providerId": "kilo-free-direct",
+    "modelId": "kilo-auto/free",
+    "operator": "Kilo AI (commercial gateway; free anonymous tier)",
+    "supplyClass": "PACKAGED_FREE_DIRECT",
+    "quotaOwnerType": "EGRESS_IP",
+    "quotaDomainType": "SOURCE_IP",
+    "metering": "provider request/token windows behind one public egress identity",
+    "independenceKey": "kilo:SOURCE_IP",
+    "independence": "one group per public egress identity"
+  },
+  "domainB": {
+    "provider": "AI Horde",
+    "providerId": "ai-horde",
+    "modelId": "google/gemma-4-31b",
+    "operator": "Haidra-Org volunteer worker network (community-donated compute)",
+    "supplyClass": "COMMUNITY_ANONYMOUS_FREE",
+    "quotaOwnerType": "GLOBAL_SHARED",
+    "quotaDomainType": "GLOBAL_SHARED",
+    "quotaDomainId": "shared:ai-horde",
+    "metering": "account concurrency (500 max parallel generations) + queue priority; no request/token budget",
+    "independenceKey": "ai-horde:GLOBAL:155d3b487efeeab33cedbd65c35ff178d7917f6b601258e1396e07f8eed9df24",
+    "independence": "one global pool keyed by the anonymous Horde account identity (account id 0)"
+  },
+  "twoIndependentLiveGroups": true,
+  "independenceRationale": [
+    "Different operators: Kilo AI commercial gateway vs Haidra community worker network.",
+    "Different quota ownership: per-egress-IP budget vs one global anonymous account (shared:ai-horde).",
+    "Different metering dimensions: request/token windows vs standing concurrency.",
+    "Different failure domains proven live: R65-CROSS-DOMAIN-FAILOVER.json records two ROTATE receipts from kilo-free-direct to ai-horde after kilo quota exhaustion, with completion served entirely by the second domain."
+  ],
+  "evidence": ["R65-DOMAIN-B-LIVE.json", "R65-CROSS-DOMAIN-FAILOVER.json", "R65-MULTIUSER-ISOLATION.json", "R65-HORDE-QUALIFICATION-google_gemma-4-31b.json"]
+}

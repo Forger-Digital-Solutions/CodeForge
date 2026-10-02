@@ -1,0 +1,70 @@
+{
+  "generatedAt": "2026-10-02T00:00:00.000Z",
+  "recoveredBy": "continuation-session",
+  "r64EndingHead": "616cbec8629a0083573efa673a8495d1aee64b36",
+  "recoveredHead": "616cbec8629a0083573efa673a8495d1aee64b36",
+  "branch": "codex/r29-release-closure",
+  "r65CommitsFound": 0,
+  "stagedChanges": 0,
+  "classification": "ALL_R65_WORK_IN_DIRTY_TREE",
+  "preexistingDirtyFiles": [
+    "apps/desktop/scripts/packaged-endurance.mjs",
+    "benchmarks/r57/extract-packaged-repeat.mjs",
+    "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+    "docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md",
+    "docs/evidence/r60-usable-free-inference/postgres-parity.json",
+    "packages/server/test/fixtures/run-recovery-worker.mjs"
+  ],
+  "r65ModifiedFiles": [
+    "apps/cloud-api/src/hosted-workflow-authority.ts",
+    "apps/cloud-api/src/index.ts",
+    "apps/cloud-api/src/remote-direct-host.ts",
+    "apps/cloud-api/src/server.ts",
+    "apps/desktop/src/main.ts",
+    "apps/desktop/src/openrouter-oauth-flow.ts",
+    "apps/desktop/src/preload.cjs",
+    "apps/desktop/src/preload.ts",
+    "apps/desktop/src/renderer/provider-connections-client.ts",
+    "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx",
+    "apps/desktop/test/free-capacity-settings.test.tsx",
+    "packages/providers/src/openrouter-entitlement.ts",
+    "packages/providers/test/openrouter-entitlement.test.ts",
+    "packages/server/src/index.ts",
+    "packages/server/test/context-efficiency.test.ts"
+  ],
+  "r65NewFiles": [
+    "apps/cloud-api/src/production-remote-direct.ts",
+    "apps/cloud-api/test/remote-direct-dispatch.test.ts",
+    "apps/desktop/test/openrouter-oauth-browser.test.ts",
+    "benchmarks/free-capacity-fabric/r65-production-coding.mjs",
+    "packages/server/src/remote-direct-cloud-provider.ts",
+    "scripts/r65-bounded-tests.mjs",
+    "scripts/r65-preserve-start.mjs",
+    "scripts/r65-provider-entitlement-probe.mjs",
+    "scripts/r65-recertify-source-state.mjs"
+  ],
+  "r65EvidencePreexisting": [
+    "docs/evidence/free-capacity-fabric/R65-START-STATE.json",
+    "docs/evidence/free-capacity-fabric/R65-R34-PRESERVATION.json",
+    "docs/evidence/free-capacity-fabric/R65-PROVIDER-VERIFIERS.json",
+    "docs/evidence/free-capacity-fabric/R65-baseline-focused.json",
+    "docs/evidence/free-capacity-fabric/R65-dispatch-focused.json"
+  ],
+  "preservation": {
+    "r34OriginalBytes": "RESTORED from git object blob 3a9d1568b153ecdcfa6e7459078abe5ea603a3ef; sha256 62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+    "r34HarnessFix": "packages/server/test/context-efficiency.test.ts writes receipts to mkdtemp and asserts historical bytes unchanged",
+    "byteSnapshots": "benchmarks/r65/tmp/preserved/0-5.bin + benchmarks/r65/tmp/preservation/*.r65-start",
+    "authority": "docs/evidence/free-capacity-fabric/R65-R34-PRESERVATION.json"
+  },
+  "interruptedWorkRecovered": {
+    "productionDispatchComposition": "apps/cloud-api/src/production-remote-direct.ts + index.ts wiring + remote-direct-host.ts scope-bound admission + server.ts submit/status/cancel routes",
+    "cloudConsumerAdapter": "packages/server/src/remote-direct-cloud-provider.ts (RemoteDirectCloudProviderAdapter)",
+    "dispatchTests": "apps/cloud-api/test/remote-direct-dispatch.test.ts — 10 tests incl. negatives (foreign owner, consent, role, paid route, policy revocation, cancel monotonicity)",
+    "browserSelection": "apps/desktop openrouter-oauth-flow.ts browser param + installedFirefoxPath + IPC validation + FreeCapacitySection Firefox button + tests",
+    "openrouterEntitlementFix": "policy reverification failure now returns accountClass UNKNOWN (fail closed)",
+    "providerVerifiers": "OpenRouter PAID denied, Cloudflare 403 denied, Groq no-tier-endpoint denied, Cerebras trial-only denied, Puter no-free-bucket denied",
+    "validationRuns": "R65-baseline-focused.json 16/91 PASS; R65-dispatch-focused.json 4/29 PASS"
+  },
+  "temporaryAuthorizationArtifacts": "none found in tree; .playwright-mcp captures and screenshots are OAuth-flow session artifacts, not credentials",
+  "destructiveCommandsRun": "none"
+}

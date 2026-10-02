@@ -1,0 +1,86 @@
+{
+  "startedAt": "2026-10-02T19:28:26.483Z",
+  "finishedAt": "2026-10-02T19:28:27.034Z",
+  "pool": {
+    "poolId": "shared:ai-horde",
+    "scope": "SHARED_OWNER_POOL",
+    "supplyClass": "COMMUNITY_ANONYMOUS_FREE",
+    "quotaDomainType": "GLOBAL_SHARED",
+    "quotaDomainId": "shared:ai-horde",
+    "concurrencyRemainingBeforeHolds": 500
+  },
+  "checks": [
+    {
+      "name": "user_a_first_hold_admitted",
+      "pass": true,
+      "detail": "ADMITTED"
+    },
+    {
+      "name": "user_b_first_hold_admitted",
+      "pass": true,
+      "detail": "ADMITTED"
+    },
+    {
+      "name": "same_shared_pool",
+      "pass": true,
+      "detail": "fabric:ai-horde::google/gemma-4-31b / shared:ai-horde"
+    },
+    {
+      "name": "user_a_fills_cap",
+      "pass": true,
+      "detail": "ADMITTED,ADMITTED"
+    },
+    {
+      "name": "user_a_fourth_denied_user_cap",
+      "pass": true,
+      "detail": "USER_CONCURRENCY_LIMIT"
+    },
+    {
+      "name": "user_b_unaffected_by_a_cap",
+      "pass": true,
+      "detail": "ADMITTED"
+    },
+    {
+      "name": "release_a_only_frees_a",
+      "pass": true,
+      "detail": "release(user-a-1)"
+    },
+    {
+      "name": "release_unknown_is_noop",
+      "pass": true,
+      "detail": "double/unknown release guard"
+    },
+    {
+      "name": "user_b_still_admits_after_a_release",
+      "pass": true,
+      "detail": "ADMITTED"
+    },
+    {
+      "name": "private_code_denied_a",
+      "pass": true,
+      "detail": "user-a PRIVATE_CODE"
+    },
+    {
+      "name": "private_code_denied_b",
+      "pass": true,
+      "detail": "user-b PRIVATE_CODE"
+    }
+  ],
+  "ledgerView": {
+    "generatedAt": "2026-10-02T19:28:27.032Z",
+    "activeReservations": 2,
+    "byUser": {
+      "user-a": 1,
+      "user-b": 1
+    },
+    "byRoute": {
+      "fabric:ai-horde::google/gemma-4-31b": 2
+    },
+    "byPool": {
+      "shared:ai-horde": 2
+    },
+    "protectedFirstRunRequests": 0,
+    "protectedFirstRunTokens": 0
+  },
+  "pass": true
+}

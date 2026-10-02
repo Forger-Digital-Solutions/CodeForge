@@ -43,6 +43,7 @@ function supplyEligible(route: CapacityRoute, policy: FreeCapacityPolicy): boole
   if (route.supplyClass === "USER_ENTITLED_FREE") return policy.allowUserConnectedFree && route.capacityPoolScope === "PER_USER_POOL" && route.freeOnlyAdmissionProven === true;
   if (route.supplyClass === "PURE_MANAGED_FREE") return route.capacityPoolScope === "SHARED_OWNER_POOL";
   if (route.supplyClass === "USER_CONNECTED_FREE") return policy.allowUserConnectedFree && route.capacityPoolScope === "PER_USER_POOL";
+  if (route.supplyClass === "COMMUNITY_ANONYMOUS_FREE") return route.capacityPoolScope === "SHARED_OWNER_POOL";
   if (route.supplyClass === "DISTRIBUTED_USER_FREE") return policy.allowDistributedUserFree && route.capacityPoolScope === "PER_USER_POOL";
   if (route.supplyClass === "DEPOSIT_UNLOCKED_FREE") return policy.allowDepositUnlockedFree && route.capacityPoolScope === "SHARED_OWNER_POOL";
   if (route.supplyClass === "SPONSORED_FREE") return policy.allowSponsoredFree && route.capacityPoolScope === "SHARED_OWNER_POOL";
@@ -72,12 +73,16 @@ export function freeRouteExclusionReason(
   const scopeExclusion = quotaScopeEvidenceExclusionReason(route, now);
   if (scopeExclusion) return scopeExclusion;
   const newSupply = route.supplyClass === "PACKAGED_FREE_PROVIDER_FUNDED" || route.supplyClass === "PACKAGED_FREE_DIRECT"
-    || route.supplyClass === "PACKAGED_FREE_SPONSORED" || route.supplyClass === "USER_ENTITLED_FREE";
+    || route.supplyClass === "PACKAGED_FREE_SPONSORED" || route.supplyClass === "USER_ENTITLED_FREE"
+    || route.supplyClass === "COMMUNITY_ANONYMOUS_FREE";
   if (newSupply) {
     if (route.marginalCostToCodeForge !== 0) return "CODEFORGE_MARGINAL_COST_NOT_ZERO";
     if (route.quotaDomainType === undefined || route.quotaDomainType === "UNKNOWN" || !route.quotaDomainId) return "QUOTA_DOMAIN_UNVERIFIED";
     if (route.egressMode === undefined) return "EGRESS_MODE_UNVERIFIED";
     if (route.supplyClass === "PACKAGED_FREE_DIRECT" && (route.egressMode !== "CLIENT_DIRECT" || route.quotaDomainType !== "PUBLIC_IP")) return "DIRECT_ROUTE_SCOPE_INVALID";
+    // Anonymous community capacity is one global pool: per-user or project-scoped claims are
+    // fabricated ownership, and relayed egress would silently centralize a shared resource.
+    if (route.supplyClass === "COMMUNITY_ANONYMOUS_FREE" && (route.egressMode !== "CLIENT_DIRECT" || route.quotaDomainType !== "GLOBAL_SHARED")) return "COMMUNITY_ROUTE_SCOPE_INVALID";
     if (route.freePrivacyClass === undefined || route.freePrivacyClass === "UNKNOWN" || route.trainingUse === undefined || route.trainingUse === "UNKNOWN") return "PRIVACY_UNVERIFIED";
     if (route.freePrivacyClass === "PRIVATE_SAFE" && route.trainingUse !== "NO") return "PRIVACY_EVIDENCE_INCONSISTENT";
     if (route.freePrivacyClass !== "PRIVATE_SAFE" && dataContext.dataClass === "PRIVATE_CODE" && dataContext.userConsented !== true) return "PRIVATE_CODE_CONSENT_REQUIRED";
@@ -119,5 +124,5 @@ export function freeRouteExclusionReason(
 export function supplyClassIsZeroCash(source: SupplyClass): boolean {
   // SPONSORED_FREE is deliberately absent: a sponsor pays real money upstream, so the class is
   // $0 to the user but not zero-cash. Eligibility is governed by allowSponsoredFree instead.
-  return source === "PACKAGED_FREE_PROVIDER_FUNDED" || source === "PACKAGED_FREE_DIRECT" || source === "USER_ENTITLED_FREE" || source === "PACKAGED_FREE_SPONSORED" || source === "PURE_MANAGED_FREE" || source === "USER_CONNECTED_FREE" || source === "DISTRIBUTED_USER_FREE" || source === "DEPOSIT_UNLOCKED_FREE" || source === "PROMOTIONAL_FREE" || source === "OWNER_DEV_FREE";
+  return source === "PACKAGED_FREE_PROVIDER_FUNDED" || source === "PACKAGED_FREE_DIRECT" || source === "USER_ENTITLED_FREE" || source === "PACKAGED_FREE_SPONSORED" || source === "PURE_MANAGED_FREE" || source === "USER_CONNECTED_FREE" || source === "COMMUNITY_ANONYMOUS_FREE" || source === "DISTRIBUTED_USER_FREE" || source === "DEPOSIT_UNLOCKED_FREE" || source === "PROMOTIONAL_FREE" || source === "OWNER_DEV_FREE";
 }

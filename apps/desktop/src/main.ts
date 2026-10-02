@@ -49,6 +49,7 @@ import {
   getProviderPolicy,
   createFreeCloudService,
   reverifyKiloPolicy,
+  reverifyHordePolicy,
   mergeModelsDevProviderHints,
   PROVIDER_DEFINITIONS,
   environmentVariablesFor,
@@ -1109,6 +1110,29 @@ async function discoverProviderFreeInner(providerId: string, adapter: ProviderAd
           isRemote: true, isCloudHosted: true, contextWindow: model.contextWindow,
           capabilities: model.capabilities, privacyClass: "permissive",
           costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, freeTierVerifiedAt: verifiedAt, paidFallbackPossible: false, paidFallbackDisabled: true, source: "kilo:anonymous-free-catalog" },
+          health: { status: "available", lastCheckedAt: verifiedAt },
+        });
+      }
+      pruneStaleRoutes(providerId, freeIds);
+      freeCloud?.updateConnection(providerId, { authState: "ok", lastCatalogRefreshAt: verifiedAt });
+      if (freeIds.size > 0) scheduleQualification(providerId);
+      return freeIds.size;
+    }
+    if (providerId === "ai-horde") {
+      // Community-pool free status is a property of the PROVIDER (kudos cannot be bought; the
+      // anonymous account has no billing rail) — the adapter's live listing already filters to
+      // text models, and every served route is $0 by design. Verified against the pinned docs.
+      const verifiedAt = new Date().toISOString();
+      const freeIds = new Set(models.filter((m) => m.isFree && m.freeStatus === "verified_free").map((m) => m.modelId));
+      for (const model of models) {
+        if (!freeIds.has(model.modelId)) continue;
+        firewall.register({
+          providerId, modelId: model.modelId, displayName: model.displayName, tier: "free",
+          accessClass: "FREE_ROUTED", freeStatus: "verified_free", freeStatusVerifiedAt: verifiedAt,
+          verificationSource: "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/kudos.md + live oai.aihorde.net/v1/models",
+          isRemote: true, isCloudHosted: true, contextWindow: model.contextWindow,
+          capabilities: model.capabilities, privacyClass: "permissive",
+          costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, freeTierVerifiedAt: verifiedAt, paidFallbackPossible: false, paidFallbackDisabled: true, source: "ai-horde:anonymous-community-catalog" },
           health: { status: "available", lastCheckedAt: verifiedAt },
         });
       }
@@ -2450,6 +2474,23 @@ async function startPrimaryInstance(): Promise<void> {
       kiloPolicyTimer.unref();
       app.once("before-quit", () => clearInterval(kiloPolicyTimer));
     }
+    if (registerProviderAdapter("ai-horde")) {
+      freeCloud?.setConnection({
+        providerId: "ai-horde", connected: true, credentialSource: "ANONYMOUS_DIRECT",
+        supplyClass: "COMMUNITY_ANONYMOUS_FREE", authState: "ok",
+      });
+      void discoverProviderFree("ai-horde").then(() => scheduleQualification("ai-horde")).catch(() => {});
+      const refreshHordePolicy = async (): Promise<void> => {
+        const result = await reverifyHordePolicy(new Date().toISOString());
+        if (result.status === "VERIFIED") freeCloud?.setHordePolicyReceipt(result.receipt);
+        else if (result.status === "CHANGED") freeCloud?.setHordePolicyReceipt(undefined);
+        if (result.status !== "VERIFIED") console.warn(`[CodeForge] AI Horde policy re-verification ${result.status}: ${result.source ?? "unknown"}`);
+      };
+      void refreshHordePolicy();
+      const hordePolicyTimer = setInterval(() => void refreshHordePolicy(), 6 * 60 * 60_000);
+      hordePolicyTimer.unref();
+      app.once("before-quit", () => clearInterval(hordePolicyTimer));
+    }
     const cloudTokens = getStoredCloudTokens();
     if (resolveCloudCatalogSyncMode(Boolean(cloudTokens.accessToken)) === "register-adapter-and-sync") {
       // Signed-in: register the hosted adapter and sync its catalog in the background. Awaiting it
@@ -3369,13 +3410,14 @@ ipcMain.handle("freecloud:qualify", async (event) => {
  * No API key is ever typed or logged; the resulting user-controlled key is stored encrypted via
  * safeStorage, the adapter is registered, and free models are discovered + verified immediately.
  */
-ipcMain.handle("oauth:openrouter:start", async (event) => {
+ipcMain.handle("oauth:openrouter:start", async (event, browser: unknown) => {
   assertMainWindowSender(event);
   if (PACKAGED_SMOKE) return { ok: false, error: "Unavailable in smoke mode" };
+  if (browser !== undefined && browser !== "default" && browser !== "firefox") return { ok: false, error: "Unsupported authorization browser" };
   try {
     const connections = requireConnections();
     const authorizingUserId = connections.accountOwnerUserId();
-    const key = await runOpenRouterOAuth();
+    const key = await runOpenRouterOAuth({ browser: browser === "firefox" ? "firefox" : "default" });
     if (authorizingUserId !== connections.accountOwnerUserId()) return { ok: false, error: "The CodeForge account changed during authorization. Connect again." };
     const result = await connections.connect("openrouter", { apiKey: key }, "OAUTH");
     notifyProviderChanged();

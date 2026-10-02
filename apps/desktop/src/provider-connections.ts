@@ -335,6 +335,7 @@ export class ProviderConnections {
     const def = this.definition(providerId);
     if (!def) return "NONE";
     if (providerId === "kilo-free-direct") return this.host.providerCatalog.get(providerId) ? "ANONYMOUS_DIRECT" : "NONE";
+    if (providerId === "ai-horde") return this.host.providerCatalog.get(providerId) ? "ANONYMOUS_DIRECT" : "NONE";
     if (def.apiStyle === "hosted") return this.host.providerCatalog.get(providerId) ? "FDS_GATEWAY" : "NONE";
     const required = def.connection.fields.filter((f) => !f.optional);
     if (required.length === 0) return "NONE";

@@ -86,7 +86,7 @@ export async function verifyOpenRouterEntitlement(options: {
     if (!/Terms of Service/i.test(policies[0]!.body) || !/August 31, 2026/i.test(policies[0]!.body)
       || !/Privacy Policy/i.test(policies[1]!.body) || !/August 31, 2026/i.test(policies[1]!.body)
       || !/free_model_daily_requests/.test(policies[2]!.body) || !/current UTC day/i.test(policies[2]!.body)) {
-      return { ...receipt, reason: "FREE_POLICY_REVERIFICATION_REQUIRED" };
+      return { ...receipt, accountClass: "UNKNOWN", reason: "FREE_POLICY_REVERIFICATION_REQUIRED" };
     }
     return { ...receipt, admissionEvidence: {
       sourceDocumentation: "https://openrouter.ai/docs/guides/overview/auth/oauth",

@@ -247,6 +247,9 @@ async function runInteractiveTask(workspacePath: string, compaction: boolean): P
 
 describe("R34 context-efficiency benchmark", () => {
   it("measures serialized input per dispatch, before vs after superseded-output compaction", async () => {
+    const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+    const historicalReceiptPath = path.join(repoRoot, "docs", "evidence", "r34-capacity-efficiency", "context-efficiency-benchmark.json");
+    const historicalReceipt = await fs.readFile(historicalReceiptPath);
     const tmpBase = await fs.mkdtemp(path.join(os.tmpdir(), "cf-bench-"));
     const wsA = path.join(tmpBase, "a");
     const wsB = path.join(tmpBase, "b");
@@ -300,17 +303,20 @@ describe("R34 context-efficiency benchmark", () => {
           deltaPct: Math.round(((intBefore.totalInputTokens - intAfter.totalInputTokens) / intBefore.totalInputTokens) * 1000) / 10,
         },
       };
-      const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-      const evidenceDir = path.join(repoRoot, "docs", "evidence", "r34-capacity-efficiency");
-      await fs.mkdir(evidenceDir, { recursive: true });
+      // Validation receipts belong to the fixture sandbox: the historical receipt may contain
+      // uncommitted user work, and even a new generatedAt timestamp would destroy its bytes.
+      const receiptPath = path.join(tmpBase, "context-efficiency-benchmark.json");
       await fs.writeFile(
-        path.join(evidenceDir, "context-efficiency-benchmark.json"),
+        receiptPath,
         JSON.stringify(receipt, null, 2),
         "utf-8",
       );
+      expect(JSON.parse(await fs.readFile(receiptPath, "utf-8"))).toEqual(receipt);
+      expect(await fs.readFile(historicalReceiptPath)).toEqual(historicalReceipt);
       console.log(`[r34-bench] role before=${before.totalInputTokens} after=${after.totalInputTokens} | interactive before=${intBefore.totalInputTokens} after=${intAfter.totalInputTokens} delta=${receipt.interactiveTurn.deltaInputTokens} (${receipt.interactiveTurn.deltaPct}%)`);
     } finally {
       await fs.rm(tmpBase, { recursive: true, force: true });
+      expect(await fs.readFile(historicalReceiptPath)).toEqual(historicalReceipt);
     }
   });
 

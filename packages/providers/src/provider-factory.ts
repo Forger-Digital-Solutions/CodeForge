@@ -4,6 +4,7 @@ import { defaultCapacityGovernor } from "./capacity-governor.js";
 import { AnthropicAdapter } from "./anthropic.js";
 import { createOpenRouterAdapter } from "./openrouter.js";
 import { createOpencodeAdapter } from "./opencode.js";
+import { createAiHordeCommunityAdapter } from "./ai-horde.js";
 import type { ProviderAdapter } from "./index.js";
 import type { CloudflareNeuronBudgetGuard } from "./cloudflare-neuron-budget.js";
 import type { GeminiFreePolicyGate } from "@codeforge/legal-policy";
@@ -325,6 +326,17 @@ function mapOllamaModel(raw: unknown): ProviderModel | null {
  */
 export function createProviderAdapterFromDefinition(def: ProviderTransportDefinition, opts: ProviderFactoryOptions = {}): ProviderAdapter | undefined {
   if (def.id === "kilo-free-direct") return opts.clientDirectAuthorized ? createKiloFreeDirectAdapter(opts) : undefined;
+  if (def.id === "ai-horde") {
+    // Anonymous community egress leaves from the installed client host — same trust boundary
+    // as the Kilo direct transport. The caller's observer still receives every observation.
+    return opts.clientDirectAuthorized
+      ? createAiHordeCommunityAdapter({
+          timeoutMs: opts.timeoutMs,
+          fetchFn: opts.fetchFn,
+          onResponse: composeObservers(defaultCapacityGovernor.observeResponse, opts.onResponse),
+        })
+      : undefined;
+  }
   if (def.id === "alibaba") return createAlibabaAdapter(opts);
   if (def.id === "deepseek") return createDeepSeekAdapter(opts);
   switch (def.apiStyle) {
@@ -390,6 +402,14 @@ export function createProviderAdapterById(providerId: string, opts: ProviderFact
   switch (providerId) {
     case "kilo-free-direct":
       return opts.clientDirectAuthorized ? createKiloFreeDirectAdapter(opts) : undefined;
+    case "ai-horde":
+      return opts.clientDirectAuthorized
+        ? createAiHordeCommunityAdapter({
+            timeoutMs: opts.timeoutMs,
+            fetchFn: opts.fetchFn,
+            onResponse: composeObservers(defaultCapacityGovernor.observeResponse, opts.onResponse),
+          })
+        : undefined;
     case "zai":
       return createZaiAdapter(opts);
     case "groq":

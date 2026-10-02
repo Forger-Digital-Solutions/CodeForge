@@ -449,6 +449,12 @@ export {
 } from "./openai-compatible.js";
 export { AnthropicAdapter, type AnthropicOptions, createAnthropicAdapter } from "./anthropic.js";
 export {
+  AiHordeCommunityAdapter,
+  createAiHordeCommunityAdapter,
+  AI_HORDE_PROVIDER_ID,
+  type AiHordeAdapterOptions,
+} from "./ai-horde.js";
+export {
   createZaiAdapter,
   createKiloFreeDirectAdapter,
   createGroqAdapter,

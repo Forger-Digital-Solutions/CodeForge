@@ -10,17 +10,22 @@ const connection = (extra: Partial<ProviderConnectionView>): ProviderConnectionV
 
 describe("Free Capacity admission display", () => {
   it("does not turn catalog counts, a saved key or a receipt alone into admitted capacity", () => {
-    expect(freeCapacityStatus(connection({}))).toBe("UNKNOWN — NOT ADMITTED");
-    expect(freeCapacityStatus(connection({ delegatedFree: { accountClass: "FREE_VERIFIED", reason: "fixture", verifiedAt: "2026-10-02", recheckAt: "2026-10-03", remainingRequests: 20 } }))).toBe("UNKNOWN — NOT ADMITTED");
+    expect(freeCapacityStatus(connection({}))).toBe("STATUS UNKNOWN — NOT ADMITTED");
+    expect(freeCapacityStatus(connection({ delegatedFree: { accountClass: "FREE_VERIFIED", reason: "fixture", verifiedAt: "2026-10-02", recheckAt: "2026-10-03", remainingRequests: 20 } }))).toBe("STATUS UNKNOWN — NOT ADMITTED");
     expect(freeCapacityStatus(connection({ freeCapacity: { admittedDomains: 1, independentGroups: 1, healthyGroups: 1 } }))).toBe("FREE VERIFIED · HEALTHY");
   });
   it("shows rejection and revocation even when stale catalog routes remain", () => {
-    expect(freeCapacityStatus(connection({ freeConnectionAttempt: { accountClass: "PAID", reason: "PAID" } }))).toBe("PAID — NOT ELIGIBLE FOR FORGEAUTO/FREE");
+    expect(freeCapacityStatus(connection({ freeConnectionAttempt: { accountClass: "PAID", reason: "PAID" } }))).toBe("PAID ACCOUNT — NOT ELIGIBLE FOR FORGEAUTO/FREE");
     expect(freeCapacityStatus(connection({ freeConnectionAttempt: { accountClass: "REVOKED", reason: "REVOKED" } }))).toBe("REAUTH REQUIRED");
+  });
+  it("masks previously admitted capacity when the provider can no longer verify entitlement", () => {
+    const stale = { admittedDomains: 1, independentGroups: 1, healthyGroups: 1 };
+    expect(freeCapacityStatus(connection({ freeCapacity: stale, freeConnectionAttempt: { accountClass: "UNKNOWN", reason: "FREE_POLICY_REVERIFICATION_REQUIRED" } }))).toBe("STATUS UNKNOWN — NOT ADMITTED");
+    expect(freeCapacityStatus(connection({ freeCapacity: stale, delegatedFree: { accountClass: "UNKNOWN", reason: "AUTHORITATIVE_FREE_QUOTA_MISSING", verifiedAt: "2026-10-02", recheckAt: "2026-10-03" } }))).toBe("STATUS UNKNOWN — NOT ADMITTED");
   });
   it("provides the exact OAuth handoff and states unavailable candidates honestly", () => {
     const html = renderSection(<FreeCapacitySection connections={[]} />, createSettingsContext());
-    for (const text of ["Connect OpenRouter Free", "Puter", "Cerebras", "Cloudflare Workers AI", "Groq", "purchased credits", "one quota group"]) expect(html).toContain(text);
+    for (const text of ["Connect OpenRouter Free", "Connect in Firefox", "Puter", "Cerebras", "Cloudflare Workers AI", "Groq", "purchased credits", "one quota group", "AI Horde Community", "global community pool", "Public code only"]) expect(html).toContain(text);
     expect(html).not.toContain("FREE VERIFIED");
   });
 });

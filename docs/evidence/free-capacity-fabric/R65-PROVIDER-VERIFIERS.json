@@ -1,0 +1,150 @@
+{
+  "generatedAt": "2026-10-02T18:27:28.167Z",
+  "inferenceCalls": 0,
+  "measurement": "READ_ONLY_PROVIDER_METADATA",
+  "providers": {
+    "openrouter": {
+      "implementation": "OAuth PKCE and owner/key-bound entitlement receipt; policy and exact-zero model discovery required",
+      "httpStatus": 200,
+      "accountClass": "PAID",
+      "admission": "DENIED",
+      "credentialSource": "ENVIRONMENT",
+      "metadata": {
+        "isFreeTier": false,
+        "providerOwnerPresent": true,
+        "personalAccount": true,
+        "freeRequests": {
+          "limit": 1000,
+          "used": 30,
+          "remaining": 970
+        }
+      },
+      "blocker": "User-delegated eligible Free account required; environment credential is not a user grant",
+      "privacy": "Consent and upstream policy dependent; private-code admission remains separately gated",
+      "sources": [
+        "https://openrouter.ai/docs/api/api-reference/api-keys/get-current-api-key",
+        "https://openrouter.ai/docs/guides/overview/auth/oauth",
+        "https://openrouter.ai/docs/api_reference/limits"
+      ]
+    },
+    "cloudflare-workers-ai": {
+      "implementation": "Encrypted account credential path and neuron budget guard; entitlement admission remains unavailable",
+      "accountClass": "UNKNOWN",
+      "admission": "DENIED",
+      "reads": [
+        {
+          "endpoint": "/accounts/<redacted>",
+          "httpStatus": 403,
+          "success": false,
+          "errorCodes": [
+            9109
+          ]
+        },
+        {
+          "endpoint": "/accounts/<redacted>/subscriptions",
+          "httpStatus": 403,
+          "success": false,
+          "errorCodes": [
+            10000
+          ]
+        },
+        {
+          "endpoint": "/accounts/<redacted>/entitlements",
+          "httpStatus": 403,
+          "success": false,
+          "errorCodes": [
+            10000
+          ]
+        },
+        {
+          "endpoint": "/accounts/<redacted>/workers/account-settings",
+          "httpStatus": 403,
+          "success": false,
+          "errorCodes": [
+            10000
+          ]
+        }
+      ],
+      "blocker": "Available token lacks access to account/billing evidence. Subscriptions require Billing Read; account entitlements require Account Read. Missing or empty subscription data cannot prove Workers Free.",
+      "billing": "Workers Free has a provider-enforced daily hard stop; Workers Paid and AI Gateway credits can incur charges. Local budget estimation alone cannot prove no paid spillover.",
+      "privacy": "Private-code compatible only after actual admission verification",
+      "sources": [
+        "https://developers.cloudflare.com/api/resources/accounts/subresources/subscriptions/methods/get/",
+        "https://developers.cloudflare.com/api/resources/accounts/subresources/entitlements/methods/list/",
+        "https://developers.cloudflare.com/workers-ai/platform/pricing/"
+      ]
+    },
+    "groq": {
+      "implementation": "Encrypted user credential connection and model discovery",
+      "modelReadStatus": 200,
+      "modelCount": 11,
+      "accountClass": "UNKNOWN",
+      "admission": "DENIED",
+      "blocker": "Public API catalog proves model access only. No supported authoritative owner/billing-tier endpoint found; rate-limit headers cannot prove Free billing tier.",
+      "privacy": "Organization/data-control verification required",
+      "sources": [
+        "https://console.groq.com/docs/api-reference",
+        "https://console.groq.com/docs/rate-limits",
+        "https://console.groq.com/docs/billing-faqs"
+      ]
+    },
+    "cerebras": {
+      "implementation": "Encrypted user credential connection and model discovery",
+      "modelReadStatus": 200,
+      "modelCount": 2,
+      "accountClass": "UNKNOWN",
+      "publicFreeOfferClass": "PROMOTIONAL",
+      "admission": "DENIED",
+      "blocker": "Provider explicitly offers only time/credit-bounded Free Trial; no recurring permanent Free tier",
+      "privacy": "UNKNOWN",
+      "sources": [
+        "https://inference-docs.cerebras.ai/support/rate-limits"
+      ]
+    },
+    "puter": {
+      "implementation": "Browser user sign-in available; aggregate allowance is insufficient",
+      "accountClass": "SUBSCRIPTION_PAID",
+      "admission": "DENIED",
+      "privacy": "UNKNOWN",
+      "blocker": "Documented MonthlyUsage allowanceInfo exposes monthUsageAllowance and remaining, without Free/purchased buckets or a Free-only spending selector; no inference performed. R65 re-probe (2026-10-02): puter.com markets a $10/month subscription, and the developer FAQ documents a 'User-Pays' model — authenticated users are billed against their own Puter account resources. Anonymous keyless puter.ai.chat calls are rate-limited/blocked by Puter's own security layer; there is no committed $0 route.",
+      "sources": [
+        "https://docs.puter.com/Objects/monthlyusage/",
+        "https://puter.com/",
+        "https://developer.puter.com/"
+      ]
+    },
+    "pollinations": {
+      "implementation": "Not implemented — legacy anonymous surface only",
+      "accountClass": "COMMUNITY_LEGACY_ANONYMOUS",
+      "admission": "DENIED",
+      "privacy": "UNKNOWN",
+      "liveProbe": {
+        "endpoint": "https://text.pollinations.ai/openai",
+        "httpStatus": 200,
+        "userTier": "anonymous",
+        "anonymousModels": ["openai-fast"],
+        "upstreamModel": "gpt-oss-20b",
+        "observedAt": "2026-10-02"
+      },
+      "blocker": "Anonymous inference works on the legacy text.pollinations.ai surface (user_tier:\"anonymous\", real usage accounting), but it serves exactly one model and publishes no quota headers. The current authoritative docs (gen.pollinations.ai APIDOCS, Pollen billing) do not mention an anonymous tier at all — the free surface is a legacy compatibility path whose durability and terms cannot be pinned to any authoritative document. Fail-closed: unverifiable free status stays un-admitted.",
+      "sources": [
+        "https://text.pollinations.ai/models",
+        "https://raw.githubusercontent.com/pollinations/pollinations/main/APIDOCS.md",
+        "https://raw.githubusercontent.com/pollinations/pollinations/main/README.md"
+      ]
+    },
+    "ollama-cloud": {
+      "implementation": "User-connected Free starter allowlist, feature-flagged (ollamaUserConnectedFreeEnabled), attest-gated; live pricing page re-verified 2026-10-02",
+      "accountClass": "ACCOUNT_DEPENDENT",
+      "admission": "DENIED_UNLESS_ATTESTED",
+      "privacy": "Provider states prompts/responses are not logged or trained on; managed-relay terms unreviewed",
+      "blocker": "Signed-in session authenticates the account but exposes no documented programmatic plan/billing endpoint — ollama.com/settings/usage is a web surface, not API evidence. Free plan includes a starter usage amount scoped to a starter-model allowlist (resets monthly); purchased credits unlock all models and are consumed after included usage. Without a verifiable no-purchased-credits signal, the only honest boundary is user attestation + starter-model confinement — which is what the implemented path does. A signed-in session alone cannot prove the free-vs-paid boundary.",
+      "sources": [
+        "https://ollama.com/pricing",
+        "https://ollama.com/settings/usage"
+      ]
+    }
+  },
+  "humanAction": "Open CodeForge → Settings → Free Capacity → Connect OpenRouter Free → authorize a genuine personal Free account in the browser",
+  "afterAuthorization": "Verify current-key owner, tier, quota and policy; bind receipt to local user and credential; encrypt credential; discover exact-zero routes; qualify eligible models; admit only on passing ForgeZero policy"
+}
