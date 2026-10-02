@@ -1,0 +1,23 @@
+{
+  "checkedOn": "2026-10-01",
+  "status": "LIVE_ZERO_PRICE_TOOL_PROBE_NOT_ADMITTED",
+  "provider": "OpenRouter",
+  "model": "nvidia/nemotron-3.5-lightning:free",
+  "catalogPromptPrice": "0",
+  "catalogCompletionPrice": "0",
+  "authentication": "Existing environment credential; no credential value retained in evidence",
+  "accountFreeTier": false,
+  "accountTierEvidence": "Authenticated GET https://openrouter.ai/api/v1/key returned is_free_tier=false",
+  "liveProbe": {
+    "httpStatus": 200,
+    "toolName": "record_result",
+    "toolArguments": { "value": 7 },
+    "usage": { "promptTokens": 278, "completionTokens": 58, "costUsd": 0, "upstreamInferenceCostUsd": 0, "isByok": false }
+  },
+  "otherProbe": { "model": "qwen/qwen3.8-27b:free", "httpStatus": 429 },
+  "admission": "QUARANTINED",
+  "reason": "This environment key is owner/dev supply on a paid-tier account. It cannot certify a distinct user-entitled Free account or a provider-funded CodeForge grant. A tool probe is weaker than coding qualification and autonomous completion.",
+  "authorizationNeeded": "A real user's OpenRouter Free account authorized via the existing PKCE desktop flow, with current account-tier, terms, privacy, quota, and coding receipts; alternatively a provider-approved CodeForge sponsor allocation.",
+  "autonomousCodingQualification": "NOT_RUN",
+  "twoLiveDomainFailover": "NOT_RUN"
+}

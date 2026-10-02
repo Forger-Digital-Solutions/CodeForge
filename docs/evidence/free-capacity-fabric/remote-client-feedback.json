@@ -1,0 +1,8 @@
+{
+  "status": "AUTHENTICATED_SCOPED_FEEDBACK_PRIMITIVE_TESTED",
+  "implementation": "packages/server/src/remote-client-direct.ts",
+  "evidence": "remote-client-security.json",
+  "validation": ["HMAC", "request and nonce binding", "account/device/session/workspace binding", "timestamp", "single settlement", "strict telemetry field allowlist"],
+  "healthScopeTest": "A signed 429 for Alice's PUBLIC_IP domain hard-excluded that domain while Bob's distinct PUBLIC_IP domain remained eligible.",
+  "productionRemoteFeedbackDemonstrated": false
+}

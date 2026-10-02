@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-01T20:05:00Z",
+  "checkedAt": "2026-10-01T23:36:41.743Z",
   "routes": [
     {
       "provider": "Kilo Gateway",
@@ -25,6 +25,26 @@
       "completionReceipt": "kilo-autonomous-live.json"
     },
     {
+      "provider": "OpenRouter",
+      "route": "nvidia/nemotron-3.5-lightning:free",
+      "state": "LIVE_ZERO_PRICE_TOOL_PROBE_NOT_ADMITTED",
+      "quotaDomainType": "PROVIDER_ACCOUNT",
+      "egressMode": "CODEFORGE_GATEWAY",
+      "authMode": "ENVIRONMENT_CREDENTIAL",
+      "currentKeyFreeTier": false,
+      "liveHttpStatus": 200,
+      "liveToolCall": "record_result({value:7})",
+      "observedUsageCostUsd": 0,
+      "observedUpstreamInferenceCostUsd": 0,
+      "reasonNotAdmitted": "The available key is an owner environment credential on a paid-tier account. A zero-price call does not turn that account into Packaged Free supply or prove user-delegated entitlement. No independent autonomous coding qualification was run.",
+      "sources": [
+        "https://openrouter.ai/docs/guides/overview/auth/oauth",
+        "https://openrouter.ai/docs/api/api-reference/api-keys/get-current-key",
+        "https://openrouter.ai/pricing/",
+        "https://openrouter.ai/privacy/"
+      ]
+    },
+    {
       "provider": "OpenCode Zen",
       "state": "REFERENCE_ONLY",
       "quotaDomainType": "PROVIDER_ACCOUNT",
@@ -36,10 +56,11 @@
       "provider": "Gemini Developer API",
       "state": "USER_ENTITLEMENT_CANDIDATE_NOT_ZERO_SETUP",
       "quotaDomainType": "PROVIDER_PROJECT",
-      "reason": "Free tier requires a user's project and sanctioned key; quotas are per project, and free-tier data may be used to improve products.",
+      "reason": "Free tier requires a project. Google documents OAuth, but external production scopes need verification and no CodeForge user-project delegation or account-tier attestation exists. The available environment key was not used for inference because its billing tier is unknown.",
       "sources": [
         "https://ai.google.dev/gemini-api/docs/rate-limits",
-        "https://ai.google.dev/gemini-api/docs/pricing"
+        "https://ai.google.dev/gemini-api/docs/pricing",
+        "https://ai.google.dev/gemini-api/docs/oauth"
       ]
     },
     {

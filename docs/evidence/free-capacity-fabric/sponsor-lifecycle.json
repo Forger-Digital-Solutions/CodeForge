@@ -1,0 +1,6 @@
+{
+  "status": "LOCAL_LIFECYCLE_TESTED_REMOTE_OPERATOR_PIPELINE_OPEN",
+  "implementation": ["packages/forge-zero/src/sponsored-routes.ts", "packages/forge-zero/src/sponsor-manifests.ts"],
+  "proven": ["signed manifest creates inert proposal", "terms and privacy evidence required before qualification", "zero-cost receipt required", "qualification and canary receipts required before promotion", "revocation and expiry remove materialized route"],
+  "remaining": ["durable proposal store", "operator review workflow", "deployed refresh schedule", "real signed sponsor offer", "live qualification and canary"]
+}

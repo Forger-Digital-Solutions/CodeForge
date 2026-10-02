@@ -74,5 +74,40 @@
     "controlledFailover": "kilo-autonomous-controlled-failover.json",
     "completionGateChanged": false,
     "twoLiveIndependentUpstreamsProven": false
+  },
+  "continuation": {
+    "date": "2026-10-01",
+    "startingHead": "f4c455a68eb0d2331c4e5a38f667640ca5304f24",
+    "finalWorkspaceBuild": { "command": "npm run build", "status": "PASS", "scope": "All workspaces, desktop main and renderer, web renderer" },
+    "scopedRegression": {
+      "command": "vitest run packages/forge-zero/test packages/model-registry/test packages/server/test/remote-client-direct.test.ts apps/desktop/test/app-settings.test.ts",
+      "status": "PASS",
+      "passedFiles": 33,
+      "passedTests": 359,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "durationSeconds": 15.85
+    },
+    "repositoryWideAttempt": {
+      "command": "npm test",
+      "status": "INTERRUPTED_RESOURCE_PRESSURE",
+      "elapsedMinutesApproximate": 28,
+      "exactTotalsAvailable": false,
+      "reason": "The run exceeded twice the previous 802-second baseline, accumulated unrelated 30-90-second timeouts, and a test process reached roughly 1 GB. It was stopped without a final Vitest summary.",
+      "observedFailures": [
+        "cloud account/credit assertions",
+        "source-state campaign identity",
+        "autonomous orchestrator and progress watchdog timeouts",
+        "million-line repository timing checks",
+        "remote publication and desktop/cloud integration timeouts"
+      ]
+    },
+    "isolatedChecks": [
+      { "file": "packages/server/test/progress-watchdog.test.ts", "status": "PASS", "passedTests": 5, "classification": "FLAKY_OR_ORDER_SENSITIVE_UNDER_BROAD_LOAD" },
+      { "file": "packages/server/test/autonomous-orchestrator.test.ts", "status": "PASS", "passedTests": 22, "classification": "FLAKY_OR_ORDER_SENSITIVE_UNDER_BROAD_LOAD" },
+      { "file": "tests/cloud-failure-matrix.test.ts", "status": "FAIL", "passedTests": 2, "failedTests": 1, "classification": "PRE_EXISTING_SUSPECTED_UNCONFIRMED_BASELINE", "assertion": "expected 500000 credits, received 0" },
+      { "file": "packages/cloud-db/test/account-deletion.test.ts", "classification": "PRE_EXISTING", "basis": "Same failure reproduced on unchanged pre-R61 base in baseline-credit-audit.json" }
+    ],
+    "repositoryWideGreen": false
   }
 }

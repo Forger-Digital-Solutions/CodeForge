@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-01T23:34:26Z",
+  "status": "PROTOCOL_PRIMITIVES_TESTED_TRANSPORT_OPEN",
+  "implementation": "packages/server/src/remote-client-direct.ts",
+  "test": "packages/server/test/remote-client-direct.test.ts",
+  "testsPassed": 2,
+  "propertiesTested": [
+    "HMAC assignment binding to account, device session, workspace, route, provider, endpoint, model, request digest, expiration and nonce",
+    "cross-device rejection and nonce replay rejection",
+    "installed-client local route/consent denial",
+    "signed ordered stream frames and cancellation signal",
+    "signed feedback replay rejection",
+    "Alice PUBLIC_IP 429 hard-excludes only Alice's domain; Bob's distinct PUBLIC_IP domain remains eligible"
+  ],
+  "remaining": "No hosted assignment transport, real remote installed-client session handshake, durable stream forwarding, or production cancellation/reservation integration is wired. Closure gate H remains open."
+}

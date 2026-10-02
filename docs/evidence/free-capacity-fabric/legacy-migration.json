@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-01T23:36:16Z",
+  "status": "MIGRATION_DECISION_LOGIC_TESTED_INVENTORY_UNVERIFIED",
+  "implementation": "packages/forge-zero/src/legacy-free-migration.ts",
+  "testsPassed": 2,
+  "mapping": {
+    "PURE_MANAGED_FREE": "PACKAGED_FREE_PROVIDER_FUNDED only with explicit zero cost, quota domain, privacy, terms and qualification evidence",
+    "USER_CONNECTED_FREE": "USER_ENTITLED_FREE only with the same evidence plus a proven free-only user entitlement",
+    "DISTRIBUTED_USER_FREE": "USER_ENTITLED_FREE under the same conditions",
+    "sponsored_or_promotional_legacy": "RETIRED until independently requalified"
+  },
+  "currentActualRouteInventory": "NOT_VERIFIED",
+  "remaining": "The migration assessor is not yet wired into production selection. Existing legacy routes still require account-level cost, quota, terms, privacy and qualification audits before safe migration. Gate N remains open."
+}

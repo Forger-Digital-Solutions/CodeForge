@@ -1,0 +1,16 @@
+{
+  "providerId": "kilo-free-direct",
+  "checkedAt": "2026-10-01T23:36:41.743Z",
+  "source": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+  "normalizedMainSha256": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+  "status": "VERIFIED_UNCHANGED",
+  "routePrivacyClass": "DATA_COLLECTION_ALLOWED",
+  "privateCodeDefault": "INELIGIBLE",
+  "changeBehavior": "A changed authoritative page clears the runtime Kilo admission receipt; new assignments fail closed until reviewed.",
+  "testFiles": [
+    "packages/model-registry/test/kilo-policy-reverification.test.ts",
+    "packages/model-registry/test/free-cloud-registry.test.ts",
+    "packages/forge-zero/test/capacity-policy.test.ts"
+  ],
+  "limitations": "The verifier hashes the authoritative page's main HTML. Any content change requires operator review; no semantic classifier automatically approves changed privacy terms."
+}

@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-10-01T23:27:19Z",
+  "status": "SIGNED_REMOTE_INTAKE_LIBRARY_TESTED_NO_LIVE_SPONSOR",
+  "implementation": "packages/forge-zero/src/sponsor-manifests.ts",
+  "tests": [
+    "packages/forge-zero/test/sponsor-manifests.test.ts",
+    "packages/forge-zero/test/sponsored-routes.test.ts"
+  ],
+  "controls": [
+    "Ed25519 signature and trusted signer key ID",
+    "strict manifest version and zero-cost schema",
+    "issued/start/expiry validation",
+    "monotonic sequence replay rejection",
+    "ETag conditional refresh and bounded backoff",
+    "last known good bounded by offer expiry",
+    "signed revocation makes an offer unavailable",
+    "remote manifest creates inert proposal until independent terms, zero-cost, qualification, authoritative quota and canary receipts exist"
+  ],
+  "remaining": "No sponsor signer key, agreement, durable operator state, scheduled deployed refresh, or live canary exists."
+}

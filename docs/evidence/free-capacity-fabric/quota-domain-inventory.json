@@ -1,6 +1,8 @@
 {
-  "checkedAt": "2026-10-01T22:38:46.225Z",
+  "checkedAt": "2026-10-01T23:36:41.743Z",
   "registrationPopulationCeiling": null,
+  "admittedLiveIndependentDomains": 1,
+  "admittedDomainTypes": { "PUBLIC_IP": 1, "USER_ACCOUNT": 0, "PROVIDER_ACCOUNT": 0, "SPONSOR_POOL": 0, "GLOBAL_SHARED": 0 },
   "liveNewDomains": [
     {
       "providerId": "kilo-free-direct",
@@ -17,6 +19,13 @@
   ],
   "simulationOnlyDomains": [
     "test:fault-pool"
+  ],
+  "liveProbedButNotAdmitted": [
+    {
+      "providerId": "openrouter",
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "reason": "The available environment credential reports is_free_tier=false. The zero-price tool probe is real, but this is not product Free entitlement or an admitted route."
+    }
   ],
   "liveSponsoredGrants": []
 }

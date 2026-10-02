@@ -1,0 +1,9 @@
+{
+  "status": "SECURE_ASSIGNMENT_PROTOCOL_TESTED_HOSTED_TRANSPORT_OPEN",
+  "implementation": "packages/server/src/remote-client-direct.ts",
+  "evidence": "remote-client-security.json",
+  "assignmentBinding": ["account", "device", "session", "workspace", "run", "route", "quota domain", "provider", "pinned HTTPS endpoint", "model", "request digest", "request ID", "expiration", "nonce"],
+  "installedClientChecks": ["HMAC", "identity", "replay", "request digest", "pinned Kilo endpoint", "Free model ID", "local route/consent callback"],
+  "hostedDispatchDemonstrated": false,
+  "reason": "No authenticated network transport connects the cloud control plane to a remote installed desktop session yet."
+}
