@@ -11,6 +11,7 @@ describe("CodeForgeServer shutdown", () => {
     let started = false;
     const provider: ProviderAdapter = {
       providerId: "codeforge",
+      isTestProvider: true,
       listModels: async () => [],
       chat: async () => { throw new Error("Use streamChat"); },
       streamChat: async function* (_request, signal) {

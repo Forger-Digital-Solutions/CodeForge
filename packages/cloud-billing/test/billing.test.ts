@@ -89,13 +89,13 @@ describe("StripeBillingService", () => {
 
     const res1 = await billing.handleWebhookEvent(checkoutEvent);
     expect(res1.action).toBe("pro_subscription_activated");
-    expect(await db.getCreditBalance(user.id)).toBe(5_500_000);
+    expect(await db.getCreditBalance(user.id)).toBe(5_000_000);
     expect(await entitlements.hasFeature(user.id, "HOSTED_PAID")).toBe(true);
 
     // Duplicate delivery is skipped
     const dupRes = await billing.handleWebhookEvent(checkoutEvent);
     expect(dupRes.action).toBe("duplicate_skipped");
-    expect(await db.getCreditBalance(user.id)).toBe(5_500_000);
+    expect(await db.getCreditBalance(user.id)).toBe(5_000_000);
 
     // Stripe can deliver the initial invoice after checkout.session.completed. The deterministic
     // ledger request id must prevent a second initial allowance grant.
@@ -115,7 +115,7 @@ describe("StripeBillingService", () => {
     };
     const initialInvoiceResult = await billing.handleWebhookEvent(initialInvoiceEvent);
     expect(initialInvoiceResult.action).toBe("pro_subscription_renewed");
-    expect(await db.getCreditBalance(user.id)).toBe(5_500_000);
+    expect(await db.getCreditBalance(user.id)).toBe(5_000_000);
 
     // 2. Monthly recurring renewal invoice
     const renewalInvoiceEvent = {
@@ -144,7 +144,7 @@ describe("StripeBillingService", () => {
 
     const res2 = await billing.handleWebhookEvent(renewalInvoiceEvent);
     expect(res2.action).toBe("pro_subscription_renewed");
-    expect(await db.getCreditBalance(user.id)).toBe(10_500_000);
+    expect(await db.getCreditBalance(user.id)).toBe(10_000_000);
 
     // 3. Cancellation webhook downgrades user cleanly
     const cancelEvent = {

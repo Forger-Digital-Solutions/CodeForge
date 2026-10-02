@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ForgeZero, CapacityReservationLedger, freeRouteExclusionReason, type FreeModelRecord } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog, createMockProvider } from "@codeforge/providers";
+import { InMemoryProviderCatalog, createMockProvider, classifyOpenRouterEntitlement } from "@codeforge/providers";
 import type { ModelQualificationReceipt } from "@codeforge/eight-bit";
 import {
   PROVIDER_DEFINITIONS,
@@ -61,7 +61,13 @@ function freeRecord(providerId: string, modelId: string, overrides: Partial<Free
 }
 
 function connected(providerId: string, extra: Partial<ProviderConnectionState> = {}): ProviderConnectionState {
-  return { providerId, connected: true, credentialSource: "SECURE_STORAGE", authState: "ok", ...extra };
+  const ownerUserId = extra.ownerUserId ?? "fixture-owner";
+  const delegated = providerId === "openrouter" && extra.credentialSource === "OAUTH" ? classifyOpenRouterEntitlement({ data: {
+    is_free_tier: true, creator_user_id: "fixture-openrouter-owner", organization_id: null, free_model_daily_requests: { limit: 50, remaining: 50, used: 0 },
+  } }, { key: "test-secret", ownerUserId, now: NOW }) : undefined;
+  return { providerId, connected: true, credentialSource: "SECURE_STORAGE", authState: "ok", ownerUserId, ...extra,
+    ...(delegated ? { delegatedEntitlement: { ...delegated, admissionEvidence: { sourceDocumentation: "fixture-policy", termsEvidence: "fixture-terms",
+      privacyEvidence: "fixture-privacy", priceEvidence: "fixture-free-quota", verifiedAt: NOW.toISOString(), recheckAt: delegated.recheckAt } } } : {}) };
 }
 
 function receipt(providerId: string, modelId: string, state: ModelQualificationReceipt["qualificationState"] = "QUALIFIED"): ModelQualificationReceipt {
@@ -957,7 +963,7 @@ describe("FreeCloudService — Free Fabric capacity projection", () => {
     expect(groqPool?.capacityIdentity).toBe("localconn:groq");
     expect(groqPool?.windows.find((w) => w.unit === "requests")?.remaining).toBe(100);
     const openrouterPool = pools.find((p) => p.providerId === "openrouter");
-    expect(openrouterPool?.capacityIdentity).toBe("localconn:openrouter");
+    expect(openrouterPool?.capacityIdentity).toBe(connected("openrouter", { credentialSource: "OAUTH" }).delegatedEntitlement?.accountIdentityHash);
     // Pool ids are distinct physical accounts — two providers never share a bucket.
     expect(new Set(pools.map((p) => p.poolId)).size).toBe(pools.length);
   });
@@ -983,7 +989,7 @@ describe("FreeCloudService — Free Fabric capacity projection", () => {
     // The identities a request may claim come from stamped connection state alone — the
     // localconn sentinel when no account hash was recorded.
     const identities = svc.capacityIdentitiesFor("alice").sort();
-    expect(identities).toEqual(["localconn:groq", "localconn:openrouter"]);
+    expect(identities).toEqual(["localconn:groq", connected("openrouter", { credentialSource: "OAUTH" }).delegatedEntitlement?.accountIdentityHash].sort());
     expect(svc.capacityIdentitiesFor("bob")).toEqual([]);
   });
 

@@ -503,7 +503,7 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
         appearance: { chatTextScale: "medium", reducedMotion: false },
         models: { defaultModelId: "auto" },
         notifications: { enabled: true, onApprovalNeeded: true, onAgentCompleted: true, onlyWhenInBackground: true },
-        privacy: { routingMode: "STANDARD" },
+        privacy: { routingMode: "STANDARD", freeCodeSharing: "PRIVATE" },
         workspace: { repositoryIndexEnabled: true },
       },
       closeBehavior: settingsSnapshot?.closeBehavior ?? "ask",

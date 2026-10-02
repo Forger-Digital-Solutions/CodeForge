@@ -51,7 +51,7 @@ describe("Agent Steering Safety & Turn Concurrency (CF-06)", () => {
     catalog.register({
       providerId: "codeforge",
       displayName: "Mock Provider",
-      isTestProvider: false,
+      isTestProvider: true,
       models: () => [createGenericFreeRecord()],
       streamChat: () => (async function* () {
         yield { type: "text_delta", delta: "Working..." };
@@ -85,7 +85,7 @@ describe("Agent Steering Safety & Turn Concurrency (CF-06)", () => {
     catalog.register({
       providerId: "codeforge",
       displayName: "Mock Provider",
-      isTestProvider: false,
+      isTestProvider: true,
       models: () => [createGenericFreeRecord()],
       streamChat: (req: any) => {
         recordedRequests.push(JSON.parse(JSON.stringify(req)));
@@ -145,7 +145,7 @@ describe("Agent Steering Safety & Turn Concurrency (CF-06)", () => {
     catalog.register({
       providerId: "codeforge",
       displayName: "Mock Provider",
-      isTestProvider: false,
+      isTestProvider: true,
       models: () => [createGenericFreeRecord()],
       streamChat: (req: any) => {
         recordedRequests.push(JSON.parse(JSON.stringify(req)));
@@ -232,7 +232,7 @@ describe("Agent Steering Safety & Turn Concurrency (CF-06)", () => {
     catalog.register({
       providerId: "codeforge",
       displayName: "Mock Provider",
-      isTestProvider: false,
+      isTestProvider: true,
       models: () => [createGenericFreeRecord()],
       streamChat: () => (async function* () {
         yield { type: "text_delta", delta: "Waiting..." };
@@ -293,7 +293,7 @@ describe("Agent Steering Safety & Turn Concurrency (CF-06)", () => {
     catalog.register({
       providerId: "codeforge",
       displayName: "Mock Provider",
-      isTestProvider: false,
+      isTestProvider: true,
       models: () => [createGenericFreeRecord()],
       streamChat: () => (async function* () {
         yield { type: "tool_call_started", toolCallId: "approval-tool", toolName: "write_file" };

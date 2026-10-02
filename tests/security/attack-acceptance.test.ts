@@ -258,7 +258,7 @@ describe("Security R1 acceptance — CodeForge Cloud", () => {
     expect(forged.status).toBe(200);
     const account = (await (await fetch(`${baseUrl}/v1/account`, { headers: auth })).json()) as { planId: string; creditBalance: number; entitlements: Array<{ featureKey: string }> };
     expect(account.planId).toBe("free");
-    expect(account.creditBalance).toBe(500_000);
+    expect(account.creditBalance).toBe(0);
     expect(account.entitlements.map((e) => e.featureKey)).not.toContain("HOSTED_PAID");
 
     const badPlan = await fetch(`${baseUrl}/v1/billing/checkout`, { method: "POST", headers: auth, body: JSON.stringify({ planId: "enterprise_free_forever", successUrl: "https://forgerdigitalsolutions.com/ok", cancelUrl: "https://forgerdigitalsolutions.com/no" }) });

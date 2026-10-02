@@ -21,6 +21,11 @@ import { LocalKeyEncryptionProvider, SecretEnvelopeService } from "@codeforge/cr
 import { ConsoleSecurityAuditSink, SecurityAuditLog, createRedactingLogger, redactSecrets, type RedactingLogger, type SecurityAuditEvent, type SecurityAuditSink } from "@codeforge/secrets";
 import { buildSecurityTxt } from "./security-txt.js";
 import { isAllowedBillingReturnUrl } from "./billing-return-url.js";
+import { RemoteDirectTransport, type RemoteDirectBinding, type RemoteDirectPrincipal } from "@codeforge/server";
+import type { ChatRequest } from "@codeforge/providers";
+import { handleRemoteDirectHttp } from "./remote-direct-http.js";
+import { SponsorOperatorService, type SponsorOperatorPolicy } from "./sponsor-operator-service.js";
+import { handleSponsorOperatorHttp } from "./sponsor-operator-http.js";
 
 const MAX_BODY_BYTES = 1024 * 1024; // 1 MiB max payload
 const DEFAULT_BROWSER_RETURN_URLS = [
@@ -329,6 +334,9 @@ export interface CodeForgeCloudServerConfig {
     maxConcurrentDispatches?: number;
   };
   logLevel?: "debug" | "info" | "warn" | "error" | "silent";
+  remoteDirectAdmission?: (binding: RemoteDirectBinding, request: ChatRequest) => boolean | Promise<boolean>;
+  remoteDirectScopeAuthorization?: (principal: RemoteDirectPrincipal, scope: { deviceId: string; workspaceId: string }) => boolean | Promise<boolean>;
+  sponsorOperatorPolicy?: SponsorOperatorPolicy;
 }
 
 export class CodeForgeCloudServer {
@@ -346,6 +354,8 @@ export class CodeForgeCloudServer {
   public readonly publicationService?: PublicationService;
   public readonly hostedWorkflowAuthority: HostedWorkflowAuthority;
   public readonly hostedRuntime: HostedRuntime;
+  public readonly remoteDirectTransport: RemoteDirectTransport;
+  public readonly sponsorOperators?: SponsorOperatorService;
   private readonly sessionPersistence: ISessionPersistence;
   private readonly ownsSessionPersistence: boolean;
   private readonly discoverOnStart: boolean;
@@ -442,6 +452,12 @@ export class CodeForgeCloudServer {
       databaseSsl: config.databaseSsl,
     });
     this.hostedWorkflowAuthority = new HostedWorkflowAuthority(this.sessionPersistence);
+    if (config.sponsorOperatorPolicy) this.sponsorOperators = new SponsorOperatorService(this.sessionPersistence, secretEnvelope, config.sponsorOperatorPolicy);
+    this.remoteDirectTransport = new RemoteDirectTransport({ persistence: this.sessionPersistence, envelope: secretEnvelope,
+      admit: config.remoteDirectAdmission ?? (() => false), authorizeSessionScope: config.remoteDirectScopeAuthorization, sessionActive: async (principal) => {
+        const session = await this.db.getDeviceSessionById(principal.authSessionId);
+        return !!session && session.userId === principal.accountId && !session.revokedAt && Date.parse(session.expiresAt) > Date.now();
+      } });
 
     this.entitlements = new EntitlementService(this.db);
     this.usage = new UsageEngine(this.db);
@@ -550,6 +566,7 @@ export class CodeForgeCloudServer {
     // Fail closed: initialize the database schema (async for Postgres) BEFORE accepting traffic.
     await this.db.init();
     await this.hostedWorkflowAuthority.init();
+    await this.sponsorOperators?.init();
     if (this.publicationService) {
       await this.publicationService.init();
       // Safe recovery is entirely durable and reacquires a new fenced lease before it can mutate a
@@ -636,7 +653,7 @@ export class CodeForgeCloudServer {
         // Stop the queue worker (aborts local in-flight dispatch) BEFORE closing the durable
         // store so a terminalizing write never races a closed pool.
         const closeOperations: Promise<unknown>[] = [this.hostedRuntime.stop().then(() => this.db.close())];
-        if (this.ownsSessionPersistence) closeOperations.push(this.sessionPersistence.close());
+        closeOperations.push((async () => { await this.sponsorOperators?.stop(); if (this.ownsSessionPersistence) await this.sessionPersistence.close(); })());
         void Promise.all(closeOperations).then(() => resolve(), reject);
       });
     });
@@ -738,6 +755,15 @@ export class CodeForgeCloudServer {
     // refused even though its signature is still valid (see AuthService.verifyAccessSession).
     const payload = await this.auth.verifyAccessSession(token);
     return payload.sub;
+  }
+
+  private async remoteDirectPrincipal(req: http.IncomingMessage): Promise<RemoteDirectPrincipal> {
+    const header = req.headers.authorization ?? "";
+    if (!header.startsWith("Bearer ") || header.length > 4103) throw new Error("Missing or invalid Bearer token");
+    const payload = await this.auth.verifyAccessSession(header.slice(7).trim());
+    const session = await this.db.getDeviceSessionById(payload.sid);
+    if (!session || session.userId !== payload.sub || session.revokedAt || Date.parse(session.expiresAt) <= Date.now()) throw new Error("Session has been revoked or has expired");
+    return { accountId: payload.sub, authSessionId: payload.sid };
   }
 
   private audit(event: SecurityAuditEvent): void {
@@ -1665,6 +1691,17 @@ export class CodeForgeCloudServer {
 
       // Hosted workflows are owner-scoped. Worker actions themselves can only be minted by the
       // server-side workflow authority; the public transport can poll and return results only.
+      if (await handleSponsorOperatorHttp(req, res, url, { service: this.sponsorOperators,
+        authenticate: (request) => this.authenticateRequest(request), readJson: (request, schema) => this.readJson(request, schema),
+        sendJson: (response, status, body) => this.sendJson(response, status, body, corsOrigin) })) return;
+
+      if (url.pathname.startsWith("/v1/remote-direct/")) {
+        const principal = await this.remoteDirectPrincipal(req);
+        await handleRemoteDirectHttp({ path: url.pathname, method: method ?? "GET", principal, transport: this.remoteDirectTransport,
+          read: () => this.readJson(req, z.unknown()), send: (status, body) => this.sendJson(res, status, body, corsOrigin) });
+        return;
+      }
+
       if (url.pathname === "/v1/workflows" && method === "POST") {
         const ownerUserId = await this.authenticateRequest(req);
         const body = await this.readJson(req, HostedWorkflowCreateSchema);

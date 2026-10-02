@@ -1,5 +1,5 @@
 import type { CredentialStore, ProviderAdapter, ProviderModel, ProviderCatalog, ProviderResponseObserver } from "@codeforge/providers";
-import { configFieldKey, createProviderAdapterFromDefinition, InMemoryProviderCatalog } from "@codeforge/providers";
+import { configFieldKey, createProviderAdapterFromDefinition, InMemoryProviderCatalog, verifyOpenRouterEntitlement, isOpenRouterEntitlementCurrent, type OpenRouterEntitlementReceipt } from "@codeforge/providers";
 import { hashUserAccountIdentity, userConnectedPoolId, type ForgeZero } from "@codeforge/forge-zero";
 import type {
   ConnectResult,
@@ -55,6 +55,7 @@ export const CREDENTIAL_SOURCES_KEY = "codeforge:provider-credential-sources";
 export const PLAN_ATTESTATIONS_KEY = "codeforge:provider-plan-attestations";
 export const ENABLED_MODELS_KEY = "codeforge:provider-enabled-models";
 export const GEMINI_FREE_ACCEPTANCE_KEY = "codeforge:gemini-free-policy-acceptance";
+export const DELEGATED_ENTITLEMENTS_KEY = "codeforge:delegated-entitlements";
 
 export interface EnvCredentialSettings {
   policy: EnvironmentCredentialPolicy;
@@ -90,6 +91,7 @@ export interface ProviderConnectionsHost {
   geminiPolicyContext?: () => { accountId?: string; region: RegionResolution };
   userId?: string;
   ollamaUserConnectedFreeEnabled?: boolean;
+  verifyOpenRouter?: typeof verifyOpenRouterEntitlement;
 }
 
 const CONNECTABLE_FIELD_RE = /^[a-zA-Z][a-zA-Z0-9_-]{0,40}$/;
@@ -97,10 +99,17 @@ const CONNECTABLE_FIELD_RE = /^[a-zA-Z][a-zA-Z0-9_-]{0,40}$/;
 export class ProviderConnections {
   private readonly host: ProviderConnectionsHost;
   private readonly now: () => Date;
+  private readonly delegatedReceipts = new Map<string, OpenRouterEntitlementReceipt>();
+
+  accountOwnerUserId(): string {
+    return this.host.userId ?? "";
+  }
 
   constructor(host: ProviderConnectionsHost) {
     this.host = host;
     this.now = host.now ?? (() => new Date());
+    const raw = host.readSettings()[DELEGATED_ENTITLEMENTS_KEY] as Record<string, OpenRouterEntitlementReceipt> | undefined;
+    if (raw?.openrouter?.provider === "openrouter") this.delegatedReceipts.set("openrouter", raw.openrouter);
   }
 
   // --- definitions -----------------------------------------------------------------------------
@@ -589,6 +598,13 @@ export class ProviderConnections {
         return { ok: false, error: friendlyProviderError(e) };
       }
     }
+    if (providerId === "openrouter" && source === "OAUTH") {
+      const receipt = await (this.host.verifyOpenRouter ?? verifyOpenRouterEntitlement)({ key: values.apiKey!, ownerUserId: this.host.userId ?? "", now: this.now() });
+      this.saveDelegatedReceipt(receipt);
+      if (!isOpenRouterEntitlementCurrent(receipt, this.host.userId ?? "", values.apiKey!, this.now()) || !receipt.admissionEvidence) {
+        return { ok: false, error: `OpenRouter Free capacity was not admitted: ${receipt.accountClass} (${receipt.reason}).` };
+      }
+    }
     this.storeFields(def, values, def.userConnectedFree ? "USER_CONNECTED_FREE_API_KEY" : source);
     await this.reconcile(providerId);
     const verifiedFree = await this.host.discoverProviderFree(providerId).catch(() => 0);
@@ -616,6 +632,10 @@ export class ProviderConnections {
     this.host.secrets.delete(this.credentialStorageKey(providerId));
     for (const field of def.connection.fields) if (field.id !== "apiKey") this.host.secrets.delete(configFieldKey(providerId, field.id));
     if (providerId === "cloudflare-workers-ai") this.host.secrets.delete("cloudflare-account-id");
+    if (providerId === "openrouter") {
+      const receipt = this.delegatedReceipts.get(providerId);
+      if (receipt) this.saveDelegatedReceipt({ ...receipt, accountClass: "REVOKED", reason: "LOCAL_CONNECTION_REVOKED", recheckAt: this.now().toISOString() });
+    }
     this.setStoredSource(providerId, null);
     await this.reconcile(providerId);
   }
@@ -627,6 +647,12 @@ export class ProviderConnections {
     const def = this.definition(providerId);
     if (!def) return;
     const source = this.credentialSourceOf(providerId);
+    if (providerId === "openrouter" && source === "OAUTH") {
+      const key = this.resolveField(providerId, "apiKey")?.value;
+      if (key && !isOpenRouterEntitlementCurrent(this.delegatedReceipts.get(providerId), this.host.userId ?? "", key, this.now())) {
+        this.saveDelegatedReceipt(await (this.host.verifyOpenRouter ?? verifyOpenRouterEntitlement)({ key, ownerUserId: this.host.userId ?? "", now: this.now() }));
+      }
+    }
     const catalog = this.host.providerCatalog;
     if (def.apiStyle === "hosted" || def.apiStyle === "internal") {
       this.publishConnection(def, source);
@@ -681,11 +707,15 @@ export class ProviderConnections {
     const envVariable = source === "ENVIRONMENT" ? this.resolveField(def.id, "apiKey")?.variable : undefined;
     const auth = this.host.providerAuthState(def.id);
     const geminiPolicy = def.id === "google" ? this.geminiPolicyGate().evaluate() : undefined;
+    const delegated = this.delegatedReceipts.get(def.id);
+    const key = def.id === "openrouter" && source === "OAUTH" ? this.resolveField(def.id, "apiKey")?.value : undefined;
+    const boundDelegated = delegated && key && isOpenRouterEntitlementCurrent(delegated, this.host.userId ?? "", key, this.now())
+      ? delegated : delegated ? { ...delegated, accountClass: "UNKNOWN" as const, reason: "CREDENTIAL_OWNER_OR_RECEIPT_STALE" } : undefined;
     const state: ProviderConnectionState = {
       providerId: def.id,
       connected,
       credentialSource: source,
-      supplyClass: supplyClassFor(def, { credentialSource: source, connected }),
+      supplyClass: supplyClassFor(def, { credentialSource: source, connected, delegatedEntitlement: boundDelegated }),
       environmentVariable: envVariable,
       authState: connected ? auth ?? "ok" : "unknown",
       planAttested: def.freeAccess.spillover === "ACCOUNT_DEPENDENT" ? this.planAttested(def.id) : true,
@@ -696,6 +726,7 @@ export class ProviderConnections {
       // attribute per-user pools — a per-user route is spendable only by requests carrying
       // this same fairness identity. Never a credential.
       ownerUserId: this.host.userId,
+      ...(def.id === "openrouter" && source === "OAUTH" && boundDelegated ? { delegatedEntitlement: boundDelegated } : {}),
       ...(def.userConnectedFree ? {
         userConnectedFree: {
           featureFlag: def.userConnectedFree.featureFlag,
@@ -713,6 +744,13 @@ export class ProviderConnections {
       } : {}),
     };
     this.host.freeCloud.setConnection(state);
+  }
+
+  private saveDelegatedReceipt(receipt: OpenRouterEntitlementReceipt): void {
+    this.delegatedReceipts.set("openrouter", receipt);
+    const settings = this.host.readSettings();
+    settings[DELEGATED_ENTITLEMENTS_KEY] = { openrouter: receipt };
+    this.persistSettings(settings, "delegated Free entitlement receipt");
   }
 
   /** Lowest-friction way to connect this provider right now (R1 §13, §68, §71). */
@@ -750,6 +788,8 @@ export class ProviderConnections {
         connected,
         credentialSource: conn?.credentialSource ?? "NONE",
         supplyClass: conn?.supplyClass ?? supplyClassFor(def, conn),
+        ...(conn?.delegatedEntitlement ? { delegatedFree: { accountClass: conn.delegatedEntitlement.accountClass, reason: conn.delegatedEntitlement.reason,
+          verifiedAt: conn.delegatedEntitlement.verifiedAt, recheckAt: conn.delegatedEntitlement.recheckAt, remainingRequests: conn.delegatedEntitlement.freeRequests?.remaining } } : {}),
         environmentVariable: conn?.environmentVariable,
         authState: conn?.authState ?? "unknown",
         planAttested: this.planAttested(def.id),

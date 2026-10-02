@@ -55,6 +55,7 @@ export interface ProviderConnectionView {
   credentialSource: CredentialSource;
   /** Economic source of this connection's capacity (RC-5): managed product supply vs the user's own account vs dev-owner keys. */
   supplyClass?: SupplyClass;
+  delegatedFree?: { accountClass: string; reason: string; verifiedAt: string; recheckAt: string; remainingRequests?: number };
   environmentVariable?: string;
   authState: ProviderConnectionState["authState"];
   planAttested: boolean;

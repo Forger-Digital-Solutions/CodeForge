@@ -33,6 +33,9 @@ export interface ModelExecutionRequest {
   maxTokens?: number;
   signal?: AbortSignal;
   userId?: string;
+  role?: string;
+  runId?: string;
+  workspaceId?: string;
   authorityState?: string;
   dedupeScope?: string;
 }
@@ -179,6 +182,7 @@ export class ModelExecutionAdapter {
     governor?: ProviderCapacityGovernor,
     private readonly greenPolicy?: ForgeGreenRunPolicy,
     private readonly paidAuto?: PaidAutoService,
+    private readonly authorizeFreeDispatch?: (selection: { providerId: string; modelId: string }, request: ModelExecutionRequest) => void,
   ) {
     this.providerCatalog = providerCatalog;
     this.firewall = firewall;
@@ -299,6 +303,7 @@ export class ModelExecutionAdapter {
    */
   async *streamExecution(req: ModelExecutionRequest): AsyncIterable<StreamEvent> {
     const { providerId, modelId } = this.resolveModel(req.modelSelection);
+    this.assertFreeDispatch({ providerId, modelId }, req);
     const provider = this.providerCatalog.get(providerId);
     if (!provider) {
       throw new Error(`[${ERROR_CODES.PROVIDER_UNAVAILABLE}] Provider "${providerId}" not found in catalog.`);
@@ -325,7 +330,10 @@ export class ModelExecutionAdapter {
     }
 
     try {
-      for await (const event of provider.streamChat(chatRequest, req.signal)) {
+      const stream = provider.streamChatWithContext
+        ? provider.streamChatWithContext(chatRequest, { userId: req.userId, metadata: { role: req.role ?? "CODER", runId: req.runId, workspaceId: req.workspaceId } }, req.signal)
+        : provider.streamChat(chatRequest, req.signal);
+      for await (const event of stream) {
         if (req.signal?.aborted) {
           return;
         }
@@ -404,6 +412,7 @@ export class ModelExecutionAdapter {
    */
   async execute(req: ModelExecutionRequest): Promise<ModelExecutionResponse> {
     const resolved = this.resolveModel(req.modelSelection);
+    this.assertFreeDispatch(resolved, req);
     const tools = convertToProviderTools(req.tools);
     const prefixHit = this.forgeGreen?.observeStablePrefix(
       resolved.providerId,
@@ -450,6 +459,14 @@ export class ModelExecutionAdapter {
         },
       },
     };
+  }
+
+  private assertFreeDispatch(selection: { providerId: string; modelId: string }, request: ModelExecutionRequest): void {
+    const provider = this.providerCatalog.get(selection.providerId);
+    if (provider?.isTestProvider === true || isUserApiAdapter(provider) || selection.providerId === "paid-auto"
+      || this.firewall.getModel(selection.providerId, selection.modelId)?.tier === "gems_paid") return;
+    if (!this.authorizeFreeDispatch) throw new Error("FREE_FABRIC_AUTHORITY_REQUIRED");
+    this.authorizeFreeDispatch(selection, request);
   }
 
   private async executeUncached(req: ModelExecutionRequest): Promise<ModelExecutionResponse> {
@@ -568,6 +585,7 @@ export function createModelExecutionAdapter(
   governor?: ProviderCapacityGovernor,
   greenPolicy?: ForgeGreenRunPolicy,
   paidAuto?: PaidAutoService,
+  authorizeFreeDispatch?: (selection: { providerId: string; modelId: string }, request: ModelExecutionRequest) => void,
 ): ModelExecutionAdapter {
-  return new ModelExecutionAdapter(providerCatalog, firewall, forgeGreen, governor, greenPolicy, paidAuto);
+  return new ModelExecutionAdapter(providerCatalog, firewall, forgeGreen, governor, greenPolicy, paidAuto, authorizeFreeDispatch);
 }

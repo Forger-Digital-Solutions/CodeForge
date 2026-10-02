@@ -225,7 +225,9 @@ function makeSuite(label: string, createDb: () => ICloudDatabase, skip: boolean)
       const accountAfter = await (await fetch(`${cloudUrl}/v1/account`, { headers: clientA.headers() })).json();
       expect(accountAfter.planId).toBe("free");
       expect(accountAfter.user.id).toBe(clientA.userId);
-      expect(accountAfter.creditBalance).toBeLessThan(accountBefore.creditBalance);
+      expect(accountAfter.creditBalance).toBe(accountBefore.creditBalance);
+      const usageAfter = await (await fetch(`${cloudUrl}/v1/usage`, { headers: clientA.headers() })).json();
+      expect(usageAfter.freeRemainingCredits).toBeLessThan(500_000);
 
       // The forged identity was never created.
       expect(await server.db.getUserById("some-other-user-id")).toBeUndefined();
@@ -304,7 +306,9 @@ function makeSuite(label: string, createDb: () => ICloudDatabase, skip: boolean)
 
       // Client B, which did nothing, observes the balance A consumed — one server-side truth.
       const after = await (await fetch(`${cloudUrl}/v1/usage`, { headers: clientB.headers() })).json();
-      expect(after.creditBalance).toBeLessThan(before.creditBalance);
+      expect(after.creditBalance).toBe(before.creditBalance);
+      expect(after.freeRemainingCredits).toBeLessThan(before.freeRemainingCredits);
+      expect(after.freeUsedCredits).toBeGreaterThan(before.freeUsedCredits);
     });
   });
 }

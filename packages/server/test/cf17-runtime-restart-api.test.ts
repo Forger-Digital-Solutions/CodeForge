@@ -63,7 +63,7 @@ describe("CF-17 runtime recovery through the production server restart path", ()
     firstCatalog.register({
       providerId: "codeforge",
       displayName: "First attempt provider",
-      isTestProvider: false,
+      isTestProvider: true,
       models: () => [createGenericFreeRecord()],
       streamChat: () => (async function* () {
         yield { type: "text_delta", delta: "first attempt started" };
@@ -93,7 +93,7 @@ describe("CF-17 runtime recovery through the production server restart path", ()
     secondCatalog.register({
       providerId: "codeforge",
       displayName: "Recovered attempt provider",
-      isTestProvider: false,
+      isTestProvider: true,
       models: () => [createGenericFreeRecord()],
       streamChat: (request: typeof recoveredRequests[number]) => {
         recoveredRequests.push(request);
@@ -142,7 +142,7 @@ describe("CF-17 runtime recovery through the production server restart path", ()
     catalog.register({
       providerId: "codeforge",
       displayName: "Active command provider",
-      isTestProvider: false,
+      isTestProvider: true,
       models: () => [createGenericFreeRecord()],
       streamChat: (request: typeof requests[number]) => {
         requests.push(request);
@@ -218,7 +218,7 @@ describe("CF-17 runtime recovery through the production server restart path", ()
     catalog.register({
       providerId: "codeforge",
       displayName: "Approval race provider",
-      isTestProvider: false,
+      isTestProvider: true,
       models: () => [createGenericFreeRecord()],
       streamChat: (request: typeof requests[number]) => {
         requests.push(request);

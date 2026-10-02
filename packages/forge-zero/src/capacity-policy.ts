@@ -1,4 +1,5 @@
 import type { CapacityRoute, DataPolicyProfile, RouteDataContext, SupplyClass } from "./capacity-types.js";
+import { quotaScopeEvidenceExclusionReason } from "./capacity-independence.js";
 
 export type { RouteDataClass, RouteDataContext } from "./capacity-types.js";
 
@@ -57,15 +58,19 @@ export function isFreeRouteEligible(
   route: CapacityRoute,
   policy: FreeCapacityPolicy = DEFAULT_FREE_CAPACITY_POLICY,
   dataContext: RouteDataContext = DEFAULT_PRIVATE_CODE_CONTEXT,
+  now = Date.now(),
 ): boolean {
-  return freeRouteExclusionReason(route, policy, dataContext) === undefined;
+  return freeRouteExclusionReason(route, policy, dataContext, now) === undefined;
 }
 
 export function freeRouteExclusionReason(
   route: CapacityRoute,
   policy: FreeCapacityPolicy = DEFAULT_FREE_CAPACITY_POLICY,
   dataContext: RouteDataContext = DEFAULT_PRIVATE_CODE_CONTEXT,
+  now = Date.now(),
 ): string | undefined {
+  const scopeExclusion = quotaScopeEvidenceExclusionReason(route, now);
+  if (scopeExclusion) return scopeExclusion;
   const newSupply = route.supplyClass === "PACKAGED_FREE_PROVIDER_FUNDED" || route.supplyClass === "PACKAGED_FREE_DIRECT"
     || route.supplyClass === "PACKAGED_FREE_SPONSORED" || route.supplyClass === "USER_ENTITLED_FREE";
   if (newSupply) {
@@ -78,7 +83,6 @@ export function freeRouteExclusionReason(
     if (route.freePrivacyClass !== "PRIVATE_SAFE" && dataContext.dataClass === "PRIVATE_CODE" && dataContext.userConsented !== true) return "PRIVATE_CODE_CONSENT_REQUIRED";
     const receipt = route.admissionReceipt;
     if (!receipt || !receipt.sourceDocumentation || !receipt.termsEvidence || !receipt.priceEvidence || !receipt.privacyEvidence || !receipt.qualificationAt) return "ADMISSION_RECEIPT_MISSING";
-    const now = Date.now();
     if (!Number.isFinite(Date.parse(receipt.verifiedAt)) || Date.parse(receipt.verifiedAt) > now
       || !Number.isFinite(Date.parse(receipt.qualificationAt)) || Date.parse(receipt.qualificationAt) > now
       || !Number.isFinite(Date.parse(receipt.recheckAt)) || Date.parse(receipt.recheckAt) <= now) return "ADMISSION_EVIDENCE_STALE";

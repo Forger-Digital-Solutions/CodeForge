@@ -19,6 +19,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@codeforge/server": "*",
+    "@codeforge/eight-bit": "*",
+    "@codeforge/model-registry": "*",
     "@codeforge/core": "*",
     "@codeforge/cloud-db": "*",
     "@codeforge/cloud-auth": "*",

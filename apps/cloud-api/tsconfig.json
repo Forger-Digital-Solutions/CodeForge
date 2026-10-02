@@ -13,6 +13,9 @@
     "dist"
   ],
   "references": [
+    { "path": "../../packages/server" },
+    { "path": "../../packages/eight-bit" },
+    { "path": "../../packages/model-registry" },
     {
       "path": "../../packages/core"
     },

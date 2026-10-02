@@ -173,7 +173,10 @@ export class HostedProviderAdapter implements ProviderAdapter {
     };
   }
 
-  private splitModel(_model: string): { modelId: string } {
+  private splitModel(model: string): { modelId: string } {
+    if (model === "gems" || model.startsWith("gems::") || model.startsWith("gems/")) {
+      throw new Error("GEMS paid models are not eligible for the hosted Free gateway");
+    }
     return { modelId: FORGEAUTO_FREE_MODEL_ID };
   }
 

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { ICloudDatabase } from "@codeforge/cloud-db";
 import { EntitlementService } from "@codeforge/cloud-entitlements";
-import { FREE_PER_TASK_CREDIT_LIMIT, UsageEngine } from "@codeforge/cloud-usage";
+import { FREE_CONCURRENT_TASK_LIMIT, FREE_PER_TASK_CREDIT_LIMIT, UsageEngine } from "@codeforge/cloud-usage";
 import { REGION_UNKNOWN, type RegionResolution } from "@codeforge/legal-policy";
 import { CloudFirewallManager } from "./cloud-firewall.js";
 import type { HostedFinishReason, HostedInferenceRequest, HostedStreamEvent } from "./types.js";
@@ -21,6 +21,7 @@ export interface HostedRouteResolution {
   maxConcurrent: number;
   estimatedCredits: number;
   accessClass?: string;
+  product?: "FREE";
 }
 
 export interface HostedInferenceOutcome {
@@ -130,21 +131,22 @@ export class GatewayService {
     const estimatedCredits = estimatedInputTokens + 2 * estimatedOutputTokens;
     const permission = await this.entitlementService.evaluateTaskExecution({
       userId,
+      product: "FREE",
       requestedEstimatedCredits: estimatedCredits,
       activeConcurrency: activeCount,
     });
     if (!permission.allowed) {
       throw new Error(permission.reason ?? "Hosted execution not permitted");
     }
-    if (permission.planId === "free" && estimatedCredits > FREE_PER_TASK_CREDIT_LIMIT) {
+    if (estimatedCredits > FREE_PER_TASK_CREDIT_LIMIT) {
       throw new Error(`Request estimate exceeds the 50,000 credit per-task limit (${estimatedCredits})`);
     }
 
-    if (permission.planId === "free" && !killSwitches.hostedFreeEnabled) {
+    if (!killSwitches.hostedFreeEnabled) {
       throw new Error("CodeForge Hosted Free tier is currently disabled by operator policy");
     }
 
-    const maxConcurrent = permission.planId === "pro" ? 4 : 1;
+    const maxConcurrent = FREE_CONCURRENT_TASK_LIMIT;
 
     // Server-side ForgeZero model selection
     let selectedProviderId = request.providerId;
@@ -222,7 +224,7 @@ export class GatewayService {
       estimatedCredits,
     };
     this.assertRouteEligible(resolution, request, region);
-    return { ...resolution, accessClass: this.firewallManager.firewall.getModel(selectedProviderId, selectedModelId)?.accessClass };
+    return { ...resolution, product: "FREE", accessClass: this.firewallManager.firewall.getModel(selectedProviderId, selectedModelId)?.accessClass };
   }
 
   /**
@@ -239,6 +241,9 @@ export class GatewayService {
     const killSwitches = this.firewallManager.getKillSwitches();
     if (!killSwitches.hostedInferenceEnabled) {
       throw new Error("Hosted inference is currently disabled by operator policy");
+    }
+    if (!killSwitches.hostedFreeEnabled) {
+      throw new Error("CodeForge Hosted Free tier is currently disabled by operator policy");
     }
 
     // Verify the final selection even after Auto routing or bare-model resolution.
@@ -292,7 +297,8 @@ export class GatewayService {
   ): Promise<HostedInferenceOutcome> {
     const messageId = randomUUID();
     const turnId = request.turnId ?? randomUUID();
-    const { providerId: selectedProviderId, modelId: selectedModelId, estimatedCredits, maxConcurrent } = resolution;
+    const { providerId: selectedProviderId, modelId: selectedModelId, estimatedCredits } = resolution;
+    const maxConcurrent = FREE_CONCURRENT_TASK_LIMIT;
 
     // Acquire execution lease (process-local optimization guard)
     this.acquireLease(userId, request.requestId, maxConcurrent);
@@ -306,7 +312,7 @@ export class GatewayService {
         providerId: selectedProviderId,
         modelId: selectedModelId,
         maxConcurrentTasks: maxConcurrent,
-        freeAllowance: resolution.planId === "free",
+        freeAllowance: true,
       });
       reservationCreated = true;
 

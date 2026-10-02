@@ -101,6 +101,20 @@ function poolFor(route: CapacityRoute, overrides: Partial<ProviderCapacityPool> 
   };
 }
 
+describe("R63 capacity group telemetry", () => {
+  it("reports same-egress user routes conservatively and excludes another user's capacity", () => {
+    const alice = kiloRoute("alice", 100);
+    const bob = kiloRoute("bob", 100);
+    const aliasedAlice = { ...alice, routeId: "alice:second-model", modelId: "another-model" };
+    const fabric = createFreeFabric({ managedRoutes: () => [alice, bob, aliasedAlice] });
+    const snapshot = fabric.capacitySnapshot({ userId: "alice", userIdentities: ["alice"], dataContext: { dataClass: "PUBLIC_CODE", userConsented: true } });
+    expect(snapshot).toMatchObject({ admittedDomains: 1, independentCapacityGroups: 1, verifiedIndependentCapacityGroups: 0, unverifiedScopeRoutes: 2 });
+    expect(snapshot.groups[0]?.routeCount).toBe(2);
+    const selection = fabric.decide({ requestId: "telemetry", userId: "alice", userIdentities: ["alice"], role: "CODER", dataContext: { dataClass: "PUBLIC_CODE", userConsented: true } });
+    expect(selection.selected?.independenceKey).toBe("kilo-free-direct:PUBLIC_IP:shared-unverified");
+  });
+});
+
 function saturate(authority: EightBitRouteHealthAuthority, route: CapacityRoute, at: number): void {
   for (let i = 0; i < 4; i += 1) {
     authority.observe({

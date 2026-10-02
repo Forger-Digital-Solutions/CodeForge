@@ -517,6 +517,10 @@ export interface TurnState {
   budgetExhaustedDetail?: string;
   /** Who authored the turn: the user (chat / repair) or a workflow dispatching an internal turn. */
   origin?: "user" | "workflow" | "repair";
+  /** Request-scoped user identity for paid/GEMS entitlement checks only. The runtime's own
+   * `userId` (host-bound localUserId) still owns quota and fabric identity so a request body
+   * can never spend another user's pool. */
+  requestUserId?: string;
   /** The adapter this turn was started with (a workflow turn's events carry its runId). Kept
    * so a capacity-wait resume emits on the same stream — never persisted. */
   adapter?: WorkspaceEventAdapter;
@@ -608,12 +612,13 @@ export interface AgentRuntimeOptions {
    * alternate routes, and route outcomes feed the shared (cross-session) health/quota view.
    */
   freeCloud?: FreeCloudRoutingHooks;
+  additionalFreeRoleAdmission?: (providerId: string, modelId: string) => boolean;
   /**
    * R24 Mission C: the Free Fabric admission authority. When attached (the host builds one
    * over the live Free Cloud projections), ForgeAuto and role-routed selection decide through
    * `fabric.decide()` — an ADMITTED verdict carries a real capacity reservation, and
-   * QUEUED/DENIED fail closed instead of ranking an unadmitted route. Explicit model/route
-   * pins keep their legacy privilege and never consult it.
+   * QUEUED/DENIED fail closed instead of ranking an unadmitted route. Production exact
+   * pins must pass the same authority at dispatch.
    */
   freeFabric?: FreeFabric;
   /**
@@ -1038,6 +1043,7 @@ export class AgentRuntime {
   private readonly forgeGreenInitialLevel?: "OFF" | "CONSERVATIVE" | "FULL";
   private readonly eightBit: EightBitRuntime;
   private readonly freeCloud?: FreeCloudRoutingHooks;
+  private readonly additionalFreeRoleAdmission?: (providerId: string, modelId: string) => boolean;
   private readonly paidAuto?: PaidAutoService;
   private readonly managedPaidPolicy?: ManagedPaidPolicy;
   private readonly managedPaidLedger?: ManagedPaidAllowanceLedger;
@@ -1083,6 +1089,7 @@ export class AgentRuntime {
       fabricContext: options.fabricContext,
     });
     this.freeCloud = options.freeCloud;
+    this.additionalFreeRoleAdmission = options.additionalFreeRoleAdmission;
     this.paidAuto = options.paidAuto;
     this.managedPaidPolicy = options.managedPaidPolicy;
     this.managedPaidLedger = options.managedPaidLedger;
@@ -1491,7 +1498,9 @@ export class AgentRuntime {
       Object.defineProperty(metrics, "roleProgress", { enumerable: true, configurable: true, get: () => req.role === "coder" ? assessCoderProgress(toolTrace, plannedTaskSteps) : undefined });
       return metrics;
     };
-    const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen, this.capacityGovernorIsExplicit ? this.capacityGovernor : undefined, greenPolicy, this.paidAuto);
+    const modelAdapter = createModelExecutionAdapter(this.providerCatalog, this.firewall, this.forgeGreen, this.capacityGovernorIsExplicit ? this.capacityGovernor : undefined, greenPolicy, this.paidAuto,
+      (selection, request) => this.authorizeProductionFreeDispatch(selection, req.runId, eightBitRoleForAgentRole(req.role), req.userId ?? this.userId,
+        { requests: 1, estimatedPromptTokens: estimatePromptOnlyTokens({ model: selection.modelId, messages: request.messages, tools: convertToProviderTools(request.tools), maxTokens: request.maxTokens }), outputTokens: request.maxTokens ?? 2_048 }));
     const contextAssembler = createContextAssembler(resolvedMaxContextTokens, this.forgeGreen);
     const contextPageStore = this.forgeGreenCacheStore ? createContextPageStore(this.forgeGreenCacheStore) : undefined;
     const adapter = req.adapter ?? this.createAdapter();
@@ -2405,6 +2414,9 @@ export class AgentRuntime {
               signal: req.signal,
               userId: req.userId ?? this.userId,
               authorityState: req.authorityState ?? "canonical",
+              role: eightBitRoleForAgentRole(req.role),
+              runId: req.runId,
+              workspaceId: req.workspaceId,
               dedupeScope: req.runId,
             });
             if (paidReservation) {
@@ -4221,6 +4233,8 @@ export class AgentRuntime {
       /** Admission hints (reviewer role evidence, physical pool independence) the fabric
        * applies on this turn's initial admission and every capacity re-admission. */
       capacityHint?: TurnCapacityHint;
+      /** Request-scoped user identity forwarded to ForgeZero.checkEntitlement for paid models. */
+      userId?: string;
     },
   ): Promise<string> {
     // Single-turn exclusivity per session for real active turns
@@ -4257,6 +4271,7 @@ export class AgentRuntime {
       userMessage,
       startedAt: new Date(),
       origin: options?.origin ?? "user",
+      ...(options?.userId ? { requestUserId: options.userId } : {}),
     };
 
     this.activeTurns.set(turnId, state);
@@ -4983,7 +4998,7 @@ export class AgentRuntime {
         await this.persistEightBitInitialRoute(turnId, model, !!this.modelSelection);
 
         if (model.tier === "gems_paid") {
-          const entitlement = await this.firewall.checkEntitlement(this.userId, model.providerId, model.modelId);
+          const entitlement = await this.firewall.checkEntitlement(state.requestUserId ?? this.userId, model.providerId, model.modelId);
           if (!entitlement.ok) {
             throw new Error(`[${entitlement.error.code}] ${entitlement.error.message}`);
           }
@@ -5245,6 +5260,7 @@ export class AgentRuntime {
     const freeCloud = this.freeCloud;
     if (!freeCloud) return undefined;
     return (providerId, modelId) => {
+      if (this.eightBit.hasFreeFabric && this.additionalFreeRoleAdmission?.(providerId, modelId)) return true;
       if (!freeCloud.isForgeAutoEligible(providerId, modelId)) return false;
       const status = this.roleQualificationStatus(providerId, modelId, role);
       return status === undefined || status === "QUALIFIED" || status === "PROBATION";
@@ -5323,6 +5339,21 @@ export class AgentRuntime {
     return { requests: 1, estimatedPromptTokens, outputTokens: 2_048 };
   }
 
+  private authorizeProductionFreeDispatch(selection: { providerId: string; modelId: string }, requestId: string, role: EightBitRole, userId: string | undefined,
+    demand: { requests: number; estimatedPromptTokens: number; outputTokens: number }): void {
+    if (!this.eightBit.hasFreeFabric) throw new Error("FREE_FABRIC_AUTHORITY_REQUIRED");
+    const qualified = this.roleRouteFilter(role);
+    const decision = this.eightBit.admitThroughFabric({ requestId, sessionId: this.sessionId, role, userId, demand,
+      routeAdmission: (providerId, modelId) => providerId === selection.providerId && modelId === selection.modelId && (qualified?.(providerId, modelId) ?? true) });
+    if (decision?.outcome === "QUEUED_FOR_CAPACITY") throw new FreeCapacityQueued(decision.explanation.reasonCodes, decision.nextAvailableAt);
+    const admitted = decision?.outcome === "ADMITTED" ? decision.selected : undefined;
+    if (!admitted?.quotaDomainId || !admitted.quotaDomainType || admitted.quotaDomainType === "UNKNOWN" || admitted.marginalCostToCodeForge !== 0 || !admitted.reservationId
+      || !["PACKAGED_FREE_DIRECT", "PACKAGED_FREE_PROVIDER_FUNDED", "PACKAGED_FREE_SPONSORED", "USER_ENTITLED_FREE"].includes(admitted.supplyClass)) {
+      this.eightBit.releaseFabricAdmission(requestId);
+      throw new Error("FREE_QUOTA_DOMAIN_NOT_ADMITTED");
+    }
+  }
+
   private selectModel(turnId?: string): FreeModelRecord | null {
     // R24 Mission C: when a Free Fabric governs this runtime it is the admission authority for
     // ForgeAuto — an ADMITTED verdict holds a real capacity reservation for this turn, and a
@@ -5374,7 +5405,7 @@ export class AgentRuntime {
       .map((r, index) => ({ r, index, assessment: this.eightBit.routeHealth.assess(r.model.providerId, r.model.modelId, { role: "CODER" }) }))
       .filter((entry) => !entry.assessment.hardExclude)
       .map((entry) => ({ model: entry.r.model, effectiveScore: entry.r.score + entry.assessment.scoreAdjustment, index: entry.index }))
-      .filter((entry) => this.providerCatalog.get(entry.model.providerId) && !this.eightBit.health.isInCooldown(entry.model.providerId, entry.model.modelId) && admitted(entry.model.providerId, entry.model.modelId))
+      .filter((entry) => this.providerCatalog.get(entry.model.providerId)?.isTestProvider === true && !this.eightBit.health.isInCooldown(entry.model.providerId, entry.model.modelId) && admitted(entry.model.providerId, entry.model.modelId))
       .sort((a, b) => b.effectiveScore - a.effectiveScore || a.index - b.index);
     if (scored[0]) return scored[0].model;
     // Fallback: any eligible tool-capable model with a registered provider, same cooldown and
@@ -5383,7 +5414,7 @@ export class AgentRuntime {
     const eligible = this.firewall.eligibleModels();
     return (
       eligible.find(
-        (m) => m.capabilities.toolCalling && this.providerCatalog.get(m.providerId) && !this.eightBit.health.isInCooldown(m.providerId, m.modelId) && !this.eightBit.routeHealth.assess(m.providerId, m.modelId, { role: "CODER" }).hardExclude && admitted(m.providerId, m.modelId),
+        (m) => m.capabilities.toolCalling && this.providerCatalog.get(m.providerId)?.isTestProvider === true && !this.eightBit.health.isInCooldown(m.providerId, m.modelId) && !this.eightBit.routeHealth.assess(m.providerId, m.modelId, { role: "CODER" }).hardExclude && admitted(m.providerId, m.modelId),
       ) ?? null
     );
   }
@@ -5583,6 +5614,10 @@ export class AgentRuntime {
 
     const turnState = this.activeTurns.get(turnId);
     if (turnState?.providerId && turnState?.modelId) {
+      if (provider.isTestProvider !== true && turnState.providerId !== "paid-auto" && this.firewall.getModel(turnState.providerId, turnState.modelId)?.tier !== "gems_paid") {
+        this.authorizeProductionFreeDispatch({ providerId: turnState.providerId, modelId: turnState.modelId }, `forgeauto:${turnId}`, "CODER", this.userId,
+          { requests: 1, estimatedPromptTokens: estimatePromptOnlyTokens(request), outputTokens: request.maxTokens ?? 2_048 });
+      }
       const rec = this.firewall.getModel(turnState.providerId, turnState.modelId);
       if (rec && rec.tier !== "gems_paid") {
         const v = this.firewall.verify(turnState.providerId, turnState.modelId);

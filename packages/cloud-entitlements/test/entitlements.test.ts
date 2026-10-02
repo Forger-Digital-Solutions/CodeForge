@@ -111,5 +111,36 @@ describe("Cloud Entitlement Service", () => {
     expect(proTask.allowed).toBe(true);
     expect(proTask.planId).toBe("pro");
   });
+  it("keeps Free allowance and concurrency independent of a Pro subscription and wallet", async () => {
+    const user = await db.createUser({ displayName: "Pro Free", primaryIdentity: "github:pro-free" });
+    await service.syncSubscriptionEntitlements(user.id, "pro");
+    await db.upsertSubscription({ userId: user.id, planId: "pro", status: "active", currentPeriodStart: new Date().toISOString(), currentPeriodEnd: new Date(Date.now() + 86_400_000).toISOString(), cancelAtPeriodEnd: false });
+    await db.appendLedgerEvent({ userId: user.id, amount: 5_000_000, eventType: "SUBSCRIPTION_ALLOWANCE_GRANTED" });
+    const allowed = await service.evaluateTaskExecution({ userId: user.id, product: "FREE", requestedEstimatedCredits: 5_000 });
+    expect(allowed.allowed).toBe(true);
+    expect(allowed.availableCredits).toBe(500_000);
+    expect(allowed.maxEstimatedCredits).toBe(50_000);
+    expect((await service.evaluateTaskExecution({ userId: user.id, product: "FREE", activeConcurrency: 1 })).allowed).toBe(false);
+    const period = (await db.getOrCreateCurrentUsagePeriod(user.id, 500_000)).period;
+    for (let index = 0; index < 10; index++) {
+      const requestId = `pro-free-exhaust-${index}`;
+      await db.reserveCredits({ requestId, userId: user.id, providerId: "codeforge", modelId: "codeforge/forgeauto-free", reservedCredits: 50_000, usagePeriodId: period.id, maxTaskSpendCredits: 50_000 });
+      await db.settleReservation({ requestId, userId: user.id, actualCredits: 50_000 });
+    }
+    const exhausted = await service.evaluateTaskExecution({ userId: user.id, product: "FREE" });
+    expect(exhausted.allowed).toBe(false);
+    expect(exhausted.availableCredits).toBe(0);
+    expect(exhausted.reason).toContain("monthly CodeForge Free allowance is exhausted");
+    expect((await service.evaluateTaskExecution({ userId: user.id, product: "PAID", requestedEstimatedCredits: 5_000 })).allowed).toBe(true);
+    expect(await db.getCreditBalance(user.id)).toBe(5_000_000);
+    expect((await service.evaluateTaskExecution({ userId: user.id, product: "FREE", modelTier: "paid" })).allowed).toBe(false);
+  });
+  it("preserves Free access when a paid subscription becomes inactive", async () => {
+    const user = await db.createUser({ displayName: "Expired Pro", primaryIdentity: "github:expired-pro" });
+    await db.upsertSubscription({ userId: user.id, planId: "pro", status: "canceled", currentPeriodStart: new Date().toISOString(), currentPeriodEnd: new Date().toISOString(), cancelAtPeriodEnd: false });
+    expect((await service.evaluateTaskExecution({ userId: user.id, product: "FREE" })).allowed).toBe(true);
+    expect((await service.evaluateTaskExecution({ userId: user.id, product: "PAID" })).allowed).toBe(false);
+    expect(await db.getCreditBalance(user.id)).toBe(0);
+  });
 });
 

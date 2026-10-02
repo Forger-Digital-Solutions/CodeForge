@@ -685,6 +685,12 @@ export class GovernedProviderAdapter implements ProviderAdapter {
     this.providerId = inner.providerId;
   }
 
+  // The wrapper must stay transparent for dispatch-authority checks: a governed test
+  // adapter is still a test adapter (never a production Free route candidate).
+  get isTestProvider() {
+    return this.inner.isTestProvider;
+  }
+
   listModels() {
     return this.inner.listModels();
   }

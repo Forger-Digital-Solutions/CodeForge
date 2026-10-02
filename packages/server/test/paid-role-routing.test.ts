@@ -10,6 +10,7 @@ import {
   type ChatResponse,
   type StreamEvent,
   InMemoryProviderCatalog,
+  ProviderCapacityGovernor,
 } from "@codeforge/providers";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 import {
@@ -82,6 +83,8 @@ const credentials = {
   has: () => true,
 };
 
+
+
 function qualifiedRoutes(): Partial<Record<PaidAutoRouteId, { state: "READY"; commercialEligibility: "verified"; privacy: "verified"; capabilityParity: "verified"; certification: "CERTIFIED" }>> {
   return Object.fromEntries(PAID_AUTO_MODELS.flatMap((model) => [model.direct, model.fallback]).map((route) => [route.routeId, {
     state: "READY",
@@ -150,6 +153,9 @@ describe("R48 C2 — paid per-role routing in executeAgentRun", () => {
       providerCatalog: catalog,
       workspacePath: ws,
       paidAuto,
+      // paid-auto is a real (non-test) adapter — without an explicit governor every call
+      // paces against the process-global window shared by the whole file.
+      capacityGovernor: new ProviderCapacityGovernor(),
     });
   }
 
@@ -497,6 +503,7 @@ describe("R55 wave 2 — managed-paid allowance accounting in executeAgentRun", 
       managedPaidPolicy: policy,
       managedPaidLedger: new ManagedPaidAllowanceLedger(persistence),
       userId: "alice",
+      capacityGovernor: new ProviderCapacityGovernor(),
     });
   }
 
@@ -605,6 +612,7 @@ describe("R55 wave 2 — managed-paid allowance accounting in executeAgentRun", 
       providerCatalog: catalog, workspacePath: ws, paidAuto,
       managedPaidPolicy: managedPolicy(), managedPaidLedger: new ManagedPaidAllowanceLedger(persistence),
       userId: "alice",
+      capacityGovernor: new ProviderCapacityGovernor(),
     });
     await rt.init();
     const result = await rt.executeAgentRun({
@@ -640,6 +648,7 @@ describe("R55 wave 2 — managed-paid allowance accounting in executeAgentRun", 
       providerCatalog: catalog, workspacePath: ws, paidAuto,
       managedPaidPolicy: managedPolicy(), managedPaidLedger: new FailingSettleLedger(persistence),
       userId: "alice",
+      capacityGovernor: new ProviderCapacityGovernor(),
     });
     await rt.init();
     const result = await rt.executeAgentRun({
@@ -740,6 +749,7 @@ describe("R55 wave 2 — managed-paid allowance accounting in executeAgentRun", 
       providerCatalog: catalog, workspacePath: ws, paidAuto: paidPin,
       managedPaidPolicy: managedPolicy(), managedPaidLedger: new ManagedPaidAllowanceLedger(persistence),
       userId: "alice",
+      capacityGovernor: new ProviderCapacityGovernor(),
     });
     await pinnedRt.init();
     const pinned = await pinnedRt.executeAgentRun({

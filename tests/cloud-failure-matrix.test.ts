@@ -77,9 +77,10 @@ describe("Phase 58 — Cloud Failure Matrix & Fallback Isolation", () => {
     expect(terminalEvents).toHaveLength(1);
     expect(terminalEvents[0]?.type).toBe("turn.failed");
 
-    // Balance must be fully refunded back to 500,000
+    // Failed Free usage releases the period allowance without touching the paid wallet.
     const finalBalance = await db.getCreditBalance(user.id);
-    expect(finalBalance).toBe(500_000);
+    expect(finalBalance).toBe(0);
+    expect((await usageEngine.getUserUsageSummary(user.id)).freeRemainingCredits).toBe(500_000);
 
     // Reservation status is released
     const res = await db.getReservationByRequestId("req-fail-upstream-1");

@@ -18,13 +18,14 @@ import {
   createGenericFreeRecord,
   PAID_CATALOG,
   CapacityReservationLedger,
+  DEFAULT_FREE_CAPACITY_POLICY,
 } from "@codeforge/forge-zero";
-import type { FreeModelRecord, RouteDataContext } from "@codeforge/forge-zero";
+import type { CapacityRoute, ProviderCapacityPool, FreeModelRecord, RouteDataContext } from "@codeforge/forge-zero";
 import type { FreeCloudService } from "@codeforge/model-registry";
 import { SqliteQualificationPersistence, EightBitRouteHealthLedger, createEightBitRouteHealthAuthority, FreeFabric, buildRouteLedger, forgeAutoSupplyPlan, type EightBitRouteHealthAuthority, type FabricContextProvider } from "@codeforge/eight-bit";
 import type { ProviderTopologyCapacity } from "@codeforge/forge-green";
 import { ForgeRouter } from "@codeforge/router";
-import type { ProviderCatalog } from "@codeforge/providers";
+import type { ChatRequest, ProviderExecutionContext, ProviderAdapter, ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore, defaultCapacityGovernor } from "@codeforge/providers";
 import { createPaidAutoService, PAID_AUTO_PROVIDER_ID, PaidFamilyCatalog, PaidFamilyCatalogStore, type ApprovedPaidSuccessor, type PaidAutoModel, type PaidAutoService, type PaidPromotionEvidence } from "@codeforge/paid-auto";
 import {
@@ -59,6 +60,8 @@ export * from "./forgeauto-roster.js";
 export * from "./user-intelligence.js";
 import { ForgeAutoRosterStore, type ForgeAutoRoster, type RosterCandidate, type RosterEntitlement, type RosterRole } from "./forgeauto-roster.js";
 import { UserIntelligenceRuntimeRegistry, type OwnerCredentialResolver, type UserIntelligenceSource } from "./user-intelligence.js";
+import { RemoteDirectProviderAdapter } from "./remote-direct-provider.js";
+import type { RemoteDirectTransport, RemoteDirectBinding } from "./remote-direct-transport.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -158,6 +161,13 @@ export interface ServerOptions {
    * qualification receipts persist in this server's session database.
    */
   freeCloud?: FreeCloudService;
+  /** Independently verified sponsor registry owned by the authenticated host. */
+  sponsorCapacitySource?: {
+    capacityRoutes(): readonly CapacityRoute[];
+    capacityPools(): readonly ProviderCapacityPool[];
+    modelRecords(): readonly FreeModelRecord[];
+    providerAdapters(): readonly ProviderAdapter[];
+  };
   /** Trusted host privacy choice, read at each admission so Settings changes apply immediately. */
   freeDataContext?: () => RouteDataContext;
   /**
@@ -200,6 +210,10 @@ export interface ServerOptions {
   openRouterFallbackEnabled?: boolean;
   /** Production subagent path. Tests may explicitly disable it for legacy compatibility. */
   subagentsR1Enabled?: boolean;
+  remoteDirect?: {
+    transport: RemoteDirectTransport;
+    bindingForContext: (context: ProviderExecutionContext, request: ChatRequest) => RemoteDirectBinding | undefined | Promise<RemoteDirectBinding | undefined>;
+  };
   /**
    * R22: governed external tool surface (browser + MCP). When omitted, configuration is read
    * from `~/.codeforge/external-tools.json` (or CODEFORGE_EXTERNAL_TOOLS_CONFIG); an absent file
@@ -252,6 +266,7 @@ export class CodeForgeServer {
   private firewall: ForgeZero;
   private providerCatalog: ProviderCatalog;
   private readonly freeCloud?: FreeCloudService;
+  private readonly sponsorCapacitySource?: ServerOptions["sponsorCapacitySource"];
   /** R24: the process-wide measured route-health authority every AgentRuntime shares. */
   readonly routeHealth: EightBitRouteHealthAuthority;
   /** R24 Mission C: one process-wide Free Fabric — its reservation ledger is shared by every
@@ -329,6 +344,9 @@ export class CodeForgeServer {
     });
     this.providerCatalog = options.providerCatalog ?? new InMemoryProviderCatalog();
     this.freeCloud = options.freeCloud;
+    this.sponsorCapacitySource = options.sponsorCapacitySource;
+    this.refreshSponsorCapacity();
+    if (options.remoteDirect) this.providerCatalog.register(new RemoteDirectProviderAdapter(options.remoteDirect.transport, options.remoteDirect.bindingForContext));
     // R24 Mission A: one temporal health authority per host. Every session runtime feeds and
     // reads the same measured state (a saturation seen by turn A re-ranks turn B), and the
     // ledger makes it durable — writes are serialized and failure-isolated, never blocking a
@@ -359,20 +377,24 @@ export class CodeForgeServer {
     // registry (re-read inside each decide()), the temporal route-health authority supplies
     // measured demotions/exclusions, and ONE process-wide reservation ledger enforces
     // shared-pool fairness across all session runtimes. Without a Free Cloud Service there is
-    // no verifiable free supply to admit against, so no fabric is built and routing keeps its
-    // pre-fabric path.
-    if (this.freeCloud) {
+    // no verifiable free supply to admit against, so production Free routing fails closed.
+    if (this.freeCloud || this.sponsorCapacitySource) {
       const freeCloud = this.freeCloud;
       this.freeFabric = new FreeFabric({
-        managedRoutes: () => freeCloud.capacityRoutes().filter((route) => route.capacityPoolScope !== "PER_USER_POOL"),
-        managedPools: () => freeCloud.capacityPools().filter((pool) => pool.scope !== "PER_USER_POOL"),
-        userSources: [{ routesForUser: (userId) => freeCloud.routesForUser(userId), poolsForUser: (userId) => freeCloud.poolsForUser(userId) }],
+        managedRoutes: () => {
+          this.refreshSponsorCapacity();
+          return [...(freeCloud?.productionCapacityRoutes() ?? []), ...(this.sponsorCapacitySource?.capacityRoutes() ?? [])].filter((route) => route.capacityPoolScope !== "PER_USER_POOL");
+        },
+        managedPools: () => [...(freeCloud?.capacityPools() ?? []), ...(this.sponsorCapacitySource?.capacityPools() ?? [])].filter((pool) => pool.scope !== "PER_USER_POOL"),
+        userSources: freeCloud ? [{ routesForUser: (userId) => freeCloud.routesForUser(userId), poolsForUser: (userId) => freeCloud.poolsForUser(userId) }] : [],
+        policy: { ...DEFAULT_FREE_CAPACITY_POLICY, allowSponsoredFree: Boolean(this.sponsorCapacitySource) },
         health: this.routeHealth,
         // Per-user cap is a fairness backstop, not a precision limiter: it must leave room for
         // a legitimately parallel orchestrated run (planner + explorers + coder + reviewer)
         // alongside an interactive turn, while still bounding one user's hold on shared pools.
         // Real contention is enforced per-pool by the physical concurrency/quota windows.
-        reservations: new CapacityReservationLedger({ routes: [], pools: [], maxActiveReservationsPerUser: 8 }),
+        reservations: new CapacityReservationLedger({ routes: [], pools: [], maxActiveReservationsPerUser: 8,
+          policy: { ...DEFAULT_FREE_CAPACITY_POLICY, allowSponsoredFree: Boolean(this.sponsorCapacitySource) } }),
         // R34 Mission E: per-candidate demand scaling. A provider with a learned tokenizer
         // ratio gets an honest reservation; an unmeasured one borrows the fleet's densest
         // observed ratio — a new provider is treated as conservatively as the worst evidence.
@@ -381,7 +403,7 @@ export class CodeForgeServer {
       });
       this.fabricContext = ({ userId }) => {
         const uid = userId ?? this.localUserId ?? "anonymous";
-        return { userId: uid, userIdentities: freeCloud.capacityIdentitiesFor(uid), dataContext: options.freeDataContext?.() ?? { dataClass: "PRIVATE_CODE" } };
+        return { userId: uid, userIdentities: freeCloud?.capacityIdentitiesFor(uid) ?? [], dataContext: options.freeDataContext?.() ?? { dataClass: "PRIVATE_CODE" } };
       };
     }
     if (!options.paidAuto) {
@@ -517,6 +539,12 @@ export class CodeForgeServer {
     for (const model of PAID_CATALOG) {
       this.firewall.register(model);
     }
+  }
+
+  private refreshSponsorCapacity(): void {
+    if (!this.sponsorCapacitySource) return;
+    for (const adapter of this.sponsorCapacitySource.providerAdapters()) this.providerCatalog.register(adapter);
+    for (const record of this.sponsorCapacitySource.modelRecords()) this.firewall.register(record);
   }
 
   /**
@@ -1485,7 +1513,7 @@ export class CodeForgeServer {
               sessionId,
               message,
               workspacePath: this.activeWorkspacePath,
-              userId: typeof data.userId === "string" ? data.userId : undefined,
+              userId: this.localUserId,
               verificationCommands: Array.isArray(data.verificationCommands) ? data.verificationCommands : undefined,
               forceHeuristic: data.forceHeuristic === true ? true : undefined,
               repair: data.repair === true ? true : undefined,
@@ -1505,7 +1533,7 @@ export class CodeForgeServer {
 
         const runtime = this.getOrCreateRuntime(
           sessionId,
-          typeof data.userId === "string" && data.userId ? data.userId : undefined,
+          this.localUserId,
         );
 
         // Check if turn already running (single active turn per session)
@@ -1523,7 +1551,9 @@ export class CodeForgeServer {
         // In demo mode, AgentRuntime skips real provider execution entirely.
         let turnId: string;
         try {
-          turnId = await runtime.startTurn(message);
+          turnId = await runtime.startTurn(message, undefined, {
+            userId: typeof data.userId === "string" ? data.userId : undefined,
+          });
         } catch (error) {
           const failure = this.classifyExecutionStartError(executionMode, error);
           await this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode, code: failure.code, message: failure.message });
@@ -2597,6 +2627,7 @@ export class CodeForgeServer {
         forgeGreenCacheStore: this.forgeGreenCacheStore,
         afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
         freeCloud: this.freeCloud,
+        additionalFreeRoleAdmission: (providerId, modelId) => this.sponsorCapacitySource?.capacityRoutes().some((route) => route.providerId === providerId && route.modelId === modelId) === true,
         freeFabric: this.freeFabric,
         fabricContext: this.fabricContext,
         paidAuto: this.paidAuto,
@@ -2624,6 +2655,7 @@ export class CodeForgeServer {
         forgeGreenCacheStore: this.forgeGreenCacheStore,
         afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
         freeCloud: this.freeCloud,
+        additionalFreeRoleAdmission: (providerId, modelId) => this.sponsorCapacitySource?.capacityRoutes().some((route) => route.providerId === providerId && route.modelId === modelId) === true,
         freeFabric: this.freeFabric,
         fabricContext: this.fabricContext,
         paidAuto: this.paidAuto,
@@ -2741,7 +2773,7 @@ export class CodeForgeServer {
           typeof data.sessionId === "string" && data.sessionId ? data.sessionId : "default";
         const runtime = this.getOrCreateRuntime(
           sessionId,
-          typeof data.userId === "string" && data.userId ? data.userId : undefined,
+          this.localUserId,
         );
 
         const respond = (status: number, payload: Record<string, unknown>): void => {
@@ -3486,6 +3518,10 @@ export * from "./demo-runtime.js";
 export * from "./workspace-event-adapter.js";
 export * from "./agent-runtime.js";
 export * from "./remote-client-direct.js";
+export * from "./remote-direct-transport.js";
+export * from "./remote-direct-provider.js";
+export * from "./remote-direct-client.js";
+export * from "./remote-direct-admission.js";
 export * from "./duplicate-suppression.js";
 export * from "./forge-verify-persistence.js";
 export { recoverInterruptedForgeVerifyAttempts, createWorkflowService, WorkflowService, type WorkflowServiceOptions, type WorkflowRunRequest } from "./workflow-service.js";

@@ -24,6 +24,30 @@ describe("HostedQueueWorker", () => {
 
   const enqueue = async (suffix: string) => authority.enqueue({ executionId: `execution-${suffix}`, idempotencyKey: `key-${suffix}`, userId, taskId: `task-${suffix}`, ...route });
 
+  it("bounds database-outage retries and keeps timers and shutdown responsive", async () => {
+    vi.useFakeTimers();
+    const claim = vi.spyOn(authority, "claim").mockRejectedValue(new Error("database offline"));
+    const onError = vi.fn();
+    const worker = new HostedQueueWorker({ authority, execute: async () => ({ status: "completed" }), idleWaitMs: 100, onError });
+    const running = worker.run();
+    try {
+      await vi.advanceTimersByTimeAsync(350);
+      expect(claim).toHaveBeenCalledTimes(4);
+      expect(onError).toHaveBeenCalledTimes(4);
+      expect(worker.activeCount()).toBe(0);
+      worker.stop();
+      await vi.advanceTimersByTimeAsync(100);
+      await running;
+      expect(claim).toHaveBeenCalledTimes(4);
+    } finally {
+      worker.stop();
+      await vi.advanceTimersByTimeAsync(100);
+      await running;
+      vi.useRealTimers();
+      claim.mockRestore();
+    }
+  });
+
   it("claims, dispatches, executes and terminalizes through durable authority", async () => {
     const queued = await enqueue("complete");
     let providerCalls = 0;

@@ -45,7 +45,7 @@ describe("explicit selection of a route without tool calling", () => {
     catalog.register({
       providerId: "codeforge",
       displayName: "Mock Provider",
-      isTestProvider: false,
+      isTestProvider: true,
       models: () => [createGenericFreeRecord(), noToolsRoute()],
       streamChat: () => (async function* () { providerCalls += 1; yield { type: "finish", finishReason: "stop" as const }; })(),
     } as any);

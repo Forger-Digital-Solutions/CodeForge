@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from "vitest";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { CloudDatabase } from "@codeforge/cloud-db";
@@ -55,6 +55,15 @@ async function collectStream(adapter: { streamChat: (req: never, signal?: AbortS
 
 describe("Direct / BYOK independence during CodeForge Cloud outage", () => {
   let fixtureProvider: FixtureProviderServer;
+  const databases: CloudDatabase[] = [];
+  const trackDatabase = (): CloudDatabase => {
+    const database = new CloudDatabase({ dbPath: ":memory:" });
+    databases.push(database);
+    return database;
+  };
+  afterEach(() => {
+    for (const database of databases.splice(0)) database.close();
+  });
   /** A port that is guaranteed to have nothing listening on it. */
   let deadCloudPort: number;
 
@@ -81,7 +90,7 @@ describe("Direct / BYOK independence during CodeForge Cloud outage", () => {
     let dbSpy: DatabaseSpy;
 
     beforeEach(() => {
-      dbSpy = spyOnDatabase(new CloudDatabase({ dbPath: ":memory:" }));
+      dbSpy = spyOnDatabase(trackDatabase());
     });
 
     it("Hosted fails, while Direct and BYOK both complete a real streaming inference", async () => {
@@ -151,7 +160,7 @@ describe("Direct / BYOK independence during CodeForge Cloud outage", () => {
     const cloudUrl = `http://127.0.0.1:${port}`;
 
     try {
-      const dbSpy = spyOnDatabase(new CloudDatabase({ dbPath: ":memory:" }));
+      const dbSpy = spyOnDatabase(trackDatabase());
       const hosted = new HostedProviderAdapter({ cloudApiUrl: cloudUrl, getAccessToken: () => "t" });
       await expect(collectStream(hosted as never, "codeforge-auto")).rejects.toThrow();
       expect(await hosted.healthCheck()).toMatchObject({ status: "offline" });
@@ -191,7 +200,7 @@ describe("Direct / BYOK independence during CodeForge Cloud outage", () => {
     const cloudUrl = `http://127.0.0.1:${port}`;
 
     try {
-      const dbSpy = spyOnDatabase(new CloudDatabase({ dbPath: ":memory:" }));
+      const dbSpy = spyOnDatabase(trackDatabase());
 
       // Hosted is abandoned by the caller's own timeout — the Direct path must not wait on it.
       const hostedController = new AbortController();
@@ -223,7 +232,7 @@ describe("Direct / BYOK independence during CodeForge Cloud outage", () => {
 
   it("a running Cloud whose DATABASE is unavailable rejects Hosted, invokes no provider, and leaves Direct/BYOK working", async () => {
     // A database that fails every operation: the Cloud process is healthy, its persistence is not.
-    const brokenDb = new CloudDatabase({ dbPath: ":memory:" });
+    const brokenDb = trackDatabase();
     const failing = new Proxy(brokenDb, {
       get(target, prop, receiver) {
         if (prop === "init") return async () => {};
@@ -296,7 +305,7 @@ describe("Direct / BYOK independence during CodeForge Cloud outage", () => {
   it("Direct and BYOK never require a CodeForge session, account, or entitlement", async () => {
     // No Cloud server exists in this test AT ALL. If the Direct path had any latent dependency on
     // Cloud identity, there would be nothing for it to talk to.
-    const dbSpy = spyOnDatabase(new CloudDatabase({ dbPath: ":memory:" }));
+    const dbSpy = spyOnDatabase(trackDatabase());
 
     const direct = new OpenAICompatibleAdapter({
       providerId: "fixture-direct",

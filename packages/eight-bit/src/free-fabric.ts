@@ -1,6 +1,7 @@
 import {
   CapacityReservationLedger,
   DEFAULT_FREE_CAPACITY_POLICY,
+  capacityIndependenceSnapshot,
   type CapacityRoute,
   type FreeCapacityPolicy,
   type ProviderCapacityPool,
@@ -139,6 +140,7 @@ export interface FabricCandidateReport {
   /** Physical quota domain this candidate would draw on — carried so an unmeasured
    *  candidate can be measured under the same account the reservation would have used. */
   capacityPoolId?: string;
+  independenceKey?: string;
   quotaDomainType?: QuotaDomainType;
   egressMode?: EgressMode;
   marginalCostToCodeForge?: number;
@@ -178,6 +180,7 @@ export interface FabricRouteDecision {
     capacityPoolId: string;
     quotaDomainType?: QuotaDomainType;
     quotaDomainId?: string;
+    independenceKey?: string;
     egressMode?: EgressMode;
     marginalCostToCodeForge?: number;
     reservationId?: string;
@@ -275,6 +278,16 @@ export class FreeFabric {
   /** Fairness/admission view for hosts (queue depth, per-user holds, pool contention). */
   reservationSnapshot() {
     return this.opts.reservations?.snapshot();
+  }
+
+  capacitySnapshot(request: Pick<FabricRequest, "userId" | "userIdentities" | "dataContext">) {
+    const owned = new Set(request.userIdentities ?? []);
+    const routes = [
+      ...this.opts.managedRoutes(),
+      ...(this.opts.userSources ?? []).flatMap((source) => source.routesForUser(request.userId)),
+    ].filter((route) => route.capacityPoolScope !== "PER_USER_POOL"
+      || (route.capacityIdentity !== undefined && owned.has(route.capacityIdentity)));
+    return capacityIndependenceSnapshot(routes, this.opts.policy, request.dataContext ?? this.opts.dataContext, this.opts.now?.() ?? Date.now());
   }
 
   /** Release a reservation early (turn finished before its lease). Idempotent. */
@@ -439,6 +452,7 @@ export class FreeFabric {
           routeId: entry.routeId, providerId: entry.providerId, modelId: entry.modelId,
           canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
           quotaOwner: entry.quotaOwner, capacityPoolId: entry.capacityPoolId,
+          independenceKey: entry.independenceKey,
           quotaDomainType: entry.quotaDomainType, quotaDomainId: entry.quotaDomainId, egressMode: entry.egressMode, marginalCostToCodeForge: entry.marginalCostToCodeForge,
         };
         reports.set(entry.routeId, this.reportFor(entry, "SELECTED", ["AUTHORIZED", candidate.roleFallback ? "ROLE_PROBATION_FALLBACK" : "ROLE_QUALIFIED", "HEALTH_ACCEPTED", ...this.independenceReason(request, entry), ...candidate.roleReasons], candidate.healthState, candidate.scoreAdjustment, candidate.fitPenalty));
@@ -472,6 +486,7 @@ export class FreeFabric {
           routeId: entry.routeId, providerId: entry.providerId, modelId: entry.modelId,
           canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
           quotaOwner: entry.quotaOwner, capacityPoolId: entry.capacityPoolId,
+          independenceKey: entry.independenceKey,
           reservationId: decision.reservationId,
           quotaDomainType: entry.quotaDomainType, quotaDomainId: entry.quotaDomainId, egressMode: entry.egressMode, marginalCostToCodeForge: entry.marginalCostToCodeForge,
         };
@@ -614,6 +629,7 @@ export class FreeFabric {
       canonicalModelId: entry.canonicalModelId, supplyClass: entry.supplyClass,
       quotaOwner: entry.quotaOwner, quotaOwnerIdentity: entry.quotaOwnerIdentity,
       capacityPoolId: entry.capacityPoolId,
+      independenceKey: entry.independenceKey,
       quotaDomainType: entry.quotaDomainType, egressMode: entry.egressMode, marginalCostToCodeForge: entry.marginalCostToCodeForge,
       status, reasonCodes, healthState, scoreAdjustment,
       ...(rightFitPenalty !== undefined && rightFitPenalty !== 0 ? { rightFitPenalty } : {}),

@@ -87,7 +87,9 @@ function chaosHarness(routes: Array<{ providerId: string; modelId: string }>) {
       hardFailureRoles: [],
     }),
   });
-  for (const providerId of new Set(routes.map((r) => r.providerId))) svc.setConnection(connected(providerId, { credentialSource: "OAUTH" }));
+  // R63: openrouter OAUTH without a FREE_VERIFIED delegated receipt correctly yields no supply;
+  // these fixtures exercise health/cooldown machinery, so they connect as a user-owned key.
+  for (const providerId of new Set(routes.map((r) => r.providerId))) svc.setConnection(connected(providerId, { credentialSource: "USER_CONNECTED_FREE_API_KEY" }));
   return {
     svc,
     fw,
@@ -288,7 +290,7 @@ describe("chaos: PROBATION is reachable and distinct from SATURATED/HEALTHY", ()
       registry: new NormalizedModelRegistry(),
       now: () => NOW,
     });
-    svc.setConnection(connected("openrouter", { credentialSource: "OAUTH" }));
+    svc.setConnection(connected("openrouter", { credentialSource: "USER_CONNECTED_FREE_API_KEY" }));
     // Deliberately never call qualifyPending — the route is still NOT_TESTED.
     const route = svc.snapshot().models[0]!.routes[0]!;
     expect(route.qualificationState).toBe("NOT_TESTED");

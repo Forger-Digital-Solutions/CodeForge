@@ -1,6 +1,7 @@
 import {
   DEFAULT_FREE_CAPACITY_POLICY,
   freeRouteExclusionReason,
+  capacityIndependenceKey,
   type CapacityPoolScope,
   type CapacityRoute,
   type CapacityScope,
@@ -58,6 +59,7 @@ export interface RouteLedgerEntry {
   supplyClass: SupplyClass;
   quotaDomainType: QuotaDomainType;
   quotaDomainId?: string;
+  independenceKey?: string;
   egressMode?: EgressMode;
   marginalCostToCodeForge?: number;
   capacityPoolId: string;
@@ -267,6 +269,7 @@ function buildEntry(
     supplyClass: route.supplyClass,
     quotaDomainType: route.quotaDomainType ?? (route.capacityPoolScope === "PER_USER_POOL" ? "USER_ACCOUNT" : "GLOBAL_SHARED"),
     ...(route.quotaDomainId !== undefined ? { quotaDomainId: route.quotaDomainId } : {}),
+    independenceKey: capacityIndependenceKey(route, now),
     ...(route.egressMode !== undefined ? { egressMode: route.egressMode } : {}),
     ...(route.marginalCostToCodeForge !== undefined ? { marginalCostToCodeForge: route.marginalCostToCodeForge } : {}),
     capacityPoolId: route.capacityPoolId,

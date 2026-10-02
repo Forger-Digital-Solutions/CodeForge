@@ -441,6 +441,7 @@ export function quotaHeadersOf(res: { headers: { forEach(cb: (value: string, key
 
 export { OpenRouterAdapter, type OpenRouterOptions, createOpenRouterAdapter } from "./openrouter.js";
 export { OpencodeAdapter, type OpencodeOptions, createOpencodeAdapter } from "./opencode.js";
+export * from "./openrouter-entitlement.js";
 export {
   OpenAICompatibleAdapter,
   type OpenAICompatibleConfig,

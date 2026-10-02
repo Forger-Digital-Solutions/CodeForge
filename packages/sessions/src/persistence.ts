@@ -10,6 +10,7 @@ import type { ISessionPersistence, SessionPersistenceTx } from "./interface.js";
 import { mkdirSync, existsSync, unlinkSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { redactSecrets } from "@codeforge/secrets";
+import { AsyncLocalStorage } from "node:async_hooks";
 
 export interface PersistenceOptions {
   dbPath?: string;
@@ -178,7 +179,8 @@ export class SqliteSessionPersistence implements ISessionPersistence {
   private dbPath: string;
   private driverName: SqliteDriverName;
   private statements: Map<string, SQLiteStatement> = new Map();
-  private inTransaction = false;
+  private readonly transactionContext = new AsyncLocalStorage<{ active: boolean }>();
+  private transactionQueue: Promise<void> = Promise.resolve();
 
   constructor(options: PersistenceOptions = {}) {
     this.dbPath = options.dbPath ?? ":memory:";
@@ -306,6 +308,7 @@ export class SqliteSessionPersistence implements ISessionPersistence {
   }
 
   async upsertSession(session: SessionRecord): Promise<void> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const safeSession = sanitizeForPersistence(session);
     this.run("upsertSession", {
       $id: safeSession.id,
@@ -327,24 +330,29 @@ export class SqliteSessionPersistence implements ISessionPersistence {
   }
 
   async getSession(id: string): Promise<SessionRecord | undefined> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const row = this.get<StoredSession>("getSession", { $id: id });
     return row ? parseSession(row) : undefined;
   }
 
   async listSessions(): Promise<SessionRecord[]> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const rows = this.all<StoredSession>("listSessions", {});
     return rows.map(parseSession);
   }
 
   async deleteSession(id: string): Promise<void> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     this.run("deleteSession", { $id: id });
   }
 
   async deleteEventsForSession(sessionId: string): Promise<void> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     this.run("deleteEventsForSession", { $sessionId: sessionId });
   }
 
   async upsertTurn(turn: TurnRecord): Promise<void> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const safeTurn = sanitizeForPersistence(turn);
     this.run("upsertTurn", {
       $id: safeTurn.id,
@@ -360,16 +368,19 @@ export class SqliteSessionPersistence implements ISessionPersistence {
   }
 
   async getTurns(sessionId: string): Promise<TurnRecord[]> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const rows = this.all<StoredTurn>("getTurns", { $sessionId: sessionId });
     return rows.map(parseTurn);
   }
 
   async getTurn(id: string): Promise<TurnRecord | undefined> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const row = this.get<StoredTurn>("getTurn", { $id: id });
     return row ? parseTurn(row) : undefined;
   }
 
   async upsertWorkItem(item: WorkItem): Promise<void> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const safeItem = sanitizeForPersistence(item);
     this.run("upsertWorkItem", {
       $id: safeItem.id,
@@ -381,6 +392,7 @@ export class SqliteSessionPersistence implements ISessionPersistence {
 
   /** Terminal audit records are append-only; duplicate persistence is idempotent rather than mutable. */
   async insertImmutableWorkItem(item: WorkItem): Promise<boolean> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     if (item.kind !== "verification" || (item.recordType !== "plan" && item.recordType !== "evidence" && item.recordType !== "policy_receipt" && item.recordType !== "resolution_receipt" && item.recordType !== "coverage_receipt" && item.recordType !== "cost_gate_receipt")) {
       throw new Error("Only immutable ForgeVerify plan, evidence, policy receipt, resolution receipt, coverage receipt, or cost-gate receipt records may use append-only persistence.");
     }
@@ -395,6 +407,7 @@ export class SqliteSessionPersistence implements ISessionPersistence {
   }
 
   async insertIfAbsent(item: WorkItem): Promise<boolean> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const safeItem = sanitizeForPersistence(item);
     const result = this.statements.get("insertIfAbsent")!.run({
       $id: safeItem.id,
@@ -406,16 +419,19 @@ export class SqliteSessionPersistence implements ISessionPersistence {
   }
 
   async getWorkItems(sessionId: string): Promise<WorkItem[]> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const rows = this.all<StoredWorkItem>("getWorkItems", { $sessionId: sessionId });
     return rows.map((row) => JSON.parse(row.data) as WorkItem);
   }
 
   async getWorkItem(id: string): Promise<WorkItem | undefined> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const row = this.get<StoredWorkItem>("getWorkItem", { $id: id });
     return row ? (JSON.parse(row.data) as WorkItem) : undefined;
   }
 
   async getWorkItemsByKind(kind: string): Promise<WorkItem[]> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const rows = this.all<StoredWorkItem>("getWorkItemsByKind", { $kind: kind });
     return rows.map((row) => JSON.parse(row.data) as WorkItem);
   }
@@ -426,11 +442,13 @@ export class SqliteSessionPersistence implements ISessionPersistence {
   }
 
   async getAllWorkItems(): Promise<WorkItem[]> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const rows = this.all<StoredWorkItem>("getAllWorkItems", {});
     return rows.map((row) => JSON.parse(row.data) as WorkItem);
   }
 
   async appendEvent(event: unknown): Promise<void> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const safeEvent = sanitizeForPersistence(event) as { sessionId?: string };
     this.run("appendEvent", {
       $sessionId: safeEvent.sessionId ?? "",
@@ -440,6 +458,7 @@ export class SqliteSessionPersistence implements ISessionPersistence {
   }
 
   async getEvents(sessionId: string): Promise<unknown[]> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     const rows = this.all<StoredEvent>("getEvents", { $sessionId: sessionId });
     return rows.map((row) => JSON.parse(row.data));
   }
@@ -451,28 +470,30 @@ export class SqliteSessionPersistence implements ISessionPersistence {
    * caller cannot mistake an inner scope for an independent atomic unit.
    */
   async withTransaction<T>(fn: (tx: SessionPersistenceTx) => Promise<T>): Promise<T> {
-    if (this.inTransaction) {
+    if (this.transactionContext.getStore()?.active) {
       throw new Error("SqliteSessionPersistence.withTransaction does not support nesting.");
     }
-    this.inTransaction = true;
-    this.db.exec("BEGIN");
-    try {
-      const result = await fn(this);
-      this.db.exec("COMMIT");
-      return result;
-    } catch (error) {
+    const context = { active: true };
+    const transaction = this.transactionQueue.then(() => this.transactionContext.run(context, async () => {
+      this.db.exec("BEGIN");
       try {
-        this.db.exec("ROLLBACK");
-      } catch {
-        // Best-effort: if COMMIT already partially applied there is nothing further to roll back.
+        const result = await fn(this);
+        this.db.exec("COMMIT");
+        return result;
+      } catch (error) {
+        try { this.db.exec("ROLLBACK"); } catch { /* COMMIT may already have ended the transaction. */ }
+        throw error;
+      } finally {
+        context.active = false;
       }
-      throw error;
-    } finally {
-      this.inTransaction = false;
-    }
+    }));
+    this.transactionQueue = transaction.then(() => undefined, () => undefined);
+    return transaction;
   }
 
   async close(): Promise<void> {
+    if (this.transactionContext.getStore()?.active) throw new Error("Cannot close SQLite persistence inside a transaction.");
+    await this.transactionQueue;
     this.db.close();
   }
 
@@ -485,6 +506,7 @@ export class SqliteSessionPersistence implements ISessionPersistence {
   }
 
   async clearAll(): Promise<void> {
+    if (!this.transactionContext.getStore()?.active) await this.transactionQueue;
     this.db.exec("DELETE FROM events");
     this.db.exec("DELETE FROM work_items");
     this.db.exec("DELETE FROM turns");

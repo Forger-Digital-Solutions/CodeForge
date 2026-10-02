@@ -54,6 +54,14 @@ describe("OpenRouter OAuth PKCE core", () => {
     expect(() => parseCallback("http://127.0.0.1:8765/cb?state=S1", "S1")).toThrow(/code/);
   });
 
+  it.each(["state=S1&state=S1&code=x", "state=S1&code=x&code=y", "state=&code=x"])("rejects ambiguous callbacks %s", (query) => {
+    expect(() => parseCallback(`http://127.0.0.1/callback?${query}`, "S1")).toThrow();
+  });
+
+  it("rejects secret-bearing exchange exceptions without exposing their content", async () => {
+    await expect(exchangeCodeForKey({ code: "x", codeVerifier: "y", fetchFn: async () => { throw new Error("private-verifier"); } })).rejects.not.toThrow("private-verifier");
+  });
+
   it("exchangeCodeForKey posts code + verifier and returns the key", async () => {
     let sentBody: any = null;
     const fetchFn = (async (_url: string, init: RequestInit) => {

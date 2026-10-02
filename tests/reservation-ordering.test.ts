@@ -85,9 +85,7 @@ describe("Reservation-before-provider ordering", () => {
 
   async function makeUser(credits: number): Promise<string> {
     const user = await rawDb.createUser({ displayName: "Ordering User", primaryIdentity: `github:ord-${randomUUID()}` });
-    if (credits > 0) {
-      await rawDb.appendLedgerEvent({ userId: user.id, amount: credits, eventType: "FREE_ALLOWANCE_GRANTED" });
-    }
+    await rawDb.getOrCreateCurrentUsagePeriod(user.id, credits);
     return user.id;
   }
 
@@ -140,7 +138,8 @@ describe("Reservation-before-provider ordering", () => {
     expect(recorder.count).toBe(0);
     expect(sink.reserveSequence).toEqual([]);
     // Nothing was charged either.
-    expect(await rawDb.getCreditBalance(userId)).toBe(10);
+    expect(await rawDb.getCreditBalance(userId)).toBe(0);
+    expect((await new UsageEngine(rawDb).getUserUsageSummary(userId)).freeRemainingCredits).toBe(10);
   });
 
   it("invokes the provider ZERO times when the database is unavailable", async () => {
@@ -187,6 +186,7 @@ describe("Reservation-before-provider ordering", () => {
       modelId,
       reservedCredits: 5_000,
       maxConcurrentTasks: 1,
+      usagePeriodId: (await rawDb.getOrCreateCurrentUsagePeriod(userId)).period.id,
     });
     const providerCallsBefore = recorder.count;
 
@@ -233,7 +233,8 @@ describe("Reservation-before-provider ordering", () => {
     expect(recorder.count).toBe(0);
     expect(sink.reserveSequence).toEqual([]);
     // No money moved for a request that never reached a provider.
-    expect(await rawDb.getCreditBalance(userId)).toBe(500_000);
+    expect(await rawDb.getCreditBalance(userId)).toBe(0);
+    expect((await new UsageEngine(rawDb).getUserUsageSummary(userId)).freeRemainingCredits).toBe(500_000);
   });
 
   it("refunds the reservation and leaves accounting whole when the provider itself fails", async () => {
@@ -273,7 +274,7 @@ describe("Reservation-before-provider ordering", () => {
   it("holds the ordering invariant across every concurrent request", async () => {
     const userId = await makeUser(500_000);
 
-    // Pro-level concurrency so several requests genuinely run at once.
+    // A paid subscription must still respect the selected Free product's limits.
     await rawDb.upsertSubscription({
       userId,
       planId: "pro",
@@ -285,6 +286,8 @@ describe("Reservation-before-provider ordering", () => {
 
     const results = await Promise.allSettled(Array.from({ length: 6 }, () => run(userId)));
     const succeeded = results.filter((r) => r.status === "fulfilled").length;
+    expect(succeeded).toBeGreaterThan(0);
+    expect(succeeded).toBeLessThan(6);
 
     // However many were admitted, the provider was entered exactly that many times…
     expect(recorder.count).toBe(succeeded);
@@ -294,5 +297,14 @@ describe("Reservation-before-provider ordering", () => {
       const reservationsBefore = sink.reserveSequence.filter((s) => s < providerSeq).length;
       expect(reservationsBefore).toBeGreaterThanOrEqual(index + 1);
     }
+  });
+  it("spends only the Free allowance when a Pro account owns purchased credits", async () => {
+    const userId = await makeUser(500_000);
+    await rawDb.upsertSubscription({ userId, planId: "pro", status: "active", currentPeriodStart: new Date().toISOString(), currentPeriodEnd: new Date(Date.now() + 86_400_000).toISOString(), cancelAtPeriodEnd: false });
+    await rawDb.appendLedgerEvent({ userId, amount: 5_000_000, eventType: "SUBSCRIPTION_ALLOWANCE_GRANTED" });
+    const outcome = await run(userId);
+    expect(outcome.creditsConsumed).toBeGreaterThan(0);
+    expect(await rawDb.getCreditBalance(userId)).toBe(5_000_000);
+    expect((await rawDb.getOrCreateCurrentUsagePeriod(userId, 500_000)).period.creditsUsed).toBe(outcome.creditsConsumed);
   });
 });

@@ -115,7 +115,9 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
     const account = await accountRes.json();
     expect(account.user.displayName).toBe("Octo Developer");
     expect(account.planId).toBe("free");
-    expect(account.creditBalance).toBe(500_000);
+    expect(account.creditBalance).toBe(0);
+    const initialUsage = await cloudServer.usage.getUserUsageSummary(authData.user.id);
+    expect(initialUsage.freeRemainingCredits).toBe(500_000);
 
     // 4. Run hosted inference through client HostedProviderAdapter (Zero-API-key inference)
     const hostedAdapter = new HostedProviderAdapter({
@@ -134,19 +136,23 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
     expect(chatResponse.usage.totalTokens).toBeGreaterThan(0);
 
     // 5. Verify usage metered & credit balance accurately decremented in ledger
-    const balanceAfterTurn = await cloudServer.db.getCreditBalance(authData.user.id);
-    expect(balanceAfterTurn).toBeLessThan(500_000);
-    expect(balanceAfterTurn).toBeGreaterThan(490_000);
+    const usageAfterTurn = await cloudServer.usage.getUserUsageSummary(authData.user.id);
+    expect(usageAfterTurn.freeRemainingCredits).toBeLessThan(500_000);
+    expect(usageAfterTurn.freeRemainingCredits).toBeGreaterThan(490_000);
+    expect(usageAfterTurn.creditBalance).toBe(0);
 
     // 6. Test Quota Exhaustion Guard
-    // Simulate consuming all remaining credits
-    await cloudServer.db.appendLedgerEvent({
-      userId: authData.user.id,
-      amount: -balanceAfterTurn, // bring balance to exactly 0
-      eventType: "ADMIN_ADJUSTMENT",
-      description: "Simulate quota exhaustion",
-    });
-    expect(await cloudServer.db.getCreditBalance(authData.user.id)).toBe(0);
+    const period = (await cloudServer.db.getOrCreateCurrentUsagePeriod(authData.user.id)).period;
+    let remaining = usageAfterTurn.freeRemainingCredits;
+    for (let index = 0; remaining > 0; index++) {
+      const amount = Math.min(50_000, remaining);
+      const requestId = `cert-exhaust-free-${index}`;
+      await cloudServer.db.reserveCredits({ requestId, userId: authData.user.id,
+        providerId: "fixture", modelId: "fixture", reservedCredits: amount, usagePeriodId: period.id });
+      await cloudServer.db.settleReservation({ requestId, userId: authData.user.id, actualCredits: amount });
+      remaining -= amount;
+    }
+    expect((await cloudServer.usage.getUserUsageSummary(authData.user.id)).freeRemainingCredits).toBe(0);
 
     // Next inference attempt must FAIL CLOSED before calling provider
     await expect(
@@ -154,7 +160,7 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
         model: "codeforge-auto",
         messages: [{ role: "user", content: "Another task" }],
       }),
-    ).rejects.toThrow(/used your included CodeForge hosted usage/);
+    ).rejects.toThrow(/monthly CodeForge Free allowance.*exhausted/);
 
     // 7. Stripe Test Mode Subscription Upgrade
     const stripeEvent = {
@@ -190,15 +196,15 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
     const webhookResult = await webhookRes.json();
     expect(webhookResult.action).toBe("pro_subscription_activated");
 
-    // 8. Account is now Pro with 5,000,000 credits and can run inference again!
+    // Pro credits stay separate: upgrading must never refill an exhausted Free domain.
     const upgradedBalance = await cloudServer.db.getCreditBalance(authData.user.id);
     expect(upgradedBalance).toBe(5_000_000);
 
-    const proChatResponse = await hostedAdapter.chat({
+    await expect(hostedAdapter.chat({
       model: "codeforge-auto",
       messages: [{ role: "user", content: "Resume coding as Pro subscriber" }],
-    });
-    expect(proChatResponse.choices[0]?.message.content).toContain("Successfully processed task");
+    })).rejects.toThrow(/monthly CodeForge Free allowance.*exhausted/);
+    expect(await cloudServer.db.getCreditBalance(authData.user.id)).toBe(5_000_000);
 
     // 9. Webhook Idempotency check: duplicate event does not double-grant credits
     const duplicateWebhookRes = await fetch(`${cloudUrl}/v1/billing/webhook`, {
@@ -211,7 +217,7 @@ describe("CodeForge Cloud Full Platform Certification E2E", () => {
     });
     const dupResult = await duplicateWebhookRes.json();
     expect(dupResult.action).toBe("duplicate_skipped");
-    expect(await cloudServer.db.getCreditBalance(authData.user.id)).toBeLessThan(5_000_000);
+    expect(await cloudServer.db.getCreditBalance(authData.user.id)).toBe(5_000_000);
 
     // 10. Cancellation webhook downgrades user cleanly back to Free plan
     const cancelEvent = {

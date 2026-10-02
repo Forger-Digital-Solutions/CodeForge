@@ -9,6 +9,9 @@ export * from "./artifact-store.js";
 export * from "./publication-executor.js";
 export * from "./publication-service.js";
 export * from "./hosted-workflow-authority.js";
+export * from "./remote-direct-host.js";
+export * from "./sponsor-operator-service.js";
+export * from "./sponsor-operator-http.js";
 export * from "./git-transport.js";
 export * from "./github-pr-client.js";
 

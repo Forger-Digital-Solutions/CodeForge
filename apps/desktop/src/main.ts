@@ -2428,6 +2428,11 @@ async function startPrimaryInstance(): Promise<void> {
       if (credentials[id] || providerConnections.credentialSourceOf(id) !== "NONE") registerProviderAdapter(id);
     }
     providerConnections.publishAll();
+    const delegatedRecheckTimer = setInterval(() => {
+      if (providerConnections?.credentialSourceOf("openrouter") === "OAUTH") void providerConnections.reconcile("openrouter").catch(() => {});
+    }, 15 * 60_000);
+    delegatedRecheckTimer.unref();
+    app.once("before-quit", () => clearInterval(delegatedRecheckTimer));
     if (registerProviderAdapter("kilo-free-direct")) {
       freeCloud?.setConnection({
         providerId: "kilo-free-direct", connected: true, credentialSource: "ANONYMOUS_DIRECT",
@@ -3368,8 +3373,10 @@ ipcMain.handle("oauth:openrouter:start", async (event) => {
   assertMainWindowSender(event);
   if (PACKAGED_SMOKE) return { ok: false, error: "Unavailable in smoke mode" };
   try {
-    const key = await runOpenRouterOAuth();
     const connections = requireConnections();
+    const authorizingUserId = connections.accountOwnerUserId();
+    const key = await runOpenRouterOAuth();
+    if (authorizingUserId !== connections.accountOwnerUserId()) return { ok: false, error: "The CodeForge account changed during authorization. Connect again." };
     const result = await connections.connect("openrouter", { apiKey: key }, "OAUTH");
     notifyProviderChanged();
     if (!result.ok) return { ok: false, error: result.error };
@@ -3577,6 +3584,7 @@ ipcMain.handle("cloud:account:delete", async (event) => {
 
 ipcMain.handle("cloud:auth:logout", async (event) => {
   assertMainWindowSender(event);
+  if (providerConnections?.credentialSourceOf("openrouter") === "OAUTH") await providerConnections.disconnect("openrouter");
   const tokens = getStoredCloudTokens();
   if (tokens.refreshToken) {
     try {

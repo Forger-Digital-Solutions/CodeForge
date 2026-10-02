@@ -21,6 +21,7 @@ export class EntitlementService {
   async evaluateTaskExecution(params: {
     userId: string;
     modelTier?: "free" | "paid" | "gems_paid";
+    product?: "FREE" | "PAID";
     requestedEstimatedCredits?: number;
     activeConcurrency?: number;
   }): Promise<TaskExecutionPermission> {
@@ -38,7 +39,13 @@ export class EntitlementService {
 
       const subscription = await this.db.getSubscriptionByUserId(params.userId);
       const planId = subscription?.planId ?? "free";
-      const plan = await this.db.getPlan(planId);
+      const tier = params.modelTier ?? (params.product === "PAID" ? "paid" : "free");
+      const product = params.product ?? (tier === "free" ? "FREE" : "PAID");
+      if (product === "FREE" && tier !== "free") {
+        return { allowed: false, reason: "Premium models require the explicit paid product", maxEstimatedCredits: 0, availableCredits: 0, planId };
+      }
+      // Free usage has its own allowance and limits even when the account owns a paid wallet.
+      const plan = await this.db.getPlan(product === "FREE" ? "free" : planId);
       if (!plan) {
         return {
           allowed: false,
@@ -49,8 +56,7 @@ export class EntitlementService {
         };
       }
 
-      const tier = params.modelTier ?? "free";
-      const freePeriod = planId === "free" && tier === "free"
+      const freePeriod = product === "FREE"
         ? (await this.db.getOrCreateCurrentUsagePeriod(params.userId, plan.monthlyCreditAllowance)).period
         : undefined;
       const freeReserved = freePeriod ? await this.db.getUsagePeriodReservedCredits(freePeriod.id) : 0;
@@ -59,7 +65,7 @@ export class EntitlementService {
         : await this.db.getCreditBalance(params.userId);
 
       // Check subscription status
-      if (planId !== "free" && subscription?.status !== "active" && subscription?.status !== "trialing") {
+      if (product === "PAID" && planId !== "free" && subscription?.status !== "active" && subscription?.status !== "trialing") {
         return {
           allowed: false,
           reason: `Subscription is not active (status: ${subscription?.status ?? "none"})`,
@@ -82,7 +88,7 @@ export class EntitlementService {
       }
 
       // Check model tier access
-      if (tier === "paid" || tier === "gems_paid") {
+      if (product === "PAID") {
         const hasPaid = await this.hasFeature(params.userId, "HOSTED_PAID");
         const hasPremium = await this.hasFeature(params.userId, "PREMIUM_MODELS");
         if (!hasPaid && !hasPremium) {

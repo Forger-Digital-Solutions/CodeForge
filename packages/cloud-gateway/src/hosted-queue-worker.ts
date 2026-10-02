@@ -113,7 +113,12 @@ export class HostedQueueWorker {
             .then(async (result) => {
               if (result === "idle") await new Promise<void>((resolve) => setTimeout(resolve, this.idleWaitMs));
             })
-            .catch((error) => { this.onError?.(error); })
+            .catch(async (error) => {
+              this.onError?.(error);
+              // A failed store must yield to HTTP, shutdown and recovery timers instead of
+              // spinning rejected microtasks and retaining an unbounded error log.
+              await new Promise<void>((resolve) => setTimeout(resolve, this.idleWaitMs));
+            })
             .finally(() => { inFlight.delete(task); });
           inFlight.add(task);
         }

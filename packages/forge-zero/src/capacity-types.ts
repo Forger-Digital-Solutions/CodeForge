@@ -115,6 +115,15 @@ export type CapacityScope =
 
 export type CapacityUnit = "requests" | "input_tokens" | "output_tokens" | "neurons" | "concurrency" | "credits" | "provider_units";
 
+export interface QuotaScopeEvidence {
+  scope: CapacityScope;
+  /** Digest of the actual provider quota owner, never a user/session/model alias. */
+  identityHash: string;
+  source: string;
+  verifiedAt: string;
+  recheckAt: string;
+}
+
 export interface CapacityWindow {
   unit: CapacityUnit;
   limit: number;
@@ -146,6 +155,8 @@ export interface ProviderCapacityPool {
   authoritative: boolean;
   /** Stable, non-secret identity for the physical account that owns this pool. */
   capacityIdentity?: string;
+  independenceKey?: string;
+  quotaScopeEvidence?: QuotaScopeEvidence;
 }
 
 export interface CapacityRoute {
@@ -159,6 +170,8 @@ export interface CapacityRoute {
   supplyClass: SupplyClass;
   quotaDomainType?: QuotaDomainType;
   quotaDomainId?: string;
+  independenceKey?: string;
+  quotaScopeEvidence?: QuotaScopeEvidence;
   egressMode?: EgressMode;
   marginalCostToCodeForge?: number;
   freePrivacyClass?: FreeRoutePrivacyClass;

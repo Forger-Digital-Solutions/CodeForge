@@ -1,12 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { ForgeZero, hashUserAccountIdentity } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog, type ProviderModel } from "@codeforge/providers";
+import { classifyOpenRouterEntitlement, InMemoryProviderCatalog, type ProviderModel } from "@codeforge/providers";
 import { NormalizedModelRegistry, createFreeCloudService } from "@codeforge/model-registry";
 import { ENV_CREDENTIALS_KEY, ProviderConnections, type ProviderConnectionsHost } from "../src/provider-connections.js";
 
 const GROQ_SECRET = "gsk_live_secret_value_0123456789abcdef";
 const OPENAI_SECRET = "sk-paid-secret-0123456789abcdefghijklmnop";
 const OR_SECRET = "sk-or-v1-legacy-env-secret-0123456789";
+
+const delegatedVerifier: NonNullable<ProviderConnectionsHost["verifyOpenRouter"]> = async (binding) => {
+  const receipt = classifyOpenRouterEntitlement({ data: { is_free_tier: true, creator_user_id: "fixture-account", organization_id: null,
+    free_model_daily_requests: { limit: 50, used: 1, remaining: 49 } } }, binding);
+  return { ...receipt, admissionEvidence: { sourceDocumentation: "fixture:oauth", termsEvidence: "fixture:terms", privacyEvidence: "fixture:privacy", priceEvidence: "fixture:zero",
+    verifiedAt: receipt.verifiedAt, recheckAt: receipt.recheckAt } };
+};
 
 interface Harness {
   connections: ProviderConnections;
@@ -15,9 +22,10 @@ interface Harness {
   env: Record<string, string | undefined>;
   catalog: InMemoryProviderCatalog;
   discovered: string[];
+  host: ProviderConnectionsHost;
 }
 
-function harness(env: Record<string, string | undefined>, fetchModels?: (providerId: string) => ProviderModel[], ollamaEnabled = true): Harness {
+function harness(env: Record<string, string | undefined>, fetchModels?: (providerId: string) => ProviderModel[], ollamaEnabled = true, overrides: Partial<ProviderConnectionsHost> = {}): Harness {
   const settings: Record<string, unknown> = {};
   const secrets = new Map<string, string>();
   const catalog = new InMemoryProviderCatalog();
@@ -57,12 +65,52 @@ function harness(env: Record<string, string | undefined>, fetchModels?: (provide
     maxSecretLength: 512,
     userId: "user-a",
     ollamaUserConnectedFreeEnabled: ollamaEnabled,
+    ...overrides,
   };
   const connections = new ProviderConnections(host);
   // Restore fetch lazily on process exit; tests only read within this module.
   void originalFetch;
-  return { connections, settings, secrets, env, catalog, discovered };
+  return { connections, settings, secrets, env, catalog, discovered, host };
 }
+
+describe("ProviderConnections — delegated entitlement authority", () => {
+  it("admits a bound receipt, stores the key through the trusted secret store, and revokes locally", async () => {
+    const h = harness({}, undefined, true, { verifyOpenRouter: delegatedVerifier });
+    expect(await h.connections.connect("openrouter", { apiKey: OR_SECRET }, "OAUTH")).toMatchObject({ ok: true });
+    expect(h.secrets.get("openrouter")).toBe(OR_SECRET);
+    expect(h.connections.listConnections().find((view) => view.providerId === "openrouter")).toMatchObject({ supplyClass: "USER_ENTITLED_FREE", delegatedFree: { accountClass: "FREE_VERIFIED" } });
+    expect(JSON.stringify([h.settings, h.connections.listConnections()])).not.toContain(OR_SECRET);
+    await h.connections.disconnect("openrouter");
+    expect(h.secrets.has("openrouter")).toBe(false);
+    expect(h.connections.credentialSourceOf("openrouter")).toBe("NONE");
+  });
+
+  it("refuses paid and ambiguous accounts before persisting a delegated key", async () => {
+    for (const metadata of [{ is_free_tier: false }, {}]) {
+      const h = harness({}, undefined, true, { verifyOpenRouter: async (binding) => classifyOpenRouterEntitlement({ data: metadata }, binding) });
+      expect(await h.connections.connect("openrouter", { apiKey: OR_SECRET }, "OAUTH")).toMatchObject({ ok: false });
+      expect(h.secrets.size).toBe(0);
+      expect(h.discovered).toEqual([]);
+    }
+  });
+
+  it("refuses a successful provider receipt belonging to another local account", async () => {
+    const h = harness({}, undefined, true, { verifyOpenRouter: async (binding) => delegatedVerifier({ ...binding, ownerUserId: "other-user" }) });
+    expect(await h.connections.connect("openrouter", { apiKey: OR_SECRET }, "OAUTH")).toMatchObject({ ok: false });
+    expect(h.secrets.size).toBe(0);
+  });
+
+  it("rechecks stale quota and prevents an account switch from inheriting Free admission", async () => {
+    let clock = new Date("2026-10-02T23:59:00Z");
+    const h = harness({}, undefined, true, { now: () => clock, verifyOpenRouter: delegatedVerifier });
+    expect(await h.connections.connect("openrouter", { apiKey: OR_SECRET }, "OAUTH")).toMatchObject({ ok: true });
+    h.host.userId = "user-b";
+    h.host.verifyOpenRouter = async (binding) => classifyOpenRouterEntitlement({ data: { is_free_tier: false } }, binding);
+    clock = new Date("2026-10-03T00:00:00Z");
+    await h.connections.reconcile("openrouter");
+    expect(h.connections.listConnections().find((view) => view.providerId === "openrouter")?.supplyClass).toBeUndefined();
+  });
+});
 
 describe("ProviderConnections — environment credentials", () => {
   it("detects credentials by name and never exposes values through any renderer-facing view", () => {

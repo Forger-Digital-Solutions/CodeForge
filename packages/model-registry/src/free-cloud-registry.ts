@@ -2,6 +2,7 @@ import type { FreeModelRecord, ForgeZero, PrivacyClass, AccessClass, SupplyClass
 import type { ModelIdentity, ProviderIdentity } from "@codeforge/core";
 import { verifyModelEligibility, FREE_ACCESS_CLASSES } from "@codeforge/forge-zero";
 import type { ModelQualificationReceipt } from "@codeforge/eight-bit";
+import type { OpenRouterEntitlementReceipt } from "@codeforge/providers";
 import { receiptSuiteSupported } from "@codeforge/eight-bit";
 import { canonicalIdentityFor, type CanonicalIdentity } from "./canonical.js";
 import {
@@ -66,6 +67,7 @@ export interface ProviderConnectionState {
    * user-owned pool when its own fairness identity matches this owner.
    */
   ownerUserId?: string;
+  delegatedEntitlement?: OpenRouterEntitlementReceipt;
   /** Sanitized metadata for a user-owned Free Cloud connection; never a credential. */
   userConnectedFree?: {
     featureFlag: string;
@@ -425,6 +427,14 @@ export function evaluateAdmission(input: {
   if (conn.authState === "auth_required") return fail("CONNECTED", "Credential rejected by provider");
   passed.push("CONNECTED");
 
+  if (def.id === "openrouter" && conn.credentialSource === "OAUTH") {
+    const entitlement = conn.delegatedEntitlement;
+    if (entitlement?.accountClass !== "FREE_VERIFIED" || entitlement.ownerUserId !== conn.ownerUserId
+      || !entitlement.admissionEvidence || Date.parse(entitlement.recheckAt) <= Date.now()) {
+      return fail("FREE_VERIFIED", `Delegated account entitlement: ${entitlement?.accountClass ?? "UNKNOWN"}`);
+    }
+  }
+
   if (def.id === "google" && conn.freePolicyState !== "ALLOW") {
     return fail("FREE_VERIFIED", `Gemini free policy gate ${conn.freePolicyReason ?? "not accepted"}`);
   }
@@ -623,7 +633,7 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
  */
 export function supplyClassFor(
   def: ProviderDefinition | undefined,
-  conn: Pick<ProviderConnectionState, "credentialSource" | "connected"> | undefined,
+  conn: Pick<ProviderConnectionState, "credentialSource" | "connected"> & Partial<Pick<ProviderConnectionState, "delegatedEntitlement">> | undefined,
 ): SupplyClass | undefined {
   if (def?.id === "kilo-free-direct" && conn?.credentialSource === "ANONYMOUS_DIRECT" && conn.connected) return "PACKAGED_FREE_DIRECT";
   if (def?.userConnectedFree) return def.userConnectedFree.supplyClass;
@@ -631,6 +641,7 @@ export function supplyClassFor(
     return "PURE_MANAGED_FREE";
   }
   if (conn?.credentialSource === "ENVIRONMENT") return "OWNER_DEV_FREE";
+  if (def?.id === "openrouter" && conn?.credentialSource === "OAUTH") return conn.delegatedEntitlement?.accountClass === "FREE_VERIFIED" ? "USER_ENTITLED_FREE" : undefined;
   if (conn?.connected && conn.credentialSource !== "NONE") return "USER_CONNECTED_FREE";
   switch (def?.freeAccess.class) {
     case "PAID_API": return "PAID";

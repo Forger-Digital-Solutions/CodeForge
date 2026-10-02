@@ -25,10 +25,22 @@ export interface OpenRouterOAuthOptions {
 const SUCCESS_HTML = `<!doctype html><html><head><meta charset="utf-8"><title>CodeForge</title>
 <style>body{font-family:system-ui,sans-serif;background:#0f1115;color:#e6e8ec;display:grid;place-items:center;height:100vh;margin:0}
 .card{text-align:center}.d{color:#7c9cff;font-size:40px}</style></head>
-<body><div class="card"><div class="d">◈</div><h2>OpenRouter connected</h2>
+<body><div class="card"><div class="d">◈</div><h2>Authorization received</h2>
 <p>You can close this tab and return to CodeForge.</p></div></body></html>`;
 
-export function runOpenRouterOAuth(opts: OpenRouterOAuthOptions = {}): Promise<string> {
+let authorizationPending = false;
+
+export async function runOpenRouterOAuth(opts: OpenRouterOAuthOptions = {}): Promise<string> {
+  if (authorizationPending) throw new Error("OpenRouter authorization is already in progress");
+  authorizationPending = true;
+  try {
+    return await receiveOpenRouterAuthorization(opts);
+  } finally {
+    authorizationPending = false;
+  }
+}
+
+function receiveOpenRouterAuthorization(opts: OpenRouterOAuthOptions): Promise<string> {
   const timeoutMs = opts.timeoutMs ?? 180000;
   const openExternal = opts.openExternal ?? ((url: string) => shell.openExternal(url));
   const exchange = opts.exchange ?? OpenRouterOAuth.exchangeCodeForKey;
@@ -42,6 +54,16 @@ export function runOpenRouterOAuth(opts: OpenRouterOAuthOptions = {}): Promise<s
 
       const server = http.createServer((req, res) => {
         try {
+          if (settled) {
+            res.writeHead(409);
+            res.end("Authorization callback already consumed.");
+            return;
+          }
+          if (req.method !== "GET" || req.headers.host !== `127.0.0.1:${(server.address() as AddressInfo).port}`) {
+            res.writeHead(400);
+            res.end("Invalid callback origin.");
+            return;
+          }
           const reqUrl = new URL(req.url ?? "/", "http://127.0.0.1");
           if (reqUrl.pathname !== "/callback") {
             res.writeHead(404);

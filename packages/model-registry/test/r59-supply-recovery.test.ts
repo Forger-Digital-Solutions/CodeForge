@@ -130,7 +130,9 @@ function harness(opts: {
   });
   for (const providerId of new Set(opts.routes.map((r) => r.providerId))) {
     svc.setConnection(connected(providerId, {
-      credentialSource: "OAUTH",
+      // R63: openrouter OAUTH without a FREE_VERIFIED delegated receipt correctly yields no
+      // supply; these fixtures exercise qualification/scheduling, so they connect as user keys.
+      credentialSource: "USER_CONNECTED_FREE_API_KEY",
       ...(opts.attestedProviders?.includes(providerId) ? { planAttested: true } : {}),
     }));
   }

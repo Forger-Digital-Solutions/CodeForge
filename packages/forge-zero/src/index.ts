@@ -6,6 +6,7 @@ export * from "./catalog.js";
 export * from "./canonical.js";
 export * from "./health-classify.js";
 export * from "./capacity-types.js";
+export * from "./capacity-independence.js";
 export * from "./capacity-policy.js";
 export * from "./capacity-reservations.js";
 export * from "./capacity-forecast.js";

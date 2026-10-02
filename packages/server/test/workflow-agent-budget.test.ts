@@ -28,7 +28,7 @@ function endlessWriter(onWrite: () => void) {
   return {
     providerId: "codeforge",
     displayName: "Mock Provider",
-    isTestProvider: false,
+    isTestProvider: true,
     models: () => [createGenericFreeRecord()],
     streamChat: () => (async function* () {
       iteration += 1;

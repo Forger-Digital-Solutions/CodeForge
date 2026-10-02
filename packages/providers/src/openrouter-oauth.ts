@@ -86,11 +86,11 @@ export function parseCallback(callbackUrl: string, expectedState: string): strin
   const u = new URL(callbackUrl);
   const gotState = u.searchParams.get("state");
   // If we issued a state, it MUST come back and match.
-  if (expectedState && gotState !== expectedState) {
+  if (!expectedState || gotState !== expectedState || u.searchParams.getAll("state").length !== 1) {
     throw new OAuthStateMismatchError();
   }
   const code = u.searchParams.get("code");
-  if (!code) throw new Error("OAuth callback missing authorization code");
+  if (!code || u.searchParams.getAll("code").length !== 1) throw new Error("OAuth callback missing or ambiguous authorization code");
   return code;
 }
 
@@ -134,7 +134,8 @@ export async function exchangeCodeForKey(opts: ExchangeOptions): Promise<string>
     if (e instanceof Error && e.name === "AbortError") {
       throw new Error("OpenRouter key exchange timed out");
     }
-    throw e;
+    if (e instanceof Error && e.message.startsWith("OpenRouter key exchange")) throw e;
+    throw new Error("OpenRouter key exchange transport failed");
   } finally {
     clearTimeout(timeout);
   }

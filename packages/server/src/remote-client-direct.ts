@@ -1,5 +1,6 @@
 import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import type { EightBitRouteHealthAuthority } from "@codeforge/eight-bit";
+import { ChatResponseSchema, ToolCallSchema, type ChatResponse } from "@codeforge/providers";
 
 const KILO_ENDPOINT = "https://api.kilo.ai/api/gateway/chat/completions";
 
@@ -48,6 +49,10 @@ export interface SignedRemoteDirectAssignment {
   mac: string;
 }
 
+export function signRemoteDirectAssignment(secret: Buffer, assignment: RemoteDirectAssignment): string {
+  return mac(secret, "assignment", assignment);
+}
+
 export interface SignedRemoteDirectAcknowledgement {
   acknowledgement: { requestId: string; sessionId: string; nonce: string };
   mac: string;
@@ -78,6 +83,8 @@ export interface RemoteDirectFeedback {
   latencyMs: number;
   httpClass: 0 | 2 | 4 | 5;
   rateLimitResetAt?: string;
+  providerErrorCode?: string;
+  httpStatus?: number;
   inputTokens?: number;
   outputTokens?: number;
   toolCallCount: number;
@@ -94,6 +101,15 @@ export interface SignedRemoteDirectFeedback {
   feedback: RemoteDirectFeedback;
   mac: string;
 }
+
+export interface RemoteDirectResult {
+  requestId: string;
+  nonce: string;
+  response: ChatResponse;
+  toolExecutionState: "PROPOSED_ONLY";
+}
+
+export interface SignedRemoteDirectResult { result: RemoteDirectResult; mac: string }
 
 export function digestRemoteDirectRequest(request: unknown): string {
   return createHash("sha256").update(canonical(request)).digest("hex");
@@ -151,6 +167,15 @@ export class RemoteDirectDevice {
     return { feedback, mac: mac(this.secret, "feedback", feedback) };
   }
 
+  signResult(result: RemoteDirectResult): SignedRemoteDirectResult {
+    const active = this.active.get(result.requestId);
+    if (!active || result.nonce !== active.assignment.nonce || result.toolExecutionState !== "PROPOSED_ONLY") {
+      throw new Error("REMOTE_RESULT_SCOPE_INVALID");
+    }
+    ChatResponseSchema.parse(result.response);
+    return { result, mac: mac(this.secret, "result", result) };
+  }
+
   cancel(requestId: string): void {
     const active = this.active.get(requestId);
     active?.abort.abort();
@@ -167,15 +192,17 @@ function feedbackMatchesAssignment(feedback: RemoteDirectFeedback, a: RemoteDire
 const FEEDBACK_FIELDS = new Set([
   "requestId", "runId", "routeId", "quotaDomainId", "provider", "physicalModel", "status", "latencyMs",
   "httpClass", "rateLimitResetAt", "inputTokens", "outputTokens", "toolCallCount", "terminationReason",
-  "timestamp", "accountId", "deviceId", "sessionId", "workspaceId", "nonce",
+  "timestamp", "accountId", "deviceId", "sessionId", "workspaceId", "nonce", "providerErrorCode", "httpStatus",
 ]);
 
 function validFeedback(feedback: RemoteDirectFeedback): boolean {
   if (Object.keys(feedback).some((field) => !FEEDBACK_FIELDS.has(field))) return false;
-  if (!/^[a-z0-9][a-z0-9._/-]{0,255}$/i.test(feedback.physicalModel)) return false;
+  if (!/^[a-z0-9][a-z0-9._/:-]{0,255}$/i.test(feedback.physicalModel) || !Number.isFinite(Date.parse(feedback.timestamp))) return false;
   if (!Number.isFinite(feedback.latencyMs) || feedback.latencyMs < 0 || feedback.latencyMs > 3_600_000) return false;
   if (!Number.isInteger(feedback.toolCallCount) || feedback.toolCallCount < 0 || feedback.toolCallCount > 10_000) return false;
   if (![0, 2, 4, 5].includes(feedback.httpClass)) return false;
+  if (feedback.providerErrorCode !== undefined && !/^[A-Z][A-Z0-9_]{0,127}$/.test(feedback.providerErrorCode)) return false;
+  if (feedback.httpStatus !== undefined && (!Number.isInteger(feedback.httpStatus) || feedback.httpStatus < 100 || feedback.httpStatus > 599)) return false;
   for (const count of [feedback.inputTokens, feedback.outputTokens]) {
     if (count !== undefined && (!Number.isInteger(count) || count < 0 || count > 1_000_000_000)) return false;
   }
@@ -191,6 +218,24 @@ export class RemoteDirectAuthority {
   private readonly sessions = new Map<string, { identity: RemoteDirectSessionIdentity; secret: Buffer }>();
   private readonly pending = new Map<string, { assignment: RemoteDirectAssignment; secret: Buffer; nextSequence: number; acknowledged: boolean }>();
   private readonly settled = new Set<string>();
+
+  restorePending(assignment: RemoteDirectAssignment, secret: Buffer, acknowledged: boolean, nextSequence = 0): void {
+    this.registerSession({ accountId: assignment.accountId, deviceId: assignment.deviceId, sessionId: assignment.sessionId, workspaceId: assignment.workspaceId }, secret);
+    this.pending.set(assignment.requestId, { assignment, secret, acknowledged, nextSequence });
+  }
+
+  acceptResult(signed: SignedRemoteDirectResult, now = Date.now()): RemoteDirectResult {
+    const pending = this.pending.get(signed.result.requestId);
+    if (!pending?.acknowledged || Date.parse(pending.assignment.expiresAt) <= now
+      || signed.result.nonce !== pending.assignment.nonce || signed.result.toolExecutionState !== "PROPOSED_ONLY"
+      || !matchesMac(pending.secret, "result", signed.result, signed.mac)) throw new Error("REMOTE_RESULT_INVALID");
+    ChatResponseSchema.parse(signed.result.response);
+    for (const choice of signed.result.response.choices) {
+      for (const call of choice.message.toolCalls ?? []) ToolCallSchema.parse(call);
+    }
+    if ((signed.result.response.usage?.costUsd ?? 0) > 0) throw new Error("REMOTE_RESULT_COST_DENIED");
+    return signed.result;
+  }
 
   registerSession(identity: RemoteDirectSessionIdentity, secret: Buffer): void {
     if (secret.length < 32) throw new Error("REMOTE_SESSION_SECRET_TOO_SHORT");
