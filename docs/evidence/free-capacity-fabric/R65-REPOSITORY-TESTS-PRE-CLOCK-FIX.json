@@ -1,44 +1,50 @@
 {
-  "generatedAt": "2026-10-02T23:17:33.691Z",
-  "status": "PASS",
-  "repositoryWideGreen": true,
+  "generatedAt": "2026-10-02T22:48:31.278Z",
+  "status": "FAIL",
+  "repositoryWideGreen": false,
   "strategy": "One main pass with two isolated workers; four contention-sensitive suites then run serially. Certificate canary runs separately after evidence freeze.",
   "workerHeapLimitMb": 2048,
-  "peakProcessTreeWorkingSetBytes": 922693632,
-  "peakSingleProcessWorkingSetBytes": 393609216,
+  "peakProcessTreeWorkingSetBytes": 869068800,
+  "peakSingleProcessWorkingSetBytes": 397369344,
   "phases": [
     {
       "name": "bounded-main",
-      "status": "PASS",
-      "startedAt": "2026-10-02T23:17:33.694Z",
+      "status": "FAIL",
+      "startedAt": "2026-10-02T22:48:31.283Z",
       "workers": 2,
       "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run --exclude=packages/server/test/autonomous-orchestrator.test.ts --exclude=packages/server/test/parallel-orchestrator-integration.test.ts --exclude=packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts --exclude=apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts --maxWorkers=2 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R65-suite-bounded-main.json",
       "report": "G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R65-suite-bounded-main.json",
-      "completedFileLines": 526,
-      "latestProgress": "      Tests  4418 passed | 50 skipped (4468)",
-      "durationSeconds": 1346.876,
-      "exitCode": 0,
+      "completedFileLines": 525,
+      "latestProgress": "      Tests  1 failed | 4417 passed | 50 skipped (4468)",
+      "durationSeconds": 1386.93,
+      "exitCode": 1,
       "totals": {
         "files": 535,
-        "passed": 4418,
-        "failed": 0,
+        "passed": 4417,
+        "failed": 1,
         "skipped": 50,
         "todo": 0,
         "pending": 0
       },
-      "failedAssertions": [],
+      "failedAssertions": [
+        {
+          "file": "packages/eight-bit/test/r56-model-scoped-health.test.ts",
+          "title": "R56 — model-scoped failure marking (within-provider failover) [PASS] a model-bucket daily 429 rotates to the SAME provider's sibling route",
+          "message": "AssertionError: expected 1790985630000 to be greater than 1790986263362\n    at G:/CodeForge/packages/eight-bit/test/r56-model-scoped-health.test.ts:68:40\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:20"
+        }
+      ],
       "failedSuitesWithoutAssertions": []
     },
     {
       "name": "serial-heavy-1",
       "status": "PASS",
-      "startedAt": "2026-10-02T23:40:00.587Z",
+      "startedAt": "2026-10-02T23:11:38.230Z",
       "workers": 1,
       "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run packages/server/test/autonomous-orchestrator.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R65-suite-serial-heavy-1.json",
       "report": "G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R65-suite-serial-heavy-1.json",
       "completedFileLines": 1,
       "latestProgress": "      Tests  22 passed (22)",
-      "durationSeconds": 90.623,
+      "durationSeconds": 90.748,
       "exitCode": 0,
       "totals": {
         "files": 1,
@@ -54,13 +60,13 @@
     {
       "name": "serial-heavy-2",
       "status": "PASS",
-      "startedAt": "2026-10-02T23:41:30.622Z",
+      "startedAt": "2026-10-02T23:13:08.979Z",
       "workers": 1,
       "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run packages/server/test/parallel-orchestrator-integration.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R65-suite-serial-heavy-2.json",
       "report": "G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R65-suite-serial-heavy-2.json",
       "completedFileLines": 1,
       "latestProgress": "      Tests  4 passed (4)",
-      "durationSeconds": 40.669,
+      "durationSeconds": 40.972,
       "exitCode": 0,
       "totals": {
         "files": 1,
@@ -76,13 +82,13 @@
     {
       "name": "serial-heavy-3",
       "status": "PASS",
-      "startedAt": "2026-10-02T23:42:11.293Z",
+      "startedAt": "2026-10-02T23:13:49.954Z",
       "workers": 1,
       "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R65-suite-serial-heavy-3.json",
       "report": "G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R65-suite-serial-heavy-3.json",
       "completedFileLines": 1,
       "latestProgress": "      Tests  1 passed (1)",
-      "durationSeconds": 36.298,
+      "durationSeconds": 35.82,
       "exitCode": 0,
       "totals": {
         "files": 1,
@@ -98,13 +104,13 @@
     {
       "name": "serial-heavy-4",
       "status": "PASS",
-      "startedAt": "2026-10-02T23:42:47.593Z",
+      "startedAt": "2026-10-02T23:14:25.775Z",
       "workers": 1,
       "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R65-suite-serial-heavy-4.json",
       "report": "G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R65-suite-serial-heavy-4.json",
       "completedFileLines": 1,
       "latestProgress": "      Tests  6 passed (6)",
-      "durationSeconds": 25.413,
+      "durationSeconds": 25.575,
       "exitCode": 0,
       "totals": {
         "files": 1,
@@ -120,12 +126,12 @@
   ],
   "totals": {
     "files": 539,
-    "passed": 4451,
-    "failed": 0,
+    "passed": 4450,
+    "failed": 1,
     "skipped": 50,
     "todo": 0,
     "pending": 0,
-    "durationSeconds": 1539.8790000000001
+    "durationSeconds": 1580.045
   },
-  "finishedAt": "2026-10-02T23:43:13.008Z"
+  "finishedAt": "2026-10-02T23:14:51.352Z"
 }

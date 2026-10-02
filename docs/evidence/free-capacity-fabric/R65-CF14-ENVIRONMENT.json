@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-02T22:00:21.8980897Z",
+  "disks": [
+    {
+      "Name": "C",
+      "Free": 122198376448
+    },
+    {
+      "Name": "D",
+      "Free": 4510208
+    },
+    {
+      "Name": "G",
+      "Free": 95514771456
+    },
+    {
+      "Name": "Temp",
+      "Free": 122198376448
+    }
+  ],
+  "benchmarkWorkers": 0,
+  "staleTrees": 1,
+  "cpu": 12,
+  "freeMemoryKb": 7762432,
+  "staleCacheRemoved": {
+    "path": "cf14-1m-cache-EssH9n",
+    "createdBeforeContinuation": true,
+    "removedAfterFirstPassingRun": true
+  }
+}

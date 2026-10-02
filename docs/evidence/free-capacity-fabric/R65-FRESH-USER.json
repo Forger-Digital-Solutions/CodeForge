@@ -1,0 +1,28 @@
+{
+  "authoritativeOriginal": "R65-FRESH-USER-ACCEPTANCE.json",
+  "continuationReviewedAt": "2026-10-02T22:04:41.520Z",
+  "generatedAt": "2026-10-02T19:40:00.000Z",
+  "claim": "A fresh install with an empty credential store, empty settings, and no environment keys connects AI Horde automatically and anonymously; no secret is ever written or requested for it.",
+  "verdict": "VERIFIED",
+  "layers": [
+    {
+      "layer": "desktop_startup_wiring",
+      "evidence": "apps/desktop/src/main.ts:2477 registers the ai-horde adapter unconditionally (registerProviderAdapter → createProviderAdapterFromDefinition, no credential lookup) and immediately sets the FreeCloud connection credentialSource ANONYMOUS_DIRECT / supplyClass COMMUNITY_ANONYMOUS_FREE, then schedules live discovery + qualification. Identical in shape to the R64 kilo block at main.ts:2460."
+    },
+    {
+      "layer": "credential_resolution",
+      "evidence": "apps/desktop/src/provider-connections.ts:338 — credentialSourceOf('ai-horde') returns ANONYMOUS_DIRECT when the adapter is registered; it never consults the secret store. FreeCapacitySection renders the honest global-community-pool copy on an empty connections list (free-capacity-settings.test.tsx, 4/4 pass)."
+    },
+    {
+      "layer": "fresh_user_acceptance_test",
+      "evidence": "apps/desktop/test/ai-horde-fresh-user.test.ts — 2/2 pass: ProviderConnections constructed over a fresh host (empty secrets map, empty settings, empty env) resolves ANONYMOUS_DIRECT, publishAll() lands connected=true with COMMUNITY_ANONYMOUS_FREE, secrets.size stays 0, and cerebras stays credentialSource NONE on the same store."
+    },
+    {
+      "layer": "live_no_key_inference",
+      "evidence": "R65-DOMAIN-B-LIVE.json — the production-shaped run served real AI Horde inference end to end through the adapter using only the documented anonymous key 0000000000 (never stored, never user-supplied). R65-HORDE-QUALIFICATION-google_gemma-4-31b.json records the live 8-Bit qualification on the same anonymous access."
+    }
+  ],
+  "noKey": true,
+  "secretsWritten": 0,
+  "userActionRequired": "none"
+}

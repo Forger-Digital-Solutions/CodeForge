@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "exitCode": 0,
+  "command": "node node_modules/typescript/bin/tsc -b packages/providers packages/forge-zero packages/model-registry packages/server apps/cloud-api apps/desktop/tsconfig.main.json apps/desktop/tsconfig.json",
+  "finishedAt": "2026-10-02T22:06:21.674Z",
+  "log": "benchmarks/r65/tmp/closure-typecheck.log",
+  "finalRuntimeTypecheck": {
+    "status": "PASS",
+    "exitCode": 0,
+    "finishedAt": "2026-10-02T23:44:10.290Z",
+    "command": "node node_modules/typescript/bin/tsc -b packages/providers packages/forge-zero packages/model-registry packages/server apps/cloud-api apps/desktop/tsconfig.main.json apps/desktop/tsconfig.json"
+  }
+}

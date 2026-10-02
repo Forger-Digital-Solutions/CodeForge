@@ -16,6 +16,7 @@ export class RemoteDirectHttpClient {
   private device?: RemoteDirectDevice;
   private identity?: RemoteDirectSessionIdentity;
   private readonly active = new Map<string, string>();
+  private lastHeartbeatAt = Number.NEGATIVE_INFINITY;
   constructor(private readonly options: RemoteDirectClientOptions) {
     const url = new URL(options.cloudUrl);
     if (url.username || url.password || url.search || url.hash || (url.protocol !== "https:" && !(url.protocol === "http:" && ["127.0.0.1", "localhost", "[::1]"].includes(url.hostname)))) {
@@ -41,7 +42,7 @@ export class RemoteDirectHttpClient {
         try {
           if (!this.identity) await this.connect();
           await this.tick();
-          await this.heartbeat();
+          if (Date.now() - this.lastHeartbeatAt >= (this.options.heartbeatMs ?? 5_000)) await this.heartbeat();
           failures = 0;
         } catch (error) {
           for (const requestId of this.active.values()) this.device?.cancel(requestId);
@@ -121,6 +122,7 @@ export class RemoteDirectHttpClient {
   }
   async heartbeat(): Promise<void> {
     const receipt = await this.post(`${this.sessionPath()}/heartbeat`, {}) as { cancelledJobIds: string[] };
+    this.lastHeartbeatAt = Date.now();
     for (const id of receipt.cancelledJobIds) { const requestId = this.active.get(id); if (requestId) this.device?.cancel(requestId); }
   }
   async disconnect(): Promise<void> {

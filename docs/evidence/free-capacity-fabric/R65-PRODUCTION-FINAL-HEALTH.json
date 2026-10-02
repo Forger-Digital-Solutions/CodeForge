@@ -1,0 +1,63 @@
+{
+  "generatedAt": "2026-10-02T22:36:21.981Z",
+  "cloudUrl": "https://codeforge-cloud-va.onrender.com",
+  "endpoints": [
+    {
+      "observedAt": "2026-10-02T22:36:21.817Z",
+      "path": "/health/live",
+      "httpStatus": 200,
+      "body": {
+        "status": "ok",
+        "version": "0.4.0",
+        "deployment": {
+          "commit": "4dfa11e195ca5864927c2ab3539f25b82ac24bf6",
+          "serviceId": "srv-dam6f83m8hqs73clo5ig"
+        },
+        "remoteDirect": {
+          "transportAvailable": true,
+          "dispatchConfigured": true
+        }
+      }
+    },
+    {
+      "observedAt": "2026-10-02T22:36:21.879Z",
+      "path": "/health/ready",
+      "httpStatus": 200,
+      "body": {
+        "status": "ready",
+        "database": "connected",
+        "hostedInferenceReady": true,
+        "availableModelsCount": 10,
+        "availableFreeCount": 6,
+        "killSwitches": {
+          "hostedInferenceEnabled": true,
+          "hostedFreeEnabled": true,
+          "maxRequestCostUsd": 2,
+          "globalDailySpendLimitUsd": 1000
+        },
+        "providerCapacity": [
+          {
+            "providerId": "openrouter",
+            "status": "policy_blocked",
+            "verifiedFreeCount": 0
+          },
+          {
+            "providerId": "groq",
+            "status": "healthy",
+            "verifiedFreeCount": 6
+          }
+        ]
+      }
+    },
+    {
+      "observedAt": "2026-10-02T22:36:21.981Z",
+      "path": "/v1/remote-direct/sessions",
+      "httpStatus": 401,
+      "body": {
+        "error": "Missing or invalid [REDACTED]",
+        "code": "UNAUTHENTICATED"
+      }
+    }
+  ],
+  "status": "PASS"
+}

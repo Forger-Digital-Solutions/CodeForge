@@ -1,11 +1,7 @@
 {
   "generatedAt": "2026-10-02T22:07:41.133Z",
-  "measurement": "Prior real provider public coding fixtures and controlled fault failover; not a claim of private-code Horde eligibility or per-user upstream pools",
-  "admittedFreeDomains": 2,
-  "independentGroups": 2,
-  "liveCodingDomains": 2,
-  "successfulLiveFailoverRuns": 1,
-  "successfulRouteRotations": 2,
+  "status": "PASS",
+  "priorLiveEvidenceVerifiedWithoutRepeatingInference": true,
   "domainA": {
     "provider": "Kilo",
     "supplyClass": "PACKAGED_FREE_DIRECT",
@@ -20,11 +16,41 @@
     "privacy": "PUBLIC_CODE_ONLY",
     "runId": "run-3a7140aa-63b6-4bdf-b65f-8c58bb1d0255"
   },
-  "paidFallbacksInLiveFixture": 0,
-  "byokFallbacksInLiveFixture": 0,
-  "falseWaits": 0,
-  "providerBillTotal": "UNKNOWN",
-  "zeroBillingAuthority": "Verified zero-price admission and served-provider receipts; no provider billing receipt fabricated",
+  "qualification": {
+    "model": "google/gemma-4-31b",
+    "roles": {
+      "CODER": "QUALIFIED",
+      "TOOL_AGENT": "QUALIFIED",
+      "ANALYST": "QUALIFIED",
+      "EXPLORER": "QUALIFIED",
+      "PLANNER": "QUALIFIED",
+      "REVIEWER": "QUALIFIED"
+    }
+  },
+  "failover": {
+    "runId": "run-4e5a50ac-26ef-4c9e-996f-a8256c1532a0",
+    "controlledFault": "TRANSPORT_INJECTED_429_QUOTA_EXHAUSTED_ALL_CALLS",
+    "liveDestination": true,
+    "rotateReceipts": [
+      {
+        "receiptId": "38de1988-82ea-4df1-9b31-7dee3e6b13a7",
+        "createdAt": "2026-10-02T19:32:04.200Z",
+        "role": "EXPLORER"
+      },
+      {
+        "receiptId": "9179251a-7bb2-4f22-a2bf-ca3272f53d23",
+        "createdAt": "2026-10-02T19:33:32.028Z",
+        "role": "REVIEWER"
+      }
+    ],
+    "decisions": 41,
+    "waitsObserved": 0
+  },
+  "multiUser": {
+    "checks": 11,
+    "passed": 11,
+    "scope": "GLOBAL_SHARED"
+  },
   "evidence": [
     {
       "path": "docs/evidence/free-capacity-fabric/R64-DOMAIN-A-LIVE.json",
@@ -54,6 +80,5 @@
       "path": "docs/evidence/free-capacity-fabric/R65-HORDE-QUALIFICATION-google_gemma-4-31b.json",
       "sha256": "f011299d38e51f2749008466d781d2365ecdfd501d6a70c732d1ed41584367e7"
     }
-  ],
-  "failoverFault": "TRANSPORT_INJECTED_429_QUOTA_EXHAUSTED_ALL_CALLS"
+  ]
 }

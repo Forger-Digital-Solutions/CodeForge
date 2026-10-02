@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ForgeZero } from "@codeforge/forge-zero";
 import { ProviderCapacityGovernor, rateLimitScopeFor } from "@codeforge/providers";
 import { createSessionPersistence, type ISessionPersistence } from "@codeforge/sessions";
@@ -43,8 +43,13 @@ const baseReq: Omit<FailoverRequest, "error" | "current"> = {
   hasAdapter: () => true,
 };
 
+afterEach(() => vi.useRealTimers());
+
 describe("R56 — model-scoped failure marking (within-provider failover)", () => {
   it("[PASS] a model-bucket daily 429 rotates to the SAME provider's sibling route", async () => {
+    // The one-hour headroom assertion requires a clock away from the UTC daily reset.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-02T12:00:00.000Z"));
     fw.register(makeModel({ providerId: "groq", modelId: "openai/gpt-oss-120b", codingScore: 95 }));
     fw.register(makeModel({ providerId: "groq", modelId: "openai/gpt-oss-20b", codingScore: 60 }));
     const outcome = await coordinator.handleFailure({

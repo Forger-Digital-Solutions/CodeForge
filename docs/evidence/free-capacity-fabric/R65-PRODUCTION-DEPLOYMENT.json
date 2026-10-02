@@ -1,0 +1,18 @@
+{
+  "observedAt": "2026-10-02T22:34:03.220Z",
+  "service": "codeforge-cloud-va",
+  "serviceId": "srv-dam6f83m8hqs73clo5ig",
+  "workspaceId": "tea-daa3l35g1s2s73c1t8mg",
+  "source": "Render integration",
+  "dirtyTreeDeployed": false,
+  "validatedRuntimeCommit": "4dfa11e195ca5864927c2ab3539f25b82ac24bf6",
+  "canonicalValidation": "R65-REPOSITORY-TESTS.json",
+  "deployment": {
+    "id": "dep-db032iu7bikc73806370",
+    "status": "live",
+    "finishedAt": "2026-10-02T22:35:34.339775Z",
+    "startedAt": "2026-10-02T22:33:47.074786Z",
+    "createdAt": "2026-10-02T22:33:47.105376Z",
+    "trigger": "api"
+  }
+}

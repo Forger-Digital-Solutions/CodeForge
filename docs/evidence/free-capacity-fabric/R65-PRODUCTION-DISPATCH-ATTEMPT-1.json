@@ -1,0 +1,35 @@
+{
+  "startedAt": "2026-10-02T22:36:34.627Z",
+  "status": "FAIL",
+  "credentialPersistence": "MEMORY_ONLY",
+  "authentication": "REAL_GITHUB_PKCE",
+  "checks": [
+    {
+      "at": "2026-10-02T22:36:34.898Z",
+      "path": "/v1/auth/start",
+      "httpStatus": 200
+    },
+    {
+      "at": "2026-10-02T22:36:58.737Z",
+      "path": "/v1/auth/exchange",
+      "httpStatus": 200
+    },
+    {
+      "at": "2026-10-02T22:36:58.781Z",
+      "path": "/health/live",
+      "httpStatus": 200
+    },
+    {
+      "at": "2026-10-02T22:36:59.600Z",
+      "path": "/v1/auth/logout",
+      "httpStatus": 200
+    }
+  ],
+  "deployment": {
+    "commit": "4dfa11e195ca5864927c2ab3539f25b82ac24bf6",
+    "serviceId": "srv-dam6f83m8hqs73clo5ig"
+  },
+  "errorCode": "PRODUCTION_REQUEST_FAILED",
+  "logout": 200,
+  "finishedAt": "2026-10-02T22:36:59.600Z"
+}

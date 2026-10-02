@@ -1,5 +1,5 @@
 {
-  "sourceStateId": "660c6d898ed3ef26356cea3b1e73e7ff2611ecbfcec3e54bd3af1618ab2f3b61",
+  "sourceStateId": "2e40805e6bfa75a825ef5fa925fc075713c081e1480b0cb0e7f8a8aad2a4d184",
   "surfaceVersion": "r65-free-capacity-fabric-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
@@ -58,6 +58,7 @@
     "packages/eight-bit/src/types.ts",
     "packages/eight-bit/test/free-fabric.test.ts",
     "packages/eight-bit/test/r24-multi-pool.test.ts",
+    "packages/eight-bit/test/r56-model-scoped-health.test.ts",
     "packages/eight-bit/test/role-quality.test.ts",
     "packages/eight-bit/test/runtime.test.ts",
     "packages/forge-green/src/optimization-candidate-a.ts",
@@ -128,6 +129,7 @@
     "packages/server/test/free-fabric-wiring.test.ts",
     "packages/server/test/free-routing-authority.test.ts",
     "packages/server/test/progress-watchdog.test.ts",
+    "packages/server/test/remote-control-pressure.test.ts",
     "packages/server/test/remote-direct-transport.test.ts",
     "packages/server/test/role-output-budget.test.ts",
     "packages/server/test/role-routing.test.ts",
@@ -199,6 +201,7 @@
     "packages/eight-bit/src/types.ts": "734479dcd0d544b8cb9579762df54aacc772f185",
     "packages/eight-bit/test/free-fabric.test.ts": "9261edf9c81a4fd8d41ddb5c83fd57efdc2ab925",
     "packages/eight-bit/test/r24-multi-pool.test.ts": "9c7b12896e2e5e437408df4db565b7b90812272b",
+    "packages/eight-bit/test/r56-model-scoped-health.test.ts": "a0bf3d123e153c530ea5d71c5c2f963ab7a02411",
     "packages/eight-bit/test/role-quality.test.ts": "3cdca370a2a3a9aed84c7a89f7218092888f74eb",
     "packages/eight-bit/test/runtime.test.ts": "2d0a99f78950db59a487e4ea95a96138d1e9f454",
     "packages/forge-green/src/optimization-candidate-a.ts": "67af82aaf7b9d20aac76238752c0532798a975a4",
@@ -250,8 +253,8 @@
     "packages/server/src/integration-service.ts": "f72e3ffc8b3087c7f3acd861eba9eb859a008dfd",
     "packages/server/src/model-execution-adapter.ts": "812f665abca771aa4dce7be18cfee121520dbf0e",
     "packages/server/src/remote-direct-admission.ts": "f81a024ce861999b4e7134e5bcee1e0dbfe21474",
-    "packages/server/src/remote-direct-client.ts": "af9ccae1d57a7c306df21329bb23685fa4f7c497",
-    "packages/server/src/remote-direct-cloud-provider.ts": "cee5ba4c75051ffcac02036172fd775a17911f01",
+    "packages/server/src/remote-direct-client.ts": "2cf6a7aa47bdde3f3d08c03cb4e8ebcfeb31155c",
+    "packages/server/src/remote-direct-cloud-provider.ts": "dd14da54bc4e13a35c83e47bd77a9a89c0aed321",
     "packages/server/src/remote-direct-provider.ts": "77b80df75c90055bd24b0ced4a98af7c8bccd5b7",
     "packages/server/src/remote-direct-transport.ts": "858f2eed159a314843152a31471cf0bb24dc781f",
     "packages/server/src/role-output-budget.ts": "f2560f9ee66fe33d5cf9f0bb6b1d1f3bd7a441dc",
@@ -269,6 +272,7 @@
     "packages/server/test/free-fabric-wiring.test.ts": "8006f2693fa252d38522350d78de49e814e672d8",
     "packages/server/test/free-routing-authority.test.ts": "42742440525c739189baabb148c40d7d8b3e5e7c",
     "packages/server/test/progress-watchdog.test.ts": "35b8ec1225cc4a63fc6666351263f11eb419b4f0",
+    "packages/server/test/remote-control-pressure.test.ts": "f8badda83b8a2cdbd14a2e1b73ff65a8940ad5f7",
     "packages/server/test/remote-direct-transport.test.ts": "186705cceeeae2b93e1ffe637af09c2442aee4ed",
     "packages/server/test/role-output-budget.test.ts": "d012b2b6fc81acea22e4c7187b492f4bbc225579",
     "packages/server/test/role-routing.test.ts": "a003d793764f810ee1d61f7e1d0119f9dca0f750",
@@ -3542,46 +3546,57 @@
         }
       ],
       "regressionEvidence": "docs/evidence/free-capacity-fabric/R65-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R65 production dispatch and Free authorization",
+      "reason": "R65 production acceptance exposed control-plane request-budget exhaustion: 250ms status polling and redundant idle heartbeats exceeded the shared 120-request minute. Status reads now use two-second intervals and idle heartbeats honor their existing five-second period. A deterministic shared-budget regression test preserves polling and lease renewal without HTTP 429. Provider eligibility, privacy, role qualification, verification and completion gates are unchanged.",
+      "priorSourceStateId": "660c6d898ed3ef26356cea3b1e73e7ff2611ecbfcec3e54bd3af1618ab2f3b61",
+      "priorSurfaceVersion": "r65-free-capacity-fabric-v1",
+      "resultingSourceStateId": "2be493e5d3e1bdb65e9a9cd1754f41c431454127bd0adf466f331a78930c2420",
+      "resultingSurfaceVersion": "r65-free-capacity-fabric-v1",
+      "recertifiedAt": "2026-10-02",
+      "changedFiles": [
+        {
+          "file": "packages/server/src/remote-direct-client.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/remote-direct-cloud-provider.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/remote-control-pressure.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/free-capacity-fabric/R65-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R65 production dispatch and Free authorization",
+      "reason": "R65 production acceptance exposed control-plane request-budget exhaustion: 250ms status polling and redundant idle heartbeats exceeded the shared 120-request minute. Status reads now use two-second intervals and idle heartbeats honor their existing five-second period. A deterministic shared-budget regression test preserves polling and lease renewal without HTTP 429. The existing R56 daily-reset test now fixes its Date clock at UTC noon so its unchanged one-hour assertion remains valid near midnight. Provider eligibility, privacy, role qualification, verification and completion gates are unchanged.",
+      "priorSourceStateId": "2be493e5d3e1bdb65e9a9cd1754f41c431454127bd0adf466f331a78930c2420",
+      "priorSurfaceVersion": "r65-free-capacity-fabric-v1",
+      "resultingSourceStateId": "2e40805e6bfa75a825ef5fa925fc075713c081e1480b0cb0e7f8a8aad2a4d184",
+      "resultingSurfaceVersion": "r65-free-capacity-fabric-v1",
+      "recertifiedAt": "2026-10-02",
+      "changedFiles": [
+        {
+          "file": "packages/eight-bit/test/r56-model-scoped-health.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/free-capacity-fabric/R65-REPOSITORY-TESTS.json"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R63 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, R44, R59, and R63 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
   "recertifiedAt": "2026-10-02",
   "recertification": {
     "phase": "R65 production dispatch and Domain B",
-    "reason": "R65 connects authenticated owner-scoped remote assignment production to the governed client runtime, verifies public-code consent and role-qualified Free supply on each admission, keeps cancellation monotone, and isolates benchmark generation from existing user work. Provider authorization remains fail closed on paid or ambiguous capacity; verification and completion policies are unchanged.",
+    "reason": "R65 production acceptance exposed control-plane request-budget exhaustion: 250ms status polling and redundant idle heartbeats exceeded the shared 120-request minute. Status reads now use two-second intervals and idle heartbeats honor their existing five-second period. A deterministic shared-budget regression test preserves polling and lease renewal without HTTP 429. The existing R56 daily-reset test now fixes its Date clock at UTC noon so its unchanged one-hour assertion remains valid near midnight. Provider eligibility, privacy, role qualification, verification and completion gates are unchanged.",
     "changedFiles": [
-      "apps/cloud-api/src/hosted-workflow-authority.ts",
-      "apps/cloud-api/src/index.ts",
-      "apps/cloud-api/src/production-remote-direct.ts",
-      "apps/cloud-api/src/remote-direct-host.ts",
-      "apps/cloud-api/src/server.ts",
-      "apps/cloud-api/test/remote-direct-dispatch.test.ts",
-      "apps/desktop/src/main.ts",
-      "apps/desktop/src/openrouter-oauth-flow.ts",
-      "apps/desktop/src/preload.cjs",
-      "apps/desktop/src/preload.ts",
-      "apps/desktop/src/provider-connections.ts",
-      "apps/desktop/src/renderer/provider-connections-client.ts",
-      "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx",
-      "apps/desktop/test/free-capacity-settings.test.tsx",
-      "packages/forge-zero/src/capacity-policy.ts",
-      "packages/forge-zero/src/capacity-reservations.ts",
-      "packages/forge-zero/src/capacity-types.ts",
-      "packages/model-registry/src/free-cloud-registry.ts",
-      "packages/model-registry/src/free-cloud-service.ts",
-      "packages/model-registry/src/index.ts",
-      "packages/model-registry/src/provider-definitions.ts",
-      "packages/model-registry/src/quota.ts",
-      "packages/providers/src/index.ts",
-      "packages/providers/src/openrouter-entitlement.ts",
-      "packages/providers/src/provider-factory.ts",
-      "packages/providers/test/openrouter-entitlement.test.ts",
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/src/index.ts",
-      "packages/server/src/remote-direct-cloud-provider.ts",
-      "packages/server/test/context-efficiency.test.ts"
+      "packages/eight-bit/test/r56-model-scoped-health.test.ts"
     ],
-    "priorSourceStateId": "24ed80d52717fa147540dd4063f0306e66ab9738611e0b54590c643a550bd5ae",
+    "priorSourceStateId": "2be493e5d3e1bdb65e9a9cd1754f41c431454127bd0adf466f331a78930c2420",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

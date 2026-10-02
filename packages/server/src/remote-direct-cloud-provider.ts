@@ -50,7 +50,8 @@ export class RemoteDirectCloudProviderAdapter implements ProviderAdapter {
         }
         await new Promise<void>((resolve) => {
           const done = () => { clearTimeout(timer); signal?.removeEventListener("abort", done); resolve(); };
-          const timer = setTimeout(done, 250);
+          // Status reads share the API budget with worker ACKs, heartbeats, results and feedback.
+          const timer = setTimeout(done, 2_000);
           signal?.addEventListener("abort", done, { once: true });
         });
       }

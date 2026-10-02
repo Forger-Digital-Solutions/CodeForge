@@ -1,0 +1,46 @@
+{
+  "startedAt": "2026-10-02T22:38:44.681Z",
+  "status": "FAIL",
+  "credentialPersistence": "MEMORY_ONLY",
+  "authentication": "REAL_GITHUB_PKCE",
+  "checks": [
+    {
+      "at": "2026-10-02T22:38:44.805Z",
+      "path": "/v1/auth/start",
+      "httpStatus": 200
+    },
+    {
+      "at": "2026-10-02T22:39:23.485Z",
+      "path": "/v1/auth/exchange",
+      "httpStatus": 200
+    },
+    {
+      "at": "2026-10-02T22:39:23.596Z",
+      "path": "/health/live",
+      "httpStatus": 200
+    },
+    {
+      "at": "2026-10-02T22:39:25.098Z",
+      "path": "/v1/workflows",
+      "httpStatus": 201
+    },
+    {
+      "at": "2026-10-02T22:40:27.555Z",
+      "path": "/v1/workflows/hosted-e957b597-dcc8-4f10-99c8-39feb7ecbab8/cancel",
+      "httpStatus": 429
+    },
+    {
+      "at": "2026-10-02T22:40:27.658Z",
+      "path": "/v1/auth/logout",
+      "httpStatus": 429
+    }
+  ],
+  "deployment": {
+    "commit": "4dfa11e195ca5864927c2ab3539f25b82ac24bf6",
+    "serviceId": "srv-dam6f83m8hqs73clo5ig"
+  },
+  "errorCode": "PRODUCTION_REQUEST_FAILED",
+  "diagnostic": "TypeError: runtime.dispose is not a function\n    at runProductionCoding (file:///G:/CodeForge/benchmarks/free-capacity-fabric/r65-production-coding.mjs:81:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async Server.<anonymous> (file:///G:/CodeForge/scripts/r65-production-closure.mjs:51:20)",
+  "logout": 429,
+  "finishedAt": "2026-10-02T22:40:27.658Z"
+}

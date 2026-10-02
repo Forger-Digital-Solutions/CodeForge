@@ -14,6 +14,8 @@ const additions = [
   "apps/cloud-api/src/production-remote-direct.ts", "apps/cloud-api/src/remote-direct-host.ts",
   "apps/cloud-api/test/remote-direct-dispatch.test.ts", "packages/server/src/remote-direct-cloud-provider.ts",
   "packages/server/src/agent-runtime.ts",
+  "packages/server/src/remote-direct-client.ts", "packages/server/test/remote-control-pressure.test.ts",
+  "packages/eight-bit/test/r56-model-scoped-health.test.ts",
   "packages/providers/src/ai-horde.ts", "packages/providers/test/ai-horde.test.ts",
   "packages/providers/src/hosted-text-tools.ts",
   "packages/model-registry/src/horde-policy-reverification.ts", "packages/model-registry/src/quota.ts",
@@ -29,6 +31,9 @@ const additions = [
   "benchmarks/free-capacity-fabric/r65-production-coding.mjs",
   "scripts/r65-bounded-tests.mjs", "scripts/r65-preserve-start.mjs", "scripts/r65-provider-entitlement-probe.mjs",
   "scripts/r65-recertify-source-state.mjs", "scripts/r65-recertify-certificate.mjs",
+  "scripts/r65-production-closure.mjs", "scripts/r65-production-health.mjs",
+  "scripts/r65-domain-sanity.mjs",
+  "benchmarks/r65/closure-evidence.mjs", "benchmarks/r65/closure-preservation.mjs",
 ];
 certificate.sourceFiles = [...new Set([...certificate.sourceFiles.map((entry) => entry.path), ...additions])].sort().map((path) => ({ path, sha256: "RECOMPUTE" }));
 const newEvidence = (await readdir(directory)).filter((name) => name.startsWith("R65-") && (name.endsWith(".json") || name.endsWith(".md"))
@@ -41,7 +46,12 @@ certificate.implementationHead = implementationHead ?? null;
 certificate.validation = { repositoryWideStatus: "PASS", repositoryWideExactTotalsExcludingStandaloneCertificateCanary: tests.totals,
   workspaceBuild: "PASS", workspaceTypecheck: "PASS", affectedDesktopAndCloudTypechecks: "PASS",
   certificateCanary: "RUN_SEPARATELY_AFTER_FREEZE", forgeGreen: { fg11: "5/5", fg12e: "3/3" } };
-certificate.limitation = "R65 proves a second genuinely independent free domain (AI Horde anonymous community pool) with live qualification, live coding, real cross-domain failover, multi-user isolation on the shared pool, and key-free fresh-user acceptance. Production remote dispatch to codeforge-cloud-va still requires the manual Render deploy plus a signed-in GitHub session; hosted dispatch proof is pending those actions. Provider verifiers for Cloudflare/Groq remain denied/unverified; Pollinations and Puter are recorded DENIED.";
+const production = await readFile(`${directory}R65-PRODUCTION-DISPATCH.json`, "utf8").then(JSON.parse).catch(() => undefined);
+const remoteCoding = await readFile(`${directory}R65-PRODUCTION-REMOTE-CODING.json`, "utf8").then(JSON.parse).catch(() => undefined);
+const productionCompleted = production?.status === "PASS" && remoteCoding?.result?.completion?.outcome === "completed";
+certificate.limitation = "R65 proves independent Kilo SOURCE_IP and AI Horde GLOBAL_SHARED free domains with live coding, two route rotations under an injected Kilo quota fault, owner-isolated reservations on the shared Horde pool, and key-free fresh-user acceptance. AI Horde remains PUBLIC_CODE_ONLY and uses hosted text-tool mediation. "
+  + (productionCompleted ? "Authenticated deployed production coding dispatch passed with independent review, verification and completion. " : "Authenticated deployed production coding dispatch remains pending. ")
+  + "Provider verifiers for Cloudflare/Groq remain denied/unverified; Pollinations and Puter are recorded DENIED. Provider billing totals are not independently measured.";
 await writeFile(path, `${JSON.stringify(certificate, null, 2)}\n`);
 execFileSync(process.execPath, ["scripts/free-capacity-certificate.mjs", "--write"], { stdio: "inherit" });
 execFileSync(process.execPath, ["scripts/free-capacity-certificate.mjs", "--verify"], { stdio: "inherit" });

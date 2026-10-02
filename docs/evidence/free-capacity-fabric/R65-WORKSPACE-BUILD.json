@@ -1,9 +1,29 @@
 {
-  "finishedAt": "2026-10-02T19:39:21.724Z",
   "status": "PASS",
-  "command": "npm run build",
-  "log": "benchmarks/r65/tmp/workspace-build.log",
-  "durationSeconds": 0,
   "exitCode": 0,
-  "startedAt": "2026-10-02T19:36:21.726Z"
+  "command": "npm run build",
+  "startedAt": "2026-10-02T22:46:25.259Z",
+  "finishedAt": "2026-10-02T22:47:03.831Z",
+  "durationSeconds": 38.57251489257813,
+  "timingSource": "build log creation and last write timestamps",
+  "log": "benchmarks/r65/tmp/closure-fixed-build.log",
+  "priorSuccessfulBuild": {
+    "status": "PASS",
+    "command": "npm run build",
+    "exitCode": 0,
+    "startedAt": "2026-10-02T21:58:04.766Z",
+    "finishedAt": "2026-10-02T21:59:20.134Z",
+    "durationSeconds": 75.36883154296875,
+    "timingSource": "build log creation and last write timestamps",
+    "log": "benchmarks/r65/tmp/closure-build.log",
+    "priorSuccessfulBuild": {
+      "finishedAt": "2026-10-02T19:39:21.724Z",
+      "status": "PASS",
+      "command": "npm run build",
+      "log": "benchmarks/r65/tmp/workspace-build.log",
+      "durationSeconds": 0,
+      "exitCode": 0,
+      "startedAt": "2026-10-02T19:36:21.726Z"
+    }
+  }
 }

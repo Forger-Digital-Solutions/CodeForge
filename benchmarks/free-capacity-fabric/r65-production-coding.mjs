@@ -35,23 +35,24 @@ export async function runProductionCoding({ cloudUrl, accessToken, userId, reque
   const freeCloud = new FreeCloudService({ firewall, providerCatalog: catalog, registry: new NormalizedModelRegistry(), routeHealth: health });
   freeCloud.setKiloPolicyReceipt(policy.receipt);
   freeCloud.setConnection({ providerId, connected: true, credentialSource: "ANONYMOUS_DIRECT", authState: "ok", ownerUserId: userId });
-  const qualification = JSON.parse(await fs.readFile("docs/evidence/free-capacity-fabric/R64-LIVE-QUALIFICATION.json", "utf8"));
+  const qualification = JSON.parse(await fs.readFile("docs/evidence/free-capacity-fabric/R64-KILO-QUALIFICATION.json", "utf8"));
   await freeCloud.recordReceipt(qualification);
   freeCloud.applyReceiptToFirewall(qualification);
   const deviceId = `r65-coding-device-${Date.now()}`, workspaceId = `r65-public-fixture-${Date.now()}`;
   const created = await request("/v1/workflows", { workerId: deviceId, workspaceId, publicCodeConsent: true, task: "Fix public synthetic addition fixture through authenticated remote Free inference." });
   if (created.status !== 201 || !created.data.id) throw new Error("WORKFLOW_CREATE_FAILED");
   const workflowId = created.data.id;
-  catalog.register(new RemoteDirectCloudProviderAdapter({ cloudUrl, getAccessToken: () => accessToken, workflowId, ownerUserId: userId }));
   const frames = [];
   const cloudFetch = async (url, init) => {
     const response = await fetch(url, init);
     const data = await response.clone().json().catch(() => ({}));
     const pathname = new URL(url).pathname;
     frames.push({ at: new Date().toISOString(), path: pathname, status: response.status,
+      ...(typeof data.state === "string" ? { assignmentState: data.state } : {}),
       ...(pathname.endsWith("/poll") && Array.isArray(data) ? { assignments: data.map((item) => ({ jobId: item.jobId, assignmentId: item.signed?.assignment?.requestId, runId: item.signed?.assignment?.runId, sessionId: item.signed?.assignment?.sessionId, workspaceId: item.signed?.assignment?.workspaceId })) } : {}) });
     return response;
   };
+  catalog.register(new RemoteDirectCloudProviderAdapter({ cloudUrl, getAccessToken: () => accessToken, workflowId, ownerUserId: userId, fetcher: cloudFetch }));
   const client = new RemoteDirectHttpClient({ cloudUrl, getAccessToken: () => accessToken, deviceId, workspaceId, cloudFetch,
     routeAllowed: (assignment) => assignment.accountId === userId && assignment.workspaceId === workspaceId && assignment.runId === workflowId && assignment.provider === providerId && assignment.model === modelId });
   const workerController = new AbortController();
@@ -78,6 +79,6 @@ export async function runProductionCoding({ cloudUrl, accessToken, userId, reque
   } finally {
     workerController.abort(); await worker.catch(() => {});
     await request(`/v1/workflows/${encodeURIComponent(workflowId)}/cancel`, {}).catch(() => {});
-    await runtime.dispose(); await persistence.close();
+    await persistence.close();
   }
 }
