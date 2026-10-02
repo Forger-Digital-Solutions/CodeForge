@@ -82,6 +82,9 @@ export function freeRouteExclusionReason(
     if (!Number.isFinite(Date.parse(receipt.verifiedAt)) || Date.parse(receipt.verifiedAt) > now
       || !Number.isFinite(Date.parse(receipt.qualificationAt)) || Date.parse(receipt.qualificationAt) > now
       || !Number.isFinite(Date.parse(receipt.recheckAt)) || Date.parse(receipt.recheckAt) <= now) return "ADMISSION_EVIDENCE_STALE";
+    for (const expiry of [receipt.termsExpiresAt, receipt.privacyExpiresAt, receipt.priceExpiresAt]) {
+      if (expiry !== undefined && (!Number.isFinite(Date.parse(expiry)) || Date.parse(expiry) <= now)) return "ADMISSION_EVIDENCE_STALE";
+    }
     if (route.startsAt && (!Number.isFinite(Date.parse(route.startsAt)) || Date.parse(route.startsAt) > now)) return "ROUTE_NOT_STARTED";
     if (route.expiresAt && (!Number.isFinite(Date.parse(route.expiresAt)) || Date.parse(route.expiresAt) <= now)) return "ROUTE_EXPIRED";
   }

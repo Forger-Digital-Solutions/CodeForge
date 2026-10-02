@@ -136,11 +136,25 @@ describe("Kilo direct Free projection", () => {
     const svc = new FreeCloudService({ firewall: fw, providerCatalog: catalog, registry: new NormalizedModelRegistry(), now: () => NOW });
     svc.setConnection(connected("kilo-free-direct", { credentialSource: "ANONYMOUS_DIRECT", ownerUserId: "alice" }));
     await svc.recordReceipt(receipt("kilo-free-direct", "kilo-auto/free"));
+    const pending = svc.routesForUser("alice").find((r) => r.modelId === "kilo-auto/free");
+    expect(pending?.admissionReceipt).toBeUndefined();
+    expect(freeRouteExclusionReason(pending!, undefined, { dataClass: "PUBLIC_CODE", userConsented: true })).toBe("ADMISSION_RECEIPT_MISSING");
+    svc.setKiloPolicyReceipt({
+      sourceDocumentation: "https://kilo.ai/docs/gateway/models-and-providers",
+      termsEvidence: "https://kilo.ai/terms",
+      priceEvidence: "https://kilo.ai/docs/gateway/usage-and-billing",
+      privacyEvidence: "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      verifiedAt: NOW.toISOString(), recheckAt: new Date(Date.now() + 86_400_000).toISOString(),
+      qualificationAt: NOW.toISOString(),
+    });
     const route = svc.routesForUser("alice").find((r) => r.modelId === "kilo-auto/free");
     expect(route).toMatchObject({ supplyClass: "PACKAGED_FREE_DIRECT", quotaDomainType: "PUBLIC_IP", egressMode: "CLIENT_DIRECT", capacityScope: "SOURCE_IP", marginalCostToCodeForge: 0 });
     expect(svc.routesForUser("bob")).toEqual([]);
     expect(freeRouteExclusionReason(route!)).toBe("PRIVATE_CODE_CONSENT_REQUIRED");
     expect(freeRouteExclusionReason(route!, undefined, { dataClass: "PUBLIC_CODE", userConsented: true })).toBeUndefined();
+    svc.setKiloPolicyReceipt(undefined);
+    const changed = svc.routesForUser("alice").find((r) => r.modelId === "kilo-auto/free");
+    expect(freeRouteExclusionReason(changed!, undefined, { dataClass: "PUBLIC_CODE", userConsented: true })).toBe("ADMISSION_RECEIPT_MISSING");
   });
 });
 

@@ -48,6 +48,7 @@ import {
   catalogPruneKeepSet,
   getProviderPolicy,
   createFreeCloudService,
+  reverifyKiloPolicy,
   mergeModelsDevProviderHints,
   PROVIDER_DEFINITIONS,
   environmentVariablesFor,
@@ -2433,6 +2434,16 @@ async function startPrimaryInstance(): Promise<void> {
         supplyClass: "PACKAGED_FREE_DIRECT", authState: "ok", ownerUserId: userConnectedFreeScopeId(),
       });
       void discoverProviderFree("kilo-free-direct").then(() => scheduleQualification("kilo-free-direct")).catch(() => {});
+      const refreshKiloPolicy = async (): Promise<void> => {
+        const result = await reverifyKiloPolicy(new Date().toISOString());
+        if (result.status === "VERIFIED") freeCloud?.setKiloPolicyReceipt(result.receipt);
+        else if (result.status === "CHANGED") freeCloud?.setKiloPolicyReceipt(undefined);
+        if (result.status !== "VERIFIED") console.warn(`[CodeForge] Kilo policy re-verification ${result.status}: ${result.source ?? "unknown"}`);
+      };
+      void refreshKiloPolicy();
+      const kiloPolicyTimer = setInterval(() => void refreshKiloPolicy(), 6 * 60 * 60_000);
+      kiloPolicyTimer.unref();
+      app.once("before-quit", () => clearInterval(kiloPolicyTimer));
     }
     const cloudTokens = getStoredCloudTokens();
     if (resolveCloudCatalogSyncMode(Boolean(cloudTokens.accessToken)) === "register-adapter-and-sync") {

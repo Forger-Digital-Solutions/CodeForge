@@ -11,6 +11,7 @@ const offer: SponsoredRouteOffer = {
   privacyClass: "PRIVATE_SAFE", trainingUse: "NO", allowedUse: "commercial coding agents", commercialUse: true, retentionPolicy: "none",
   admissionReceipt: { sourceDocumentation: "docs", termsEvidence: "terms", priceEvidence: "grant", privacyEvidence: "policy", verifiedAt: past, recheckAt: future, qualificationAt: past },
   status: "PROMOTED", roles: ["CODER"], qualificationReceiptId: "receipt-1", canaryReceiptId: "canary-1",
+  zeroUserCost: true, zeroCodeForgeMarginalCost: true, zeroCostReceiptId: "zero-cost-1",
 };
 
 describe("sponsored Free lifecycle", () => {
@@ -26,6 +27,8 @@ describe("sponsored Free lifecycle", () => {
     expect(materializeSponsoredRoute({ ...offer, status: "CANARY" }, now)).toBeUndefined();
     expect(materializeSponsoredRoute({ ...offer, qualificationReceiptId: "" }, now)).toBeUndefined();
     expect(materializeSponsoredRoute({ ...offer, commercialUse: false }, now)).toBeUndefined();
+    expect(materializeSponsoredRoute({ ...offer, zeroCodeForgeMarginalCost: false }, now)).toBeUndefined();
+    expect(materializeSponsoredRoute({ ...offer, zeroCostReceiptId: "" }, now)).toBeUndefined();
     expect(materializeSponsoredRoute({ ...offer, canaryReceiptId: undefined }, now)).toBeUndefined();
     expect(materializeSponsoredRoute({ ...offer, admissionReceipt: { ...offer.admissionReceipt, termsEvidence: "" } }, now)).toBeUndefined();
     expect(materializeSponsoredRoute({ ...offer, admissionReceipt: { ...offer.admissionReceipt, qualificationAt: future } }, now)).toBeUndefined();
@@ -41,6 +44,8 @@ describe("sponsored Free lifecycle", () => {
     const canary = transitionSponsoredOffer(qualification, "CANARY", now);
     expect(() => transitionSponsoredOffer({ ...canary, canaryReceiptId: undefined }, "PROMOTED", now)).toThrow("PROMOTION_EVIDENCE_REQUIRED");
     expect(transitionSponsoredOffer(canary, "PROMOTED", now).status).toBe("PROMOTED");
+    expect(transitionSponsoredOffer(offer, "REVOKED", now).status).toBe("REVOKED");
+    expect(materializeSponsoredRoute(transitionSponsoredOffer(offer, "REVOKED", now), now)).toBeUndefined();
     expect(() => transitionSponsoredOffer({ ...offer, expiresAt: "invalid" }, "EXPIRED", now)).toThrow("SPONSOR_NOT_EXPIRED");
   });
 });

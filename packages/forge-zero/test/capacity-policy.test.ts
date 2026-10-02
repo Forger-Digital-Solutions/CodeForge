@@ -143,4 +143,12 @@ describe("packaged direct admission", () => {
     expect(freeRouteExclusionReason(stale, DEFAULT_FREE_CAPACITY_POLICY, { dataClass: "PUBLIC_CODE", userConsented: true })).toBe("ADMISSION_EVIDENCE_STALE");
     expect(freeRouteExclusionReason({ ...direct(), supplyClass: "CODEFORGE_PAID" })).toBe("PAID_OR_PROMOTIONAL_NOT_PACKAGED_FREE");
   });
+
+  it("stops new work when any independent terms, privacy, or price receipt expires", () => {
+    for (const field of ["termsExpiresAt", "privacyExpiresAt", "priceExpiresAt"] as const) {
+      const route = direct();
+      route.admissionReceipt = { ...route.admissionReceipt!, [field]: "2020-01-01T00:00:00Z" };
+      expect(freeRouteExclusionReason(route, DEFAULT_FREE_CAPACITY_POLICY, PUBLIC_CONSENTED)).toBe("ADMISSION_EVIDENCE_STALE");
+    }
+  });
 });

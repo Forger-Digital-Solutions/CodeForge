@@ -3,6 +3,7 @@ import {
   supplyClassIsZeroCash,
   type CapacityRoute,
   type CapacityWindow,
+  type FreeAdmissionReceipt,
   type ProviderCapacityPool,
   type SupplyClass,
 } from "@codeforge/forge-zero";
@@ -277,6 +278,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private definitions: Record<string, ProviderDefinition>;
   private qualificationStore: QualificationPersistence;
   private readonly receipts = new Map<string, ModelQualificationReceipt>();
+  private kiloPolicyReceipt?: FreeAdmissionReceipt;
   private readonly connections = new Map<string, ProviderConnectionState>();
   private readonly managedPools = new Map<string, ManagedPoolRecord>();
   /** Instant-disable set for ANY poolId (shared, per-user, managed). A quarantined pool's
@@ -375,6 +377,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   }
 
   // --- connections ---------------------------------------------------------------------------
+
+  setKiloPolicyReceipt(receipt: FreeAdmissionReceipt | undefined): void {
+    this.kiloPolicyReceipt = receipt;
+    this.emit();
+  }
 
   setConnection(state: ProviderConnectionState): void {
     this.connections.set(state.providerId, state);
@@ -1380,14 +1387,9 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
             marginalCostToCodeForge: 0,
             freePrivacyClass: "DATA_COLLECTION_ALLOWED" as const,
             trainingUse: "YES" as const,
-            ...(this.receipts.get(`${r.providerId}::${r.providerModelId}`) ? {
+            ...(this.kiloPolicyReceipt && this.receipts.get(`${r.providerId}::${r.providerModelId}`) ? {
               admissionReceipt: {
-                sourceDocumentation: "https://kilo.ai/docs/gateway/models-and-providers",
-                termsEvidence: "https://kilo.ai/terms",
-                priceEvidence: "https://kilo.ai/docs/gateway/usage-and-billing",
-                privacyEvidence: "https://kilo.ai/docs/getting-started/using-kilo-for-free",
-                verifiedAt: "2026-10-01T00:00:00Z",
-                recheckAt: "2026-10-08T00:00:00Z",
+                ...this.kiloPolicyReceipt,
                 qualificationAt: this.receipts.get(`${r.providerId}::${r.providerModelId}`)!.completedAt,
               },
             } : {}),

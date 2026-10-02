@@ -3485,6 +3485,7 @@ export class CodeForgeServer {
 export * from "./demo-runtime.js";
 export * from "./workspace-event-adapter.js";
 export * from "./agent-runtime.js";
+export * from "./remote-client-direct.js";
 export * from "./duplicate-suppression.js";
 export * from "./forge-verify-persistence.js";
 export { recoverInterruptedForgeVerifyAttempts, createWorkflowService, WorkflowService, type WorkflowServiceOptions, type WorkflowRunRequest } from "./workflow-service.js";

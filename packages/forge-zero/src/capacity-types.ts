@@ -59,6 +59,16 @@ export interface FreeAdmissionReceipt {
   verifiedAt: string;
   recheckAt: string;
   qualificationAt: string;
+  termsVerifiedAt?: string;
+  termsEvidenceHash?: string;
+  termsExpiresAt?: string;
+  privacyVerifiedAt?: string;
+  privacyEvidenceHash?: string;
+  privacyExpiresAt?: string;
+  priceVerifiedAt?: string;
+  priceEvidenceHash?: string;
+  priceExpiresAt?: string;
+  nextReverifyAt?: string;
 }
 
 /** The strongest data class a route may receive without an additional user decision. */
