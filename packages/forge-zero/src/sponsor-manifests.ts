@@ -128,6 +128,7 @@ export interface SponsorRefreshReceipt {
 export class SponsorManifestFeed {
   private etag?: string;
   private accepted?: SignedSponsorManifest;
+  private lastVerifiedAt = 0;
   private lastSequence = -1;
   private lastIdentity?: string;
   private nextFetchAt = 0;
@@ -143,7 +144,10 @@ export class SponsorManifestFeed {
 
   current(now = Date.now()): SignedSponsorManifest | undefined {
     if (!this.accepted || this.accepted.revoked || Date.parse(this.accepted.startsAt) > now
-      || Date.parse(this.accepted.expiresAt) <= now) return undefined;
+      || Date.parse(this.accepted.expiresAt) <= now || now - this.lastVerifiedAt >= 6 * 60 * 60_000
+      || !this.keys.some((key) => key.sponsorId === this.accepted?.sponsorId
+        && key.keyId === this.accepted?.keyId && Date.parse(key.validFrom) <= now
+        && Date.parse(key.validUntil) > now)) return undefined;
     return this.accepted;
   }
 
@@ -163,6 +167,10 @@ export class SponsorManifestFeed {
     }
     if (response.url !== this.url) return this.quarantine(checkedAt, "ENDPOINT_CHANGED");
     if (response.status === 304) {
+      if (!this.accepted || verifySponsorManifest(this.accepted, this.keys, now).status !== "SIGNATURE_VALID") {
+        return this.quarantine(checkedAt, "CACHED_MANIFEST_INVALID");
+      }
+      this.lastVerifiedAt = now;
       this.nextFetchAt = now + 60 * 60_000;
       return { checkedAt, status: this.current(now) ? "NOT_MODIFIED" : "EXPIRED" };
     }
@@ -185,6 +193,7 @@ export class SponsorManifestFeed {
       return this.quarantine(checkedAt, "REPLAY_OR_IDENTITY_CHANGED");
     }
     this.accepted = next;
+    this.lastVerifiedAt = now;
     this.lastSequence = next.sequence;
     this.lastIdentity = identity;
     this.etag = response.headers.get("etag") ?? undefined;
@@ -195,6 +204,7 @@ export class SponsorManifestFeed {
 
   private quarantine(checkedAt: string, reason: string): SponsorRefreshReceipt {
     this.accepted = undefined;
+    this.lastVerifiedAt = 0;
     this.etag = undefined;
     return { checkedAt, status: "QUARANTINED", reason };
   }

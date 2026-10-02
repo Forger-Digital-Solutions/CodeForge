@@ -65,7 +65,7 @@ describe("authenticated sponsor manifest intake", () => {
     expect(await feed.refresh(now + 2 * 60 * 60_000)).toMatchObject({ status: "QUARANTINED", reason: "REPLAY_OR_IDENTITY_CHANGED" });
   });
 
-  it("uses last known good only while the offer has not expired", async () => {
+  it("uses last known good only while the signature, signer and refresh evidence remain current", async () => {
     let calls = 0;
     const feed = new SponsorManifestFeed(url, keys, async () => {
       if (calls++ === 0) return response(manifest());
@@ -74,7 +74,15 @@ describe("authenticated sponsor manifest intake", () => {
     await feed.refresh(now);
     expect((await feed.refresh(now + 60 * 60_000)).status).toBe("FETCH_FAILED");
     expect(feed.current(now + 60 * 60_000)).toBeDefined();
+    expect(feed.current(now + 6 * 60 * 60_000)).toBeUndefined();
     expect(feed.current(now + 3 * 86_400_000)).toBeUndefined();
+  });
+
+  it("drops a cached offer when the trusted signing key expires", async () => {
+    const shortKeys = [{ ...keys[0]!, validUntil: new Date(now + 60 * 60_000).toISOString() }];
+    const feed = new SponsorManifestFeed(url, shortKeys, async () => response(manifest()));
+    expect((await feed.refresh(now)).status).toBe("UPDATED");
+    expect(feed.current(now + 60 * 60_000)).toBeUndefined();
   });
 
   it("quarantines an oversized untrusted remote body", async () => {
