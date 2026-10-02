@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-10-02T17:03:29.148Z",
+  "unchanged": false,
+  "files": [
+    {
+      "path": "apps/desktop/scripts/packaged-endurance.mjs",
+      "sha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c",
+      "currentSha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c"
+    },
+    {
+      "path": "benchmarks/r57/extract-packaged-repeat.mjs",
+      "sha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7",
+      "currentSha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7"
+    },
+    {
+      "path": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+      "sha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+      "currentSha256": "813a39d49affa3ce9e8590fadf5179c042a7118ecd004b8c1c291da171ff1eaf"
+    },
+    {
+      "path": "docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md",
+      "sha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497",
+      "currentSha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497"
+    },
+    {
+      "path": "docs/evidence/r60-usable-free-inference/postgres-parity.json",
+      "sha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243",
+      "currentSha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243"
+    },
+    {
+      "path": "packages/server/test/fixtures/run-recovery-worker.mjs",
+      "sha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd",
+      "currentSha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd"
+    }
+  ]
+}

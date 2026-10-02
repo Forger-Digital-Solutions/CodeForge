@@ -1,0 +1,17 @@
+{
+  "observedAt": "2026-10-02T16:51:30Z",
+  "source": "Authenticated Render dashboard, existing codeforge-cloud-va service",
+  "valuesRevealed": false,
+  "valuesChanged": false,
+  "keys": [
+    "CODEFORGE_ALLOWED_BROWSER_RETURN_URLS", "CODEFORGE_ALLOWED_ORIGINS", "CODEFORGE_CLOUD_DB_DRIVER", "CODEFORGE_CLOUD_DB_SSL",
+    "CODEFORGE_CLOUD_ENV", "CODEFORGE_DATA_ENCRYPTION_KEYS", "CODEFORGE_PUBLIC_URL", "CODEFORGE_REQUEST_TIMEOUT_MS", "CODEFORGE_TRUST_PROXY",
+    "DATABASE_URL", "GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "GROQ_API_KEY", "HOST", "JWT_SECRET", "NODE_ENV", "OPENROUTER_API_KEY"
+  ],
+  "inferenceCredentialEligibility": "Presence is not Free entitlement proof; existing runtime admission must remain fail closed.",
+  "environmentGroups": "None linked",
+  "dockerfile": "Dockerfile.cloud",
+  "dockerCommandOverride": "Empty",
+  "preDeployCommand": "Empty",
+  "autoDeploy": "Off"
+}

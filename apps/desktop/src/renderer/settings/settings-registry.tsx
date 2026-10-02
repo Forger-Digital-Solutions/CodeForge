@@ -14,6 +14,7 @@ import { NotificationsSection } from "./sections/NotificationsSection.js";
 import { ApplicationBackgroundSection } from "./sections/ApplicationBackgroundSection.js";
 import { DataPrivacySection } from "./sections/DataPrivacySection.js";
 import { ProvidersSection } from "./sections/ProvidersSection.js";
+import { FreeCapacitySection } from "./sections/FreeCapacitySection.js";
 import { ExtensionsSection } from "./sections/ExtensionsSection.js";
 import { AdvancedSection } from "./sections/AdvancedSection.js";
 import { AboutSection } from "./sections/AboutSection.js";
@@ -65,6 +66,14 @@ export const SETTINGS_SECTIONS: SettingsSectionDef[] = [
     component: ModelsRoutingSection,
     keywords: ["model", "default model", "forgeauto", "auto", "free models", "8-bit", "catalog", "forgezero", "favorites", "routing", "reasoning", "provider models", "refresh"],
     description: "Default model, ForgeAuto routing, the 8-Bit free catalog, ForgeZero, and favorites.",
+  },
+  {
+    id: "free-capacity",
+    label: "Free Capacity",
+    group: "CodeForge",
+    component: FreeCapacitySection,
+    keywords: ["free", "capacity", "kilo", "puter", "cerebras", "cloudflare", "openrouter", "groq", "connect free", "quota"],
+    description: "Connect a verified Free account and check your independent Free capacity.",
   },
   {
     id: "agents",

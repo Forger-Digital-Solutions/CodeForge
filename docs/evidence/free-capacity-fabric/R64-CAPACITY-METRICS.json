@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-10-02T17:03:29.148Z",
+  "measurement": "R64 live public fixture; not global production capacity",
+  "admittedFreeDomains": 1,
+  "independentGroups": 1,
+  "healthyCodingGroupsObservedDuringRun": 1,
+  "liveCodingDomains": 1,
+  "successfulLiveFailovers": 0,
+  "paidFallbacksInLiveFixture": 0,
+  "byokFallbacksInLiveFixture": 0,
+  "falseWaits": null,
+  "falseWaitsReason": "Two-domain live continuity not exercised; deterministic coverage is reported separately.",
+  "providerBillTotal": "UNKNOWN",
+  "zeroBillingAuthority": "Kilo Free public policy + Fabric admission, not a fabricated billing measurement"
+}

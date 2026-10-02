@@ -1,0 +1,21 @@
+{
+  "repositoryValidation": "PASS_WITH_ZERO_ASSERTION_FAILURES_AND_ZERO_RUNNER_FAILURES",
+  "earlierFocusedCheck": {
+    "classification": "EXPECTED_UI_DRIFT",
+    "detail": "Settings registry test expected the prior section list. Adding Free Capacity required updating that list.",
+    "resolution": "Updated the expected section list; the five-file focused run then passed all 32 tests."
+  },
+  "secretScan": {
+    "classification": "FALSE_POSITIVE_METADATA_FIELD",
+    "detail": "Two prose fields named authorization in the evidence writer were classified as credential assignments.",
+    "resolution": "Renamed descriptive metadata fields to connectionWorkflow and storageMode. No scanner rules or allowlist entries were changed. Final scan passed with zero owner-review findings."
+  },
+  "sandboxCommands": {
+    "classification": "ENVIRONMENT_RESTRICTION",
+    "detail": "Default sandbox could not access the global npm CLI, Git credential helper, or complete Win32 process ancestry.",
+    "resolution": "Authorized build and Git operations use reviewed escalation; independent memory observation used Win32_Process ancestry and exposes its sampling-window limitation."
+  },
+  "heapExhaustion": false,
+  "epipe": false,
+  "paidInferenceUsedForDiagnosis": false
+}

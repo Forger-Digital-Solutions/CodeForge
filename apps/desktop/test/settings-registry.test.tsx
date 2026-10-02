@@ -13,6 +13,7 @@ describe("settings registry", () => {
       "Profile & Account",
       "Appearance",
       "Models & Routing",
+      "Free Capacity",
       "Agents",
       "Verification & Safety",
       "GEMS",

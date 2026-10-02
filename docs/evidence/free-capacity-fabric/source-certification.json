@@ -1,7 +1,11 @@
 {
-  "certifiedAt": "2026-10-02T15:36:09.156Z",
-  "implementationHead": "9a58d54c3e17c8b8ed82865c3c796e4698d23f90",
+  "certifiedAt": "2026-10-02T17:03:54.455Z",
+  "implementationHead": null,
   "sourceFiles": [
+    {
+      "path": "apps/cloud-api/src/deployment-identity.ts",
+      "sha256": "171a60ddfbaa476141735edba5f41e27eac21cf7229e6e7dfbcb468cfb4c5e3b"
+    },
     {
       "path": "apps/cloud-api/src/remote-direct-host.ts",
       "sha256": "01c17fd633b9dd59ae233d7c71b0df99208650d1cf32b29a70d064784c6fa1fc"
@@ -9,6 +13,10 @@
     {
       "path": "apps/cloud-api/src/remote-direct-http.ts",
       "sha256": "70d749fd2e46c4bf8d80ee54d774cc354b3f4d1e931671ecbe2cf4089df2757b"
+    },
+    {
+      "path": "apps/cloud-api/src/server.ts",
+      "sha256": "60a7905485d70cdb8774b13f02855560ca184cb9deacf4faeb49c01f94b6024f"
     },
     {
       "path": "apps/cloud-api/src/sponsor-operator-http.ts",
@@ -19,8 +27,12 @@
       "sha256": "79e5f26508edab0b80d6f3e5f5c08b773e052363cf8915987f672cf7b3b4fe1f"
     },
     {
+      "path": "apps/cloud-api/test/deployment-identity.test.ts",
+      "sha256": "14a860753798931b092371b3bc2494957b2258cdff721cfbb183273638ed6edd"
+    },
+    {
       "path": "apps/cloud-api/test/remote-direct-http.test.ts",
-      "sha256": "fdea17be3a41ac32efa179c4db41be6d9af2ba57915581a8e50c2d232051c5e3"
+      "sha256": "4230c03bb73bb8c0c9d3fc8957cee950ce183e0848c8683892db8098e2ea5f12"
     },
     {
       "path": "apps/cloud-api/test/sponsor-operator.test.ts",
@@ -35,8 +47,40 @@
       "sha256": "c8ba9da4d9435c3f2997ac03560da1e03255cf821243e2ece7a7a4e710e22a71"
     },
     {
+      "path": "apps/desktop/src/provider-connection-types.ts",
+      "sha256": "fbe22d64296d7a99504a829cc33c980b50a8011bf48e69f706639937e1597c6b"
+    },
+    {
       "path": "apps/desktop/src/provider-connections.ts",
-      "sha256": "530f0299bb537c6b8dcda072901580e3f2d61be3a1ba8d87e1e7f6d793016b92"
+      "sha256": "9c3957b1da24a2b01ce2ef1723b4930d2147200517a87d0e5313f7fb484481a2"
+    },
+    {
+      "path": "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx",
+      "sha256": "26a54a90ace69c661dbbae4ea2280677ebc3ac221e7d400895a8103c2e2a8b03"
+    },
+    {
+      "path": "apps/desktop/src/renderer/settings/settings-registry.tsx",
+      "sha256": "0bd1c4223b9a81b3656762c489b67ad92db6890181317542095ad2997f36518a"
+    },
+    {
+      "path": "apps/desktop/test/free-capacity-settings.test.tsx",
+      "sha256": "16fcb129b8a806988c9d08e99f2c02bdac98a21505ee8220cfba492c68644cb1"
+    },
+    {
+      "path": "apps/desktop/test/provider-connections.test.ts",
+      "sha256": "9ffae36b6e4941321a11c524fd9aafd02065831d164f2844bdf808453d3aed28"
+    },
+    {
+      "path": "apps/desktop/test/settings-registry.test.tsx",
+      "sha256": "fe2d048b9f83a4dc018cbd7e7bde3e87dc689efdfbb3ccf45d07601b5af9abc4"
+    },
+    {
+      "path": "benchmarks/free-capacity-fabric/r64-kilo-autonomous.mjs",
+      "sha256": "c747c836e670ced6a364dd4be9c82c7293e99bdbc1db48562131772ee408eba0"
+    },
+    {
+      "path": "docs/codeforge-forgegreen-certified-source-state.json",
+      "sha256": "bf66881f7216d894a1602f96c8b1218713ab12bd8974cf946b828eadfbc7e380"
     },
     {
       "path": "packages/cloud-entitlements/src/entitlement-service.ts",
@@ -263,11 +307,47 @@
       "sha256": "9a4d4ee2eaa1fbb72c4ae56aa671be04d3dc67ca48e205b2dfbab237b3381911"
     },
     {
+      "path": "scripts/r64-bounded-tests.mjs",
+      "sha256": "a9b65141ee49996a059b4dd4c3b4628a4301aa2b723a0d4fe2145c16d6c12a9b"
+    },
+    {
+      "path": "scripts/r64-evidence-snapshot.mjs",
+      "sha256": "23842ddce33ea5882346010254a0b99cd7a8465e41da9a82328546350e52b093"
+    },
+    {
+      "path": "scripts/r64-memory-observe.ps1",
+      "sha256": "d4d2a822f133cc8fb03a7cc429776aca14eec1efa30bcf5bb19826dea14c9a7b"
+    },
+    {
+      "path": "scripts/r64-production-health.mjs",
+      "sha256": "3ca13b5dc392067228acbf09143d705160c4abf4db4ef18bc74e92f7a89e5747"
+    },
+    {
+      "path": "scripts/r64-production-preflight.mjs",
+      "sha256": "69c58af73f533fc0568ea37080dbbf6ff07f87ba8f6e444f6dd4541b6899fb9f"
+    },
+    {
+      "path": "scripts/r64-production-transport-probe.mjs",
+      "sha256": "f3ded32bd051567e00e2e39433d6f977b4c301cfbec39128d59d39fae84a98a0"
+    },
+    {
+      "path": "scripts/r64-provider-entitlement-probe.mjs",
+      "sha256": "07e2433307ff4243e3a22bd14fb1decc2f3e79dfef2771a9bfe0aa4270d20bda"
+    },
+    {
+      "path": "scripts/r64-recertify-certificate.mjs",
+      "sha256": "f293e09034acaab27acbb1d0443ba5b3e9cd2525c506c544881482376ea3ef29"
+    },
+    {
+      "path": "scripts/r64-recertify-source-state.mjs",
+      "sha256": "cb0149d9b9a18209ea989374adea108b90b4aa8645090d4bf5d72f342e182acd"
+    },
+    {
       "path": "tests/free-capacity-certificate.test.ts",
       "sha256": "8b1cc59f4296c66881e25c040c956f6328bf78868bbc2fc0362c5d421bfd49fa"
     }
   ],
-  "sourceAggregateSha256": "ee496e400308dafa63fd6f4234e98df96df09a454087a40de3f9883473452e4c",
+  "sourceAggregateSha256": "cb70f63f9846b0d8b4dc574cee0c71b96cfe739036d3929f8c46c34f41e9f0ce",
   "evidenceFiles": [
     {
       "path": "docs/evidence/free-capacity-fabric/FREE-PRODUCT-COMPARISON.md",
@@ -450,6 +530,130 @@
       "sha256": "f0e15bdc99af106ada1c6b29de471a45bd0594b1af9a86fcadacd68bc458f861"
     },
     {
+      "path": "docs/evidence/free-capacity-fabric/R64-CAPACITY-METRICS.json",
+      "sha256": "e7061283af8e5adbef9433daaa3f32c2d789667c736b90e1df65a52612eff713"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-CROSS-DOMAIN-FAILOVER.json",
+      "sha256": "bb6c041f72a99ee44d271afa9feb54537eae205029075951db40e9beca84c99c"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-DOMAIN-A-LIVE.json",
+      "sha256": "d1a6de94e10dc6ca4eae4083f57bcdeb128091e077e051302351fed5f459e0cc"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-DOMAIN-B.json",
+      "sha256": "8d7c07d45f42b8e5a4a6586e92314c9ff79df0c0f1805cfa7c7e7490a4280c70"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-FAILURE-CLASSIFICATION.json",
+      "sha256": "68fc68e2b53d3434b7759692029c91d288a4cf73f12078432bf821863e09d371"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-FRESH-USER.json",
+      "sha256": "4efb3b94c9e954f34bb20bde28822155241100ee8b1f768ab209a517ff696b82"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-KILO-POLICY.json",
+      "sha256": "c62273f6ca3ea3fc5bf3d642bc58bff059b7358c7640059d5b8adcdb077208a8"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-KILO-QUALIFICATION.json",
+      "sha256": "31707462105b8da194492f316b0cd65155e3d9414ebac0d274390333c881076e"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-LIVE-ACCOUNTING.json",
+      "sha256": "4125c65229a306b557e952f0095f8c85e5daf2f50371fa6c348c0ac64bac761a"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-MULTI-USER-INDEPENDENCE.json",
+      "sha256": "a78ef8eca688c9f36b5ad95b3ff298cc37bf6a3624651d98b093385ce81f6885"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-PRESERVED-USER-WORK.json",
+      "sha256": "c6e8f04d9ef9543c118c440db8b0dd53869152ff31f0e4e4597d35a387860135"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-PRIVACY-CLASSIFICATIONS.json",
+      "sha256": "f896e5ffb35e330af55e4f4657784b92358b6958fda5d7f1557689943f13a348"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-PRODUCTION-ENVIRONMENT.json",
+      "sha256": "301e7453d121c8834d9f97658521cb2d1d4bf4653c00ba7cebe575ff8a7aecfb"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-PRODUCTION-PREFLIGHT.json",
+      "sha256": "02569215f1a0204d4df0443bc05d160cd6aa4917dd7f603e680e04443a882523"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-PROVIDER-ENTITLEMENT-PROBE.json",
+      "sha256": "8d57e26ae301d2a0a9b1655c24adbb638bf61cdd36ecfc9a4d74e1fddf04aaef"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-PROVIDER-READINESS.json",
+      "sha256": "aa13a304d2f16977ee2913ca6827423e132989eab878d444a414f840a250176b"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-RENDER-SERVICE.json",
+      "sha256": "384c988576114f90e1b806f159c196208b78f0dfa4b4a003019ba8fe635b1ec9"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-REPOSITORY-TESTS.json",
+      "sha256": "7e55f71ec2233347052f8872f7f627b4680e9e8d8995c72d87ba77e205c9e905"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-START-STATE.json",
+      "sha256": "a22eb8b1784210849776cbc371dca8883448d2280f428809a1092ead73760ce7"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-WORKSPACE-BUILD.json",
+      "sha256": "3fff75ebcff4e1783df3f6841a133eb52260c51819a9f5661e0e8956b0639402"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-baseline-authority.json",
+      "sha256": "e865df862318380159746b60d40a224cf4d46a303d9e4f2a735c1d352b021ab2"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-baseline-focused.json",
+      "sha256": "7c1d2a3a3cadc54a5d7437064295ddf77d300de67d9eb9ce8599cc5046337b9a"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-implementation-focused.json",
+      "sha256": "f041066bbdc3ebc34cf3e061334560ea1e3a3ee1205730d4317e7bbe798fadcf"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-memory-observations.json",
+      "sha256": "a9357a0d5f8000e1162147b0df6784c2569ea4f432f7257bda7e5fd72fde5bc6"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-secret-scan.json",
+      "sha256": "e9bcbee9f25ccb2623526199c7c66e240e723cd6be89d8c6965ff0aefb40c972"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-source-canaries.json",
+      "sha256": "46d9227e601bd6d9a8816e4c5c89ce84f30a646d7b9221677b6b72307952d398"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-suite-bounded-main.json",
+      "sha256": "2978d1ab51d7e1160dba7d18360855d651a08c7f4e2cdb5103f3473d65a5cdf7"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-suite-serial-heavy-1.json",
+      "sha256": "2eef73fd5b06a7e21de14fb4f6cfa26647a58aa22cdc59dc8d144772a57c4d24"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-suite-serial-heavy-2.json",
+      "sha256": "5b73ced8300e40988e088337b7cff1a7e4bddfddfe535fc12a27b30aab9d2352"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-suite-serial-heavy-3.json",
+      "sha256": "846fa1a074b9b9bfeadf96af9cb66d62e01a5dc73900aaad3bb52ee2989e3038"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R64-suite-serial-heavy-4.json",
+      "sha256": "47a3e08c61eaf500382836b6fb08aa76d9971012358dff445190887400f4adee"
+    },
+    {
       "path": "docs/evidence/free-capacity-fabric/legacy-migration.json",
       "sha256": "ae46372ceb622e0180f4dfb5365670a7eab8862745c5ca53e0705d5a59b665d8"
     },
@@ -506,24 +710,29 @@
       "sha256": "c52f109a8eccfbec95ac98cf6d418942483eb5e61b8f66a80510a3afcbefb06f"
     }
   ],
-  "evidenceAggregateSha256": "8aa81ede44090c050960bea41c6cc8b86c481f98d63253c173139df21676bd54",
+  "evidenceAggregateSha256": "8e6f272db7d6eaccaccb63f71fe2db1d166f8d733611c0457088763521e46c83",
   "validation": {
-    "repositoryWideStatus": "FAIL",
-    "focusedPassedTests": 9,
-    "focusedPassedFiles": 2,
-    "workspaceBuild": "PASS_BASELINE",
-    "focusedFailedTests": 0,
-    "affectedTypecheck": "PASS",
-    "repositoryWideExactTotals": {
-      "files": 524,
-      "tests": 4381,
-      "passed": 4312,
-      "failed": 17,
+    "repositoryWideStatus": "PASS",
+    "repositoryWideExactTotalsExcludingStandaloneCertificateCanary": {
+      "files": 533,
+      "passed": 4415,
+      "failed": 0,
       "skipped": 50,
-      "pending": 2,
-      "sumOfShardDurationsSeconds": 4774.5,
-      "workerHeapFailure": true
+      "todo": 0,
+      "pending": 0,
+      "durationSeconds": 2703.3550000000005
+    },
+    "workspaceBuild": "PASS",
+    "workspaceTypecheck": "PASS",
+    "affectedDesktopAndCloudTypechecks": "PASS",
+    "certificateCanary": "RUN_SEPARATELY_AFTER_FREEZE",
+    "forgeGreen": {
+      "fg11": "5/5",
+      "fg12e": "3/3"
     }
   },
-  "limitation": "R62 remains partial: second live Packaged Free domain, hosted transport, sponsor operations, and legacy cutover are not proven."
+  "limitation": "R64 remains partial: no independently owned Domain B Free entitlement, live two-domain failover, or live independent users. Production remote control transport is deployed only when verified in R64 production evidence; actual hosted Fabric remote dispatch is not configured. Dedicated Cloudflare and Groq Free account verifiers remain unfinished. Fresh-user end-to-end authorization and coding are unproven.",
+  "certificateId": "r64-free-capacity-fabric-v1",
+  "sourceStateId": "b7d3470cadb30aa89be9148d64b76521f66b0418d59ee0d517128aff03cd83dd",
+  "implementationBase": "f1ceb4a34a97c0bbae4553994148c465fce44c1d"
 }

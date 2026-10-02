@@ -24,6 +24,7 @@ import { isAllowedBillingReturnUrl } from "./billing-return-url.js";
 import { RemoteDirectTransport, type RemoteDirectBinding, type RemoteDirectPrincipal } from "@codeforge/server";
 import type { ChatRequest } from "@codeforge/providers";
 import { handleRemoteDirectHttp } from "./remote-direct-http.js";
+import { deploymentIdentity } from "./deployment-identity.js";
 import { SponsorOperatorService, type SponsorOperatorPolicy } from "./sponsor-operator-service.js";
 import { handleSponsorOperatorHttp } from "./sponsor-operator-http.js";
 
@@ -355,6 +356,8 @@ export class CodeForgeCloudServer {
   public readonly hostedWorkflowAuthority: HostedWorkflowAuthority;
   public readonly hostedRuntime: HostedRuntime;
   public readonly remoteDirectTransport: RemoteDirectTransport;
+  private readonly deployment = deploymentIdentity(process.env);
+  private readonly remoteDirectDispatchConfigured: boolean;
   public readonly sponsorOperators?: SponsorOperatorService;
   private readonly sessionPersistence: ISessionPersistence;
   private readonly ownsSessionPersistence: boolean;
@@ -452,9 +455,12 @@ export class CodeForgeCloudServer {
       databaseSsl: config.databaseSsl,
     });
     this.hostedWorkflowAuthority = new HostedWorkflowAuthority(this.sessionPersistence);
+    this.remoteDirectDispatchConfigured = config.remoteDirectAdmission !== undefined;
     if (config.sponsorOperatorPolicy) this.sponsorOperators = new SponsorOperatorService(this.sessionPersistence, secretEnvelope, config.sponsorOperatorPolicy);
     this.remoteDirectTransport = new RemoteDirectTransport({ persistence: this.sessionPersistence, envelope: secretEnvelope,
-      admit: config.remoteDirectAdmission ?? (() => false), authorizeSessionScope: config.remoteDirectScopeAuthorization, sessionActive: async (principal) => {
+      admit: config.remoteDirectAdmission ?? (() => false), authorizeSessionScope: config.remoteDirectScopeAuthorization ?? (async (principal, scope) =>
+        (await this.hostedWorkflowAuthority.list(principal.accountId)).some((workflow) => workflow.workerId === scope.deviceId
+          && workflow.workspaceId === scope.workspaceId && ["active", "awaiting_worker"].includes(workflow.status))), sessionActive: async (principal) => {
         const session = await this.db.getDeviceSessionById(principal.authSessionId);
         return !!session && session.userId === principal.accountId && !session.revokedAt && Date.parse(session.expiresAt) > Date.now();
       } });
@@ -979,7 +985,8 @@ export class CodeForgeCloudServer {
 
       // 1. Health & Meta Endpoints
       if (url.pathname === "/health/live" && method === "GET") {
-        this.sendJson(res, 200, { status: "ok", version: "0.4.0" }, corsOrigin);
+        this.sendJson(res, 200, { status: "ok", version: "0.4.0", deployment: this.deployment,
+          remoteDirect: { transportAvailable: true, dispatchConfigured: this.remoteDirectDispatchConfigured } }, corsOrigin);
         return;
       }
 

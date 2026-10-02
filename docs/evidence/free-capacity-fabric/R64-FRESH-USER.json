@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-10-02T17:03:29.148Z",
+  "status": "PARTIAL",
+  "profile": "benchmarks/r64/tmp/fresh-profile",
+  "build": "CURRENT_SOURCE_ELECTRON_BUILD",
+  "cloudUrl": "https://codeforge-cloud-va.onrender.com",
+  "productionManifest": "GENERATED_BUILD_ARTIFACT",
+  "hiddenProviderCredentialInjection": false,
+  "initialCredentialCount": 0,
+  "journey": [
+    "Launch separate fresh CodeForge source profile",
+    "Normal CodeForge sign-in",
+    "Settings → Free Capacity",
+    "Connect OpenRouter Free",
+    "Provider authorization",
+    "Automatic entitlement verification and qualification"
+  ],
+  "completedSteps": [
+    "Fresh source profile launched against the production endpoint",
+    "Dedicated Free Capacity UI and OAuth handoff passed focused rendering/authority tests"
+  ],
+  "authorizationCompleted": false,
+  "codingCompleted": false,
+  "limitation": "User reported no eligible Free account. Normal human fresh-profile sign-in and provider authorization were not completed; no end-to-end onboarding claim."
+}

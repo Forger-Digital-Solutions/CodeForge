@@ -91,6 +91,10 @@ describe("ProviderConnections — delegated entitlement authority", () => {
       expect(await h.connections.connect("openrouter", { apiKey: OR_SECRET }, "OAUTH")).toMatchObject({ ok: false });
       expect(h.secrets.size).toBe(0);
       expect(h.discovered).toEqual([]);
+      const view = h.connections.listConnections().find((connection) => connection.providerId === "openrouter");
+      expect(view?.freeConnectionAttempt?.accountClass).toBe(metadata.is_free_tier === false ? "PAID" : "UNKNOWN");
+      expect(view?.freeCapacity?.admittedDomains).toBe(0);
+      expect(JSON.stringify(view)).not.toContain("credentialFingerprint");
     }
   });
 

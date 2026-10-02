@@ -1,0 +1,8 @@
+{
+  "generatedAt": "2026-10-02T17:03:29.148Z",
+  "status": "BLOCKED",
+  "live": false,
+  "successfulFailovers": 0,
+  "reason": "Requires admitted and qualified Domain B.",
+  "syntheticFaultsCountedAsLive": false
+}

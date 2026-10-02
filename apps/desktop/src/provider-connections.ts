@@ -1,6 +1,6 @@
 import type { CredentialStore, ProviderAdapter, ProviderModel, ProviderCatalog, ProviderResponseObserver } from "@codeforge/providers";
 import { configFieldKey, createProviderAdapterFromDefinition, InMemoryProviderCatalog, verifyOpenRouterEntitlement, isOpenRouterEntitlementCurrent, type OpenRouterEntitlementReceipt } from "@codeforge/providers";
-import { hashUserAccountIdentity, userConnectedPoolId, type ForgeZero } from "@codeforge/forge-zero";
+import { capacityIndependenceSnapshot, hashUserAccountIdentity, userConnectedPoolId, type ForgeZero } from "@codeforge/forge-zero";
 import type {
   ConnectResult,
   EnvironmentCredentialView,
@@ -602,6 +602,8 @@ export class ProviderConnections {
       const receipt = await (this.host.verifyOpenRouter ?? verifyOpenRouterEntitlement)({ key: values.apiKey!, ownerUserId: this.host.userId ?? "", now: this.now() });
       this.saveDelegatedReceipt(receipt);
       if (!isOpenRouterEntitlementCurrent(receipt, this.host.userId ?? "", values.apiKey!, this.now()) || !receipt.admissionEvidence) {
+        this.publishConnection(def, this.credentialSourceOf(providerId));
+        this.host.notifyChanged?.();
         return { ok: false, error: `OpenRouter Free capacity was not admitted: ${receipt.accountClass} (${receipt.reason}).` };
       }
     }
@@ -772,6 +774,7 @@ export class ProviderConnections {
 
   listConnections(): ProviderConnectionView[] {
     const snap = this.host.freeCloud.snapshot();
+    const capacityRoutes = this.host.userId ? this.host.freeCloud.routesForUser(this.host.userId) : [];
     const envViews = new Map(this.listEnvironmentCredentials().map((e) => [e.providerId, e] as const));
     const views: ProviderConnectionView[] = [];
     for (const def of Object.values(this.definitions())) {
@@ -783,11 +786,16 @@ export class ProviderConnections {
       const connected = conn?.connected === true;
       const offer = conn?.connectOffer ?? this.connectOfferFor(def);
       const sortRank = connected ? 0 : env?.complete ? 1 : offer?.authClass === "OAUTH_PKCE" ? 2 : def.recommendedForFreeDefault ? 3 : 4;
+      const capacity = capacityIndependenceSnapshot(capacityRoutes.filter((route) => route.providerId === def.id), undefined, { dataClass: "SYNTHETIC" }, this.now().getTime());
+      const attempt = this.delegatedReceipts.get(def.id);
       views.push({
         ...this.definitionView(def),
         connected,
         credentialSource: conn?.credentialSource ?? "NONE",
         supplyClass: conn?.supplyClass ?? supplyClassFor(def, conn),
+        freeCapacity: { admittedDomains: capacity.admittedDomains, independentGroups: capacity.independentCapacityGroups, healthyGroups: capacity.healthyGroups },
+        ...(attempt && attempt.ownerUserId === this.host.userId && attempt.accountClass !== "FREE_VERIFIED"
+          ? { freeConnectionAttempt: { accountClass: attempt.accountClass, reason: attempt.reason } } : {}),
         ...(conn?.delegatedEntitlement ? { delegatedFree: { accountClass: conn.delegatedEntitlement.accountClass, reason: conn.delegatedEntitlement.reason,
           verifiedAt: conn.delegatedEntitlement.verifiedAt, recheckAt: conn.delegatedEntitlement.recheckAt, remainingRequests: conn.delegatedEntitlement.freeRequests?.remaining } } : {}),
         environmentVariable: conn?.environmentVariable,

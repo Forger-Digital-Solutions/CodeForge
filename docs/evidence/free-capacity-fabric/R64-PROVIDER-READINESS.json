@@ -1,0 +1,80 @@
+{
+  "generatedAt": "2026-10-02T17:03:29.148Z",
+  "humanResponse": "I don’t have an eligible Free account",
+  "inferenceProbesUsingExistingKeys": 0,
+  "candidates": [
+    {
+      "provider": "Puter",
+      "classification": "UNKNOWN",
+      "quotaOwner": "PUTER_USER",
+      "connectionWorkflow": "Provider supports browser sign-in; no safe CodeForge Free connection is enabled.",
+      "storageMode": "NOT_IMPLEMENTED_FOR_FREE",
+      "automatedFreeVerification": false,
+      "automaticDomainAdmission": false,
+      "qualification": "BLOCKED",
+      "blocker": "Published monthly allowance metadata does not distinguish Free from purchased allowance or establish an enforceable Free-only spend boundary.",
+      "sources": [
+        "https://docs.puter.com/Objects/monthlyusage/",
+        "https://developer.puter.com/pricing/"
+      ]
+    },
+    {
+      "provider": "Cerebras",
+      "classification": "TRIAL_OFFER_UNVERIFIED_ACCOUNT",
+      "quotaOwner": "ACCOUNT_OR_PROJECT",
+      "connectionWorkflow": "Existing key entry supports encrypted storage, but key validity alone cannot establish a durable Free account.",
+      "storageMode": "ENCRYPTED_LOCAL_KEY_PATH",
+      "automatedFreeVerification": false,
+      "automaticDomainAdmission": false,
+      "qualification": "BLOCKED",
+      "blocker": "Current public offer is $5 trial credit. No authoritative durable Free account receipt was obtained.",
+      "sources": [
+        "https://www.cerebras.ai/inference"
+      ]
+    },
+    {
+      "provider": "Cloudflare Workers AI",
+      "classification": "UNKNOWN",
+      "quotaOwner": "CLOUDFLARE_ACCOUNT",
+      "connectionWorkflow": "No registered CodeForge OAuth client with the necessary account and AI scopes is configured.",
+      "storageMode": "ENCRYPTED_LOCAL_KEY_PATH",
+      "automatedFreeVerification": false,
+      "automaticDomainAdmission": false,
+      "qualification": "BLOCKED",
+      "blocker": "Existing account subscription request returned HTTP 403. Workers Free plan, ownership and hard stop are unverified; account verifier and dedicated Free connection remain unfinished.",
+      "sources": [
+        "https://developers.cloudflare.com/workers-ai/platform/pricing/",
+        "https://developers.cloudflare.com/fundamentals/oauth/create-an-oauth-client/"
+      ]
+    },
+    {
+      "provider": "OpenRouter",
+      "classification": "EXISTING_ACCOUNT_PAID",
+      "quotaOwner": "USER_ACCOUNT",
+      "connectionWorkflow": "Settings → Free Capacity → Connect OpenRouter Free → browser OAuth PKCE → loopback callback",
+      "storageMode": "ENCRYPTED_LOCAL_OAUTH",
+      "automatedFreeVerification": true,
+      "automaticDomainAdmission": true,
+      "qualification": "AUTOMATIC_AFTER_VERIFIED_FREE_AUTHORIZATION",
+      "blocker": "Read-only current-key response is_free_tier=false. User has no eligible Free account to authorize. Existing key denied with no inference.",
+      "sources": [
+        "https://openrouter.ai/docs/guides/overview/auth/oauth",
+        "https://openrouter.ai/docs/api_reference/limits"
+      ]
+    },
+    {
+      "provider": "Groq",
+      "classification": "UNKNOWN",
+      "quotaOwner": "ORGANIZATION",
+      "connectionWorkflow": "Existing key entry supports encrypted storage; a dedicated Free organization verifier remains unfinished.",
+      "storageMode": "ENCRYPTED_LOCAL_KEY_PATH",
+      "automatedFreeVerification": false,
+      "automaticDomainAdmission": false,
+      "qualification": "BLOCKED",
+      "blocker": "No authoritative organization ownership, billing tier and current quota receipt was obtained. A shared environment key is not an independently owned user domain.",
+      "sources": [
+        "https://console.groq.com/docs/rate-limits"
+      ]
+    }
+  ]
+}

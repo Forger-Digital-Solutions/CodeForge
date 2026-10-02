@@ -1,0 +1,43 @@
+{
+  "generatedAt": "2026-10-02T17:03:29.148Z",
+  "privateDefault": "DENY_IF_UNVERIFIED",
+  "candidates": [
+    {
+      "provider": "Kilo",
+      "classification": "PUBLIC_CODE_ONLY",
+      "privateCode": "DENIED",
+      "evidence": "R64-KILO-POLICY.json",
+      "publicFixtureConsent": "EXPLICIT"
+    },
+    {
+      "provider": "Puter",
+      "classification": "UNKNOWN",
+      "privateCode": "DENIED",
+      "reason": "No complete provider/model privacy receipt obtained."
+    },
+    {
+      "provider": "Cerebras",
+      "classification": "UNKNOWN",
+      "privateCode": "DENIED",
+      "reason": "No eligible account or complete Free tier privacy receipt obtained."
+    },
+    {
+      "provider": "Cloudflare Workers AI",
+      "classification": "PRIVATE_CODE_ALLOWED_BY_DOCUMENTED_POLICY_BUT_ACCOUNT_UNADMITTED",
+      "privateCode": "DENIED_UNTIL_ACCOUNT_AND_ROUTE_ADMISSION",
+      "source": "https://developers.cloudflare.com/workers-ai/platform/data-usage/"
+    },
+    {
+      "provider": "OpenRouter",
+      "classification": "REQUIRES_EXPLICIT_CONSENT_AND_UPSTREAM_POLICY_VERIFICATION",
+      "privateCode": "DENIED_WITHOUT_MATCHING_ROUTE_POLICY",
+      "source": "https://openrouter.ai/privacy"
+    },
+    {
+      "provider": "Groq",
+      "classification": "REQUIRES_ACCOUNT_DATA_CONTROL_VERIFICATION",
+      "privateCode": "DENIED_UNTIL_ACCOUNT_AND_ROUTE_ADMISSION",
+      "source": "https://console.groq.com/docs/your-data"
+    }
+  ]
+}

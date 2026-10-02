@@ -45,6 +45,7 @@ describe("authenticated hosted remote direct HTTP", () => {
     const runtime = createAgentRuntime({ sessionId: binding.runId, persistence, eventStore, firewall, providerCatalog: catalog,
       workspacePath: workspace, userId: binding.accountId, qualificationWaitHorizonMs: 10 });
     try {
+      await server.hostedWorkflowAuthority.create({ ownerUserId: binding.accountId, workerId: binding.deviceId, workspaceId: binding.workspaceId, task: "Remote HTTP fixture" });
       await client.connect();
       await runtime.init();
       runtime.setModelSelection({ providerId: "kilo-free-direct", modelId: "kilo-auto/free" });
@@ -82,6 +83,8 @@ describe("authenticated hosted remote direct HTTP", () => {
       const bob = await mintSessionAccessToken(server.db, "bob", jwtSecret);
       const post = (path: string, token: string, body: unknown) => fetch(`${url}${path}`, { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify(body) });
       expect((await post("/v1/remote-direct/sessions", alice, { deviceId: "d", workspaceId: "*" })).status).toBe(409);
+      expect((await post("/v1/remote-direct/sessions", alice, { deviceId: "d", workspaceId: "foreign-workspace" })).status).toBe(409);
+      await server.hostedWorkflowAuthority.create({ ownerUserId: "alice", workerId: "d", workspaceId: "workspace", task: "Authorized bootstrap fixture" });
       const bootstrap = await post("/v1/remote-direct/sessions", alice, { deviceId: "d", workspaceId: "workspace" });
       expect(bootstrap.status).toBe(201);
       const session = await bootstrap.json() as { identity: { sessionId: string } };
@@ -109,6 +112,7 @@ describe("authenticated hosted remote direct HTTP", () => {
         });
       }) as typeof fetch });
     try {
+      await server.hostedWorkflowAuthority.create({ ownerUserId: binding.accountId, workerId: binding.deviceId, workspaceId: binding.workspaceId, task: "Cancellation fixture" });
       await client.connect();
       const adapter = new TestRemoteProvider(server.remoteDirectTransport, () => binding);
       const abort = new AbortController();

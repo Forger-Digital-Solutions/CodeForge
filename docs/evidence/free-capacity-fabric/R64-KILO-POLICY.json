@@ -1,0 +1,23 @@
+{
+  "status": "VERIFIED",
+  "checkedAt": "2026-10-02T16:16:42.465Z",
+  "receipt": {
+    "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+    "termsEvidence": "https://kilo.ai/terms",
+    "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+    "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+    "verifiedAt": "2026-10-02T16:16:42.465Z",
+    "recheckAt": "2026-10-09T16:16:42.465Z",
+    "qualificationAt": "2026-10-02T16:16:42.465Z",
+    "termsVerifiedAt": "2026-10-02T16:16:42.465Z",
+    "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+    "termsExpiresAt": "2026-10-09T16:16:42.465Z",
+    "privacyVerifiedAt": "2026-10-02T16:16:42.465Z",
+    "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+    "privacyExpiresAt": "2026-10-09T16:16:42.465Z",
+    "priceVerifiedAt": "2026-10-02T16:16:42.465Z",
+    "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+    "priceExpiresAt": "2026-10-09T16:16:42.465Z",
+    "nextReverifyAt": "2026-10-02T22:16:42.465Z"
+  }
+}

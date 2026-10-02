@@ -1,0 +1,68 @@
+{
+  "generatedAt": "2026-10-02T16:26:51.951Z",
+  "inferenceCalls": 0,
+  "credentials": {
+    "openrouter": {
+      "present": true,
+      "classification": "UNVERIFIED"
+    },
+    "groq": {
+      "present": true,
+      "classification": "UNVERIFIED"
+    },
+    "google": {
+      "present": true,
+      "classification": "UNVERIFIED"
+    },
+    "sambanova": {
+      "present": false,
+      "classification": "UNVERIFIED"
+    },
+    "mistral": {
+      "present": true,
+      "classification": "UNVERIFIED"
+    },
+    "cerebras": {
+      "present": true,
+      "classification": "UNVERIFIED"
+    },
+    "cloudflare-workers-ai": {
+      "present": true,
+      "classification": "UNVERIFIED"
+    },
+    "opencode": {
+      "present": false,
+      "classification": "UNVERIFIED"
+    },
+    "github-models": {
+      "present": true,
+      "classification": "UNVERIFIED"
+    },
+    "nvidia": {
+      "present": false,
+      "classification": "UNVERIFIED"
+    }
+  },
+  "openrouterCurrentKey": {
+    "status": "READ_SUCCEEDED",
+    "classification": "PAID",
+    "admission": "DENIED",
+    "measurement": "READ_ONLY_GET_CURRENT_KEY_NO_INFERENCE",
+    "httpStatus": 200,
+    "metadata": {
+      "isFreeTier": false,
+      "limit": null,
+      "limitRemaining": null,
+      "expiresAt": null
+    },
+    "reason": "Environment credentials are not user-delegated Packaged Free grants; account ownership and independent entitlement must be verified separately."
+  },
+  "cloudflareSubscriptions": {
+    "status": "AUTHENTICATION_OR_PERMISSION_FAILED",
+    "classification": "UNKNOWN",
+    "admission": "DENIED",
+    "measurement": "READ_ONLY_GET_ACCOUNT_SUBSCRIPTIONS_NO_INFERENCE",
+    "httpStatus": 403,
+    "reason": "Only a verified Workers Free account with provider-enforced hard stop may qualify; missing/empty subscription data does not prove Free status."
+  }
+}

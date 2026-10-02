@@ -1,0 +1,63 @@
+{
+  "observedAt": "2026-10-02T16:41:51.885Z",
+  "service": {
+    "autoDeploy": "no",
+    "autoDeployTrigger": "off",
+    "branch": "forger-digital-solutions-forgegreen-certified",
+    "createdAt": "2026-09-17T22:20:17.119925Z",
+    "dashboardUrl": "https://dashboard.render.com/web/srv-dam6f83m8hqs73clo5ig",
+    "id": "srv-dam6f83m8hqs73clo5ig",
+    "name": "codeforge-cloud-va",
+    "notifyOnFail": "default",
+    "ownerId": "tea-daa3l35g1s2s73c1t8mg",
+    "repo": "https://github.com/Forger-Digital-Solutions/CodeForge",
+    "rootDir": "",
+    "serviceDetails": {
+      "buildPlan": "starter",
+      "cache": {
+        "profile": "no-cache"
+      },
+      "env": "docker",
+      "envSpecificDetails": {
+        "dockerCommand": "",
+        "dockerContext": ".",
+        "dockerfilePath": "./Dockerfile.cloud"
+      },
+      "healthCheckPath": "/health/live",
+      "ipAllowList": [
+        {
+          "cidrBlock": "0.0.0.0/0",
+          "description": "everywhere"
+        }
+      ],
+      "maintenanceMode": {
+        "enabled": false,
+        "uri": ""
+      },
+      "numInstances": 1,
+      "openPorts": [
+        {
+          "port": 10000,
+          "protocol": "TCP"
+        }
+      ],
+      "plan": "0.5c-512mb",
+      "previews": {
+        "generation": "off"
+      },
+      "pullRequestPreviewsEnabled": "no",
+      "region": "virginia",
+      "renderSubdomainPolicy": "enabled",
+      "runtime": "docker",
+      "sshAddress": "srv-dam6f83m8hqs73clo5ig@ssh.virginia.render.com",
+      "url": "https://codeforge-cloud-va.onrender.com"
+    },
+    "slug": "codeforge-cloud-va",
+    "suspended": "not_suspended",
+    "suspenders": [],
+    "type": "web_service",
+    "updatedAt": "2026-09-24T23:54:04.664524Z"
+  },
+  "previousLiveRevision": "1b34b4bbda4bf7904c09cbd72c3c546013d93c3d",
+  "previousDeployId": "dep-daqrg3m1egvs73dc4cb0"
+}
