@@ -11,6 +11,7 @@ if (tests.status !== "PASS" || build.status !== "PASS") throw new Error("GREEN_V
 const implementationHead = process.argv[2];
 if (implementationHead && !/^[a-f0-9]{40}$/.test(implementationHead)) throw new Error("COMMIT_SHA_REQUIRED");
 const additions = [
+  "packages/server/tsconfig.json", "Dockerfile.cloud",
   "apps/cloud-api/src/server.ts", "apps/cloud-api/src/deployment-identity.ts", "apps/cloud-api/test/deployment-identity.test.ts",
   "apps/desktop/src/provider-connection-types.ts", "apps/desktop/src/renderer/settings/settings-registry.tsx",
   "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx", "apps/desktop/test/free-capacity-settings.test.tsx",

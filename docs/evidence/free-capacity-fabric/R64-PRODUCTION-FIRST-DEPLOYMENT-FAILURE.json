@@ -1,0 +1,18 @@
+{
+  "deploymentId": "dep-davuah2d0e5s739dmtfg",
+  "revision": "9c6b6ef11aa2dadab984e99e71549ebe242810a0",
+  "status": "build_failed",
+  "startedAt": "2026-10-02T17:09:24.203444Z",
+  "finishedAt": "2026-10-02T17:10:15.866879Z",
+  "classification": "CLEAN_BUILD_PROJECT_REFERENCE_DEFECT",
+  "errors": [
+    "TS2307 @codeforge/cloud-usage",
+    "TS2307 @codeforge/browser",
+    "TS2307 @codeforge/computer-use",
+    "TS2307 @codeforge/mcp",
+    "TS7006 implicit parameter type caused by unresolved browser declarations"
+  ],
+  "productionReplaced": false,
+  "runtimeSourceModifiedByFix": false,
+  "fix": "Add the four existing dependencies to packages/server/tsconfig.json project references so their declarations are emitted before the server in a clean Docker build."
+}

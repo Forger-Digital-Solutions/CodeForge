@@ -1,0 +1,18 @@
+{
+  "exitCode": 0,
+  "preexistingUserModificationsIncluded": false,
+  "status": "PASS",
+  "startedAt": "2026-10-02T17:14:45.5540370Z",
+  "finishedAt": "2026-10-02T17:16:15.8566491Z",
+  "command": "docker build --progress=plain -f Dockerfile.cloud",
+  "log": "benchmarks/r64/tmp/clean-docker-build.log",
+  "context": "git archive 9c6b6ef11aa2dadab984e99e71549ebe242810a0 plus corrected packages/server/tsconfig.json",
+  "durationSeconds": 90.3043357,
+  "linuxModuleImport": {
+    "status": "PASS",
+    "command": "docker run --rm --network none --entrypoint node codeforge-r64-production-validation import cloud API",
+    "networkEnabled": false,
+    "productionSecretsInjected": false,
+    "inferenceCalls": 0
+  }
+}

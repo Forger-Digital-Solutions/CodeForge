@@ -137,5 +137,12 @@
     "peakSingleProcessWorkingSetBytes": 370638848,
     "startedAt": "2026-10-02T16:22:19.5851529Z"
   },
-  "memoryLimitation": "Independent process-tree sampling started six minutes into the run; reported peak is the observed peak for that sampling window, at 15-second intervals. Earlier built-in sampler did not capture the full tree reliably."
+  "memoryLimitation": "Independent process-tree sampling started six minutes into the run; reported peak is the observed peak for that sampling window, at 15-second intervals. Earlier built-in sampler did not capture the full tree reliably.",
+  "postValidationBuildFix": {
+    "validatedRuntimeRevision": "9c6b6ef11aa2dadab984e99e71549ebe242810a0",
+    "runtimeAndTestSourceUnchanged": true,
+    "changedConfiguration": "packages/server/tsconfig.json project references",
+    "configurationValidation": "R64-CLEAN-DOCKER-BUILD.json",
+    "reasonForNoFullRuntimeRerun": "Only build ordering and certification/evidence changed; clean Linux image build and module import validate the configuration fix. Final authority/certificate canaries rerun."
+  }
 }

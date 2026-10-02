@@ -1,5 +1,5 @@
 {
-  "sourceStateId": "b7d3470cadb30aa89be9148d64b76521f66b0418d59ee0d517128aff03cd83dd",
+  "sourceStateId": "24ed80d52717fa147540dd4063f0306e66ab9738611e0b54590c643a550bd5ae",
   "surfaceVersion": "r64-free-capacity-fabric-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
@@ -24,6 +24,7 @@
     "apps/desktop/test/free-capacity-settings.test.tsx",
     "apps/desktop/test/provider-connections.test.ts",
     "apps/desktop/test/settings-registry.test.tsx",
+    "Dockerfile.cloud",
     "packages/agent/src/index.ts",
     "packages/agent/src/planning-contract.ts",
     "packages/benchmark/src/codeforge-bench-r2.ts",
@@ -116,6 +117,7 @@
     "packages/server/test/remote-direct-transport.test.ts",
     "packages/server/test/role-output-budget.test.ts",
     "packages/server/test/role-routing.test.ts",
+    "packages/server/tsconfig.json",
     "packages/sessions/src/persistence.ts",
     "packages/sessions/src/postgres-persistence.ts",
     "packages/sessions/src/session-state.ts",
@@ -149,6 +151,7 @@
     "apps/desktop/test/free-capacity-settings.test.tsx": "cd61f4ae15abca1114c594fee6dbeaaf8ab5e85a",
     "apps/desktop/test/provider-connections.test.ts": "bc461d63c560b3a21c762b71113524b1788868e8",
     "apps/desktop/test/settings-registry.test.tsx": "55c1c61fcf282eac9f0372af83bfab06ae6af8c8",
+    "Dockerfile.cloud": "7d855b5403d6adb696a88f3a87595d2871d0ac1c",
     "packages/agent/src/index.ts": "3e33c03e81390c55ef6a52153f28a1f9db5cb30c",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
@@ -241,6 +244,7 @@
     "packages/server/test/remote-direct-transport.test.ts": "186705cceeeae2b93e1ffe637af09c2442aee4ed",
     "packages/server/test/role-output-budget.test.ts": "d012b2b6fc81acea22e4c7187b492f4bbc225579",
     "packages/server/test/role-routing.test.ts": "a003d793764f810ee1d61f7e1d0119f9dca0f750",
+    "packages/server/tsconfig.json": "8081031e6c16125f3f17a1bf9c9827dd9e08ba93",
     "packages/sessions/src/persistence.ts": "b14d0a25ecfca7a3813ea703e8e943a2cfc3db3c",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "5f3232ae12786a8256e4c7944bc29262aef94721",
@@ -3358,17 +3362,38 @@
         }
       ],
       "regressionEvidence": "docs/evidence/free-capacity-fabric/R64-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R64 Free connection and production provenance",
+      "reason": "R64 adds a dedicated Free Capacity authorization screen backed by Fabric admission, safe rejected-account status, owner-scoped metrics, default hosted-workflow authorization for remote session scope and validated Render revision provenance. It also corrects server project references so clean Docker builds compile cloud usage, browser, computer use and MCP declarations before the server. No Free eligibility, privacy, billing, role qualification, verification or completion policy is relaxed. Production dispatch remains denied unless a Fabric admission authority is configured; its absence is exposed in health metadata.",
+      "priorSourceStateId": "b7d3470cadb30aa89be9148d64b76521f66b0418d59ee0d517128aff03cd83dd",
+      "priorSurfaceVersion": "r64-free-capacity-fabric-v1",
+      "resultingSourceStateId": "24ed80d52717fa147540dd4063f0306e66ab9738611e0b54590c643a550bd5ae",
+      "resultingSurfaceVersion": "r64-free-capacity-fabric-v1",
+      "recertifiedAt": "2026-10-02",
+      "changedFiles": [
+        {
+          "file": "Dockerfile.cloud",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/tsconfig.json",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/free-capacity-fabric/R64-REPOSITORY-TESTS.json"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R63 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, R44, R59, and R63 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
   "recertifiedAt": "2026-10-02",
   "recertification": {
     "phase": "R64 external entitlement acquisition",
-    "reason": "R64 adds a dedicated Free Capacity authorization screen backed by Fabric admission, safe rejected-account status, owner-scoped metrics, default hosted-workflow authorization for remote session scope and validated Render revision provenance. No Free eligibility, privacy, billing, role qualification, verification or completion policy is relaxed. Production dispatch remains denied unless a Fabric admission authority is configured; its absence is exposed in health metadata.",
+    "reason": "R64 adds a dedicated Free Capacity authorization screen backed by Fabric admission, safe rejected-account status, owner-scoped metrics, default hosted-workflow authorization for remote session scope and validated Render revision provenance. It also corrects server project references so clean Docker builds compile cloud usage, browser, computer use and MCP declarations before the server. No Free eligibility, privacy, billing, role qualification, verification or completion policy is relaxed. Production dispatch remains denied unless a Fabric admission authority is configured; its absence is exposed in health metadata.",
     "changedFiles": [
-      "apps/desktop/test/free-capacity-settings.test.tsx"
+      "Dockerfile.cloud",
+      "packages/server/tsconfig.json"
     ],
-    "priorSourceStateId": "83d9a01b436b4056755fa1d7ffe1b9d0ce983411535b45bd92e26f6b5e2a948e",
+    "priorSourceStateId": "b7d3470cadb30aa89be9148d64b76521f66b0418d59ee0d517128aff03cd83dd",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

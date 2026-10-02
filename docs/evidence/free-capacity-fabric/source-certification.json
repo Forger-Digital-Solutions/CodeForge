@@ -1,7 +1,11 @@
 {
-  "certifiedAt": "2026-10-02T17:03:54.455Z",
+  "certifiedAt": "2026-10-02T17:17:38.957Z",
   "implementationHead": null,
   "sourceFiles": [
+    {
+      "path": "Dockerfile.cloud",
+      "sha256": "96ff36a1b458d806cae26a00fcbb5ae0e1215ded88f521e99e5670e7c225061d"
+    },
     {
       "path": "apps/cloud-api/src/deployment-identity.ts",
       "sha256": "171a60ddfbaa476141735edba5f41e27eac21cf7229e6e7dfbcb468cfb4c5e3b"
@@ -80,7 +84,7 @@
     },
     {
       "path": "docs/codeforge-forgegreen-certified-source-state.json",
-      "sha256": "bf66881f7216d894a1602f96c8b1218713ab12bd8974cf946b828eadfbc7e380"
+      "sha256": "e2e485ad78eed11022675fcb18343f0ad33033bb461f3c52ebb2b8e4897fc95f"
     },
     {
       "path": "packages/cloud-entitlements/src/entitlement-service.ts",
@@ -259,6 +263,10 @@
       "sha256": "8fc69c68457ea502e2adbbd96c9c3670de1228a6a5d9c691a25b581d97bc868e"
     },
     {
+      "path": "packages/server/tsconfig.json",
+      "sha256": "42fcbb02b58f0f85e134da32bd80a5c247a048161d8f6987564ec7842580ed17"
+    },
+    {
       "path": "packages/sessions/src/persistence.ts",
       "sha256": "97538ec168d852fd6c399623809abb6aabc6c044823824dce3269cd630ce3b1c"
     },
@@ -336,18 +344,18 @@
     },
     {
       "path": "scripts/r64-recertify-certificate.mjs",
-      "sha256": "f293e09034acaab27acbb1d0443ba5b3e9cd2525c506c544881482376ea3ef29"
+      "sha256": "4af08685f92afed7beb843b97f290a340f300c54129b5d817da0d317420ff38c"
     },
     {
       "path": "scripts/r64-recertify-source-state.mjs",
-      "sha256": "cb0149d9b9a18209ea989374adea108b90b4aa8645090d4bf5d72f342e182acd"
+      "sha256": "41d7d9a8b996f6ed1c7b83dffe05e9909a2e41c3062b1bef3dc6a903260114c1"
     },
     {
       "path": "tests/free-capacity-certificate.test.ts",
       "sha256": "8b1cc59f4296c66881e25c040c956f6328bf78868bbc2fc0362c5d421bfd49fa"
     }
   ],
-  "sourceAggregateSha256": "cb70f63f9846b0d8b4dc574cee0c71b96cfe739036d3929f8c46c34f41e9f0ce",
+  "sourceAggregateSha256": "3542626a4457cc1ddb181da36c806bc79601727dcc748cf4c738bd67e20772d3",
   "evidenceFiles": [
     {
       "path": "docs/evidence/free-capacity-fabric/FREE-PRODUCT-COMPARISON.md",
@@ -534,6 +542,10 @@
       "sha256": "e7061283af8e5adbef9433daaa3f32c2d789667c736b90e1df65a52612eff713"
     },
     {
+      "path": "docs/evidence/free-capacity-fabric/R64-CLEAN-DOCKER-BUILD.json",
+      "sha256": "b4847fcbf199f26ce3c926c1148053c5a249731bbd50322abe039420f0fd6ed1"
+    },
+    {
       "path": "docs/evidence/free-capacity-fabric/R64-CROSS-DOMAIN-FAILOVER.json",
       "sha256": "bb6c041f72a99ee44d271afa9feb54537eae205029075951db40e9beca84c99c"
     },
@@ -582,6 +594,10 @@
       "sha256": "301e7453d121c8834d9f97658521cb2d1d4bf4653c00ba7cebe575ff8a7aecfb"
     },
     {
+      "path": "docs/evidence/free-capacity-fabric/R64-PRODUCTION-FIRST-DEPLOYMENT-FAILURE.json",
+      "sha256": "138b358c5f91135c1e1ba79d407d1f74e3083282ff9798f96f87e2317da253b7"
+    },
+    {
       "path": "docs/evidence/free-capacity-fabric/R64-PRODUCTION-PREFLIGHT.json",
       "sha256": "02569215f1a0204d4df0443bc05d160cd6aa4917dd7f603e680e04443a882523"
     },
@@ -599,7 +615,7 @@
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R64-REPOSITORY-TESTS.json",
-      "sha256": "7e55f71ec2233347052f8872f7f627b4680e9e8d8995c72d87ba77e205c9e905"
+      "sha256": "8e500fb8190bd77685f2ed8dd8bfbb4ecca67a263736e05c65e79d866d4b12ad"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R64-START-STATE.json",
@@ -710,7 +726,7 @@
       "sha256": "c52f109a8eccfbec95ac98cf6d418942483eb5e61b8f66a80510a3afcbefb06f"
     }
   ],
-  "evidenceAggregateSha256": "8e6f272db7d6eaccaccb63f71fe2db1d166f8d733611c0457088763521e46c83",
+  "evidenceAggregateSha256": "6fc176a45ae2635614ecc36bcb2143d65875d5f81e29383fea55f9af1358b8a9",
   "validation": {
     "repositoryWideStatus": "PASS",
     "repositoryWideExactTotalsExcludingStandaloneCertificateCanary": {
@@ -733,6 +749,6 @@
   },
   "limitation": "R64 remains partial: no independently owned Domain B Free entitlement, live two-domain failover, or live independent users. Production remote control transport is deployed only when verified in R64 production evidence; actual hosted Fabric remote dispatch is not configured. Dedicated Cloudflare and Groq Free account verifiers remain unfinished. Fresh-user end-to-end authorization and coding are unproven.",
   "certificateId": "r64-free-capacity-fabric-v1",
-  "sourceStateId": "b7d3470cadb30aa89be9148d64b76521f66b0418d59ee0d517128aff03cd83dd",
+  "sourceStateId": "24ed80d52717fa147540dd4063f0306e66ab9738611e0b54590c643a550bd5ae",
   "implementationBase": "f1ceb4a34a97c0bbae4553994148c465fce44c1d"
 }

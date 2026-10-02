@@ -5,6 +5,7 @@ import { readFile, writeFile } from "node:fs/promises";
 const path = "docs/codeforge-forgegreen-certified-source-state.json";
 const doc = JSON.parse(await readFile(path, "utf8"));
 const additions = [
+  "packages/server/tsconfig.json", "Dockerfile.cloud",
   "apps/cloud-api/src/deployment-identity.ts", "apps/cloud-api/src/server.ts", "apps/cloud-api/test/deployment-identity.test.ts",
   "apps/cloud-api/test/remote-direct-http.test.ts", "apps/desktop/src/provider-connections.ts", "apps/desktop/src/provider-connection-types.ts",
   "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx", "apps/desktop/src/renderer/settings/settings-registry.tsx",
@@ -17,7 +18,7 @@ const changedFiles = entries.filter(({ path, blobHash }) => doc.materialFileHash
 if (sourceStateId !== doc.sourceStateId) {
   const priorSourceStateId = doc.sourceStateId;
   const priorSurfaceVersion = doc.surfaceVersion;
-  const reason = "R64 adds a dedicated Free Capacity authorization screen backed by Fabric admission, safe rejected-account status, owner-scoped metrics, default hosted-workflow authorization for remote session scope and validated Render revision provenance. No Free eligibility, privacy, billing, role qualification, verification or completion policy is relaxed. Production dispatch remains denied unless a Fabric admission authority is configured; its absence is exposed in health metadata.";
+  const reason = "R64 adds a dedicated Free Capacity authorization screen backed by Fabric admission, safe rejected-account status, owner-scoped metrics, default hosted-workflow authorization for remote session scope and validated Render revision provenance. It also corrects server project references so clean Docker builds compile cloud usage, browser, computer use and MCP declarations before the server. No Free eligibility, privacy, billing, role qualification, verification or completion policy is relaxed. Production dispatch remains denied unless a Fabric admission authority is configured; its absence is exposed in health metadata.";
   Object.assign(doc, { sourceStateId, surfaceVersion: "r64-free-capacity-fabric-v1", materialFiles,
     materialFileHashes: Object.fromEntries(entries.map(({ path, blobHash }) => [path, blobHash])), recertifiedAt: new Date().toISOString().slice(0, 10),
     recertification: { phase: "R64 external entitlement acquisition", reason, changedFiles, priorSourceStateId, guarded: true } });
