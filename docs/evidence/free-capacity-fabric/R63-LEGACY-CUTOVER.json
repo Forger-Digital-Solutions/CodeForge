@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-10-02T13:13:35.936Z",
+  "round": "R63",
+  "status": "COMPLETE",
+  "invariant": "ForgeAuto/Free -> Capacity Fabric -> admitted quota domain -> provider. No ForgeAuto/Free -> legacy fallback -> provider path remains in production.",
+  "decisions": {
+    "MIGRATE": [
+      "productionCapacityRoutes() in packages/model-registry/src/free-cloud-service.ts migrates PURE_MANAGED_FREE -> PACKAGED_FREE_PROVIDER_FUNDED and USER_CONNECTED_FREE/DISTRIBUTED_USER_FREE -> USER_ENTITLED_FREE via migrateLegacyFreeRoute when zero-cost evidence is already present on the old route"
+    ],
+    "QUARANTINE": [
+      "Any legacy route whose migration fails an evidence gate returns enabled=false, lifecycle=QUARANTINED with the reason recorded (ZERO_COST_UNPROVEN / policy exclusion)"
+    ],
+    "KEEP": [
+      "capacityRoutes() diagnostic projection retains unmigrated classes for inspection; it is not a production dispatch input",
+      "Superseded free-cloud-service capacity projection retained as the migration source of truth"
+    ],
+    "DELETE": [
+      "Supply classes with no recurring zero-cost migration path return RETIRED (NO_RECURRING_ZERO_COST_MIGRATION); no invocation path remains"
+    ]
+  },
+  "authorityCanary": "packages/server/test/free-routing-authority.test.ts + assertFreeDispatch in packages/server/src/agent-runtime.ts: catalog registration cannot reach a provider on automatic, exact-pin, or streaming Free paths; any future bypass fails closed with FREE_FABRIC_AUTHORITY_REQUIRED"
+}

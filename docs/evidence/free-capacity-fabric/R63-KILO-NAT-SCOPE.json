@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-10-02T13:04:06.283Z",
+  "status": "CONSERVATIVE_NAT_GROUPING_IMPLEMENTED",
+  "quotaOwnerClass": "EGRESS_IP",
+  "authoritativeDocumentation": "https://kilo.ai/docs/gateway/authentication",
+  "allowance": "200 requests/hour per public IP",
+  "fallbackIndependenceGroup": "kilo-free-direct:PUBLIC_IP:shared-unverified",
+  "rawIpPersisted": false,
+  "physicalScopeReceipt": "Not captured; no claim of independent distinct egress",
+  "behavior": "All unverified same-provider Kilo egress users collapse to one conservative group regardless of localconn, model, key, installation or user identity. Verified same-egress sha256 receipts group together; separate verified scopes distinguish distinct physical quota.",
+  "upstreamCost": "UNKNOWN",
+  "tests": {
+    "command": "node node_modules/vitest/vitest.mjs run packages/forge-zero/test/capacity-independence.test.ts packages/forge-zero/test/capacity-policy.test.ts packages/eight-bit/test/free-fabric.test.ts packages/eight-bit/test/route-ledger.test.ts --maxWorkers=1",
+    "status": "PASS",
+    "tests": 72,
+    "files": 4,
+    "note": "19 ForgeZero assertions plus 53 eight-bit assertions; no live Domain B inference"
+  }
+}

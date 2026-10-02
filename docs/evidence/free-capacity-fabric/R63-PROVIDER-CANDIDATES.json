@@ -1,0 +1,777 @@
+{
+  "generatedAt": "2026-10-02T13:04:06.278Z",
+  "status": "NO_SECOND_DOMAIN_ADMITTED",
+  "inferenceCalls": 0,
+  "readOnlyProbe": "R63-PROVIDER-ENTITLEMENT-PROBE.json",
+  "candidates": [
+    {
+      "provider": "codeforge-cloud",
+      "providerDisplayName": "CodeForge Free (hosted)",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "FREE_ACCOUNT_ENTITLEMENT: CodeForge account entitlement (server-owned provider capacity)",
+      "modelToolCapability": "Not independently qualified for a Packaged Free coding role",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "DENIED_NO_VERIFIED_CURRENT_FREE_ENTITLEMENT",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "apps/cloud-api CloudProviderRegistry (server-owned keys, $0 routes only)"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "openrouter",
+      "providerDisplayName": "OpenRouter",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "Provider account, not individual API key or model",
+      "sharedOrGlobal": "Provider account, not individual API key or model",
+      "freeProvenance": "Current read-only environment-key metadata reports is_free_tier=false; only an independently authorized Free account can qualify",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "DENIED_PAID_ENVIRONMENT_CREDENTIAL",
+      "requiredAction": "Real Free account owner authorizes PKCE flow; verify hashed creator_user_id/organization scope and Free tier",
+      "authoritativeSources": [
+        "https://openrouter.ai/docs/api/api-reference/api-keys/get-current-api-key",
+        "https://openrouter.ai/docs/guides/overview/auth/oauth"
+      ],
+      "credentialPresence": true
+    },
+    {
+      "provider": "zai",
+      "providerDisplayName": "Z.AI",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "FREE_API: GLM-4.5-Flash / GLM-4.7-Flash / GLM-4.6V-Flash listed at $0",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "DENIED_NO_VERIFIED_CURRENT_FREE_ENTITLEMENT",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "https://docs.z.ai/guides/overview/pricing"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "alibaba",
+      "providerDisplayName": "Alibaba Model Studio",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PAID_API: Model Studio API is pay-as-you-go; no free Paid Auto route is assumed",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PAID_API",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "https://www.alibabacloud.com/help/en/model-studio/models"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "google",
+      "providerDisplayName": "Google Gemini",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "Project with billing-account-level tier and shared billing limits",
+      "sharedOrGlobal": "Project with billing-account-level tier and shared billing limits",
+      "freeProvenance": "New accounts start Free; account projects upgrade by linking billing; existing key's project and billing state unverified",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "DENIED_UNVERIFIED_PROJECT_BILLING",
+      "requiredAction": "Project owner authorizes read-only project billing verification and Free project connection, accepts unpaid-service data policy",
+      "authoritativeSources": [
+        "https://ai.google.dev/gemini-api/docs/billing",
+        "https://ai.google.dev/gemini-api/terms"
+      ],
+      "credentialPresence": true
+    },
+    {
+      "provider": "groq",
+      "providerDisplayName": "Groq",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "Organization; model rate windows do not establish independent account ownership",
+      "sharedOrGlobal": "Organization; model rate windows do not establish independent account ownership",
+      "freeProvenance": "Recurring Free plan documented, exact account tier unavailable in supported inference-key metadata",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "DENIED_UNVERIFIED_ORGANIZATION_FREE_TIER",
+      "requiredAction": "Organization owner provides current Free-plan evidence/approved delegated grant; inference-key presence alone is insufficient",
+      "authoritativeSources": [
+        "https://console.groq.com/docs/rate-limits",
+        "https://console.groq.com/docs/billing-faqs",
+        "https://console.groq.com/docs/spend-limits"
+      ],
+      "credentialPresence": true
+    },
+    {
+      "provider": "cerebras",
+      "providerDisplayName": "Cerebras",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "Organization",
+      "sharedOrGlobal": "Organization",
+      "freeProvenance": "Current official docs explicitly exclude a permanently renewing Free tier; $5 trial expires after 30 days",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PROMOTIONAL_CREDIT",
+      "requiredAction": "Only separate provider-approved durable zero-cost grant could change admission",
+      "authoritativeSources": [
+        "https://inference-docs.cerebras.ai/support/rate-limits"
+      ],
+      "credentialPresence": true
+    },
+    {
+      "provider": "sambanova",
+      "providerDisplayName": "SambaNova",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "Account; free tier exists only without a linked payment method",
+      "sharedOrGlobal": "Account; free tier exists only without a linked payment method",
+      "freeProvenance": "Official production model Free limits exist; no current credential or account billing evidence present",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "DENIED_NO_USER_ACCOUNT_ENTITLEMENT",
+      "requiredAction": "Real account owner connects account without payment method and provides current provider tier proof",
+      "authoritativeSources": [
+        "https://docs.sambanova.ai/docs/en/models/rate-limits"
+      ],
+      "credentialPresence": false
+    },
+    {
+      "provider": "mistral",
+      "providerDisplayName": "Mistral",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "Organization, allowance shared across Studio/API/Vibe",
+      "sharedOrGlobal": "Organization, allowance shared across Studio/API/Vibe",
+      "freeProvenance": "Free mode is default, monthly allowance and pay-as-you-go depend on subscription settings; environment key plan unverified",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "DENIED_UNKNOWN_PLAN_AND_OVERAGE",
+      "requiredAction": "Organization owner proves Free subscription, current quota, disabled pay-as-you-go and permitted third-party use",
+      "authoritativeSources": [
+        "https://docs.mistral.ai/admin/billing-usage/subscriptions",
+        "https://docs.mistral.ai/admin/billing-usage/usage-limits",
+        "https://legal.mistral.ai/terms/commercial-terms-of-service/"
+      ],
+      "credentialPresence": true
+    },
+    {
+      "provider": "ollama-cloud",
+      "providerDisplayName": "Ollama Cloud",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "Ollama Cloud account",
+      "sharedOrGlobal": "Ollama Cloud account",
+      "freeProvenance": "Starter use is included credits, all cloud models token-priced; purchased-credit spillover requires verified hard stop",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "LEGAL_REVIEW_REQUIRED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_CREDIT_ALLOWANCE_UNKNOWN_HARD_STOP",
+      "requiredAction": "Durable provider-approved no-billing entitlement and third-party use permission required; local inference forbidden",
+      "authoritativeSources": [
+        "https://ollama.com/pricing",
+        "https://ollama.com/terms"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "cloudflare-workers-ai",
+      "providerDisplayName": "Cloudflare Workers AI",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "Cloudflare account; all models consume account neuron allowance",
+      "sharedOrGlobal": "Cloudflare account; all models consume account neuron allowance",
+      "freeProvenance": "Workers Free has recurring 10,000 neurons/day hard stop; Workers Paid bills excess; subscription read returned HTTP 403",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "DENIED_UNVERIFIED_WORKERS_PLAN",
+      "requiredAction": "Account owner provides scoped Billing Read authority or authoritative current Workers Free receipt; Workers AI key alone cannot prove plan",
+      "authoritativeSources": [
+        "https://developers.cloudflare.com/workers-ai/platform/pricing/",
+        "https://developers.cloudflare.com/api/resources/accounts/subresources/subscriptions/methods/get/"
+      ],
+      "credentialPresence": true
+    },
+    {
+      "provider": "nvidia",
+      "providerDisplayName": "NVIDIA API Catalog",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "FREE_DEV_ENDPOINT: Trial API credits for prototyping (build.nvidia.com); not a production entitlement",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "DEVELOPMENT_ONLY",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_FREE_DEV_ENDPOINT",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "https://docs.api.nvidia.com/nim/docs/faq"
+      ],
+      "credentialPresence": false
+    },
+    {
+      "provider": "deepseek",
+      "providerDisplayName": "DeepSeek",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PAID_API: Direct API is pay-as-you-go (no recurring free tier)",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PAID_API",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "https://api-docs.deepseek.com/quick_start/pricing"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "poolside",
+      "providerDisplayName": "Poolside",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "FREE_DEV_ENDPOINT: Laguna models free-in-preview via platform.poolside.ai (no public rate card)",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "LEGAL_REVIEW_REQUIRED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_FREE_DEV_ENDPOINT",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "https://platform.poolside.ai (preview) + Models.dev 0/0 listing"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "huggingface",
+      "providerDisplayName": "Hugging Face Inference Providers",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PROMOTIONAL_CREDIT: Small monthly free credits; billed usage beyond credits on PAYG accounts",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PROMOTIONAL_CREDIT",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "https://huggingface.co/docs/inference-providers/pricing"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "togetherai",
+      "providerDisplayName": "Together AI",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PROMOTIONAL_CREDIT: Signup credit only",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PROMOTIONAL_CREDIT",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "https://www.together.ai/pricing"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "fireworks-ai",
+      "providerDisplayName": "Fireworks AI",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PROMOTIONAL_CREDIT: Signup credit only",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PROMOTIONAL_CREDIT",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "https://fireworks.ai/pricing"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "siliconflow",
+      "providerDisplayName": "SiliconFlow",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "LEGAL_REVIEW_REQUIRED: No approved durable recurring Free mechanism",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "LEGAL_REVIEW_REQUIRED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_LEGAL_REVIEW_REQUIRED",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "Models.dev (no $0 listings); free-model program terms not reviewed"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "nebius",
+      "providerDisplayName": "Nebius Token Factory",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PROMOTIONAL_CREDIT: No approved durable recurring Free mechanism",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PROMOTIONAL_CREDIT",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "Models.dev (no $0 listings)"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "novita-ai",
+      "providerDisplayName": "Novita AI",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PROMOTIONAL_CREDIT: No approved durable recurring Free mechanism",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PROMOTIONAL_CREDIT",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "Models.dev (no $0 listings)"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "hyperbolic",
+      "providerDisplayName": "Hyperbolic",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PROMOTIONAL_CREDIT: No approved durable recurring Free mechanism",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PROMOTIONAL_CREDIT",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "Not listed on Models.dev; signup credit model"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "friendli",
+      "providerDisplayName": "Friendli",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PROMOTIONAL_CREDIT: No approved durable recurring Free mechanism",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PROMOTIONAL_CREDIT",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "Models.dev (no $0 listings)"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "baseten",
+      "providerDisplayName": "Baseten",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PROMOTIONAL_CREDIT: No approved durable recurring Free mechanism",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PROMOTIONAL_CREDIT",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "Models.dev (no $0 listings)"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "moonshotai",
+      "providerDisplayName": "Moonshot (Kimi)",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PAID_API: No approved durable recurring Free mechanism",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PAID_API",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "Models.dev (no $0 listings)"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "opencode",
+      "providerDisplayName": "OpenCode Zen",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "Account/provider program; independent Free quota scope not established",
+      "sharedOrGlobal": "Account/provider program; independent Free quota scope not established",
+      "freeProvenance": "Official Zen Free offerings explicitly limited-time; no environment credential",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_TEMPORARY_FREE_PROGRAM",
+      "requiredAction": "Durable provider-approved Free grant with independently enforceable quota required",
+      "authoritativeSources": [
+        "https://opencode.ai/docs/zen/"
+      ],
+      "credentialPresence": false
+    },
+    {
+      "provider": "kilo",
+      "providerDisplayName": "Kilo Gateway",
+      "integrationImplemented": false,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "LEGAL_REVIEW_REQUIRED: No approved durable recurring Free mechanism",
+      "modelToolCapability": "Not independently qualified for a Packaged Free coding role",
+      "termsCompatibility": {
+        "registryClassification": "LEGAL_REVIEW_REQUIRED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "NO_NEW_INDEPENDENT_EGRESS_PROVEN",
+      "admissionDecision": "REJECTED_LEGAL_REVIEW_REQUIRED",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "Models.dev lists 24 $0 routes; third-party client terms not published"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "kilo-free-direct",
+      "providerDisplayName": "Kilo Auto Free Direct",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "PUBLIC_IP / EGRESS_IP, 200 anonymous Free requests/hour per IP",
+      "sharedOrGlobal": "PUBLIC_IP / EGRESS_IP, 200 anonymous Free requests/hour per IP",
+      "freeProvenance": "Current official authentication documentation reconfirms public-IP allowance; all same-egress users/models share one quota",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "Existing admitted anonymous Domain A; current availability requires fresh live proof",
+      "codingSuitability": "Inherited R61 coding qualification; R63 fresh execution owned by main workstream",
+      "independentFromDomainA": "NO_NEW_INDEPENDENT_EGRESS_PROVEN",
+      "admissionDecision": "DOMAIN_A_ONLY_NOT_DOMAIN_B",
+      "requiredAction": "Separate actual verified egress quota could qualify only if legitimately independently owned; no fake user/session/key aliases",
+      "authoritativeSources": [
+        "https://kilo.ai/docs/gateway/authentication"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "zenmux",
+      "providerDisplayName": "ZenMux",
+      "integrationImplemented": false,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "LEGAL_REVIEW_REQUIRED: No approved durable recurring Free mechanism",
+      "modelToolCapability": "Not independently qualified for a Packaged Free coding role",
+      "termsCompatibility": {
+        "registryClassification": "LEGAL_REVIEW_REQUIRED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_LEGAL_REVIEW_REQUIRED",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "Models.dev lists `*-free` routes incl. proprietary models; redistribution terms unverified"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "github-copilot",
+      "providerDisplayName": "GitHub Copilot",
+      "integrationImplemented": false,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "User Copilot account",
+      "sharedOrGlobal": "User Copilot account",
+      "freeProvenance": "Included subscription/free allocation requires current account quota and included-only hard stop; no authorized SDK account flow",
+      "modelToolCapability": "Not independently qualified for a Packaged Free coding role",
+      "termsCompatibility": {
+        "registryClassification": "LEGAL_REVIEW_REQUIRED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "DENIED_UNIMPLEMENTED_ENTITLEMENT_AND_POLICY",
+      "requiredAction": "Official SDK user OAuth plus verified Free plan and no overage; prior private endpoint shortcuts remain forbidden",
+      "authoritativeSources": [
+        "https://github.com/github/copilot-sdk",
+        "https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/usage-and-billing"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "github-models",
+      "providerDisplayName": "GitHub Models",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "Authenticated GitHub owner; model windows do not prove independently owned account",
+      "sharedOrGlobal": "Authenticated GitHub owner; model windows do not prove independently owned account",
+      "freeProvenance": "Free prototyping allowance; production/multi-user permission and remaining quota unverified",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "LEGAL_REVIEW_REQUIRED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "DENIED_PROTOTYPING_POLICY_AND_QUOTA_UNKNOWN",
+      "requiredAction": "Provider production permission plus authoritative quota and authorized account required",
+      "authoritativeSources": [
+        "https://docs.github.com/en/github-models"
+      ],
+      "credentialPresence": true
+    },
+    {
+      "provider": "anthropic",
+      "providerDisplayName": "Anthropic",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PAID_API: No zero-cost API route; consumer subscriptions do not grant API use",
+      "modelToolCapability": "Not independently qualified for a Packaged Free coding role",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PAID_API",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "https://www.anthropic.com/pricing"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "openai",
+      "providerDisplayName": "OpenAI",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "PAID_API: No free API tier; ChatGPT/Codex subscriptions are not API entitlements",
+      "modelToolCapability": "Adapter supports tool-capable models; selected model needs live role qualification",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_PAID_API",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "https://openai.com/api/pricing"
+      ],
+      "credentialPresence": null
+    },
+    {
+      "provider": "codeforge",
+      "providerDisplayName": "CodeForge (bundled)",
+      "integrationImplemented": true,
+      "accountOwnership": "No new authorized provider account acquired in this audit",
+      "quotaOwner": "No authoritative independent recurring Free quota owner verified",
+      "sharedOrGlobal": "UNKNOWN; may not be multiplied by key/model count",
+      "freeProvenance": "FREE_PRODUCT_ONLY: No approved durable recurring Free mechanism",
+      "modelToolCapability": "Not independently qualified for a Packaged Free coding role",
+      "termsCompatibility": {
+        "registryClassification": "CLEARED",
+        "currentProductionPermission": "No new delegated grant; exact route requires current terms/privacy verification"
+      },
+      "liveCallPossible": "NO_APPROVED_INFERENCE_CALL_FROM_THIS_AUDIT",
+      "codingSuitability": "UNQUALIFIED_FOR_NEW_DOMAIN",
+      "independentFromDomainA": "POTENTIALLY_ONLY_AFTER_PHYSICAL_ACCOUNT_OR_GRANT_PROOF",
+      "admissionDecision": "REJECTED_FREE_PRODUCT_ONLY",
+      "requiredAction": "Acquire explicit independently owned durable zero-cost grant, verify policy/billing/privacy and qualify before admission",
+      "authoritativeSources": [
+        "bundled placeholder/smoke records"
+      ],
+      "credentialPresence": null
+    }
+  ],
+  "externalHumanAuth": "EXTERNAL HUMAN AUTHORIZATION REQUIRED: authorize own genuinely Free provider account or provider-approved durable grant. Existing paid OpenRouter environment credential is denied; Groq/Gemini/Mistral/Cloudflare keys lack verified account plan receipts."
+}

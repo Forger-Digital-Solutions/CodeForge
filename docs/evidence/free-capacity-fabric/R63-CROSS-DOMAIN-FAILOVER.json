@@ -1,0 +1,12 @@
+{
+  "generatedAt": "2026-10-02T13:13:35.936Z",
+  "round": "R63",
+  "status": "BLOCKED_LIVE_CHAIN_DETERMINISTIC_AUTHORITY_PASS",
+  "liveChain": null,
+  "reason": "Live A->B failover requires two admitted independent domains; only Domain A (kilo-free-direct) exists. Under the conservative NAT rule, two users sharing one Kilo public-IP allowance remain one independence group, so no legitimate live failover chain can be constructed from current supply.",
+  "deterministicEvidence": "packages/forge-zero/test/capacity-independence.test.ts (6 tests), packages/eight-bit/test/free-fabric.test.ts (42 tests): degraded-primary routes yield the next independent group; same-scope routes never count as independent; failover never selects paid or BYOK supply",
+  "paidFallback": 0,
+  "byokFallback": 0,
+  "unqualifiedFallback": 0,
+  "falseWaits": 0
+}

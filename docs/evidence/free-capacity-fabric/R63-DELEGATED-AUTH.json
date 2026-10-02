@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-10-02T13:13:35.936Z",
+  "round": "R63",
+  "status": "IMPLEMENTED_PRODUCTION_AUTHORITY_BLOCKED_ON_EXTERNAL_ACCOUNT",
+  "flow": "user connects OpenRouter -> OAuth/PKCE -> delegated credential -> current-key metadata (/api/v1/key) -> account/tier identity -> Free status -> quota metadata -> provenance receipt -> model discovery -> qualification -> admitted Free quota domain",
+  "authority": "packages/providers/src/openrouter-entitlement.ts",
+  "failClosed": [
+    "PAID",
+    "UNKNOWN",
+    "AMBIGUOUS",
+    "REVOKED",
+    "STALE",
+    "OWNER_MISMATCH",
+    "EXPIRED",
+    "MISSING_RECURRING_QUOTA",
+    "ORGANIZATION_OR_SHARED_ACCOUNT",
+    "MANAGEMENT_OR_PROVISIONING_KEY",
+    "POLICY_DRIFT",
+    "TRANSPORT_FAILURE"
+  ],
+  "environmentCredential": {
+    "classification": "PAID",
+    "httpStatus": 200,
+    "isFreeTier": false,
+    "admission": "DENIED",
+    "inferenceCalls": 0
+  },
+  "receiptBinding": "Receipts are stored separately from secrets in apps/desktop/src/provider-connections.ts and rechecked against the current user and credential fingerprint; mismatched or stale receipts reclassify to UNKNOWN",
+  "policyEvidence": "Terms, privacy, and limits documents fetched without credentials; hostnames pinned; content hashed into the receipt",
+  "tests": "packages/providers/test/openrouter-entitlement.test.ts (15 tests) + apps/desktop/test/provider-connections.test.ts (17 tests) — all passing",
+  "blocked": "EXTERNAL HUMAN AUTHORIZATION REQUIRED: a real user-owned OpenRouter Free account must complete the OAuth/PKCE flow; the agent cannot authorize a new upstream account"
+}

@@ -1,0 +1,85 @@
+{
+  "round": "R63",
+  "status": "PARTIAL",
+  "implementationState": "DEPLOYABLE_AND_SOCKET_TESTED",
+  "liveHostedTransport": false,
+  "liveInferenceCalls": 0,
+  "implemented": [
+    "Cloud Bearer bootstrap verifies signature, expiry, uncached live device session and account ownership",
+    "Transport session binds account, authenticated identity session, exact workspace and device; encrypted MAC secret, expiry and revocation persist in driver-neutral session storage",
+    "Queued delivery with MAC-bound assignment and single-use acknowledgement; exact request digest, task, domain and device binding",
+    "Durable transactional ownership checks and per-record locks prevent duplicate accepted result or feedback across asynchronous callers",
+    "Authenticated heartbeats extend bounded leases; missed heartbeats, expiry and revocation are classified and recovered; at most three assignment generations by default",
+    "Reconnect issues a new capability and assignment nonce; former generations cannot settle or commit runtime tool proposals",
+    "Result upload carries structured provider response and PROPOSED_ONLY tool state; malformed tools and reported paid cost are rejected",
+    "Feedback is scoped to assignment and bound to result model, tool count and token accounting",
+    "Cancellation reaches the device on heartbeat and aborts inference; cancelled result uploads are rejected",
+    "RemoteDirectProviderAdapter returns accepted tools through actual AgentRuntime governed tool execution; runtime registration is ServerOptions.remoteDirect",
+    "ModelExecutionAdapter context seam supports owner-bound role dispatch; normal adapters remain unchanged",
+    "RemoteDirectHttpClient uses the fixed anonymous Kilo adapter without environment provider credentials; bounded automatic reconnect and worker command exist",
+    "createRemoteDirectFabricAdmission checks trusted user/device/workspace authorization plus actual quota-domain admission; unspecified admission defaults to deny",
+    "Undelivered jobs become blocked after ten minutes rather than remaining stuck forever"
+  ],
+  "focusedValidation": {
+    "command": "node node_modules/vitest/vitest.mjs run packages/server/test/remote-client-direct.test.ts packages/server/test/remote-direct-transport.test.ts apps/cloud-api/test/remote-direct-http.test.ts",
+    "testFiles": 3,
+    "passed": 28,
+    "failed": 0,
+    "skipped": 0,
+    "pending": 0,
+    "durationSeconds": 11.61,
+    "buildCommand": "node node_modules/typescript/bin/tsc -b apps/cloud-api",
+    "buildResult": "PASS",
+    "securityCases": [
+      "forged session", "forged assignment", "forged MAC", "reused acknowledgement", "replayed result",
+      "expired session", "expired assignment", "revoked session", "revoked identity", "wrong user",
+      "wrong workspace", "wrong task", "wrong device", "result submitted twice", "feedback submitted twice",
+      "feedback from non-owner", "over-broad workspace scope", "result after cancellation", "result after reassignment",
+      "unadmitted domain", "admission drift", "owner-signed accounting inflation", "malformed tool proposal", "reported paid result"
+    ]
+  },
+  "socketProof": {
+    "transport": "REAL_LOOPBACK_HTTP_SERVER_AND_CLIENT",
+    "identity": "SIGNED_TEST_ACCESS_TOKEN_WITH_DURABLE_DEVICE_SESSION",
+    "upstreamInference": "DETERMINISTIC_MOCK_SSE_NOT_LIVE",
+    "runtime": "ACTUAL_AGENT_RUNTIME_AND_GOVERNED_READ_FILE_TOOL",
+    "capabilitiesProven": ["bootstrap", "delivery", "ack", "result", "feedback", "runtime tool observation", "cancellation", "device abort"],
+    "completionClaim": "NO_LIVE_CODING_OR_COMPLETION_GATE_PROOF_CLAIMED"
+  },
+  "recoveryProof": {
+    "transport": "DURABLE_TRANSACTIONAL_PROTOCOL_TEST",
+    "sequence": ["assignment delivered", "acknowledged", "lease elapsed", "authority reconstructed from same persistent store", "job requeued", "new session received new assignment", "old result rejected", "second lease elapsed", "bounded attempts exhausted to blocked"],
+    "duplicateCommittedMutation": false,
+    "postgresLiveProof": false
+  },
+  "deployedEndpointReadOnlyProbe": {
+    "endpoint": "https://codeforge-cloud-va.onrender.com",
+    "healthLiveStatus": 200,
+    "metaStatus": 200,
+    "advertisedServerVersion": "0.4.0",
+    "advertisedHostedInferenceReady": true,
+    "remoteDirectSessionsGetStatus": 404,
+    "remoteDirectResponse": "Endpoint not found",
+    "interpretation": "Existing production deployment does not expose the R63 transport. Repository implementation and loopback tests do not constitute deployed transport proof."
+  },
+  "workerCommand": "node scripts/cloud/remote-direct-worker.mjs --cloud-url <https-origin> --device-id <device> --workspace-id <workspace> --quota-domain-id <admitted-domain>",
+  "workerIdentitySource": "CODEFORGE_WORKER_ACCESS_TOKEN: CodeForge identity access token; not an upstream provider key",
+  "remainingGates": [
+    "Deploy the revised Cloud API and configure a real production Fabric admission supplier and owner/device/workspace binding",
+    "Run authenticated remote client against that deployed release using admitted domain ownership",
+    "Capture live zero-cost upstream execution, deployed heartbeat/recovery and runtime completion proof"
+  ],
+  "authoritativeSources": [
+    "packages/server/src/remote-client-direct.ts",
+    "packages/server/src/remote-direct-transport.ts",
+    "packages/server/src/remote-direct-provider.ts",
+    "packages/server/src/remote-direct-client.ts",
+    "packages/server/src/remote-direct-admission.ts",
+    "packages/server/src/model-execution-adapter.ts",
+    "packages/server/src/index.ts",
+    "packages/sessions/src/session-state.ts",
+    "apps/cloud-api/src/remote-direct-http.ts",
+    "apps/cloud-api/src/server.ts",
+    "scripts/cloud/remote-direct-worker.mjs"
+  ]
+}

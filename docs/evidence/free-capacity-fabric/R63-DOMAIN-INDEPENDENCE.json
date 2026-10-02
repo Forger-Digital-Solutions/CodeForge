@@ -1,0 +1,31 @@
+{
+  "generatedAt": "2026-10-02T13:04:06.282Z",
+  "status": "DETERMINISTIC_AUTHORITY_PASS_LIVE_SECOND_DOMAIN_BLOCKED",
+  "authority": "packages/forge-zero/src/capacity-independence.ts",
+  "fields": [
+    "independenceKey",
+    "quotaScopeEvidence.scope",
+    "quotaScopeEvidence.identityHash",
+    "quotaScopeEvidence.source",
+    "quotaScopeEvidence.verifiedAt",
+    "quotaScopeEvidence.recheckAt"
+  ],
+  "rules": [
+    "Only actual provider quota owner may create verified scope evidence",
+    "User/session/key/model aliases never independently count",
+    "Same organization/account/project/sponsor wallet/shared NAT groups together",
+    "Missing scope proof conservatively pools by provider/domain type",
+    "Both domains need verified physical scopes before haveIndependentQuotaScopes returns true",
+    "Supplied stale/future/raw/mismatched evidence denies Free admission"
+  ],
+  "telemetry": "FreeFabric.capacitySnapshot scopes to user-owned routes; distinguishes conservative groups from verified scope groups",
+  "tests": {
+    "command": "node node_modules/vitest/vitest.mjs run packages/forge-zero/test/capacity-independence.test.ts packages/forge-zero/test/capacity-policy.test.ts packages/eight-bit/test/free-fabric.test.ts packages/eight-bit/test/route-ledger.test.ts --maxWorkers=1",
+    "status": "PASS",
+    "tests": 72,
+    "files": 4,
+    "note": "19 ForgeZero assertions plus 53 eight-bit assertions; no live Domain B inference"
+  },
+  "liveIndependentDomains": 1,
+  "liveSecondDomain": "NOT_ADMITTED"
+}

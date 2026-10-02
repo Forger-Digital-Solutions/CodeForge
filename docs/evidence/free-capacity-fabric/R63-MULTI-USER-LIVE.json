@@ -1,0 +1,8 @@
+{
+  "generatedAt": "2026-10-02T13:13:35.936Z",
+  "round": "R63",
+  "status": "BLOCKED_LIVE_CONCURRENCY_DETERMINISTIC_AUTHORITY_PASS",
+  "liveResult": null,
+  "reason": "Genuine independent multi-user concurrency needs two independent quota domains. Only one exists; grouping unverified same-egress Kilo users together is exactly the R63 fix, so fabricating two Kilo 'users' behind one public IP would violate it.",
+  "deterministicEvidence": "tests/two-client-authority.test.ts (authority isolation across two clients), packages/sessions/test/transaction-concurrency.test.ts, apps/cloud-api/test/sponsor-operator.test.ts fairness scheduling (8 waiting users round-robin inside one funded slot) — all passing"
+}

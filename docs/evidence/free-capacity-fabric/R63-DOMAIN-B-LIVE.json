@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-10-02T13:13:35.936Z",
+  "round": "R63",
+  "status": "BLOCKED",
+  "domain": null,
+  "reason": "No second independently owned zero-cost quota domain could be admitted. Every available credential failed authoritative Free verification: the OpenRouter environment key is a paid tier (verified /api/v1/key is_free_tier=false); Groq, Google, Mistral, Cerebras, Cloudflare Workers AI, and GitHub Models credentials are present but cannot prove a current Free account tier from supported metadata; Cerebras official docs show only an expiring $5 trial (promotional, non-durable).",
+  "candidates": "docs/evidence/free-capacity-fabric/R63-PROVIDER-CANDIDATES.json (33 providers audited)",
+  "probe": "docs/evidence/free-capacity-fabric/R63-PROVIDER-ENTITLEMENT-PROBE.json",
+  "blocked": "EXTERNAL HUMAN AUTHORIZATION REQUIRED: an account owner must authorize a genuinely Free provider account (OpenRouter Free via PKCE, or an equivalent durable zero-cost grant). No developer-paid credential was substituted."
+}

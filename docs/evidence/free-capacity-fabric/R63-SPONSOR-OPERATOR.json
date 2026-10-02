@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-10-02T13:13:35.936Z",
+  "round": "R63",
+  "status": "PASS_PRODUCTION_CAPABLE_NO_LIVE_SPONSOR",
+  "authority": [
+    "apps/cloud-api/src/sponsor-operator-service.ts",
+    "apps/cloud-api/src/sponsor-operator-http.ts",
+    "apps/cloud-api/test/sponsor-operator.test.ts"
+  ],
+  "controls": [
+    "Authenticated operator enrollment with active/revoked state",
+    "Signing-key fingerprint registration, rotation, expiry, revocation",
+    "Signed offer manifests kept INERT until independent current qualification",
+    "Forged identity/key/signature/scope/replay rejected",
+    "Independent verification receipts fenced against forgery and supersession",
+    "Billing receipt must prove zero marginal cost to CodeForge before admission",
+    "Sponsor quota identity pooled across model/offer aliases; funded pool never exceeded",
+    "Bounded models, roles, concurrency, and usage per offer",
+    "Fairness queueing: eight waiting users scheduled round robin inside one funded slot",
+    "Suspension limited to the failing sponsor wallet aliases on signer expiry/rotation/revocation/stale verification",
+    "Cancellation fences dispatch; a cancelled result cannot be replayed",
+    "Encrypted durable registry survives service restart; shares SQLite safely with concurrent authenticated remote session polling",
+    "No paid fallback on any sponsor path"
+  ],
+  "tests": "apps/cloud-api/test/sponsor-operator.test.ts — 13/13 pass over real HTTP + SQLite",
+  "liveSponsor": "None exists; no real sponsor was required or fabricated"
+}

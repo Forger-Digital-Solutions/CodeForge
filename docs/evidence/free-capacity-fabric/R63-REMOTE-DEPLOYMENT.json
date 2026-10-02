@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-10-02T13:13:35.936Z",
+  "round": "R63",
+  "status": "BLOCKED",
+  "deployedCommit": null,
+  "liveEndpointEvidence": null,
+  "productionService": "render.yaml service codeforge-cloud-staging (Docker, plan=free), branch feat/codeforge-cloud, autoDeploy=false",
+  "reason": "Production deploys require pushing the validated tree to feat/codeforge-cloud and triggering a manual Render deploy. The R63 work branch is codex/r29-release-closure, autoDeploy is disabled, and no Render API credential or push authorization is available in this session. The currently deployed service predates the transport and returned 404 for the new routes when probed.",
+  "localState": "Deployable and socket-tested — see R63-REMOTE-TRANSPORT.json (28 focused tests, 0 failures). No production claim is merged with local evidence.",
+  "requiredAction": "Merge/push the committed R63 tree to feat/codeforge-cloud (or the production branch), run the Render deploy for codeforge-cloud-staging, then prove session bootstrap, assignment, ack, heartbeat, result, feedback, disconnect recovery, revocation, and the negative cases against the live URL."
+}

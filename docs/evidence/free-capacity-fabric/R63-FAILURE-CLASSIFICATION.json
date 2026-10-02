@@ -1,0 +1,113 @@
+{
+  "generatedAt": "2026-10-02T13:13:35.936Z",
+  "round": "R63",
+  "status": "ALL_RESOLVED",
+  "originalBoundedRun": "docs/evidence/free-capacity-fabric/R63-suite-bounded-main.json — 1435 files, 4424 tests, 4356 passed, 18 failed, 50 skipped",
+  "classifications": [
+    {
+      "file": "tests/cloud-e2e.test.ts",
+      "failure": "Free request debited paid wallet accounting (499925!=0)",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — Free usage moved to dedicated product=FREE period; paid wallet untouched; suite green"
+    },
+    {
+      "file": "apps/cloud-api/test/sponsor-operator.test.ts",
+      "failure": "admission/supersession assertions",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — sponsor service completed during R63; 13/13 green"
+    },
+    {
+      "file": "apps/desktop/test/provider-connections.test.ts",
+      "failure": "delegated receipt mismatch",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — receipt recheck and storage split; 17/17 green"
+    },
+    {
+      "file": "packages/cloud-entitlements/test/entitlements.test.ts",
+      "failure": "paid wallet counted as Free (5000000!=500000)",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — product=FREE evaluation; 5/5 green"
+    },
+    {
+      "file": "packages/forge-zero/test/capacity-independence.test.ts",
+      "failure": "independence group count",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — conservative grouping implementation; 6/6 green"
+    },
+    {
+      "file": "packages/forgegreen-campaign/test/fg11-source-state.test.ts",
+      "failure": "certified source-state drift",
+      "classification": "EXPECTED_DRIFT",
+      "resolution": "RESOLVED — deliberate R63 surface recertified (r63-free-capacity-fabric-v1) via scripts/r63-recertify-source-state.mjs; canary preserved, not weakened; 5/5 green"
+    },
+    {
+      "file": "packages/forgegreen-campaign/test/fg12e-harness-provenance.test.ts",
+      "failure": "FG12E_SOURCE_STATE_DRIFT",
+      "classification": "EXPECTED_DRIFT",
+      "resolution": "RESOLVED — same recertification; 3/3 green"
+    },
+    {
+      "file": "packages/providers/test/openrouter-entitlement.test.ts",
+      "failure": "2 receipt/assertion mismatches",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — entitlement receipt semantics completed; 15/15 green"
+    },
+    {
+      "file": "packages/server/test/agent-turn-boundary.test.ts",
+      "failure": "unclassified boundary error (fabric authority)",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — GovernedProviderAdapter forwards isTestProvider; 4/4 green"
+    },
+    {
+      "file": "packages/server/test/remote-direct-transport.test.ts",
+      "failure": "2 expected-rejection assertions",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — transport validation completed; 21/21 green"
+    },
+    {
+      "file": "packages/server/test/server-stop.test.ts",
+      "failure": "fixture treated as production provider",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — fixture marked isTestProvider:true; 2/2 green"
+    },
+    {
+      "file": "tests/cloud-failure-matrix.test.ts",
+      "failure": "intermediate-state failure",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — green in R63-reliability-affected-final.json and current run"
+    },
+    {
+      "file": "tests/reservation-ordering.test.ts",
+      "failure": "intermediate-state failure",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — 10/10 green"
+    },
+    {
+      "file": "packages/model-registry/test/free-cloud-chaos.test.ts",
+      "failure": "5 chaos cooldown/qualification assertions — no eligible routes produced",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — fixtures used credentialSource=OAUTH without a FREE_VERIFIED receipt, which R63 correctly classifies as unverifiable; fixtures now connect as USER_CONNECTED_FREE_API_KEY (user-owned free account); suite green"
+    },
+    {
+      "file": "packages/model-registry/test/r59-supply-recovery.test.ts",
+      "failure": "17 supply-recovery assertions — qualification yielded no routes",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — same fixture-class repair: user-connected free accounts instead of bare OAuth; suite green"
+    },
+    {
+      "file": "packages/server/test/model-selection-boundary.test.ts",
+      "failure": "valid paid selection turn failed REQUIRES_SUBSCRIPTION",
+      "classification": "REGRESSION",
+      "resolution": "FIXED — R63 severed request-body userId from session-runtime identity (anti-spoofing); the GEMS entitlement check now uses the request-scoped userId threaded through TurnState (state.requestUserId ?? this.userId); quota binding stays on host identity; 11/11 green"
+    },
+    {
+      "file": "packages/server/test/paid-role-routing.test.ts",
+      "failure": "settles attempt OBSERVED timed out at 30s (was 24.6-27s in-file, 0.8s isolated)",
+      "classification": "RESOURCE_FAILURE",
+      "resolution": "FIXED — paid-auto adapter is a real (non-test) adapter whose calls pace against the process-global defaultCapacityGovernor sliding window; earlier file tests exhausted the window. Each test runtime now gets an explicit per-test ProviderCapacityGovernor; OBSERVED test runs ~1s; 20/20 green"
+    }
+  ],
+  "preExistingDirtyWork": "Six pre-R63 tracked modifications and benchmark debris preserved untouched per R63-START-STATE.json; none are failures",
+  "finalBoundedRun": "docs/evidence/free-capacity-fabric/R63-REPOSITORY-TESTS.json — third invocation of the bounded suite, repositoryWideGreen=true: bounded-main PASS (527 files, 4378 passed, 0 failed, 50 skipped, exit 0) plus four serial heavy suites PASS (22+4+1+6); totals 531 files, 4411 passed, 0 failed, 50 skipped; peak process-tree working set ~905MB against the 2048MB worker cap",
+  "transientRunnerNote": "The previous invocation's bounded-main reported vitest exit 1 with 0 failed suites and 0 failed tests: one uncaught 'EPIPE / writeAfterFIN' during worker teardown, loosely attributed to packages/server/test/context-efficiency.test.ts (clean standalone). No R63 file writes to a duplex socket in a data handler; the same code rerun produced a fully clean PASS (exit 0, no unhandled errors), classifying it TRANSIENT_TEARDOWN — a pre-existing latent socket/stdio teardown race, not a policy regression. One plausible latent source remains unpatched: packages/providers/src/codex-app-server-process.ts child.stdin has no 'error' listener (pre-existing since e3b8ac35), so a write-after-child-exit surfaces as an uncaught exception rather than a transport failure."
+}

@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-10-02T13:13:35.936Z",
+  "round": "R63",
+  "status": "PASS",
+  "invariant": "ForgeAuto/Free can consume purchased credits, Paid Auto, or BYOK only when the user explicitly selects a non-Free mode; never through Free routing",
+  "purchasedCreditsReachableFromFree": false,
+  "paidAutoReachableFromFree": false,
+  "byokReachableFromFree": false,
+  "mechanism": [
+    "packages/cloud-entitlements/src/entitlement-service.ts: product \"FREE\" evaluates the dedicated Free usage period and Free feature set; a paid subscription and paid wallet balance are not consulted and cannot refill or authorize exhausted Free capacity",
+    "packages/cloud-gateway/src/gateway-service.ts: hosted Free evaluation passes product=FREE explicitly; Free request limits and concurrency apply to Free routes regardless of paid balance",
+    "packages/providers/src/hosted.ts: hosted Free adapters reject gems, gems::, and gems/ model ids outright",
+    "packages/server/src/agent-runtime.ts assertFreeDispatch -> authorizeProductionFreeDispatch: every non-test Free dispatch (automatic, exact pin, streaming) must be admitted by the Capacity Fabric; catalog registration alone is not authority",
+    "packages/server/src/model-execution-adapter.ts: paid-auto selections resolve only through the explicit paid-auto surface; gems_paid tier exempt only inside its own paid path"
+  ],
+  "evidence": [
+    "docs/evidence/free-capacity-fabric/R63-free-wallet-authority.json (6 suites, 16 tests, all pass)",
+    "docs/evidence/free-capacity-fabric/R63-cloud-e2e-final.json (Free allowance 500_000 decrements to exhaustion; Pro upgrade mints 5,000,000 paid credits yet the next Free request is still denied; paid wallet untouched)",
+    "tests/cloud-e2e.test.ts, tests/reservation-ordering.test.ts, packages/cloud-entitlements/test/entitlements.test.ts, packages/server/test/free-routing-authority.test.ts"
+  ]
+}

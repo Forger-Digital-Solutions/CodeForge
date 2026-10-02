@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-10-02T13:13:35.936Z",
+  "round": "R63",
+  "status": "CURRENT",
+  "liveAdmittedDomains": 1,
+  "liveAdmittedDomainList": [
+    "kilo-free-direct (kilo-auto/free)"
+  ],
+  "independentGroups": 1,
+  "independentGroupList": [
+    "kilo-free-direct:PUBLIC_IP:shared-unverified"
+  ],
+  "healthyGroups": 1,
+  "liveCodingDomains": 1,
+  "successfulFailovers": 0,
+  "falseWaits": 0,
+  "paidLeakage": 0,
+  "byokLeakage": 0,
+  "usersWithUsableGroup": 1,
+  "usersWithTwoIndependentGroups": 0,
+  "telemetryAuthority": "FreeFabric.capacitySnapshot scopes to user-owned routes and returns capacityIndependenceSnapshot: groups keyed by provider+verified physical quota scope (or conservative shared-unverified), per-group healthy flag and routeCount — no sensitive identifiers",
+  "note": "A second admitted domain would raise independentGroups to 2; none exists yet — see R63-DOMAIN-B-LIVE.json"
+}

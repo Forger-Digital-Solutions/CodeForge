@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-10-02T13:13:35.936Z",
+  "round": "R63",
+  "status": "ROOT_CAUSE_CONFIRMED_AND_REPAIRED",
+  "rootCause": "HostedQueueWorker.run looped runOnce with no delay between iterations. A persistently failing database claim returned a rejected promise that was re-issued as an immediate microtask: 45,000 claims in 1.5s, zero timer ticks (heartbeat/cancellation/shutdown starved), and 20,000 retained errors growing the heap — matching the R62 4GB worker exhaustion.",
+  "fix": "packages/cloud-gateway/src/hosted-queue-worker.ts: failed or idle claims now await a real setTimeout(idleWaitMs=100) inside the bounded maxConcurrentDispatches loop; cancellation observation is coalesced to one in-flight query plus at most one follow-up",
+  "retryBehavior": "Bounded: at most maxConcurrentDispatches in flight, each failed attempt waits idleWaitMs before the next claim — timers, HTTP, and shutdown stay responsive; worker remains cancellable via AbortSignal",
+  "memoryResult": "docs/evidence/free-capacity-fabric/R63-HEAP-DIAGNOSIS.json: baseline 45,000 claims / 0 timer ticks / 26.1MB retained errors in 1.5s vs repaired 13 claims / timer ticks / 5.2MB peak — no unbounded growth",
+  "directByokRerun": "docs/evidence/free-capacity-fabric/R63-direct-heap-after.json: 15/15 pass (tests/direct-byok-cloud-outage.test.ts + cloud-failure-matrix) under the same 2048MB ceiling that previously exhausted; packages/sessions transaction serialization (AsyncLocalStorage + queued transactions) removes the nested-transaction reentry path"
+}

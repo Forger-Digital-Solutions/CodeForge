@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-10-02T12:00:38.928Z",
+  "baselineCommit": "57db998de17eead4254f7a1e9ba985e482d91e8c",
+  "status": "ROOT_CAUSE_REPRODUCED_AND_REPAIRED",
+  "observationMs": 1500,
+  "source": "packages/cloud-gateway/src/hosted-queue-worker.ts",
+  "cases": [
+    {
+      "name": "baseline",
+      "sourceSha256": "c0b17ffe64ec5512f62ed3ddfe8c5606325f8430788780c5bfc342b204f16331",
+      "claims": 45000,
+      "timerTicks": 0,
+      "peakObservedHeapUsedBytes": 26103552,
+      "retainedErrors": 20000
+    },
+    {
+      "name": "repaired",
+      "sourceSha256": "9320f5c2805127cf893a617ac632c5c4081e36a0a10d5dfa44bdbfdf905ce18b",
+      "claims": 13,
+      "timerTicks": 1,
+      "peakObservedHeapUsedBytes": 5189248,
+      "retainedErrors": 13
+    }
+  ],
+  "finding": "Baseline rejected database claims are retried as an immediate microtask loop, starving timers/HTTP/shutdown. Error sinks retain unbounded per-attempt errors in the real Vitest worker. Repair yields at idleWaitMs after each failed claim; real Direct/BYOK suite and deterministic bounded retry tests pass without raising heap limit.",
+  "scope": "No provider inference; bounded 1.5s subprocess diagnostic with at most 20,000 retained fixture errors and 256MB heap ceiling. Peak heap measurements are samples, not an OS peak."
+}

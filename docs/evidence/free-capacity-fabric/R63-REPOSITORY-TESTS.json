@@ -1,0 +1,131 @@
+{
+  "generatedAt": "2026-10-02T14:55:19.817Z",
+  "status": "PASS",
+  "repositoryWideGreen": true,
+  "strategy": "One main pass with two isolated workers; four contention-sensitive suites then run serially. Certificate canary independently recertified by main R63 workstream.",
+  "workerHeapLimitMb": 2048,
+  "peakProcessTreeWorkingSetBytes": 904884224,
+  "peakSingleProcessWorkingSetBytes": 380403712,
+  "phases": [
+    {
+      "name": "bounded-main",
+      "status": "PASS",
+      "startedAt": "2026-10-02T14:55:19.821Z",
+      "workers": 2,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run --exclude=packages/server/test/autonomous-orchestrator.test.ts --exclude=packages/server/test/parallel-orchestrator-integration.test.ts --exclude=packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts --exclude=apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts --maxWorkers=2 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R63-suite-bounded-main.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R63-suite-bounded-main.json",
+      "completedFileLines": 0,
+      "latestProgress": "      Tests  4378 passed | 50 skipped (4428)",
+      "durationSeconds": 2111.603,
+      "exitCode": 0,
+      "totals": {
+        "files": 527,
+        "passed": 4378,
+        "failed": 0,
+        "skipped": 50,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    },
+    {
+      "name": "serial-heavy-1",
+      "status": "PASS",
+      "startedAt": "2026-10-02T15:30:31.474Z",
+      "workers": 1,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run packages/server/test/autonomous-orchestrator.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R63-suite-serial-heavy-1.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R63-suite-serial-heavy-1.json",
+      "completedFileLines": 0,
+      "latestProgress": "      Tests  22 passed (22)",
+      "durationSeconds": 123.06,
+      "exitCode": 0,
+      "totals": {
+        "files": 1,
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    },
+    {
+      "name": "serial-heavy-2",
+      "status": "PASS",
+      "startedAt": "2026-10-02T15:32:34.537Z",
+      "workers": 1,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run packages/server/test/parallel-orchestrator-integration.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R63-suite-serial-heavy-2.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R63-suite-serial-heavy-2.json",
+      "completedFileLines": 0,
+      "latestProgress": "      Tests  4 passed (4)",
+      "durationSeconds": 61.425,
+      "exitCode": 0,
+      "totals": {
+        "files": 1,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    },
+    {
+      "name": "serial-heavy-3",
+      "status": "PASS",
+      "startedAt": "2026-10-02T15:33:34.600Z",
+      "workers": 1,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R63-suite-serial-heavy-3.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R63-suite-serial-heavy-3.json",
+      "completedFileLines": 0,
+      "latestProgress": "      Tests  1 passed (1)",
+      "durationSeconds": 77.522,
+      "exitCode": 0,
+      "totals": {
+        "files": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    },
+    {
+      "name": "serial-heavy-4",
+      "status": "PASS",
+      "startedAt": "2026-10-02T15:34:52.126Z",
+      "workers": 1,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R63-suite-serial-heavy-4.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\free-capacity-fabric\\R63-suite-serial-heavy-4.json",
+      "completedFileLines": 0,
+      "latestProgress": "      Tests  6 passed (6)",
+      "durationSeconds": 40.333,
+      "exitCode": 0,
+      "totals": {
+        "files": 1,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    }
+  ],
+  "totals": {
+    "files": 531,
+    "passed": 4411,
+    "failed": 0,
+    "skipped": 50,
+    "todo": 0,
+    "pending": 0,
+    "durationSeconds": 2413.943
+  },
+  "finishedAt": "2026-10-02T15:35:32.467Z"
+}
