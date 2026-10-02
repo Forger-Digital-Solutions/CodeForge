@@ -1,0 +1,21 @@
+{
+  "status": "PARTIAL",
+  "implementationCommit": "9a58d54c",
+  "implemented": [
+    "cached signed offer ceases to be available after six hours without successful re-verification",
+    "cached offer ceases to be available when its trusted signing key expires",
+    "HTTP 304 revalidates cached signature and signer before extending freshness"
+  ],
+  "focusedTests": {
+    "files": 1,
+    "passed": 5,
+    "failed": 0,
+    "command": "node node_modules/vitest/vitest.mjs run packages/forge-zero/test/sponsor-manifests.test.ts"
+  },
+  "liveSponsorGrant": false,
+  "notProven": [
+    "deployed operator enrollment and signing-key rotation",
+    "durable manifest/operator history",
+    "real sponsor-funded offer qualification and runtime admission"
+  ]
+}

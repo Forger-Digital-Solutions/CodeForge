@@ -1,0 +1,22 @@
+{
+  "status": "PARTIAL",
+  "implementationCommit": "9a58d54c",
+  "implemented": [
+    "MAC-bound assignment acknowledgement is required before frames or feedback",
+    "duplicate session registration and empty assignment scope are rejected",
+    "session revocation invalidates pending assignments",
+    "expired assignments cannot acknowledge, stream, or settle"
+  ],
+  "focusedTests": {
+    "files": 1,
+    "passed": 4,
+    "failed": 0,
+    "command": "node node_modules/vitest/vitest.mjs run packages/server/test/remote-client-direct.test.ts"
+  },
+  "notProven": [
+    "hosted session handshake and device authentication",
+    "network delivery, retry, heartbeat, disconnect recovery, and result upload",
+    "runtime dispatch and cancellation integration"
+  ],
+  "liveHostedTransport": false
+}

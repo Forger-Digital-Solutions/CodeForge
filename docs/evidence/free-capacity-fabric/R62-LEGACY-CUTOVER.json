@@ -1,0 +1,11 @@
+{
+  "status": "OPEN",
+  "inventory": [
+    { "path": "packages/model-registry/src/free-cloud-registry.ts:supplyClassFor", "decision": "KEEP_WITH_GATE", "reason": "Environment credentials classify as owner developer supply; legacy classes still exist" },
+    { "path": "packages/model-registry/src/free-cloud-service.ts:capacityRoutes", "decision": "MIGRATE", "reason": "Projects legacy supply classes and a local connection sentinel into the capacity fabric" },
+    { "path": "packages/server/src/agent-runtime.ts:hasRoutableFleet", "decision": "QUARANTINE", "reason": "Legacy deterministic provider-catalog fallback remains when no fabric fleet exists" },
+    { "path": "packages/forge-zero/src/legacy-free-migration.ts:migrateLegacyFreeRoute", "decision": "KEEP", "reason": "Fail-closed assessor is not yet invoked in production routing" }
+  ],
+  "productionCutoverProven": false,
+  "canaryAdded": false
+}

@@ -1,0 +1,10 @@
+{
+  "status": "NOT_PROVEN_LIVE",
+  "inheritedScopedTest": "packages/server/test/remote-client-direct.test.ts",
+  "scopedResult": "A signed rate-limit feedback event for Alice's public-IP domain does not hard-exclude Bob's distinct domain in the health authority.",
+  "liveConcurrentUsers": 0,
+  "liveIndependentDomains": 1,
+  "sponsorFairnessProven": false,
+  "crossUserCredentialIsolationLiveProven": false,
+  "limitation": "Deterministic isolation checks cannot substitute for two-user live coding and quota-domain concurrency."
+}

@@ -1,14 +1,38 @@
 {
-  "certifiedAt": "2026-10-02T00:21:02.765Z",
-  "implementationHead": "ea353f8fb6845ed6bfac261a1d2d94e48f8bd0f4",
+  "certifiedAt": "2026-10-02T11:05:13.311Z",
+  "implementationHead": "9a58d54c3e17c8b8ed82865c3c796e4698d23f90",
   "sourceFiles": [
     {
       "path": "apps/desktop/src/main.ts",
       "sha256": "d276263e46670ceb32697eb02efee0d4ed9f8b6300a181c74530539792469ddc"
     },
     {
+      "path": "apps/desktop/src/openrouter-oauth-flow.ts",
+      "sha256": "32d08c30fe48e44701b1300cf04d4bd247f7ecfcf1cde0c0f326131fce7bb937"
+    },
+    {
+      "path": "apps/desktop/src/provider-connections.ts",
+      "sha256": "90c949bc18caf6951fa5414b8d2ad89cbac71d93700bae12a88cd426738d87eb"
+    },
+    {
+      "path": "packages/eight-bit/src/failover.ts",
+      "sha256": "6129a5312d490146514b1dde9e91f7cf458ac7d45e72a17a16f92c29f5984779"
+    },
+    {
+      "path": "packages/eight-bit/src/free-fabric.ts",
+      "sha256": "db3d477f591a042f7080dbabca507878f120014d15f45a0ec1adfa4a2d58ca2e"
+    },
+    {
+      "path": "packages/eight-bit/src/route-health-authority.ts",
+      "sha256": "2bee1aa9599b91eceec8e8385de76aa2526e05b411a808d650a9923c09add485"
+    },
+    {
       "path": "packages/forge-zero/src/capacity-policy.ts",
       "sha256": "6ce8bfb2b7db2bea03b5af3e2452c3a9ff1ad37b1f039adaeab5210450f6ffc8"
+    },
+    {
+      "path": "packages/forge-zero/src/capacity-reservations.ts",
+      "sha256": "29f59cc93bacf1a90de29e1d50d4ed7f913b806b220e4573e2f0eef781eaf10b"
     },
     {
       "path": "packages/forge-zero/src/capacity-types.ts",
@@ -24,7 +48,7 @@
     },
     {
       "path": "packages/forge-zero/src/sponsor-manifests.ts",
-      "sha256": "2561ebad56dd81a4fc533d2b7e0480ad4fb1c14ab22c76b3e5946505e7899491"
+      "sha256": "c2cf090b362b598ef4fb8d190be5a330f591d390870e3193b79a01ac63e01309"
     },
     {
       "path": "packages/forge-zero/src/sponsored-routes.ts",
@@ -40,11 +64,15 @@
     },
     {
       "path": "packages/forge-zero/test/sponsor-manifests.test.ts",
-      "sha256": "b60e8348eae5a1a2ecf33ee0062ba6171f2316bd645af0fdcaf69c774eb3c55c"
+      "sha256": "77b2d11a4a1f0c6ba70a32780835b263dd444bbad755c92900ddfc338d29a1e8"
     },
     {
       "path": "packages/forge-zero/test/sponsored-routes.test.ts",
       "sha256": "e7376d4d779c54f10e6a4e00a1ebb2200f601f5c36c421a6b40af89cbabb991b"
+    },
+    {
+      "path": "packages/model-registry/src/free-cloud-registry.ts",
+      "sha256": "1c3095f6d95ed24455e95cd14470e451382bcbdd64d841b51803a99734444e0e"
     },
     {
       "path": "packages/model-registry/src/free-cloud-service.ts",
@@ -59,6 +87,10 @@
       "sha256": "762a770fe459255f66b8b76df230c9a49f45e69635456573c6b6f064d5d03090"
     },
     {
+      "path": "packages/model-registry/src/quota.ts",
+      "sha256": "ffa6dc816e81dc03cfa809c5f4f26e9a885f5286591fc3c4fc0aff50b148339f"
+    },
+    {
       "path": "packages/model-registry/test/free-cloud-registry.test.ts",
       "sha256": "0319d81dabbfb90ea2c9887a642c685769d06d90ad5999c181d54a614de178ed"
     },
@@ -67,19 +99,47 @@
       "sha256": "d5de1cf9a604b01c307cfaa0570a21155efc27706dede356412e21a373ad47d5"
     },
     {
+      "path": "packages/providers/src/openrouter-oauth.ts",
+      "sha256": "13aafcec4f66b5ba7dc77efd49d282d35294a82f259af1c6bfad939ec421bf48"
+    },
+    {
+      "path": "packages/server/src/agent-runtime.ts",
+      "sha256": "910483278305353f94a12dbe4cf44919203f81c19d6172099951290b89a7a2a9"
+    },
+    {
+      "path": "packages/server/src/autonomous-orchestrator.ts",
+      "sha256": "0b4d248b74b73915a8de0255ae2df36a96233ad99d3a8a43dc85129e53b395fe"
+    },
+    {
       "path": "packages/server/src/index.ts",
       "sha256": "36c1dd1213062ac231e6c719360449b5dbf1bc5790cd4a16c55fb76f48cadf55"
     },
     {
       "path": "packages/server/src/remote-client-direct.ts",
-      "sha256": "5cb1b32490fc4d94013b740f5e76b7cbed981b7b749d3aba65e7373101d584e5"
+      "sha256": "b66ef86771fab2bcbb458d1701c6109235a90995608edfdfd7ef853850085007"
     },
     {
       "path": "packages/server/test/remote-client-direct.test.ts",
-      "sha256": "0b40148fa834ef16eca1da06660032c68eebc2f4d1c6ae3051b8e26b5b3882df"
+      "sha256": "0417ba4f1f1a8381fe3924b40d533064168e29642c91ee116148124c0b087979"
+    },
+    {
+      "path": "packages/workflow/src/completion-gate.ts",
+      "sha256": "83de4becfedd27b43e63d9800a226190fe4d0a5bb01b4b5cfe175ba22b239b16"
+    },
+    {
+      "path": "packages/workflow/src/forge-verify.ts",
+      "sha256": "35310ea2b0743f00d4d962236b0c619df26febd557de3540b243a28285af58c1"
+    },
+    {
+      "path": "scripts/free-capacity-certificate.mjs",
+      "sha256": "1429d8d395e4158b122a5f118afd9fd5e0decd0be2085f3504f51e9305590fec"
+    },
+    {
+      "path": "tests/free-capacity-certificate.test.ts",
+      "sha256": "8b1cc59f4296c66881e25c040c956f6328bf78868bbc2fc0362c5d421bfd49fa"
     }
   ],
-  "sourceAggregateSha256": "6729ce37095b4264dbd3469e46746541492a9945c0120571dc4ebd1d7790c5df",
+  "sourceAggregateSha256": "b1270b948e40b0ace5b176b39b2f317c71a9d584de33f8c5a49f305cc6d6a4ae",
   "evidenceFiles": [
     {
       "path": "docs/evidence/free-capacity-fabric/FREE-PRODUCT-COMPARISON.md",
@@ -88,6 +148,46 @@
     {
       "path": "docs/evidence/free-capacity-fabric/R61-FINAL-REPORT.md",
       "sha256": "4eed1094e481f7ef7295e2c353265635a40108aaa6248bff8e3055e66bfef520"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R62-CROSS-DOMAIN-FAILOVER.json",
+      "sha256": "fc0e80a55aa70ecc1e46365558889a0a58e7f4e691d40ab15a4d2cd93a0f1480"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R62-FINAL-REPORT.md",
+      "sha256": "53bb008ae2d2a96f05efc72395b5f86b69ee3d369f5cc0580780f79f620ebfd1"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R62-LEGACY-CUTOVER.json",
+      "sha256": "7bb93332ce522ceca78da421a2a90ad5e609b796bdcc96eabf4a2c6a5c94998b"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R62-LIVE-DOMAIN-A.json",
+      "sha256": "28b771120bc89d057f0c54e4470acc903698ef35d777442eebe63647e05c5df0"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R62-LIVE-DOMAIN-B.json",
+      "sha256": "894f60c71d88973cc2fcd1e1514437d5e7c8736dc5f82d15207b2832a9724f3f"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R62-MULTI-USER-CONCURRENCY.json",
+      "sha256": "d1572988abcab84a12700a16fdcc084a8ae706ac8ef581d7fea269f02ef2674e"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R62-PROVIDER-CANDIDATES.json",
+      "sha256": "5efe53f5b6943cf96d53ff4f7e664f6b7d6cc26bcb67bc83464d2d494e950851"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R62-REMOTE-TRANSPORT.json",
+      "sha256": "edb48dc13373c8ae5b7ffbd876900597ed436fffa0a72d6fb3a28781d68ad961"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R62-REPOSITORY-TESTS.json",
+      "sha256": "b3615e1b1c4caf7f935490fe1e80768f7d60d2c108dec9e8a2688721aa48b86e"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R62-SPONSOR-PIPELINE.json",
+      "sha256": "808f8c18363f0f6ccd414c3dc86757f058f08437993c5471d24975ebdcd608be"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/legacy-migration.json",
@@ -146,14 +246,24 @@
       "sha256": "c52f109a8eccfbec95ac98cf6d418942483eb5e61b8f66a80510a3afcbefb06f"
     }
   ],
-  "evidenceAggregateSha256": "05ef7dc8430d6dc5fef0f356ddfaae96d45eab81d89505fee37b8c00bc27335a",
+  "evidenceAggregateSha256": "e045d6ad8db5146c5566ed1999f16d238ba876d1debe5610f2763ea0ca99840a",
   "validation": {
-    "workspaceBuild": "PASS",
-    "scopedPassedFiles": 33,
-    "scopedPassedTests": 359,
-    "scopedFailedTests": 0,
-    "repositoryWideStatus": "INTERRUPTED_RESOURCE_PRESSURE",
-    "repositoryWideExactTotals": null
+    "repositoryWideStatus": "FAIL",
+    "focusedPassedTests": 9,
+    "focusedPassedFiles": 2,
+    "workspaceBuild": "PASS_BASELINE",
+    "focusedFailedTests": 0,
+    "affectedTypecheck": "PASS",
+    "repositoryWideExactTotals": {
+      "files": 524,
+      "tests": 4381,
+      "passed": 4312,
+      "failed": 17,
+      "skipped": 50,
+      "pending": 2,
+      "sumOfShardDurationsSeconds": 4774.5,
+      "workerHeapFailure": true
+    }
   },
-  "limitation": "The evidence commit changes HEAD after this certificate; implementation source files remain exactly those in implementationHead."
+  "limitation": "R62 remains partial: second live Packaged Free domain, hosted transport, sponsor operations, and legacy cutover are not proven."
 }

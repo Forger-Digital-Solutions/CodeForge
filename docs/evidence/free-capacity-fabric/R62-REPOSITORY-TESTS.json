@@ -1,0 +1,60 @@
+{
+  "status": "FAIL",
+  "repositoryWideGreen": false,
+  "strategy": "Four Vitest shards with bounded workers; certificate canary excluded and run independently",
+  "command": "node node_modules/vitest/vitest.mjs run --shard=N/4 --maxWorkers=1-or-2 --exclude=tests/free-capacity-certificate.test.ts --reporter=json",
+  "shards": [
+    { "number": 1, "files": 131, "tests": 1163, "passed": 1149, "failed": 3, "skipped": 11, "pending": 0, "durationSeconds": 651.3 },
+    { "number": 2, "files": 131, "tests": 1032, "passed": 1014, "failed": 2, "skipped": 16, "pending": 0, "durationSeconds": 1651.4 },
+    { "number": 3, "files": 131, "tests": 1159, "passed": 1144, "failed": 8, "skipped": 7, "pending": 0, "durationSeconds": 1023.3 },
+    { "number": 4, "files": 131, "tests": 1027, "passed": 1005, "failed": 4, "skipped": 16, "pending": 2, "durationSeconds": 1448.5, "workerError": "Node heap exhausted while running Direct/BYOK Cloud outage tests" }
+  ],
+  "totals": { "files": 524, "tests": 4381, "passed": 4312, "failed": 17, "skipped": 50, "pending": 2, "sumOfShardDurationsSeconds": 4774.5 },
+  "failedFiles": [
+    "tests/reservation-ordering.test.ts",
+    "tests/security/attack-acceptance.test.ts",
+    "packages/cloud-db/test/account-deletion.test.ts",
+    "packages/cloud-billing/test/billing.test.ts",
+    "packages/forgegreen-campaign/test/fg12e-harness-provenance.test.ts",
+    "tests/cloud-e2e.test.ts",
+    "tests/two-client-authority.test.ts",
+    "apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts",
+    "packages/forgegreen-campaign/test/fg11-source-state.test.ts",
+    "packages/server/test/parallel-orchestrator-integration.test.ts",
+    "tests/cloud-failure-matrix.test.ts",
+    "tests/gems-identity-firewall.test.ts",
+    "packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts",
+    "packages/server/test/autonomous-orchestrator.test.ts"
+  ],
+  "knownBaselineFailures": {
+    "source": "validation-results.json baselineAudit and continuation",
+    "independentlyReproducedOnUnchangedBase": [
+      "tests/cloud-e2e.test.ts",
+      "tests/reservation-ordering.test.ts",
+      "packages/cloud-db/test/account-deletion.test.ts",
+      "packages/cloud-billing/test/billing.test.ts"
+    ],
+    "previouslyObservedButNotIndependentlyReproduced": [
+      "tests/cloud-failure-matrix.test.ts",
+      "packages/forgegreen-campaign/test/fg11-source-state.test.ts",
+      "packages/forgegreen-campaign/test/fg12e-harness-provenance.test.ts"
+    ]
+  },
+  "isolatedRetry": {
+    "files": [
+      "tests/direct-byok-cloud-outage.test.ts",
+      "apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts",
+      "packages/server/test/parallel-orchestrator-integration.test.ts"
+    ],
+    "passed": 14,
+    "failed": 0,
+    "pending": 2,
+    "result": "Two Cloud bridge and two parallel orchestration assertions that timed out in the shard passed in isolation; Direct/BYOK Cloud outage worker again exhausted the Node heap before its final two cases completed. This retry is supplemental and is not added to repository-wide totals."
+  },
+  "certificateCanary": { "files": 1, "passed": 1, "failed": 0 },
+  "limitations": [
+    "The repository suite is not green; thirteen of seventeen assertion failures lack unchanged-HEAD reproduction.",
+    "The shard-four first attempt was interrupted after a worker grew beyond 4 GB. The bounded retry finished its reporter but still had a worker heap error.",
+    "The two pending Direct/BYOK cases cannot be counted as passed or skipped."
+  ]
+}

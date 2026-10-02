@@ -1,0 +1,20 @@
+{
+  "status": "INHERITED_R61_LIVE_PROOF_NOT_RERUN",
+  "provider": "Kilo Gateway",
+  "model": "kilo-auto/free",
+  "supplyClass": "PACKAGED_FREE_DIRECT",
+  "quotaDomainType": "PUBLIC_IP",
+  "entitlementOwner": "installed user host/public egress IP",
+  "qualificationReceipt": "kilo-live-qualification.json",
+  "codingReceipt": "kilo-autonomous-live.json",
+  "codingResult": {
+    "fileChanged": "math.ts",
+    "reviewPassed": true,
+    "testsPassed": 3,
+    "forgeVerifyRequired": true,
+    "completionOutcome": "completed",
+    "treeIntegration": "integrated"
+  },
+  "reportedUpstreamCost": "UNKNOWN",
+  "limitation": "R62 did not run a fresh autonomous coding task on this domain; this preserves the R61 live evidence without relabeling it."
+}

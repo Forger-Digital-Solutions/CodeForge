@@ -1,0 +1,37 @@
+{
+  "status": "NO_SECOND_DOMAIN_ADMITTED",
+  "candidates": [
+    {
+      "provider": "OpenRouter",
+      "mechanism": "user-controlled API key issued through OAuth PKCE",
+      "repositoryFlow": "apps/desktop/src/openrouter-oauth-flow.ts",
+      "officialDocs": [
+        "https://openrouter.ai/docs/guides/overview/auth/oauth",
+        "https://openrouter.ai/docs/api/api-reference/api-keys/get-current-key"
+      ],
+      "availableCredential": "R61 verified paid account tier; R62 read failed authentication",
+      "admission": "DENIED_NO_USER_FREE_ENTITLEMENT"
+    },
+    {
+      "provider": "Groq",
+      "mechanism": "provider Free plan with organization-scoped limits",
+      "officialDocs": [
+        "https://console.groq.com/docs/rate-limits",
+        "https://console.groq.com/docs/spend-limits"
+      ],
+      "availableCredential": "Environment key exists; account organization tier and integration permission unverified",
+      "admission": "DENIED_PROVENANCE_UNVERIFIED"
+    },
+    {
+      "provider": "Gemini Developer API",
+      "mechanism": "project-scoped Free tier; OAuth requires a Cloud project and production authorization design",
+      "officialDocs": [
+        "https://ai.google.dev/gemini-api/docs/oauth",
+        "https://ai.google.dev/gemini-api/docs/billing"
+      ],
+      "availableCredential": "Environment key exists; project billing tier unverified",
+      "admission": "DENIED_PROVENANCE_UNVERIFIED"
+    }
+  ],
+  "liveInferenceCallsInR62": 0
+}

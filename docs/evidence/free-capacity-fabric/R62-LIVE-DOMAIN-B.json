@@ -1,0 +1,10 @@
+{
+  "status": "NOT_ADMITTED",
+  "provider": "OpenRouter",
+  "candidate": "user-delegated Free account via existing desktop OAuth PKCE",
+  "availableEnvironmentCredential": "OWNER_DEV_FREE; R61 reported is_free_tier=false",
+  "r62CurrentKeyRead": "AUTHENTICATION_FAILED; no new tier assertion",
+  "independentQuotaProven": false,
+  "autonomousCodingProven": false,
+  "requiredExternalAuthority": "A real Free account owner must authorize the user-scoped connection, or a provider must issue an explicit zero-cost grant. The paid-tier environment credential cannot substitute."
+}

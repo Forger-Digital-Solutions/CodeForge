@@ -1,0 +1,10 @@
+{
+  "status": "NOT_PROVEN_LIVE",
+  "admittedLiveDomainCount": 1,
+  "inheritedControlledEvidence": "kilo-autonomous-controlled-failover.json",
+  "controlledEvidenceLimit": "The other domain in the inherited proof was synthetic, so it does not establish two live upstream quota domains.",
+  "liveCapacityFailureInjected": false,
+  "liveSecondDomainContinuation": false,
+  "paidFallbackObserved": false,
+  "byokFallbackObserved": false
+}
