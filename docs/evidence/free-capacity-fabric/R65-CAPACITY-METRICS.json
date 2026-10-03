@@ -55,5 +55,19 @@
       "sha256": "f011299d38e51f2749008466d781d2365ecdfd501d6a70c732d1ed41584367e7"
     }
   ],
-  "failoverFault": "TRANSPORT_INJECTED_429_QUOTA_EXHAUSTED_ALL_CALLS"
+  "failoverFault": "TRANSPORT_INJECTED_429_QUOTA_EXHAUSTED_ALL_CALLS",
+  "productionClosure": {
+    "verifiedAt": "2026-10-03T00:13:18.122Z",
+    "runtimeCommit": "c32037b95c93fee3d41c7d259794e69c84b62b72",
+    "workflowId": "hosted-de91455a-a03e-4907-b600-5eb7bd340f0f",
+    "runId": "run-c5890f19-42bb-4c97-a80d-fac7f2adf50f",
+    "assignmentsSettled": 15,
+    "review": "PASS",
+    "verification": "3/3",
+    "completion": "completed",
+    "integration": "integrated",
+    "paidFallbacks": 0,
+    "byokFallbacks": 0,
+    "providerBillTotal": "UNKNOWN"
+  }
 }

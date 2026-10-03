@@ -126,5 +126,14 @@
       "currentSha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd",
       "action": "BYTE_IDENTICAL"
     }
-  ]
+  ],
+  "closureContinuationVerification": {
+    "at": "2026-10-03T00:13:18.112Z",
+    "status": "PASS",
+    "filesVerified": 6,
+    "runtimeCommit": "c32037b95c93fee3d41c7d259794e69c84b62b72",
+    "sha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+    "bytes": 3949,
+    "validationRewroteBenchmark": false
+  }
 }

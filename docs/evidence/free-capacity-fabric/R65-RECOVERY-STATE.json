@@ -118,5 +118,12 @@
     "status": "PASS",
     "expectedHead": "4dfa11e195ca5864927c2ab3539f25b82ac24bf6",
     "trackedStatus": "M apps/desktop/scripts/packaged-endurance.mjs\n M benchmarks/r57/extract-packaged-repeat.mjs\n M docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json\n M docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md\n M docs/evidence/r60-usable-free-inference/postgres-parity.json\n M packages/server/test/fixtures/run-recovery-worker.mjs"
+  },
+  "closureFinal": {
+    "runtimeCommit": "c32037b95c93fee3d41c7d259794e69c84b62b72",
+    "branch": "codex/r29-release-closure",
+    "sourceStateId": "2e40805e6bfa75a825ef5fa925fc075713c081e1480b0cb0e7f8a8aad2a4d184",
+    "sixUserFilesPreserved": true,
+    "finalEvidenceCommitFollowsFreeze": true
   }
 }

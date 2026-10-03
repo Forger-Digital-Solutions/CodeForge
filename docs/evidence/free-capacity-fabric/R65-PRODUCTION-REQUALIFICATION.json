@@ -1,0 +1,147 @@
+{
+  "observedAt": "2026-10-03T00:05:32.652Z",
+  "source": "Authenticated Render Web Shell running the committed production factory and FreeCloudService.qualifyPending; normal qualification persistence, no SQL row edits",
+  "boundedCycles": 1,
+  "preservedPriorVerdict": {
+    "completedAt": "2026-10-02T22:35:31.913Z",
+    "CODER": "QUALIFIED",
+    "EXPLORER": "PROBATION",
+    "PLANNER": "PROBATION",
+    "REVIEWER": "HARD_FAILURE",
+    "reviewerHardFailures": [
+      "reviewer.swallowed_failure"
+    ]
+  },
+  "receipts": [
+    {
+      "suite": "R41_ROLE_QUALIFICATION_V3",
+      "completedAt": "2026-10-03T00:02:04.563Z",
+      "state": "QUALIFIED",
+      "roles": {
+        "CODER": {
+          "status": "QUALIFIED",
+          "score": 1,
+          "hardFailures": [],
+          "cases": [
+            {
+              "id": "compact.tool_call",
+              "passed": true,
+              "hardFailure": false
+            },
+            {
+              "id": "compact.edit",
+              "passed": true,
+              "hardFailure": false
+            }
+          ]
+        },
+        "TOOL_AGENT": {
+          "status": "QUALIFIED",
+          "score": 1,
+          "hardFailures": [],
+          "cases": [
+            {
+              "id": "compact.tool_call",
+              "passed": true,
+              "hardFailure": false
+            },
+            {
+              "id": "compact.edit",
+              "passed": true,
+              "hardFailure": false
+            },
+            {
+              "id": "compact.structured",
+              "passed": true,
+              "hardFailure": false
+            }
+          ]
+        },
+        "ANALYST": {
+          "status": "QUALIFIED",
+          "score": 1,
+          "hardFailures": [],
+          "cases": [
+            {
+              "id": "compact.structured",
+              "passed": true,
+              "hardFailure": false
+            }
+          ]
+        },
+        "EXPLORER": {
+          "status": "NOT_QUALIFIED",
+          "score": 0,
+          "hardFailures": [],
+          "cases": [
+            {
+              "id": "explorer.route_execution",
+              "passed": false,
+              "hardFailure": false
+            },
+            {
+              "id": "explorer.reservation_release",
+              "passed": false,
+              "hardFailure": false
+            }
+          ]
+        },
+        "PLANNER": {
+          "status": "PROBATION",
+          "score": 0.5,
+          "hardFailures": [],
+          "cases": [
+            {
+              "id": "planner.release_callsite",
+              "passed": false,
+              "hardFailure": false
+            },
+            {
+              "id": "planner.schema",
+              "passed": true,
+              "hardFailure": false
+            }
+          ]
+        },
+        "REVIEWER": {
+          "status": "QUALIFIED",
+          "score": 0.8333333333333334,
+          "hardFailures": [],
+          "cases": [
+            {
+              "id": "reviewer.one_bug",
+              "passed": true,
+              "hardFailure": false
+            },
+            {
+              "id": "reviewer.clean",
+              "passed": true,
+              "hardFailure": false
+            },
+            {
+              "id": "reviewer.clean_comment",
+              "passed": true,
+              "hardFailure": false
+            },
+            {
+              "id": "reviewer.swallowed_failure",
+              "passed": true,
+              "hardFailure": false
+            },
+            {
+              "id": "reviewer.reservation_leak",
+              "passed": false,
+              "hardFailure": false
+            },
+            {
+              "id": "reviewer.test_cheat",
+              "passed": true,
+              "hardFailure": false
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "policyRelaxed": false
+}

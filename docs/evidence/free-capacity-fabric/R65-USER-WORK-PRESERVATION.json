@@ -46,5 +46,11 @@
       "matchesPriorAuthority": true
     }
   ],
-  "status": "PASS"
+  "status": "PASS",
+  "finalVerification": {
+    "at": "2026-10-03T00:13:18.112Z",
+    "status": "PASS",
+    "filesVerified": 6,
+    "runtimeCommit": "c32037b95c93fee3d41c7d259794e69c84b62b72"
+  }
 }

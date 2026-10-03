@@ -1,41 +1,41 @@
 {
-  "startedAt": "2026-10-03T00:07:43.306Z",
-  "status": "PASS",
+  "startedAt": "2026-10-02T23:49:05.386Z",
+  "status": "CODING_NOT_COMPLETED",
   "credentialPersistence": "MEMORY_ONLY",
   "authentication": "REAL_GITHUB_PKCE",
   "checks": [
     {
-      "at": "2026-10-03T00:07:43.871Z",
+      "at": "2026-10-02T23:49:05.628Z",
       "path": "/v1/auth/start",
       "httpStatus": 200
     },
     {
-      "at": "2026-10-03T00:08:02.013Z",
+      "at": "2026-10-02T23:49:37.076Z",
       "path": "/v1/auth/exchange",
       "httpStatus": 200
     },
     {
-      "at": "2026-10-03T00:08:02.726Z",
+      "at": "2026-10-02T23:49:37.834Z",
       "path": "/v1/workflows/hosted-e957b597-dcc8-4f10-99c8-39feb7ecbab8/cancel",
       "httpStatus": 200
     },
     {
-      "at": "2026-10-03T00:08:02.801Z",
+      "at": "2026-10-02T23:49:37.916Z",
       "path": "/health/live",
       "httpStatus": 200
     },
     {
-      "at": "2026-10-03T00:08:03.784Z",
+      "at": "2026-10-02T23:49:38.720Z",
       "path": "/v1/workflows",
       "httpStatus": 201
     },
     {
-      "at": "2026-10-03T00:09:45.555Z",
-      "path": "/v1/workflows/hosted-de91455a-a03e-4907-b600-5eb7bd340f0f/cancel",
+      "at": "2026-10-02T23:50:45.935Z",
+      "path": "/v1/workflows/hosted-44c50f39-0cf6-4774-8385-3ff6d90618a2/cancel",
       "httpStatus": 200
     },
     {
-      "at": "2026-10-03T00:09:45.652Z",
+      "at": "2026-10-02T23:50:46.041Z",
       "path": "/v1/auth/logout",
       "httpStatus": 200
     }
@@ -46,10 +46,10 @@
     "serviceId": "srv-dam6f83m8hqs73clo5ig"
   },
   "coding": {
-    "status": "completed",
-    "workflowId": "hosted-de91455a-a03e-4907-b600-5eb7bd340f0f",
-    "assignments": 15
+    "status": "blocked",
+    "workflowId": "hosted-44c50f39-0cf6-4774-8385-3ff6d90618a2",
+    "assignments": 12
   },
   "logout": 200,
-  "finishedAt": "2026-10-03T00:09:45.653Z"
+  "finishedAt": "2026-10-02T23:50:46.042Z"
 }

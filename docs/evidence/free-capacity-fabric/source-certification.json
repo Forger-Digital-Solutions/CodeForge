@@ -1,6 +1,6 @@
 {
-  "certifiedAt": "2026-10-02T23:44:10.456Z",
-  "implementationHead": null,
+  "certifiedAt": "2026-10-03T00:13:58.732Z",
+  "implementationHead": "c32037b95c93fee3d41c7d259794e69c84b62b72",
   "sourceFiles": [
     {
       "path": "Dockerfile.cloud",
@@ -851,7 +851,7 @@
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-CAPACITY-METRICS.json",
-      "sha256": "7b04266cf87ff466db5e22770cd9a080fa4cc7ec51bec283a532a931c6f44de8"
+      "sha256": "bcfacaa1b842ec7e02f069c728c9c5ffdb5031ec4b17c813ea9745b98a980171"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-CF14-ENVIRONMENT.json",
@@ -887,15 +887,15 @@
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-EVIDENCE-SECRET-SCAN.json",
-      "sha256": "b34b99269ee2f21d54d90e2b5a00db159ebde64ea74d872aaa0fc629552200f5"
+      "sha256": "f12249e52bf13cc917afbf7eb4afe58a68ca34f55e0b463496fe28f70c602fc3"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-FAILURE-CLASSIFICATION.json",
-      "sha256": "82a38a0895bbd05bf4fe05b0e8c273130667ce739adcbaa8d6f54452d28f561f"
+      "sha256": "65a5a4019b6a7f871cb61c4c796c3103eb3f14bb7ee9078896177823a2f46ab6"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-FINAL-REPORT.md",
-      "sha256": "88d50a7a53385a0f0e84d5da9e82f540aa2006ea5e999d2ff143b1e740e7d142"
+      "sha256": "bdfef2802714608ebaec7e7afb60c2567240cedc8a326b5ab86de39ea80cff05"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-FRESH-USER-ACCEPTANCE.json",
@@ -926,8 +926,12 @@
       "sha256": "2cfb7fe94f1ec3761a3a4a776d1930a29514f36a7f5671b401e1e953abf46a95"
     },
     {
+      "path": "docs/evidence/free-capacity-fabric/R65-PRODUCTION-ACCEPTANCE.png",
+      "sha256": "5715781a4ce2f3b49ea6f9cb0bea44174167220ad8ab63235975a80fe221e665"
+    },
+    {
       "path": "docs/evidence/free-capacity-fabric/R65-PRODUCTION-DEPLOYMENT.json",
-      "sha256": "1e3f84e030099040e220d50c5c5454ada6b2f6a2c9e235dd71f2186419e2533a"
+      "sha256": "a6f2ce4d5cb88eefac85e217ddc38e9d94a89e3472b1c0cb44d8611d88d1c3e9"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-PRODUCTION-DISPATCH-ATTEMPT-1.json",
@@ -938,12 +942,20 @@
       "sha256": "70f90c43cf29b1dd4f0286c78308680672f9eb220c761fb4ca60e7c6e7b40fe6"
     },
     {
+      "path": "docs/evidence/free-capacity-fabric/R65-PRODUCTION-DISPATCH-ATTEMPT-3.json",
+      "sha256": "fea9c1bea56b73d730ae8a780d6bec162d5441882d7840b81d4825766ac752de"
+    },
+    {
       "path": "docs/evidence/free-capacity-fabric/R65-PRODUCTION-DISPATCH.json",
-      "sha256": "70f90c43cf29b1dd4f0286c78308680672f9eb220c761fb4ca60e7c6e7b40fe6"
+      "sha256": "f7baae9f552786cff709cae95922c15cb885703517a975d2aeffcda4f57b206b"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R65-PRODUCTION-DOMAIN-SANITY.json",
+      "sha256": "72a56c1976326abbaed13b2bfd5435eea1a5bec4b6ed3d7323acc549a95afc05"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-PRODUCTION-FINAL-HEALTH.json",
-      "sha256": "e8c6e151fb7eea934ef17470c8fe7160a87e24c280ad66dec594cdee3d9b3e0f"
+      "sha256": "d3b50cce5004a25a7a10b88d2eceb3b1a4b138e267a6b335ec98e569b79601b2"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-PRODUCTION-PREFLIGHT.json",
@@ -954,8 +966,16 @@
       "sha256": "f9a0d9d7c4ac1941ddf5c9497272290d9864f48821d1acc0723d31e06b8588c5"
     },
     {
+      "path": "docs/evidence/free-capacity-fabric/R65-PRODUCTION-REMOTE-CODING-ATTEMPT-3.json",
+      "sha256": "775040bc65a00f691d52adf2e78e8675e0cfda65b00ad9f8775b64ede696ce5b"
+    },
+    {
       "path": "docs/evidence/free-capacity-fabric/R65-PRODUCTION-REMOTE-CODING.json",
-      "sha256": "f9a0d9d7c4ac1941ddf5c9497272290d9864f48821d1acc0723d31e06b8588c5"
+      "sha256": "12c267a03ca5b485c31083230ef0216533ee651b1b9fa080e0dc3693908cce87"
+    },
+    {
+      "path": "docs/evidence/free-capacity-fabric/R65-PRODUCTION-REQUALIFICATION.json",
+      "sha256": "2147c9ad95dc09035e8185840f54b7c5d9659c4c0ea4be9152be47df5a3c876c"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-PROVIDER-VERIFIERS.json",
@@ -963,11 +983,11 @@
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-R34-PRESERVATION.json",
-      "sha256": "2bf61fb319f037189c908e756b77b16553473f5400fae1ecc18557fd6867aac5"
+      "sha256": "b5a47bf81b9042ec435c83f45827e054cd81e0c94050d86f00d3d8665964f1d2"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-RECOVERY-STATE.json",
-      "sha256": "da1692aa245d910033314eaa7d960ae64e52c308b6682cfd2a0d82772fd7bac6"
+      "sha256": "d0f21734d2b040d7fc8b63bb37d5aea968b36a91be0fb7356a84d3416aa21a83"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-REPOSITORY-TESTS-PRE-CLOCK-FIX.json",
@@ -991,7 +1011,7 @@
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-USER-WORK-PRESERVATION.json",
-      "sha256": "8bc5f61ad3799ebe556511cd1774d481b207de6f4da08e53aaafc949d4295bd4"
+      "sha256": "492384fdb6b19b74f41c41822e8ffd4344a90528d2d30a24edde6266ddc59e2f"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-WORKSPACE-BUILD.json",
@@ -1027,7 +1047,7 @@
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-secret-scan.json",
-      "sha256": "647c14e3694d140f168b21d7cd46b8c4d2129ecca53be99bce1e9a33bae271e2"
+      "sha256": "8495219f6bf859bafc69d901ac91865349e0a95e743d07c01d8ef6514bccb992"
     },
     {
       "path": "docs/evidence/free-capacity-fabric/R65-suite-bounded-main.json",
@@ -1114,7 +1134,7 @@
       "sha256": "c52f109a8eccfbec95ac98cf6d418942483eb5e61b8f66a80510a3afcbefb06f"
     }
   ],
-  "evidenceAggregateSha256": "10441f5d2d43a40d7d8dd64f4cba2f4c02a71e29ff36af4dbddf51614ddaf119",
+  "evidenceAggregateSha256": "29178ba10be365912f635950ac9125f1db11d09ccce7ad8e487012dd31854e63",
   "validation": {
     "repositoryWideStatus": "PASS",
     "repositoryWideExactTotalsExcludingStandaloneCertificateCanary": {
@@ -1135,7 +1155,7 @@
       "fg12e": "3/3"
     }
   },
-  "limitation": "R65 proves independent Kilo SOURCE_IP and AI Horde GLOBAL_SHARED free domains with live coding, two route rotations under an injected Kilo quota fault, owner-isolated reservations on the shared Horde pool, and key-free fresh-user acceptance. AI Horde remains PUBLIC_CODE_ONLY and uses hosted text-tool mediation. Authenticated deployed production coding dispatch remains pending. Provider verifiers for Cloudflare/Groq remain denied/unverified; Pollinations and Puter are recorded DENIED. Provider billing totals are not independently measured.",
+  "limitation": "R65 proves independent Kilo SOURCE_IP and AI Horde GLOBAL_SHARED free domains with live coding, two route rotations under an injected Kilo quota fault, owner-isolated reservations on the shared Horde pool, and key-free fresh-user acceptance. AI Horde remains PUBLIC_CODE_ONLY and uses hosted text-tool mediation. Authenticated deployed production coding dispatch passed with independent review, verification and completion. Provider verifiers for Cloudflare/Groq remain denied/unverified; Pollinations and Puter are recorded DENIED. Provider billing totals are not independently measured.",
   "certificateId": "r65-free-capacity-fabric-v1",
   "sourceStateId": "2e40805e6bfa75a825ef5fa925fc075713c081e1480b0cb0e7f8a8aad2a4d184",
   "implementationBase": "616cbec8629a0083573efa673a8495d1aee64b36"

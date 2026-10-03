@@ -1,0 +1,60 @@
+{
+  "startedAt": "2026-10-03T00:03:35.961Z",
+  "finishedAt": "2026-10-03T00:03:37.653Z",
+  "status": "PASS",
+  "runtimeCommit": "c32037b95c93fee3d41c7d259794e69c84b62b72",
+  "scope": "Compiled production package sanity bound to the deployed commit, with live anonymous catalogs, policy reverification and Horde capacity probe. No model inference or autonomous failover rerun.",
+  "hostedRouteDecisionSnapshot": "NOT_EXPOSED",
+  "hostedRemoteDirectProviders": [
+    "kilo-free-direct"
+  ],
+  "hostedLimitation": "The cloud remote-direct host currently admits Kilo. Both domains are available in the client-direct Fabric modules shipped in the same production image; this is not a live hosted Horde assignment claim.",
+  "sourceMatchesDeployedCommit": true,
+  "routes": [
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "supplyClass": "PACKAGED_FREE_DIRECT",
+      "quotaDomainType": "PUBLIC_IP",
+      "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+      "scope": "PER_USER_POOL",
+      "privacy": "PUBLIC_CODE_ONLY",
+      "roles": [
+        "PRIMARY_CODING_AGENT",
+        "PLANNER",
+        "REVIEWER",
+        "VERIFIER_ASSIST",
+        "SUBAGENT",
+        "SEARCH_ASSIST",
+        "SUMMARIZER"
+      ],
+      "publicExclusion": null,
+      "privateExclusion": "DATA_POLICY_PUBLIC_CODE_ONLY"
+    },
+    {
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "supplyClass": "COMMUNITY_ANONYMOUS_FREE",
+      "quotaDomainType": "GLOBAL_SHARED",
+      "quotaDomainId": "shared:ai-horde",
+      "scope": "SHARED_OWNER_POOL",
+      "privacy": "PUBLIC_CODE_ONLY",
+      "roles": [
+        "PRIMARY_CODING_AGENT",
+        "PLANNER",
+        "REVIEWER",
+        "VERIFIER_ASSIST",
+        "SUBAGENT",
+        "SEARCH_ASSIST",
+        "SUMMARIZER"
+      ],
+      "publicExclusion": null,
+      "privateExclusion": "DATA_POLICY_PUBLIC_CODE_ONLY"
+    }
+  ],
+  "policy": {
+    "kilo": "VERIFIED",
+    "horde": "VERIFIED"
+  },
+  "inferenceCalls": 0
+}

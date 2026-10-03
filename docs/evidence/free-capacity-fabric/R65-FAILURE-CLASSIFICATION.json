@@ -81,7 +81,13 @@
       "eligibilityOrCompletionPolicyChanged": false
     },
     "focusedValidation": "R65-closure-dispatch-regression.json",
-    "canonicalValidation": "PASS"
+    "canonicalValidation": "PASS",
+    "finalLiveAcceptance": {
+      "status": "PASS",
+      "evidence": "R65-PRODUCTION-REMOTE-CODING.json",
+      "http429Observed": 0,
+      "assignmentsSettled": 15
+    }
   },
   "harnessCorrections": {
     "missingReceiptPath": "R64-LIVE-QUALIFICATION.json does not exist; authoritative receipt is R64-KILO-QUALIFICATION.json",
@@ -98,5 +104,24 @@
     "focusedValidation": "R65-closure-clock-regression.json",
     "policyRelaxed": false,
     "canonicalValidation": "PASS"
+  },
+  "productionRoleAdmission": {
+    "evidence": "R65-PRODUCTION-REMOTE-CODING-ATTEMPT-3.json",
+    "classification": "CORRECT_DENIAL_OF_UNQUALIFIED_REVIEWER",
+    "no429Observed": true,
+    "coderAssignmentsCompleted": 12,
+    "initialReviewer": "HARD_FAILURE",
+    "failedProbe": "reviewer.swallowed_failure",
+    "recovery": "One bounded real FreeCloudService.qualifyPending cycle in the production container, normal qualification persistence; reload the same committed runtime to consume the earned receipt",
+    "requalificationEvidence": "R65-PRODUCTION-REQUALIFICATION.json",
+    "qualifiedReviewerCases": "5/6",
+    "explorer": "NOT_QUALIFIED",
+    "planner": "PROBATION",
+    "gateRelaxed": false,
+    "finalLiveAcceptance": {
+      "status": "PASS",
+      "completion": "completed",
+      "evidence": "R65-PRODUCTION-REMOTE-CODING.json"
+    }
   }
 }

@@ -1,18 +1,49 @@
 {
-  "observedAt": "2026-10-02T22:34:03.220Z",
+  "observedAt": "2026-10-03T00:13:18.119Z",
   "service": "codeforge-cloud-va",
   "serviceId": "srv-dam6f83m8hqs73clo5ig",
   "workspaceId": "tea-daa3l35g1s2s73c1t8mg",
   "source": "Render integration",
   "dirtyTreeDeployed": false,
-  "validatedRuntimeCommit": "4dfa11e195ca5864927c2ab3539f25b82ac24bf6",
+  "validatedRuntimeCommit": "c32037b95c93fee3d41c7d259794e69c84b62b72",
   "canonicalValidation": "R65-REPOSITORY-TESTS.json",
   "deployment": {
-    "id": "dep-db032iu7bikc73806370",
+    "commit": {
+      "createdAt": "2026-10-02T23:45:27Z",
+      "id": "c32037b95c93fee3d41c7d259794e69c84b62b72",
+      "message": "fix(r65): validate production polling within the shared API budget"
+    },
+    "createdAt": "2026-10-03T00:05:48.196151Z",
+    "finishedAt": "2026-10-03T00:06:20.714835Z",
+    "id": "dep-db04dn2d0e5s73a2ks5g",
+    "startedAt": "2026-10-03T00:05:48.173838Z",
     "status": "live",
-    "finishedAt": "2026-10-02T22:35:34.339775Z",
-    "startedAt": "2026-10-02T22:33:47.074786Z",
-    "createdAt": "2026-10-02T22:33:47.105376Z",
-    "trigger": "api"
-  }
+    "trigger": "api",
+    "updatedAt": "2026-10-03T00:06:44.246665Z"
+  },
+  "priorDeployments": [
+    {
+      "id": "dep-db032iu7bikc73806370",
+      "status": "live",
+      "finishedAt": "2026-10-02T22:35:34.339775Z",
+      "startedAt": "2026-10-02T22:33:47.074786Z",
+      "createdAt": "2026-10-02T22:33:47.105376Z",
+      "trigger": "api"
+    },
+    {
+      "commit": {
+        "createdAt": "2026-10-02T23:45:27Z",
+        "id": "c32037b95c93fee3d41c7d259794e69c84b62b72",
+        "message": "fix(r65): validate production polling within the shared API budget"
+      },
+      "createdAt": "2026-10-02T23:46:17.939979Z",
+      "finishedAt": "2026-10-02T23:48:10.197811Z",
+      "id": "dep-db044ic9v7es739rlb2g",
+      "startedAt": "2026-10-02T23:46:17.916646Z",
+      "status": "live",
+      "trigger": "api",
+      "updatedAt": "2026-10-02T23:48:35.866501Z"
+    }
+  ],
+  "reloadReason": "Load the real persisted Reviewer qualification earned by one bounded normal qualification cycle"
 }
