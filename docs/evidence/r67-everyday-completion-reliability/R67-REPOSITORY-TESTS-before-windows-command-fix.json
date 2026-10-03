@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-10-03T14:12:01.369Z",
+  "status": "INTERRUPTED_FOR_PRODUCT_FIX",
+  "repositoryWideGreen": false,
+  "strategy": "One main pass with two isolated workers; four contention-sensitive suites then run serially. Certificate canary runs separately after evidence freeze.",
+  "workerHeapLimitMb": 2048,
+  "peakProcessTreeWorkingSetBytes": 779665408,
+  "peakSingleProcessWorkingSetBytes": 328790016,
+  "phases": [
+    {
+      "name": "bounded-main",
+      "status": "RUNNING",
+      "startedAt": "2026-10-03T14:12:01.376Z",
+      "workers": 2,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run --exclude=packages/server/test/autonomous-orchestrator.test.ts --exclude=packages/server/test/parallel-orchestrator-integration.test.ts --exclude=packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts --exclude=apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts --maxWorkers=2 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-suite-bounded-main.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-suite-bounded-main.json",
+      "completedFileLines": 1,
+      "latestProgress": " ✓ packages/server/test/autonomous-parent-recovery.test.ts (7 tests) 254416ms",
+      "durationSeconds": 316.284
+    }
+  ],
+  "interruptionReason": "Windows compound Node command quoting defect discovered in real live task"
+}

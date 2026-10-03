@@ -1,0 +1,90 @@
+{
+  "startedAt": "2026-10-03T14:15:58.877Z",
+  "status": "PASS",
+  "evidenceClass": "PRODUCTION_HOSTED_QUEUE_AND_ADMISSION_CODE_PATH_ISOLATED_SQLITE_REAL_LOOPBACK_FAULT",
+  "productionPostgresOutage": "NOT_TESTED",
+  "cases": [
+    {
+      "name": "Queued claim survives connectivity outage and duplicate enqueue",
+      "status": "PASS",
+      "terminal": "completed",
+      "executions": 1,
+      "duplicateEnqueueCreated": false,
+      "errors": [
+        {
+          "at": 895.1748,
+          "code": "ECONNREFUSED",
+          "message": "connect ECONNREFUSED 127.0.0.1:62684"
+        },
+        {
+          "at": 1109.2809,
+          "code": "ECONNREFUSED",
+          "message": "connect ECONNREFUSED 127.0.0.1:62684"
+        },
+        {
+          "at": 1315.5206,
+          "code": "ECONNREFUSED",
+          "message": "connect ECONNREFUSED 127.0.0.1:62684"
+        },
+        {
+          "at": 1521.4996,
+          "code": "ECONNREFUSED",
+          "message": "connect ECONNREFUSED 127.0.0.1:62684"
+        },
+        {
+          "at": 1727.2887,
+          "code": "ECONNREFUSED",
+          "message": "connect ECONNREFUSED 127.0.0.1:62684"
+        },
+        {
+          "at": 1932.92,
+          "code": "ECONNREFUSED",
+          "message": "connect ECONNREFUSED 127.0.0.1:62684"
+        }
+      ],
+      "retryIntervalsMs": [
+        221.1531,
+        206.40030000000002,
+        205.84619999999995,
+        205.76690000000008,
+        206.0601999999999
+      ],
+      "activeReservations": 0
+    },
+    {
+      "name": "Restart before dispatch releases expired fenced claim and executes once",
+      "status": "PASS",
+      "reconciliation": {
+        "recovered": 1,
+        "executionIds": [
+          "r67-claimed-before-restart"
+        ]
+      },
+      "executions": 1,
+      "activeReservations": 0
+    },
+    {
+      "name": "Ambiguous dispatched claim is not replayed after restart",
+      "status": "PASS",
+      "terminal": "failed",
+      "duplicateExecution": 0,
+      "activeReservations": 0
+    },
+    {
+      "name": "Permanent dispatched operation failure is terminal and observable",
+      "status": "PASS",
+      "terminal": "failed",
+      "resultError": "DB_PERMANENT_FAILURE: isolated operation cannot reconnect",
+      "executions": 1,
+      "activeReservations": 0
+    }
+  ],
+  "inferenceDispatched": false,
+  "spendEvidence": "No inference is dispatched in this queue certification; inference/accounting idempotency is separately certified.",
+  "finishedAt": "2026-10-03T14:16:00.920Z",
+  "limitations": [
+    "Real ECONNREFUSED is injected before the isolated SQLite claim authority. No production Postgres connection is interrupted.",
+    "Permanent claim-store failure remains queued with observable bounded errors until the worker stops; it is never mislabeled completed. Permanent dispatched operation failure is independently shown as terminal failed.",
+    "The restarted authorities share durable database state but this harness does not kill its operating system process; actual parent process/server kills are certified separately."
+  ]
+}

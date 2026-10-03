@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import net from 'node:net';
+import { once } from 'node:events';
+import { createRequire } from 'node:module';
+import { randomUUID } from 'node:crypto';
+import { teardownPty } from '../../dist/pty-loader.js';
+
+const require = createRequire(import.meta.url);
+const { ConoutConnection } = require('node-pty/lib/windowsConoutConnection.js');
+const pipe = `\\\\.\\pipe\\r67-reader-${randomUUID()}`;
+const source = net.createServer();
+source.listen(pipe);
+await once(source, 'listening');
+const accepted = once(source, 'connection');
+const reader = new ConoutConnection(pipe, true);
+const errors = [];
+reader._worker.on('error', error => errors.push(error));
+await new Promise(resolve => reader.onReady(resolve));
+const [writer] = await accepted;
+writer.on('error', () => {});
+const output = new net.Socket();
+let readerAliveAtSocketClose;
+reader.connectSocket(output);
+await once(output, 'connect');
+output.resume();
+writer.write('ready');
+await once(output, 'data');
+const timer = setInterval(() => writer.write('x'.repeat(65536)), 1);
+teardownPty({ _agent: { _conoutSocketWorker: reader, _outSocket: { destroy() {
+  readerAliveAtSocketClose = reader._worker.threadId !== -1;
+  output.destroy();
+} },
+  _ptyNative: { kill() {} }, _pty: 1 } });
+await new Promise(resolve => setTimeout(resolve, 1200));
+clearInterval(timer);
+writer.destroy();
+output.destroy();
+await reader._worker.terminate();
+await new Promise(resolve => source.close(resolve));
+assert.equal(errors.length, 0, errors.map(error => `${error.code}: ${error.message}`).join('\n'));
+assert.equal(readerAliveAtSocketClose, false, 'Output socket closed while its reader worker was still alive');
+console.log('CONPTY_READER_CLOSE_PASS');

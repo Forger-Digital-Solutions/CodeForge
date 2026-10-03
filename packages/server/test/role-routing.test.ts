@@ -413,6 +413,24 @@ describe("R41 role-quality routing wiring", () => {
     await rm(ws, { recursive: true, force: true });
   });
 
+  it("requires live-failed Reviewer requalification while retaining the qualified Coder route", async () => {
+    const firewall = new ForgeZero();
+    firewall.register(fleetRecord("fleet-a", "default"));
+    const provider = new ScriptedFleetProvider("fleet-a");
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(provider);
+    const hooks = freeCloudHooks(new Map([["fleet-a::default", receipt("fleet-a", "default", { REVIEWER: roleResult("QUALIFIED", [true, true], "REVIEWER"), CODER: roleResult("QUALIFIED", [true, true], "CODER") })]]));
+    hooks.runtimeRequalificationRoles = () => ["REVIEWER"];
+    const runtime = createAgentRuntime({ sessionId: "sess-live-requal", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: ws, freeCloud: hooks });
+    const base = { workspaceId: "ws", workspacePath: ws, permissions: { read: true, search: true, write: false, executeCommand: false, network: false }, roleRouting: true };
+    const review = await runtime.executeAgentRun({ ...base, runId: "live-requal-review", agentId: "reviewer", role: "reviewer", goal: "Review", structuredOutput: "reviewer" });
+    expect(review.status).toBe("failed");
+    expect(provider.requests).toBe(0);
+    const coding = await runtime.executeAgentRun({ ...base, runId: "live-requal-code", agentId: "coder", role: "coder", goal: "Inspect" });
+    expect(coding.status).toBe("completed");
+    expect(provider.requests).toBeGreaterThan(0);
+  });
+
   it("a fresher multi-case qualified REVIEWER route wins the run over an equally eligible weaker one", async () => {
     const firewall = new ForgeZero();
     // Identical capability profiles → identical global scores; the modelId tiebreak alone

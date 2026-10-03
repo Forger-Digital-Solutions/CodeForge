@@ -1,0 +1,17 @@
+{
+  "nextSupply": "stepfun/step-3.7-flash:free",
+  "sourceChanged": false,
+  "at": "2026-10-03T17:31:26.6756324Z",
+  "processStopExitCode": 0,
+  "processId": 3392,
+  "qualification": "R67-KILO-ROLE-QUALITY-after-reader-fix.json",
+  "reason": "Fresh conclusive qualification excludes auto-route Planner and Reviewer. Owned campaign stopped to prevent further admission using its older receipt.",
+  "failedRolesRemainExcluded": [
+    "kilo-auto/free:PLANNER",
+    "kilo-auto/free:REVIEWER",
+    "stepfun/step-3.7-flash:free:PLANNER"
+  ],
+  "unfinishedRows": "Remain RUNNING in the untouched original snapshot; they are interrupted attempts, not completed or passed.",
+  "status": "CONTROLLED_CAMPAIGN_STOP",
+  "campaign": "R67-CANONICAL-CAMPAIGN-before-auto-role-loss.json"
+}

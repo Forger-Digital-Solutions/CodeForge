@@ -1,0 +1,137 @@
+{
+  "generatedAt": "2026-10-03T15:26:32.171Z",
+  "status": "FAIL",
+  "repositoryWideGreen": false,
+  "strategy": "One main pass with two isolated workers; four contention-sensitive suites then run serially. Certificate canary runs separately after evidence freeze.",
+  "workerHeapLimitMb": 2048,
+  "peakProcessTreeWorkingSetBytes": 900485120,
+  "peakSingleProcessWorkingSetBytes": 403652608,
+  "phases": [
+    {
+      "name": "bounded-main",
+      "status": "FAIL",
+      "startedAt": "2026-10-03T15:26:32.179Z",
+      "workers": 2,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run --exclude=packages/server/test/autonomous-orchestrator.test.ts --exclude=packages/server/test/parallel-orchestrator-integration.test.ts --exclude=packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts --exclude=apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts --maxWorkers=2 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-suite-bounded-main.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-suite-bounded-main.json",
+      "completedFileLines": 528,
+      "latestProgress": "      Tests  4456 passed | 50 skipped (4506)",
+      "durationSeconds": 2138.248,
+      "exitCode": 1,
+      "totals": {
+        "files": 537,
+        "passed": 4456,
+        "failed": 0,
+        "skipped": 50,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    },
+    {
+      "name": "serial-heavy-1",
+      "status": "PASS",
+      "startedAt": "2026-10-03T16:02:10.453Z",
+      "workers": 1,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run packages/server/test/autonomous-orchestrator.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-suite-serial-heavy-1.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-suite-serial-heavy-1.json",
+      "completedFileLines": 1,
+      "latestProgress": "      Tests  22 passed (22)",
+      "durationSeconds": 137.506,
+      "exitCode": 0,
+      "totals": {
+        "files": 1,
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    },
+    {
+      "name": "serial-heavy-2",
+      "status": "PASS",
+      "startedAt": "2026-10-03T16:04:27.324Z",
+      "workers": 1,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run packages/server/test/parallel-orchestrator-integration.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-suite-serial-heavy-2.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-suite-serial-heavy-2.json",
+      "completedFileLines": 1,
+      "latestProgress": "      Tests  4 passed (4)",
+      "durationSeconds": 57.192,
+      "exitCode": 0,
+      "totals": {
+        "files": 1,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    },
+    {
+      "name": "serial-heavy-3",
+      "status": "FAIL",
+      "startedAt": "2026-10-03T16:05:24.519Z",
+      "workers": 1,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-suite-serial-heavy-3.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-suite-serial-heavy-3.json",
+      "completedFileLines": 0,
+      "latestProgress": "      Tests  1 failed (1)",
+      "durationSeconds": 49.518,
+      "exitCode": 1,
+      "totals": {
+        "files": 1,
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [
+        {
+          "file": "packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts",
+          "title": "CF-14 Million-Line Repository Target & Benchmark indexes a deterministic 1,000,000+ line repository and measures all query latencies",
+          "message": "AssertionError: expected 506.7705999999962 to be less than 500\n    at G:/CodeForge/packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts:137:20\n    at file:///G:/CodeForge/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:20"
+        }
+      ],
+      "failedSuitesWithoutAssertions": []
+    },
+    {
+      "name": "serial-heavy-4",
+      "status": "PASS",
+      "startedAt": "2026-10-03T16:06:14.040Z",
+      "workers": 1,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-suite-serial-heavy-4.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-suite-serial-heavy-4.json",
+      "completedFileLines": 1,
+      "latestProgress": "      Tests  6 passed (6)",
+      "durationSeconds": 37.159,
+      "exitCode": 0,
+      "totals": {
+        "files": 1,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    }
+  ],
+  "totals": {
+    "files": 541,
+    "passed": 4488,
+    "failed": 1,
+    "skipped": 50,
+    "todo": 0,
+    "pending": 0,
+    "durationSeconds": 2419.623
+  },
+  "finishedAt": "2026-10-03T16:06:51.202Z"
+}

@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFile, writeFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+const directory = 'docs/evidence/r67-everyday-completion-reliability';
+const digest = bytes => createHash('sha256').update(bytes).digest('hex');
+const frozen = JSON.parse(await readFile(`${directory}/R67-SOURCE-FREEZE.json`, 'utf8'));
+const start = JSON.parse(await readFile(`${directory}/R67-START-STATE.json`, 'utf8'));
+const material = await Promise.all(frozen.files.map(async file => ({ ...file, currentSha256: digest(await readFile(file.path)) })));
+const preserved = await Promise.all(start.preservedFiles.map(async file => ({ path: file.path, expectedSha256: file.sha256, currentSha256: digest(await readFile(file.path)), backupSha256: digest(await readFile(file.backupPath)) })));
+assert(material.every(file => file.sha256 === file.currentSha256), 'FROZEN_SOURCE_DRIFT');
+assert(preserved.every(file => file.expectedSha256 === file.currentSha256 && file.backupSha256 === file.currentSha256), 'PRESERVED_USER_FILE_DRIFT');
+const result = { at: new Date().toISOString(), status: 'PASS', head: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sourceStateId: frozen.sourceStateId, sourceAggregateSha256: frozen.sourceAggregateSha256, materialFiles: material.length, sourceChangedSinceFreeze: false, preserved };
+await writeFile(`${directory}/R67-FINAL-SOURCE-PRESERVATION.json`, `${JSON.stringify(result, null, 2)}\n`);
+console.log(JSON.stringify(result));

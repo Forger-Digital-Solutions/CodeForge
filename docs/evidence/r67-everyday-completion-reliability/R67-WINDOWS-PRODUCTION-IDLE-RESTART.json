@@ -1,0 +1,307 @@
+{
+  "startedAt": "2026-10-03T14:37:21.369Z",
+  "status": "PASS_UNAUTHENTICATED_IDLE_RESTART",
+  "evidenceClass": "ACTUAL_PACKAGED_WINDOWS_NORMAL_STARTUP",
+  "profile": "G:\\CodeForge\\benchmarks\\r67\\tmp\\windows-profile-F0IAbk",
+  "workspace": "G:\\CodeForge\\benchmarks\\r67\\tmp\\windows-public-r8twFR",
+  "port": 56391,
+  "samples": [
+    {
+      "at": "2026-10-03T14:37:29.190Z",
+      "rendererRoundTripMs": 27.646500000000742,
+      "mainProcess": {
+        "cpuSeconds": 6.0625,
+        "rssBytes": 341729280,
+        "handles": 1192
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:37:35.257Z",
+      "rendererRoundTripMs": 3.591899999999441,
+      "mainProcess": {
+        "cpuSeconds": 6.1875,
+        "rssBytes": 340795392,
+        "handles": 1178
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:37:41.286Z",
+      "rendererRoundTripMs": 3.1235000000015134,
+      "mainProcess": {
+        "cpuSeconds": 6.234375,
+        "rssBytes": 340934656,
+        "handles": 1177
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:37:47.302Z",
+      "rendererRoundTripMs": 3.371100000000297,
+      "mainProcess": {
+        "cpuSeconds": 6.34375,
+        "rssBytes": 341020672,
+        "handles": 1177
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:37:53.298Z",
+      "rendererRoundTripMs": 3.3937000000005355,
+      "mainProcess": {
+        "cpuSeconds": 6.375,
+        "rssBytes": 341135360,
+        "handles": 1177
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:37:59.268Z",
+      "rendererRoundTripMs": 6.071199999998498,
+      "mainProcess": {
+        "cpuSeconds": 6.953125,
+        "rssBytes": 250241024,
+        "handles": 1177
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:38:05.250Z",
+      "rendererRoundTripMs": 2.8113000000012107,
+      "mainProcess": {
+        "cpuSeconds": 6.96875,
+        "rssBytes": 250290176,
+        "handles": 1181
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:38:11.224Z",
+      "rendererRoundTripMs": 3.04490000000078,
+      "mainProcess": {
+        "cpuSeconds": 7.328125,
+        "rssBytes": 248311808,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:38:17.251Z",
+      "rendererRoundTripMs": 3.029099999999744,
+      "mainProcess": {
+        "cpuSeconds": 7.421875,
+        "rssBytes": 249511936,
+        "handles": 1181
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:38:23.265Z",
+      "rendererRoundTripMs": 2.9605999999985215,
+      "mainProcess": {
+        "cpuSeconds": 7.4375,
+        "rssBytes": 250089472,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:38:29.229Z",
+      "rendererRoundTripMs": 3.0043000000005122,
+      "mainProcess": {
+        "cpuSeconds": 7.65625,
+        "rssBytes": 243904512,
+        "handles": 1173
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:38:35.232Z",
+      "rendererRoundTripMs": 2.734500000005937,
+      "mainProcess": {
+        "cpuSeconds": 7.734375,
+        "rssBytes": 243736576,
+        "handles": 1174
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:38:41.289Z",
+      "rendererRoundTripMs": 2.8674000000028173,
+      "mainProcess": {
+        "cpuSeconds": 7.859375,
+        "rssBytes": 245215232,
+        "handles": 1174
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T14:38:48.904Z",
+      "rendererRoundTripMs": 3.7088000000076136,
+      "mainProcess": {
+        "cpuSeconds": 6.03125,
+        "rssBytes": 337977344,
+        "handles": 1182
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    }
+  ],
+  "tasks": [],
+  "restarts": [
+    {
+      "crashInjected": true,
+      "restartMs": 4141
+    }
+  ],
+  "limitations": [
+    "GitHub login not demonstrated in this isolated profile.",
+    "One packaged task and one restart do not meet the daily-use multi-task/repeated-recovery gate."
+  ],
+  "identity": {
+    "version": "0.4.0",
+    "commit": "6c8af1b3fd43b048fdad2002aa6e5d22b1b72957",
+    "shortCommit": "6c8af1b3fd43",
+    "branch": "codex/r29-release-closure",
+    "dirty": true,
+    "builtAt": "2026-10-03T14:22:19.708Z"
+  },
+  "manifest": {
+    "$comment": "Build-time CodeForge Cloud endpoint manifest. The packaging pipeline rewrites `channel` and fills the matching endpoint for staging/production releases. The renderer never reads this file, and a packaged staging/production build ignores CODEFORGE_CLOUD_URL entirely. Staging/production endpoints are intentionally absent until a real deployment exists: a build for those channels must fail closed rather than fall back to a local address.",
+    "channel": "production",
+    "endpoints": {
+      "development": "http://127.0.0.1:3220",
+      "staging": "https://codeforge-cloud-staging.onrender.com",
+      "production": "https://codeforge-cloud-va.onrender.com"
+    }
+  },
+  "executableSha256": "45fbccb3eabb33734227edb69777937b1cd9d4d9a6a6aa3fc8e9833864130700",
+  "pid": 4772,
+  "endpointConsistency": {
+    "matches": true,
+    "rendererOrigin": "file://"
+  },
+  "runtimeStatus": {
+    "activeWork": false,
+    "activeWorkflows": 0,
+    "activeAgentTurns": 0,
+    "activeCommands": 0,
+    "pendingApprovals": 0,
+    "activeVerifications": 0,
+    "hostedContinuations": 0,
+    "backgroundTasks": 0,
+    "recoverable": true,
+    "unrecoverableResources": [],
+    "discoveringProviders": 1
+  },
+  "launchMs": 6706,
+  "runtimeVersion": "0.4.0",
+  "account": {
+    "authenticated": false,
+    "status": null
+  },
+  "authenticatedTaskGate": "HUMAN_AUTH_REQUIRED",
+  "backendHealth": {
+    "status": 200,
+    "body": {
+      "status": "ok"
+    }
+  },
+  "trustedRendererSessions": {
+    "status": 200,
+    "body": []
+  },
+  "visibleText": "CODEFORGE\nYour AI coding agent.\n\nBuild, fix, and understand software with an agent that works directly with your project.\n\nCodeForge can explore your codebase, edit files, run commands and tests, and show you exactly what it changed.\n\nStart free with CodeForge-managed AI models. No API key required.\n\nI’m 18 or older and understand that CodeForge can read and modify project files and run commands on this computer according to my approval settings.\nContinue with GitHub\n\nGitHub sign-in creates your free CodeForge account. Connect repositories or your own AI providers later if you want — neither is required to start using CodeForge Free.",
+  "backendHealthAfterRestart": {
+    "status": 200,
+    "body": {
+      "status": "ok"
+    }
+  },
+  "runtimeStatusAfterRestart": {
+    "activeWork": false,
+    "activeWorkflows": 0,
+    "activeAgentTurns": 0,
+    "activeCommands": 0,
+    "pendingApprovals": 0,
+    "activeVerifications": 0,
+    "hostedContinuations": 0,
+    "backgroundTasks": 0,
+    "recoverable": true,
+    "unrecoverableResources": [],
+    "discoveringProviders": 0
+  },
+  "finishedAt": "2026-10-03T14:38:49.391Z",
+  "durationMs": 88022,
+  "memoryScope": "Main process only; renderer evaluated separately. Process-tree memory unmeasured."
+}

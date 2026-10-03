@@ -1,0 +1,40 @@
+{
+  "schema": "r67-real-socket-claim-fault/v1",
+  "startedAt": "2026-10-03T13:10:58.662Z",
+  "finishedAt": "2026-10-03T13:11:01.173Z",
+  "status": "PASS",
+  "evidenceClass": "PRODUCTION_QUEUE_WORKER_REAL_LOOPBACK_CONNECTIVITY_FAULT_ISOLATED_SQLITE_NAMESPACE",
+  "fault": "ECONNREFUSED while the owned TCP dependency was closed",
+  "productionSupabaseClaimRecovery": "UNPROVEN",
+  "claimAttempts": 13,
+  "faultAttempts": 11,
+  "retryIntervalsMs": [
+    213.72159999999997,
+    204.10900000000004,
+    203.32990000000007,
+    202.8467999999998,
+    202.37670000000003,
+    204.06330000000003,
+    202.40920000000006,
+    204.5616,
+    203.7853,
+    204.31500000000005
+  ],
+  "minIntervalMs": 202.37670000000003,
+  "maxIntervalMs": 213.72159999999997,
+  "errorCount": 11,
+  "errorLogBytes": 965,
+  "cpuMicroseconds": {
+    "user": 0,
+    "system": 16000
+  },
+  "peakRssBytes": 82976768,
+  "responsiveTimerSamples": 40,
+  "executionsAfterReconnect": 1,
+  "terminalStatus": "completed",
+  "activeReservations": 0,
+  "limitations": [
+    "The real socket failure exercises production HostedQueueWorker.run(), with an isolated SQLite authority behind the dependency boundary.",
+    "This is not a production Postgres connection outage or live inference test."
+  ]
+}

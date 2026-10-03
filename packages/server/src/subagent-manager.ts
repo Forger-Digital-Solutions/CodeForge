@@ -41,6 +41,7 @@ export const MAX_SUBAGENT_DEPTH = 1;
 export const MAX_CHILDREN_PER_PARENT = 8;
 
 export interface SpawnChildOptions {
+  recoveryKey?: string;
   parentRunId: string;
   sessionId?: string;
   agentId: string;
@@ -214,6 +215,8 @@ export class SubagentManager {
       risks: result.risks,
       recommendations: result.recommendations,
       ...(result.structuredData ? { structuredData: result.structuredData } : {}),
+      ...(result.route ? { route: result.route } : {}),
+      ...(result.routePoolId ? { routePoolId: result.routePoolId } : {}),
     }));
     const digest = crypto.createHash("sha256").update(content).digest("hex");
     const artifactId = `artifact-${child.childRunId}-result`;
@@ -297,6 +300,19 @@ export class SubagentManager {
       contextSummary,
     } = options;
 
+    const durableChildId = options.recoveryKey
+      ? `child-${crypto.createHash("sha256").update(`${parentRunId}:${options.recoveryKey}`).digest("hex").slice(0, 32)}` : undefined;
+    if (durableChildId && this.persistence) {
+      const prior = await this.persistence.getWorkItem(durableChildId);
+      if (prior?.kind === "subagent_run") {
+        const artifact = await this.persistence.getWorkItem(`artifact-${durableChildId}-result`);
+        if (artifact?.kind === "artifact" && artifact.content && ["completed", "blocked", "cancelled", "failed"].includes(prior.status)) {
+          return JSON.parse(artifact.content) as AgentResult;
+        }
+        throw new Error(`INTERRUPTED_WORKER_REQUIRES_RECOVERY:${durableChildId}:${prior.status}`);
+      }
+    }
+
     // 1. Invariant: Depth Bound (MAX_SUBAGENT_DEPTH = 1)
     if (depth > MAX_SUBAGENT_DEPTH) {
       const error = new Error(
@@ -344,7 +360,7 @@ export class SubagentManager {
     }
 
     // 5. Create Child Run Identity & Linked AbortController
-    const childRunId = `child-${crypto.randomUUID()}`;
+    const childRunId = durableChildId ?? `child-${crypto.randomUUID()}`;
     const controller = new AbortController();
 
     // Link parent signal if provided
@@ -702,7 +718,7 @@ export class SubagentManager {
    * recovery entry point — it classifies each non-terminal worker into RESUME/REPLAN/FAIL based
    * on journal content and tool execution records, then executes the corresponding strategy.
    */
-  async recoverInterruptedWorkers(options?: { recoveryOwnerId?: string }): Promise<{ resumed: number; replanned: number; failed: number; decisions: Array<{ workerId: string; outcome: string; reason: string }> }> {
+  async recoverInterruptedWorkers(options?: { recoveryOwnerId?: string; parentRunId?: string; signal?: AbortSignal; excludeParentRunIds?: readonly string[] }): Promise<{ resumed: number; replanned: number; failed: number; decisions: Array<{ workerId: string; outcome: string; reason: string }> }> {
     if (!this.persistence) return { resumed: 0, replanned: 0, failed: 0, decisions: [] };
 
     const ownerId = options?.recoveryOwnerId ?? `recovery-owner-${process.pid}-${crypto.randomUUID().slice(0, 8)}`;
@@ -715,6 +731,8 @@ export class SubagentManager {
 
     for (const item of workers) {
       if (item.kind !== "subagent_run" || terminal.has(item.status)) continue;
+      if (options?.parentRunId && item.parentRunId !== options.parentRunId) continue;
+      if (options?.excludeParentRunIds?.includes(item.parentRunId)) continue;
 
       // Cross-process recovery lease: ensure at most one recovery worker/process resumes this worker
       const leaseId = `recovery-lease-${item.id}`;
@@ -744,6 +762,20 @@ export class SubagentManager {
       if (!acquired) continue;
 
       const journal = await this.persistence.getWorkItem(`agent-run-journal-${item.id}`) as AgentRunJournal | undefined;
+      const savedResult = await this.persistence.getWorkItem(`artifact-${item.id}-result`);
+      if (journal?.state === "completed" && savedResult?.kind === "artifact" && savedResult.status === "ready" && savedResult.content) {
+        const result = JSON.parse(savedResult.content) as AgentResult;
+        if (["completed", "blocked", "cancelled", "failed"].includes(result.status)) {
+          item.status = result.status;
+          item.resultSummary = result.summary;
+          item.updatedAt = new Date().toISOString();
+          item.completedAt = item.updatedAt;
+          await this.persistence.upsertWorkItem(item);
+          decisions.push({ workerId: item.id, outcome: "resume", reason: "DURABLE_RESULT_REUSED" });
+          resumed++;
+          continue;
+        }
+      }
       const toolRecords: RunRecoveryToolRecord[] = [];
       const toolItems = await this.persistence.getWorkItemsByKind("agent_tool_execution");
       const staleToolRecords: Array<{ id: string; state: string; executionClass: string }> = [];
@@ -824,14 +856,16 @@ export class SubagentManager {
           workspaceId: item.workspace?.id ?? item.id,
           workspacePath,
           permissions: item.permissions,
+          executionBudget: item.budget,
           initialContext: item.capsule ? JSON.stringify(item.capsule) : undefined,
-          structuredOutput: item.agentId === "reviewer" ? "reviewer" : undefined,
+          structuredOutput: ["reviewer", "explorer", "planner"].includes(item.agentId) ? item.agentId as StructuredOutputKind : undefined,
           roleRouting: this.r1Enabled || item.rosterAllowance !== undefined,
           // R55: recovery re-decides from the exact persisted allowance — userRoutes must
           // round-trip verbatim so the recovered run keeps the same class boundary.
           ...(item.rosterAllowance ? { rosterAllowance: { freeRoutes: [...item.rosterAllowance.freeRoutes], paidModelIds: [...item.rosterAllowance.paidModelIds], userRoutes: (item.rosterAllowance.userRoutes ?? []).map((route) => ({ ...route })), ...(item.rosterAllowance.decision ? { decision: { ...item.rosterAllowance.decision, role: item.rosterAllowance.decision.role as RosterRole, candidates: item.rosterAllowance.decision.candidates.map((candidate) => ({ ...candidate, sourceClass: candidate.sourceClass as IntelligenceSourceClass, lifecycle: candidate.lifecycle as RosterCandidate["lifecycle"] })) } } : {}) } } : {}),
           ...(item.rosterAllowance && item.rosterAllowance.freeRoutes.length === 0 && item.rosterAllowance.paidModelIds.length > 0 ? { modelSelection: { providerId: "paid-auto", modelId: "auto" } } : {}),
           ...(item.rosterAllowance && item.rosterAllowance.freeRoutes.length === 0 && item.rosterAllowance.paidModelIds.length === 0 && (item.rosterAllowance.userRoutes?.length ?? 0) > 0 ? { modelSelection: { providerId: item.rosterAllowance.userRoutes![0]!.providerId, modelId: item.rosterAllowance.userRoutes![0]!.modelId } } : {}),
+          ...(options?.signal ? { signal: options.signal } : {}),
           resumeJournal: {
             journal,
             replayToolCallIds: outcome.outcome === "resume" ? outcome.replayToolCallIds : [],
@@ -842,15 +876,29 @@ export class SubagentManager {
         item.telemetry = {
           ...item.telemetry,
           wallTimeMs: (item.telemetry?.wallTimeMs ?? 0) + 0,
-          modelRequests: (item.telemetry?.modelRequests ?? 0) + runtimeRes.usage.requestCount,
-          inputTokens: (item.telemetry?.inputTokens ?? 0) + runtimeRes.usage.inputTokens,
-          outputTokens: (item.telemetry?.outputTokens ?? 0) + runtimeRes.usage.outputTokens,
-          toolCalls: (item.telemetry?.toolCalls ?? 0) + runtimeRes.usage.toolCount,
+          modelRequests: Math.max(item.telemetry?.modelRequests ?? 0, runtimeRes.usage.requestCount),
+          inputTokens: Math.max(item.telemetry?.inputTokens ?? 0, runtimeRes.usage.inputTokens),
+          outputTokens: Math.max(item.telemetry?.outputTokens ?? 0, runtimeRes.usage.outputTokens),
+          toolCalls: Math.max(item.telemetry?.toolCalls ?? 0, runtimeRes.usage.toolCount),
           providerFailures: runtimeRes.status === "failed" ? (item.telemetry?.providerFailures ?? 0) + 1 : item.telemetry?.providerFailures ?? 0,
         };
         if (runtimeRes.usage.provider && runtimeRes.usage.model) {
           item.model = { providerId: runtimeRes.usage.provider, modelId: runtimeRes.usage.model };
         }
+        const recoveredResult: AgentResult = {
+          status: runtimeRes.status, summary: runtimeRes.summary, findings: runtimeRes.findings,
+          evidence: runtimeRes.evidence, files: runtimeRes.filesChanged, risks: [], recommendations: [],
+          structuredData: runtimeRes.structuredData,
+          ...(runtimeRes.route ? { route: runtimeRes.route } : {}),
+          ...(runtimeRes.routePoolId ? { routePoolId: runtimeRes.routePoolId } : {}),
+        };
+        const content = redactSecrets(JSON.stringify(recoveredResult));
+        await this.persistence.upsertWorkItem({
+          kind: "artifact", id: `artifact-${item.id}-result`, sessionId: item.sessionId,
+          turnId: item.id, type: "report", title: `Recovered worker result: ${item.role}`,
+          content, status: "ready", author: item.agentId,
+          createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+        });
         item.completedAt = new Date().toISOString();
         item.updatedAt = item.completedAt;
         await this.persistence.upsertWorkItem(item);

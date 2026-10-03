@@ -1,0 +1,54 @@
+{
+  "schema": "r67-accounting-fault-campaign/v1",
+  "startedAt": "2026-10-03T13:12:08.116Z",
+  "finishedAt": "2026-10-03T13:12:41.281Z",
+  "scope": "deterministic fault injection; no paid-provider inference or charge",
+  "cases": [
+    {
+      "name": "request_failure_before_inference",
+      "proof": "released hold; zero successful-inference settlement",
+      "pass": true
+    },
+    {
+      "name": "inference_served_then_settlement_write_fails",
+      "proof": "production runtime asserts one provider request, zero retry/failover, open reservation",
+      "pass": true,
+      "test": {
+        "pattern": "fails closed with MANAGED_PAID_ACCOUNTING_FAILED",
+        "exitCode": 0,
+        "testPassed": true
+      }
+    },
+    {
+      "name": "kill_after_reservation_before_settlement",
+      "proof": "real process kill, reopened SQLite hold, one observed settlement",
+      "pass": true
+    },
+    {
+      "name": "settlement_repeated_after_restart",
+      "proof": "same receipt; one durable row",
+      "pass": true
+    },
+    {
+      "name": "usage_unavailable",
+      "proof": "actual usage and Shilling totals remain null; estimated money hold is charged conservatively",
+      "pass": true
+    },
+    {
+      "name": "provider_model_failover",
+      "proof": "production runtime asserts distinct estimated failed-attempt and observed successful-attempt route receipts",
+      "pass": true,
+      "test": {
+        "pattern": "records every charged paid attempt",
+        "exitCode": 0,
+        "testPassed": true
+      }
+    }
+  ],
+  "metrics": {
+    "successfulInferenceReplayDueToAccountingFailure": 0,
+    "duplicateSettlementCount": 0,
+    "unknownToZeroCoercionCount": 0
+  },
+  "pass": true
+}

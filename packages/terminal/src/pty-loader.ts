@@ -68,7 +68,7 @@ interface PtyAgentInternals {
   _useConptyDll?: boolean;
   _inSocket?: { destroy(): void };
   _outSocket?: { destroy(): void };
-  _conoutSocketWorker?: { dispose(): void };
+  _conoutSocketWorker?: { dispose(): void; _worker?: { terminate(): Promise<number> } };
 }
 
 /**
@@ -82,8 +82,18 @@ export function teardownPty(p: PtyLike): void {
   const agent = (p as unknown as { _agent?: PtyAgentInternals })._agent;
   try { agent?._ptyNative?.kill(agent._pty ?? -1, agent._useConptyDll); } catch { /* best effort */ }
   try { agent?._conoutSocketWorker?.dispose(); } catch { /* best effort */ }
-  try { agent?._outSocket?.destroy(); } catch { /* best effort */ }
-  try { agent?._inSocket?.destroy(); } catch { /* best effort */ }
+  const closeSockets = (): void => {
+    try { agent?._outSocket?.destroy(); } catch { /* best effort */ }
+    try { agent?._inSocket?.destroy(); } catch { /* best effort */ }
+  };
+  const reader = agent?._conoutSocketWorker?._worker;
+  if (reader) {
+    // ClosePseudoConsole must retain its reader to drain native output, but once it
+    // returns the worker must stop piping before its destination socket is closed.
+    void reader.terminate().then(closeSockets, closeSockets);
+  } else {
+    closeSockets();
+  }
   // Fallback for shapes that don't expose internals.
   if (!agent) {
     try { p.kill(); } catch { /* already gone */ }

@@ -59,6 +59,7 @@ export interface FreeCloudRoutingHooks {
    * receipt) contributes a zero role-quality adjustment, never a disqualification.
    */
   getQualificationReceipt?(providerId: string, modelId: string): ModelQualificationReceipt | undefined;
+  runtimeRequalificationRoles?(providerId: string, modelId: string): string[];
   /**
    * R51: measure a route's quota domain on demand when the fabric denies it as
    * CAPACITY_UNMEASURED — a metadata quota endpoint where available, else one bounded

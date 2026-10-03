@@ -4,9 +4,17 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const currentCertificatePath = resolve(root, "docs/evidence/r66-everyday-free-readiness/source-certification.json");
-const certificatePath = await access(currentCertificatePath).then(() => currentCertificatePath,
-  () => resolve(root, "docs/evidence/free-capacity-fabric/source-certification.json"));
+const certificateCandidates = [
+  "docs/evidence/r67-everyday-completion-reliability/source-certification.json",
+  "docs/evidence/r66-everyday-free-readiness/source-certification.json",
+  "docs/evidence/free-capacity-fabric/source-certification.json",
+];
+let certificatePath;
+for (const candidate of certificateCandidates) {
+  const path = resolve(root, candidate);
+  if (await access(path).then(() => true, () => false)) { certificatePath = path; break; }
+}
+if (!certificatePath) throw new Error("FREE_CAPACITY_CERTIFICATE_MISSING");
 
 function digest(value) {
   return createHash("sha256").update(value).digest("hex");

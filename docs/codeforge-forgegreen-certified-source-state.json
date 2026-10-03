@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "9e3089f6689b3a1c9e406528a7603bd60c32f81c77967588bcce0c910dbf86a1",
-  "surfaceVersion": "r66-everyday-free-readiness-v1",
+  "sourceStateId": "ec08e481b4cb9073045c9516b3d320e278ad3d1be3fc224d441ae4f871f4ecdd",
+  "surfaceVersion": "r67-everyday-completion-reliability-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -55,6 +55,7 @@
     "packages/eight-bit/src/qualification/role-protocols.ts",
     "packages/eight-bit/src/qualification/role-suite.ts",
     "packages/eight-bit/src/role-quality.ts",
+    "packages/eight-bit/src/route-health-authority.ts",
     "packages/eight-bit/src/route-ledger.ts",
     "packages/eight-bit/src/runtime.ts",
     "packages/eight-bit/src/types.ts",
@@ -63,6 +64,7 @@
     "packages/eight-bit/test/r56-model-scoped-health.test.ts",
     "packages/eight-bit/test/role-qualification.test.ts",
     "packages/eight-bit/test/role-quality.test.ts",
+    "packages/eight-bit/test/route-health-authority.test.ts",
     "packages/eight-bit/test/runtime.test.ts",
     "packages/forge-green/src/optimization-candidate-a.ts",
     "packages/forge-green/src/optimization-candidates-shadow.ts",
@@ -103,6 +105,7 @@
     "packages/server/src/agent-runtime.ts",
     "packages/server/src/autonomous-orchestrator.ts",
     "packages/server/src/checkpoint-service.ts",
+    "packages/server/src/command-classifier.ts",
     "packages/server/src/duplicate-suppression.ts",
     "packages/server/src/experience-learning.ts",
     "packages/server/src/forge-verify-persistence.ts",
@@ -126,13 +129,17 @@
     "packages/server/src/user-intelligence.ts",
     "packages/server/src/workflow-service.ts",
     "packages/server/src/workspace-service.ts",
+    "packages/server/test/autonomous-new-file.test.ts",
+    "packages/server/test/autonomous-parent-recovery.test.ts",
     "packages/server/test/checkpoint.test.ts",
     "packages/server/test/context-efficiency.test.ts",
     "packages/server/test/forge-workspaces.test.ts",
     "packages/server/test/free-fabric-wiring.test.ts",
     "packages/server/test/free-routing-authority.test.ts",
     "packages/server/test/progress-watchdog.test.ts",
+    "packages/server/test/r21-autonomous-command-gate.test.ts",
     "packages/server/test/r44-edit-discipline.test.ts",
+    "packages/server/test/r50-tool-safety.test.ts",
     "packages/server/test/r54-quality-handoff.test.ts",
     "packages/server/test/remote-control-pressure.test.ts",
     "packages/server/test/remote-direct-transport.test.ts",
@@ -143,8 +150,14 @@
     "packages/sessions/src/postgres-persistence.ts",
     "packages/sessions/src/session-state.ts",
     "packages/sessions/test/transaction-concurrency.test.ts",
+    "packages/terminal/src/executor.ts",
+    "packages/terminal/src/pty-loader.ts",
+    "packages/terminal/test/conpty-teardown.test.ts",
+    "packages/terminal/test/fixtures/conpty-close-worker.mjs",
+    "packages/terminal/test/fixtures/conpty-reader-close.mjs",
     "packages/tools/src/compress.ts",
     "packages/tools/src/index.ts",
+    "packages/tools/test/command-exit-status.test.ts",
     "packages/workflow/src/diff-review.ts",
     "packages/workflow/src/forge-verify.ts",
     "packages/workflow/src/index.ts",
@@ -181,7 +194,7 @@
     "apps/desktop/test/provider-connections.test.ts": "bc461d63c560b3a21c762b71113524b1788868e8",
     "apps/desktop/test/settings-registry.test.tsx": "55c1c61fcf282eac9f0372af83bfab06ae6af8c8",
     "Dockerfile.cloud": "7d855b5403d6adb696a88f3a87595d2871d0ac1c",
-    "packages/agent/src/index.ts": "3e33c03e81390c55ef6a52153f28a1f9db5cb30c",
+    "packages/agent/src/index.ts": "53a9c52f07659918b0f5f2f486c851a2d0a2f5cd",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
     "packages/benchmark/src/index.ts": "615c02c9d77491a17e8b6a80a82cb619efd6be02",
@@ -203,15 +216,17 @@
     "packages/eight-bit/src/qualification/role-protocols.ts": "57a4c4a5ee9cc0a5b9a4cdae4d768835f3c32bfb",
     "packages/eight-bit/src/qualification/role-suite.ts": "4977f8b0b87cd527474ea22faad9347528edf831",
     "packages/eight-bit/src/role-quality.ts": "d8992db15002f18d4ac1d7eed2246e3f73f26286",
+    "packages/eight-bit/src/route-health-authority.ts": "82879ded320c9dd4e89a898579ea80acd6214ec3",
     "packages/eight-bit/src/route-ledger.ts": "500cd8b1fefc4d5ae17d9e4d26f174517b97076b",
-    "packages/eight-bit/src/runtime.ts": "a1fc87ce5a6715e7a2dcbef9bba20b68a222b3ff",
+    "packages/eight-bit/src/runtime.ts": "c1c2d0675fbf169ced244a5da1f360da90952eb5",
     "packages/eight-bit/src/types.ts": "734479dcd0d544b8cb9579762df54aacc772f185",
     "packages/eight-bit/test/free-fabric.test.ts": "594f350dce0a49fcdbefd680d1f2ec5a22633afb",
     "packages/eight-bit/test/r24-multi-pool.test.ts": "9c7b12896e2e5e437408df4db565b7b90812272b",
     "packages/eight-bit/test/r56-model-scoped-health.test.ts": "a0bf3d123e153c530ea5d71c5c2f963ab7a02411",
     "packages/eight-bit/test/role-qualification.test.ts": "c4eeb00edf813bba5e303c2db5d5cd1612e939d6",
     "packages/eight-bit/test/role-quality.test.ts": "3cdca370a2a3a9aed84c7a89f7218092888f74eb",
-    "packages/eight-bit/test/runtime.test.ts": "2d0a99f78950db59a487e4ea95a96138d1e9f454",
+    "packages/eight-bit/test/route-health-authority.test.ts": "eea0ca6c2281a6877a521b52168678ff3ba8247f",
+    "packages/eight-bit/test/runtime.test.ts": "0cde45a26a22076fa4b74f5554a1dcc3b9a42f77",
     "packages/forge-green/src/optimization-candidate-a.ts": "67af82aaf7b9d20aac76238752c0532798a975a4",
     "packages/forge-green/src/optimization-candidates-shadow.ts": "a3d1f7b3a5a28d46eb127ce83770d1c292053507",
     "packages/forge-green/src/optimization-decision.ts": "940ab41951d0cae123e82decb8f9d4b0c2e40e05",
@@ -227,7 +242,7 @@
     "packages/model-registry/src/catalog-refresh.ts": "ba9057e3c6bfc39bbc618e5c042ed4081e2cc306",
     "packages/model-registry/src/discovery.ts": "cc024b18cdb2ce8a74d19c00379216cbfb9fa1ae",
     "packages/model-registry/src/free-cloud-registry.ts": "70331fab1ed05263dc2b7ef35813979a262149db",
-    "packages/model-registry/src/free-cloud-service.ts": "e434962b04554db8bc43dd91803c89403f509612",
+    "packages/model-registry/src/free-cloud-service.ts": "09c80391737e5b0668b83c8c17da13afc77d487e",
     "packages/model-registry/src/index.ts": "3d6e7ad6361d22b02444ceec76729f99e4056006",
     "packages/model-registry/src/provider-definitions.ts": "ce51dc9a32ba846eaa68ab94578fe85a8a8ff7e4",
     "packages/model-registry/src/quota.ts": "dc393fd54d3a860aa15a16f5de4ba1c76c00dd11",
@@ -238,7 +253,7 @@
     "packages/paid-auto/src/index.ts": "fbef7d85109e7e1bf54c2b2f6982a4b8181c0ecc",
     "packages/paid-auto/src/registry.ts": "96773c01b27182b62675b15cddfb8354f5257c52",
     "packages/paid-auto/src/service.ts": "2f6ebdcbb71f8b2f9fbf00e949b19e274b2a111c",
-    "packages/protocol/src/subagent-runtime.ts": "76dfee10cf2a6d686f28aff4bb25edad39f6a443",
+    "packages/protocol/src/subagent-runtime.ts": "299d254d6d5891a1f331039828c68f48267ac426",
     "packages/providers/src/capacity-governor.ts": "6ce663b4f03303d91c1e54c2a8b6f3fd0c35e68f",
     "packages/providers/src/index.ts": "86b0bcb15e10660c62bd9512adce31b07563ab02",
     "packages/providers/src/openrouter-entitlement.ts": "a76d496122d0533f166006c4b548cae5ca340603",
@@ -248,16 +263,17 @@
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
-    "packages/server/src/agent-runtime.ts": "1a5a9a0a55d236ff70c3f0936f3d3fb25ab727a3",
-    "packages/server/src/autonomous-orchestrator.ts": "3cad1f9874c5cbc15dbbb15d83bab37e1411c7e0",
+    "packages/server/src/agent-runtime.ts": "4014f88815c32357af5c0c831a8fbbcafd388c82",
+    "packages/server/src/autonomous-orchestrator.ts": "8823afb733cb910dccc870317768cb6ceb7d05e2",
     "packages/server/src/checkpoint-service.ts": "667fe270d9c832b7c9bef217e6796a0bcbb82eb1",
+    "packages/server/src/command-classifier.ts": "5c93d8433c1c542f12fca4ffbac2227c428604c6",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
     "packages/server/src/experience-learning.ts": "4b2412fac97695e1568fdef4c0490c0f26446723",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
     "packages/server/src/forgeauto-roster.ts": "741bf73fe25e24bb1576af0ca2d778318a5f1e88",
     "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
     "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
-    "packages/server/src/index.ts": "90e1a7e63cfed3dd48c53b585d9e9a2deb6edcbf",
+    "packages/server/src/index.ts": "83ae41ebe91d6b4c102cdbd1c2bda09d7daf7521",
     "packages/server/src/integration-service.ts": "f72e3ffc8b3087c7f3acd861eba9eb859a008dfd",
     "packages/server/src/model-execution-adapter.ts": "812f665abca771aa4dce7be18cfee121520dbf0e",
     "packages/server/src/remote-direct-admission.ts": "f81a024ce861999b4e7134e5bcee1e0dbfe21474",
@@ -269,30 +285,40 @@
     "packages/server/src/role-progress.ts": "4aa4c3e8f85ab55b9e315662363264614e1f1279",
     "packages/server/src/run-failure.ts": "c3758e6b652cf2b8b6051425e6655095c7bef52e",
     "packages/server/src/strategy-novelty.ts": "79af053d023fdbd6f67719377eefe05b583f22ba",
-    "packages/server/src/subagent-manager.ts": "4f6684273c80bdd9b1d91153d232f5cf4c9ef2c4",
+    "packages/server/src/subagent-manager.ts": "34f7c2b60ed3f807dd946920c0e00b5f40cfc657",
     "packages/server/src/turn-state-machine.ts": "bd79b984c832d8ad7020b58b2f4991c747abafd6",
     "packages/server/src/user-intelligence.ts": "9324dc19fccea0eb945c07700c23a0966d759604",
     "packages/server/src/workflow-service.ts": "a6fa8ae76d908fe503ba6050d8afdf9d2e239b23",
     "packages/server/src/workspace-service.ts": "814dc45e7865b2d6459089101e591caf00f2cb20",
+    "packages/server/test/autonomous-new-file.test.ts": "78549c99ccecebdde9aab775a6ee96230b798d78",
+    "packages/server/test/autonomous-parent-recovery.test.ts": "67259f886512de6f059b89d5a62f6ba6490e1a1a",
     "packages/server/test/checkpoint.test.ts": "17057d94868e0b2b9613fa12027c1023c77e2af9",
     "packages/server/test/context-efficiency.test.ts": "1d7c0c1cfbb18db237cbc999dfb83ac2f1959fb3",
     "packages/server/test/forge-workspaces.test.ts": "c330801734b71527ff521bddfec4e6fdc9f57ddf",
     "packages/server/test/free-fabric-wiring.test.ts": "8006f2693fa252d38522350d78de49e814e672d8",
     "packages/server/test/free-routing-authority.test.ts": "42742440525c739189baabb148c40d7d8b3e5e7c",
-    "packages/server/test/progress-watchdog.test.ts": "35b8ec1225cc4a63fc6666351263f11eb419b4f0",
+    "packages/server/test/progress-watchdog.test.ts": "322beb66368b2eccfdcbeb2724df01db4f2b93df",
+    "packages/server/test/r21-autonomous-command-gate.test.ts": "ad92cf9dd98c0005ebb579fb4521b5c3a2e2739b",
     "packages/server/test/r44-edit-discipline.test.ts": "faefd6ee701730d2e681e2879aa9433a917e383f",
+    "packages/server/test/r50-tool-safety.test.ts": "2823cecac4269afa7da4d0d8634e3860168da830",
     "packages/server/test/r54-quality-handoff.test.ts": "ea1bedca22b53ab2492f18f9fafd8baef0e6d5fb",
     "packages/server/test/remote-control-pressure.test.ts": "f8badda83b8a2cdbd14a2e1b73ff65a8940ad5f7",
     "packages/server/test/remote-direct-transport.test.ts": "186705cceeeae2b93e1ffe637af09c2442aee4ed",
-    "packages/server/test/role-output-budget.test.ts": "d012b2b6fc81acea22e4c7187b492f4bbc225579",
-    "packages/server/test/role-routing.test.ts": "a003d793764f810ee1d61f7e1d0119f9dca0f750",
+    "packages/server/test/role-output-budget.test.ts": "f16513d9c61fdf5e0a4b034ba52345be41886191",
+    "packages/server/test/role-routing.test.ts": "769f22b4c8e2279c7d91aeb1fd9717f72152644d",
     "packages/server/tsconfig.json": "8081031e6c16125f3f17a1bf9c9827dd9e08ba93",
     "packages/sessions/src/persistence.ts": "b14d0a25ecfca7a3813ea703e8e943a2cfc3db3c",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "5f3232ae12786a8256e4c7944bc29262aef94721",
     "packages/sessions/test/transaction-concurrency.test.ts": "f4333be57518667530f5bb0370032f2df5f82587",
+    "packages/terminal/src/executor.ts": "1de8c16eb7779d6c43b9776a1822b0aa2e533125",
+    "packages/terminal/src/pty-loader.ts": "cb88c93b912569582ece2d388bf3dbfaeaf2b039",
+    "packages/terminal/test/conpty-teardown.test.ts": "5d6beed0443317504926428bb6f331facc0aeb11",
+    "packages/terminal/test/fixtures/conpty-close-worker.mjs": "1828022aa171a7a4c3cd20acecc23607ab0a2ac1",
+    "packages/terminal/test/fixtures/conpty-reader-close.mjs": "e5a2b04ca9657a571ea5d51f20b9740c6b1b5397",
     "packages/tools/src/compress.ts": "78960ac43a09f2f4b855fda7ac5383aace791ddf",
-    "packages/tools/src/index.ts": "5613f17b997db34faa5b53948fce39d24a17b7e1",
+    "packages/tools/src/index.ts": "5e20c1c0b2a2d4797fe48d288f83a8055fa010f2",
+    "packages/tools/test/command-exit-status.test.ts": "fd529fadcdbdd45d23d1641eb02b675d483b9e8d",
     "packages/workflow/src/diff-review.ts": "3cb34d3f7e6496781088b2ac7f0e5923fc1d3120",
     "packages/workflow/src/forge-verify.ts": "d134438dfde57de85c756cdd8aaab192f1d801e8",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
@@ -3688,18 +3714,273 @@
         }
       ],
       "regressionEvidence": "docs/evidence/r66-everyday-free-readiness/R66-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R67 completion reliability",
+      "reason": "R67 distinguishes structured JSON quality from malformed tools, accepts fully validated structured JSON at the output cap, requires role requalification after independent live failures, preserves authoritative denial facts, and recovers parent stages through durable worker results and worktrees. Completion authority, privacy, call limits and qualification floors are unchanged.",
+      "priorSourceStateId": "9e3089f6689b3a1c9e406528a7603bd60c32f81c77967588bcce0c910dbf86a1",
+      "priorSurfaceVersion": "r66-everyday-free-readiness-v1",
+      "resultingSourceStateId": "9dee21b2b2392d487c44e2df0af11acad120a5e863aac46e70060be256bafee6",
+      "resultingSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/agent/src/index.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/src/route-health-authority.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/src/runtime.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/test/route-health-authority.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/test/runtime.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/src/free-cloud-service.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/subagent-manager.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/role-output-budget.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/role-routing.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r67-everyday-completion-reliability/R67-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R67 completion reliability",
+      "reason": "R67 distinguishes structured JSON quality from malformed tools, accepts fully validated structured JSON at the output cap, requires role requalification after independent live failures, preserves authoritative denial facts, and recovers parent stages through durable worker results and worktrees. Completion authority, privacy, call limits and qualification floors are unchanged.",
+      "priorSourceStateId": "9dee21b2b2392d487c44e2df0af11acad120a5e863aac46e70060be256bafee6",
+      "priorSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "resultingSourceStateId": "61b91bd393f2156fd1d2c8b8a149c430822d65ff778e5925cfd1c447a45565d0",
+      "resultingSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/protocol/src/subagent-runtime.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/index.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/subagent-manager.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/autonomous-parent-recovery.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r67-everyday-completion-reliability/R67-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R67 completion reliability",
+      "reason": "R67 distinguishes structured JSON quality from malformed tools, accepts fully validated structured JSON at the output cap, requires role requalification after independent live failures, preserves authoritative denial facts, and recovers parent stages through durable worker results and worktrees. Completion authority, privacy, call limits and qualification floors are unchanged.",
+      "priorSourceStateId": "61b91bd393f2156fd1d2c8b8a149c430822d65ff778e5925cfd1c447a45565d0",
+      "priorSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "resultingSourceStateId": "21771ac4892a892cab30193b47e01b243f99b99bb309876c6e2c11d9aa424b1f",
+      "resultingSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/agent/src/index.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/src/runtime.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/test/runtime.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/autonomous-new-file.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/autonomous-parent-recovery.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r67-everyday-completion-reliability/R67-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R67 completion reliability",
+      "reason": "R67 distinguishes structured JSON quality from malformed tools, accepts fully validated structured JSON at the output cap, requires role requalification after independent live failures, preserves authoritative denial facts, and recovers parent stages through durable worker results and worktrees. Completion authority, privacy, call limits and qualification floors are unchanged.",
+      "priorSourceStateId": "21771ac4892a892cab30193b47e01b243f99b99bb309876c6e2c11d9aa424b1f",
+      "priorSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "resultingSourceStateId": "01b6140eb9ff3375a8e061d88c7d24644e8b353634658f5726ec45b3d47b8eac",
+      "resultingSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/server/test/autonomous-parent-recovery.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r67-everyday-completion-reliability/R67-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R67 completion reliability",
+      "reason": "R67 distinguishes structured JSON quality from malformed tools, accepts fully validated structured JSON at the output cap, requires role requalification after independent live failures, preserves authoritative denial facts, and recovers parent stages through durable worker results and worktrees. Completion authority, privacy, call limits and qualification floors are unchanged.",
+      "priorSourceStateId": "01b6140eb9ff3375a8e061d88c7d24644e8b353634658f5726ec45b3d47b8eac",
+      "priorSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "resultingSourceStateId": "f12fb215f62e6e9a6c6cab8c4f4cc4cb48fc446f03532da50b5aaa289390b5a8",
+      "resultingSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/terminal/src/executor.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/tools/src/index.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/tools/test/command-exit-status.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r67-everyday-completion-reliability/R67-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R67 completion reliability",
+      "reason": "R67 distinguishes structured JSON quality from malformed tools, accepts fully validated structured JSON at the output cap, requires role requalification after independent live failures, preserves authoritative denial facts, and recovers parent stages through durable worker results and worktrees. Completion authority, privacy, call limits and qualification floors are unchanged.",
+      "priorSourceStateId": "f12fb215f62e6e9a6c6cab8c4f4cc4cb48fc446f03532da50b5aaa289390b5a8",
+      "priorSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "resultingSourceStateId": "b8e0d6f4984360423b38a760eb34c44ff3a496c14df6a45077e22cef93c49887",
+      "resultingSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/command-classifier.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/r21-autonomous-command-gate.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/r50-tool-safety.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r67-everyday-completion-reliability/R67-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R67 completion reliability",
+      "reason": "R67 distinguishes structured JSON quality from malformed tools, accepts fully validated structured JSON at the output cap, requires role requalification after independent live failures, preserves authoritative denial facts, and recovers parent stages through durable worker results and worktrees. Completion authority, privacy, call limits and qualification floors are unchanged.",
+      "priorSourceStateId": "b8e0d6f4984360423b38a760eb34c44ff3a496c14df6a45077e22cef93c49887",
+      "priorSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "resultingSourceStateId": "7498f02cff4360190b41037745af8f064ed0b389dc71fd5bf4bbf945451e04d5",
+      "resultingSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/terminal/src/pty-loader.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r67-everyday-completion-reliability/R67-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R67 completion reliability",
+      "reason": "R67 distinguishes structured JSON quality from malformed tools, accepts fully validated structured JSON at the output cap, requires role requalification after independent live failures, preserves authoritative denial facts, and recovers parent stages through durable worker results and worktrees. Completion authority, privacy, call limits and qualification floors are unchanged.",
+      "priorSourceStateId": "7498f02cff4360190b41037745af8f064ed0b389dc71fd5bf4bbf945451e04d5",
+      "priorSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "resultingSourceStateId": "2f2da53ce8a981be70e4b046c69c1fa7f17695bfa8bcb78020fdd39536ee41ae",
+      "resultingSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/terminal/test/conpty-teardown.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/terminal/test/fixtures/conpty-close-worker.mjs",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/terminal/test/fixtures/conpty-reader-close.mjs",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r67-everyday-completion-reliability/R67-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R67 completion reliability",
+      "reason": "R67 distinguishes structured JSON quality from malformed tools, accepts fully validated structured JSON at the output cap, requires role requalification after independent live failures, preserves authoritative denial facts, and recovers parent stages through durable worker results and worktrees. Completion authority, privacy, call limits and qualification floors are unchanged.",
+      "priorSourceStateId": "2f2da53ce8a981be70e4b046c69c1fa7f17695bfa8bcb78020fdd39536ee41ae",
+      "priorSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "resultingSourceStateId": "ec08e481b4cb9073045c9516b3d320e278ad3d1be3fc224d441ae4f871f4ecdd",
+      "resultingSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/server/test/progress-watchdog.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r67-everyday-completion-reliability/R67-REPOSITORY-TESTS.json"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R63 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, R44, R59, and R63 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
   "recertifiedAt": "2026-10-03",
   "recertification": {
-    "phase": "R66 role transport and role team",
-    "reason": "R66 traced live qualification exposed missing Explorer report budget, invalid parallel tool transcript grouping, discarded complete JSON, and grounded NodeNext imports falsely scored as invented paths. Measured role tier now precedes domain order, with bounded independent review across domains. Scoring thresholds, call caps, privacy and completion authority are preserved.",
+    "phase": "R67 role-scoped quality and durable parent recovery",
+    "reason": "R67 distinguishes structured JSON quality from malformed tools, accepts fully validated structured JSON at the output cap, requires role requalification after independent live failures, preserves authoritative denial facts, and recovers parent stages through durable worker results and worktrees. Completion authority, privacy, call limits and qualification floors are unchanged.",
     "changedFiles": [
-      "packages/server/src/agent-runtime.ts",
-      "packages/server/test/r44-edit-discipline.test.ts"
+      "packages/server/test/progress-watchdog.test.ts"
     ],
-    "priorSourceStateId": "a996651c2530e2af54558cc2bc271e2bbc780309ee711ad61b9c32cddde23735",
+    "priorSourceStateId": "2f2da53ce8a981be70e4b046c69c1fa7f17695bfa8bcb78020fdd39536ee41ae",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

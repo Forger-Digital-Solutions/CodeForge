@@ -230,7 +230,9 @@ export class EightBitRuntime {
   }
 
   recordToolCallOutcome(providerId: string, modelId: string, outcome: ToolCallOutcome, context: { role?: EightBitRole; correlationId?: string } = {}): void {
-    this.reliability.record(providerId, modelId, outcome);
+    if (outcome !== "structured_output_failure" && outcome !== "structured_output_repaired") {
+      this.reliability.record(providerId, modelId, outcome);
+    }
     this.observe({ kind: "tool_outcome", providerId, modelId, observedAt: new Date(this.now()).toISOString(), source: "runtime", outcome, role: context.role, correlationId: context.correlationId });
   }
 
@@ -323,8 +325,10 @@ export class EightBitRuntime {
     if (decision.outcome !== "ADMITTED" || !decision.selected) {
       const queued = decision.outcome === "QUEUED_FOR_CAPACITY";
       await this.store.recordReceipt(
-        this.receipt(scope, context, "NO_ELIGIBLE_ROUTE", options.policyMode, undefined, undefined,
+        { ...this.receipt(scope, context, "NO_ELIGIBLE_ROUTE", options.policyMode, undefined, undefined,
           [`FABRIC_${decision.outcome}`, ...reasonCodes]),
+          evidence: { fabricDecisionJson: JSON.stringify(decision) },
+        },
       );
       return {
         outcome: "no_eligible_route",
@@ -451,6 +455,11 @@ export class EightBitRuntime {
         outcome = await this.handleTurnFailure({ ...req, qualificationAwaited: true });
         awaited = true;
       }
+    }
+    if (!measured && !awaited && outcome.action === "no_replacement" && lastFabricDecision && outcome.receipt) {
+      const receipt = { ...outcome.receipt, evidence: { ...outcome.receipt.evidence, fabricDecisionJson: JSON.stringify(lastFabricDecision) } };
+      await this.store.recordReceipt(receipt);
+      outcome = { ...outcome, receipt };
     }
     if (!measured && !awaited && outcome.action === "no_replacement" && lastFabricDecision?.outcome === "QUEUED_FOR_CAPACITY") {
       return {

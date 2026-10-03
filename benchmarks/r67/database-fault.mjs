@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+import net from 'node:net';
+import { writeFile } from 'node:fs/promises';
+import { SQLiteCloudDatabase } from '@codeforge/cloud-db';
+import { HostedAdmissionAuthority, HostedQueueWorker } from '@codeforge/cloud-gateway';
+
+const startedAt = new Date().toISOString();
+const db = new SQLiteCloudDatabase();
+const user = await db.createUser({ displayName: 'R67 public recovery fixture', primaryIdentity: `r67-db:${Date.now()}` });
+const route = { providerId: 'synthetic-no-inference', modelId: 'verified-free-test' };
+await db.setHostedProviderCapacity({ ...route, maxConcurrent: 1 });
+const authority = new HostedAdmissionAuthority({ db, workerId: 'r67-owned-fault', leaseMs: 2000, maxUserConcurrent: 1 });
+const server = net.createServer(socket => socket.end('ready'));
+await new Promise(resolve => server.listen(0,'127.0.0.1',resolve));
+const port = server.address().port;
+await new Promise(resolve => server.close(resolve));
+const attempts = [], errors = [], samples = [];
+const realClaim = authority.claim.bind(authority);
+authority.claim = async () => {
+  attempts.push(performance.now());
+  await new Promise((resolve,reject) => {
+    const socket=net.createConnection({host:'127.0.0.1',port});
+    socket.setTimeout(1000,()=>socket.destroy(new Error('connect timeout')));
+    socket.once('connect',()=>{socket.end();resolve();}); socket.once('error',reject);
+  });
+  return realClaim();
+};
+let executed=0;
+const worker = new HostedQueueWorker({ authority, idleWaitMs: 200, execute: async () => {executed++; return {status:'completed'};}, onError:error=>errors.push({at:performance.now(),code:error.code,message:error.message}) });
+const cpuBefore = process.cpuUsage();
+const sampleTimer=setInterval(()=>samples.push({at:performance.now(),rss:process.memoryUsage().rss}),50);
+const running=worker.run();
+await new Promise(resolve=>setTimeout(resolve,2200));
+const faultEnd=performance.now();
+await new Promise(resolve=>server.listen(port,'127.0.0.1',resolve));
+const queued=await authority.enqueue({executionId:'r67-db-reconnect',idempotencyKey:'r67-db-reconnect',userId:user.id,taskId:'r67-db-reconnect',...route});
+const deadline=Date.now()+5000;
+let execution;
+while(Date.now()<deadline){execution=await db.getHostedExecution(queued.execution.id,user.id);if(execution?.status==='completed')break;await new Promise(resolve=>setTimeout(resolve,50));}
+worker.stop(); await running; clearInterval(sampleTimer);
+const metrics=await db.getHostedAdmissionMetrics();
+await new Promise(resolve=>server.close(resolve));
+await db.close();
+const faultAttempts=attempts.filter(at=>at<faultEnd);
+const intervals=faultAttempts.slice(1).map((at,i)=>at-faultAttempts[i]);
+assert.equal(execution?.status,'completed'); assert.equal(executed,1); assert.equal(metrics.activeReservations,0);
+assert.ok(faultAttempts.length>=8&&faultAttempts.length<=15); assert.ok(Math.min(...intervals)>=180);
+const output={schema:'r67-real-socket-claim-fault/v1',startedAt,finishedAt:new Date().toISOString(),status:'PASS',evidenceClass:'PRODUCTION_QUEUE_WORKER_REAL_LOOPBACK_CONNECTIVITY_FAULT_ISOLATED_SQLITE_NAMESPACE',fault:'ECONNREFUSED while the owned TCP dependency was closed',productionSupabaseClaimRecovery:'UNPROVEN',claimAttempts:attempts.length,faultAttempts:faultAttempts.length,retryIntervalsMs:intervals,minIntervalMs:Math.min(...intervals),maxIntervalMs:Math.max(...intervals),errorCount:errors.length,errorLogBytes:Buffer.byteLength(JSON.stringify(errors)),cpuMicroseconds:process.cpuUsage(cpuBefore),peakRssBytes:Math.max(...samples.map(x=>x.rss)),responsiveTimerSamples:samples.length,executionsAfterReconnect:executed,terminalStatus:execution.status,activeReservations:metrics.activeReservations,limitations:['The real socket failure exercises production HostedQueueWorker.run(), with an isolated SQLite authority behind the dependency boundary.','This is not a production Postgres connection outage or live inference test.']};
+await writeFile('docs/evidence/r67-everyday-completion-reliability/R67-DATABASE-FAULT-BOUNDARY.json',JSON.stringify(output,null,2)+'\n');
+console.log(JSON.stringify(output));

@@ -1,0 +1,66 @@
+{
+  "generatedAt": "2026-10-03T11:44:03.294Z",
+  "rows": [
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "role": "explorer",
+      "attempts": 10,
+      "completed": 0,
+      "blocked": 10,
+      "failed": 0,
+      "toolFreeWriterClaims": 0
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "role": "coder",
+      "attempts": 10,
+      "completed": 9,
+      "blocked": 1,
+      "failed": 0,
+      "toolFreeWriterClaims": 0
+    },
+    {
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "role": "reviewer",
+      "attempts": 9,
+      "completed": 0,
+      "blocked": 9,
+      "failed": 0,
+      "toolFreeWriterClaims": 0
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "role": "reviewer",
+      "attempts": 5,
+      "completed": 3,
+      "blocked": 2,
+      "failed": 0,
+      "toolFreeWriterClaims": 0
+    },
+    {
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "role": "explorer",
+      "attempts": 2,
+      "completed": 0,
+      "blocked": 2,
+      "failed": 0,
+      "toolFreeWriterClaims": 0
+    },
+    {
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "role": "coder",
+      "attempts": 2,
+      "completed": 2,
+      "blocked": 0,
+      "failed": 0,
+      "toolFreeWriterClaims": 2
+    }
+  ],
+  "warning": "Worker completed is weaker than independently verified task completion. Fixture qualification did not predict live reliability."
+}

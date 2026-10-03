@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-03T17:10:13.514Z",
+  "status": "PASS",
+  "evidenceClass": "REAL_NODE_PTY_READER_WORKER_CONTROLLED_SOCKET_LIFECYCLE",
+  "baselineRevision": "6c8af1b3fd43b048fdad2002aa6e5d22b1b72957",
+  "before": {
+    "exitCode": 1,
+    "stdout": "",
+    "stderr": "node:internal/modules/run_main:107\r\n    triggerUncaughtException(\r\n    ^\r\n\r\nAssertionError [ERR_ASSERTION]: Output socket closed while its reader worker was still alive\r\n\r\ntrue !== false\r\n\r\n    at file:///G:/CodeForge/benchmarks/r67/tmp/baseline-reader-close.mjs:41:8\r\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: true,\r\n  expected: false,\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.19.0"
+  },
+  "after": {
+    "exitCode": 0,
+    "stdout": "CONPTY_READER_CLOSE_PASS",
+    "stderr": ""
+  },
+  "limitation": "The full suite observed EPIPE. This controlled regression reproduces premature socket teardown with the actual reader worker; the isolated stress fixture did not reproduce EPIPE itself."
+}

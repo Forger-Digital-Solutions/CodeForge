@@ -1,0 +1,2595 @@
+{
+  "startedAt": "2026-10-03T17:19:38.178Z",
+  "providerId": "kilo-free-direct",
+  "status": "MEASURED",
+  "frames": [
+    {
+      "at": "2026-10-03T17:19:38.982Z",
+      "rolePrompt": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool.",
+      "maxTokens": 200,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+        },
+        {
+          "role": "user",
+          "content": "Open src/calc.ts and report what it exports. Use the read_file tool."
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "I'll read"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that file for you."
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "ede8c5a9-5a82-474d-bbb3-00d10c02bc63",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "ede8c5a9-5a82-474d-bbb3-00d10c02bc63",
+          "delta": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "ede8c5a9-5a82-474d-bbb3-00d10c02bc63",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 532,
+            "outputTokens": 37,
+            "totalTokens": 569,
+            "cachedInputTokens": 140,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:19:40.464Z"
+    },
+    {
+      "at": "2026-10-03T17:19:40.467Z",
+      "rolePrompt": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool.",
+      "maxTokens": 400,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+        },
+        {
+          "role": "user",
+          "content": "src/calc.ts has a bug: the add function subtracts. Fix it so it returns a + b. Read the file if you need to, then use edit_file with an exact oldText."
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "I'll read the file first."
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "9a0f1e60-ae25-4c5b-93f8-72c819e2ad0b",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "9a0f1e60-ae25-4c5b-93f8-72c819e2ad0b",
+          "delta": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "9a0f1e60-ae25-4c5b-93f8-72c819e2ad0b",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 556,
+            "outputTokens": 36,
+            "totalTokens": 592,
+            "cachedInputTokens": 140,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:19:42.107Z"
+    },
+    {
+      "at": "2026-10-03T17:19:42.110Z",
+      "rolePrompt": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool.",
+      "maxTokens": 400,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+        },
+        {
+          "role": "user",
+          "content": "src/calc.ts has a bug: the add function subtracts. Fix it so it returns a + b. Read the file if you need to, then use edit_file with an exact oldText."
+        },
+        {
+          "role": "assistant",
+          "content": "I'll read the file first.",
+          "toolCalls": [
+            {
+              "id": "call_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/calc.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "export function add(a: number, b: number): number {\n  return a - b;\n}\n",
+          "toolCallId": "call_1"
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "5ea56b00-b4e6-4cfd-afd9-1f13dadf6e50",
+          "toolName": "edit_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "5ea56b00-b4e6-4cfd-afd9-1f13dadf6e50",
+          "delta": "{\"path\": \"src"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "5ea56b00-b4e6-4cfd-afd9-1f13dadf6e50",
+          "delta": "/calc.ts\", \"oldText\": \"  return a - b;\", \"newText\": \"  return a + b;\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "5ea56b00-b4e6-4cfd-afd9-1f13dadf6e50",
+          "toolName": "edit_file",
+          "arguments": "{\"path\": \"src/calc.ts\", \"oldText\": \"  return a - b;\", \"newText\": \"  return a + b;\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 628,
+            "outputTokens": 62,
+            "totalTokens": 690,
+            "cachedInputTokens": 140,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:19:43.684Z"
+    },
+    {
+      "at": "2026-10-03T17:19:43.690Z",
+      "rolePrompt": "Respond with JSON only. No prose, no code fences.",
+      "maxTokens": 120,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Respond with JSON only. No prose, no code fences."
+        },
+        {
+          "role": "user",
+          "content": "Return a JSON object with keys \"files\" (array of strings) listing exactly [\"src/calc.ts\",\"test/calc.test.ts\"] and \"verified\" (boolean true)."
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\"files\":[\"src/calc.ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\"test/calc.test.ts\"],\"verified\":true}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 198,
+            "outputTokens": 19,
+            "totalTokens": 217,
+            "cachedInputTokens": 138,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:19:44.949Z"
+    },
+    {
+      "at": "2026-10-03T17:19:44.953Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Find where a selected route becomes a provider execution. Report the file(s) that contain the handoff and the execution call."
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "I'll explore"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the repository structure first."
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "9cc7d81e-c184-4fdf-8fa0-6d0db52827bf",
+          "toolName": "list_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "9cc7d81e-c184-4fdf-8fa0-6d0db52827bf",
+          "delta": "{}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "60c20ef1-141d-4998-85ca-868f13913af6",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "60c20ef1-141d-4998-85ca-868f13913af6",
+          "delta": "{\"query\": \"route\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "9cc7d81e-c184-4fdf-8fa0-6d0db52827bf",
+          "toolName": "list_files",
+          "arguments": "{}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "60c20ef1-141d-4998-85ca-868f13913af6",
+          "toolName": "search_files",
+          "arguments": "{\"query\": \"route\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 693,
+            "outputTokens": 46,
+            "totalTokens": 739,
+            "cachedInputTokens": 140,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:19:47.199Z"
+    },
+    {
+      "at": "2026-10-03T17:19:47.206Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Find where a selected route becomes a provider execution. Report the file(s) that contain the handoff and the execution call."
+        },
+        {
+          "role": "assistant",
+          "content": "I'll explore the repository structure first.",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{}"
+              }
+            },
+            {
+              "id": "q_1_2",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"route\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/fabric/admission.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_2"
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "fab85cb4-c78e-49b7-b77a-ed2b7addb24c",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "fab85cb4-c78e-49b7-b77a-ed2b7addb24c",
+          "delta": "{\"path\": \"src/router.ts\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "d0e281bf-be51-40a2-a9e0-0d51ae5d785f",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "d0e281bf-be51-40a2-a9e0-0d51ae5d785f",
+          "delta": "{\"path\": \"src/provider/client.ts\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "9981d516-d594-4844-8727-b599ddfc4576",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "9981d516-d594-4844-8727-b599ddfc4576",
+          "delta": "{\"path\": \"docs/flow.md\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "9981d516-d594-4844-8727-b599ddfc4576",
+          "delta": "}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "fab85cb4-c78e-49b7-b77a-ed2b7addb24c",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/router.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "d0e281bf-be51-40a2-a9e0-0d51ae5d785f",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/provider/client.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "9981d516-d594-4844-8727-b599ddfc4576",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"docs/flow.md\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 855,
+            "outputTokens": 86,
+            "totalTokens": 941,
+            "cachedInputTokens": 141,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:19:48.563Z"
+    },
+    {
+      "at": "2026-10-03T17:19:48.569Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Find where a selected route becomes a provider execution. Report the file(s) that contain the handoff and the execution call."
+        },
+        {
+          "role": "assistant",
+          "content": "I'll explore the repository structure first.",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{}"
+              }
+            },
+            {
+              "id": "q_1_2",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"route\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/fabric/admission.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_2"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/router.ts\"}"
+              }
+            },
+            {
+              "id": "q_2_2",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/provider/client.ts\"}"
+              }
+            },
+            {
+              "id": "q_2_3",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"docs/flow.md\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/router.ts\",\"content\":\"import { executeProviderCall } from \\\"./provider/client.js\\\";\\nimport { assessHealth } from \\\"./health.js\\\";\\nexport function createRouter(fabric: unknown) {\\n  async function selectAndExecute(task: string) {\\n    const route = await selectRoute(task);\\n    return executeProviderCall(route, task);\\n  }\\n  return { selectAndExecute, listen: () => selectAndExecute };\\n}\\nasync function selectRoute(task: string) {\\n  const health = assessHealth(task);\\n  return { providerId: health.best, task };\\n}\"}",
+          "toolCallId": "q_2_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/provider/client.ts\",\"content\":\"export async function executeProviderCall(route: { providerId: string }, task: string) {\\n  return { route, task, status: 200 };\\n}\"}",
+          "toolCallId": "q_2_2"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"docs/flow.md\",\"content\":\"# Request flow\\nselectRoute -> executeProviderCall\"}",
+          "toolCallId": "q_2_3"
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "2e0da6ae-0ff3-46d2-bf35-fb032677a886",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "2e0da6ae-0ff3-46d2-bf35-fb032677a886",
+          "delta": "{\"path\": \"src/server.ts\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "4bd574ad-03c0-4872-ba2f-33e03e0867e7",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "4bd574ad-03c0-4872-ba2f-33e03e0867e7",
+          "delta": "{\"path\": \"src/health.ts\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "d7f540a3-d540-4844-9bb9-626c7864a3b0",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "d7f540a3-d540-4844-9bb9-626c7864a3b0",
+          "delta": "{\"path\": \"src/f"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "d7f540a3-d540-4844-9bb9-626c7864a3b0",
+          "delta": "abric/admission.ts\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "d116552a-bff4-4871-a379-be7b7b076bc0",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "d116552a-bff4-4871-a379-be7b7b076bc0",
+          "delta": "{\"path\": \"src/ui/button.tsx\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "188ff4c5-1227-453a-bb80-2fa8b8848630",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "188ff4c5-1227-453a-bb80-2fa8b8848630",
+          "delta": "{\"path\": \"test/router.test.ts\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "b3f9e967-c26f-413a-b5b0-d0166d58832f",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "b3f9e967-c26f-413a-b5b0-d0166d58832f",
+          "delta": "{"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "b3f9e967-c26f-413a-b5b0-d0166d58832f",
+          "delta": "\"path\": \"src/fabric/ledger.ts\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "397f7b5e-235f-4b43-aead-4fec75915962",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "397f7b5e-235f-4b43-aead-4fec75915962",
+          "delta": "{\"path\": \"src/util/logger.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "2e0da6ae-0ff3-46d2-bf35-fb032677a886",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/server.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "4bd574ad-03c0-4872-ba2f-33e03e0867e7",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/health.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "d7f540a3-d540-4844-9bb9-626c7864a3b0",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/fabric/admission.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "d116552a-bff4-4871-a379-be7b7b076bc0",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/ui/button.tsx\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "188ff4c5-1227-453a-bb80-2fa8b8848630",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"test/router.test.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "b3f9e967-c26f-413a-b5b0-d0166d58832f",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/fabric/ledger.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "397f7b5e-235f-4b43-aead-4fec75915962",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/util/logger.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1167,
+            "outputTokens": 275,
+            "totalTokens": 1442,
+            "cachedInputTokens": 141,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:19:51.906Z"
+    },
+    {
+      "at": "2026-10-03T17:19:51.910Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Find where a selected route becomes a provider execution. Report the file(s) that contain the handoff and the execution call."
+        },
+        {
+          "role": "assistant",
+          "content": "I'll explore the repository structure first.",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{}"
+              }
+            },
+            {
+              "id": "q_1_2",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"route\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/fabric/admission.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_2"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/router.ts\"}"
+              }
+            },
+            {
+              "id": "q_2_2",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/provider/client.ts\"}"
+              }
+            },
+            {
+              "id": "q_2_3",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"docs/flow.md\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/router.ts\",\"content\":\"import { executeProviderCall } from \\\"./provider/client.js\\\";\\nimport { assessHealth } from \\\"./health.js\\\";\\nexport function createRouter(fabric: unknown) {\\n  async function selectAndExecute(task: string) {\\n    const route = await selectRoute(task);\\n    return executeProviderCall(route, task);\\n  }\\n  return { selectAndExecute, listen: () => selectAndExecute };\\n}\\nasync function selectRoute(task: string) {\\n  const health = assessHealth(task);\\n  return { providerId: health.best, task };\\n}\"}",
+          "toolCallId": "q_2_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/provider/client.ts\",\"content\":\"export async function executeProviderCall(route: { providerId: string }, task: string) {\\n  return { route, task, status: 200 };\\n}\"}",
+          "toolCallId": "q_2_2"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"docs/flow.md\",\"content\":\"# Request flow\\nselectRoute -> executeProviderCall\"}",
+          "toolCallId": "q_2_3"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_3_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/server.ts\"}"
+              }
+            },
+            {
+              "id": "q_3_2",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/health.ts\"}"
+              }
+            },
+            {
+              "id": "q_3_3",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/admission.ts\"}"
+              }
+            },
+            {
+              "id": "q_3_4",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/ui/button.tsx\"}"
+              }
+            },
+            {
+              "id": "q_3_5",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"test/router.test.ts\"}"
+              }
+            },
+            {
+              "id": "q_3_6",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/ledger.ts\"}"
+              }
+            },
+            {
+              "id": "q_3_7",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/util/logger.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/server.ts\",\"content\":\"import { createRouter } from \\\"./router.js\\\";\\nimport { createFabric } from \\\"./fabric/admission.js\\\";\\nexport function serve() {\\n  const fabric = createFabric();\\n  const router = createRouter(fabric);\\n  return router.listen();\\n}\"}",
+          "toolCallId": "q_3_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/health.ts\",\"content\":\"export function assessHealth(_task: string) {\\n  return { best: \\\"provider-a\\\" };\\n}\"}",
+          "toolCallId": "q_3_2"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/admission.ts\",\"content\":\"const holds = new Map<string, { routeId: string }>();\\nexport function reserve(requestId: string, routeId: string) {\\n  holds.set(requestId, { routeId });\\n}\\nexport function release(requestId: string) {\\n  holds.delete(requestId);\\n}\\nexport function settleRun(requestId: string, ok: boolean) {\\n  try { /* settle */ } finally { release(requestId); }\\n}\"}",
+          "toolCallId": "q_3_3"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/ui/button.tsx\",\"content\":\"export function Button() { return null; }\"}",
+          "toolCallId": "q_3_4"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"test/router.test.ts\",\"content\":\"/// <reference types=\\\"vitest\\\" />\\ntest(\\\"route executes\\\", () => {});\"}",
+          "toolCallId": "q_3_5"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/ledger.ts\",\"content\":\"export function snapshotHolds() { return []; }\\nexport function releaseExpired(now: number) { return now; }\"}",
+          "toolCallId": "q_3_6"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/util/logger.ts\",\"content\":\"export const log = (m: string) => m;\"}",
+          "toolCallId": "q_3_7"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " route"
+        },
+        {
+          "type": "text_delta",
+          "delta": "→"
+        },
+        {
+          "type": "text_delta",
+          "delta": "provider handoff lives"
+        },
+        {
+          "type": "text_delta",
+          "delta": " in the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " router,"
+        },
+        {
+          "type": "text_delta",
+          "delta": " which"
+        },
+        {
+          "type": "text_delta",
+          "delta": " selects"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a route via"
+        },
+        {
+          "type": "text_delta",
+          "delta": " `selectRoute`"
+        },
+        {
+          "type": "text_delta",
+          "delta": " (back"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ed by health"
+        },
+        {
+          "type": "text_delta",
+          "delta": " assessment"
+        },
+        {
+          "type": "text_delta",
+          "delta": ") and immediately"
+        },
+        {
+          "type": "text_delta",
+          "delta": " passes it into `executeProviderCall`."
+        },
+        {
+          "type": "text_delta",
+          "delta": " The execution call itself"
+        },
+        {
+          "type": "text_delta",
+          "delta": " is defined in the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " provider client.\n\n```json\n{\"files"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": [\"src/router.ts\", \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src/provider/client.ts\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"docs/flow.md\"]}\n```"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1711,
+            "outputTokens": 117,
+            "totalTokens": 1828,
+            "cachedInputTokens": 128,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:19:55.394Z"
+    },
+    {
+      "at": "2026-10-03T17:19:55.399Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Locate every place a capacity reservation can be released. Report the file(s) that release reservations."
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "I'll start by exploring the repository structure to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " understand the codebase."
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "195c60a2-fbd2-48db-bb22-8272b1ff31f7",
+          "toolName": "list_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "195c60a2-fbd2-48db-bb22-8272b1ff31f7",
+          "delta": "{}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "677f5f39-7bb1-43f5-b788-8dbe15b54b53",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "677f5f39-7bb1-43f5-b788-8dbe15b54b53",
+          "delta": "{\"query\": \"release\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "195c60a2-fbd2-48db-bb22-8272b1ff31f7",
+          "toolName": "list_files",
+          "arguments": "{}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "677f5f39-7bb1-43f5-b788-8dbe15b54b53",
+          "toolName": "search_files",
+          "arguments": "{\"query\": \"release\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 688,
+            "outputTokens": 51,
+            "totalTokens": 739,
+            "cachedInputTokens": 140,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:19:56.651Z"
+    },
+    {
+      "at": "2026-10-03T17:19:56.661Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Locate every place a capacity reservation can be released. Report the file(s) that release reservations."
+        },
+        {
+          "role": "assistant",
+          "content": "I'll start by exploring the repository structure to understand the codebase.",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{}"
+              }
+            },
+            {
+              "id": "q_1_2",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"release\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\"]}",
+          "toolCallId": "q_1_2"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "Found two candidate files. Let me examine them in detail."
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "9ddf8339-5602-4a9d-86f9-7260c7f32d87",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "9ddf8339-5602-4a9d-86f9-7260c7f32d87",
+          "delta": "{\"path\": \"src/fabric/admission.ts\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "4de43f93-2bf2-4897-9917-9b5127a7745c",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "4de43f93-2bf2-4897-9917-9b5127a7745c",
+          "delta": "{\"path\": \"src/fabric/ledger.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "9ddf8339-5602-4a9d-86f9-7260c7f32d87",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/fabric/admission.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "4de43f93-2bf2-4897-9917-9b5127a7745c",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/fabric/ledger.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 837,
+            "outputTokens": 77,
+            "totalTokens": 914,
+            "cachedInputTokens": 138,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:19:58.080Z"
+    },
+    {
+      "at": "2026-10-03T17:19:58.084Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Locate every place a capacity reservation can be released. Report the file(s) that release reservations."
+        },
+        {
+          "role": "assistant",
+          "content": "I'll start by exploring the repository structure to understand the codebase.",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{}"
+              }
+            },
+            {
+              "id": "q_1_2",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"release\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\"]}",
+          "toolCallId": "q_1_2"
+        },
+        {
+          "role": "assistant",
+          "content": "Found two candidate files. Let me examine them in detail.",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/admission.ts\"}"
+              }
+            },
+            {
+              "id": "q_2_2",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/ledger.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/admission.ts\",\"content\":\"const holds = new Map<string, { routeId: string }>();\\nexport function reserve(requestId: string, routeId: string) {\\n  holds.set(requestId, { routeId });\\n}\\nexport function release(requestId: string) {\\n  holds.delete(requestId);\\n}\\nexport function settleRun(requestId: string, ok: boolean) {\\n  try { /* settle */ } finally { release(requestId); }\\n}\"}",
+          "toolCallId": "q_2_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/ledger.ts\",\"content\":\"export function snapshotHolds() { return []; }\\nexport function releaseExpired(now: number) { return now; }\"}",
+          "toolCallId": "q_2_2"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "Let"
+        },
+        {
+          "type": "text_delta",
+          "delta": " me check the documentation for context on how releases are expected to work."
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "f98b2fd8-142e-4268-a441-ae735b35e336",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "f98b2fd8-142e-4268-a441-ae735b35e336",
+          "delta": "{\"path\": \"docs/flow.md\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "f98b2fd8-142e-4268-a441-ae735b35e336",
+          "delta": "}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "e5c9f272-086d-48d4-acb0-a71cb3f08979",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "e5c9f272-086d-48d4-acb0-a71cb3f08979",
+          "delta": "{\"query\": \"release\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "f98b2fd8-142e-4268-a441-ae735b35e336",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"docs/flow.md\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "e5c9f272-086d-48d4-acb0-a71cb3f08979",
+          "toolName": "search_files",
+          "arguments": "{\"query\": \"release\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1076,
+            "outputTokens": 66,
+            "totalTokens": 1142,
+            "cachedInputTokens": 141,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:19:59.497Z"
+    },
+    {
+      "at": "2026-10-03T17:19:59.500Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Locate every place a capacity reservation can be released. Report the file(s) that release reservations."
+        },
+        {
+          "role": "assistant",
+          "content": "I'll start by exploring the repository structure to understand the codebase.",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{}"
+              }
+            },
+            {
+              "id": "q_1_2",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"release\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\"]}",
+          "toolCallId": "q_1_2"
+        },
+        {
+          "role": "assistant",
+          "content": "Found two candidate files. Let me examine them in detail.",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/admission.ts\"}"
+              }
+            },
+            {
+              "id": "q_2_2",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/ledger.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/admission.ts\",\"content\":\"const holds = new Map<string, { routeId: string }>();\\nexport function reserve(requestId: string, routeId: string) {\\n  holds.set(requestId, { routeId });\\n}\\nexport function release(requestId: string) {\\n  holds.delete(requestId);\\n}\\nexport function settleRun(requestId: string, ok: boolean) {\\n  try { /* settle */ } finally { release(requestId); }\\n}\"}",
+          "toolCallId": "q_2_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/ledger.ts\",\"content\":\"export function snapshotHolds() { return []; }\\nexport function releaseExpired(now: number) { return now; }\"}",
+          "toolCallId": "q_2_2"
+        },
+        {
+          "role": "assistant",
+          "content": "Let me check the documentation for context on how releases are expected to work.",
+          "toolCalls": [
+            {
+              "id": "q_3_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"docs/flow.md\"}"
+              }
+            },
+            {
+              "id": "q_3_2",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"release\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"docs/flow.md\",\"content\":\"# Request flow\\nselectRoute -> executeProviderCall\"}",
+          "toolCallId": "q_3_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\"]}",
+          "toolCallId": "q_3_2"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "Evidence is"
+        },
+        {
+          "type": "text_delta",
+          "delta": " sufficient. Findings:\n\n**`src/fabric/admission.ts`** — the authoritative release site:\n- `holds` is a `Map<string, { routeId }"
+        },
+        {
+          "type": "text_delta",
+          "delta": ">` holding live reservations.\n- `release(requestId)` deletes the entry — the actual capacity release primitive.\n- `settleRun(requestId, ok)` runs `release(requestId)` in"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a `finally` block, so a hold is always released after a run settles, even on failure.\n\n**`src/fabric/ledger.ts`** — a second release site by name, but a stub:\n- `releaseExpired(now)` is"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the expiration-driven release path, yet its body is just `return now;` and `snapshotHolds()` returns `[]`. Neither reads nor mutates `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "admission.holds`, so this release path is currently inert and would not free capacity.\n\nWorth flagging: because"
+        },
+        {
+          "type": "text_delta",
+          "delta": " `ledger.ts` doesn't touch the `holds` map, expiration/reaper-driven releases are not actually wired to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the admission controller — only the `settleRun` path really releases reservations today. Also note the doc `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "docs/flow.md` describes the flow as `selectRoute -> executeProviderCall` with no reserve/release step, so the reservation lifecycle is undocumented relative to the implementation"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\n\n```json\n{\"files\": [\"src/fabric/admission.ts\", \"src/fabric/ledger.ts\"]}\n```"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1202,
+            "outputTokens": 412,
+            "totalTokens": 1614,
+            "cachedInputTokens": 140,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:20:06.029Z"
+    },
+    {
+      "at": "2026-10-03T17:20:06.048Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Locate every place a capacity reservation can be released. Report the file(s) that release reservations."
+        },
+        {
+          "role": "assistant",
+          "content": "I'll start by exploring the repository structure to understand the codebase.",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{}"
+              }
+            },
+            {
+              "id": "q_1_2",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"release\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\"]}",
+          "toolCallId": "q_1_2"
+        },
+        {
+          "role": "assistant",
+          "content": "Found two candidate files. Let me examine them in detail.",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/admission.ts\"}"
+              }
+            },
+            {
+              "id": "q_2_2",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/ledger.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/admission.ts\",\"content\":\"const holds = new Map<string, { routeId: string }>();\\nexport function reserve(requestId: string, routeId: string) {\\n  holds.set(requestId, { routeId });\\n}\\nexport function release(requestId: string) {\\n  holds.delete(requestId);\\n}\\nexport function settleRun(requestId: string, ok: boolean) {\\n  try { /* settle */ } finally { release(requestId); }\\n}\"}",
+          "toolCallId": "q_2_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/ledger.ts\",\"content\":\"export function snapshotHolds() { return []; }\\nexport function releaseExpired(now: number) { return now; }\"}",
+          "toolCallId": "q_2_2"
+        },
+        {
+          "role": "assistant",
+          "content": "Let me check the documentation for context on how releases are expected to work.",
+          "toolCalls": [
+            {
+              "id": "q_3_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"docs/flow.md\"}"
+              }
+            },
+            {
+              "id": "q_3_2",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"release\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"docs/flow.md\",\"content\":\"# Request flow\\nselectRoute -> executeProviderCall\"}",
+          "toolCallId": "q_3_1"
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\"]}",
+          "toolCallId": "q_3_2"
+        },
+        {
+          "role": "user",
+          "content": "Reply with JSON only: {\"files\": [...]}."
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "files\": [\"src/fabric/admission"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts\", \"src/fabric/ledger"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts\"]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1197,
+            "outputTokens": 22,
+            "totalTokens": 1219,
+            "cachedInputTokens": 128,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:20:08.909Z"
+    },
+    {
+      "at": "2026-10-03T17:20:08.913Z",
+      "rolePrompt": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites.",
+      "maxTokens": 1200,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites."
+        },
+        {
+          "role": "user",
+          "content": "Task: Reservation holds must also be released when a run is cancelled. Plan the smallest change that adds a release call on the cancellation path of src/server.ts, using src/fabric/admission.ts's release().\n\nExplorer findings (the only repository files that exist for you):\n--- src/server.ts ---\nimport { createRouter } from \"./router.js\";\nimport { createFabric } from \"./fabric/admission.js\";\nexport function serve() {\n  const fabric = createFabric();\n  const router = createRouter(fabric);\n  return router.listen();\n}\n--- src/fabric/admission.ts ---\nconst holds = new Map<string, { routeId: string }>();\nexport function reserve(requestId: string, routeId: string) {\n  holds.set(requestId, { routeId });\n}\nexport function release(requestId: string) {\n  holds.delete(requestId);\n}\nexport function settleRun(requestId: string, ok: boolean) {\n  try { /* settle */ } finally { release(requestId); }\n}"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\"protocol\":\"task_graph_v1\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary\":\"Make the minimal src/server.ts change: import release() from ./fabric/admission.js and call release(requestId) on the run-cancellation path, then verify the cancellation behavior and successful paths"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\",\"tasks\":[{\"id\":\"C\",\"title\":\"Release holds on cancellation\",\"objective\":\"In src/server.ts, extend the existing ./fabric/admission.js import to include release, then"
+        },
+        {
+          "type": "text_delta",
+          "delta": " add release(requestId) to the run-cancellation path using the cancellation request/run identifier. Do not alter reserve(), settleRun(), or unrelated server"
+        },
+        {
+          "type": "text_delta",
+          "delta": " behavior.\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"Verify cancellation release\",\"objective\":\"Review the src/server.ts diff for minimal scope and verify that cancelling a run invokes"
+        },
+        {
+          "type": "text_delta",
+          "delta": " src/fabric/admission.ts's release() for its request ID, while successful and settled runs retain their existing behavior.\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 498,
+            "outputTokens": 700,
+            "totalTokens": 1198,
+            "cachedInputTokens": 141,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:20:17.786Z"
+    },
+    {
+      "at": "2026-10-03T17:20:17.808Z",
+      "rolePrompt": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites.",
+      "maxTokens": 1200,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites."
+        },
+        {
+          "role": "user",
+          "content": "Task: Plan the smallest change that fixes executeProviderCall returning the wrong status when the provider answers 429.\n\nExplorer findings (the only repository files that exist for you):\n--- src/provider/client.ts ---\nexport async function executeProviderCall(route: { providerId: string }, task: string) {\n  return { route, task, status: 200 };\n}\n--- test/router.test.ts ---\n/// <reference types=\"vitest\" />\ntest(\"route executes\", () => {});"
+        }
+      ],
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 394,
+            "outputTokens": 1200,
+            "totalTokens": 1594,
+            "cachedInputTokens": 141,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:20:35.955Z"
+    },
+    {
+      "at": "2026-10-03T17:20:35.958Z",
+      "rolePrompt": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites.",
+      "maxTokens": 2224,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites."
+        },
+        {
+          "role": "user",
+          "content": "Task: Plan the smallest change that fixes executeProviderCall returning the wrong status when the provider answers 429.\n\nExplorer findings (the only repository files that exist for you):\n--- src/provider/client.ts ---\nexport async function executeProviderCall(route: { providerId: string }, task: string) {\n  return { route, task, status: 200 };\n}\n--- test/router.test.ts ---\n/// <reference types=\"vitest\" />\ntest(\"route executes\", () => {});"
+        }
+      ],
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 394,
+            "outputTokens": 2224,
+            "totalTokens": 2618,
+            "cachedInputTokens": 141,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:21:07.964Z"
+    },
+    {
+      "at": "2026-10-03T17:21:07.977Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Fix add() so it returns the sum of its arguments.\n\nDiff under review:\n--- a/src/calc.ts\n+++ b/src/calc.ts\n@@ export function add(a, b) @@\n-  return a - b;\n+  return a * b;"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\"verdict\":\"reject\",\"findings\":[{\"message\":\"The change makes"
+        },
+        {
+          "type": "text_delta",
+          "delta": " add() return the product of its arguments instead of their sum; it should return `a + b`.\",\"path\":\"src/calc.ts\"}]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 271,
+            "outputTokens": 66,
+            "totalTokens": 337,
+            "cachedInputTokens": 140,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:21:09.806Z"
+    },
+    {
+      "at": "2026-10-03T17:21:09.809Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Rename the internal helper for clarity; behaviour unchanged.\n\nDiff under review:\n--- a/src/util/logger.ts\n+++ b/src/util/logger.ts\n@@\n-export const log = (m: string) => m;\n+export const writeLog = (m: string) => m;"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\"verdict\":\"approve\",\"findings\":[]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 275,
+            "outputTokens": 204,
+            "totalTokens": 479,
+            "cachedInputTokens": 140,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:21:13.127Z"
+    },
+    {
+      "at": "2026-10-03T17:21:13.132Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Document the quota window semantics; comment only, no behaviour change.\n\nDiff under review:\n--- a/src/fabric/ledger.ts\n+++ b/src/fabric/ledger.ts\n@@\n+// Windows are provider-reported; a missing window means unobserved, not unlimited.\n export function snapshotHolds() { return []; }\n export function releaseExpired(now: number) { return now; }"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\"verdict\":\"approve\",\"findings\":[]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 295,
+            "outputTokens": 68,
+            "totalTokens": 363,
+            "cachedInputTokens": 140,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:21:15.358Z"
+    },
+    {
+      "at": "2026-10-03T17:21:15.369Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Record provider failures so the route can be demoted.\n\nDiff under review:\n--- a/src/health.ts\n+++ b/src/health.ts\n@@\n+export function recordFailure(id: string) {\n+  try { sendTelemetry(id); } catch { /* ignore */ }\n+}"
+        }
+      ],
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 272,
+            "outputTokens": 900,
+            "totalTokens": 1172,
+            "cachedInputTokens": 141,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:21:29.102Z"
+    },
+    {
+      "at": "2026-10-03T17:21:29.113Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 1924,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Record provider failures so the route can be demoted.\n\nDiff under review:\n--- a/src/health.ts\n+++ b/src/health.ts\n@@\n+export function recordFailure(id: string) {\n+  try { sendTelemetry(id); } catch { /* ignore */ }\n+}"
+        }
+      ],
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 272,
+            "outputTokens": 1924,
+            "totalTokens": 2196,
+            "cachedInputTokens": 140,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:21:58.316Z"
+    },
+    {
+      "at": "2026-10-03T17:21:58.321Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Add a fast path that reserves capacity before early return.\n\nDiff under review:\n--- a/src/fabric/admission.ts\n+++ b/src/fabric/admission.ts\n@@\n+export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n+}"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\"verdict\":\"approve\",\"findings\":[]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 287,
+            "outputTokens": 415,
+            "totalTokens": 702,
+            "cachedInputTokens": 140,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:22:05.716Z"
+    },
+    {
+      "at": "2026-10-03T17:22:05.719Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Add a fast path that reserves capacity before early return.\n\nDiff under review:\n--- a/src/fabric/admission.ts\n+++ b/src/fabric/admission.ts\n@@\n+export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n+}"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\"verdict\":\"approve\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "findings\":[]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 287,
+            "outputTokens": 118,
+            "totalTokens": 405,
+            "cachedInputTokens": 140,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:22:08.805Z"
+    },
+    {
+      "at": "2026-10-03T17:22:08.808Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Make the flaky router test pass.\n\nDiff under review:\n--- a/test/router.test.ts\n+++ b/test/router.test.ts\n@@\n-test(\"route executes\", () => { expect(run()).toBe(\"ok\"); });\n+test(\"route executes\", () => { expect(\"ok\").toBe(\"ok\"); });"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\"verdict\":\"reject\",\"findings\":[{\"message\":\"The test no longer calls run(), so it does not exercise the router at all and can"
+        },
+        {
+          "type": "text_delta",
+          "delta": " pass even when routing is broken. Fix the flaky test or underlying route rather than replacing the behavior under"
+        },
+        {
+          "type": "text_delta",
+          "delta": " test with a constant assertion.\",\"path\":\"test/router.test.ts\"}]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 282,
+            "outputTokens": 113,
+            "totalTokens": 395,
+            "cachedInputTokens": 210,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:22:11.160Z"
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-03T17:19:38.178Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-03T17:19:38.178Z",
+      "recheckAt": "2026-10-10T17:19:38.178Z",
+      "qualificationAt": "2026-10-03T17:19:38.178Z",
+      "termsVerifiedAt": "2026-10-03T17:19:38.178Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-10T17:19:38.178Z",
+      "privacyVerifiedAt": "2026-10-03T17:19:38.178Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-10T17:19:38.178Z",
+      "priceVerifiedAt": "2026-10-03T17:19:38.178Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-10T17:19:38.178Z",
+      "nextReverifyAt": "2026-10-03T23:19:38.178Z"
+    }
+  },
+  "catalog": [
+    {
+      "modelId": "kilo-auto/free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 256000
+    },
+    {
+      "modelId": "stepfun/step-3.7-flash:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    },
+    {
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 1000000
+    },
+    {
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 512000
+    },
+    {
+      "modelId": "poolside/laguna-s-2.1:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    },
+    {
+      "modelId": "apodex/apodex-1.1-mini:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    },
+    {
+      "modelId": "inclusionai/ling-3.0-flash-sante:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    },
+    {
+      "modelId": "qwen/qwen3.8-27b:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    },
+    {
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 65536
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 1000000
+    },
+    {
+      "modelId": "thinkingmachines/inkling-small:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 1048576
+    },
+    {
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    },
+    {
+      "modelId": "cohere/north-mini-code:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 256000
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-content-safety:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 128000
+    },
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 256000
+    },
+    {
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    }
+  ],
+  "modelId": "kilo-auto/free",
+  "qualification": {
+    "suiteVersion": "R66_ROLE_QUALIFICATION_V4",
+    "providerId": "kilo-free-direct",
+    "modelId": "kilo-auto/free",
+    "modelDisplayName": "Auto Free",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1486,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3223,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 25,
+                  "outputTokens": 36
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 62
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-03T17:19:38.981Z",
+        "completedAt": "2026-10-03T17:19:44.952Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1486,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3223,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 25,
+                  "outputTokens": 36
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 62
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1262,
+            "retries": 0,
+            "details": {
+              "textLength": 61,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-03T17:19:38.981Z",
+        "completedAt": "2026-10-03T17:19:44.952Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1262,
+            "retries": 0,
+            "details": {
+              "textLength": 61,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-03T17:19:38.981Z",
+        "completedAt": "2026-10-03T17:19:44.952Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "explorer.route_execution",
+            "category": "explore",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 10446,
+            "retries": 0,
+            "details": {
+              "modelCalls": 4,
+              "filesRead": [
+                "src/router.ts",
+                "src/provider/client.ts",
+                "docs/flow.md",
+                "src/server.ts",
+                "src/health.ts",
+                "src/fabric/admission.ts",
+                "src/ui/button.tsx",
+                "test/router.test.ts",
+                "src/fabric/ledger.ts",
+                "src/util/logger.ts"
+              ],
+              "relevantFilesRead": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "searches": 1,
+              "totalToolCalls": 12,
+              "validCalls": 12,
+              "validToolCallRate": 1,
+              "readPrecision": 0.2,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [
+                "src/router.ts",
+                "src/provider/client.ts",
+                "docs/flow.md"
+              ],
+              "answerFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "recall": 1,
+              "reasoningRetries": 0,
+              "reasoningTokens": 0
+            }
+          },
+          {
+            "caseId": "explorer.reservation_release",
+            "category": "explore",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 13514,
+            "retries": 0,
+            "details": {
+              "modelCalls": 5,
+              "filesRead": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts",
+                "docs/flow.md"
+              ],
+              "relevantFilesRead": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "searches": 2,
+              "totalToolCalls": 6,
+              "validCalls": 6,
+              "validToolCallRate": 1,
+              "readPrecision": 0.6666666666666666,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "answerFiles": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "recall": 1,
+              "reasoningRetries": 0,
+              "reasoningTokens": 0
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-03T17:19:44.952Z",
+        "completedAt": "2026-10-03T17:22:11.173Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "HARD_FAILURE",
+        "testCases": [
+          {
+            "caseId": "planner.release_callsite",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 8895,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 2,
+              "roles": [
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": false,
+              "reasoningTokens": 0
+            }
+          },
+          {
+            "caseId": "planner.schema",
+            "category": "plan",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 50168,
+            "retries": 0,
+            "details": {
+              "tasks": 0,
+              "roles": [],
+              "requiredRolesPresent": false,
+              "dependencyOrderValid": false,
+              "inventedPaths": [],
+              "verificationStepPresent": false,
+              "scopeWithinBudget": true,
+              "schemaValid": false,
+              "reasoningRetried": true,
+              "reasoningTokens": 0,
+              "starvedAttempt": {
+                "maxTokens": 1200,
+                "reasoningTokens": 0,
+                "finishReason": "length"
+              }
+            }
+          }
+        ],
+        "hardFailures": [
+          "planner.schema"
+        ],
+        "overallScore": 0.5,
+        "startedAt": "2026-10-03T17:19:44.952Z",
+        "completedAt": "2026-10-03T17:22:11.173Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "HARD_FAILURE",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1833,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The change makes add() return the product of its arguments instead of their sum; it should return `a + b`."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 0
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3323,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 0
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2237,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 0
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 42952,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "reasoningRetried": true,
+              "reasoningTokens": 0
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 3089,
+            "retries": 1,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 0,
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "approve",
+                "expectedApproved": false,
+                "verdictCorrect": false,
+                "findingLocalized": false,
+                "findings": [],
+                "reasoningRetried": false,
+                "reasoningTokens": 0
+              }
+            }
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2365,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The test no longer calls run(), so it does not exercise the router at all and can pass even when routing is broken. Fix the flaky test or underlying route rather than replacing the behavior under test with a constant assertion."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 0
+            }
+          }
+        ],
+        "hardFailures": [
+          "reviewer.swallowed_failure"
+        ],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-03T17:19:44.952Z",
+        "completedAt": "2026-10-03T17:22:11.173Z"
+      }
+    },
+    "startedAt": "2026-10-03T17:19:38.981Z",
+    "completedAt": "2026-10-03T17:19:44.952Z",
+    "totalLatencyMs": 5971,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [
+      "PLANNER",
+      "REVIEWER"
+    ],
+    "metadata": {
+      "compact": true,
+      "requests": 23,
+      "transient": false,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R66_ROLE_QUALIFICATION_V4",
+      "roleTransientCases": 0
+    }
+  },
+  "policyRelaxed": false,
+  "sourceContent": "Only frozen public qualification fixtures; no user source",
+  "costState": "UNKNOWN",
+  "finishedAt": "2026-10-03T17:22:11.174Z"
+}

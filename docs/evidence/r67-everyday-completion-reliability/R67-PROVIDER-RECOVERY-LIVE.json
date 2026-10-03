@@ -1,0 +1,305 @@
+{
+  "startedAt": "2026-10-03T12:32:13.247Z",
+  "status": "MEASURED",
+  "evidenceClass": "LIVE_ANONYMOUS_FREE_BOUNDED_TRANSPORT_RECOVERY",
+  "observations": [
+    {
+      "at": "2026-10-03T12:32:14.045Z",
+      "providerId": "kilo-free-direct",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:32:15.207Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:32:15.870Z",
+      "providerId": "ai-horde",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:32:19.955Z",
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:37:20.772Z",
+      "providerId": "kilo-free-direct",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:37:21.952Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:37:22.494Z",
+      "providerId": "ai-horde",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:37:37.879Z",
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:42:38.543Z",
+      "providerId": "kilo-free-direct",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:42:40.101Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:42:40.662Z",
+      "providerId": "ai-horde",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:42:50.928Z",
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:47:51.516Z",
+      "providerId": "kilo-free-direct",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:47:53.042Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:47:53.627Z",
+      "providerId": "ai-horde",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T12:47:58.135Z",
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "status": 200,
+      "capacityHeaders": []
+    }
+  ],
+  "rounds": [
+    {
+      "round": 0,
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "at": "2026-10-03T12:32:13.248Z",
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 160,
+            "outputTokens": 16,
+            "totalTokens": 176,
+            "cachedInputTokens": 149,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "status": "NO_TEXT",
+      "wallTimeMs": 2001
+    },
+    {
+      "round": 0,
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "at": "2026-10-03T12:32:15.254Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "OK"
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 4702
+    },
+    {
+      "round": 1,
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "at": "2026-10-03T12:37:19.960Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "OK"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 160,
+            "outputTokens": 2,
+            "totalTokens": 162,
+            "cachedInputTokens": 149,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 1993
+    },
+    {
+      "round": 1,
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "at": "2026-10-03T12:37:21.955Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "Okay, the user wants me to reply exactly \"OK\". Let me make sure"
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 15924
+    },
+    {
+      "round": 2,
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "at": "2026-10-03T12:42:37.907Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "OK"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 160,
+            "outputTokens": 2,
+            "totalTokens": 162,
+            "cachedInputTokens": 149,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 2198
+    },
+    {
+      "round": 2,
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "at": "2026-10-03T12:42:40.106Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "OK."
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 10860
+    },
+    {
+      "round": 3,
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "at": "2026-10-03T12:47:50.978Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "OK"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 160,
+            "outputTokens": 13,
+            "totalTokens": 173,
+            "cachedInputTokens": 149,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 2144
+    },
+    {
+      "round": 3,
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "at": "2026-10-03T12:47:53.123Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "The user wants me to reply exactly \"OK\". This is a straightforward instruction."
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 5013
+    }
+  ],
+  "limitations": [
+    "Transport recovery does not establish recovery of every role or a completed task. No failures are manufactured."
+  ],
+  "finishedAt": "2026-10-03T12:47:58.141Z"
+}

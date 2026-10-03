@@ -1,0 +1,527 @@
+{
+  "startedAt": "2026-10-03T14:00:28.787Z",
+  "status": "PASS_CONTROLLED_LIVE_ROLE_RECOVERY",
+  "evidenceClass": "LIVE_FREE_ROLE_CALLS_WITH_CONTROLLED_ADAPTER_BOUNDARY_FAULT",
+  "domains": [
+    {
+      "providerId": "kilo-free-direct",
+      "status": "PASS",
+      "steps": [
+        {
+          "phase": "working-role",
+          "route": {
+            "providerId": "kilo-free-direct",
+            "modelId": "kilo-auto/free"
+          },
+          "poolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "text": "The defective operator is `+`; replace it with `*`:\n\n```js\nexport function multiply(a, b) {\n  return a * b;\n}\n```",
+          "events": [
+            {
+              "type": "text_delta",
+              "delta": "The defective operator is `+`;"
+            },
+            {
+              "type": "text_delta",
+              "delta": " replace it with `*`:\n\n```js\nexport function multiply(a, b) {\n  return a * b;\n}\n```"
+            },
+            {
+              "type": "usage",
+              "usage": {
+                "inputTokens": 210,
+                "outputTokens": 34,
+                "totalTokens": 244,
+                "cachedInputTokens": 140,
+                "reasoningTokens": 0
+              }
+            },
+            {
+              "type": "finish",
+              "finishReason": "stop",
+              "model": "stealth/space-bunny-alpha"
+            }
+          ],
+          "latencyMs": 1196,
+          "verified": true
+        },
+        {
+          "phase": "controlled-degrade-and-rotate",
+          "faultCode": "RATE_LIMITED",
+          "faultStatus": 429,
+          "failure": {
+            "action": "retry_same",
+            "reason": "RATE_LIMITED"
+          },
+          "health": {
+            "providerId": "kilo-free-direct",
+            "modelId": "kilo-auto/free",
+            "state": "HEALTHY",
+            "hardExclude": false,
+            "scoreAdjustment": 4,
+            "confidence": 0.499,
+            "reasonCodes": [
+              "HEALTHY:SERVED_PRODUCTION_SHAPE"
+            ],
+            "expiresAt": 1791037832539,
+            "sampleSize": 1,
+            "lastObservedAt": "2026-10-03T14:00:32.539Z",
+            "activeConditions": [
+              {
+                "state": "HEALTHY",
+                "since": "2026-10-03T14:00:32.539Z",
+                "expiresAt": 1791037832539,
+                "confidence": 0.49930458333333333,
+                "sampleSize": 1,
+                "reasonCode": "SERVED_PRODUCTION_SHAPE",
+                "source": "runtime"
+              }
+            ],
+            "window": {
+              "calls": 1,
+              "successes": 1,
+              "failures": 0,
+              "rateLimits": 0,
+              "capacityErrors": 0,
+              "malformedToolCalls": 0,
+              "toolCalls": 0,
+              "latencyP50Ms": 1192,
+              "latencyP95Ms": 1192,
+              "from": "2026-10-03T14:00:32.539Z",
+              "to": "2026-10-03T14:00:32.539Z"
+            }
+          }
+        },
+        {
+          "phase": "bounded-same-route-retry-no-qualified-alternate",
+          "route": {
+            "providerId": "kilo-free-direct",
+            "modelId": "kilo-auto/free"
+          },
+          "poolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "text": "The defective operator is `+`; replace it with `*`:\n\n```js\nexport function multiply(a, b) {\n  return a * b;\n}\n```",
+          "events": [
+            {
+              "type": "text_delta",
+              "delta": "The defective operator is `+`;"
+            },
+            {
+              "type": "text_delta",
+              "delta": " replace it with `*`:\n\n```js\nexport function multiply(a, b) {\n  return a * b;\n}\n```"
+            },
+            {
+              "type": "usage",
+              "usage": {
+                "inputTokens": 210,
+                "outputTokens": 34,
+                "totalTokens": 244,
+                "cachedInputTokens": 140,
+                "reasoningTokens": 0
+              }
+            },
+            {
+              "type": "finish",
+              "finishReason": "stop",
+              "model": "stealth/space-bunny-alpha"
+            }
+          ],
+          "latencyMs": 1196,
+          "verified": true
+        },
+        {
+          "phase": "cooldown-expired-live-role-reuse",
+          "waitMs": 3,
+          "admission": {
+            "outcome": "ADMITTED",
+            "requestId": "r67-controlled-kilo-free-direct-recover",
+            "userId": "r67-provider-recovery",
+            "role": "SEARCH_ASSIST",
+            "generatedAt": "2026-10-03T14:00:38.743Z",
+            "selected": {
+              "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+              "providerId": "kilo-free-direct",
+              "modelId": "kilo-auto/free",
+              "canonicalModelId": "kilo-auto/free",
+              "supplyClass": "PACKAGED_FREE_DIRECT",
+              "quotaOwner": "USER_ENTITLEMENT",
+              "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+              "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified",
+              "reservationId": "r67-controlled-kilo-free-direct-recover",
+              "quotaDomainType": "PUBLIC_IP",
+              "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+              "egressMode": "CLIENT_DIRECT",
+              "marginalCostToCodeForge": 0
+            },
+            "explanation": {
+              "summary": "Selected your connected account route kilo-free-direct/kilo-auto/free: role-qualified; health healthy; quota reserved; using your authorized client-direct Free capacity",
+              "reasonCodes": [
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED"
+              ],
+              "domainOrder": [
+                "SHARED_CODEFORGE_POOL",
+                "SPONSORED",
+                "USER_ENTITLEMENT"
+              ],
+              "isolationViolations": [],
+              "candidates": [
+                {
+                  "routeId": "fabric:ai-horde::google/gemma-4-31b",
+                  "providerId": "ai-horde",
+                  "modelId": "google/gemma-4-31b",
+                  "canonicalModelId": "google/gemma-4-31b",
+                  "supplyClass": "COMMUNITY_ANONYMOUS_FREE",
+                  "quotaOwner": "SHARED_CODEFORGE_POOL",
+                  "capacityPoolId": "shared:ai-horde",
+                  "independenceKey": "ai-horde:GLOBAL:155d3b487efeeab33cedbd65c35ff178d7917f6b601258e1396e07f8eed9df24",
+                  "quotaDomainType": "GLOBAL_SHARED",
+                  "egressMode": "CLIENT_DIRECT",
+                  "marginalCostToCodeForge": 0,
+                  "status": "POLICY_EXCLUDED",
+                  "reasonCodes": [
+                    "UNHEALTHY",
+                    "CODEFORGE_QUALIFIED"
+                  ]
+                },
+                {
+                  "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                  "providerId": "kilo-free-direct",
+                  "modelId": "kilo-auto/free",
+                  "canonicalModelId": "kilo-auto/free",
+                  "supplyClass": "PACKAGED_FREE_DIRECT",
+                  "quotaOwner": "USER_ENTITLEMENT",
+                  "quotaOwnerIdentity": "localconn:kilo-free-direct",
+                  "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                  "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified",
+                  "quotaDomainType": "PUBLIC_IP",
+                  "egressMode": "CLIENT_DIRECT",
+                  "marginalCostToCodeForge": 0,
+                  "status": "SELECTED",
+                  "reasonCodes": [
+                    "AUTHORIZED",
+                    "ROLE_QUALIFIED",
+                    "QUOTA_RESERVED",
+                    "ADMITTED"
+                  ],
+                  "healthState": "HEALTHY",
+                  "scoreAdjustment": 6,
+                  "rightFitPenalty": -8
+                }
+              ]
+            },
+            "suggestions": []
+          },
+          "route": {
+            "providerId": "kilo-free-direct",
+            "modelId": "kilo-auto/free"
+          },
+          "poolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "text": "The defective operator is `+`; replace it with `*`:\n\n```js\nexport function multiply(a, b) {\n  return a * b;\n}\n```",
+          "events": [
+            {
+              "type": "text_delta",
+              "delta": "The defective operator is `"
+            },
+            {
+              "type": "text_delta",
+              "delta": "+`; replace it with `*`:\n\n```js\nexport function multiply(a, b) {\n  return a * b;\n}\n```"
+            },
+            {
+              "type": "usage",
+              "usage": {
+                "inputTokens": 210,
+                "outputTokens": 34,
+                "totalTokens": 244,
+                "cachedInputTokens": 140,
+                "reasoningTokens": 0
+              }
+            },
+            {
+              "type": "finish",
+              "finishReason": "stop",
+              "model": "stealth/space-bunny-alpha"
+            }
+          ],
+          "latencyMs": 1098,
+          "verified": true
+        }
+      ],
+      "qualification": "QUALIFIED",
+      "eligibleIndependentAlternates": []
+    },
+    {
+      "providerId": "ai-horde",
+      "status": "ROLE_INELIGIBLE",
+      "steps": [],
+      "denial": {
+        "outcome": "no_eligible_route",
+        "reasonCodes": [
+          "FABRIC_DENIED_NO_SUPPLY",
+          "NO_ROLE_QUALIFIED_ROUTE",
+          "NO_ELIGIBLE_ROUTE"
+        ],
+        "fabric": {
+          "outcome": "DENIED_NO_SUPPLY",
+          "requestId": "r67-controlled-ai-horde",
+          "userId": "r67-provider-recovery",
+          "role": "SEARCH_ASSIST",
+          "generatedAt": "2026-10-03T14:00:39.849Z",
+          "explanation": {
+            "summary": "No free supply can serve this request — nothing eligible, nothing paid substituted.",
+            "reasonCodes": [
+              "NO_ROLE_QUALIFIED_ROUTE",
+              "NO_ELIGIBLE_ROUTE"
+            ],
+            "domainOrder": [
+              "SHARED_CODEFORGE_POOL",
+              "SPONSORED",
+              "USER_ENTITLEMENT"
+            ],
+            "isolationViolations": [],
+            "candidates": [
+              {
+                "routeId": "fabric:ai-horde::google/gemma-4-31b",
+                "providerId": "ai-horde",
+                "modelId": "google/gemma-4-31b",
+                "canonicalModelId": "google/gemma-4-31b",
+                "supplyClass": "COMMUNITY_ANONYMOUS_FREE",
+                "quotaOwner": "SHARED_CODEFORGE_POOL",
+                "capacityPoolId": "shared:ai-horde",
+                "independenceKey": "ai-horde:GLOBAL:155d3b487efeeab33cedbd65c35ff178d7917f6b601258e1396e07f8eed9df24",
+                "quotaDomainType": "GLOBAL_SHARED",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0,
+                "status": "POLICY_EXCLUDED",
+                "reasonCodes": [
+                  "UNHEALTHY",
+                  "CODEFORGE_QUALIFIED"
+                ]
+              },
+              {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free",
+                "canonicalModelId": "kilo-auto/free",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaOwner": "USER_ENTITLEMENT",
+                "quotaOwnerIdentity": "localconn:kilo-free-direct",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified",
+                "quotaDomainType": "PUBLIC_IP",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0,
+                "status": "ROLE_INELIGIBLE",
+                "reasonCodes": [
+                  "ROLE_VERDICT_EXCLUDED"
+                ]
+              }
+            ]
+          },
+          "suggestions": [
+            "No eligible free route exists for this role — check provider connections and qualification state."
+          ]
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Faults are explicitly injected at the real adapter boundary; these are not naturally observed upstream outages.",
+    "A successful reasoner diagnostic role call is not an autonomous software task completion."
+  ],
+  "costState": "UNKNOWN",
+  "finishedAt": "2026-10-03T14:00:39.860Z",
+  "receipts": [
+    {
+      "kind": "eight_bit_decision_receipt",
+      "id": "eight-bit-receipt-b49a34e3-baf1-4851-b11e-d36649690642",
+      "sessionId": "r67-controlled-kilo-free-direct",
+      "receipt": {
+        "receiptId": "b49a34e3-baf1-4851-b11e-d36649690642",
+        "createdAt": "2026-10-03T14:00:31.347Z",
+        "sessionId": "r67-controlled-kilo-free-direct",
+        "runId": "r67-controlled-kilo-free-direct",
+        "role": "ANALYST",
+        "action": "INITIAL_SELECTION",
+        "policyMode": "adaptive",
+        "selected": {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        },
+        "reasonCodes": [
+          "FABRIC_ADMITTED",
+          "SUPPLY_PACKAGED_FREE_DIRECT",
+          "OWNER_USER_ENTITLEMENT",
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED"
+        ],
+        "evidence": {
+          "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "egressMode": "CLIENT_DIRECT",
+          "marginalCostToCodeForge": 0
+        }
+      },
+      "createdAt": "2026-10-03T14:00:31.347Z"
+    },
+    {
+      "kind": "eight_bit_decision_receipt",
+      "id": "eight-bit-receipt-8ff3c22b-1f7b-4c07-aafa-4e1dbb110894",
+      "sessionId": "r67-controlled-kilo-free-direct",
+      "receipt": {
+        "receiptId": "8ff3c22b-1f7b-4c07-aafa-4e1dbb110894",
+        "createdAt": "2026-10-03T14:00:32.558Z",
+        "sessionId": "r67-controlled-kilo-free-direct",
+        "runId": "r67-controlled-kilo-free-direct",
+        "turnId": "r67-controlled-kilo-free-direct-fault",
+        "role": "ANALYST",
+        "action": "COOLDOWN",
+        "policyMode": "adaptive",
+        "previous": {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        },
+        "reasonCodes": [
+          "RATE_LIMITED",
+          "NO_REPLACEMENT_ROUTE",
+          "BOUNDED_SAME_ROUTE_RETRY",
+          "SHORT_RATE_LIMIT_WAIT"
+        ],
+        "evidence": {
+          "waitMs": 4986,
+          "consecutiveFailures": 1
+        }
+      },
+      "createdAt": "2026-10-03T14:00:32.558Z"
+    },
+    {
+      "kind": "eight_bit_decision_receipt",
+      "id": "eight-bit-receipt-aed84475-4372-4d81-9437-d61d4d6bdd82",
+      "sessionId": "r67-controlled-kilo-free-direct-recover",
+      "receipt": {
+        "receiptId": "aed84475-4372-4d81-9437-d61d4d6bdd82",
+        "createdAt": "2026-10-03T14:00:38.746Z",
+        "sessionId": "r67-controlled-kilo-free-direct-recover",
+        "runId": "r67-controlled-kilo-free-direct-recover",
+        "role": "ANALYST",
+        "action": "INITIAL_SELECTION",
+        "policyMode": "adaptive",
+        "selected": {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        },
+        "reasonCodes": [
+          "FABRIC_ADMITTED",
+          "SUPPLY_PACKAGED_FREE_DIRECT",
+          "OWNER_USER_ENTITLEMENT",
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED"
+        ],
+        "evidence": {
+          "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "egressMode": "CLIENT_DIRECT",
+          "marginalCostToCodeForge": 0
+        }
+      },
+      "createdAt": "2026-10-03T14:00:38.746Z"
+    },
+    {
+      "kind": "eight_bit_decision_receipt",
+      "id": "eight-bit-receipt-6a097d8b-dc84-4b3a-b09b-5419ca1ced98",
+      "sessionId": "r67-controlled-ai-horde",
+      "receipt": {
+        "receiptId": "6a097d8b-dc84-4b3a-b09b-5419ca1ced98",
+        "createdAt": "2026-10-03T14:00:39.853Z",
+        "sessionId": "r67-controlled-ai-horde",
+        "runId": "r67-controlled-ai-horde",
+        "role": "ANALYST",
+        "action": "NO_ELIGIBLE_ROUTE",
+        "policyMode": "adaptive",
+        "reasonCodes": [
+          "FABRIC_DENIED_NO_SUPPLY",
+          "NO_ROLE_QUALIFIED_ROUTE",
+          "NO_ELIGIBLE_ROUTE"
+        ],
+        "evidence": {
+          "fabricDecisionJson": "{\"outcome\":\"DENIED_NO_SUPPLY\",\"requestId\":\"r67-controlled-ai-horde\",\"userId\":\"r67-provider-recovery\",\"role\":\"SEARCH_ASSIST\",\"generatedAt\":\"2026-10-03T14:00:39.849Z\",\"explanation\":{\"summary\":\"No free supply can serve this request — nothing eligible, nothing paid substituted.\",\"reasonCodes\":[\"NO_ROLE_QUALIFIED_ROUTE\",\"NO_ELIGIBLE_ROUTE\"],\"domainOrder\":[\"SHARED_CODEFORGE_POOL\",\"SPONSORED\",\"USER_ENTITLEMENT\"],\"isolationViolations\":[],\"candidates\":[{\"routeId\":\"fabric:ai-horde::google/gemma-4-31b\",\"providerId\":\"ai-horde\",\"modelId\":\"google/gemma-4-31b\",\"canonicalModelId\":\"google/gemma-4-31b\",\"supplyClass\":\"COMMUNITY_ANONYMOUS_FREE\",\"quotaOwner\":\"SHARED_CODEFORGE_POOL\",\"capacityPoolId\":\"shared:ai-horde\",\"independenceKey\":\"ai-horde:GLOBAL:155d3b487efeeab33cedbd65c35ff178d7917f6b601258e1396e07f8eed9df24\",\"quotaDomainType\":\"GLOBAL_SHARED\",\"egressMode\":\"CLIENT_DIRECT\",\"marginalCostToCodeForge\":0,\"status\":\"POLICY_EXCLUDED\",\"reasonCodes\":[\"UNHEALTHY\",\"CODEFORGE_QUALIFIED\"]},{\"routeId\":\"fabric:kilo-free-direct::kilo-auto/free\",\"providerId\":\"kilo-free-direct\",\"modelId\":\"kilo-auto/free\",\"canonicalModelId\":\"kilo-auto/free\",\"supplyClass\":\"PACKAGED_FREE_DIRECT\",\"quotaOwner\":\"USER_ENTITLEMENT\",\"quotaOwnerIdentity\":\"localconn:kilo-free-direct\",\"capacityPoolId\":\"kilo-free-direct:user:localconn:kilo-free-direct\",\"independenceKey\":\"kilo-free-direct:PUBLIC_IP:shared-unverified\",\"quotaDomainType\":\"PUBLIC_IP\",\"egressMode\":\"CLIENT_DIRECT\",\"marginalCostToCodeForge\":0,\"status\":\"ROLE_INELIGIBLE\",\"reasonCodes\":[\"ROLE_VERDICT_EXCLUDED\"]}]},\"suggestions\":[\"No eligible free route exists for this role — check provider connections and qualification state.\"]}"
+        }
+      },
+      "createdAt": "2026-10-03T14:00:39.853Z"
+    }
+  ],
+  "health": [
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "conditions": [
+        {
+          "state": "HEALTHY",
+          "since": "2026-10-03T14:00:32.539Z",
+          "expiresAt": 1791037839844,
+          "confidence": 0.8,
+          "sampleSize": 3,
+          "reasonCode": "SERVED_PRODUCTION_SHAPE",
+          "source": "runtime"
+        }
+      ],
+      "roleEvidence": [],
+      "window": {
+        "calls": 3,
+        "successes": 3,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": 1192,
+        "latencyP95Ms": 1195,
+        "from": "2026-10-03T14:00:32.539Z",
+        "to": "2026-10-03T14:00:39.844Z"
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-10-03T14:00:39.844Z",
+      "lastSuccessAt": "2026-10-03T14:00:39.844Z",
+      "quota": {},
+      "state": "HEALTHY",
+      "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct"
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "__quota_domain__",
+      "conditions": [],
+      "roleEvidence": [],
+      "window": {
+        "calls": 1,
+        "successes": 0,
+        "failures": 1,
+        "rateLimits": 1,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null,
+        "from": "2026-10-03T14:00:32.545Z",
+        "to": "2026-10-03T14:00:32.545Z"
+      },
+      "consecutiveFailures": 1,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-10-03T14:00:32.545Z",
+      "quota": {},
+      "state": "UNKNOWN",
+      "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct"
+    }
+  ]
+}

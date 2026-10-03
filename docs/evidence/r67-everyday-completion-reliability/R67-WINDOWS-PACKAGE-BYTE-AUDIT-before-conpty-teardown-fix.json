@@ -1,0 +1,103 @@
+{
+  "at": "2026-10-03T15:55:40.880Z",
+  "status": "PASS",
+  "evidenceClass": "ACTUAL_PACKAGED_RUNTIME_BYTE_COMPARISON",
+  "runtimeSourceStateId": "b8e0d6f4984360423b38a760eb34c44ff3a496c14df6a45077e22cef93c49887",
+  "runtimeSourceAggregateSha256": "81f99c7054c9e9fa4d66afb3002a0e8d5f7d8ba83dfe27acfa9dbfd7cf089bc8",
+  "archiveSha256": "016338516eb4bb23fae71a812c540618deced4a70004f32dbb352cc79ad41e7a",
+  "executableSha256": "c45908cdc0257640b68bb57bb60b12d251b0fa4ec92ae8f511a467f0722f04e2",
+  "identity": {
+    "version": "0.4.0",
+    "commit": "6c8af1b3fd43b048fdad2002aa6e5d22b1b72957",
+    "shortCommit": "6c8af1b3fd43",
+    "branch": "codex/r29-release-closure",
+    "dirty": true,
+    "builtAt": "2026-10-03T15:04:48.593Z"
+  },
+  "manifest": {
+    "$comment": "Build-time CodeForge Cloud endpoint manifest. The packaging pipeline rewrites `channel` and fills the matching endpoint for staging/production releases. The renderer never reads this file, and a packaged staging/production build ignores CODEFORGE_CLOUD_URL entirely. Staging/production endpoints are intentionally absent until a real deployment exists: a build for those channels must fail closed rather than fall back to a local address.",
+    "channel": "production",
+    "endpoints": {
+      "development": "http://127.0.0.1:3220",
+      "staging": "https://codeforge-cloud-staging.onrender.com",
+      "production": "https://codeforge-cloud-va.onrender.com"
+    }
+  },
+  "entries": [
+    {
+      "builtPath": "packages/agent/dist/index.js",
+      "packagedPath": "node_modules\\@codeforge\\agent\\dist\\index.js",
+      "builtSha256": "e6358744e027afa8f1f17b81727100d5f5b854feb73b8dbe8b58ddeea3f6867c",
+      "packagedSha256": "e6358744e027afa8f1f17b81727100d5f5b854feb73b8dbe8b58ddeea3f6867c"
+    },
+    {
+      "builtPath": "packages/eight-bit/dist/route-health-authority.js",
+      "packagedPath": "node_modules\\@codeforge\\eight-bit\\dist\\route-health-authority.js",
+      "builtSha256": "f222703dabced712352dfbe9568cb12d25f65209d0a878ed752b483a66957a35",
+      "packagedSha256": "f222703dabced712352dfbe9568cb12d25f65209d0a878ed752b483a66957a35"
+    },
+    {
+      "builtPath": "packages/eight-bit/dist/runtime.js",
+      "packagedPath": "node_modules\\@codeforge\\eight-bit\\dist\\runtime.js",
+      "builtSha256": "ddbd771a7f0d521c0b34de938c5e9c1a3f3c0fc23c088b1d59b3777b4230afe0",
+      "packagedSha256": "ddbd771a7f0d521c0b34de938c5e9c1a3f3c0fc23c088b1d59b3777b4230afe0"
+    },
+    {
+      "builtPath": "packages/model-registry/dist/free-cloud-service.js",
+      "packagedPath": "node_modules\\@codeforge\\model-registry\\dist\\free-cloud-service.js",
+      "builtSha256": "8d082224a25092e89bba74ffe51794743b246e990e450cd906389c8f451a3048",
+      "packagedSha256": "8d082224a25092e89bba74ffe51794743b246e990e450cd906389c8f451a3048"
+    },
+    {
+      "builtPath": "packages/protocol/dist/subagent-runtime.js",
+      "packagedPath": "node_modules\\@codeforge\\protocol\\dist\\subagent-runtime.js",
+      "builtSha256": "d1403beee79cca0757786e3610dccc7d6c8f4d677405c2399d2dd49e2c81d0ee",
+      "packagedSha256": "d1403beee79cca0757786e3610dccc7d6c8f4d677405c2399d2dd49e2c81d0ee"
+    },
+    {
+      "builtPath": "packages/server/dist/agent-runtime.js",
+      "packagedPath": "node_modules\\@codeforge\\server\\dist\\agent-runtime.js",
+      "builtSha256": "b7ea3c23354665e14d4403ba36303e64ed0e3201991a8bf377747585271d1f49",
+      "packagedSha256": "b7ea3c23354665e14d4403ba36303e64ed0e3201991a8bf377747585271d1f49"
+    },
+    {
+      "builtPath": "packages/server/dist/autonomous-orchestrator.js",
+      "packagedPath": "node_modules\\@codeforge\\server\\dist\\autonomous-orchestrator.js",
+      "builtSha256": "e5d3231d0401d744da72e0d687d44e667c343ca644733049d8fd79b409884dc7",
+      "packagedSha256": "e5d3231d0401d744da72e0d687d44e667c343ca644733049d8fd79b409884dc7"
+    },
+    {
+      "builtPath": "packages/server/dist/command-classifier.js",
+      "packagedPath": "node_modules\\@codeforge\\server\\dist\\command-classifier.js",
+      "builtSha256": "37fea593dff8014d8aeb38c29793f31947fc57c4026074ea031eb302343c2217",
+      "packagedSha256": "37fea593dff8014d8aeb38c29793f31947fc57c4026074ea031eb302343c2217"
+    },
+    {
+      "builtPath": "packages/server/dist/index.js",
+      "packagedPath": "node_modules\\@codeforge\\server\\dist\\index.js",
+      "builtSha256": "f89cfa222caed79767bafb0b611ef6fbc5c330258c08b151a22a4991933c4401",
+      "packagedSha256": "f89cfa222caed79767bafb0b611ef6fbc5c330258c08b151a22a4991933c4401"
+    },
+    {
+      "builtPath": "packages/server/dist/subagent-manager.js",
+      "packagedPath": "node_modules\\@codeforge\\server\\dist\\subagent-manager.js",
+      "builtSha256": "ebd7d44db3bb3c913b5313ed2574a8d982d7baba85366fcd4858c6ec1a332776",
+      "packagedSha256": "ebd7d44db3bb3c913b5313ed2574a8d982d7baba85366fcd4858c6ec1a332776"
+    },
+    {
+      "builtPath": "packages/terminal/dist/executor.js",
+      "packagedPath": "node_modules\\@codeforge\\terminal\\dist\\executor.js",
+      "builtSha256": "8aab408f331fdb29703ffcbb0590b247314fa8cd631b62519341396e7e88d3fe",
+      "packagedSha256": "8aab408f331fdb29703ffcbb0590b247314fa8cd631b62519341396e7e88d3fe"
+    },
+    {
+      "builtPath": "packages/tools/dist/index.js",
+      "packagedPath": "node_modules\\@codeforge\\tools\\dist\\index.js",
+      "builtSha256": "1c0d6a114311aec856a3a190cd9ddece71d9dc32cbf0da1744fe442c1468b9a8",
+      "packagedSha256": "1c0d6a114311aec856a3a190cd9ddece71d9dc32cbf0da1744fe442c1468b9a8"
+    }
+  ],
+  "runtimeModulesCompared": 12,
+  "startupIdleRestartEvidence": "R67-WINDOWS-CERTIFIED-IDLE-RESTART.json",
+  "authenticatedTaskGate": "HUMAN_AUTH_REQUIRED"
+}

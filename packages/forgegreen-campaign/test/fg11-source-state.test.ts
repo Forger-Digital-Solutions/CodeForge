@@ -8,6 +8,24 @@ import { computeCampaignHarnessId, computeContentStateId, loadCertifiedSourceSta
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
 
 describe("FG-11 source-state / campaign-harness identity", () => {
+  it("batched hashes match individual Git hashes for filtered, untracked and spaced paths", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "fg11-batched-hashes-"));
+    try {
+      execFileSync("git", ["init", "-q"], { cwd: dir });
+      fs.writeFileSync(path.join(dir, ".gitattributes"), "*.ts text eol=lf\n");
+      fs.writeFileSync(path.join(dir, "space name.ts"), "export const a = 1;\r\n");
+      fs.writeFileSync(path.join(dir, "untracked.ts"), "export const b = 2;\n");
+      const files = ["untracked.ts", "space name.ts", ".gitattributes"];
+      const individual = [...files].sort((a, b) => a.localeCompare(b)).map(file => ({ path: file,
+        blobHash: execFileSync("git", ["hash-object", file], { cwd: dir, encoding: "utf8" }).trim() }));
+      expect(computeContentStateId(dir, files).entries).toEqual(individual);
+      expect(computeContentStateId(dir, []).entries).toEqual([]);
+      expect(() => computeContentStateId(dir, ["missing.ts"])).toThrow();
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it("is deterministic for the same file content", () => {
     const a = computeContentStateId(repoRoot, ["packages/forgegreen-campaign/src/policy.ts"]);
     const b = computeContentStateId(repoRoot, ["packages/forgegreen-campaign/src/policy.ts"]);

@@ -24,6 +24,7 @@ import {
 import {
   type SubagentManager,
   createSubagentManager,
+  type SpawnChildOptions,
 } from "./subagent-manager.js";
 import {
   type IntegrationService,
@@ -252,6 +253,26 @@ export interface OrchestratorOptions {
   capacityConfidence?: () => CapacityConfidenceReport | undefined;
 }
 
+interface AutonomousParentState {
+  kind: "autonomous_parent_state";
+  id: string;
+  runId: string;
+  sessionId: string;
+  workspacePath: string;
+  goal: string;
+  baseRevision: string;
+  topology: AdaptiveTopology;
+  verificationCommands: string[];
+  verificationTimeoutMs?: number;
+  isolatedWorktreeId?: string;
+  checkpointId?: string;
+  phase: AutonomousRunStatus;
+  reviewRounds: number;
+  createdAt: string;
+  updatedAt: string;
+  recoveryAttempts?: number;
+}
+
 export class AutonomousRunOrchestrator {
   private readonly workspaceService: WorkspaceService;
   private readonly persistence?: ISessionPersistence;
@@ -266,6 +287,26 @@ export class AutonomousRunOrchestrator {
   private readonly subagentsR1Enabled: boolean;
   private readonly runs: Map<string, AutonomousRun> = new Map();
   private readonly abortControllers: Map<string, AbortController> = new Map();
+  private readonly parentStates = new Map<string, AutonomousParentState>();
+
+  private async saveParentState(run: AutonomousRun): Promise<void> {
+    const state = this.parentStates.get(run.id);
+    if (!state || !this.persistence) return;
+    Object.assign(state, { phase: run.status, reviewRounds: run.reviewRounds,
+      isolatedWorktreeId: run.isolatedWorktreeId, checkpointId: run.checkpointId,
+      updatedAt: new Date().toISOString() });
+    await this.persistence.upsertWorkItem(state as unknown as import("@codeforge/sessions").WorkItem);
+  }
+
+  private async spawnRole(options: SpawnChildOptions): Promise<AgentResult> {
+    const run = this.runs.get(options.parentRunId);
+    if (run) await this.saveParentState(run);
+    const recoveryKey = this.parentStates.has(options.parentRunId)
+      ? crypto.createHash("sha256").update(JSON.stringify({ agentId: options.agentId, task: options.task,
+        workspacePath: options.workspacePath, contextSummary: options.contextSummary,
+        reviewFeedback: options.reviewFeedback, excludeRoleRoute: options.excludeRoleRoute })).digest("hex") : undefined;
+    return this.subagentManager.spawnChildAgent({ ...options, ...(recoveryKey ? { recoveryKey } : {}) });
+  }
 
   constructor(options: OrchestratorOptions) {
     this.workspaceService = options.workspaceService;
@@ -483,7 +524,7 @@ export class AutonomousRunOrchestrator {
   /**
    * Execute an autonomous multi-agent engineering run.
    */
-  async startRun(options: OrchestratorRunOptions): Promise<AutonomousRunResult> {
+  async startRun(options: OrchestratorRunOptions, recovery?: AutonomousParentState): Promise<AutonomousRunResult> {
     const { sessionId, workspacePath, goal, verificationCommands = [], verificationTimeoutMs, adapter, signal, coderExecutor } = options;
     const rosterAllowanceFor = (role: RosterRole): RosterRouteAllowance | undefined => {
       if (!options.rosterContext) return undefined;
@@ -516,7 +557,8 @@ export class AutonomousRunOrchestrator {
 
     // Resolve base Git commit
     const { stdout: headShaOut } = await this.git(targetWs.rootPath, ["rev-parse", "HEAD"]).catch(() => ({ stdout: "0000000000000000000000000000000000000000" }));
-    const baseRevision = headShaOut.trim();
+    const baseRevision = recovery?.baseRevision ?? headShaOut.trim();
+    if (recovery && headShaOut.trim() !== baseRevision) throw new Error("PARENT_RECOVERY_BASE_CHANGED");
 
     // R21 topology decision: the smallest useful team, decided deterministically before any agent
     // is spawned and recorded on the run. ForgeVerify is required by every plan.
@@ -563,7 +605,7 @@ export class AutonomousRunOrchestrator {
 
     const counters: AutonomousRunCounters = {
       childrenSpawned: 0,
-      reviewRounds: 0,
+      reviewRounds: recovery?.reviewRounds ?? 0,
       taskAttempts: 0,
       verificationAttempts: 0,
     };
@@ -584,7 +626,10 @@ export class AutonomousRunOrchestrator {
       goal,
       status: "created",
       baseRevision,
-      reviewRounds: 0,
+      checkpointId: recovery?.checkpointId,
+      isolatedWorktreeId: recovery?.isolatedWorktreeId,
+      isolatedBranch: recovery?.isolatedWorktreeId ? this.workspaceService.getWorkspace(recovery.isolatedWorktreeId)?.branch : undefined,
+      reviewRounds: recovery?.reviewRounds ?? 0,
       taskGraph: initialTaskGraph,
       topology,
       counters,
@@ -608,6 +653,16 @@ export class AutonomousRunOrchestrator {
 
     this.runs.set(runId, run);
     this.persistRun(run);
+    if (this.persistence && this.subagentsR1Enabled && !coderExecutor && !options.rosterContext) {
+      const now = new Date().toISOString();
+      this.parentStates.set(runId, recovery ? { ...recovery } : {
+        kind: "autonomous_parent_state", id: `parent-state-${runId}`, runId, sessionId,
+        workspacePath: targetWs.rootPath, goal: redactSecrets(goal), baseRevision,
+        topology: topologyPlan.topology, verificationCommands, verificationTimeoutMs,
+        phase: run.status, reviewRounds: run.reviewRounds, createdAt: now, updatedAt: now,
+      });
+      if (!recovery) await this.saveParentState(run);
+    }
     adapter?.emitTaskCreated(runId, redactSecrets(goal.slice(0, 80)), "autonomous");
 
     if (missionAdmission && missionAdmission.verdict !== "ADMIT") {
@@ -659,7 +714,7 @@ export class AutonomousRunOrchestrator {
           ]
           : [`Explore repository for goal: ${goal}`];
       counters.childrenSpawned += explorerTasks.length;
-      const explorerResults = await Promise.all(explorerTasks.map((task) => this.subagentManager.spawnChildAgent({
+      const explorerResults = await Promise.all(explorerTasks.map((task) => this.spawnRole({
         parentRunId: runId,
         sessionId,
         agentId: "explorer",
@@ -689,7 +744,7 @@ export class AutonomousRunOrchestrator {
       let leadHandoff = "";
       if (options.rosterContext && options.rosterContext.roster.lead.mode !== "NONE") {
         counters.childrenSpawned++;
-        const leadResult = await this.subagentManager.spawnChildAgent({
+        const leadResult = await this.spawnRole({
           parentRunId: runId, sessionId, agentId: "lead",
           task: `Interpret intent and delegate bounded work for goal: ${goal}`,
           workspacePath: targetWs.rootPath, adapter, signal: controller.signal,
@@ -713,7 +768,7 @@ export class AutonomousRunOrchestrator {
         const explorationContext = incompleteExplorerRoles.length > 0
           ? `R1 exploration was bounded and incomplete: ${incompleteExplorerRoles.join(", ")}. Treat missing evidence as unknown and continue with only the evidence supplied below.`
           : "R1 exploration completed; use only the evidence supplied below.";
-        const plannerResult = await this.subagentManager.spawnChildAgent({
+        const plannerResult = await this.spawnRole({
           parentRunId: runId,
           sessionId,
           agentId: "planner",
@@ -763,24 +818,28 @@ export class AutonomousRunOrchestrator {
 
       // Create base checkpoint
       const chkSvc = this.checkpointServiceFactory(targetWs.rootPath);
+      if (recovery?.checkpointId) await chkSvc.init();
       const checkpointId = `chk-${runId.slice(0, 8)}`;
-      const chk = await chkSvc.createCheckpoint({
+      const chk = recovery?.checkpointId ? await chkSvc.getCheckpoint(recovery.checkpointId) : await chkSvc.createCheckpoint({
         checkpointId,
         label: `Base snapshot for ${runId}`,
         sessionId,
       });
-      run.checkpointId = checkpointId;
-      adapter?.emitCheckpointCreated(checkpointId, `Base snapshot ${checkpointId}`, chk.fileCount);
+      if (!chk) throw new Error("PARENT_RECOVERY_CHECKPOINT_MISSING");
+      run.checkpointId = recovery?.checkpointId ?? checkpointId;
+      if (!recovery?.checkpointId) adapter?.emitCheckpointCreated(checkpointId, `Base snapshot ${checkpointId}`, chk.fileCount);
 
       // Create isolated worktree outside parent repo
-      worktreeWs = await this.workspaceService.createWorktree({
+      worktreeWs = recovery?.isolatedWorktreeId ? this.workspaceService.getWorkspace(recovery.isolatedWorktreeId) : await this.workspaceService.createWorktree({
         parentWorkspaceId: targetWs.id,
         base: "checkpoint",
         checkpointId,
         runId,
       });
+      if (!worktreeWs || worktreeWs.status === "missing") throw new Error("PARENT_RECOVERY_WORKTREE_MISSING");
       run.isolatedWorktreeId = worktreeWs.id;
       run.isolatedBranch = worktreeWs.branch;
+      await this.saveParentState(run);
 
       // Acquire exclusive write lease on worktree
       worktreeLease = this.workspaceService.acquireLease(worktreeWs.rootPath, runId, "write");
@@ -823,7 +882,7 @@ export class AutonomousRunOrchestrator {
           const codeExecResult = await coderExecutor(worktreeWs.rootPath, goal, reviewFeedback);
           changedFiles = codeExecResult.filesChanged;
         } else if (this.subagentsR1Enabled) {
-          let codeResult = await this.subagentManager.spawnChildAgent({
+          let codeResult = await this.spawnRole({
             parentRunId: runId,
             sessionId,
             agentId: "coder",
@@ -873,7 +932,7 @@ export class AutonomousRunOrchestrator {
             };
             await this.persistence?.upsertWorkItem(handoff as unknown as import("@codeforge/sessions").WorkItem);
             const contextSummary = `A preceding Coder stopped after observable repeated non-progress. Its route was ${oldRoute.providerId}/${oldRoute.modelId}; that route is excluded from this continuation. The same isolated worktree is preserved. Existing changed files: ${JSON.stringify(preservedFiles)}. Continue the original goal from those files; inspect existing edits before changing them, finish pending requirements, and run the required tests. Do not assume the prior Coder completed verification.\n${executionContext}`;
-            codeResult = await this.subagentManager.spawnChildAgent({
+            codeResult = await this.spawnRole({
               parentRunId: runId,
               sessionId,
               agentId: "coder",
@@ -932,7 +991,7 @@ export class AutonomousRunOrchestrator {
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             } as unknown as import("@codeforge/sessions").WorkItem);
-            codeResult = await this.subagentManager.spawnChildAgent({
+            codeResult = await this.spawnRole({
               parentRunId: runId,
               sessionId,
               agentId: "coder",
@@ -1047,6 +1106,8 @@ export class AutonomousRunOrchestrator {
         // root cause). The context assembler's own token budget bounds the final size;
         // 24KB covers realistic coordinated changes, and the marker tells the reviewer
         // it can re-run the diff in the worktree for the remainder.
+        // New files must enter the review/gate diff before integration stages their contents.
+        await this.git(worktreeWs.rootPath, ["add", "--intent-to-add", "--all"]);
         const { stdout: diffStat } = await this.git(worktreeWs.rootPath, ["diff", "--stat", baseRevision]).catch(() => ({ stdout: "" }));
         const { stdout: diffOut } = await this.git(worktreeWs.rootPath, ["diff", baseRevision]).catch(() => ({ stdout: "" }));
 
@@ -1054,7 +1115,7 @@ export class AutonomousRunOrchestrator {
         const reviewerContext = diffOut
           ? buildReviewerDiffContext(diffStat, diffOut, baseRevision)
           : `Changes verified for task: ${goal}`;
-        let reviewResult = await this.subagentManager.spawnChildAgent({
+        let reviewResult = await this.spawnRole({
           parentRunId: runId,
           sessionId,
           agentId: "reviewer",
@@ -1097,7 +1158,7 @@ export class AutonomousRunOrchestrator {
           };
           await this.persistence?.upsertWorkItem(handoff as unknown as import("@codeforge/sessions").WorkItem);
           counters.childrenSpawned++;
-          reviewResult = await this.subagentManager.spawnChildAgent({
+          reviewResult = await this.spawnRole({
             parentRunId: runId,
             sessionId,
             agentId: "reviewer",
@@ -1239,6 +1300,7 @@ export class AutonomousRunOrchestrator {
       // PHASE 5: DETERMINISTIC VERIFICATION GATE
       // ==========================================
       this.transitionRun(run, "verifying", adapter);
+      await this.saveParentState(run);
       counters.verificationAttempts++;
 
       const verificationCwd = worktreeWs.rootPath;
@@ -1288,6 +1350,7 @@ export class AutonomousRunOrchestrator {
       // Completion is an enforced lifecycle transition, not an inference from a clean reviewer or
       // a zero exit code. Build the gate input from authoritative worktree state and ForgeVerify's
       // report; model-reported file lists are never accepted as proof of an effective change.
+      await this.git(worktreeWs.rootPath, ["add", "--intent-to-add", "--all"]);
       const [{ stdout: completionDiff }, { stdout: changedPathsOut }] = await Promise.all([
         this.git(worktreeWs.rootPath, ["diff", baseRevision]).catch(() => ({ stdout: "" })),
         this.git(worktreeWs.rootPath, ["diff", "--name-only", baseRevision]).catch(() => ({ stdout: "" })),
@@ -1378,6 +1441,7 @@ export class AutonomousRunOrchestrator {
       // ==========================================
       this.transitionRun(run, "integration_ready", adapter);
       this.transitionRun(run, "integrating", adapter);
+      await this.saveParentState(run);
 
       const intResult: IntegrateResult = await this.integrationService.integrate({
         targetWorkspaceId: targetWs.id,
@@ -1436,6 +1500,7 @@ export class AutonomousRunOrchestrator {
       };
       run.result = completedResult;
       this.persistRun(run);
+      await this.saveParentState(run);
       adapter?.emitTaskCompleted(runId, completedResult.summary);
       return completedResult;
     } catch (err: unknown) {
@@ -1509,17 +1574,19 @@ export class AutonomousRunOrchestrator {
   /**
    * Restart Recovery: Rehydrate runs from persistence and validate Git & workspace refs.
    */
-  async recoverRuns(): Promise<{ recovered: number; requiresRevalidation: number; blocked: number }> {
+  async recoverRuns(options: { resumeParents?: boolean } = {}): Promise<{ recovered: number; requiresRevalidation: number; blocked: number }> {
     if (!this.persistence) return { recovered: 0, requiresRevalidation: 0, blocked: 0 };
 
     let recovered = 0;
     let requiresRevalidation = 0;
     let blocked = 0;
+    const resumable: AutonomousParentState[] = [];
 
     try {
       const items = await this.persistence.getWorkItemsByKind("autonomous_run");
       for (const item of items) {
         if (item.kind === "autonomous_run" && item.id) {
+          if (this.abortControllers.has(item.id)) continue;
           const raw = item as unknown as {
             id: string;
             sessionId?: string;
@@ -1556,13 +1623,17 @@ export class AutonomousRunOrchestrator {
           if (!TERMINAL_STATUSES.has(raw.status)) {
             effectiveStatus = "blocked";
             requiresRevalidation++;
+            const parent = await this.persistence.getWorkItem(`parent-state-${raw.id}`) as unknown as AutonomousParentState | undefined;
+            if (parent?.kind === "autonomous_parent_state" && parent.runId === raw.id
+              && parent.sessionId === raw.sessionId && parent.baseRevision === raw.baseRevision
+              && this.subagentsR1Enabled && this.runtimeForSession(parent.sessionId)) resumable.push(parent);
           }
 
           const run: AutonomousRun = {
             id: raw.id,
             sessionId: raw.sessionId || "global",
             workspaceId: raw.workspaceId,
-            workspacePath: "",
+            workspacePath: resumable.find((state) => state.runId === raw.id)?.workspacePath ?? "",
             goal: raw.goal,
             status: effectiveStatus,
             baseRevision: raw.baseRevision,
@@ -1584,16 +1655,87 @@ export class AutonomousRunOrchestrator {
           if (effectiveStatus === "blocked") blocked++;
         }
       }
-      // R2: recover crash-interrupted workers through the durable execution journal. Workers
-      // with a resume-safe journal are genuinely resumed (RESUME); the rest converge honestly to
-      // failed with RECOVERY_REPLAN / RECOVERY_FAIL reasons (REPLAN / FAIL). Workers without any
-      // journal (pre-R2 records) converge exactly as the R1 replan-only pass did.
-      await this.subagentManager
-        .recoverInterruptedWorkers()
-        .catch(() => undefined);
+      await this.workspaceService.init();
+      if (options.resumeParents === false) return { recovered, requiresRevalidation, blocked };
+      for (const state of resumable) {
+        const result = await this.recoverParent(state);
+        if (result && result.status !== "blocked") blocked--;
+      }
+      // Other orchestrators own their worker records; this recovery pass may only reconcile
+      // legacy children belonging to the autonomous parents loaded above.
+      for (const item of items) {
+        if (!TERMINAL_STATUSES.has((item as unknown as { status: AutonomousRunStatus }).status)
+          && !resumable.some(state => state.runId === item.id)) {
+          await this.subagentManager.recoverInterruptedWorkers({ parentRunId: item.id }).catch(() => undefined);
+        }
+      }
     } catch {}
 
     return { recovered, requiresRevalidation, blocked };
+  }
+
+  private async recoverParent(state: AutonomousParentState): Promise<AutonomousRunResult | undefined> {
+    if (!this.persistence) return undefined;
+    const persistence = this.persistence;
+    const ownerId = `parent-recovery-${process.pid}-${crypto.randomUUID()}`;
+    const leaseId = `parent-recovery-lease-${state.runId}`;
+    const claim = async (renew: boolean): Promise<boolean> => persistence.withTransaction(async (tx) => {
+      const lease = await tx.getWorkItem(leaseId) as unknown as { ownerId: string; expiresAt: string } | undefined;
+      if (lease && Date.parse(lease.expiresAt) > Date.now() && lease.ownerId !== ownerId) return false;
+      if (renew && lease?.ownerId !== ownerId) return false;
+      await tx.upsertWorkItem({ kind: "agent_recovery_lease", id: leaseId, workerId: state.runId,
+        ownerId, sessionId: state.sessionId, expiresAt: new Date(Date.now() + 90_000).toISOString(),
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      } as unknown as import("@codeforge/sessions").WorkItem);
+      return true;
+    });
+    if (!await claim(false)) return undefined;
+    const controller = new AbortController();
+    const previousRun = this.runs.get(state.runId);
+    const heartbeat = setInterval(() => { void claim(true).then(ok => { if (!ok) controller.abort(); }).catch(() => controller.abort()); }, 15_000);
+    try {
+      if ((state.recoveryAttempts ?? 0) >= 3) throw new Error("PARENT_RECOVERY_ATTEMPT_LIMIT");
+      state.recoveryAttempts = (state.recoveryAttempts ?? 0) + 1;
+      await persistence.upsertWorkItem(state as unknown as import("@codeforge/sessions").WorkItem);
+      if (["integrating", "completed"].includes(state.phase)) throw new Error("AMBIGUOUS_INTEGRATION_REQUIRES_REVALIDATION");
+      const workers = await this.subagentManager.recoverInterruptedWorkers({ parentRunId: state.runId, recoveryOwnerId: ownerId, signal: controller.signal });
+      if (workers.failed || workers.replanned) throw new Error("PARENT_WORKER_RECOVERY_REQUIRES_REVALIDATION");
+      if (controller.signal.aborted) throw new Error("PARENT_RECOVERY_LEASE_LOST");
+      this.runs.delete(state.runId);
+      const result = await this.startRun({ runId: state.runId, sessionId: state.sessionId,
+        workspacePath: state.workspacePath, goal: state.goal, topology: state.topology,
+        verificationCommands: state.verificationCommands, verificationTimeoutMs: state.verificationTimeoutMs,
+        signal: controller.signal,
+      }, state);
+      await persistence.upsertWorkItem({ kind: "autonomous_parent_recovery", id: `parent-recovery-${state.runId}`,
+        sessionId: state.sessionId, runId: state.runId, outcome: result.status,
+        recoveredWorkers: workers, completion: result.completion ?? null,
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      } as unknown as import("@codeforge/sessions").WorkItem);
+      return result;
+    } catch (error) {
+      const run = this.runs.get(state.runId) ?? previousRun;
+      if (run) {
+        this.runs.set(state.runId, run);
+        run.status = "blocked";
+        run.error = redactSecrets(error instanceof Error ? error.message : String(error));
+        this.persistRun(run);
+      }
+      await persistence.upsertWorkItem({ kind: "autonomous_parent_recovery", id: `parent-recovery-${state.runId}`,
+        sessionId: state.sessionId, runId: state.runId, outcome: "blocked", reason: redactSecrets(String(error)),
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      } as unknown as import("@codeforge/sessions").WorkItem);
+      return undefined;
+    } finally {
+      clearInterval(heartbeat);
+      this.abortControllers.delete(state.runId);
+      await persistence.withTransaction(async (tx) => {
+        const lease = await tx.getWorkItem(leaseId);
+        if (lease && (lease as unknown as { ownerId: string }).ownerId === ownerId) {
+          await tx.upsertWorkItem({ ...lease, expiresAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as import("@codeforge/sessions").WorkItem);
+        }
+      });
+    }
   }
 }
 

@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "exitCode": 0,
+  "command": "npm run build (installed Node npm CLI, Node directory prepended to PATH)",
+  "startedAt": "2026-10-03T12:22:08.604Z",
+  "finishedAt": "2026-10-03T13:10:25.487Z",
+  "durationSeconds": 78.79650122070312,
+  "log": "benchmarks/r67/tmp/workspace-build-frozen.log",
+  "initialLauncherFailure": "Roaming npm CLI path absent; corrected PATH to installed npm without dependency changes",
+  "memory": "UNMEASURED",
+  "finalFrozenSource": true,
+  "scope": "all workspace packages and desktop build"
+}

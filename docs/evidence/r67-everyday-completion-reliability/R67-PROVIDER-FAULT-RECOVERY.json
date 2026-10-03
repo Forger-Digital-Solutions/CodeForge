@@ -1,0 +1,21 @@
+{
+  "startedAt": "2026-10-03T13:17:17.869Z",
+  "status": "PARTIAL",
+  "evidenceClass": "LIVE_FREE_ROLE_CALLS_WITH_CONTROLLED_ADAPTER_BOUNDARY_FAULT",
+  "domains": [
+    {
+      "providerId": "kilo-free-direct",
+      "status": "RUNNING",
+      "steps": []
+    }
+  ],
+  "limitations": [
+    "Faults are explicitly injected at the real adapter boundary; these are not naturally observed upstream outages.",
+    "A successful reasoner diagnostic role call is not an autonomous software task completion."
+  ],
+  "costState": "UNKNOWN",
+  "error": "Error: FOREIGN KEY constraint failed",
+  "finishedAt": "2026-10-03T13:17:21.797Z",
+  "receipts": [],
+  "health": []
+}

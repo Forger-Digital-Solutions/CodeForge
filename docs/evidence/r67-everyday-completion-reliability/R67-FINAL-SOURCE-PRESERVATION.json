@@ -1,0 +1,47 @@
+{
+  "at": "2026-10-03T19:04:18.782Z",
+  "status": "PASS",
+  "head": "6c8af1b3fd43b048fdad2002aa6e5d22b1b72957",
+  "sourceStateId": "ec08e481b4cb9073045c9516b3d320e278ad3d1be3fc224d441ae4f871f4ecdd",
+  "sourceAggregateSha256": "f1368006ff7e4decf92c0966d02feebc7ade8600bcf0465ac38d264f38c979f4",
+  "materialFiles": 159,
+  "sourceChangedSinceFreeze": false,
+  "preserved": [
+    {
+      "path": "apps/desktop/scripts/packaged-endurance.mjs",
+      "expectedSha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c",
+      "currentSha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c",
+      "backupSha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c"
+    },
+    {
+      "path": "benchmarks/r57/extract-packaged-repeat.mjs",
+      "expectedSha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7",
+      "currentSha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7",
+      "backupSha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7"
+    },
+    {
+      "path": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+      "expectedSha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+      "currentSha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+      "backupSha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b"
+    },
+    {
+      "path": "docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md",
+      "expectedSha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497",
+      "currentSha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497",
+      "backupSha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497"
+    },
+    {
+      "path": "docs/evidence/r60-usable-free-inference/postgres-parity.json",
+      "expectedSha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243",
+      "currentSha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243",
+      "backupSha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243"
+    },
+    {
+      "path": "packages/server/test/fixtures/run-recovery-worker.mjs",
+      "expectedSha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd",
+      "currentSha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd",
+      "backupSha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd"
+    }
+  ]
+}

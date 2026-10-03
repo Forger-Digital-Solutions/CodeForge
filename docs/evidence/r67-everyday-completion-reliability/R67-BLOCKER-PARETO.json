@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-10-03T11:44:03.293Z",
+  "blocked": 16,
+  "pareto": [
+    {
+      "cluster": "ROUTE_QUARANTINE",
+      "count": 8,
+      "fraction": 0.5
+    },
+    {
+      "cluster": "REVIEWER_MALFORMED_OUTPUT",
+      "count": 7,
+      "fraction": 0.4375
+    },
+    {
+      "cluster": "CODER_NONCONVERGENCE",
+      "count": 1,
+      "fraction": 0.0625
+    }
+  ],
+  "rootCauseOrder": [
+    "ROLE_OUTPUT_CONTRACT",
+    "QUALITY_QUARANTINE_CROSS_ROLE",
+    "CODER_OVEREXPLORATION"
+  ],
+  "externalCapacityBlocksProven": 0,
+  "limitations": [
+    "Initial campaign collector failed to retain health snapshots. Later final-source route-health snapshots provide direct quarantine evidence."
+  ]
+}

@@ -23,18 +23,20 @@ export interface ContentStateId {
   readonly entries: readonly FileHashEntry[];
 }
 
-/** Git blob hash of a file's current on-disk content (works for tracked and untracked files;
- * throws if the file does not exist — a missing material file is itself a hard drift signal). */
-function blobHash(repoRoot: string, relativePath: string): string {
-  return execFileSync("git", ["hash-object", relativePath], { cwd: repoRoot, encoding: "utf8" }).trim();
-}
-
 /** `sha256(JSON.stringify(files sorted lexicographically, each as [path, gitBlobHash]))` —
  * matches `idAlgorithm` recorded in docs/codeforge-forgegreen-certified-source-state.json. */
 export function computeContentStateId(repoRoot: string, files: readonly string[]): ContentStateId {
-  const entries = [...files]
-    .sort((a, b) => a.localeCompare(b))
-    .map((file) => ({ path: file, blobHash: blobHash(repoRoot, file) }));
+  const sorted = [...files].sort((a, b) => a.localeCompare(b));
+  // One Git process preserves attribute/filter semantics without process-launch time
+  // dominating source certification on Windows. Quoted stdin paths also handle spaces.
+  const quotedPaths = sorted.map(file => `"${file.replaceAll("\\", "\\\\").replaceAll('"', '\\"').replaceAll("\t", "\\t").replaceAll("\r", "\\r").replaceAll("\n", "\\n")}"`);
+  const hashes = sorted.length === 0 ? [] : execFileSync("git", ["hash-object", "--stdin-paths"], {
+    cwd: repoRoot, encoding: "utf8", input: `${quotedPaths.join("\n")}\n`,
+  }).trim().split(/\r?\n/);
+  if (hashes.length !== sorted.length || hashes.some(hash => !/^[0-9a-f]{40,64}$/.test(hash))) {
+    throw new Error("SOURCE_STATE_HASH_BATCH_INVALID");
+  }
+  const entries = sorted.map((file, index) => ({ path: file, blobHash: hashes[index]! }));
   const id = createHash("sha256").update(JSON.stringify(entries.map((e) => [e.path, e.blobHash]))).digest("hex");
   return { id, entries };
 }

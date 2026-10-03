@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-03T18:23:08.924Z",
+  "status": "PASS",
+  "beforeSourceStateId": "2f2da53ce8a981be70e4b046c69c1fa7f17695bfa8bcb78020fdd39536ee41ae",
+  "afterSourceStateId": "ec08e481b4cb9073045c9516b3d320e278ad3d1be3fc224d441ae4f871f4ecdd",
+  "beforeFreezeAt": "2026-10-03T17:12:08.385Z",
+  "afterFreezeAt": "2026-10-03T18:11:04.518Z",
+  "addedMaterialPaths": [],
+  "removedMaterialPaths": [],
+  "changedMaterialPaths": [
+    "packages/server/test/progress-watchdog.test.ts"
+  ],
+  "runtimeImplementationFilesCompared": 112,
+  "runtimeImplementationChanged": false,
+  "claim": "The current live campaign and recoveries use identical runtime implementation bytes before/after the test-only synchronization. The full canonical suite reruns on the final expanded material set."
+}

@@ -629,6 +629,19 @@ export class EightBitRouteHealthAuthority {
         break;
       }
       case "tool_outcome": {
+        if (observation.outcome === "structured_output_failure" || observation.outcome === "structured_output_repaired") {
+          // Verdict formatting is role evidence, not a malformed tool invocation. Mixing it
+          // into the global tool streak quarantined working coders after Explorer/Reviewer failures.
+          if (observation.outcome === "structured_output_failure") {
+            this.setCondition(state, {
+              state: "CAPABILITY_LIMITED", since: iso,
+              expiresAt: now + this.policy.healthyTtlMs * 4, confidence: 0.5, sampleSize: 1,
+              reasonCode: "STRUCTURED_OUTPUT_FAILURE", source: observation.source,
+              roles: observation.role ? [...new Set([...(state.conditions.get("CAPABILITY_LIMITED")?.roles ?? []), observation.role])] : undefined,
+            });
+          }
+          break;
+        }
         state.tools.push({ at: now, outcome: observation.outcome, role: observation.role });
         if (observation.outcome === "valid") {
           state.consecutiveMalformed = 0;
@@ -837,12 +850,20 @@ export class EightBitRouteHealthAuthority {
       case "FREE_TIER_NOT_AVAILABLE":
         this.setCondition(state, { state: "BILLING_VERIFICATION_REQUIRED", since: iso, expiresAt: null, confidence: 1, sampleSize: 1, reasonCode: reason, source });
         break;
-      case "INVALID_TOOL_OUTPUT":
       case "STRUCTURED_OUTPUT_FAILURE": {
+        this.setCondition(state, {
+          state: "CAPABILITY_LIMITED", since: iso,
+          expiresAt: now + this.policy.healthyTtlMs * 4, confidence: 0.5, sampleSize: 1,
+          reasonCode: reason, source,
+          roles: role ? [...new Set([...(state.conditions.get("CAPABILITY_LIMITED")?.roles ?? []), role])] : undefined,
+        });
+        break;
+      }
+      case "INVALID_TOOL_OUTPUT": {
         // Provider-side tool validation is the model's fault, not the route's supply health;
         // it feeds the tool-reliability projection, never saturation. The observation's role
         // scopes the condition (a model can misfire as CODER and still reason fine as ANALYST).
-        state.tools.push({ at: now, outcome: reason === "INVALID_TOOL_OUTPUT" ? "malformed" : "structured_output_failure", role });
+        state.tools.push({ at: now, outcome: "malformed", role });
         state.consecutiveMalformed += 1;
         if (state.consecutiveMalformed >= this.policy.quarantineStreak) {
           this.setCondition(state, { state: "QUARANTINED", since: iso, expiresAt: null, confidence: 1, sampleSize: state.consecutiveMalformed, reasonCode: "MALFORMED_TOOL_CALL_STREAK", source });

@@ -878,7 +878,7 @@ export class ToolBroker {
             /(^|[&|;]\s*)node(?=\s|$)/g,
             `$1"${process.execPath}"`,
           );
-          const nodeEval = /^node\s+-e\s+(?:(["'])([\s\S]*)\1|([\s\S]+))$/.exec(cmd.trim());
+          const nodeEval = /^node\s+(?:-e|--eval)\s+(?:"([^"]*)"|'([^']*)'|([^&|;\r\n"']+))\s*$/.exec(cmd.trim());
           const targetCwd = args.cwd ? String(args.cwd) : ".";
           const confinement = resolveWithinWorkspace(context.workspacePath, targetCwd);
           if (!confinement.valid || !confinement.resolvedPath) {
@@ -903,7 +903,7 @@ export class ToolBroker {
                   nodeEval
                     ? {
                         file: process.execPath,
-                        args: ["-e", nodeEval[2] ?? nodeEval[3] ?? ""],
+                        args: ["-e", nodeEval[1] ?? nodeEval[2] ?? nodeEval[3] ?? ""],
                         cwd: confinement.resolvedPath,
                         env: sanitizedEnv,
                         timeoutMs: 60_000,

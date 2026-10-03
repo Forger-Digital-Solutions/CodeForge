@@ -1,0 +1,238 @@
+{
+  "startedAt": "2026-10-03T13:22:31.761Z",
+  "status": "PARTIAL",
+  "evidenceClass": "LIVE_FREE_ROLE_CALLS_WITH_CONTROLLED_ADAPTER_BOUNDARY_FAULT",
+  "domains": [
+    {
+      "providerId": "kilo-free-direct",
+      "status": "RUNNING",
+      "steps": [
+        {
+          "phase": "working-role",
+          "route": {
+            "providerId": "kilo-free-direct",
+            "modelId": "kilo-auto/free"
+          },
+          "poolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "text": "The defective operator is `+`. Replace it with `*`:\n\n```js\nexport function multiply(a, b) {\n  return a * b;\n}\n```",
+          "events": [
+            {
+              "type": "text_delta",
+              "delta": "The defective operator is `+`."
+            },
+            {
+              "type": "text_delta",
+              "delta": " Replace it with `*`:\n\n```js\nexport function multiply(a, b) {\n  return a * b;\n}\n```"
+            },
+            {
+              "type": "usage",
+              "usage": {
+                "inputTokens": 210,
+                "outputTokens": 33,
+                "totalTokens": 243,
+                "cachedInputTokens": 140,
+                "reasoningTokens": 0
+              }
+            },
+            {
+              "type": "finish",
+              "finishReason": "stop",
+              "model": "stealth/space-bunny-alpha"
+            }
+          ],
+          "latencyMs": 1417,
+          "verified": true
+        },
+        {
+          "phase": "controlled-degrade-and-rotate",
+          "faultCode": "RATE_LIMITED",
+          "faultStatus": 429,
+          "failure": {
+            "action": "retry_same",
+            "reason": "RATE_LIMITED"
+          },
+          "health": {
+            "providerId": "kilo-free-direct",
+            "modelId": "kilo-auto/free",
+            "state": "HEALTHY",
+            "hardExclude": false,
+            "scoreAdjustment": 4,
+            "confidence": 0.499,
+            "reasonCodes": [
+              "HEALTHY:SERVED_PRODUCTION_SHAPE"
+            ],
+            "expiresAt": 1791035556449,
+            "sampleSize": 1,
+            "lastObservedAt": "2026-10-03T13:22:36.449Z",
+            "activeConditions": [
+              {
+                "state": "HEALTHY",
+                "since": "2026-10-03T13:22:36.449Z",
+                "expiresAt": 1791035556449,
+                "confidence": 0.4993047222222222,
+                "sampleSize": 1,
+                "reasonCode": "SERVED_PRODUCTION_SHAPE",
+                "source": "runtime"
+              }
+            ],
+            "window": {
+              "calls": 1,
+              "successes": 1,
+              "failures": 0,
+              "rateLimits": 0,
+              "capacityErrors": 0,
+              "malformedToolCalls": 0,
+              "toolCalls": 0,
+              "latencyP50Ms": 1413,
+              "latencyP95Ms": 1413,
+              "from": "2026-10-03T13:22:36.449Z",
+              "to": "2026-10-03T13:22:36.449Z"
+            }
+          }
+        }
+      ],
+      "qualification": "QUALIFIED"
+    }
+  ],
+  "limitations": [
+    "Faults are explicitly injected at the real adapter boundary; these are not naturally observed upstream outages.",
+    "A successful reasoner diagnostic role call is not an autonomous software task completion."
+  ],
+  "costState": "UNKNOWN",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'retry_same'\n- 'rotate'\n",
+  "finishedAt": "2026-10-03T13:22:41.456Z",
+  "receipts": [
+    {
+      "kind": "eight_bit_decision_receipt",
+      "id": "eight-bit-receipt-662be441-09e2-4bd2-923b-65b8be58bef5",
+      "sessionId": "r67-controlled-kilo-free-direct",
+      "receipt": {
+        "receiptId": "662be441-09e2-4bd2-923b-65b8be58bef5",
+        "createdAt": "2026-10-03T13:22:35.035Z",
+        "sessionId": "r67-controlled-kilo-free-direct",
+        "runId": "r67-controlled-kilo-free-direct",
+        "role": "ANALYST",
+        "action": "INITIAL_SELECTION",
+        "policyMode": "adaptive",
+        "selected": {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        },
+        "reasonCodes": [
+          "FABRIC_ADMITTED",
+          "SUPPLY_PACKAGED_FREE_DIRECT",
+          "OWNER_USER_ENTITLEMENT",
+          "AUTHORIZED",
+          "ROLE_QUALIFIED",
+          "QUOTA_RESERVED",
+          "ADMITTED"
+        ],
+        "evidence": {
+          "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "egressMode": "CLIENT_DIRECT",
+          "marginalCostToCodeForge": 0
+        }
+      },
+      "createdAt": "2026-10-03T13:22:35.035Z"
+    },
+    {
+      "kind": "eight_bit_decision_receipt",
+      "id": "eight-bit-receipt-987b17df-838e-44fa-bb42-a051c1b62a8d",
+      "sessionId": "r67-controlled-kilo-free-direct",
+      "receipt": {
+        "receiptId": "987b17df-838e-44fa-bb42-a051c1b62a8d",
+        "createdAt": "2026-10-03T13:22:36.464Z",
+        "sessionId": "r67-controlled-kilo-free-direct",
+        "runId": "r67-controlled-kilo-free-direct",
+        "turnId": "r67-controlled-kilo-free-direct-fault",
+        "role": "ANALYST",
+        "action": "COOLDOWN",
+        "policyMode": "adaptive",
+        "previous": {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        },
+        "reasonCodes": [
+          "RATE_LIMITED",
+          "NO_REPLACEMENT_ROUTE",
+          "BOUNDED_SAME_ROUTE_RETRY",
+          "SHORT_RATE_LIMIT_WAIT"
+        ],
+        "evidence": {
+          "waitMs": 4988,
+          "consecutiveFailures": 1
+        }
+      },
+      "createdAt": "2026-10-03T13:22:36.464Z"
+    }
+  ],
+  "health": [
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "conditions": [
+        {
+          "state": "HEALTHY",
+          "since": "2026-10-03T13:22:36.449Z",
+          "expiresAt": 1791035556449,
+          "confidence": 0.5,
+          "sampleSize": 1,
+          "reasonCode": "SERVED_PRODUCTION_SHAPE",
+          "source": "runtime"
+        }
+      ],
+      "roleEvidence": [],
+      "window": {
+        "calls": 1,
+        "successes": 1,
+        "failures": 0,
+        "rateLimits": 0,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": 1413,
+        "latencyP95Ms": 1413,
+        "from": "2026-10-03T13:22:36.449Z",
+        "to": "2026-10-03T13:22:36.449Z"
+      },
+      "consecutiveFailures": 0,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-10-03T13:22:36.449Z",
+      "lastSuccessAt": "2026-10-03T13:22:36.449Z",
+      "quota": {},
+      "state": "HEALTHY",
+      "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct"
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "__quota_domain__",
+      "conditions": [],
+      "roleEvidence": [],
+      "window": {
+        "calls": 1,
+        "successes": 0,
+        "failures": 1,
+        "rateLimits": 1,
+        "capacityErrors": 0,
+        "malformedToolCalls": 0,
+        "toolCalls": 0,
+        "latencyP50Ms": null,
+        "latencyP95Ms": null,
+        "from": "2026-10-03T13:22:36.454Z",
+        "to": "2026-10-03T13:22:36.454Z"
+      },
+      "consecutiveFailures": 1,
+      "consecutiveAuthFailures": 0,
+      "consecutiveMalformed": 0,
+      "lastObservedAt": "2026-10-03T13:22:36.454Z",
+      "quota": {},
+      "state": "UNKNOWN",
+      "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct"
+    }
+  ]
+}

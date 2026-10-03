@@ -1,0 +1,27 @@
+{
+  "startedAt": "2026-10-03T12:58:46.665Z",
+  "evidenceClass": "ACTUAL_PROCESS_KILL_LIVE_FREE_PROVIDER_PARENT_END_TO_END",
+  "root": "G:\\CodeForge\\benchmarks\\r67\\tmp\\parent-recovery-ZNdFYG",
+  "workspacePath": "G:\\CodeForge\\benchmarks\\r67\\tmp\\parent-recovery-ZNdFYG\\repo",
+  "dbPath": "G:\\CodeForge\\benchmarks\\r67\\tmp\\parent-recovery-ZNdFYG\\session.db",
+  "steps": [
+    {
+      "mode": "kill-coder",
+      "exitCode": 1,
+      "signal": null,
+      "stdout": "CRASH_REVIEWER\n",
+      "stderr": ""
+    },
+    {
+      "mode": "recover",
+      "exitCode": 1,
+      "signal": null,
+      "stdout": "CodeForge server running at http://localhost:64045\n",
+      "stderr": "node:internal/modules/run_main:107\r\n    triggerUncaughtException(\r\n    ^\r\n\r\n[TypeError: Failed to parse URL from http://127.0.0.1:undefined/api/orchestrator/run-00000000-0000-4000-8000-000000000068] {\r\n  [cause]: TypeError: Invalid URL\r\n      at new URL (node:internal/url:840:25)\r\n      at new Request (node:internal/deps/undici/undici:12072:25)\r\n      at fetch (node:internal/deps/undici/undici:12997:25)\r\n      at fetch (node:internal/deps/undici/undici:17708:10)\r\n      at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)\r\n      at file:///G:/CodeForge/benchmarks/r67/server-recovery-worker.mjs:15:26\r\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {\r\n    code: 'ERR_INVALID_URL',\r\n    input: 'http://127.0.0.1:undefined/api/orchestrator/run-00000000-0000-4000-8000-000000000068'\r\n  }\r\n}\r\n\r\nNode.js v24.19.0\r\n"
+    }
+  ],
+  "status": "FAIL",
+  "liveRecovery": "RUNNING",
+  "error": "AssertionError [ERR_ASSERTION]: CodeForge server running at http://localhost:64045\nnode:internal/modules/run_main:107\r\n    triggerUncaughtException(\r\n    ^\r\n\r\n[TypeError: Failed to parse URL from http://127.0.0.1:undefined/api/orchestrator/run-00000000-0000-4000-8000-000000000068] {\r\n  [cause]: TypeError: Invalid URL\r\n      at new URL (node:internal/url:840:25)\r\n      at new Request (node:internal/deps/undici/undici:12072:25)\r\n      at fetch (node:internal/deps/undici/undici:12997:25)\r\n      at fetch (node:internal/deps/undici/undici:17708:10)\r\n      at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)\r\n      at file:///G:/CodeForge/benchmarks/r67/server-recovery-worker.mjs:15:26\r\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {\r\n    code: 'ERR_INVALID_URL',\r\n    input: 'http://127.0.0.1:undefined/api/orchestrator/run-00000000-0000-4000-8000-000000000068'\r\n  }\r\n}\r\n\r\nNode.js v24.19.0\r\n\n\n1 !== 0\n",
+  "finishedAt": "2026-10-03T12:59:29.478Z"
+}

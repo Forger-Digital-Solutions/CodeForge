@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-10-03T13:11:37.269Z",
+  "status": "PASS_SIMULATED_LIFECYCLE",
+  "evidenceClass": "DETERMINISTIC_MODEL_IDENTITY_CHURN_NO_LIVE_ALTERNATE_QUALIFICATION",
+  "oldRemoved": true,
+  "newInitiallyInert": true,
+  "pendingBefore": [
+    "simulated/new-candidate"
+  ],
+  "qualificationCalls": [
+    {
+      "modelId": "simulated/new-candidate",
+      "at": "2026-10-03T13:11:37.269Z",
+      "evidence": "SCRIPTED qualification result, not real alternate-model quality"
+    }
+  ],
+  "admittedAfterScriptedQualification": true,
+  "repeatRefreshQualificationCalls": 0,
+  "qualificationSummary": [
+    {
+      "providerId": "ai-horde",
+      "pending": 0,
+      "qualifying": false,
+      "requestsSpentToday": 29,
+      "dailyBudget": 2,
+      "liveEvidence": false,
+      "lastCycleAt": "2026-10-03T13:11:37.268Z",
+      "cycleIntervalMs": 0,
+      "recoveryAttemptsToday": 0
+    }
+  ],
+  "privacy": "PUBLIC_CODE_ONLY",
+  "limitations": [
+    "Catalog pruning is exercised through the same ForgeZero.unregister used by desktop discovery.",
+    "Cheap transport and text-tool semantics are covered by provider contracts and the live R65/R66 model evidence. They are not re-earned for this scripted alternate.",
+    "Capability churn under an unchanged model ID remains unproven."
+  ]
+}

@@ -1,0 +1,2377 @@
+{
+  "at": "2026-10-03T15:32:21.056Z",
+  "status": "PASS",
+  "sourceStateId": "b8e0d6f4984360423b38a760eb34c44ff3a496c14df6a45077e22cef93c49887",
+  "runtimeSourceAggregateSha256": "81f99c7054c9e9fa4d66afb3002a0e8d5f7d8ba83dfe27acfa9dbfd7cf089bc8",
+  "runtimeSourceFreezeAt": "2026-10-03T15:04:56.788Z",
+  "campaignSourceBinding": "Both campaigns ran after the last runtime edit and before final runtime hash audit; certification harness batching changed no file in the runtime material set.",
+  "costState": "UNKNOWN",
+  "independentPhysicalQuotaDomainsProven": false,
+  "supplyLimitation": "One eligible Kilo anonymous PUBLIC_IP route; user identities are logically isolated but independent physical quota domains are not verified.",
+  "historicalTimeout": {
+    "source": "R67-MULTI-USER-LIVE.json",
+    "status": "cancelled",
+    "wallTimeMs": 604643,
+    "baseTestsExitCode": 1,
+    "reviewRounds": 1,
+    "reason": "Invalid refactor test baseline; blocked Horde Reviewer followed by Kilo blocking verdict and Coder revision cancelled at 600 seconds. The trace proves progressing provider requests, not a scheduler deadlock. It cannot measure fair completion of a valid refactor.",
+    "workers": [
+      {
+        "role": "explorer",
+        "status": "blocked",
+        "model": {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        },
+        "requests": 4
+      },
+      {
+        "role": "coder",
+        "status": "completed",
+        "model": {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        },
+        "requests": 12
+      },
+      {
+        "role": "reviewer",
+        "status": "blocked",
+        "model": {
+          "providerId": "ai-horde",
+          "modelId": "google/gemma-4-31b"
+        },
+        "requests": 2
+      },
+      {
+        "role": "reviewer",
+        "status": "blocked",
+        "model": {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        },
+        "requests": 5
+      },
+      {
+        "role": "coder",
+        "status": "cancelled",
+        "model": {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        },
+        "requests": 2
+      }
+    ],
+    "activeReservationsAfter": 0
+  },
+  "campaigns": [
+    {
+      "name": "canonical",
+      "status": "PASS",
+      "attempted": 6,
+      "completed": 6,
+      "failedOrBlocked": 0,
+      "longestCompletionStreak": 6,
+      "falseCompletions": 0,
+      "noSupplyDecisions": 0,
+      "simultaneousUsers": 1,
+      "allTaskOverlapMs": null,
+      "tasks": [
+        {
+          "id": "01-invoice-rounding",
+          "taskClass": "bug fix",
+          "ownerUserId": "r67-public-user",
+          "startedAt": "2026-10-03T15:04:58.961Z",
+          "finishedAt": "2026-10-03T15:08:41.463Z",
+          "wallTimeMs": 222502,
+          "baseTestsExitCode": 1,
+          "status": "completed",
+          "providers": [
+            "kilo-free-direct"
+          ],
+          "models": [
+            "kilo-auto/free"
+          ],
+          "physicalModels": [
+            "stealth/space-bunny-alpha"
+          ],
+          "domains": [
+            "kilo-free-direct:user:localconn:kilo-free-direct"
+          ],
+          "admission": [
+            {
+              "role": "EXPLORER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_EVIDENCE_ABSENT"
+              ]
+            },
+            {
+              "role": "CODER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_EVIDENCE_ABSENT"
+              ]
+            },
+            {
+              "role": "REVIEWER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "SAME_POOL_FALLBACK",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_EVIDENCE_ABSENT"
+              ]
+            }
+          ],
+          "noSupplyDecisions": 0,
+          "recordedTools": 22,
+          "recordedSourceOrTemporaryWrites": 1,
+          "workers": [
+            {
+              "role": "explorer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 25,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 90000
+              },
+              "telemetry": {
+                "wallTimeMs": 33358,
+                "modelRequests": 4,
+                "inputTokens": 17160,
+                "outputTokens": 2253,
+                "toolCalls": 4,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 1,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            },
+            {
+              "role": "coder",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 25,
+                "maxToolCalls": 50,
+                "maxWriteToolCalls": 30,
+                "maxCommandExecutions": 20,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 90819,
+                "modelRequests": 8,
+                "inputTokens": 43275,
+                "outputTokens": 2617,
+                "toolCalls": 12,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": []
+              }
+            },
+            {
+              "role": "reviewer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 20,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 81966,
+                "modelRequests": 4,
+                "inputTokens": 14865,
+                "outputTokens": 1637,
+                "toolCalls": 6,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 1,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            }
+          ],
+          "reviewRounds": 0,
+          "reviewerPassed": true,
+          "verification": [
+            {
+              "command": "node --test",
+              "exitCode": 0,
+              "passed": 3,
+              "failed": 0,
+              "skipped": 0
+            }
+          ],
+          "completion": {
+            "outcome": "completed",
+            "blockers": [],
+            "advisories": [],
+            "rationale": "All required completion checks passed."
+          },
+          "integration": {
+            "status": "integrated",
+            "branch": "codeforge/worktree/run-4a7873d6-a339-417b-908b-86e9cae3c866-b4d7bec1",
+            "worktreeId": "wt-b4d7bec1"
+          },
+          "integratedRevision": "d69c99e97c306f0d77e17c0d43e18b66b40301d4",
+          "integratedTree": "811a8da411b96f9d27407a6427c59907ee6b8f15",
+          "verifiedTree": "811a8da411b96f9d27407a6427c59907ee6b8f15",
+          "verifiedTreeMatchesIntegratedTree": true,
+          "finalWorkingTreesClean": true,
+          "activeReservationsAfter": 0,
+          "crossTaskSessionOrWorkspaceLeakage": false
+        },
+        {
+          "id": "02-pagination",
+          "taskClass": "small feature",
+          "ownerUserId": "r67-public-user",
+          "startedAt": "2026-10-03T15:08:41.471Z",
+          "finishedAt": "2026-10-03T15:11:39.735Z",
+          "wallTimeMs": 178264,
+          "baseTestsExitCode": 1,
+          "status": "completed",
+          "providers": [
+            "kilo-free-direct"
+          ],
+          "models": [
+            "kilo-auto/free"
+          ],
+          "physicalModels": [
+            "stealth/space-bunny-alpha"
+          ],
+          "domains": [
+            "kilo-free-direct:user:localconn:kilo-free-direct"
+          ],
+          "admission": [
+            {
+              "role": "EXPLORER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_NEGATIVE",
+                "ROLE_RUNTIME_DOMINANT_EMPTY_COMPLETION"
+              ]
+            },
+            {
+              "role": "CODER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_POSITIVE",
+                "ROLE_RUNTIME_DOMINANT_CONVERGED"
+              ]
+            },
+            {
+              "role": "REVIEWER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "SAME_POOL_FALLBACK",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_NEGATIVE",
+                "ROLE_RUNTIME_DOMINANT_EMPTY_COMPLETION"
+              ]
+            }
+          ],
+          "noSupplyDecisions": 0,
+          "recordedTools": 27,
+          "recordedSourceOrTemporaryWrites": 3,
+          "workers": [
+            {
+              "role": "explorer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 25,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 90000
+              },
+              "telemetry": {
+                "wallTimeMs": 31473,
+                "modelRequests": 4,
+                "inputTokens": 17089,
+                "outputTokens": 2116,
+                "toolCalls": 4,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 1,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            },
+            {
+              "role": "coder",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 25,
+                "maxToolCalls": 50,
+                "maxWriteToolCalls": 30,
+                "maxCommandExecutions": 20,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 84334,
+                "modelRequests": 11,
+                "inputTokens": 66291,
+                "outputTokens": 3918,
+                "toolCalls": 18,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": []
+              }
+            },
+            {
+              "role": "reviewer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 20,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 40714,
+                "modelRequests": 4,
+                "inputTokens": 19079,
+                "outputTokens": 1937,
+                "toolCalls": 5,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 1,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            }
+          ],
+          "reviewRounds": 0,
+          "reviewerPassed": true,
+          "verification": [
+            {
+              "command": "node --test",
+              "exitCode": 0,
+              "passed": 5,
+              "failed": 0,
+              "skipped": 0
+            }
+          ],
+          "completion": {
+            "outcome": "completed",
+            "blockers": [],
+            "advisories": [],
+            "rationale": "All required completion checks passed."
+          },
+          "integration": {
+            "status": "integrated",
+            "branch": "codeforge/worktree/run-131fd15c-4857-4120-9abf-054a58c76d22-e51a1511",
+            "worktreeId": "wt-e51a1511"
+          },
+          "integratedRevision": "faed9943afabd85ba44c0353bf8040577e288e92",
+          "integratedTree": "3063130fcd790b5bb9644ceb4ca4b2686816d3d0",
+          "verifiedTree": "3063130fcd790b5bb9644ceb4ca4b2686816d3d0",
+          "verifiedTreeMatchesIntegratedTree": true,
+          "finalWorkingTreesClean": true,
+          "activeReservationsAfter": 0,
+          "crossTaskSessionOrWorkspaceLeakage": false
+        },
+        {
+          "id": "03-shared-path-validation",
+          "taskClass": "refactor",
+          "ownerUserId": "r67-public-user",
+          "startedAt": "2026-10-03T15:11:39.747Z",
+          "finishedAt": "2026-10-03T15:15:27.009Z",
+          "wallTimeMs": 227262,
+          "baseTestsExitCode": 0,
+          "status": "completed",
+          "providers": [
+            "kilo-free-direct"
+          ],
+          "models": [
+            "kilo-auto/free"
+          ],
+          "physicalModels": [
+            "stealth/space-bunny-alpha"
+          ],
+          "domains": [
+            "kilo-free-direct:user:localconn:kilo-free-direct"
+          ],
+          "admission": [
+            {
+              "role": "EXPLORER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_NEGATIVE",
+                "ROLE_RUNTIME_DOMINANT_EMPTY_COMPLETION"
+              ]
+            },
+            {
+              "role": "CODER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_POSITIVE",
+                "ROLE_RUNTIME_DOMINANT_CONVERGED"
+              ]
+            },
+            {
+              "role": "REVIEWER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "SAME_POOL_FALLBACK",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_NEGATIVE",
+                "ROLE_RUNTIME_DOMINANT_EMPTY_COMPLETION"
+              ]
+            }
+          ],
+          "noSupplyDecisions": 0,
+          "recordedTools": 32,
+          "recordedSourceOrTemporaryWrites": 4,
+          "workers": [
+            {
+              "role": "explorer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 25,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 90000
+              },
+              "telemetry": {
+                "wallTimeMs": 13806,
+                "modelRequests": 3,
+                "inputTokens": 11741,
+                "outputTokens": 1060,
+                "toolCalls": 4,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            },
+            {
+              "role": "coder",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 25,
+                "maxToolCalls": 50,
+                "maxWriteToolCalls": 30,
+                "maxCommandExecutions": 20,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 145159,
+                "modelRequests": 12,
+                "inputTokens": 71343,
+                "outputTokens": 4848,
+                "toolCalls": 19,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": []
+              }
+            },
+            {
+              "role": "reviewer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 20,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 46147,
+                "modelRequests": 5,
+                "inputTokens": 27833,
+                "outputTokens": 2038,
+                "toolCalls": 9,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            }
+          ],
+          "reviewRounds": 0,
+          "reviewerPassed": true,
+          "verification": [
+            {
+              "command": "node --test",
+              "exitCode": 0,
+              "passed": 4,
+              "failed": 0,
+              "skipped": 0
+            }
+          ],
+          "completion": {
+            "outcome": "completed",
+            "blockers": [],
+            "advisories": [
+              {
+                "code": "review_rejected",
+                "severity": "advisory",
+                "message": "Independent diff review raised 2 advisory finding(s).",
+                "evidence": "New export UNSAFE_KEY_MESSAGE in src/key-policy.mjs is referenced nowhere else in the workspace; it may be dead code added instead of a fix. | New export isSafeRelativeKey in src/key-policy.mjs is referenced nowhere else in the workspace; it may be dead code added instead of a fix."
+              }
+            ],
+            "rationale": "All required completion checks passed."
+          },
+          "integration": {
+            "status": "integrated",
+            "branch": "codeforge/worktree/run-d09aebbc-33b4-4a17-9d5d-51748808b0dc-d655342e",
+            "worktreeId": "wt-d655342e"
+          },
+          "integratedRevision": "f2d2f3d6afceabc77be5855f2ed9e18c13f1a66e",
+          "integratedTree": "05c426f1d203fd209838bff770e4dde2a8834930",
+          "verifiedTree": "05c426f1d203fd209838bff770e4dde2a8834930",
+          "verifiedTreeMatchesIntegratedTree": true,
+          "finalWorkingTreesClean": true,
+          "activeReservationsAfter": 0,
+          "crossTaskSessionOrWorkspaceLeakage": false
+        },
+        {
+          "id": "04-csv-tests",
+          "taskClass": "test creation",
+          "ownerUserId": "r67-public-user",
+          "startedAt": "2026-10-03T15:15:27.020Z",
+          "finishedAt": "2026-10-03T15:19:03.642Z",
+          "wallTimeMs": 216622,
+          "baseTestsExitCode": 0,
+          "status": "completed",
+          "providers": [
+            "kilo-free-direct"
+          ],
+          "models": [
+            "kilo-auto/free"
+          ],
+          "physicalModels": [
+            "stealth/space-bunny-alpha"
+          ],
+          "domains": [
+            "kilo-free-direct:user:localconn:kilo-free-direct"
+          ],
+          "admission": [
+            {
+              "role": "EXPLORER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_POSITIVE",
+                "ROLE_RUNTIME_DOMINANT_CONVERGED"
+              ]
+            },
+            {
+              "role": "CODER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_POSITIVE",
+                "ROLE_RUNTIME_DOMINANT_CONVERGED"
+              ]
+            },
+            {
+              "role": "REVIEWER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "SAME_POOL_FALLBACK",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_POSITIVE",
+                "ROLE_RUNTIME_DOMINANT_CONVERGED"
+              ]
+            }
+          ],
+          "noSupplyDecisions": 0,
+          "recordedTools": 23,
+          "recordedSourceOrTemporaryWrites": 2,
+          "workers": [
+            {
+              "role": "explorer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 25,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 90000
+              },
+              "telemetry": {
+                "wallTimeMs": 11732,
+                "modelRequests": 2,
+                "inputTokens": 7399,
+                "outputTokens": 1051,
+                "toolCalls": 2,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            },
+            {
+              "role": "coder",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 25,
+                "maxToolCalls": 50,
+                "maxWriteToolCalls": 30,
+                "maxCommandExecutions": 20,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 141671,
+                "modelRequests": 11,
+                "inputTokens": 57146,
+                "outputTokens": 3019,
+                "toolCalls": 15,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": []
+              }
+            },
+            {
+              "role": "reviewer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 20,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 42753,
+                "modelRequests": 5,
+                "inputTokens": 22372,
+                "outputTokens": 2391,
+                "toolCalls": 6,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 1,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            }
+          ],
+          "reviewRounds": 0,
+          "reviewerPassed": true,
+          "verification": [
+            {
+              "command": "node --test",
+              "exitCode": 0,
+              "passed": 8,
+              "failed": 0,
+              "skipped": 0
+            }
+          ],
+          "completion": {
+            "outcome": "completed",
+            "blockers": [],
+            "advisories": [],
+            "rationale": "All required completion checks passed."
+          },
+          "integration": {
+            "status": "integrated",
+            "branch": "codeforge/worktree/run-dd16d8f8-2f5c-4ea0-8bc5-d785eac8ac96-d0a259a0",
+            "worktreeId": "wt-d0a259a0"
+          },
+          "integratedRevision": "fdcae07352619209530b9c5a5ff789ded1538a3f",
+          "integratedTree": "ff3b40ad6de05d4a79170a67741c0b087d0e2f1e",
+          "verifiedTree": "ff3b40ad6de05d4a79170a67741c0b087d0e2f1e",
+          "verifiedTreeMatchesIntegratedTree": true,
+          "finalWorkingTreesClean": true,
+          "activeReservationsAfter": 0,
+          "crossTaskSessionOrWorkspaceLeakage": false
+        },
+        {
+          "id": "05-dependency-debugging",
+          "taskClass": "debugging",
+          "ownerUserId": "r67-public-user",
+          "startedAt": "2026-10-03T15:19:03.664Z",
+          "finishedAt": "2026-10-03T15:20:54.889Z",
+          "wallTimeMs": 111225,
+          "baseTestsExitCode": 1,
+          "status": "completed",
+          "providers": [
+            "kilo-free-direct"
+          ],
+          "models": [
+            "kilo-auto/free"
+          ],
+          "physicalModels": [
+            "stealth/space-bunny-alpha"
+          ],
+          "domains": [
+            "kilo-free-direct:user:localconn:kilo-free-direct"
+          ],
+          "admission": [
+            {
+              "role": "EXPLORER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_POSITIVE",
+                "ROLE_RUNTIME_DOMINANT_CONVERGED"
+              ]
+            },
+            {
+              "role": "CODER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_POSITIVE",
+                "ROLE_RUNTIME_DOMINANT_CONVERGED"
+              ]
+            },
+            {
+              "role": "REVIEWER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "SAME_POOL_FALLBACK",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_POSITIVE",
+                "ROLE_RUNTIME_DOMINANT_CONVERGED"
+              ]
+            }
+          ],
+          "noSupplyDecisions": 0,
+          "recordedTools": 17,
+          "recordedSourceOrTemporaryWrites": 1,
+          "workers": [
+            {
+              "role": "explorer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 25,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 90000
+              },
+              "telemetry": {
+                "wallTimeMs": 17732,
+                "modelRequests": 2,
+                "inputTokens": 7319,
+                "outputTokens": 912,
+                "toolCalls": 2,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            },
+            {
+              "role": "coder",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 25,
+                "maxToolCalls": 50,
+                "maxWriteToolCalls": 30,
+                "maxCommandExecutions": 20,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 43384,
+                "modelRequests": 5,
+                "inputTokens": 25959,
+                "outputTokens": 1648,
+                "toolCalls": 8,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": []
+              }
+            },
+            {
+              "role": "reviewer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 20,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 29682,
+                "modelRequests": 4,
+                "inputTokens": 15675,
+                "outputTokens": 1538,
+                "toolCalls": 7,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            }
+          ],
+          "reviewRounds": 0,
+          "reviewerPassed": true,
+          "verification": [
+            {
+              "command": "node --test",
+              "exitCode": 0,
+              "passed": 3,
+              "failed": 0,
+              "skipped": 0
+            }
+          ],
+          "completion": {
+            "outcome": "completed",
+            "blockers": [],
+            "advisories": [],
+            "rationale": "All required completion checks passed."
+          },
+          "integration": {
+            "status": "integrated",
+            "branch": "codeforge/worktree/run-5b6b1ca4-69d2-4307-b49b-6feb4c8b25e5-f262be2a",
+            "worktreeId": "wt-f262be2a"
+          },
+          "integratedRevision": "29b6e37859d00de79102fa1e96beea8c4b449d73",
+          "integratedTree": "56b032ff6396f0463ed41faccc368bdc45f8aa50",
+          "verifiedTree": "56b032ff6396f0463ed41faccc368bdc45f8aa50",
+          "verifiedTreeMatchesIntegratedTree": true,
+          "finalWorkingTreesClean": true,
+          "activeReservationsAfter": 0,
+          "crossTaskSessionOrWorkspaceLeakage": false
+        },
+        {
+          "id": "06-conditional-exports",
+          "taskClass": "configuration/build issue",
+          "ownerUserId": "r67-public-user",
+          "startedAt": "2026-10-03T15:20:54.909Z",
+          "finishedAt": "2026-10-03T15:23:18.552Z",
+          "wallTimeMs": 143643,
+          "baseTestsExitCode": 1,
+          "status": "completed",
+          "providers": [
+            "kilo-free-direct"
+          ],
+          "models": [
+            "kilo-auto/free"
+          ],
+          "physicalModels": [
+            "stealth/space-bunny-alpha"
+          ],
+          "domains": [
+            "kilo-free-direct:user:localconn:kilo-free-direct"
+          ],
+          "admission": [
+            {
+              "role": "EXPLORER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_POSITIVE",
+                "ROLE_RUNTIME_DOMINANT_CONVERGED"
+              ]
+            },
+            {
+              "role": "CODER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_POSITIVE",
+                "ROLE_RUNTIME_DOMINANT_CONVERGED"
+              ]
+            },
+            {
+              "role": "REVIEWER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "SAME_POOL_FALLBACK",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_POSITIVE",
+                "ROLE_RUNTIME_DOMINANT_CONVERGED"
+              ]
+            }
+          ],
+          "noSupplyDecisions": 0,
+          "recordedTools": 22,
+          "recordedSourceOrTemporaryWrites": 3,
+          "workers": [
+            {
+              "role": "explorer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 25,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 90000
+              },
+              "telemetry": {
+                "wallTimeMs": 15632,
+                "modelRequests": 2,
+                "inputTokens": 7759,
+                "outputTokens": 1738,
+                "toolCalls": 0,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 1,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            },
+            {
+              "role": "coder",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 25,
+                "maxToolCalls": 50,
+                "maxWriteToolCalls": 30,
+                "maxCommandExecutions": 20,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 83833,
+                "modelRequests": 12,
+                "inputTokens": 64398,
+                "outputTokens": 2051,
+                "toolCalls": 17,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": []
+              }
+            },
+            {
+              "role": "reviewer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 20,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 23858,
+                "modelRequests": 4,
+                "inputTokens": 13595,
+                "outputTokens": 1703,
+                "toolCalls": 5,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 1,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            }
+          ],
+          "reviewRounds": 0,
+          "reviewerPassed": true,
+          "verification": [
+            {
+              "command": "node --test",
+              "exitCode": 0,
+              "passed": 2,
+              "failed": 0,
+              "skipped": 0
+            }
+          ],
+          "completion": {
+            "outcome": "completed",
+            "blockers": [],
+            "advisories": [],
+            "rationale": "All required completion checks passed."
+          },
+          "integration": {
+            "status": "integrated",
+            "branch": "codeforge/worktree/run-abcc097e-814a-49c0-b396-0c6f514d393e-0e7c8862",
+            "worktreeId": "wt-0e7c8862"
+          },
+          "integratedRevision": "9b6a4f8571a5950c42158dc285fd21025d029066",
+          "integratedTree": "ca50461aa89323998c774f29fb6927226599d0aa",
+          "verifiedTree": "ca50461aa89323998c774f29fb6927226599d0aa",
+          "verifiedTreeMatchesIntegratedTree": true,
+          "finalWorkingTreesClean": true,
+          "activeReservationsAfter": 0,
+          "crossTaskSessionOrWorkspaceLeakage": false
+        }
+      ]
+    },
+    {
+      "name": "concurrency",
+      "status": "PASS",
+      "attempted": 3,
+      "completed": 3,
+      "failedOrBlocked": 0,
+      "longestCompletionStreak": 3,
+      "falseCompletions": 0,
+      "noSupplyDecisions": 0,
+      "simultaneousUsers": 3,
+      "allTaskOverlapMs": 276975,
+      "tasks": [
+        {
+          "id": "01-invoice-rounding",
+          "taskClass": "bug fix",
+          "ownerUserId": "r67-public-user",
+          "startedAt": "2026-10-03T15:14:44.098Z",
+          "finishedAt": "2026-10-03T15:19:21.073Z",
+          "wallTimeMs": 276975,
+          "baseTestsExitCode": 1,
+          "status": "completed",
+          "providers": [
+            "kilo-free-direct"
+          ],
+          "models": [
+            "kilo-auto/free"
+          ],
+          "physicalModels": [
+            "stealth/space-bunny-alpha"
+          ],
+          "domains": [
+            "kilo-free-direct:user:localconn:kilo-free-direct"
+          ],
+          "admission": [
+            {
+              "role": "EXPLORER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_EVIDENCE_ABSENT"
+              ]
+            },
+            {
+              "role": "CODER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_EVIDENCE_ABSENT"
+              ]
+            },
+            {
+              "role": "REVIEWER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "SAME_POOL_FALLBACK",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_EVIDENCE_ABSENT"
+              ]
+            }
+          ],
+          "noSupplyDecisions": 0,
+          "recordedTools": 24,
+          "recordedSourceOrTemporaryWrites": 2,
+          "workers": [
+            {
+              "role": "explorer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 25,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 90000
+              },
+              "telemetry": {
+                "wallTimeMs": 34925,
+                "modelRequests": 4,
+                "inputTokens": 16987,
+                "outputTokens": 2313,
+                "toolCalls": 3,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 1,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            },
+            {
+              "role": "coder",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 25,
+                "maxToolCalls": 50,
+                "maxWriteToolCalls": 30,
+                "maxCommandExecutions": 20,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 183990,
+                "modelRequests": 10,
+                "inputTokens": 54706,
+                "outputTokens": 2488,
+                "toolCalls": 16,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": []
+              }
+            },
+            {
+              "role": "reviewer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 20,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 33513,
+                "modelRequests": 4,
+                "inputTokens": 14731,
+                "outputTokens": 1734,
+                "toolCalls": 5,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 1,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            }
+          ],
+          "reviewRounds": 0,
+          "reviewerPassed": true,
+          "verification": [
+            {
+              "command": "node --test",
+              "exitCode": 0,
+              "passed": 3,
+              "failed": 0,
+              "skipped": 0
+            }
+          ],
+          "completion": {
+            "outcome": "completed",
+            "blockers": [],
+            "advisories": [],
+            "rationale": "All required completion checks passed."
+          },
+          "integration": {
+            "status": "integrated",
+            "branch": "codeforge/worktree/run-93c06232-3dfa-4218-9c86-786cdc927465-4f4a1872",
+            "worktreeId": "wt-4f4a1872"
+          },
+          "integratedRevision": "8e2a6276ff80e6af3783ee26474b7cbb007eb762",
+          "integratedTree": "00732be4282872427b422a90f8675d3e7c6a7f56",
+          "verifiedTree": "00732be4282872427b422a90f8675d3e7c6a7f56",
+          "verifiedTreeMatchesIntegratedTree": true,
+          "finalWorkingTreesClean": true,
+          "activeReservationsAfter": 2,
+          "crossTaskSessionOrWorkspaceLeakage": false
+        },
+        {
+          "id": "03-shared-path-validation",
+          "taskClass": "refactor",
+          "ownerUserId": "r67-public-user-2",
+          "startedAt": "2026-10-03T15:14:44.098Z",
+          "finishedAt": "2026-10-03T15:21:38.565Z",
+          "wallTimeMs": 414467,
+          "baseTestsExitCode": 0,
+          "status": "completed",
+          "providers": [
+            "kilo-free-direct"
+          ],
+          "models": [
+            "kilo-auto/free"
+          ],
+          "physicalModels": [
+            "stealth/space-bunny-alpha"
+          ],
+          "domains": [
+            "kilo-free-direct:user:localconn:kilo-free-direct"
+          ],
+          "admission": [
+            {
+              "role": "EXPLORER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_EVIDENCE_ABSENT"
+              ]
+            },
+            {
+              "role": "CODER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_EVIDENCE_ABSENT"
+              ]
+            },
+            {
+              "role": "REVIEWER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "SAME_POOL_FALLBACK",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_NEGATIVE",
+                "ROLE_RUNTIME_DOMINANT_EMPTY_COMPLETION"
+              ]
+            }
+          ],
+          "noSupplyDecisions": 0,
+          "recordedTools": 32,
+          "recordedSourceOrTemporaryWrites": 5,
+          "workers": [
+            {
+              "role": "explorer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 25,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 90000
+              },
+              "telemetry": {
+                "wallTimeMs": 22592,
+                "modelRequests": 4,
+                "inputTokens": 14783,
+                "outputTokens": 969,
+                "toolCalls": 6,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            },
+            {
+              "role": "coder",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 25,
+                "maxToolCalls": 50,
+                "maxWriteToolCalls": 30,
+                "maxCommandExecutions": 20,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 338705,
+                "modelRequests": 15,
+                "inputTokens": 86616,
+                "outputTokens": 3830,
+                "toolCalls": 19,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": []
+              }
+            },
+            {
+              "role": "reviewer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 20,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 25340,
+                "modelRequests": 4,
+                "inputTokens": 19609,
+                "outputTokens": 1779,
+                "toolCalls": 7,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 1,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            }
+          ],
+          "reviewRounds": 0,
+          "reviewerPassed": true,
+          "verification": [
+            {
+              "command": "node --test",
+              "exitCode": 0,
+              "passed": 4,
+              "failed": 0,
+              "skipped": 0
+            }
+          ],
+          "completion": {
+            "outcome": "completed",
+            "blockers": [],
+            "advisories": [
+              {
+                "code": "review_rejected",
+                "severity": "advisory",
+                "message": "Independent diff review raised 1 advisory finding(s).",
+                "evidence": "New export isSafeKey in src/key-policy.mjs is referenced nowhere else in the workspace; it may be dead code added instead of a fix."
+              }
+            ],
+            "rationale": "All required completion checks passed."
+          },
+          "integration": {
+            "status": "integrated",
+            "branch": "codeforge/worktree/run-62c0a88a-589d-406b-98de-d7f29c59415f-1cf12620",
+            "worktreeId": "wt-1cf12620"
+          },
+          "integratedRevision": "ebbd2828b3dfcdb28f87562fdf1bcea80c40f60e",
+          "integratedTree": "15d2ad078ec99365887b8f1c3be71e6f245c9ea3",
+          "verifiedTree": "15d2ad078ec99365887b8f1c3be71e6f245c9ea3",
+          "verifiedTreeMatchesIntegratedTree": true,
+          "finalWorkingTreesClean": true,
+          "activeReservationsAfter": 0,
+          "crossTaskSessionOrWorkspaceLeakage": false
+        },
+        {
+          "id": "02-pagination",
+          "taskClass": "small feature",
+          "ownerUserId": "r67-public-user-1",
+          "startedAt": "2026-10-03T15:14:44.098Z",
+          "finishedAt": "2026-10-03T15:20:06.311Z",
+          "wallTimeMs": 322213,
+          "baseTestsExitCode": 1,
+          "status": "completed",
+          "providers": [
+            "kilo-free-direct"
+          ],
+          "models": [
+            "kilo-auto/free"
+          ],
+          "physicalModels": [
+            "stealth/space-bunny-alpha"
+          ],
+          "domains": [
+            "kilo-free-direct:user:localconn:kilo-free-direct"
+          ],
+          "admission": [
+            {
+              "role": "EXPLORER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_EVIDENCE_ABSENT"
+              ]
+            },
+            {
+              "role": "CODER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_EVIDENCE_ABSENT"
+              ]
+            },
+            {
+              "role": "REVIEWER",
+              "action": "INITIAL_SELECTION",
+              "selected": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "evidence": {
+                "routeId": "fabric:kilo-free-direct::kilo-auto/free",
+                "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "supplyClass": "PACKAGED_FREE_DIRECT",
+                "quotaDomainType": "PUBLIC_IP",
+                "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+                "egressMode": "CLIENT_DIRECT",
+                "marginalCostToCodeForge": 0
+              },
+              "reasonCodes": [
+                "FABRIC_ADMITTED",
+                "SUPPLY_PACKAGED_FREE_DIRECT",
+                "OWNER_USER_ENTITLEMENT",
+                "AUTHORIZED",
+                "ROLE_QUALIFIED",
+                "QUOTA_RESERVED",
+                "ADMITTED",
+                "SAME_POOL_FALLBACK",
+                "ROLE_QUALIFIED_EVIDENCE",
+                "ROLE_RUNTIME_EVIDENCE_ABSENT"
+              ]
+            }
+          ],
+          "noSupplyDecisions": 0,
+          "recordedTools": 23,
+          "recordedSourceOrTemporaryWrites": 2,
+          "workers": [
+            {
+              "role": "explorer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 25,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 90000
+              },
+              "telemetry": {
+                "wallTimeMs": 18188,
+                "modelRequests": 3,
+                "inputTokens": 12507,
+                "outputTokens": 1034,
+                "toolCalls": 4,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            },
+            {
+              "role": "coder",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 25,
+                "maxToolCalls": 50,
+                "maxWriteToolCalls": 30,
+                "maxCommandExecutions": 20,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 138865,
+                "modelRequests": 8,
+                "inputTokens": 43651,
+                "outputTokens": 2398,
+                "toolCalls": 12,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 0,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": []
+              }
+            },
+            {
+              "role": "reviewer",
+              "status": "completed",
+              "model": {
+                "providerId": "kilo-free-direct",
+                "modelId": "kilo-auto/free"
+              },
+              "budget": {
+                "maxModelTurns": 10,
+                "maxToolCalls": 20,
+                "maxWriteToolCalls": 0,
+                "maxCommandExecutions": 0,
+                "maxContextTokens": 64000,
+                "maxOutputTokens": 4096,
+                "wallTimeMs": 600000
+              },
+              "telemetry": {
+                "wallTimeMs": 139643,
+                "modelRequests": 5,
+                "inputTokens": 24584,
+                "outputTokens": 2665,
+                "toolCalls": 7,
+                "retryCount": 0,
+                "duplicateWorkCount": 0,
+                "providerFailures": 0
+              },
+              "repairTelemetry": {
+                "repairs": 0,
+                "truncationRepairs": 1,
+                "repairStrategies": [],
+                "rejections": [],
+                "exhausted": false,
+                "missingFields": [],
+                "outcome": "native"
+              }
+            }
+          ],
+          "reviewRounds": 0,
+          "reviewerPassed": true,
+          "verification": [
+            {
+              "command": "node --test",
+              "exitCode": 0,
+              "passed": 5,
+              "failed": 0,
+              "skipped": 0
+            }
+          ],
+          "completion": {
+            "outcome": "completed",
+            "blockers": [],
+            "advisories": [],
+            "rationale": "All required completion checks passed."
+          },
+          "integration": {
+            "status": "integrated",
+            "branch": "codeforge/worktree/run-206d7c27-dc7f-4aa0-91a1-0f1cf7787374-9b7d2037",
+            "worktreeId": "wt-9b7d2037"
+          },
+          "integratedRevision": "7a30b2aaf0d670c0548b242c3701801039a05531",
+          "integratedTree": "bcb4b94305107657d26d8e1da50e6467d3d4c1a0",
+          "verifiedTree": "bcb4b94305107657d26d8e1da50e6467d3d4c1a0",
+          "verifiedTreeMatchesIntegratedTree": true,
+          "finalWorkingTreesClean": true,
+          "activeReservationsAfter": 1,
+          "crossTaskSessionOrWorkspaceLeakage": false
+        }
+      ]
+    }
+  ]
+}

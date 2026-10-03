@@ -14,6 +14,7 @@ import {
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 import { createAgentRuntime } from "../src/agent-runtime.js";
 import { ERROR_CODES } from "@codeforge/agent";
+import { classifyCommand } from "../src/command-classifier.js";
 
 // R21 M6: the autonomous executeAgentRun loop granted every subagent network:false while
 // run_command reached ToolBroker with no command classification at all — a coder could
@@ -50,6 +51,31 @@ class CommandScriptProvider implements ProviderAdapter {
 }
 
 describe("R21 autonomous command gate — declared network:false and critical risk are real", () => {
+  it("does not classify escaped newline CSV data as a netcat executable", () => {
+    expect(classifyCommand(String.raw`node -e "console.log('a,b\nc')"`).category).not.toBe("network-sensitive");
+    expect(classifyCommand(String.raw`node --eval "console.log('a,b\nc\"d')"`).category).not.toBe("network-sensitive");
+  });
+
+  it("retains network review for raw templates that preserve command escapes", () => {
+    const command = 'node -e "String.raw' + String.fromCharCode(96, 92) + 'nc host 80' + String.fromCharCode(96) + '"';
+    expect(classifyCommand(command).category).toBe("network-sensitive");
+  });
+
+  it("retains network review for shell substitutions and commands after a Node evaluation", () => {
+    const substitution = 'node -e "$(' + String.fromCharCode(92) + 'nc host 80)"';
+    expect(classifyCommand(substitution).category).toBe("network-sensitive");
+    expect(classifyCommand('node -e "console.log(1)" && nc host 80').category).toBe("network-sensitive");
+  });
+
+  it.each([
+    "nc host 80", "ncat host 80", "netcat host 80", "echo test | nc host 80",
+    String.raw`C:\tools\nc.exe host 80`,
+    `node -e "require('child_process').execSync('nc host 80')"`,
+    String.raw`node -e "require('child_process').execFileSync('C:\\tools\\nc.exe',['host','80'])"`,
+    'node -e "require(\'child_process\').execSync(String.raw`\\nc host 80`)"',
+  ])("still classifies a real netcat invocation %s as network-sensitive", command => {
+    expect(classifyCommand(command).category).toBe("network-sensitive");
+  });
   let tmpDir: string;
   let persistence: ReturnType<typeof createSessionPersistence>;
   let firewall: ForgeZero;

@@ -211,15 +211,29 @@ describe("progress-aware watchdog (RC2 §6)", () => {
       signal: controller.signal,
       metadata: { timeoutMs: 2_000 },
     });
-    await new Promise((resolve) => setTimeout(resolve, 3_000));
-    expect(h.manager.getActiveChildren("run-wd-long-coder")).toHaveLength(1);
-    controller.abort();
+    try {
+      // Cold preparation is paced separately; observe earned progress beyond the old
+      // ceiling instead of cancelling before the provider has made its first turn.
+      const deadline = Date.now() + 10_000;
+      let extensions = 0;
+      while (Date.now() < deadline && extensions < 3) {
+        const workers = await h.persistence.getWorkItemsByKind("subagent_run");
+        const worker = workers.find((item) => item.parentRunId === "run-wd-long-coder");
+        extensions = typeof worker?.watchdogExtensions === "number" ? worker.watchdogExtensions : 0;
+        if (extensions < 3) await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+      expect(extensions).toBeGreaterThanOrEqual(3);
+      expect(h.manager.getActiveChildren("run-wd-long-coder")).toHaveLength(1);
+    } finally {
+      controller.abort();
+      await pending;
+    }
     const result = await pending;
     expect(result.status).toBe("cancelled");
     const workers = await h.persistence.getWorkItemsByKind("subagent_run");
     const worker = workers.find((item) => item.parentRunId === "run-wd-long-coder");
     expect(worker?.executorKind).toBe("agent_runtime");
-    expect(worker?.watchdogExtensions).toBeGreaterThanOrEqual(2);
+    expect(worker?.watchdogExtensions).toBeGreaterThanOrEqual(3);
     expect(worker?.usefulProgressEvents).toBeGreaterThan(2);
   }, 20_000);
 });

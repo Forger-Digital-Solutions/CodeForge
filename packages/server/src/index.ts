@@ -290,6 +290,7 @@ export class CodeForgeServer {
   private activeWorkspacePath: string | null = null;
   private workspaceService: WorkspaceService;
   private orchestrator: AutonomousRunOrchestrator;
+  private parentRecovery?: Promise<unknown>;
   private parallelOrchestrators: Map<string, ParallelAutonomousRunOrchestrator> = new Map();
   private missionSupervisors: Map<string, MissionSupervisor> = new Map();
   private deliveryService: DeliveryService;
@@ -754,6 +755,7 @@ export class CodeForgeServer {
         `a routable unauthenticated listener would expose approvals and workspace control to the network.`,
       );
     }
+    await this.orchestrator.recoverRuns({ resumeParents: false });
     this.server = http.createServer((req, res) => this.handleRequest(req, res));
     const server = this.server;
     // A bind failure (EADDRINUSE when another CodeForge already owns the port, EACCES on a
@@ -779,6 +781,7 @@ export class CodeForgeServer {
     if (typeof address === "object" && address !== null) {
       this.port = address.port;
     }
+    this.parentRecovery = this.orchestrator.recoverRuns();
     console.log(`CodeForge server running at http://localhost:${this.port}`);
   }
 
@@ -791,8 +794,11 @@ export class CodeForgeServer {
       server.closeAllConnections();
     }
     this.clients.clear();
+    for (const run of this.orchestrator.getAllRuns()) this.orchestrator.cancelRun(run.id);
     await this.workflowService.shutdown();
     await Promise.all(Array.from(this.runtimes.values()).map((runtime) => runtime.shutdown()));
+    await this.parentRecovery;
+    this.parentRecovery = undefined;
     await this.externalToolSurface?.close().catch(() => undefined);
     this.externalToolSurface = undefined;
     const repoIntel = this.repositoryIntelligence;

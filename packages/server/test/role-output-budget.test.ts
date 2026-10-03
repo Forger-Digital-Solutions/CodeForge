@@ -388,6 +388,34 @@ describe("R41 output budgeting — wired through executeAgentRun", () => {
     }
   });
 
+  it("accepts a complete schema at the cap without replaying the Reviewer", async () => {
+    firewall.register(fleetRecord("cap-p", "cap-m"));
+    const provider = new CapturingProvider("cap-p", "cap-m", () => [
+      { type: "text_delta", delta: JSON.stringify({ verdict: "revision_required", findings: [{ id: "F1", severity: "blocking", category: "logic", message: "Wrong boundary" }], summary: "Boundary is broken." }) },
+      { type: "finish", finishReason: "length" },
+    ]);
+    catalog.register(provider);
+    const result = await runReviewer(makeRuntime("sess-r67-cap"), { providerId: "cap-p", modelId: "cap-m" });
+    expect(provider.requests).toHaveLength(1);
+    expect(result.status).toBe("blocked");
+    expect(result.stopReason).toBe("completed");
+    expect(result.structuredData).toMatchObject({ verdict: "revision_required" });
+    expect(result.findings).toMatchObject([{ severity: "blocking" }]);
+  });
+
+  it("still rejects an incomplete verdict at the cap after one corrective request", async () => {
+    firewall.register(fleetRecord("partial-p", "partial-m"));
+    const provider = new CapturingProvider("partial-p", "partial-m", () => [
+      { type: "text_delta", delta: '{"verdict":"pass","findings":[],' },
+      { type: "finish", finishReason: "length" },
+    ]);
+    catalog.register(provider);
+    const result = await runReviewer(makeRuntime("sess-r67-partial"), { providerId: "partial-p", modelId: "partial-m" });
+    expect(provider.requests).toHaveLength(2);
+    expect(result.status).toBe("blocked");
+    expect(result.structuredData).toBeUndefined();
+  });
+
   it("blocks before any provider request when the transcript alone fills the route's context window", async () => {
     // The route advertises a 700-token window: the authoritative kernel (~584 tokens) fits,
     // but the measured dispatch (system + role tools + task, ~1.9k tokens) leaves zero room

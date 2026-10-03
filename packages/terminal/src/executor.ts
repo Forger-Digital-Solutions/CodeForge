@@ -121,12 +121,10 @@ async function executeViaConpty(input: ExecSpec): Promise<ExecResult> {
   // finishes — node-pty's ConPTY onExit lags 1.5–3.5s behind the actual process exit
   // and is only a fallback here.
   const sentinel = `${EXIT_SENTINEL_PREFIX}${randomUUID().replace(/-/g, "")}`;
-  // A hosted line starts with a quoted executable path; `/s` keeps cmd from applying its
-  // leading-quote stripping rule to it (the outer quotes are the only ones cmd removes).
+  // /s removes only the outer command quotes, preserving a quoted executable path
+  // even when the command also contains quoted arguments or shell operators.
   const args: string | string[] = spec.commandLine
-    ? hosted
-      ? `/d /v:on /s /c "${spec.commandLine} & echo ${sentinel}_!errorlevel!"`
-      : `/d /v:on /c ${spec.commandLine} & echo ${sentinel}_!errorlevel!`
+    ? `/d /v:on /s /c "${spec.commandLine} & echo ${sentinel}_!errorlevel!"`
     : (spec.args ?? []);
 
   return new Promise<ExecResult>((resolve) => {

@@ -127,8 +127,13 @@ export function classifyCommand(command: string): Classification {
       return { risk: "critical", category: "credential-sensitive", reasons: [p.reason, ...reasons], requiresApproval: true };
     }
   }
+  // Node evaluates escaped control characters in ordinary quoted literals as data.
+  // Raw template strings keep escapes, so their original bytes remain subject to review.
+  const simpleNodeEvaluation = /^node\s+(?:-e|--eval)\s+(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')\s*$/.test(trimmed);
+  const networkText = simpleNodeEvaluation && !SUBSHELL.test(trimmed) && !trimmed.includes("`") && !/\bString\.raw\b/.test(trimmed)
+    ? trimmed.replace(/(?<!\\)\\[nrtbfv]/g, " ") : trimmed;
   for (const p of NETWORK_PATTERNS) {
-    if (p.re.test(trimmed)) {
+    if (p.re.test(networkText)) {
       return { risk: "high", category: "network-sensitive", reasons: [p.reason, ...reasons], requiresApproval: true };
     }
   }

@@ -41,6 +41,7 @@ import {
   buildContextPack,
   buildDependencyNeighborhoodPage,
   createContextAssembler,
+  ContextCapacityError,
   createContextPageStore,
   resolveContextCapacity,
   type AssembledContext,
@@ -1598,7 +1599,7 @@ export class AgentRuntime {
     const resumeJournal = req.resumeJournal?.journal;
     const journalEnabled = req.roleRouting === true || resumeJournal !== undefined;
     const journalId = `agent-run-journal-${req.runId}`;
-    const journalCreatedAt = new Date().toISOString();
+    const journalCreatedAt = resumeJournal?.createdAt ?? new Date().toISOString();
     let journalRecoveryOutcome: AgentRunJournal["recoveryOutcome"] = resumeJournal ? "resume" : "none";
     let runTerminalState: AgentRunJournal["state"] = "converged_failed";
     const writeRunJournal = async (state: AgentRunJournal["state"], detail?: string): Promise<void> => {
@@ -1715,6 +1716,14 @@ export class AgentRuntime {
         }
       };
       if (resumeJournal) {
+        const priorTelemetry = resumeJournal.telemetry as {
+          usage?: AgentUsage; structuredOutput?: StructuredOutputTelemetry;
+          toolTrace?: ToolTurnRecord[]; editAttempts?: EditAttemptRecord[];
+        } | undefined;
+        if (priorTelemetry?.usage) Object.assign(totalUsage, priorTelemetry.usage);
+        if (priorTelemetry?.structuredOutput) Object.assign(structuredTelemetry, structuredClone(priorTelemetry.structuredOutput));
+        if (Array.isArray(priorTelemetry?.toolTrace)) toolTrace.push(...structuredClone(priorTelemetry.toolTrace).slice(-64));
+        if (Array.isArray(priorTelemetry?.editAttempts)) editAttempts.push(...structuredClone(priorTelemetry.editAttempts).slice(-64));
         messages = fromJournalMessages(resumeJournal.messages);
         const initialUserMessage = messages.findIndex((message, index) => index > 0 && message.role === "user");
         bootstrapContextMessageIndex = initialUserMessage >= 0 ? initialUserMessage : undefined;
@@ -1950,7 +1959,7 @@ export class AgentRuntime {
       });
 
       let structuredData: StructuredAgentResult | undefined;
-      let structuredRepairs = 0;
+      let structuredRepairs = structuredTelemetry.repairs + structuredTelemetry.truncationRepairs;
       const expectedStructuredOutput = req.structuredOutput;
       const maxStructuredOutputRepairs = Math.max(0, req.maxStructuredOutputRepairs ?? 1);
 
@@ -2462,7 +2471,9 @@ export class AgentRuntime {
             // reasoning consumed the whole budget) or an empty answer is an honest failure
             // observation for the route's health — never a verified success, and never a
             // blind retry trigger (the turn loop below decides how the run continues).
-            const turnServed = (response.finishReason === "stop" || response.finishReason === "tool_calls")
+            const schemaAtCap = response.finishReason === "length" && expectedStructuredOutput !== undefined
+              && validateStructuredAgentResult(expectedStructuredOutput, response.text).success;
+            const turnServed = (response.finishReason === "stop" || response.finishReason === "tool_calls" || schemaAtCap)
               && (response.toolCalls.length > 0 || response.text.trim().length > 0);
             if (activeSelection) {
               if (turnServed) {
@@ -3124,14 +3135,18 @@ export class AgentRuntime {
           // stamping a truncated answer "completed". An empty `stop` reply still ends the
           // loop as before — the completion gate arbitrates whether the run actually
           // verified anything.
-          const turnTruncated = response.finishReason === "length";
+          const completeStructuredPayload = expectedStructuredOutput
+            ? validateStructuredAgentResult(expectedStructuredOutput, finalSummary) : undefined;
+          // A cap can coincide with the final JSON token. The full schema is authoritative;
+          // partial objects and unstructured cap-limited answers still take the blocked path.
+          const turnTruncated = response.finishReason === "length" && !completeStructuredPayload?.success;
           if (turnTruncated) {
             if (structuredRepairs < maxStructuredOutputRepairs && turnCount < effectiveMaxModelTurns()) {
               structuredRepairs++;
               structuredTelemetry.truncationRepairs++;
               messages.push({
                 role: "user",
-                content: `Your previous reply was ${response.text.trim().length === 0 ? "empty" : "cut off before it finished"}. ${expectedStructuredOutput ? `Return only a valid JSON object for the required ${expectedStructuredOutput} schema.` : "Provide the complete final answer now."}`,
+                content: `Your previous reply was ${response.text.trim().length === 0 ? "empty" : "cut off before it finished"}. ${expectedStructuredOutput ? `Return only a compact valid JSON object for the required ${expectedStructuredOutput} schema: ${STRUCTURED_OUTPUT_CONTRACTS[expectedStructuredOutput]}. Keep the summary to three sentences, avoid repeating source code, and include every blocking finding.` : "Provide the complete final answer now."}`,
               });
               continue;
             }
@@ -3139,7 +3154,7 @@ export class AgentRuntime {
             break;
           }
           if (expectedStructuredOutput) {
-            const validation = validateStructuredAgentResult(expectedStructuredOutput, finalSummary);
+            const validation = completeStructuredPayload ?? validateStructuredAgentResult(expectedStructuredOutput, finalSummary);
             if (!validation.success) {
               if (structuredRepairs < maxStructuredOutputRepairs && turnCount < effectiveMaxModelTurns()) {
                 structuredRepairs++;
@@ -3153,7 +3168,7 @@ export class AgentRuntime {
                   role: "user",
                   // R47 §7: state the field-level contract on every rejection — "valid explorer
                   // JSON" alone left weaker models guessing which fields existed.
-                  content: `Your prior response was rejected: ${validation.error}. Return only a valid JSON object for the required ${expectedStructuredOutput} schema: ${STRUCTURED_OUTPUT_CONTRACTS[expectedStructuredOutput]}`,
+                  content: `Your prior response was rejected: ${validation.error}. Return only a compact valid JSON object for the required ${expectedStructuredOutput} schema: ${STRUCTURED_OUTPUT_CONTRACTS[expectedStructuredOutput]}. Use JSON double-quoted strings, keep the summary to three sentences, avoid repeating source code, and include every blocking finding.`,
                 });
                 continue;
               }
@@ -3670,10 +3685,12 @@ export class AgentRuntime {
 
           toolExecutions.push(toolExec);
           traceCall(tc.name, tc.arguments, toolExec.success ? "success" : "failed", toolExec);
-          // R50 §5: a locally-rejected call is tool-protocol evidence on the serving route —
-          // malformed args, unknown tools and boundary proposals all teach the role-quality
-          // ledgers. Runtime execution failures emit nothing (they are not the model's fault).
-          if (!toolExec.success) {
+          // Successful calls must reset the malformed streak; otherwise independent
+          // mistakes separated by valid work become a fabricated consecutive streak.
+          const servingRoute = journalActiveRoute ?? activeSelection;
+          if (toolExec.success && servingRoute?.providerId && servingRoute.modelId) {
+            this.eightBit.recordToolCallOutcome(servingRoute.providerId, servingRoute.modelId, "valid", { role: eightBitRoleForAgentRole(req.role), correlationId: req.runId });
+          } else if (!toolExec.success) {
             this.recordLocalToolOutcome(journalActiveRoute?.providerId ?? activeSelection?.providerId, journalActiveRoute?.modelId ?? activeSelection?.modelId, toolExec.error, eightBitRoleForAgentRole(req.role), req.runId);
           }
           if (pendingEditAttempt) {
@@ -3955,7 +3972,8 @@ export class AgentRuntime {
       return result;
     } catch (err: unknown) {
       const isCancelled = req.signal?.aborted || (err instanceof Error && err.message.includes(ERROR_CODES.AGENT_CANCELLED));
-      const status = isCancelled ? "cancelled" : "failed";
+      const contextBlocked = err instanceof ContextCapacityError;
+      const status = isCancelled ? "cancelled" : contextBlocked ? "blocked" : "failed";
       const errorMsg = err instanceof Error ? err.message : String(err);
       forgeGreenR0RunStatus = status;
       stopReason = isCancelled ? "cancelled" : "error";
@@ -3971,7 +3989,7 @@ export class AgentRuntime {
         usage: totalUsage,
         stopReason: isCancelled ? "cancelled" : "error",
         filesChanged: Array.from(changedFiles),
-        error: errorMsg,
+        error: contextBlocked ? ERROR_CODES.AGENT_CONTEXT_BUDGET_EXCEEDED : errorMsg,
         ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
         ...(journalActiveRoute ? { route: { ...journalActiveRoute } } : {}),
       };
@@ -5259,6 +5277,7 @@ export class AgentRuntime {
    */
   private roleQualificationStatus(providerId: string, modelId: string, role: EightBitRole): RoleQualificationStatus | undefined {
     const receipt: ModelQualificationReceipt | undefined = this.freeCloud?.getQualificationReceipt?.(providerId, modelId);
+    if ((this.freeCloud?.runtimeRequalificationRoles?.(providerId, modelId) ?? []).includes(role)) return "NOT_QUALIFIED";
     return roleQualificationStatusFor(receipt, role);
   }
 
@@ -5273,6 +5292,7 @@ export class AgentRuntime {
     const freeCloud = this.freeCloud;
     if (!freeCloud) return undefined;
     return (providerId, modelId) => {
+      if ((freeCloud.runtimeRequalificationRoles?.(providerId, modelId) ?? []).includes(role)) return false;
       if (this.eightBit.hasFreeFabric && this.additionalFreeRoleAdmission?.(providerId, modelId)) return true;
       if (!freeCloud.isForgeAutoEligible(providerId, modelId)) return false;
       const status = this.roleQualificationStatus(providerId, modelId, role);

@@ -68,6 +68,17 @@ describe("EightBitRuntime — end-to-end facade", () => {
     expect(health.assess("provider-a", "provider-a-model", { quotaDomainId: "account-b" }).hardExclude).toBe(false);
     expect(fw.eligibleModels().some((model) => model.modelId === "provider-a-model")).toBe(true);
   });
+  it("persists the complete authoritative fabric denial instead of reporting unmeasured capacity as a wait", async () => {
+    const fabric = createFreeFabric({ managedRoutes: () => [fabricRoute("provider-a", { windows: [] })], reservations: new CapacityReservationLedger({ routes: [] }) });
+    const facade = new EightBitRuntime({ firewall: fw, persistence, freeFabric: fabric });
+    const result = await facade.selectInitialRoute({ sessionId: "s1", role: "CODER" }, { policyMode: "adaptive", hasAdapter: () => true }, { runId: "unmeasured-denial" });
+    expect(result.outcome).toBe("no_eligible_route");
+    expect(result.queued).toBeUndefined();
+    const receipt = (await facade.store.listReceipts("s1")).find(row => row.runId === "unmeasured-denial");
+    expect(JSON.parse(String(receipt?.evidence?.fabricDecisionJson))).toEqual(result.fabric);
+    expect(result.fabric?.explanation.candidates.some(candidate => candidate.status === "CAPACITY_UNMEASURED")).toBe(true);
+  });
+
   it("[PASS] initial selection persists a route binding and a decision receipt", async () => {
     fw.register(makeModel({ modelId: "primary" }));
     fw.register(makeModel({ modelId: "secondary" }));
@@ -191,6 +202,11 @@ describe("EightBitRuntime — end-to-end facade", () => {
     expect(outcome.action).toBe("no_replacement");
     // CAPACITY_UNMEASURED never masquerades as a capacity wait — there is no reset to wait for.
     expect((outcome as { capacityWait?: unknown }).capacityWait).toBeUndefined();
+    const decision = JSON.parse(String(outcome.receipt?.evidence?.fabricDecisionJson));
+    expect(decision.outcome).toBe("DENIED_NO_SUPPLY");
+    expect(decision.explanation.candidates.some((candidate: { status: string }) => candidate.status === "CAPACITY_UNMEASURED")).toBe(true);
+    const recorded = await fabricRuntime.store.listReceipts("s1");
+    expect(recorded.filter(receipt => receipt.receiptId === outcome.receipt?.receiptId)).toHaveLength(1);
   });
 
   it("R59: failover joins a live qualification lane once, then the re-decide admits the landed route", async () => {

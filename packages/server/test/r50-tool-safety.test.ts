@@ -50,6 +50,21 @@ class EscapeProvider implements ProviderAdapter {
 }
 
 describe("R50 tool-safety feedback (§9, §26)", () => {
+  class InterleavedProvider extends EscapeProvider {
+    override async *streamChat(): AsyncIterable<StreamEvent> {
+      this.requests++;
+      if (this.requests > 6) {
+        yield { type: "text_delta", delta: "Inspected the fixture." };
+        yield { type: "finish", finishReason: "stop" }; return;
+      }
+      const invalid = this.requests % 2 === 1;
+      const toolName = "read_file";
+      const args = invalid ? { startLine: this.requests } : { path: "note.txt", startLine: this.requests / 2 };
+      yield { type: "tool_call_started", toolCallId: `interleaved-${this.requests}`, toolName };
+      yield { type: "tool_call_completed", toolCallId: `interleaved-${this.requests}`, toolName, arguments: JSON.stringify(args) };
+      yield { type: "finish", finishReason: "tool_calls" };
+    }
+  }
   let ws: string;
   let eventStore: EventStore;
   let persistence: ReturnType<typeof createSessionPersistence>;
@@ -123,6 +138,20 @@ describe("R50 tool-safety feedback (§9, §26)", () => {
 
     const assessment = authority.assess("fleet-esc2", "model-esc2", { role: "EXPLORER" });
     expect(assessment.state).toBe("QUARANTINED");
+  });
+
+  it("valid autonomous tool calls reset the malformed streak between independent argument errors", async () => {
+    firewall.register(createGenericFreeRecord({ providerId: "fleet-interleaved", modelId: "model-interleaved" }));
+    const provider = new InterleavedProvider("fleet-interleaved", "{}");
+    const catalog = new InMemoryProviderCatalog(); catalog.register(provider);
+    const runtime = createAgentRuntime({ sessionId: "sess-r50-safe", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: ws, routeHealth: authority });
+    const result = await runtime.executeAgentRun({ runId: "run-r67-interleaved", agentId: "coder", role: "coder", goal: "Inspect the fixture", workspaceId: "ws", workspacePath: ws, modelSelection: { providerId: provider.providerId, modelId: "model-interleaved" }, permissions: { read: true, search: true, write: true, executeCommand: true, network: false } });
+    expect(result.status, JSON.stringify({ summary: result.summary, tools: result.toolExecutions })).toBe("completed");
+    const snapshot = authority.snapshot().find(row => row.modelId === "model-interleaved");
+    expect(snapshot?.consecutiveMalformed).toBe(0);
+    expect(snapshot?.window.malformedToolCalls).toBe(3);
+    expect(snapshot?.window.toolCalls).toBe(6);
+    expect(snapshot?.conditions.some(condition => condition.state === "QUARANTINED")).toBe(false);
   });
 
   it("a parent-directory escape proposal is refused the same way", async () => {

@@ -1,0 +1,15 @@
+{
+  "typecheck": "tsc -b all workspace project references",
+  "runtimeChange": "No runtime implementation change after ConPTY fix; watchdog test synchronizes durable progress",
+  "exitCode": 0,
+  "scope": "All workspace packages and desktop",
+  "lastOutputAt": "2026-10-03T18:11:40.4278946Z",
+  "startedAt": "2026-10-03T18:11:04.8169299Z",
+  "certificationHarness": "Final batched Git hashing included",
+  "runtimeSourceAggregateSha256": "f1368006ff7e4decf92c0966d02feebc7ade8600bcf0465ac38d264f38c979f4",
+  "sourceStateId": "ec08e481b4cb9073045c9516b3d320e278ad3d1be3fc224d441ae4f871f4ecdd",
+  "log": "benchmarks/r67/tmp/workspace-build-watchdog.log",
+  "command": "node C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js run build (Node directory prepended to PATH)",
+  "exitCodeEvidence": "Exec session 69324 completed with exit code 0",
+  "status": "PASS"
+}

@@ -1,0 +1,51 @@
+{
+  "generatedAt": "2026-10-03T11:38:14.738Z",
+  "head": "6c8af1b3fd43b048fdad2002aa6e5d22b1b72957",
+  "branch": "codex/r29-release-closure",
+  "trackedStatus": "M apps/desktop/scripts/packaged-endurance.mjs\n M benchmarks/r57/extract-packaged-repeat.mjs\n M docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json\n M docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md\n M docs/evidence/r60-usable-free-inference/postgres-parity.json\n M packages/server/test/fixtures/run-recovery-worker.mjs",
+  "log": "6c8af1b3 docs(r66): record partial everyday Free readiness evidence\n7d1c625d fix(r66): qualify Free roles and preserve bounded review recovery\n8b436277 docs(r65): close validated production coding acceptance\nc32037b9 fix(r65): validate production polling within the shared API budget\n4dfa11e1 feat: add AI Horde community free domain with failover and isolation (R65)\n616cbec8 docs: certify R64 production transport and partial closure evidence\n84c08956 fix: build server dependencies before clean cloud deployment (R64)\n9c6b6ef1 feat: add Free capacity authorization and production provenance (R64)",
+  "preservedFiles": [
+    {
+      "path": "apps/desktop/scripts/packaged-endurance.mjs",
+      "sha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c",
+      "bytes": 10644,
+      "backupPath": "benchmarks/r67/tmp/preserved/0.bin",
+      "matchesR66": true
+    },
+    {
+      "path": "benchmarks/r57/extract-packaged-repeat.mjs",
+      "sha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7",
+      "bytes": 2196,
+      "backupPath": "benchmarks/r67/tmp/preserved/1.bin",
+      "matchesR66": true
+    },
+    {
+      "path": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+      "sha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+      "bytes": 3949,
+      "backupPath": "benchmarks/r67/tmp/preserved/2.bin",
+      "matchesR66": true
+    },
+    {
+      "path": "docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md",
+      "sha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497",
+      "bytes": 20268,
+      "backupPath": "benchmarks/r67/tmp/preserved/3.bin",
+      "matchesR66": true
+    },
+    {
+      "path": "docs/evidence/r60-usable-free-inference/postgres-parity.json",
+      "sha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243",
+      "bytes": 4456,
+      "backupPath": "benchmarks/r67/tmp/preserved/4.bin",
+      "matchesR66": true
+    },
+    {
+      "path": "packages/server/test/fixtures/run-recovery-worker.mjs",
+      "sha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd",
+      "bytes": 7552,
+      "backupPath": "benchmarks/r67/tmp/preserved/5.bin",
+      "matchesR66": true
+    }
+  ]
+}

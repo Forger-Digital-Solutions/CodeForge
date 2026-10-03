@@ -1,0 +1,14 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import { DatabaseSync } from 'node:sqlite';
+const file = 'docs/evidence/r67-everyday-completion-reliability/R67-PARENT-CODER-RECOVERY-LIVE-final.json';
+const evidence = JSON.parse(await readFile(file,'utf8'));
+const db = new DatabaseSync(evidence.dbPath, { readOnly: true });
+const records = db.prepare('select data from work_items').all().map(row => JSON.parse(row.data));
+db.close();
+const writes = records.filter(record => record.kind === 'agent_tool_execution' && record.executionClass === 'write');
+console.log(JSON.stringify(writes,null,2));
+const journals = records.filter(record => record.kind === 'agent_run_journal' && record.agentId === 'coder');
+console.log(JSON.stringify(journals.map(j => ({ id:j.id,state:j.state,tools:j.telemetry?.toolTrace,usage:j.usage })),null,2).slice(0,5000));
+evidence.recoveredResult = JSON.parse(await readFile(evidence.dbPath+'.recovered.json','utf8'));
+evidence.mutationAudit = writes;
+await writeFile(file,JSON.stringify(evidence,null,2)+'\n');

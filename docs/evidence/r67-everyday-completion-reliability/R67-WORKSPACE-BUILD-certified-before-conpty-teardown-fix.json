@@ -1,0 +1,14 @@
+{
+  "lastOutputAt": "2026-10-03T15:28:47.7804261Z",
+  "sourceStateId": "b8e0d6f4984360423b38a760eb34c44ff3a496c14df6a45077e22cef93c49887",
+  "exitCodeEvidence": "Exec session 33601 completed with exit code 0",
+  "startedAt": "2026-10-03T15:26:51.2331930Z",
+  "exitCode": 0,
+  "status": "PASS",
+  "certificationHarness": "Final batched Git hashing included",
+  "log": "benchmarks/r67/tmp/workspace-build-certified.log",
+  "command": "node C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js run build (Node directory prepended to PATH)",
+  "typecheck": "tsc -b all workspace project references",
+  "scope": "All workspace packages and desktop",
+  "runtimeSourceAggregateSha256": "81f99c7054c9e9fa4d66afb3002a0e8d5f7d8ba83dfe27acfa9dbfd7cf089bc8"
+}

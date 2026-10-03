@@ -33,6 +33,33 @@ function iso(t: number): string {
 const SATURATION_MESSAGE = "OpenRouter stream error (502): Upstream error from Nvidia: ResourceExhausted: Worker local total request limit reached (16/16)";
 
 describe("EightBitRouteHealthAuthority — temporal health (§6, §7)", () => {
+  it("keeps repeated verdict formatting failures out of the global tool quarantine", () => {
+    const c = clock();
+    const authority = new EightBitRouteHealthAuthority(DEFAULT_ROUTE_HEALTH_POLICY, c.now);
+    for (let index = 0; index < 8; index++) {
+      authority.observe({ kind: "tool_outcome", ...NEMOTRON, observedAt: iso(c.now()), source: "runtime", outcome: "structured_output_failure", role: index % 2 ? "REVIEWER" : "EXPLORER" });
+    }
+    expect(authority.assess(NEMOTRON.providerId, NEMOTRON.modelId, { role: "CODER" }).hardExclude).toBe(false);
+    expect(authority.assess(NEMOTRON.providerId, NEMOTRON.modelId, { role: "CODER" }).activeConditions).toEqual([]);
+    expect(authority.assess(NEMOTRON.providerId, NEMOTRON.modelId, { role: "REVIEWER" }).state).toBe("CAPABILITY_LIMITED");
+    expect(authority.assess(NEMOTRON.providerId, NEMOTRON.modelId).window.toolCalls).toBe(0);
+    for (let index = 0; index < 4; index++) {
+      authority.observe({ kind: "tool_outcome", ...NEMOTRON, observedAt: iso(c.now()), source: "runtime", outcome: "malformed", role: "CODER" });
+    }
+    expect(authority.assess(NEMOTRON.providerId, NEMOTRON.modelId).state).toBe("QUARANTINED");
+    expect(authority.assess(NEMOTRON.providerId, NEMOTRON.modelId).hardExclude).toBe(true);
+  });
+
+  it("does not quarantine tool routes for accepted deterministic JSON repairs", () => {
+    const c = clock();
+    const authority = new EightBitRouteHealthAuthority(DEFAULT_ROUTE_HEALTH_POLICY, c.now);
+    for (let index = 0; index < 8; index++) {
+      authority.observe({ kind: "tool_outcome", ...NEMOTRON, observedAt: iso(c.now()), source: "runtime", outcome: "structured_output_repaired", role: "REVIEWER" });
+    }
+    expect(authority.assess(NEMOTRON.providerId, NEMOTRON.modelId).hardExclude).toBe(false);
+    expect(authority.assess(NEMOTRON.providerId, NEMOTRON.modelId).window.toolCalls).toBe(0);
+  });
+
   it("persists a pool cooldown across aliases while isolating another user's domain", async () => {
     const authority = new EightBitRouteHealthAuthority(DEFAULT_ROUTE_HEALTH_POLICY, () => T0);
     const persistence = createSessionPersistence({ dbPath: ":memory:" });

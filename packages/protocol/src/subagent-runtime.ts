@@ -176,6 +176,7 @@ export const AgentRunJournalSchema = z.object({
   toolCallCount: z.number().int().nonnegative(),
   writeCallCount: z.number().int().nonnegative(),
   commandCallCount: z.number().int().nonnegative(),
+  telemetry: z.record(z.unknown()).optional(),
   route: z.object({
     providerId: z.string().min(1),
     modelId: z.string().min(1),

@@ -1,0 +1,2952 @@
+{
+  "startedAt": "2026-10-03T17:27:04.372Z",
+  "providerId": "kilo-free-direct",
+  "status": "MEASURED",
+  "frames": [
+    {
+      "at": "2026-10-03T17:27:05.177Z",
+      "rolePrompt": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool.",
+      "maxTokens": 200,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+        },
+        {
+          "role": "user",
+          "content": "Open src/calc.ts and report what it exports. Use the read_file tool."
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-7d76f8c6-9f31-4d24-8dda-2c7b42770eff",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-7d76f8c6-9f31-4d24-8dda-2c7b42770eff",
+          "delta": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-7d76f8c6-9f31-4d24-8dda-2c7b42770eff",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 446,
+            "outputTokens": 53,
+            "totalTokens": 499,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 24
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:05.971Z"
+    },
+    {
+      "at": "2026-10-03T17:27:05.976Z",
+      "rolePrompt": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool.",
+      "maxTokens": 400,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+        },
+        {
+          "role": "user",
+          "content": "src/calc.ts has a bug: the add function subtracts. Fix it so it returns a + b. Read the file if you need to, then use edit_file with an exact oldText."
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-b4a7499b-4c5e-46a9-935e-eca7a828bb21",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-b4a7499b-4c5e-46a9-935e-eca7a828bb21",
+          "delta": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-b4a7499b-4c5e-46a9-935e-eca7a828bb21",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 470,
+            "outputTokens": 53,
+            "totalTokens": 523,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 24
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:06.688Z"
+    },
+    {
+      "at": "2026-10-03T17:27:06.691Z",
+      "rolePrompt": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool.",
+      "maxTokens": 400,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+        },
+        {
+          "role": "user",
+          "content": "src/calc.ts has a bug: the add function subtracts. Fix it so it returns a + b. Read the file if you need to, then use edit_file with an exact oldText."
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "call_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/calc.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "export function add(a: number, b: number): number {\n  return a - b;\n}\n",
+          "toolCallId": "call_1"
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-0c64e0fe-2ca8-4df2-87ea-334630fbcc47",
+          "toolName": "edit_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-0c64e0fe-2ca8-4df2-87ea-334630fbcc47",
+          "delta": "{\"path\":\"src/calc.ts\",\"oldText\":\"  return a - b;\",\"newText\":\"  return a + b;\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-0c64e0fe-2ca8-4df2-87ea-334630fbcc47",
+          "toolName": "edit_file",
+          "arguments": "{\"path\":\"src/calc.ts\",\"oldText\":\"  return a - b;\",\"newText\":\"  return a + b;\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 534,
+            "outputTokens": 180,
+            "totalTokens": 714,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 122
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:08.202Z"
+    },
+    {
+      "at": "2026-10-03T17:27:08.204Z",
+      "rolePrompt": "Respond with JSON only. No prose, no code fences.",
+      "maxTokens": 120,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Respond with JSON only. No prose, no code fences."
+        },
+        {
+          "role": "user",
+          "content": "Return a JSON object with keys \"files\" (array of strings) listing exactly [\"src/calc.ts\",\"test/calc.test.ts\"] and \"verified\" (boolean true)."
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\"files\": [\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src/calc.ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\"test/calc"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".test.ts\"], \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "verified\": true}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 66,
+            "outputTokens": 77,
+            "totalTokens": 143,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 54
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:08.811Z"
+    },
+    {
+      "at": "2026-10-03T17:27:08.814Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Find where a selected route becomes a provider execution. Report the file(s) that contain the handoff and the execution call."
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-29ca226a-b941-47a5-9d2c-94f1597fef1e",
+          "toolName": "list_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-29ca226a-b941-47a5-9d2c-94f1597fef1e",
+          "delta": "{\"path\":\".\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-29ca226a-b941-47a5-9d2c-94f1597fef1e",
+          "toolName": "list_files",
+          "arguments": "{\"path\":\".\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 613,
+            "outputTokens": 223,
+            "totalTokens": 836,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 199
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:10.217Z"
+    },
+    {
+      "at": "2026-10-03T17:27:10.220Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Find where a selected route becomes a provider execution. Report the file(s) that contain the handoff and the execution call."
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{\"path\":\".\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-0c7fddbe-9b32-4435-b2cc-1185bac04541",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-0c7fddbe-9b32-4435-b2cc-1185bac04541",
+          "delta": "{\"path\":\"src/router.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-0c7fddbe-9b32-4435-b2cc-1185bac04541",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/router.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 711,
+            "outputTokens": 85,
+            "totalTokens": 796,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 57
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:10.894Z"
+    },
+    {
+      "at": "2026-10-03T17:27:10.897Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Find where a selected route becomes a provider execution. Report the file(s) that contain the handoff and the execution call."
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{\"path\":\".\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/router.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/router.ts\",\"content\":\"import { executeProviderCall } from \\\"./provider/client.js\\\";\\nimport { assessHealth } from \\\"./health.js\\\";\\nexport function createRouter(fabric: unknown) {\\n  async function selectAndExecute(task: string) {\\n    const route = await selectRoute(task);\\n    return executeProviderCall(route, task);\\n  }\\n  return { selectAndExecute, listen: () => selectAndExecute };\\n}\\nasync function selectRoute(task: string) {\\n  const health = assessHealth(task);\\n  return { providerId: health.best, task };\\n}\"}",
+          "toolCallId": "q_2_1"
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-90687e4e-fd04-43f4-bb90-1baa3651830c",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-90687e4e-fd04-43f4-bb90-1baa3651830c",
+          "delta": "{\"path\":\"src/provider/client.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-90687e4e-fd04-43f4-bb90-1baa3651830c",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/provider/client.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 898,
+            "outputTokens": 155,
+            "totalTokens": 1053,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 126
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:12.058Z"
+    },
+    {
+      "at": "2026-10-03T17:27:12.062Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Find where a selected route becomes a provider execution. Report the file(s) that contain the handoff and the execution call."
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{\"path\":\".\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/router.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/router.ts\",\"content\":\"import { executeProviderCall } from \\\"./provider/client.js\\\";\\nimport { assessHealth } from \\\"./health.js\\\";\\nexport function createRouter(fabric: unknown) {\\n  async function selectAndExecute(task: string) {\\n    const route = await selectRoute(task);\\n    return executeProviderCall(route, task);\\n  }\\n  return { selectAndExecute, listen: () => selectAndExecute };\\n}\\nasync function selectRoute(task: string) {\\n  const health = assessHealth(task);\\n  return { providerId: health.best, task };\\n}\"}",
+          "toolCallId": "q_2_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_3_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/provider/client.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/provider/client.ts\",\"content\":\"export async function executeProviderCall(route: { providerId: string }, task: string) {\\n  return { route, task, status: 200 };\\n}\"}",
+          "toolCallId": "q_3_1"
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-d68df36f-bff2-4ab7-920a-3a12117f2b05",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-d68df36f-bff2-4ab7-920a-3a12117f2b05",
+          "delta": "{\"query\":\"executeProviderCall\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-d68df36f-bff2-4ab7-920a-3a12117f2b05",
+          "toolName": "search_files",
+          "arguments": "{\"query\":\"executeProviderCall\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 990,
+            "outputTokens": 281,
+            "totalTokens": 1271,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 253
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:13.465Z"
+    },
+    {
+      "at": "2026-10-03T17:27:13.468Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Find where a selected route becomes a provider execution. Report the file(s) that contain the handoff and the execution call."
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{\"path\":\".\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/router.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/router.ts\",\"content\":\"import { executeProviderCall } from \\\"./provider/client.js\\\";\\nimport { assessHealth } from \\\"./health.js\\\";\\nexport function createRouter(fabric: unknown) {\\n  async function selectAndExecute(task: string) {\\n    const route = await selectRoute(task);\\n    return executeProviderCall(route, task);\\n  }\\n  return { selectAndExecute, listen: () => selectAndExecute };\\n}\\nasync function selectRoute(task: string) {\\n  const health = assessHealth(task);\\n  return { providerId: health.best, task };\\n}\"}",
+          "toolCallId": "q_2_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_3_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/provider/client.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/provider/client.ts\",\"content\":\"export async function executeProviderCall(route: { providerId: string }, task: string) {\\n  return { route, task, status: 200 };\\n}\"}",
+          "toolCallId": "q_3_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_4_1",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"executeProviderCall\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/router.ts\",\"src/provider/client.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_4_1"
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-c17a963b-773c-43fc-becc-7b10a076abd4",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-c17a963b-773c-43fc-becc-7b10a076abd4",
+          "delta": "{\"path\":\"docs/flow.md\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-c17a963b-773c-43fc-becc-7b10a076abd4",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"docs/flow.md\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1052,
+            "outputTokens": 156,
+            "totalTokens": 1208,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 127
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:14.399Z"
+    },
+    {
+      "at": "2026-10-03T17:27:14.401Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Find where a selected route becomes a provider execution. Report the file(s) that contain the handoff and the execution call."
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{\"path\":\".\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/router.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/router.ts\",\"content\":\"import { executeProviderCall } from \\\"./provider/client.js\\\";\\nimport { assessHealth } from \\\"./health.js\\\";\\nexport function createRouter(fabric: unknown) {\\n  async function selectAndExecute(task: string) {\\n    const route = await selectRoute(task);\\n    return executeProviderCall(route, task);\\n  }\\n  return { selectAndExecute, listen: () => selectAndExecute };\\n}\\nasync function selectRoute(task: string) {\\n  const health = assessHealth(task);\\n  return { providerId: health.best, task };\\n}\"}",
+          "toolCallId": "q_2_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_3_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/provider/client.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/provider/client.ts\",\"content\":\"export async function executeProviderCall(route: { providerId: string }, task: string) {\\n  return { route, task, status: 200 };\\n}\"}",
+          "toolCallId": "q_3_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_4_1",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"executeProviderCall\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/router.ts\",\"src/provider/client.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_4_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_5_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"docs/flow.md\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"docs/flow.md\",\"content\":\"# Request flow\\nselectRoute -> executeProviderCall\"}",
+          "toolCallId": "q_5_1"
+        },
+        {
+          "role": "user",
+          "content": "This is your final call. Report only the files supported by your inspection as JSON: {\"files\": [...]}. Do not request more tools."
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\"files\":[\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src/router.ts\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src/provider/client.ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 657,
+            "outputTokens": 110,
+            "totalTokens": 767,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 93
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:17.325Z"
+    },
+    {
+      "at": "2026-10-03T17:27:17.327Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Locate every place a capacity reservation can be released. Report the file(s) that release reservations."
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-ac6a1cbd-55d1-4d71-aee7-61ee48f88215",
+          "toolName": "list_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-ac6a1cbd-55d1-4d71-aee7-61ee48f88215",
+          "delta": "{\"path\":\".\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-ac6a1cbd-55d1-4d71-aee7-61ee48f88215",
+          "toolName": "list_files",
+          "arguments": "{\"path\":\".\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 608,
+            "outputTokens": 100,
+            "totalTokens": 708,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 76
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:19.520Z"
+    },
+    {
+      "at": "2026-10-03T17:27:19.522Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Locate every place a capacity reservation can be released. Report the file(s) that release reservations."
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{\"path\":\".\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-b492daf4-2304-4962-b1f1-b383b124afc2",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-b492daf4-2304-4962-b1f1-b383b124afc2",
+          "delta": "{\"query\":\"release\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-b492daf4-2304-4962-b1f1-b383b124afc2",
+          "toolName": "search_files",
+          "arguments": "{\"query\":\"release\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 706,
+            "outputTokens": 76,
+            "totalTokens": 782,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 50
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:20.214Z"
+    },
+    {
+      "at": "2026-10-03T17:27:20.217Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Locate every place a capacity reservation can be released. Report the file(s) that release reservations."
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{\"path\":\".\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"release\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\"]}",
+          "toolCallId": "q_2_1"
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-2d32b900-aa72-4778-a50e-e2d4eada32e2",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-2d32b900-aa72-4778-a50e-e2d4eada32e2",
+          "delta": "{\"path\":\"src/fabric/admission.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-2d32b900-aa72-4778-a50e-e2d4eada32e2",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/fabric/admission.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 767,
+            "outputTokens": 127,
+            "totalTokens": 894,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 96
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:22.065Z"
+    },
+    {
+      "at": "2026-10-03T17:27:22.067Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Locate every place a capacity reservation can be released. Report the file(s) that release reservations."
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{\"path\":\".\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"release\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\"]}",
+          "toolCallId": "q_2_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_3_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/admission.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/admission.ts\",\"content\":\"const holds = new Map<string, { routeId: string }>();\\nexport function reserve(requestId: string, routeId: string) {\\n  holds.set(requestId, { routeId });\\n}\\nexport function release(requestId: string) {\\n  holds.delete(requestId);\\n}\\nexport function settleRun(requestId: string, ok: boolean) {\\n  try { /* settle */ } finally { release(requestId); }\\n}\"}",
+          "toolCallId": "q_3_1"
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-20a08e40-5047-4132-a45b-c5d674d6b669",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-20a08e40-5047-4132-a45b-c5d674d6b669",
+          "delta": "{\"path\":\"src/fabric/ledger.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-20a08e40-5047-4132-a45b-c5d674d6b669",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/fabric/ledger.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 923,
+            "outputTokens": 199,
+            "totalTokens": 1122,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 167
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:25.379Z"
+    },
+    {
+      "at": "2026-10-03T17:27:25.382Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Locate every place a capacity reservation can be released. Report the file(s) that release reservations."
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{\"path\":\".\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"release\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\"]}",
+          "toolCallId": "q_2_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_3_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/admission.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/admission.ts\",\"content\":\"const holds = new Map<string, { routeId: string }>();\\nexport function reserve(requestId: string, routeId: string) {\\n  holds.set(requestId, { routeId });\\n}\\nexport function release(requestId: string) {\\n  holds.delete(requestId);\\n}\\nexport function settleRun(requestId: string, ok: boolean) {\\n  try { /* settle */ } finally { release(requestId); }\\n}\"}",
+          "toolCallId": "q_3_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_4_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/ledger.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/ledger.ts\",\"content\":\"export function snapshotHolds() { return []; }\\nexport function releaseExpired(now: number) { return now; }\"}",
+          "toolCallId": "q_4_1"
+        }
+      ],
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-3fd2cefb-0ada-46ff-b61d-1905d4be74c9",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-3fd2cefb-0ada-46ff-b61d-1905d4be74c9",
+          "delta": "{\"query\":\"holds\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-3fd2cefb-0ada-46ff-b61d-1905d4be74c9",
+          "toolName": "search_files",
+          "arguments": "{\"query\":\"holds\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1009,
+            "outputTokens": 658,
+            "totalTokens": 1667,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 632
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:29.163Z"
+    },
+    {
+      "at": "2026-10-03T17:27:29.165Z",
+      "rolePrompt": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.",
+      "maxTokens": 800,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a read-only repository explorer. Use the tools to inspect the repository, then answer with JSON only: {\"files\": [\"<repo-relative path>\", ...]} listing the files that answer the task. Do not edit files. Do not invent paths. You have at most 6 model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task."
+        },
+        {
+          "role": "user",
+          "content": "Locate every place a capacity reservation can be released. Report the file(s) that release reservations."
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_1_1",
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "arguments": "{\"path\":\".\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/server.ts\",\"src/router.ts\",\"src/provider/client.ts\",\"src/health.ts\",\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\",\"src/ui/button.tsx\",\"src/util/logger.ts\",\"test/router.test.ts\",\"docs/flow.md\"]}",
+          "toolCallId": "q_1_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_2_1",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"release\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\"]}",
+          "toolCallId": "q_2_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_3_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/admission.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/admission.ts\",\"content\":\"const holds = new Map<string, { routeId: string }>();\\nexport function reserve(requestId: string, routeId: string) {\\n  holds.set(requestId, { routeId });\\n}\\nexport function release(requestId: string) {\\n  holds.delete(requestId);\\n}\\nexport function settleRun(requestId: string, ok: boolean) {\\n  try { /* settle */ } finally { release(requestId); }\\n}\"}",
+          "toolCallId": "q_3_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_4_1",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\":\"src/fabric/ledger.ts\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"path\":\"src/fabric/ledger.ts\",\"content\":\"export function snapshotHolds() { return []; }\\nexport function releaseExpired(now: number) { return now; }\"}",
+          "toolCallId": "q_4_1"
+        },
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "q_5_1",
+              "type": "function",
+              "function": {
+                "name": "search_files",
+                "arguments": "{\"query\":\"holds\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "content": "{\"files\":[\"src/fabric/admission.ts\",\"src/fabric/ledger.ts\"]}",
+          "toolCallId": "q_5_1"
+        },
+        {
+          "role": "user",
+          "content": "This is your final call. Report only the files supported by your inspection as JSON: {\"files\": [...]}. Do not request more tools."
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\"files\":[\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src/fabric/ad"
+        },
+        {
+          "type": "text_delta",
+          "delta": "mission.ts\",\"src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/fabric/led"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ger.ts\"]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 610,
+            "outputTokens": 162,
+            "totalTokens": 772,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 139
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:30.307Z"
+    },
+    {
+      "at": "2026-10-03T17:27:30.310Z",
+      "rolePrompt": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites.",
+      "maxTokens": 1200,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites."
+        },
+        {
+          "role": "user",
+          "content": "Task: Reservation holds must also be released when a run is cancelled. Plan the smallest change that adds a release call on the cancellation path of src/server.ts, using src/fabric/admission.ts's release().\n\nExplorer findings (the only repository files that exist for you):\n--- src/server.ts ---\nimport { createRouter } from \"./router.js\";\nimport { createFabric } from \"./fabric/admission.js\";\nexport function serve() {\n  const fabric = createFabric();\n  const router = createRouter(fabric);\n  return router.listen();\n}\n--- src/fabric/admission.ts ---\nconst holds = new Map<string, { routeId: string }>();\nexport function reserve(requestId: string, routeId: string) {\n  holds.set(requestId, { routeId });\n}\nexport function release(requestId: string) {\n  holds.delete(requestId);\n}\nexport function settleRun(requestId: string, ok: boolean) {\n  try { /* settle */ } finally { release(requestId); }\n}"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n  \"protocol"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\"task_graph_v"
+        },
+        {
+          "type": "text_delta",
+          "delta": "1\",\n  \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary\":\"Add release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " call on cancellation path"
+        },
+        {
+          "type": "text_delta",
+          "delta": " in src/server.ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": " using admission"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".release\",\n  \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "tasks\":[\n   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " {\n      \"id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\"C1\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"title\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Modify src/server.ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to call release on"
+        },
+        {
+          "type": "text_delta",
+          "delta": " run cancellation\",\n     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"objective\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Import release from ./"
+        },
+        {
+          "type": "text_delta",
+          "delta": "fabric/admission"
+        },
+        {
+          "type": "text_delta",
+          "delta": " and invoke it with"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the appropriate requestId"
+        },
+        {
+          "type": "text_delta",
+          "delta": " in the cancellation handler"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\",\n      \"dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[],\n     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"assignedRole\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "coder\"\n   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " },\n    {\n     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"id\":\"R"
+        },
+        {
+          "type": "text_delta",
+          "delta": "1\",\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title\":\"Review the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " change\",\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective\":\"Ens"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ure release is called"
+        },
+        {
+          "type": "text_delta",
+          "delta": " correctly and no extra"
+        },
+        {
+          "type": "text_delta",
+          "delta": " changes introduced.\",\n     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"dependencies\":[\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "C1\"],\n     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"assignedRole\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "reviewer\"\n   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " }\n  ]\n}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 376,
+            "outputTokens": 519,
+            "totalTokens": 895,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 363
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:32.496Z"
+    },
+    {
+      "at": "2026-10-03T17:27:32.506Z",
+      "rolePrompt": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites.",
+      "maxTokens": 1200,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites."
+        },
+        {
+          "role": "user",
+          "content": "Task: Plan the smallest change that fixes executeProviderCall returning the wrong status when the provider answers 429.\n\nExplorer findings (the only repository files that exist for you):\n--- src/provider/client.ts ---\nexport async function executeProviderCall(route: { providerId: string }, task: string) {\n  return { route, task, status: 200 };\n}\n--- test/router.test.ts ---\n/// <reference types=\"vitest\" />\ntest(\"route executes\", () => {});"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n  \"protocol"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"task_graph"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_v1\",\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"summary\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Plan to fix execute"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ProviderCall to return"
+        },
+        {
+          "type": "text_delta",
+          "delta": " correct status when provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": " answers 42"
+        },
+        {
+          "type": "text_delta",
+          "delta": "9.\",\n  \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "tasks\": [\n   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " {\n     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"id\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "C\",\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title\": \"Update"
+        },
+        {
+          "type": "text_delta",
+          "delta": " executeProviderCall to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " return dynamic status\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"objective"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"Modify src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/provider/client"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts so that execute"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ProviderCall returns the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " status provided by the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " provider (e.g"
+        },
+        {
+          "type": "text_delta",
+          "delta": "., 42"
+        },
+        {
+          "type": "text_delta",
+          "delta": "9) instead of"
+        },
+        {
+          "type": "text_delta",
+          "delta": " hardcoded "
+        },
+        {
+          "type": "text_delta",
+          "delta": "200.\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"dependencies\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [],\n      \"assigned"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Role\": \"c"
+        },
+        {
+          "type": "text_delta",
+          "delta": "oder\"\n    },\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "    {\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id\": \"R"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n      \"title"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"Review the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " change\",\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Verify that the updated"
+        },
+        {
+          "type": "text_delta",
+          "delta": " executeProviderCall"
+        },
+        {
+          "type": "text_delta",
+          "delta": " correctly returns the provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": "'s status and that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " existing tests still pass"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\",\n      \"dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": [\"C\"],\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"assignedRole"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"reviewer"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"\n    }\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " ]\n}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 272,
+            "outputTokens": 894,
+            "totalTokens": 1166,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 706
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:39.423Z"
+    },
+    {
+      "at": "2026-10-03T17:27:39.428Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Fix add() so it returns the sum of its arguments.\n\nDiff under review:\n--- a/src/calc.ts\n+++ b/src/calc.ts\n@@ export function add(a, b) @@\n-  return a - b;\n+  return a * b;"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"verdict\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"reject\",\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"findings\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [\n    {\n     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"message\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The change modifies"
+        },
+        {
+          "type": "text_delta",
+          "delta": " add"
+        },
+        {
+          "type": "text_delta",
+          "delta": "() to return a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " * b ("
+        },
+        {
+          "type": "text_delta",
+          "delta": "product) instead of"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a +"
+        },
+        {
+          "type": "text_delta",
+          "delta": " b (sum),"
+        },
+        {
+          "type": "text_delta",
+          "delta": " which does not satisfy"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the intent to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " return the sum of"
+        },
+        {
+          "type": "text_delta",
+          "delta": " its arguments.\",\n     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"path\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src/calc.ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"\n    }\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " ]\n}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 139,
+            "outputTokens": 156,
+            "totalTokens": 295,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 81
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:40.398Z"
+    },
+    {
+      "at": "2026-10-03T17:27:40.401Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Rename the internal helper for clarity; behaviour unchanged.\n\nDiff under review:\n--- a/src/util/logger.ts\n+++ b/src/util/logger.ts\n@@\n-export const log = (m: string) => m;\n+export const writeLog = (m: string) => m;"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "verdict\":\"appro"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ve\",\"findings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 145,
+            "outputTokens": 100,
+            "totalTokens": 245,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 85
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:41.518Z"
+    },
+    {
+      "at": "2026-10-03T17:27:41.523Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Document the quota window semantics; comment only, no behaviour change.\n\nDiff under review:\n--- a/src/fabric/ledger.ts\n+++ b/src/fabric/ledger.ts\n@@\n+// Windows are provider-reported; a missing window means unobserved, not unlimited.\n export function snapshotHolds() { return []; }\n export function releaseExpired(now: number) { return now; }"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n  \"ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict\": \"appro"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ve\",\n  \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "findings\": []\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 166,
+            "outputTokens": 105,
+            "totalTokens": 271,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 85
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:42.299Z"
+    },
+    {
+      "at": "2026-10-03T17:27:42.302Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Record provider failures so the route can be demoted.\n\nDiff under review:\n--- a/src/health.ts\n+++ b/src/health.ts\n@@\n+export function recordFailure(id: string) {\n+  try { sendTelemetry(id); } catch { /* ignore */ }\n+}"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n  \"ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict\": \"reject"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n  \"find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings\": [\n   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " {\n     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"message\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The function record"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Failure only"
+        },
+        {
+          "type": "text_delta",
+          "delta": " sends telemetry and"
+        },
+        {
+          "type": "text_delta",
+          "delta": " ignores errors"
+        },
+        {
+          "type": "text_delta",
+          "delta": "; it does not"
+        },
+        {
+          "type": "text_delta",
+          "delta": " actually record the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failure in a way"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that can be used"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to dem"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ote the route ("
+        },
+        {
+          "type": "text_delta",
+          "delta": "e.g., updating"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failure"
+        },
+        {
+          "type": "text_delta",
+          "delta": " count"
+        },
+        {
+          "type": "text_delta",
+          "delta": ", marking provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": " unhealthy"
+        },
+        {
+          "type": "text_delta",
+          "delta": ", or"
+        },
+        {
+          "type": "text_delta",
+          "delta": " pers"
+        },
+        {
+          "type": "text_delta",
+          "delta": "isting state).\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"path"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src/health.ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"\n    }\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " ]\n}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 143,
+            "outputTokens": 252,
+            "totalTokens": 395,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 163
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:43.531Z"
+    },
+    {
+      "at": "2026-10-03T17:27:43.535Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Add a fast path that reserves capacity before early return.\n\nDiff under review:\n--- a/src/fabric/admission.ts\n+++ b/src/fabric/admission.ts\n@@\n+export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n+}"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "verdict\":\"appro"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ve\",\"findings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 155,
+            "outputTokens": 112,
+            "totalTokens": 267,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 97
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:45.454Z"
+    },
+    {
+      "at": "2026-10-03T17:27:45.466Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Add a fast path that reserves capacity before early return.\n\nDiff under review:\n--- a/src/fabric/admission.ts\n+++ b/src/fabric/admission.ts\n@@\n+export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n+}"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n  \"ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict\": \"appro"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ve\",\n  \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "findings\": []\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 155,
+            "outputTokens": 101,
+            "totalTokens": 256,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 81
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:46.598Z"
+    },
+    {
+      "at": "2026-10-03T17:27:46.607Z",
+      "rolePrompt": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems.",
+      "maxTokens": 900,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\": \"approve\" | \"reject\", \"findings\": [{\"message\": string, \"path\"?: string}]}. Approve only when the diff correctly implements the intent with no defects. A clean diff must be approved — do not invent problems."
+        },
+        {
+          "role": "user",
+          "content": "Intent: Make the flaky router test pass.\n\nDiff under review:\n--- a/test/router.test.ts\n+++ b/test/router.test.ts\n@@\n-test(\"route executes\", () => { expect(run()).toBe(\"ok\"); });\n+test(\"route executes\", () => { expect(\"ok\").toBe(\"ok\"); });"
+        }
+      ],
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n  \"ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict\": \"reject"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n  \"find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings\": [\n   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " {\n      \"message"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"The test"
+        },
+        {
+          "type": "text_delta",
+          "delta": " no longer calls run"
+        },
+        {
+          "type": "text_delta",
+          "delta": "() and does not"
+        },
+        {
+          "type": "text_delta",
+          "delta": " verify router behavior;"
+        },
+        {
+          "type": "text_delta",
+          "delta": " it merely asserts a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " constant, which does"
+        },
+        {
+          "type": "text_delta",
+          "delta": " not address the fl"
+        },
+        {
+          "type": "text_delta",
+          "delta": "akiness and defeats"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the purpose of the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " test.\"\n    }\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "  ]\n}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 150,
+            "outputTokens": 270,
+            "totalTokens": 420,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 204
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-03T17:27:48.140Z"
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-03T17:27:04.373Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-03T17:27:04.373Z",
+      "recheckAt": "2026-10-10T17:27:04.373Z",
+      "qualificationAt": "2026-10-03T17:27:04.372Z",
+      "termsVerifiedAt": "2026-10-03T17:27:04.373Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-10T17:27:04.373Z",
+      "privacyVerifiedAt": "2026-10-03T17:27:04.373Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-10T17:27:04.373Z",
+      "priceVerifiedAt": "2026-10-03T17:27:04.373Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-10T17:27:04.373Z",
+      "nextReverifyAt": "2026-10-03T23:27:04.373Z"
+    }
+  },
+  "catalog": [
+    {
+      "modelId": "kilo-auto/free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 256000
+    },
+    {
+      "modelId": "stepfun/step-3.7-flash:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    },
+    {
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 1000000
+    },
+    {
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 512000
+    },
+    {
+      "modelId": "poolside/laguna-s-2.1:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    },
+    {
+      "modelId": "apodex/apodex-1.1-mini:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    },
+    {
+      "modelId": "inclusionai/ling-3.0-flash-sante:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    },
+    {
+      "modelId": "qwen/qwen3.8-27b:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    },
+    {
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 65536
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 1000000
+    },
+    {
+      "modelId": "thinkingmachines/inkling-small:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 1048576
+    },
+    {
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    },
+    {
+      "modelId": "cohere/north-mini-code:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 256000
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-content-safety:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 128000
+    },
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 256000
+    },
+    {
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "isFree": true,
+      "freeStatus": "verified_free",
+      "contextWindow": 262144
+    }
+  ],
+  "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+  "qualification": {
+    "suiteVersion": "R66_ROLE_QUALIFICATION_V4",
+    "providerId": "kilo-free-direct",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "modelDisplayName": "NVIDIA: Nemotron 3 Super (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 798,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2228,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 53
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 180
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-03T17:27:05.176Z",
+        "completedAt": "2026-10-03T17:27:08.813Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 798,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2228,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 53
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 180
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 608,
+            "retries": 0,
+            "details": {
+              "textLength": 64,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-03T17:27:05.176Z",
+        "completedAt": "2026-10-03T17:27:08.813Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 608,
+            "retries": 0,
+            "details": {
+              "textLength": 64,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-03T17:27:05.176Z",
+        "completedAt": "2026-10-03T17:27:08.813Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "explorer.route_execution",
+            "category": "explore",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 8514,
+            "retries": 0,
+            "details": {
+              "modelCalls": 6,
+              "filesRead": [
+                "src/router.ts",
+                "src/provider/client.ts",
+                "docs/flow.md"
+              ],
+              "relevantFilesRead": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "searches": 1,
+              "totalToolCalls": 5,
+              "validCalls": 5,
+              "validToolCallRate": 1,
+              "readPrecision": 0.6666666666666666,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "answerFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "recall": 1,
+              "reasoningRetries": 0,
+              "reasoningTokens": 93
+            }
+          },
+          {
+            "caseId": "explorer.reservation_release",
+            "category": "explore",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 12982,
+            "retries": 0,
+            "details": {
+              "modelCalls": 6,
+              "filesRead": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "relevantFilesRead": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "searches": 2,
+              "totalToolCalls": 5,
+              "validCalls": 5,
+              "validToolCallRate": 1,
+              "readPrecision": 1,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "answerFiles": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "recall": 1,
+              "reasoningRetries": 0,
+              "reasoningTokens": 139
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-03T17:27:08.813Z",
+        "completedAt": "2026-10-03T17:27:48.147Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "planner.release_callsite",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2196,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 2,
+              "roles": [
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": false,
+              "reasoningTokens": 363
+            }
+          },
+          {
+            "caseId": "planner.schema",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 6921,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 2,
+              "roles": [
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": false,
+              "reasoningTokens": 706
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-03T17:27:08.813Z",
+        "completedAt": "2026-10-03T17:27:48.147Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 973,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The change modifies add() to return a * b (product) instead of a + b (sum), which does not satisfy the intent to return the sum of its arguments."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 81
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1122,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 85
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 779,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 85
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1233,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The function recordFailure only sends telemetry and ignores errors; it does not actually record the failure in a way that can be used to demote the route (e.g., updating failure count, marking provider unhealthy, or persisting state)."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 163
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 1141,
+            "retries": 1,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 81,
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "approve",
+                "expectedApproved": false,
+                "verdictCorrect": false,
+                "findingLocalized": false,
+                "findings": [],
+                "reasoningRetried": false,
+                "reasoningTokens": 97
+              }
+            }
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1539,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The test no longer calls run() and does not verify router behavior; it merely asserts a constant, which does not address the flakiness and defeats the purpose of the test."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 204
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.8333333333333334,
+        "startedAt": "2026-10-03T17:27:08.813Z",
+        "completedAt": "2026-10-03T17:27:48.147Z"
+      }
+    },
+    "startedAt": "2026-10-03T17:27:05.176Z",
+    "completedAt": "2026-10-03T17:27:08.813Z",
+    "totalLatencyMs": 3637,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 24,
+      "transient": false,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R66_ROLE_QUALIFICATION_V4",
+      "roleTransientCases": 0
+    }
+  },
+  "policyRelaxed": false,
+  "sourceContent": "Only frozen public qualification fixtures; no user source",
+  "costState": "UNKNOWN",
+  "finishedAt": "2026-10-03T17:27:48.147Z"
+}
