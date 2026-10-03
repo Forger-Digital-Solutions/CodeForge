@@ -1,0 +1,100 @@
+{
+  "startedAt": "2026-10-03T19:10:10.500Z",
+  "status": "BLOCKED",
+  "evidenceClass": "ACTUAL_PACKAGED_WINDOWS_NORMAL_STARTUP",
+  "profile": "G:\\CodeForge\\benchmarks\\r67\\tmp\\windows-profile-0kf21p",
+  "workspace": "G:\\CodeForge\\benchmarks\\r67\\tmp\\windows-public-qT5p4e",
+  "port": 49336,
+  "samples": [
+    {
+      "at": "2026-10-03T19:10:15.190Z",
+      "rendererRoundTripMs": 1.4292999999997846,
+      "mainProcess": {
+        "cpuSeconds": 2.171875,
+        "rssBytes": 345169920,
+        "handles": 1192
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T19:10:20.873Z",
+      "rendererRoundTripMs": 1.5048999999999069,
+      "mainProcess": {
+        "cpuSeconds": 2.1875,
+        "rssBytes": 345063424,
+        "handles": 1177
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    }
+  ],
+  "tasks": [],
+  "restarts": [],
+  "limitations": [],
+  "identity": {
+    "version": "0.4.0",
+    "commit": "3af7acea7328ab6ca0f490484490c77dc9eec33e",
+    "shortCommit": "3af7acea7328",
+    "branch": "codex/r29-release-closure",
+    "dirty": true,
+    "builtAt": "2026-10-03T19:07:23.816Z"
+  },
+  "manifest": {
+    "$comment": "Build-time CodeForge Cloud endpoint manifest. The packaging pipeline rewrites `channel` and fills the matching endpoint for staging/production releases. The renderer never reads this file, and a packaged staging/production build ignores CODEFORGE_CLOUD_URL entirely. Staging/production endpoints are intentionally absent until a real deployment exists: a build for those channels must fail closed rather than fall back to a local address.",
+    "channel": "production",
+    "endpoints": {
+      "development": "http://127.0.0.1:3220",
+      "staging": "https://codeforge-cloud-staging.onrender.com",
+      "production": "https://codeforge-cloud-va.onrender.com"
+    }
+  },
+  "executableSha256": "23cc13e8fee1476258ebf1c39d00bacf576c3222d827f5feb8e15be30f8a37a9",
+  "pid": 8756,
+  "endpointConsistency": {
+    "matches": true,
+    "rendererOrigin": "file://"
+  },
+  "runtimeStatus": {
+    "activeWork": false,
+    "activeWorkflows": 0,
+    "activeAgentTurns": 0,
+    "activeCommands": 0,
+    "pendingApprovals": 0,
+    "activeVerifications": 0,
+    "hostedContinuations": 0,
+    "backgroundTasks": 0,
+    "recoverable": true,
+    "unrecoverableResources": [],
+    "discoveringProviders": 1
+  },
+  "launchMs": 3987,
+  "runtimeVersion": "0.4.0",
+  "account": {
+    "authenticated": false,
+    "status": null
+  },
+  "authenticatedTaskGate": "HUMAN_AUTH_REQUIRED",
+  "backendHealth": {
+    "status": 200,
+    "body": {
+      "status": "ok"
+    }
+  },
+  "trustedRendererSessions": {
+    "status": 200,
+    "body": []
+  },
+  "error": "Error: UNKNOWN: unknown error, open 'G:\\CodeForge\\docs\\evidence\\r67-everyday-completion-reliability\\R67-WINDOWS-CERTIFIED-IDLE-RESTART.json'",
+  "finishedAt": "2026-10-03T19:10:21.050Z",
+  "durationMs": 10550,
+  "memoryScope": "Main process only; renderer evaluated separately. Process-tree memory unmeasured."
+}

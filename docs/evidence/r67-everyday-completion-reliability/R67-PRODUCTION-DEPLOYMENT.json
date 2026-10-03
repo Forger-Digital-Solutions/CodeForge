@@ -1,0 +1,32 @@
+{
+  "observedAt": "2026-10-03T19:13:17.824Z",
+  "status": "live",
+  "commit": "3af7acea7328ab6ca0f490484490c77dc9eec33e",
+  "deployId": "dep-db0l6imgekts73a6gcd0",
+  "serviceId": "srv-dam6f83m8hqs73clo5ig",
+  "workspaceId": "tea-daa3l35g1s2s73c1t8mg",
+  "branch": "forger-digital-solutions-forgegreen-certified",
+  "autoDeploy": "no",
+  "sourceStateId": "ec08e481b4cb9073045c9516b3d320e278ad3d1be3fc224d441ae4f871f4ecdd",
+  "history": [
+    {
+      "observedAt": "2026-10-03T19:12:49.511Z",
+      "status": "live",
+      "commit": "3af7acea7328ab6ca0f490484490c77dc9eec33e"
+    }
+  ],
+  "renderDeployment": {
+    "commit": {
+      "createdAt": "2026-10-03T19:06:31Z",
+      "id": "3af7acea7328ab6ca0f490484490c77dc9eec33e",
+      "message": "fix: close R67 everyday completion and recovery reliability"
+    },
+    "createdAt": "2026-10-03T19:11:06.585383Z",
+    "finishedAt": "2026-10-03T19:12:48.921773Z",
+    "id": "dep-db0l6imgekts73a6gcd0",
+    "startedAt": "2026-10-03T19:11:06.558881Z",
+    "status": "live",
+    "trigger": "api",
+    "updatedAt": "2026-10-03T19:12:48.922236Z"
+  }
+}

@@ -1,12 +1,12 @@
 {
   "certificateId": "r67-everyday-completion-reliability-v1",
   "schemaVersion": "free-capacity-source-certification/v1",
-  "certifiedAt": "2026-10-03T19:05:47.221Z",
+  "certifiedAt": "2026-10-03T19:15:39.851Z",
   "implementationBase": "6c8af1b3fd43b048fdad2002aa6e5d22b1b72957",
-  "implementationHead": "PENDING_IMPLEMENTATION_COMMIT",
+  "implementationHead": "3af7acea7328ab6ca0f490484490c77dc9eec33e",
   "sourceStateId": "ec08e481b4cb9073045c9516b3d320e278ad3d1be3fc224d441ae4f871f4ecdd",
   "runtimeSourceAggregateSha256": "f1368006ff7e4decf92c0966d02feebc7ade8600bcf0465ac38d264f38c979f4",
-  "closureStatus": "SOURCE_CERTIFIED_DEPLOYMENT_PENDING",
+  "closureStatus": "CODEFORGE_R67_CLOSED",
   "certificateMeaning": "Exact source/evidence byte integrity, final canonical validation and measured public-fixture runtime reliability. Backend/runtime closure permits only the isolated authenticated Windows task to remain human-dependent.",
   "validation": {
     "repositoryWideStatus": "PASS",
@@ -38,7 +38,7 @@
     "validation": "PASS",
     "windowsStartupIdleRestart": "PASS",
     "authenticatedWindowsTask": "HUMAN_AUTH_REQUIRED",
-    "production": "PENDING"
+    "production": "PASS_EXACT_RUNTIME_REVISION"
   },
   "limitations": [
     "Only Kilo anonymous PUBLIC_IP supply is eligible; independent physical quota domains are not verified. Horde remains ineligible after fresh failed qualification.",
@@ -1279,7 +1279,7 @@
     },
     {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-FINAL-REPORT.md",
-      "sha256": "c6d0eb936331356a42eb21c227ef4508a9662cd9b33b55b54e18862fc73fa34d"
+      "sha256": "e2abbb5f61ce6633c8a6077152fe2ff58b05b75379484cf154e162b4ef72e8e3"
     },
     {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-FINAL-SOURCE-CANARIES.json",
@@ -1295,7 +1295,7 @@
     },
     {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-HISTORY-INDEX.json",
-      "sha256": "88c4d2f6ca22733a4d2af8294d5d65fc764da51b86d38950f8787fd0e86fcfdc"
+      "sha256": "1388d36180dde6ab74eb1e9200b37852a9d43ea297755e4681fc838eec08ea01"
     },
     {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-HORDE-MODEL-CHURN.json",
@@ -1438,6 +1438,14 @@
       "sha256": "9d07db0082adb68edadf743173bebd74b0da3cb2b2f07fd1fec85c054a8f238e"
     },
     {
+      "path": "docs/evidence/r67-everyday-completion-reliability/R67-PRODUCTION-DEPLOYMENT.json",
+      "sha256": "53ccbb18efe579444eefad3823978c8ed6ac95cb54b6d3c02465c5e6c6399cc1"
+    },
+    {
+      "path": "docs/evidence/r67-everyday-completion-reliability/R67-PRODUCTION-FINAL.json",
+      "sha256": "f0b1d2938aac4c55404f6a046e98ce19e340c5227b392b03369f4f483f1c642b"
+    },
+    {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-PROVIDER-429-RECOVERY-before-current-supply.json",
       "sha256": "604b0dbb5770be6d99989d95610091298ffc9e78f58e20b7dd72386fb8582121"
     },
@@ -1567,7 +1575,7 @@
     },
     {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-SOURCE-SECRET-SCAN-final.json",
-      "sha256": "6d732bff0523897a532093708c1e36199c1dc74df62b0721c4eda343b967d531"
+      "sha256": "2369dde87414723eed2f307638ecbd6610d136a4c8a5e44b6c5c18aaa7825e95"
     },
     {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-SOURCE-SECRET-SCAN.json",
@@ -1630,12 +1638,20 @@
       "sha256": "ebbc7c83c271cda55cc0d5920767e8b87ad0767d1395e8871e3bc4d9730992fc"
     },
     {
+      "path": "docs/evidence/r67-everyday-completion-reliability/R67-WINDOWS-CERTIFIED-IDLE-RESTART-before-commit-stamp.json",
+      "sha256": "ebcacb83315a20b31c76a9c62daa5ee42287b3b17ade9886b7c443feccd83a0e"
+    },
+    {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-WINDOWS-CERTIFIED-IDLE-RESTART-before-conpty-teardown-fix.json",
       "sha256": "ad1f4d51e1e26b0e5c16fb1629ce631908c81174ed5074e0250a774d6716fdf0"
     },
     {
+      "path": "docs/evidence/r67-everyday-completion-reliability/R67-WINDOWS-CERTIFIED-IDLE-RESTART-before-recorder-retry.json",
+      "sha256": "588841f280b6d1fdc818aa32836ab15df5e10dbfb86d9c200137f5a85b7db3c8"
+    },
+    {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-WINDOWS-CERTIFIED-IDLE-RESTART.json",
-      "sha256": "ebcacb83315a20b31c76a9c62daa5ee42287b3b17ade9886b7c443feccd83a0e"
+      "sha256": "22c81e6425cd752d0534f3d05481d5365e482b33d48ae17937b367dad4063c21"
     },
     {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-WINDOWS-COMMAND-REGRESSIONS.json",
@@ -1646,12 +1662,24 @@
       "sha256": "2fa5f49e7bef4502edcede4004af01670f5891a8316df2eb448a3ec0d3c960d7"
     },
     {
+      "path": "docs/evidence/r67-everyday-completion-reliability/R67-WINDOWS-IMPLEMENTATION-IDLE-RESTART.json",
+      "sha256": "22c81e6425cd752d0534f3d05481d5365e482b33d48ae17937b367dad4063c21"
+    },
+    {
+      "path": "docs/evidence/r67-everyday-completion-reliability/R67-WINDOWS-PACKAGE-BYTE-AUDIT-before-commit-stamp.json",
+      "sha256": "9012a37d21411547ab3e1bdd14145eb0e093b85e27bc523c5af355c4b731c1ff"
+    },
+    {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-WINDOWS-PACKAGE-BYTE-AUDIT-before-conpty-teardown-fix.json",
       "sha256": "aad2f8ba14f0c96e5a89e8979eaff0a626a71143ce36e89678b853a5a000b39b"
     },
     {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-WINDOWS-PACKAGE-BYTE-AUDIT.json",
-      "sha256": "9012a37d21411547ab3e1bdd14145eb0e093b85e27bc523c5af355c4b731c1ff"
+      "sha256": "af22f0f2300ba18a28bab81f009a7aa7596b1f08750651cad92fe034181d4ede"
+    },
+    {
+      "path": "docs/evidence/r67-everyday-completion-reliability/R67-WINDOWS-PACKAGE-IDENTITY-AUDIT.json",
+      "sha256": "826c477844a17bf6e7d055b65d8180ef095729749f36bc725ce8d1ef81dd1932"
     },
     {
       "path": "docs/evidence/r67-everyday-completion-reliability/R67-WINDOWS-PRODUCTION-IDLE-RESTART.json",
@@ -1718,5 +1746,5 @@
       "sha256": "d81a7c12aa0d1225809eae0d1f84e41e936f864c67215093f99dc4c4ddf438de"
     }
   ],
-  "evidenceAggregateSha256": "17f0efdd3808561d308c773935ce10e70d1c37000c89d186121be597a9e3913a"
+  "evidenceAggregateSha256": "5123191169f43f4af849f0d99f0167aa166b27e3a3d0f814a224b4d9465bc03f"
 }

@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-03T19:14:02.914Z",
+  "status": "PASS",
+  "command": "node apps/desktop/scripts/audit-packaged-build-identity.mjs G:/CodeForge/benchmarks/r67/tmp/windows-package/win-unpacked/resources/app.asar",
+  "exitCode": 0,
+  "commit": "3af7acea7328ab6ca0f490484490c77dc9eec33e",
+  "mainRendererStampsMatch": true,
+  "dirty": true,
+  "dirtyReason": "Six preserved user modifications remain outside the release commit; exact runtime bytes are separately audited.",
+  "diagnostic": "PACKAGED_BUILD_IDENTITY_VALID=PASS\ncommit=3af7acea7328ab6ca0f490484490c77dc9eec33e\nbuiltAt=2026-10-03T19:07:23.816Z\ndirty=true\narchive=G:\\CodeForge\\benchmarks\\r67\\tmp\\windows-package\\win-unpacked\\resources\\app.asar\n"
+}

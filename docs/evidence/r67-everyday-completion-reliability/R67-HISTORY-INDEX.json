@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-03T19:04:39.582Z",
+  "at": "2026-10-03T19:14:08.200Z",
   "historicalOutputsRewritten": false,
   "campaigns": [
     {
@@ -1158,6 +1158,18 @@
       ]
     },
     {
+      "file": "R67-WINDOWS-CERTIFIED-IDLE-RESTART-before-commit-stamp.json",
+      "role": "HISTORICAL",
+      "recordedStatus": "PASS_UNAUTHENTICATED_IDLE_RESTART",
+      "measuredProfileExperiment": null,
+      "startedAt": "2026-10-03T18:34:55.803Z",
+      "finishedAt": "2026-10-03T18:36:21.609Z",
+      "attempted": 0,
+      "completed": 0,
+      "longestCompletionStreak": 0,
+      "tasks": []
+    },
+    {
       "file": "R67-WINDOWS-CERTIFIED-IDLE-RESTART-before-conpty-teardown-fix.json",
       "role": "HISTORICAL",
       "recordedStatus": "PASS_UNAUTHENTICATED_IDLE_RESTART",
@@ -1170,12 +1182,24 @@
       "tasks": []
     },
     {
+      "file": "R67-WINDOWS-CERTIFIED-IDLE-RESTART-before-recorder-retry.json",
+      "role": "HISTORICAL",
+      "recordedStatus": "BLOCKED",
+      "measuredProfileExperiment": null,
+      "startedAt": "2026-10-03T19:10:10.500Z",
+      "finishedAt": "2026-10-03T19:10:21.050Z",
+      "attempted": 0,
+      "completed": 0,
+      "longestCompletionStreak": 0,
+      "tasks": []
+    },
+    {
       "file": "R67-WINDOWS-CERTIFIED-IDLE-RESTART.json",
       "role": "HISTORICAL",
       "recordedStatus": "PASS_UNAUTHENTICATED_IDLE_RESTART",
       "measuredProfileExperiment": null,
-      "startedAt": "2026-10-03T18:34:55.803Z",
-      "finishedAt": "2026-10-03T18:36:21.609Z",
+      "startedAt": "2026-10-03T19:12:10.066Z",
+      "finishedAt": "2026-10-03T19:13:22.779Z",
       "attempted": 0,
       "completed": 0,
       "longestCompletionStreak": 0,
@@ -1188,6 +1212,18 @@
       "measuredProfileExperiment": null,
       "startedAt": "2026-10-03T14:24:32.640Z",
       "finishedAt": "2026-10-03T14:26:00.106Z",
+      "attempted": 0,
+      "completed": 0,
+      "longestCompletionStreak": 0,
+      "tasks": []
+    },
+    {
+      "file": "R67-WINDOWS-IMPLEMENTATION-IDLE-RESTART.json",
+      "role": "HISTORICAL",
+      "recordedStatus": "PASS_UNAUTHENTICATED_IDLE_RESTART",
+      "measuredProfileExperiment": null,
+      "startedAt": "2026-10-03T19:12:10.066Z",
+      "finishedAt": "2026-10-03T19:13:22.779Z",
       "attempted": 0,
       "completed": 0,
       "longestCompletionStreak": 0,

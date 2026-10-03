@@ -1,8 +1,8 @@
-# R67_CERTIFIED_CANDIDATE_DEPLOYMENT_PENDING
+# CODEFORGE_R67_CLOSED
 
 ## Repository
 
-Starting revision: `6c8af1b3fd43b048fdad2002aa6e5d22b1b72957`. Branch: `codex/r29-release-closure`. Runtime revision: pending implementation commit.
+Starting revision: `6c8af1b3fd43b048fdad2002aa6e5d22b1b72957`. Branch: `codex/r29-release-closure`. Runtime revision: `3af7acea7328ab6ca0f490484490c77dc9eec33e`.
 
 Six pre-existing tracked changes are preserved byte-for-byte and excluded from the R67 commit. Unrelated untracked material is retained. [Preservation audit](R67-FINAL-SOURCE-PRESERVATION.json) and [starting state](R67-START-STATE.json).
 
@@ -65,14 +65,18 @@ Runtime source-state ID: `ec08e481b4cb9073045c9516b3d320e278ad3d1be3fc224d441ae4
 
 Actual rebuilt production-channel Electron package: startup, file renderer, trusted IPC backend `/api/health` 200, session access 200, 14 responsive idle samples, owned crash/restart and clean recoverable runtime status pass. Cloud endpoint is the approved production HTTPS endpoint. Isolated GitHub account is unauthenticated; authenticated packaged coding is HUMAN_AUTH_REQUIRED and was not attempted. Authentication dialogs were not automated. [Package evidence](R67-WINDOWS-CERTIFIED-IDLE-RESTART.json).
 
+The final package's main and renderer stamps both identify committed implementation `3af7acea7328ab6ca0f490484490c77dc9eec33e`. The dirty flag truthfully includes the six preserved user changes; it is not presented as a clean checkout. [Identity audit](R67-WINDOWS-PACKAGE-IDENTITY-AUDIT.json) and [13-module byte comparison](R67-WINDOWS-PACKAGE-BYTE-AUDIT.json). A repeat soak stopped after two samples because its evidence-file open returned an OS UNKNOWN error; that [failed recorder attempt](R67-WINDOWS-CERTIFIED-IDLE-RESTART-before-recorder-retry.json) is retained. The same package then passed the full soak with a fresh evidence path, with no source or package changes.
+
 ## Production
 
-Render service `srv-dam6f83m8hqs73clo5ig`, workspace `tea-daa3l35g1s2s73c1t8mg`, URL https://codeforge-cloud-va.onrender.com. Deployment: PENDING. Revision: PENDING. Smoke: PENDING.
+Render service `srv-dam6f83m8hqs73clo5ig`, workspace `tea-daa3l35g1s2s73c1t8mg`, URL https://codeforge-cloud-va.onrender.com. Deployment: live. Revision: 3af7acea7328ab6ca0f490484490c77dc9eec33e. Smoke: PASS.
 
-The source-certified implementation must be committed and pushed before deployment; R66 remains live until then.
+Implementation commit `3af7acea7328ab6ca0f490484490c77dc9eec33e` was pushed atomically to `codex/r29-release-closure` and `forger-digital-solutions-forgegreen-certified`. The configured credential manager stalled before completing the first push; the verified owned push was stopped and retried successfully through the existing authenticated GitHub CLI helper for that command only. No authentication dialog was automated or global credential configuration changed. Render deployment `dep-db0l6imgekts73a6gcd0` was explicitly triggered with auto-deploy disabled. The final closure commit records evidence only and does not change this deployed runtime.
+
+Liveness/readiness are 200; database is connected; anonymous remote sessions remain 401. Deployment identity matches the certified runtime revision. Authenticated production coding is not claimed.
 
 ## Remaining Blockers
 
-Final canonical validation/certificate/deployment are pending; no runtime failure is asserted from incomplete execution.
+Backend/runtime release blockers: NONE. Isolated authenticated packaged-task gate: HUMAN_AUTH_REQUIRED.
 
 R67 demonstrates repeated completion of six ordinary public engineering fixtures, overlapping logical users, safe real process/server recovery and truthful controlled provider/queue fault handling. It supports bounded everyday backend development on currently eligible free supply. It does not prove indefinite provider availability, independent physical quota pools, large-repository task complexity, a production Postgres outage, authenticated packaged coding, or an authenticated production coding smoke. Historical failures remain part of the evidence.

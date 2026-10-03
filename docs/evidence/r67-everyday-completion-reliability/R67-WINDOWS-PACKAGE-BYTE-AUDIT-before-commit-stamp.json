@@ -1,18 +1,18 @@
 {
-  "at": "2026-10-03T19:14:03.084Z",
+  "at": "2026-10-03T18:59:07.093Z",
   "status": "PASS",
   "evidenceClass": "ACTUAL_PACKAGED_RUNTIME_BYTE_COMPARISON",
   "runtimeSourceStateId": "ec08e481b4cb9073045c9516b3d320e278ad3d1be3fc224d441ae4f871f4ecdd",
   "runtimeSourceAggregateSha256": "f1368006ff7e4decf92c0966d02feebc7ade8600bcf0465ac38d264f38c979f4",
-  "archiveSha256": "b9e20a4b07aeefe1407be2b483da06966463b14bbd3e6a10d0182d15a05f5fa3",
-  "executableSha256": "23cc13e8fee1476258ebf1c39d00bacf576c3222d827f5feb8e15be30f8a37a9",
+  "archiveSha256": "68e34c4f64cab818cd2e1755f4f8a307288c818bfdfb37160a7f83aaa334bb78",
+  "executableSha256": "bb9935081028fd3ac1497a9ed85219060f6cfd57e058669948656f4dc84054be",
   "identity": {
     "version": "0.4.0",
-    "commit": "3af7acea7328ab6ca0f490484490c77dc9eec33e",
-    "shortCommit": "3af7acea7328",
+    "commit": "6c8af1b3fd43b048fdad2002aa6e5d22b1b72957",
+    "shortCommit": "6c8af1b3fd43",
     "branch": "codex/r29-release-closure",
     "dirty": true,
-    "builtAt": "2026-10-03T19:07:23.816Z"
+    "builtAt": "2026-10-03T18:11:36.297Z"
   },
   "manifest": {
     "$comment": "Build-time CodeForge Cloud endpoint manifest. The packaging pipeline rewrites `channel` and fills the matching endpoint for staging/production releases. The renderer never reads this file, and a packaged staging/production build ignores CODEFORGE_CLOUD_URL entirely. Staging/production endpoints are intentionally absent until a real deployment exists: a build for those channels must fail closed rather than fall back to a local address.",
