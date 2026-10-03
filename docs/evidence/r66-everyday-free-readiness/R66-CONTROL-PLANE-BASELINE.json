@@ -1,0 +1,53 @@
+{
+  "observedAt": "2026-10-03T04:33:12.801Z",
+  "render": [
+    {
+      "commit": {
+        "createdAt": "2026-10-02T23:45:27Z",
+        "id": "c32037b95c93fee3d41c7d259794e69c84b62b72",
+        "message": "fix(r65): validate production polling within the shared API budget"
+      },
+      "createdAt": "2026-10-03T00:05:48.196151Z",
+      "finishedAt": "2026-10-03T00:06:20.714835Z",
+      "id": "dep-db04dn2d0e5s73a2ks5g",
+      "startedAt": "2026-10-03T00:05:48.173838Z",
+      "status": "live",
+      "trigger": "api",
+      "updatedAt": "2026-10-03T00:06:44.246665Z"
+    },
+    {
+      "commit": {
+        "createdAt": "2026-10-02T23:45:27Z",
+        "id": "c32037b95c93fee3d41c7d259794e69c84b62b72",
+        "message": "fix(r65): validate production polling within the shared API budget"
+      },
+      "createdAt": "2026-10-02T23:46:17.939979Z",
+      "finishedAt": "2026-10-02T23:48:10.197811Z",
+      "id": "dep-db044ic9v7es739rlb2g",
+      "startedAt": "2026-10-02T23:46:17.916646Z",
+      "status": "deactivated",
+      "trigger": "api",
+      "updatedAt": "2026-10-03T00:06:20.714014Z"
+    }
+  ],
+  "supabase": {
+    "projects": [
+      {
+        "id": "pbqrneccjvoojcispzyj",
+        "ref": "pbqrneccjvoojcispzyj",
+        "organization_id": "svceqgdfcrxcazakbvmd",
+        "organization_slug": "svceqgdfcrxcazakbvmd",
+        "name": "codeforge-cloud-staging",
+        "region": "us-east-1",
+        "status": "ACTIVE_HEALTHY",
+        "database": {
+          "host": "db.pbqrneccjvoojcispzyj.supabase.co",
+          "version": "17.6.1.166",
+          "postgres_engine": "17",
+          "release_channel": "ga"
+        },
+        "created_at": "2026-08-30T12:31:13.316225Z"
+      }
+    ]
+  }
+}

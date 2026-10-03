@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2026-10-03T06:14:06.406Z",
+  "status": "VALID",
+  "certificateId": "r66-everyday-free-readiness-v1",
+  "closureStatus": "PARTIAL",
+  "sourceFiles": 144,
+  "evidenceFiles": 58,
+  "sourceAggregateSha256": "ec98199848ab25ec2f4550dfc22fd3e1b8b3a9a79864753ca3964336a4954ead",
+  "evidenceAggregateSha256": "68b02cd7ad1a19f424a9792ae76963902aab0adf7d02644320cde07902436ed0",
+  "FG11": "5/5 PASS",
+  "FG12E": "3/3 PASS",
+  "canary": "1/1 PASS",
+  "productionDeployment": "BLOCKED_WORKSPACE_CONFIRMATION"
+}

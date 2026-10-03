@@ -1,0 +1,13 @@
+{
+  "generatedAt": "2026-10-03T05:46:56.028Z",
+  "status": "PASS_DETERMINISTIC_ENFORCEMENT",
+  "evidenceClass": "ADVERSARIAL_FABRIC_SIMULATION_AND_PROVIDER_CONTRACTS",
+  "publicLiveTasks": 19,
+  "privateLivePayloadsSent": 0,
+  "simulatedPrivateAttemptsWithHordeOnly": 250,
+  "privateLeaksObserved": 0,
+  "publicHordeModelTurns": 24,
+  "providerContracts": "R66-FAULT-REGRESSIONS.json",
+  "qualificationFixtures": "Public frozen fixtures only",
+  "limitation": "Private denial is adversarially simulated; no private user source is transmitted to test it."
+}

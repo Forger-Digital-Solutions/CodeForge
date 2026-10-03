@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-10-03T05:46:56.027Z",
+  "status": "PASS_SIMULATION_LIVE_UNCLASSIFIED",
+  "simulatedDegradations": 250,
+  "simulatedFalseWaits": 0,
+  "liveFalseWaits": null,
+  "liveCapacityDenials": 8,
+  "limitations": [
+    "No healthy-eligible live oracle was recorded at each denial. Later transport successes do not retrospectively prove role eligibility."
+  ]
+}

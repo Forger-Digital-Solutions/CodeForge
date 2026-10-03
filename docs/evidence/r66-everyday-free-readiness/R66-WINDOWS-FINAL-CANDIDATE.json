@@ -1,0 +1,374 @@
+{
+  "startedAt": "2026-10-03T06:10:18.285Z",
+  "status": "MEASURED",
+  "evidenceClass": "ACTUAL_PACKAGED_WINDOWS_NORMAL_STARTUP",
+  "profile": "G:\\CodeForge\\benchmarks\\r66\\tmp\\windows-profile-uszRVi",
+  "workspace": "G:\\CodeForge\\benchmarks\\r66\\tmp\\windows-public-zAP0WX",
+  "port": 55153,
+  "samples": [
+    {
+      "at": "2026-10-03T06:10:21.541Z",
+      "rendererRoundTripMs": 5.394300000000385,
+      "mainProcess": {
+        "cpuSeconds": 2.09375,
+        "rssBytes": 333885440,
+        "handles": 1193
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T06:10:22.961Z",
+      "rendererRoundTripMs": 1.1796999999996842,
+      "mainProcess": {
+        "cpuSeconds": 2.328125,
+        "rssBytes": 338370560,
+        "handles": 1208
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T06:10:34.113Z",
+      "rendererRoundTripMs": 1.5450000000000728,
+      "mainProcess": {
+        "cpuSeconds": 2.78125,
+        "rssBytes": 342822912,
+        "handles": 1197
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T06:10:38.876Z",
+      "rendererRoundTripMs": 1.2763000000013562,
+      "mainProcess": {
+        "cpuSeconds": 2.125,
+        "rssBytes": 335716352,
+        "handles": 1208
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "startedAt": "2026-10-03T06:10:22.525Z",
+      "class": "bug fix",
+      "launchStatus": 200,
+      "runId": "run-1841ed8e-8ac5-40c5-90f4-6b20d35174f4",
+      "lastStatus": "blocked",
+      "result": {
+        "runId": "run-1841ed8e-8ac5-40c5-90f4-6b20d35174f4",
+        "status": "blocked",
+        "summary": "Writer did not complete: Agent coder failed: [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found.",
+        "workspaceId": "ws-46468240",
+        "baseRevision": "bac050b06f7e653a8dbec61e0773537a00893ab1",
+        "changedFiles": [],
+        "review": {
+          "passed": false,
+          "findings": []
+        },
+        "verification": [],
+        "integration": {
+          "status": "blocked",
+          "branch": "codeforge/worktree/run-1841ed8e-8ac5-40c5-90f4-6b20d35174f4-527bed48",
+          "worktreeId": "wt-527bed48",
+          "reason": "SUBAGENT_WRITER_BLOCKED"
+        },
+        "evidence": [
+          {
+            "kind": "search",
+            "ref": "test/retry.test.mjs",
+            "description": "path_token_match, multi_token_path_match, filename_match, lexical_content_match"
+          },
+          {
+            "kind": "search",
+            "ref": "src/retry.mjs",
+            "description": "path_token_match, multi_token_path_match, symbol_name_match, implementation_symbol"
+          },
+          {
+            "kind": "search",
+            "ref": "src/index.mjs",
+            "description": "lexical_content_match"
+          }
+        ],
+        "counters": {
+          "childrenSpawned": 1,
+          "reviewRounds": 0,
+          "taskAttempts": 1,
+          "verificationAttempts": 0
+        }
+      }
+    }
+  ],
+  "restarts": [
+    {
+      "crashInjected": true,
+      "restartMs": 2071,
+      "priorRunId": "run-1841ed8e-8ac5-40c5-90f4-6b20d35174f4"
+    }
+  ],
+  "limitations": [
+    "GitHub login not demonstrated in this isolated profile.",
+    "One packaged task and one restart do not meet the daily-use multi-task/repeated-recovery gate."
+  ],
+  "identity": {
+    "version": "0.4.0",
+    "commit": "7d1c625d7c13c04d6538fcde11bd3acbfc84a756",
+    "shortCommit": "7d1c625d7c13",
+    "branch": "codex/r29-release-closure",
+    "dirty": true,
+    "builtAt": "2026-10-03T06:07:55.674Z"
+  },
+  "manifest": {
+    "$comment": "Build-time CodeForge Cloud endpoint manifest. The packaging pipeline rewrites `channel` and fills the matching endpoint for staging/production releases. The renderer never reads this file, and a packaged staging/production build ignores CODEFORGE_CLOUD_URL entirely. Staging/production endpoints are intentionally absent until a real deployment exists: a build for those channels must fail closed rather than fall back to a local address.",
+    "channel": "production",
+    "endpoints": {
+      "development": "http://127.0.0.1:3220",
+      "staging": "https://codeforge-cloud-staging.onrender.com",
+      "production": "https://codeforge-cloud-va.onrender.com"
+    }
+  },
+  "executableSha256": "24e968af7d5d35aaf2a20fd4373ef075495cf727113d85e8989a51a05a07d65a",
+  "pid": 13728,
+  "launchMs": 2813,
+  "runtimeVersion": "0.4.0",
+  "account": {
+    "authenticated": false,
+    "status": null
+  },
+  "capacityAtStart": [
+    {
+      "providerId": "ai-horde",
+      "displayName": "AI Horde",
+      "kind": "gateway",
+      "implemented": true,
+      "recommendedForFreeDefault": false,
+      "authClasses": [
+        "ZERO_TOUCH"
+      ],
+      "fields": [],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "One global anonymous account (concurrency 500, lowest-priority queue); all anonymous callers share it — never a per-user pool",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "quotaDomain": "account",
+        "maxRequestsPerMinute": 10,
+        "evidence": {
+          "source": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/README.md + live GET https://aihorde.net/api/v2/find_user",
+          "checkedAt": "2026-10-02",
+          "note": "Anonymous key 0000000000 is provider-documented; kudos cannot be bought or sold so no billing rail exists on this route."
+        }
+      },
+      "privacy": {
+        "class": "permissive",
+        "freeTierClass": "permissive",
+        "note": "Community workers can technically see prompts (open-source worker software); Horde itself stores requests in-memory transiently only. Public code only — consent cannot change what a worker host sees."
+      },
+      "terms": {
+        "status": "CLEARED",
+        "source": "https://aihorde.net/terms",
+        "note": "Anonymous and proxied-client use is documented; profiting from Horde access requires giving back at least as much as taken — CodeForge Free never monetizes this route."
+      },
+      "docsUrl": "https://github.com/Haidra-Org/AI-Horde",
+      "paidOnly": false,
+      "zeroCashFreeAccess": true,
+      "connected": true,
+      "credentialSource": "ANONYMOUS_DIRECT",
+      "supplyClass": "COMMUNITY_ANONYMOUS_FREE",
+      "freeCapacity": {
+        "admittedDomains": 0,
+        "independentGroups": 0,
+        "healthyGroups": 0
+      },
+      "authState": "ok",
+      "planAttested": false,
+      "planAttestationRequired": false,
+      "environment": null,
+      "freeRouteCount": 30,
+      "healthyRouteCount": 0,
+      "catalogCount": 30,
+      "sortRank": 0
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "displayName": "Kilo Auto Free Direct",
+      "kind": "gateway",
+      "implemented": true,
+      "recommendedForFreeDefault": false,
+      "authClasses": [
+        "ZERO_TOUCH"
+      ],
+      "fields": [],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "200 free-model requests/hour per public IP; users behind one NAT share it",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://kilo.ai/docs/gateway/authentication",
+          "checkedAt": "2026-10-01"
+        }
+      },
+      "privacy": {
+        "class": "permissive",
+        "freeTierClass": "permissive",
+        "note": "Auto Free may use providers that log and improve services with prompts; public code only, with workspace consent."
+      },
+      "terms": {
+        "status": "CLEARED",
+        "source": "https://kilo.ai/terms",
+        "note": "Gateway API terms permit serving end users of a third-party application subject to Kilo terms."
+      },
+      "docsUrl": "https://kilo.ai/docs/gateway/models-and-providers",
+      "paidOnly": false,
+      "zeroCashFreeAccess": true,
+      "connected": true,
+      "credentialSource": "ANONYMOUS_DIRECT",
+      "supplyClass": "PACKAGED_FREE_DIRECT",
+      "freeCapacity": {
+        "admittedDomains": 0,
+        "independentGroups": 0,
+        "healthyGroups": 0
+      },
+      "authState": "ok",
+      "planAttested": false,
+      "planAttestationRequired": false,
+      "environment": null,
+      "freeRouteCount": 15,
+      "healthyRouteCount": 0,
+      "catalogCount": 15,
+      "sortRank": 0
+    }
+  ],
+  "workspaceSelection": {
+    "status": 200
+  },
+  "capacityAtEnd": [
+    {
+      "providerId": "ai-horde",
+      "displayName": "AI Horde",
+      "kind": "gateway",
+      "implemented": true,
+      "recommendedForFreeDefault": false,
+      "authClasses": [
+        "ZERO_TOUCH"
+      ],
+      "fields": [],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "One global anonymous account (concurrency 500, lowest-priority queue); all anonymous callers share it — never a per-user pool",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "quotaDomain": "account",
+        "maxRequestsPerMinute": 10,
+        "evidence": {
+          "source": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/README.md + live GET https://aihorde.net/api/v2/find_user",
+          "checkedAt": "2026-10-02",
+          "note": "Anonymous key 0000000000 is provider-documented; kudos cannot be bought or sold so no billing rail exists on this route."
+        }
+      },
+      "privacy": {
+        "class": "permissive",
+        "freeTierClass": "permissive",
+        "note": "Community workers can technically see prompts (open-source worker software); Horde itself stores requests in-memory transiently only. Public code only — consent cannot change what a worker host sees."
+      },
+      "terms": {
+        "status": "CLEARED",
+        "source": "https://aihorde.net/terms",
+        "note": "Anonymous and proxied-client use is documented; profiting from Horde access requires giving back at least as much as taken — CodeForge Free never monetizes this route."
+      },
+      "docsUrl": "https://github.com/Haidra-Org/AI-Horde",
+      "paidOnly": false,
+      "zeroCashFreeAccess": true,
+      "connected": true,
+      "credentialSource": "ANONYMOUS_DIRECT",
+      "supplyClass": "COMMUNITY_ANONYMOUS_FREE",
+      "freeCapacity": {
+        "admittedDomains": 0,
+        "independentGroups": 0,
+        "healthyGroups": 0
+      },
+      "authState": "ok",
+      "planAttested": false,
+      "planAttestationRequired": false,
+      "environment": null,
+      "freeRouteCount": 30,
+      "healthyRouteCount": 0,
+      "catalogCount": 30,
+      "sortRank": 0
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "displayName": "Kilo Auto Free Direct",
+      "kind": "gateway",
+      "implemented": true,
+      "recommendedForFreeDefault": false,
+      "authClasses": [
+        "ZERO_TOUCH"
+      ],
+      "fields": [],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "200 free-model requests/hour per public IP; users behind one NAT share it",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://kilo.ai/docs/gateway/authentication",
+          "checkedAt": "2026-10-01"
+        }
+      },
+      "privacy": {
+        "class": "permissive",
+        "freeTierClass": "permissive",
+        "note": "Auto Free may use providers that log and improve services with prompts; public code only, with workspace consent."
+      },
+      "terms": {
+        "status": "CLEARED",
+        "source": "https://kilo.ai/terms",
+        "note": "Gateway API terms permit serving end users of a third-party application subject to Kilo terms."
+      },
+      "docsUrl": "https://kilo.ai/docs/gateway/models-and-providers",
+      "paidOnly": false,
+      "zeroCashFreeAccess": true,
+      "connected": true,
+      "credentialSource": "ANONYMOUS_DIRECT",
+      "supplyClass": "PACKAGED_FREE_DIRECT",
+      "freeCapacity": {
+        "admittedDomains": 0,
+        "independentGroups": 0,
+        "healthyGroups": 0
+      },
+      "authState": "ok",
+      "planAttested": false,
+      "planAttestationRequired": false,
+      "environment": null,
+      "freeRouteCount": 15,
+      "healthyRouteCount": 0,
+      "catalogCount": 15,
+      "sortRank": 0
+    }
+  ],
+  "visibleText": "CODEFORGE\nYour AI coding agent.\n\nBuild, fix, and understand software with an agent that works directly with your project.\n\nCodeForge can explore your codebase, edit files, run commands and tests, and show you exactly what it changed.\n\nStart free with CodeForge-managed AI models. No API key required.\n\nI’m 18 or older and understand that CodeForge can read and modify project files and run commands on this computer according to my approval settings.\nContinue with GitHub\n\nGitHub sign-in creates your free CodeForge account. Connect repositories or your own AI providers later if you want — neither is required to start using CodeForge Free.",
+  "finishedAt": "2026-10-03T06:10:39.040Z",
+  "durationMs": 20755,
+  "memoryScope": "Main process only; renderer evaluated separately. Process-tree memory unmeasured."
+}

@@ -1,0 +1,66 @@
+{
+  "generatedAt": "2026-10-03T06:07:18.477Z",
+  "startingHead": "8b436277e6ebbb9620a4e61b085a447e96045727",
+  "status": "PASS",
+  "files": [
+    {
+      "path": "apps/desktop/scripts/packaged-endurance.mjs",
+      "sha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c",
+      "bytes": 10644,
+      "backupPath": "benchmarks/r66/tmp/preserved/0.bin",
+      "matchesR65": true,
+      "finalSha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c",
+      "bytePreserved": true
+    },
+    {
+      "path": "benchmarks/r57/extract-packaged-repeat.mjs",
+      "sha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7",
+      "bytes": 2196,
+      "backupPath": "benchmarks/r66/tmp/preserved/1.bin",
+      "matchesR65": true,
+      "finalSha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7",
+      "bytePreserved": true
+    },
+    {
+      "path": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+      "sha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+      "bytes": 3949,
+      "backupPath": "benchmarks/r66/tmp/preserved/2.bin",
+      "matchesR65": true,
+      "finalSha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+      "bytePreserved": true
+    },
+    {
+      "path": "docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md",
+      "sha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497",
+      "bytes": 20268,
+      "backupPath": "benchmarks/r66/tmp/preserved/3.bin",
+      "matchesR65": true,
+      "finalSha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497",
+      "bytePreserved": true
+    },
+    {
+      "path": "docs/evidence/r60-usable-free-inference/postgres-parity.json",
+      "sha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243",
+      "bytes": 4456,
+      "backupPath": "benchmarks/r66/tmp/preserved/4.bin",
+      "matchesR65": true,
+      "finalSha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243",
+      "bytePreserved": true
+    },
+    {
+      "path": "packages/server/test/fixtures/run-recovery-worker.mjs",
+      "sha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd",
+      "bytes": 7552,
+      "backupPath": "benchmarks/r66/tmp/preserved/5.bin",
+      "matchesR65": true,
+      "finalSha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd",
+      "bytePreserved": true
+    }
+  ],
+  "cf14": {
+    "path": "packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts",
+    "byteUnchanged": true,
+    "sha256": "a607734d6f3abc5aaa478e110c1c54568dec78609126bc0579b864f8992be83e"
+  }
+}

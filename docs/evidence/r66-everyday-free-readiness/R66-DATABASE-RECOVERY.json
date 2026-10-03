@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-10-03T05:53:15.245Z",
+  "status": "PARTIAL",
+  "productionSupabase": "ACTIVE_HEALTHY",
+  "productionReadinessDatabase": "connected",
+  "localProof": "R66-ACCOUNTING-REMOTE-REGRESSIONS.json: transaction rollback, immutable idempotent accounting, real SQLite crash/reopen and lease replay",
+  "productionDisconnectInjected": false,
+  "realPostgresReconnectCampaign": "NOT_RUN",
+  "limitation": "Local/mock database contracts are not live Supabase disconnect/reconnect proof. Existing optional PostgreSQL tests remain skipped without an isolated PostgreSQL target."
+}

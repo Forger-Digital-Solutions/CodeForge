@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-10-03T06:12:43.524Z",
+  "status": "BLOCKED_WORKSPACE_CONFIRMATION",
+  "serviceId": "srv-dam6f83m8hqs73clo5ig",
+  "serviceName": "codeforge-cloud-va",
+  "validatedRuntimeCommit": "7d1c625d7c13c04d6538fcde11bd3acbfc84a756",
+  "observedProductionCommit": "c32037b95c93fee3d41c7d259794e69c84b62b72",
+  "health": 200,
+  "readiness": 200,
+  "remoteAnonymousBoundary": 401,
+  "database": "connected",
+  "supabaseStatus": "ACTIVE_HEALTHY",
+  "connectorResponse": "no workspace selected; explicit user workspace confirmation required",
+  "pendingWorkspace": {
+    "name": "CodeForge",
+    "id": "tea-daa3l35g1s2s73c1t8mg"
+  },
+  "deploymentTriggered": false,
+  "branchesPublished": true
+}

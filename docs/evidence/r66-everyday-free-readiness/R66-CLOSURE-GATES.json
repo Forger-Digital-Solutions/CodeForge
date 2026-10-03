@@ -1,0 +1,62 @@
+{
+  "generatedAt": "2026-10-03T06:12:43.603Z",
+  "closureStatus": "CODEFORGE_R66_PARTIAL",
+  "gates": {
+    "A": {
+      "status": "PASS",
+      "meaning": "R65 certificate/focused baseline/build passed before edits; historical R65 evidence preserved."
+    },
+    "B": {
+      "status": "PARTIAL",
+      "meaning": "Bug fix, multi-file feature, and debugging completed. Refactor, test creation, and configuration did not complete; only bug fix is earned again on final source."
+    },
+    "C": {
+      "status": "NOT_MET",
+      "meaning": "19 live attempts, 3 completed; maximum consecutive completion 1."
+    },
+    "D": {
+      "status": "PARTIAL",
+      "meaning": "Both providers responded to all four spaced transport observations; failure-to-recovery state transitions are deterministic simulation, not live role-recovery certification."
+    },
+    "E": {
+      "status": "PARTIAL",
+      "meaning": "250 deterministic degraded-provider admissions, zero false waits. Live denials lack a per-denial healthy-eligible oracle; live count remains null."
+    },
+    "F": {
+      "status": "PASS_OBSERVED",
+      "meaning": "0 false completions across 19 live attempts; authoritative review/verification/integration checked."
+    },
+    "G": {
+      "status": "NOT_MET",
+      "meaning": "Four real worker kills/restarts passed; autonomous parent recovery still blocks active runs and clears its workspacePath."
+    },
+    "H": {
+      "status": "PARTIAL",
+      "meaning": "Three real overlapping logical users shared one ledger; all tasks blocked on review. Sustained completion and no starvation are unproven."
+    },
+    "I": {
+      "status": "PASS_ENFORCEMENT",
+      "meaning": "250 private-context denials with Horde as only healthy supply, zero selected private routes; all live source was public synthetic fixtures."
+    },
+    "J": {
+      "status": "PASS_ROUTE_ENFORCEMENT",
+      "meaning": "No paid/BYOK route selections or credentials; actual monetary billing remains UNKNOWN."
+    },
+    "K": {
+      "status": "NOT_MET",
+      "meaning": "Actual packaged startup, 10-minute onboarding liveness, blocked task and restart measured. Login and multi-task workbench use are unproven."
+    },
+    "L": {
+      "status": "PASS",
+      "meaning": "Canonical main plus four serial heavy phases; certificate canary separately."
+    },
+    "M": {
+      "status": "PENDING",
+      "meaning": "Exact validated runtime commit must be live on the named Render service."
+    },
+    "N": {
+      "status": "PARTIAL_SOURCE_CERTIFICATE",
+      "meaning": "Source/evidence integrity certificate supports this PARTIAL result; it does not certify daily-use closure."
+    }
+  }
+}

@@ -1,0 +1,2055 @@
+{
+  "startedAt": "2026-10-03T05:10:07.952Z",
+  "status": "MEASURED",
+  "evidenceClass": "ACTUAL_PACKAGED_WINDOWS_NORMAL_STARTUP",
+  "profile": "G:\\CodeForge\\benchmarks\\r66\\tmp\\windows-profile-PrU8ge",
+  "workspace": "G:\\CodeForge\\benchmarks\\r66\\tmp\\windows-public-HEsCIT",
+  "port": 54554,
+  "samples": [
+    {
+      "at": "2026-10-03T05:10:11.272Z",
+      "rendererRoundTripMs": 5.127100000000155,
+      "mainProcess": {
+        "cpuSeconds": 2.75,
+        "rssBytes": 341807104,
+        "handles": 1202
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:10:11.692Z",
+      "rendererRoundTripMs": 2.3303000000000793,
+      "mainProcess": {
+        "cpuSeconds": 2.75,
+        "rssBytes": 341815296,
+        "handles": 1202
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:10:17.095Z",
+      "rendererRoundTripMs": 1.496499999999287,
+      "mainProcess": {
+        "cpuSeconds": 2.796875,
+        "rssBytes": 341614592,
+        "handles": 1186
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:10:22.519Z",
+      "rendererRoundTripMs": 1.3078999999997905,
+      "mainProcess": {
+        "cpuSeconds": 2.8125,
+        "rssBytes": 341876736,
+        "handles": 1186
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:10:27.903Z",
+      "rendererRoundTripMs": 1.3070999999981723,
+      "mainProcess": {
+        "cpuSeconds": 2.8125,
+        "rssBytes": 341884928,
+        "handles": 1186
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:10:33.268Z",
+      "rendererRoundTripMs": 1.3171000000002095,
+      "mainProcess": {
+        "cpuSeconds": 2.8125,
+        "rssBytes": 341917696,
+        "handles": 1187
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:10:38.618Z",
+      "rendererRoundTripMs": 1.16899999999805,
+      "mainProcess": {
+        "cpuSeconds": 2.8125,
+        "rssBytes": 341921792,
+        "handles": 1186
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:10:44.018Z",
+      "rendererRoundTripMs": 1.7656999999962864,
+      "mainProcess": {
+        "cpuSeconds": 3.046875,
+        "rssBytes": 250118144,
+        "handles": 1187
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:10:49.428Z",
+      "rendererRoundTripMs": 4.335899999998219,
+      "mainProcess": {
+        "cpuSeconds": 3.203125,
+        "rssBytes": 249307136,
+        "handles": 1186
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:10:54.867Z",
+      "rendererRoundTripMs": 1.1869000000006054,
+      "mainProcess": {
+        "cpuSeconds": 3.21875,
+        "rssBytes": 249458688,
+        "handles": 1186
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:11:00.254Z",
+      "rendererRoundTripMs": 1.414199999999255,
+      "mainProcess": {
+        "cpuSeconds": 3.21875,
+        "rssBytes": 249458688,
+        "handles": 1186
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:11:05.704Z",
+      "rendererRoundTripMs": 1.4086999999999534,
+      "mainProcess": {
+        "cpuSeconds": 3.25,
+        "rssBytes": 249700352,
+        "handles": 1186
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:11:11.069Z",
+      "rendererRoundTripMs": 0.9487000000008265,
+      "mainProcess": {
+        "cpuSeconds": 3.28125,
+        "rssBytes": 243752960,
+        "handles": 1179
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:11:16.512Z",
+      "rendererRoundTripMs": 1.2575999999971827,
+      "mainProcess": {
+        "cpuSeconds": 3.28125,
+        "rssBytes": 243658752,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:11:21.902Z",
+      "rendererRoundTripMs": 1.3570999999938067,
+      "mainProcess": {
+        "cpuSeconds": 3.28125,
+        "rssBytes": 243707904,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:11:27.271Z",
+      "rendererRoundTripMs": 1.1169999999983702,
+      "mainProcess": {
+        "cpuSeconds": 3.28125,
+        "rssBytes": 243793920,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:11:32.727Z",
+      "rendererRoundTripMs": 1.0604000000021188,
+      "mainProcess": {
+        "cpuSeconds": 3.28125,
+        "rssBytes": 243982336,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:11:38.142Z",
+      "rendererRoundTripMs": 1.2379000000073574,
+      "mainProcess": {
+        "cpuSeconds": 3.296875,
+        "rssBytes": 243916800,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:11:43.654Z",
+      "rendererRoundTripMs": 1.1206999999994878,
+      "mainProcess": {
+        "cpuSeconds": 3.3125,
+        "rssBytes": 243924992,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:11:49.179Z",
+      "rendererRoundTripMs": 1.9284999999945285,
+      "mainProcess": {
+        "cpuSeconds": 3.34375,
+        "rssBytes": 243986432,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:11:54.725Z",
+      "rendererRoundTripMs": 1.53870000000461,
+      "mainProcess": {
+        "cpuSeconds": 3.34375,
+        "rssBytes": 244142080,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:12:00.168Z",
+      "rendererRoundTripMs": 1.1279999999969732,
+      "mainProcess": {
+        "cpuSeconds": 3.34375,
+        "rssBytes": 244359168,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:12:05.687Z",
+      "rendererRoundTripMs": 11.574300000007497,
+      "mainProcess": {
+        "cpuSeconds": 3.359375,
+        "rssBytes": 244400128,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:12:11.273Z",
+      "rendererRoundTripMs": 1.981100000004517,
+      "mainProcess": {
+        "cpuSeconds": 3.421875,
+        "rssBytes": 244584448,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:12:16.653Z",
+      "rendererRoundTripMs": 1.3421999999991385,
+      "mainProcess": {
+        "cpuSeconds": 3.421875,
+        "rssBytes": 245067776,
+        "handles": 1181
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:12:22.000Z",
+      "rendererRoundTripMs": 1.2529999999969732,
+      "mainProcess": {
+        "cpuSeconds": 3.421875,
+        "rssBytes": 244588544,
+        "handles": 1180
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:12:27.437Z",
+      "rendererRoundTripMs": 1.018899999995483,
+      "mainProcess": {
+        "cpuSeconds": 3.453125,
+        "rssBytes": 244695040,
+        "handles": 1172
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:12:32.844Z",
+      "rendererRoundTripMs": 1.2177000000083353,
+      "mainProcess": {
+        "cpuSeconds": 3.46875,
+        "rssBytes": 244719616,
+        "handles": 1173
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:12:38.193Z",
+      "rendererRoundTripMs": 1.2859000000171363,
+      "mainProcess": {
+        "cpuSeconds": 3.46875,
+        "rssBytes": 244842496,
+        "handles": 1173
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:12:43.619Z",
+      "rendererRoundTripMs": 1.0176999999966938,
+      "mainProcess": {
+        "cpuSeconds": 3.46875,
+        "rssBytes": 245014528,
+        "handles": 1172
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:12:49.071Z",
+      "rendererRoundTripMs": 1.2304999999760184,
+      "mainProcess": {
+        "cpuSeconds": 3.46875,
+        "rssBytes": 245379072,
+        "handles": 1172
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:12:54.489Z",
+      "rendererRoundTripMs": 1.4831000000122003,
+      "mainProcess": {
+        "cpuSeconds": 3.46875,
+        "rssBytes": 245022720,
+        "handles": 1172
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:12:59.870Z",
+      "rendererRoundTripMs": 1.551000000006752,
+      "mainProcess": {
+        "cpuSeconds": 3.46875,
+        "rssBytes": 245121024,
+        "handles": 1172
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:13:05.232Z",
+      "rendererRoundTripMs": 1.1775999999954365,
+      "mainProcess": {
+        "cpuSeconds": 3.46875,
+        "rssBytes": 245022720,
+        "handles": 1172
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:13:10.617Z",
+      "rendererRoundTripMs": 1.237200000003213,
+      "mainProcess": {
+        "cpuSeconds": 3.484375,
+        "rssBytes": 245047296,
+        "handles": 1172
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:13:16.002Z",
+      "rendererRoundTripMs": 2.2277999999932945,
+      "mainProcess": {
+        "cpuSeconds": 3.5,
+        "rssBytes": 245182464,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:13:21.353Z",
+      "rendererRoundTripMs": 1.3319999999948777,
+      "mainProcess": {
+        "cpuSeconds": 3.515625,
+        "rssBytes": 244998144,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:13:26.752Z",
+      "rendererRoundTripMs": 1.4109000000171363,
+      "mainProcess": {
+        "cpuSeconds": 3.515625,
+        "rssBytes": 245043200,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:13:32.136Z",
+      "rendererRoundTripMs": 1.373600000020815,
+      "mainProcess": {
+        "cpuSeconds": 3.53125,
+        "rssBytes": 245510144,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:13:37.524Z",
+      "rendererRoundTripMs": 1.2663999999931548,
+      "mainProcess": {
+        "cpuSeconds": 3.53125,
+        "rssBytes": 244973568,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:13:42.880Z",
+      "rendererRoundTripMs": 1.0586000000184868,
+      "mainProcess": {
+        "cpuSeconds": 3.546875,
+        "rssBytes": 244998144,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:13:48.259Z",
+      "rendererRoundTripMs": 1.06339999998454,
+      "mainProcess": {
+        "cpuSeconds": 3.578125,
+        "rssBytes": 244305920,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:13:53.624Z",
+      "rendererRoundTripMs": 0.9709999999904539,
+      "mainProcess": {
+        "cpuSeconds": 3.59375,
+        "rssBytes": 243683328,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:13:58.976Z",
+      "rendererRoundTripMs": 1.309800000017276,
+      "mainProcess": {
+        "cpuSeconds": 3.59375,
+        "rssBytes": 243695616,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:14:04.342Z",
+      "rendererRoundTripMs": 1.3488000000070315,
+      "mainProcess": {
+        "cpuSeconds": 3.59375,
+        "rssBytes": 243703808,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:14:09.806Z",
+      "rendererRoundTripMs": 1.3237000000081025,
+      "mainProcess": {
+        "cpuSeconds": 3.59375,
+        "rssBytes": 243761152,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:14:15.219Z",
+      "rendererRoundTripMs": 1.0788000000175089,
+      "mainProcess": {
+        "cpuSeconds": 3.640625,
+        "rssBytes": 244473856,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:14:20.595Z",
+      "rendererRoundTripMs": 1.2166999999899417,
+      "mainProcess": {
+        "cpuSeconds": 3.671875,
+        "rssBytes": 244121600,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:14:26.011Z",
+      "rendererRoundTripMs": 0.9953999999852385,
+      "mainProcess": {
+        "cpuSeconds": 3.703125,
+        "rssBytes": 244281344,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:14:31.388Z",
+      "rendererRoundTripMs": 1.0143999999854714,
+      "mainProcess": {
+        "cpuSeconds": 3.75,
+        "rssBytes": 245067776,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:14:36.826Z",
+      "rendererRoundTripMs": 1.3927999999723397,
+      "mainProcess": {
+        "cpuSeconds": 3.75,
+        "rssBytes": 243920896,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:14:42.269Z",
+      "rendererRoundTripMs": 1.8469000000040978,
+      "mainProcess": {
+        "cpuSeconds": 3.78125,
+        "rssBytes": 243658752,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:14:47.731Z",
+      "rendererRoundTripMs": 1.6079000000027008,
+      "mainProcess": {
+        "cpuSeconds": 3.78125,
+        "rssBytes": 243904512,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:14:53.112Z",
+      "rendererRoundTripMs": 1.2874000000301749,
+      "mainProcess": {
+        "cpuSeconds": 3.78125,
+        "rssBytes": 244002816,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:14:58.539Z",
+      "rendererRoundTripMs": 0.934499999973923,
+      "mainProcess": {
+        "cpuSeconds": 3.796875,
+        "rssBytes": 243970048,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:15:03.936Z",
+      "rendererRoundTripMs": 1.1096000000252388,
+      "mainProcess": {
+        "cpuSeconds": 3.796875,
+        "rssBytes": 244178944,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:15:09.319Z",
+      "rendererRoundTripMs": 1.1656999999540858,
+      "mainProcess": {
+        "cpuSeconds": 3.8125,
+        "rssBytes": 244502528,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:15:14.694Z",
+      "rendererRoundTripMs": 1.3654999999562278,
+      "mainProcess": {
+        "cpuSeconds": 3.875,
+        "rssBytes": 248262656,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:15:20.112Z",
+      "rendererRoundTripMs": 0.8907999999937601,
+      "mainProcess": {
+        "cpuSeconds": 3.875,
+        "rssBytes": 248229888,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:15:25.574Z",
+      "rendererRoundTripMs": 1.79939999995986,
+      "mainProcess": {
+        "cpuSeconds": 3.921875,
+        "rssBytes": 248438784,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:15:30.968Z",
+      "rendererRoundTripMs": 1.1211999999941327,
+      "mainProcess": {
+        "cpuSeconds": 3.921875,
+        "rssBytes": 248897536,
+        "handles": 1168
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:15:36.342Z",
+      "rendererRoundTripMs": 1.055400000012014,
+      "mainProcess": {
+        "cpuSeconds": 3.984375,
+        "rssBytes": 249462784,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:15:41.709Z",
+      "rendererRoundTripMs": 0.992000000027474,
+      "mainProcess": {
+        "cpuSeconds": 4.046875,
+        "rssBytes": 247631872,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:15:47.071Z",
+      "rendererRoundTripMs": 0.8744000000297092,
+      "mainProcess": {
+        "cpuSeconds": 4.0625,
+        "rssBytes": 249192448,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:15:52.459Z",
+      "rendererRoundTripMs": 1.2527000000118278,
+      "mainProcess": {
+        "cpuSeconds": 4.125,
+        "rssBytes": 248766464,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:15:57.859Z",
+      "rendererRoundTripMs": 1.8761999999987893,
+      "mainProcess": {
+        "cpuSeconds": 4.140625,
+        "rssBytes": 247889920,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:16:03.277Z",
+      "rendererRoundTripMs": 1.0443000000086613,
+      "mainProcess": {
+        "cpuSeconds": 4.15625,
+        "rssBytes": 247717888,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:16:08.655Z",
+      "rendererRoundTripMs": 1.2296000000205822,
+      "mainProcess": {
+        "cpuSeconds": 4.1875,
+        "rssBytes": 247959552,
+        "handles": 1169
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:16:14.108Z",
+      "rendererRoundTripMs": 1.1345999999903142,
+      "mainProcess": {
+        "cpuSeconds": 4.234375,
+        "rssBytes": 247640064,
+        "handles": 1173
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:16:19.502Z",
+      "rendererRoundTripMs": 0.9358999999822117,
+      "mainProcess": {
+        "cpuSeconds": 4.25,
+        "rssBytes": 247218176,
+        "handles": 1172
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:16:24.893Z",
+      "rendererRoundTripMs": 1.0305999999982305,
+      "mainProcess": {
+        "cpuSeconds": 4.3125,
+        "rssBytes": 247779328,
+        "handles": 1173
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:16:30.262Z",
+      "rendererRoundTripMs": 0.9694000000017695,
+      "mainProcess": {
+        "cpuSeconds": 4.3125,
+        "rssBytes": 247857152,
+        "handles": 1173
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:16:35.634Z",
+      "rendererRoundTripMs": 0.8038999999989755,
+      "mainProcess": {
+        "cpuSeconds": 4.34375,
+        "rssBytes": 247398400,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:16:41.016Z",
+      "rendererRoundTripMs": 1.1682000000146218,
+      "mainProcess": {
+        "cpuSeconds": 4.34375,
+        "rssBytes": 247283712,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:16:46.411Z",
+      "rendererRoundTripMs": 1.1680000000051223,
+      "mainProcess": {
+        "cpuSeconds": 4.359375,
+        "rssBytes": 247283712,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:16:51.802Z",
+      "rendererRoundTripMs": 0.9662999999709427,
+      "mainProcess": {
+        "cpuSeconds": 4.359375,
+        "rssBytes": 247246848,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:16:57.221Z",
+      "rendererRoundTripMs": 1.3616000000038184,
+      "mainProcess": {
+        "cpuSeconds": 4.359375,
+        "rssBytes": 247246848,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:17:02.589Z",
+      "rendererRoundTripMs": 1.9091000000480562,
+      "mainProcess": {
+        "cpuSeconds": 4.375,
+        "rssBytes": 247246848,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:17:07.971Z",
+      "rendererRoundTripMs": 0.976299999980256,
+      "mainProcess": {
+        "cpuSeconds": 4.375,
+        "rssBytes": 247246848,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:17:13.417Z",
+      "rendererRoundTripMs": 1.2309000000241213,
+      "mainProcess": {
+        "cpuSeconds": 4.375,
+        "rssBytes": 247246848,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:17:18.861Z",
+      "rendererRoundTripMs": 1.2043999999877997,
+      "mainProcess": {
+        "cpuSeconds": 4.421875,
+        "rssBytes": 247246848,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:17:24.228Z",
+      "rendererRoundTripMs": 0.9636999999638647,
+      "mainProcess": {
+        "cpuSeconds": 4.4375,
+        "rssBytes": 247246848,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:17:29.597Z",
+      "rendererRoundTripMs": 1.2758000000030734,
+      "mainProcess": {
+        "cpuSeconds": 4.453125,
+        "rssBytes": 247246848,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:17:34.974Z",
+      "rendererRoundTripMs": 1.463999999978114,
+      "mainProcess": {
+        "cpuSeconds": 4.453125,
+        "rssBytes": 247246848,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:17:40.380Z",
+      "rendererRoundTripMs": 1.4380999999702908,
+      "mainProcess": {
+        "cpuSeconds": 4.46875,
+        "rssBytes": 247246848,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:17:45.767Z",
+      "rendererRoundTripMs": 1.6146999999764375,
+      "mainProcess": {
+        "cpuSeconds": 4.46875,
+        "rssBytes": 247242752,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:17:51.139Z",
+      "rendererRoundTripMs": 0.905399999988731,
+      "mainProcess": {
+        "cpuSeconds": 4.46875,
+        "rssBytes": 247246848,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:17:56.510Z",
+      "rendererRoundTripMs": 1.0251000000280328,
+      "mainProcess": {
+        "cpuSeconds": 4.46875,
+        "rssBytes": 247246848,
+        "handles": 1171
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:18:01.911Z",
+      "rendererRoundTripMs": 0.9459999999962747,
+      "mainProcess": {
+        "cpuSeconds": 4.46875,
+        "rssBytes": 247222272,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:18:07.306Z",
+      "rendererRoundTripMs": 0.9793999999528751,
+      "mainProcess": {
+        "cpuSeconds": 4.46875,
+        "rssBytes": 247226368,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:18:12.713Z",
+      "rendererRoundTripMs": 1.3606000000145286,
+      "mainProcess": {
+        "cpuSeconds": 4.46875,
+        "rssBytes": 247226368,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:18:18.096Z",
+      "rendererRoundTripMs": 1.3495000000111759,
+      "mainProcess": {
+        "cpuSeconds": 4.46875,
+        "rssBytes": 247226368,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:18:23.498Z",
+      "rendererRoundTripMs": 1.2658000000519678,
+      "mainProcess": {
+        "cpuSeconds": 4.46875,
+        "rssBytes": 247226368,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:18:28.900Z",
+      "rendererRoundTripMs": 1.0099999999511056,
+      "mainProcess": {
+        "cpuSeconds": 4.484375,
+        "rssBytes": 247226368,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:18:34.275Z",
+      "rendererRoundTripMs": 1.2125999999698251,
+      "mainProcess": {
+        "cpuSeconds": 4.5,
+        "rssBytes": 247226368,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:18:39.642Z",
+      "rendererRoundTripMs": 0.9083000000100583,
+      "mainProcess": {
+        "cpuSeconds": 4.5,
+        "rssBytes": 247226368,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:18:45.031Z",
+      "rendererRoundTripMs": 1.2981000000145286,
+      "mainProcess": {
+        "cpuSeconds": 4.5,
+        "rssBytes": 247226368,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:18:50.384Z",
+      "rendererRoundTripMs": 1.0406000000075437,
+      "mainProcess": {
+        "cpuSeconds": 4.5,
+        "rssBytes": 247226368,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:18:55.737Z",
+      "rendererRoundTripMs": 2.888299999991432,
+      "mainProcess": {
+        "cpuSeconds": 4.5,
+        "rssBytes": 247230464,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:19:01.098Z",
+      "rendererRoundTripMs": 1.3087999999988824,
+      "mainProcess": {
+        "cpuSeconds": 4.5,
+        "rssBytes": 247300096,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:19:06.445Z",
+      "rendererRoundTripMs": 1.2371999999741092,
+      "mainProcess": {
+        "cpuSeconds": 4.5,
+        "rssBytes": 247300096,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:19:11.803Z",
+      "rendererRoundTripMs": 1.6007000000681728,
+      "mainProcess": {
+        "cpuSeconds": 4.5,
+        "rssBytes": 247300096,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:19:17.159Z",
+      "rendererRoundTripMs": 0.9250000000465661,
+      "mainProcess": {
+        "cpuSeconds": 4.5,
+        "rssBytes": 247300096,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:19:22.510Z",
+      "rendererRoundTripMs": 1.1771000000881031,
+      "mainProcess": {
+        "cpuSeconds": 4.515625,
+        "rssBytes": 247300096,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:19:27.991Z",
+      "rendererRoundTripMs": 1.2025000000139698,
+      "mainProcess": {
+        "cpuSeconds": 4.515625,
+        "rssBytes": 247300096,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:19:33.343Z",
+      "rendererRoundTripMs": 0.9414999999571592,
+      "mainProcess": {
+        "cpuSeconds": 4.515625,
+        "rssBytes": 247300096,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:19:38.729Z",
+      "rendererRoundTripMs": 1.1980999999213964,
+      "mainProcess": {
+        "cpuSeconds": 4.515625,
+        "rssBytes": 247300096,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:19:44.100Z",
+      "rendererRoundTripMs": 0.9654999999329448,
+      "mainProcess": {
+        "cpuSeconds": 4.53125,
+        "rssBytes": 247300096,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:19:49.541Z",
+      "rendererRoundTripMs": 1.853999999933876,
+      "mainProcess": {
+        "cpuSeconds": 4.53125,
+        "rssBytes": 247300096,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:19:54.924Z",
+      "rendererRoundTripMs": 0.9217000000644475,
+      "mainProcess": {
+        "cpuSeconds": 4.53125,
+        "rssBytes": 247300096,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:20:00.299Z",
+      "rendererRoundTripMs": 1.334099999978207,
+      "mainProcess": {
+        "cpuSeconds": 4.53125,
+        "rssBytes": 247496704,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:20:05.658Z",
+      "rendererRoundTripMs": 0.877600000007078,
+      "mainProcess": {
+        "cpuSeconds": 4.546875,
+        "rssBytes": 247422976,
+        "handles": 1167
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:20:11.014Z",
+      "rendererRoundTripMs": 2.192200000048615,
+      "mainProcess": {
+        "cpuSeconds": 4.640625,
+        "rssBytes": 253915136,
+        "handles": 1170
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:20:17.050Z",
+      "rendererRoundTripMs": 1.086699999985285,
+      "mainProcess": {
+        "cpuSeconds": 4.875,
+        "rssBytes": 260812800,
+        "handles": 1184
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:20:27.420Z",
+      "rendererRoundTripMs": 1.7399000000441447,
+      "mainProcess": {
+        "cpuSeconds": 5.53125,
+        "rssBytes": 254959616,
+        "handles": 1179
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-03T05:20:32.134Z",
+      "rendererRoundTripMs": 1.5834999999497086,
+      "mainProcess": {
+        "cpuSeconds": 2.171875,
+        "rssBytes": 342585344,
+        "handles": 1201
+      },
+      "renderer": {
+        "title": "CodeForge",
+        "buttons": [
+          "Continue with GitHub"
+        ]
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "startedAt": "2026-10-03T05:20:16.655Z",
+      "class": "bug fix",
+      "launchStatus": 200,
+      "runId": "run-c44dc1d3-e922-4f62-9f38-58f591ec7636",
+      "lastStatus": "blocked",
+      "result": {
+        "runId": "run-c44dc1d3-e922-4f62-9f38-58f591ec7636",
+        "status": "blocked",
+        "summary": "Writer did not complete: Agent coder failed: [PROVIDER_MODEL_UNAVAILABLE] No eligible or registered model provider found.",
+        "workspaceId": "ws-9ccb05c4",
+        "baseRevision": "4a32785c95176e28e64cbbffe5823ee7ecdb68c4",
+        "changedFiles": [],
+        "review": {
+          "passed": false,
+          "findings": []
+        },
+        "verification": [],
+        "integration": {
+          "status": "blocked",
+          "branch": "codeforge/worktree/run-c44dc1d3-e922-4f62-9f38-58f591ec7636-eadb82ec",
+          "worktreeId": "wt-eadb82ec",
+          "reason": "SUBAGENT_WRITER_BLOCKED"
+        },
+        "evidence": [
+          {
+            "kind": "search",
+            "ref": "test/retry.test.mjs",
+            "description": "path_token_match, multi_token_path_match, filename_match, lexical_content_match"
+          },
+          {
+            "kind": "search",
+            "ref": "src/retry.mjs",
+            "description": "path_token_match, multi_token_path_match, symbol_name_match, implementation_symbol"
+          },
+          {
+            "kind": "search",
+            "ref": "src/index.mjs",
+            "description": "lexical_content_match"
+          }
+        ],
+        "counters": {
+          "childrenSpawned": 1,
+          "reviewRounds": 0,
+          "taskAttempts": 1,
+          "verificationAttempts": 0
+        }
+      }
+    }
+  ],
+  "restarts": [
+    {
+      "crashInjected": true,
+      "restartMs": 2055,
+      "priorRunId": "run-c44dc1d3-e922-4f62-9f38-58f591ec7636"
+    }
+  ],
+  "limitations": [
+    "GitHub login not demonstrated in this isolated profile.",
+    "One packaged task and one restart do not meet the daily-use multi-task/repeated-recovery gate."
+  ],
+  "identity": {
+    "version": "0.4.0",
+    "commit": "8b436277e6ebbb9620a4e61b085a447e96045727",
+    "shortCommit": "8b436277e6eb",
+    "branch": "codex/r29-release-closure",
+    "dirty": true,
+    "builtAt": "2026-10-03T04:53:45.221Z"
+  },
+  "manifest": {
+    "$comment": "Build-time CodeForge Cloud endpoint manifest. The packaging pipeline rewrites `channel` and fills the matching endpoint for staging/production releases. The renderer never reads this file, and a packaged staging/production build ignores CODEFORGE_CLOUD_URL entirely. Staging/production endpoints are intentionally absent until a real deployment exists: a build for those channels must fail closed rather than fall back to a local address.",
+    "channel": "production",
+    "endpoints": {
+      "development": "http://127.0.0.1:3220",
+      "staging": "https://codeforge-cloud-staging.onrender.com",
+      "production": "https://codeforge-cloud-va.onrender.com"
+    }
+  },
+  "executableSha256": "c3608f9003a6e19bcb744e6b2033bca34b0472fc71f11cca912661ec70af46ed",
+  "pid": 17228,
+  "launchMs": 2848,
+  "runtimeVersion": "0.4.0",
+  "account": {
+    "authenticated": false,
+    "offline": false,
+    "pending": false
+  },
+  "capacityAtStart": [
+    {
+      "providerId": "ai-horde",
+      "displayName": "AI Horde",
+      "kind": "gateway",
+      "implemented": true,
+      "recommendedForFreeDefault": false,
+      "authClasses": [
+        "ZERO_TOUCH"
+      ],
+      "fields": [],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "One global anonymous account (concurrency 500, lowest-priority queue); all anonymous callers share it — never a per-user pool",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "quotaDomain": "account",
+        "maxRequestsPerMinute": 10,
+        "evidence": {
+          "source": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/README.md + live GET https://aihorde.net/api/v2/find_user",
+          "checkedAt": "2026-10-02",
+          "note": "Anonymous key 0000000000 is provider-documented; kudos cannot be bought or sold so no billing rail exists on this route."
+        }
+      },
+      "privacy": {
+        "class": "permissive",
+        "freeTierClass": "permissive",
+        "note": "Community workers can technically see prompts (open-source worker software); Horde itself stores requests in-memory transiently only. Public code only — consent cannot change what a worker host sees."
+      },
+      "terms": {
+        "status": "CLEARED",
+        "source": "https://aihorde.net/terms",
+        "note": "Anonymous and proxied-client use is documented; profiting from Horde access requires giving back at least as much as taken — CodeForge Free never monetizes this route."
+      },
+      "docsUrl": "https://github.com/Haidra-Org/AI-Horde",
+      "paidOnly": false,
+      "zeroCashFreeAccess": true,
+      "connected": true,
+      "credentialSource": "ANONYMOUS_DIRECT",
+      "supplyClass": "COMMUNITY_ANONYMOUS_FREE",
+      "freeCapacity": {
+        "admittedDomains": 0,
+        "independentGroups": 0,
+        "healthyGroups": 0
+      },
+      "authState": "ok",
+      "planAttested": false,
+      "planAttestationRequired": false,
+      "environment": null,
+      "freeRouteCount": 31,
+      "healthyRouteCount": 0,
+      "catalogCount": 31,
+      "sortRank": 0
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "displayName": "Kilo Auto Free Direct",
+      "kind": "gateway",
+      "implemented": true,
+      "recommendedForFreeDefault": false,
+      "authClasses": [
+        "ZERO_TOUCH"
+      ],
+      "fields": [],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "200 free-model requests/hour per public IP; users behind one NAT share it",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://kilo.ai/docs/gateway/authentication",
+          "checkedAt": "2026-10-01"
+        }
+      },
+      "privacy": {
+        "class": "permissive",
+        "freeTierClass": "permissive",
+        "note": "Auto Free may use providers that log and improve services with prompts; public code only, with workspace consent."
+      },
+      "terms": {
+        "status": "CLEARED",
+        "source": "https://kilo.ai/terms",
+        "note": "Gateway API terms permit serving end users of a third-party application subject to Kilo terms."
+      },
+      "docsUrl": "https://kilo.ai/docs/gateway/models-and-providers",
+      "paidOnly": false,
+      "zeroCashFreeAccess": true,
+      "connected": true,
+      "credentialSource": "ANONYMOUS_DIRECT",
+      "supplyClass": "PACKAGED_FREE_DIRECT",
+      "freeCapacity": {
+        "admittedDomains": 0,
+        "independentGroups": 0,
+        "healthyGroups": 0
+      },
+      "authState": "ok",
+      "planAttested": false,
+      "planAttestationRequired": false,
+      "environment": null,
+      "freeRouteCount": 15,
+      "healthyRouteCount": 0,
+      "catalogCount": 15,
+      "sortRank": 0
+    }
+  ],
+  "workspaceSelection": {
+    "status": 200
+  },
+  "capacityAtEnd": [
+    {
+      "providerId": "ai-horde",
+      "displayName": "AI Horde",
+      "kind": "gateway",
+      "implemented": true,
+      "recommendedForFreeDefault": false,
+      "authClasses": [
+        "ZERO_TOUCH"
+      ],
+      "fields": [],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "One global anonymous account (concurrency 500, lowest-priority queue); all anonymous callers share it — never a per-user pool",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "quotaDomain": "account",
+        "maxRequestsPerMinute": 10,
+        "evidence": {
+          "source": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/README.md + live GET https://aihorde.net/api/v2/find_user",
+          "checkedAt": "2026-10-02",
+          "note": "Anonymous key 0000000000 is provider-documented; kudos cannot be bought or sold so no billing rail exists on this route."
+        }
+      },
+      "privacy": {
+        "class": "permissive",
+        "freeTierClass": "permissive",
+        "note": "Community workers can technically see prompts (open-source worker software); Horde itself stores requests in-memory transiently only. Public code only — consent cannot change what a worker host sees."
+      },
+      "terms": {
+        "status": "CLEARED",
+        "source": "https://aihorde.net/terms",
+        "note": "Anonymous and proxied-client use is documented; profiting from Horde access requires giving back at least as much as taken — CodeForge Free never monetizes this route."
+      },
+      "docsUrl": "https://github.com/Haidra-Org/AI-Horde",
+      "paidOnly": false,
+      "zeroCashFreeAccess": true,
+      "connected": true,
+      "credentialSource": "ANONYMOUS_DIRECT",
+      "supplyClass": "COMMUNITY_ANONYMOUS_FREE",
+      "freeCapacity": {
+        "admittedDomains": 0,
+        "independentGroups": 0,
+        "healthyGroups": 0
+      },
+      "authState": "ok",
+      "planAttested": false,
+      "planAttestationRequired": false,
+      "environment": null,
+      "freeRouteCount": 31,
+      "healthyRouteCount": 0,
+      "catalogCount": 31,
+      "sortRank": 0
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "displayName": "Kilo Auto Free Direct",
+      "kind": "gateway",
+      "implemented": true,
+      "recommendedForFreeDefault": false,
+      "authClasses": [
+        "ZERO_TOUCH"
+      ],
+      "fields": [],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "200 free-model requests/hour per public IP; users behind one NAT share it",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://kilo.ai/docs/gateway/authentication",
+          "checkedAt": "2026-10-01"
+        }
+      },
+      "privacy": {
+        "class": "permissive",
+        "freeTierClass": "permissive",
+        "note": "Auto Free may use providers that log and improve services with prompts; public code only, with workspace consent."
+      },
+      "terms": {
+        "status": "CLEARED",
+        "source": "https://kilo.ai/terms",
+        "note": "Gateway API terms permit serving end users of a third-party application subject to Kilo terms."
+      },
+      "docsUrl": "https://kilo.ai/docs/gateway/models-and-providers",
+      "paidOnly": false,
+      "zeroCashFreeAccess": true,
+      "connected": true,
+      "credentialSource": "ANONYMOUS_DIRECT",
+      "supplyClass": "PACKAGED_FREE_DIRECT",
+      "freeCapacity": {
+        "admittedDomains": 0,
+        "independentGroups": 0,
+        "healthyGroups": 0
+      },
+      "authState": "ok",
+      "planAttested": false,
+      "planAttestationRequired": false,
+      "environment": null,
+      "freeRouteCount": 15,
+      "healthyRouteCount": 0,
+      "catalogCount": 15,
+      "sortRank": 0
+    }
+  ],
+  "visibleText": "CODEFORGE\nYour AI coding agent.\n\nBuild, fix, and understand software with an agent that works directly with your project.\n\nCodeForge can explore your codebase, edit files, run commands and tests, and show you exactly what it changed.\n\nStart free with CodeForge-managed AI models. No API key required.\n\nI’m 18 or older and understand that CodeForge can read and modify project files and run commands on this computer according to my approval settings.\nContinue with GitHub\n\nGitHub sign-in creates your free CodeForge account. Connect repositories or your own AI providers later if you want — neither is required to start using CodeForge Free.",
+  "finishedAt": "2026-10-03T05:20:32.297Z",
+  "durationMs": 624345,
+  "memoryScope": "Main process only; renderer evaluated separately. Process-tree memory unmeasured."
+}

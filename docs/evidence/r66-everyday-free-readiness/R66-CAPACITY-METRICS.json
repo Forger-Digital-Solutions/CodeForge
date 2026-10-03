@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-10-03T05:46:56.045Z",
+  "status": "MEASURED_WITH_LIMITATIONS",
+  "admittedFreeDomainsInCampaign": 2,
+  "independentUpstreamGroups": 2,
+  "qualificationFixtureRoleRoutes": 12,
+  "healthyProductionRoleRoutesAtFreeze": null,
+  "successfulR66LiveCrossDomainCompletions": 1,
+  "liveFailoverCompletions": 1,
+  "falseWaitsLive": null,
+  "falseWaitsSimulated": 0,
+  "paidRouteSelections": 0,
+  "BYOKRouteSelections": 0,
+  "purchasedCreditBillingMeasurement": "UNKNOWN",
+  "providers": [
+    "Kilo PACKAGED_FREE_DIRECT/SOURCE_IP",
+    "AI Horde COMMUNITY_ANONYMOUS_FREE/GLOBAL_SHARED/PUBLIC_CODE_ONLY/text-tool mediation"
+  ]
+}

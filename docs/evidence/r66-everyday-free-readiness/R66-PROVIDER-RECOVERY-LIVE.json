@@ -1,0 +1,309 @@
+{
+  "startedAt": "2026-10-03T05:14:09.927Z",
+  "status": "MEASURED",
+  "evidenceClass": "LIVE_ANONYMOUS_FREE_BOUNDED_TRANSPORT_RECOVERY",
+  "observations": [
+    {
+      "at": "2026-10-03T05:14:10.742Z",
+      "providerId": "kilo-free-direct",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:14:12.024Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:14:12.556Z",
+      "providerId": "ai-horde",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:14:15.643Z",
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:19:16.214Z",
+      "providerId": "kilo-free-direct",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:19:17.507Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:19:18.005Z",
+      "providerId": "ai-horde",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:19:26.157Z",
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:24:26.828Z",
+      "providerId": "kilo-free-direct",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:24:27.921Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:24:28.388Z",
+      "providerId": "ai-horde",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:24:32.282Z",
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:29:32.838Z",
+      "providerId": "kilo-free-direct",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:29:33.921Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:29:34.402Z",
+      "providerId": "ai-horde",
+      "status": 200,
+      "capacityHeaders": []
+    },
+    {
+      "at": "2026-10-03T05:29:43.298Z",
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "status": 200,
+      "capacityHeaders": []
+    }
+  ],
+  "rounds": [
+    {
+      "round": 0,
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "at": "2026-10-03T05:14:09.927Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "OK"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 160,
+            "outputTokens": 2,
+            "totalTokens": 162,
+            "cachedInputTokens": 149,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 2099
+    },
+    {
+      "round": 0,
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "at": "2026-10-03T05:14:12.031Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "The user wants me to reply exactly \"OK\". This is a straightforward instruction."
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 3624
+    },
+    {
+      "round": 1,
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "at": "2026-10-03T05:19:15.657Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "OK"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 160,
+            "outputTokens": 2,
+            "totalTokens": 162,
+            "cachedInputTokens": 150,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 1857
+    },
+    {
+      "round": 1,
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "at": "2026-10-03T05:19:17.515Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "The user wants me to reply exactly \"OK\". This is a straightforward instruction."
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 8645
+    },
+    {
+      "round": 2,
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "at": "2026-10-03T05:24:26.173Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "OK"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 160,
+            "outputTokens": 2,
+            "totalTokens": 162,
+            "cachedInputTokens": 149,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 1748
+    },
+    {
+      "round": 2,
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "at": "2026-10-03T05:24:27.922Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "The user wants me to reply exactly \"OK\". This is a straightforward instruction."
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 4361
+    },
+    {
+      "round": 3,
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "at": "2026-10-03T05:29:32.285Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "OK"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 160,
+            "outputTokens": 2,
+            "totalTokens": 162,
+            "cachedInputTokens": 149,
+            "reasoningTokens": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "stealth/space-bunny-alpha"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 1643
+    },
+    {
+      "round": 3,
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "at": "2026-10-03T05:29:33.930Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "The user wants me to reply exactly \"OK\". This is a straightforward instruction."
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "status": "RESPONSE_OBSERVED",
+      "wallTimeMs": 9398
+    }
+  ],
+  "limitations": [
+    "Transport recovery does not establish recovery of every role or a completed task. No failures are manufactured."
+  ],
+  "finishedAt": "2026-10-03T05:29:43.331Z"
+}

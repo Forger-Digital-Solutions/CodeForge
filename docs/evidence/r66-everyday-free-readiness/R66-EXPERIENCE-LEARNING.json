@@ -1,0 +1,558 @@
+{
+  "generatedAt": "2026-10-03T05:46:56.035Z",
+  "status": "PASS_FOUNDATION_LIVE_NEXT_TASK_EFFECT_UNPROVEN",
+  "generalizedSignals": [
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-34c2a72d-4a26-4650-948b-e733e46e5238",
+      "sessionId": "r66-01-bug-fix-1791002610777",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "1-10",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 24,
+        "toolCalls": 30,
+        "retries": 0,
+        "inputTokens": 124404,
+        "outputTokens": 6138,
+        "providerFailures": 0,
+        "workerCount": 3,
+        "roles": [
+          "explorer",
+          "coder",
+          "reviewer"
+        ]
+      },
+      "createdAt": "2026-10-03T04:47:01.454Z",
+      "updatedAt": "2026-10-03T04:47:01.454Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-5e1fc6b2-e840-45e8-950f-91eb4a1f7755",
+      "sessionId": "r66-02-feature-1791002822424",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "VERIFIED_SUCCESS",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "1-10",
+        "reviewRounds": 0,
+        "verificationAttempts": 1,
+        "verificationPassed": true,
+        "modelRequests": 23,
+        "toolCalls": 37,
+        "retries": 0,
+        "inputTokens": 111508,
+        "outputTokens": 6593,
+        "providerFailures": 0,
+        "workerCount": 3,
+        "roles": [
+          "explorer",
+          "coder",
+          "reviewer"
+        ]
+      },
+      "createdAt": "2026-10-03T04:50:17.598Z",
+      "updatedAt": "2026-10-03T04:50:17.598Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-8edb20df-3493-440e-94e1-ad715fd35f43",
+      "sessionId": "r66-03-refactor-1791003021067",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "0",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 29,
+        "toolCalls": 37,
+        "retries": 0,
+        "inputTokens": 161913,
+        "outputTokens": 6600,
+        "providerFailures": 0,
+        "workerCount": 2,
+        "roles": [
+          "explorer",
+          "coder"
+        ]
+      },
+      "createdAt": "2026-10-03T04:54:57.697Z",
+      "updatedAt": "2026-10-03T04:54:57.697Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-16b21ea1-6dcd-49d8-bc6e-ab588c769efd",
+      "sessionId": "r66-04-test-creation-1791003299831",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "1-10",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 30,
+        "toolCalls": 33,
+        "retries": 0,
+        "inputTokens": 247438,
+        "outputTokens": 18001,
+        "providerFailures": 0,
+        "workerCount": 3,
+        "roles": [
+          "explorer",
+          "coder",
+          "reviewer"
+        ]
+      },
+      "createdAt": "2026-10-03T05:02:05.511Z",
+      "updatedAt": "2026-10-03T05:02:05.511Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-07dc8018-a65f-4107-b895-d2e58e7ded2a",
+      "sessionId": "r66-05-debugging-1791003726668",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "VERIFIED_SUCCESS",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "1-10",
+        "reviewRounds": 0,
+        "verificationAttempts": 1,
+        "verificationPassed": true,
+        "modelRequests": 18,
+        "toolCalls": 28,
+        "retries": 0,
+        "inputTokens": 79043,
+        "outputTokens": 5807,
+        "providerFailures": 0,
+        "workerCount": 3,
+        "roles": [
+          "explorer",
+          "coder",
+          "reviewer"
+        ]
+      },
+      "createdAt": "2026-10-03T05:04:53.623Z",
+      "updatedAt": "2026-10-03T05:04:53.623Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-2ad158c6-358b-4630-9e3e-f5c972e7c5bb",
+      "sessionId": "r66-06-configuration-1791003894620",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "0",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 5,
+        "toolCalls": 0,
+        "retries": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "providerFailures": 0,
+        "workerCount": 3,
+        "roles": [
+          "explorer",
+          "coder",
+          "reviewer"
+        ]
+      },
+      "createdAt": "2026-10-03T05:06:40.677Z",
+      "updatedAt": "2026-10-03T05:06:40.677Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-73c8448f-4a7a-46c1-b5ed-cc1e57b53c3d",
+      "sessionId": "r66-07-bug-fix-1791004001674",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "0",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 0,
+        "toolCalls": 0,
+        "retries": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "providerFailures": 2,
+        "workerCount": 2,
+        "roles": [
+          "explorer",
+          "coder"
+        ]
+      },
+      "createdAt": "2026-10-03T05:06:45.214Z",
+      "updatedAt": "2026-10-03T05:06:45.214Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-a4783672-73e9-4e17-b8f0-6f8db5c9764f",
+      "sessionId": "r66-08-feature-1791004006368",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "0",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 0,
+        "toolCalls": 0,
+        "retries": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "providerFailures": 2,
+        "workerCount": 2,
+        "roles": [
+          "explorer",
+          "coder"
+        ]
+      },
+      "createdAt": "2026-10-03T05:06:49.973Z",
+      "updatedAt": "2026-10-03T05:06:49.973Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-ee70e93d-a40b-4a1c-bb38-779cdbfb4c9b",
+      "sessionId": "r66-09-refactor-1791004011087",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "0",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 0,
+        "toolCalls": 0,
+        "retries": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "providerFailures": 2,
+        "workerCount": 2,
+        "roles": [
+          "explorer",
+          "coder"
+        ]
+      },
+      "createdAt": "2026-10-03T05:06:54.838Z",
+      "updatedAt": "2026-10-03T05:06:54.838Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-148a705e-f987-4af4-927a-99c17ca35c70",
+      "sessionId": "r66-10-test-creation-1791004015970",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "0",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 0,
+        "toolCalls": 0,
+        "retries": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "providerFailures": 2,
+        "workerCount": 2,
+        "roles": [
+          "explorer",
+          "coder"
+        ]
+      },
+      "createdAt": "2026-10-03T05:06:59.655Z",
+      "updatedAt": "2026-10-03T05:06:59.655Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-2c44e7d9-fd25-4f5b-8c4b-199e647fb6d3",
+      "sessionId": "r66-01-bug-fix-1791003918921",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "1-10",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 28,
+        "toolCalls": 36,
+        "retries": 0,
+        "inputTokens": 129681,
+        "outputTokens": 10553,
+        "providerFailures": 0,
+        "workerCount": 4,
+        "roles": [
+          "explorer",
+          "coder",
+          "reviewer",
+          "reviewer"
+        ]
+      },
+      "createdAt": "2026-10-03T05:12:08.606Z",
+      "updatedAt": "2026-10-03T05:12:08.606Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-affa18ed-246a-43db-a576-7656cd4c93d4",
+      "sessionId": "r66-03-refactor-1791003919013",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "1-10",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 24,
+        "toolCalls": 32,
+        "retries": 0,
+        "inputTokens": 118539,
+        "outputTokens": 5995,
+        "providerFailures": 0,
+        "workerCount": 3,
+        "roles": [
+          "explorer",
+          "coder",
+          "reviewer"
+        ]
+      },
+      "createdAt": "2026-10-03T05:11:11.001Z",
+      "updatedAt": "2026-10-03T05:11:11.001Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-28579ca1-db33-4f8a-82f6-fba0f995b0c8",
+      "sessionId": "r66-02-feature-1791003918953",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "1-10",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 18,
+        "toolCalls": 29,
+        "retries": 0,
+        "inputTokens": 78420,
+        "outputTokens": 5557,
+        "providerFailures": 0,
+        "workerCount": 3,
+        "roles": [
+          "explorer",
+          "coder",
+          "reviewer"
+        ]
+      },
+      "createdAt": "2026-10-03T05:09:16.974Z",
+      "updatedAt": "2026-10-03T05:09:16.974Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-588a8222-3808-4109-a62e-81aef40631eb",
+      "sessionId": "r66-01-bug-fix-1791005925183",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "VERIFIED_SUCCESS",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "1-10",
+        "reviewRounds": 0,
+        "verificationAttempts": 1,
+        "verificationPassed": true,
+        "modelRequests": 24,
+        "toolCalls": 34,
+        "retries": 0,
+        "inputTokens": 116217,
+        "outputTokens": 7408,
+        "providerFailures": 0,
+        "workerCount": 4,
+        "roles": [
+          "explorer",
+          "coder",
+          "reviewer",
+          "reviewer"
+        ]
+      },
+      "createdAt": "2026-10-03T05:41:38.193Z",
+      "updatedAt": "2026-10-03T05:41:38.193Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-25606e14-9b0e-4184-ac98-1d9a9a8f8b73",
+      "sessionId": "r66-02-feature-1791006099308",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "1-10",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 22,
+        "toolCalls": 27,
+        "retries": 0,
+        "inputTokens": 92106,
+        "outputTokens": 7614,
+        "providerFailures": 0,
+        "workerCount": 4,
+        "roles": [
+          "explorer",
+          "coder",
+          "reviewer",
+          "reviewer"
+        ]
+      },
+      "createdAt": "2026-10-03T05:44:40.368Z",
+      "updatedAt": "2026-10-03T05:44:40.368Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-8cd1db2d-21cc-481f-b6e0-3aded8d58751",
+      "sessionId": "r66-03-refactor-1791006281521",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "0",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 5,
+        "toolCalls": 0,
+        "retries": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "providerFailures": 1,
+        "workerCount": 4,
+        "roles": [
+          "explorer",
+          "coder",
+          "reviewer",
+          "reviewer"
+        ]
+      },
+      "createdAt": "2026-10-03T05:45:26.125Z",
+      "updatedAt": "2026-10-03T05:45:26.125Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-d1c67662-b5a1-4e9e-81c1-b61121d3fdf3",
+      "sessionId": "r66-04-test-creation-1791006327328",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "0",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 0,
+        "toolCalls": 0,
+        "retries": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "providerFailures": 2,
+        "workerCount": 2,
+        "roles": [
+          "explorer",
+          "coder"
+        ]
+      },
+      "createdAt": "2026-10-03T05:45:31.555Z",
+      "updatedAt": "2026-10-03T05:45:31.555Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-05f52dbe-b33b-4ebe-9ff9-49e3b9c39e5b",
+      "sessionId": "r66-05-debugging-1791006332903",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "0",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 0,
+        "toolCalls": 0,
+        "retries": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "providerFailures": 2,
+        "workerCount": 2,
+        "roles": [
+          "explorer",
+          "coder"
+        ]
+      },
+      "createdAt": "2026-10-03T05:45:37.103Z",
+      "updatedAt": "2026-10-03T05:45:37.103Z"
+    },
+    {
+      "kind": "generalized_experience_signal",
+      "id": "experience-signal:run-5bac9075-f4c0-4b91-9d7d-171f15c76c55",
+      "sessionId": "r66-06-configuration-1791006338344",
+      "signal": {
+        "schemaVersion": "r57-experience-signal/v1",
+        "label": "UNKNOWN",
+        "taskClass": "normal",
+        "repositorySizeBucket": "1-10",
+        "changeSizeBucket": "0",
+        "reviewRounds": 0,
+        "verificationAttempts": 0,
+        "verificationPassed": false,
+        "modelRequests": 0,
+        "toolCalls": 0,
+        "retries": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "providerFailures": 2,
+        "workerCount": 2,
+        "roles": [
+          "explorer",
+          "coder"
+        ]
+      },
+      "createdAt": "2026-10-03T05:45:42.332Z",
+      "updatedAt": "2026-10-03T05:45:42.332Z"
+    }
+  ],
+  "localReceiptCount": 19,
+  "neuralTraining": false,
+  "priorOutcomeAdviceRegression": "R66-FAULT-REGRESSIONS.json: r57-experience-learning.test.ts",
+  "liveNextTaskEffect": null,
+  "limitation": "Sequential fixtures deliberately use separate databases; no cross-task learning effect is attributed to that campaign."
+}

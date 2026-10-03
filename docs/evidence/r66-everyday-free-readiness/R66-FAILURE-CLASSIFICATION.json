@@ -1,0 +1,93 @@
+{
+  "generatedAt": "2026-10-03T05:46:56.046Z",
+  "status": "CLASSIFIED",
+  "runtimeFailures": [
+    {
+      "id": "01-bug-fix",
+      "class": "bug fix",
+      "summary": "Independent review did not complete (REVIEWER_BUDGET_EXHAUSTED): Structured output is not valid JSON"
+    },
+    {
+      "id": "03-refactor",
+      "class": "refactor",
+      "summary": "Writer did not complete: [AGENT_MODEL_TURN_LIMIT] The coder agent used all 25 model turns without finishing; the work is unfinished, not complete."
+    },
+    {
+      "id": "04-test-creation",
+      "class": "test creation",
+      "summary": "Independent review did not complete (REVIEWER_BUDGET_EXHAUSTED): Structured output is not valid JSON"
+    },
+    {
+      "id": "06-configuration",
+      "class": "configuration/build issue",
+      "summary": "Independent review did not complete (REVIEWER_BUDGET_EXHAUSTED): Structured output is not valid JSON"
+    },
+    {
+      "id": "07-bug-fix",
+      "class": "bug fix",
+      "summary": "Writer did not complete: Agent coder failed: [PROVIDER_UNAVAILABLE] No eligible free route for role coder: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ELIGIBLE_ROUTE, candidates: 2 policy_excluded:UNHEALTHY:HEALTHY [google/gemma-4-31b, kilo-auto/free]). No paid or unknown-cost route was used."
+    },
+    {
+      "id": "08-feature",
+      "class": "small feature",
+      "summary": "Writer did not complete: Agent coder failed: [PROVIDER_UNAVAILABLE] No eligible free route for role coder: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ELIGIBLE_ROUTE, candidates: 2 policy_excluded:UNHEALTHY:HEALTHY [google/gemma-4-31b, kilo-auto/free]). No paid or unknown-cost route was used."
+    },
+    {
+      "id": "09-refactor",
+      "class": "refactor",
+      "summary": "Writer did not complete: Agent coder failed: [PROVIDER_UNAVAILABLE] No eligible free route for role coder: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ELIGIBLE_ROUTE, candidates: 2 policy_excluded:UNHEALTHY:HEALTHY [google/gemma-4-31b, kilo-auto/free]). No paid or unknown-cost route was used."
+    },
+    {
+      "id": "10-test-creation",
+      "class": "test creation",
+      "summary": "Writer did not complete: Agent coder failed: [PROVIDER_UNAVAILABLE] No eligible free route for role coder: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ELIGIBLE_ROUTE, candidates: 2 policy_excluded:UNHEALTHY:HEALTHY [google/gemma-4-31b, kilo-auto/free]). No paid or unknown-cost route was used."
+    },
+    {
+      "id": "01-bug-fix",
+      "class": "bug fix",
+      "summary": "Independent review did not complete (REVIEWER_BUDGET_EXHAUSTED): Structured output is not valid JSON"
+    },
+    {
+      "id": "03-refactor",
+      "class": "refactor",
+      "summary": "Independent review did not complete (REVIEWER_BUDGET_EXHAUSTED): Structured output is not valid JSON"
+    },
+    {
+      "id": "02-feature",
+      "class": "small feature",
+      "summary": "Independent review did not complete (REVIEWER_BUDGET_EXHAUSTED): Structured output is not valid JSON"
+    },
+    {
+      "id": "02-feature",
+      "class": "small feature",
+      "summary": "Independent review did not complete (REVIEWER_BUDGET_EXHAUSTED): Structured output is not valid JSON"
+    },
+    {
+      "id": "03-refactor",
+      "class": "refactor",
+      "summary": "Independent review did not complete (REVIEWER_FAILED): Agent reviewer failed: [PROVIDER_UNAVAILABLE] No eligible free route for role reviewer: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ELIGIBLE_ROUTE, candidates: 2 policy_excluded:UNHEALTHY:HEALTHY [google/gemma-4-31b, kilo-auto/free]). No paid or unknown-cost route was used."
+    },
+    {
+      "id": "04-test-creation",
+      "class": "test creation",
+      "summary": "Writer did not complete: Agent coder failed: [PROVIDER_UNAVAILABLE] No eligible free route for role coder: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ELIGIBLE_ROUTE, candidates: 2 policy_excluded:UNHEALTHY:HEALTHY [google/gemma-4-31b, kilo-auto/free]). No paid or unknown-cost route was used."
+    },
+    {
+      "id": "05-debugging",
+      "class": "debugging",
+      "summary": "Writer did not complete: Agent coder failed: [PROVIDER_UNAVAILABLE] No eligible free route for role coder: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ELIGIBLE_ROUTE, candidates: 2 policy_excluded:UNHEALTHY:HEALTHY [google/gemma-4-31b, kilo-auto/free]). No paid or unknown-cost route was used."
+    },
+    {
+      "id": "06-configuration",
+      "class": "configuration/build issue",
+      "summary": "Writer did not complete: Agent coder failed: [PROVIDER_UNAVAILABLE] No eligible free route for role coder: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ELIGIBLE_ROUTE, candidates: 2 policy_excluded:UNHEALTHY:HEALTHY [google/gemma-4-31b, kilo-auto/free]). No paid or unknown-cost route was used."
+    }
+  ],
+  "harnessFailures": [
+    "Initial diff collector incorrectly assumed HEAD~1 existed for blocked runs; outcomes recovered from SQLite.",
+    "Restricted Windows renderer startup exited 49; outside-sandbox normal startup succeeded.",
+    "A repeat worker recovery before lease expiration was blocked; respecting the existing 60-second lease permits safe recovery.",
+    "Secret scanner git inventory exceeded default buffer; increased enumeration buffer only."
+  ],
+  "regressionFixed": "Cross-domain review preference was initially applied to coder failover; final comparison is Reviewer-only. The R24 conservation regression passed 89 focused tests before final canonical run."
+}

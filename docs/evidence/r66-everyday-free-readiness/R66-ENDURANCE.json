@@ -1,0 +1,64 @@
+{
+  "generatedAt": "2026-10-03T05:46:56.023Z",
+  "evidenceClass": "LIVE_ANONYMOUS_FREE_PUBLIC_FIXTURES",
+  "status": "PARTIAL",
+  "attempted": 19,
+  "completed": 3,
+  "blocked": 16,
+  "failed": 0,
+  "falseCompletions": 0,
+  "modelTurns": 250,
+  "reportedModelRequests": 250,
+  "toolCalls": 323,
+  "retries": 0,
+  "averageRetriesPerTask": 0,
+  "roleQualityHandoffs": 4,
+  "successfulRoleQualityHandoffs": 1,
+  "liveFalseWaits": null,
+  "paidRouteSelections": 0,
+  "unknownServedRouteTurns": 0,
+  "BYOKRouteSelections": 0,
+  "billingMeasurement": "UNKNOWN",
+  "consecutiveCompletedTasksMaximum": 1,
+  "campaigns": [
+    {
+      "file": "R66-TASK-CAMPAIGN.json",
+      "startedAt": "2026-10-03T04:43:27.025Z",
+      "finishedAt": "2026-10-03T05:06:59.921Z",
+      "attempted": 10,
+      "completed": 2
+    },
+    {
+      "file": "R66-MULTI-USER-LIVE.json",
+      "startedAt": "2026-10-03T05:05:11.205Z",
+      "finishedAt": "2026-10-03T05:12:09.036Z",
+      "attempted": 3,
+      "completed": 0
+    },
+    {
+      "file": "R66-TASK-FINAL-SOURCE.json",
+      "startedAt": "2026-10-03T05:38:41.328Z",
+      "finishedAt": "2026-10-03T05:45:42.646Z",
+      "attempted": 6,
+      "completed": 1
+    }
+  ],
+  "roleCounts": {
+    "explorer:kilo-free-direct:blocked": 10,
+    "coder:kilo-free-direct:completed": 9,
+    "reviewer:ai-horde:blocked": 9,
+    "reviewer:kilo-free-direct:completed": 3,
+    "coder:kilo-free-direct:blocked": 1,
+    "explorer:ai-horde:blocked": 2,
+    "coder:ai-horde:completed": 2,
+    "explorer:NONE:failed": 7,
+    "coder:NONE:failed": 7,
+    "reviewer:kilo-free-direct:blocked": 2,
+    "reviewer:NONE:failed": 1
+  },
+  "limitations": [
+    "See concrete completion and consecutive-task totals; fixture qualification alone does not establish sustained daily reliability.",
+    "Initial sequential runtime predates anonymous quality handoff and the final Reviewer-only conservation correction. Concurrent runtime includes handoff but predates the Reviewer-only correction.",
+    "Unavailable-route outcomes do not establish whether every provider was actually healthy and eligible; live false waits remain unclassified."
+  ]
+}

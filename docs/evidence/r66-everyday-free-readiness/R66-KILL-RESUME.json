@@ -1,0 +1,95 @@
+{
+  "schema": "r66-worker-kill-resume-campaign/v1",
+  "startedAt": "2026-10-03T05:28:07.055Z",
+  "finishedAt": "2026-10-03T05:30:30.834Z",
+  "scope": "real process SIGKILL, production worker journal and SQLite, scripted test provider",
+  "evidenceClass": "ACTUAL_PROCESS_KILL_SCRIPTED_PROVIDER_WORKER_ONLY",
+  "parentEndToEndRecovery": "UNPROVEN",
+  "limitations": [
+    "Worker recovery is not autonomous parent verification/integration recovery.",
+    "This campaign reads the byte-preserved preexisting worker fixture without modifying it."
+  ],
+  "tasks": [
+    {
+      "scenario": "model_then_write",
+      "steps": [
+        {
+          "step": "kill-before-first-call",
+          "exitCode": 1,
+          "signal": null,
+          "elapsedMs": 2956,
+          "stderrSample": "",
+          "stdoutBytes": 0
+        },
+        {
+          "step": "recover:kill-after-write",
+          "exitCode": 1,
+          "signal": null,
+          "elapsedMs": 2541,
+          "stderrSample": "",
+          "stdoutBytes": 0
+        },
+        {
+          "step": "recover:healthy",
+          "exitCode": 0,
+          "signal": null,
+          "elapsedMs": 2441,
+          "stderrSample": "[fixture] recovery=healthy {\"resumed\":1,\"replanned\":0,\"failed\":0,\"decisions\":[{\"workerId\":\"child-a18c8be6-2daf-463f-b51f-23d886f8e9e9\",\"outcome\":\"resume\",\"reason\":\"RECOVERY_RESUME: recorded transcript is consistent and every durable tool execution is terminal\"}]}\n",
+          "stdoutBytes": 0
+        }
+      ],
+      "restartCount": 2,
+      "killCount": 2,
+      "recoveryLeaseExpiryWaitMs": 61000,
+      "finalWorkerState": "completed",
+      "finalJournalState": "completed",
+      "observedWriteCount": 1,
+      "shillingEntryCount": 3,
+      "correct": true,
+      "pass": true
+    },
+    {
+      "scenario": "write_then_response",
+      "steps": [
+        {
+          "step": "kill-after-write",
+          "exitCode": 1,
+          "signal": null,
+          "elapsedMs": 4462,
+          "stderrSample": "",
+          "stdoutBytes": 0
+        },
+        {
+          "step": "recover:kill-after-write",
+          "exitCode": 1,
+          "signal": null,
+          "elapsedMs": 1500,
+          "stderrSample": "",
+          "stdoutBytes": 0
+        },
+        {
+          "step": "recover:healthy",
+          "exitCode": 0,
+          "signal": null,
+          "elapsedMs": 2672,
+          "stderrSample": "[fixture] recovery=healthy {\"resumed\":1,\"replanned\":0,\"failed\":0,\"decisions\":[{\"workerId\":\"child-0bb3c623-4859-4e8d-8efc-d03be05616d6\",\"outcome\":\"resume\",\"reason\":\"RECOVERY_RESUME: recorded transcript is consistent and every durable tool execution is terminal\"}]}\n",
+          "stdoutBytes": 0
+        }
+      ],
+      "restartCount": 2,
+      "killCount": 2,
+      "recoveryLeaseExpiryWaitMs": 61000,
+      "finalWorkerState": "completed",
+      "finalJournalState": "completed",
+      "observedWriteCount": 1,
+      "shillingEntryCount": 3,
+      "correct": true,
+      "pass": true
+    }
+  ],
+  "killCount": 4,
+  "restartCount": 4,
+  "successfulResumptions": 2,
+  "duplicateObservedWrites": 0,
+  "pass": true
+}

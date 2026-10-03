@@ -1,0 +1,8 @@
+{
+  "generatedAt": "2026-10-03T05:28:20.558Z",
+  "evidenceClass": "ACTUAL_SCRIPTED_WORKER_CRASH_RECOVERY",
+  "result": "BLOCKED_BY_UNEXPIRED_RECOVERY_LEASE",
+  "observed": "A second recovery process made zero resumption decisions before the killed recovery owner lease expired.",
+  "meaning": "Duplicate ownership was prevented. The campaign was corrected to respect the existing 60-second lease.",
+  "fixture": "benchmarks/r66/tmp/kill-resume-x0CShb"
+}

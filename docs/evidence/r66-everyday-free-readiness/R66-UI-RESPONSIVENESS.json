@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-10-03T05:46:56.042Z",
+  "status": "MEASURED_ONBOARDING_ONLY",
+  "samples": 116,
+  "maxRendererRoundTripMs": 11.574300000007497,
+  "minRendererRoundTripMs": 0.8038999999989755,
+  "launchMs": 2848,
+  "peakMainRssBytes": 342585344,
+  "authenticated": false,
+  "rendererFreezeObserved": false,
+  "tasksUnderUiLoadCompleted": 0,
+  "scrollingFilesTabsSettingsDuringCoding": "UNPROVEN",
+  "socketLeakMeasurement": null,
+  "processTreeMemory": null,
+  "limitation": "Animation-frame responsiveness on sign-in screen is not a coding-workspace daily-use soak."
+}

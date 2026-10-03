@@ -1,0 +1,142 @@
+{
+  "generatedAt": "2026-10-03T05:38:16.327Z",
+  "status": "PASS",
+  "repositoryWideGreen": true,
+  "strategy": "One main pass with two isolated workers; four contention-sensitive suites then run serially. Certificate canary runs separately after evidence freeze.",
+  "workerHeapLimitMb": 2048,
+  "peakProcessTreeWorkingSetBytes": 988000256,
+  "peakSingleProcessWorkingSetBytes": 378200064,
+  "phases": [
+    {
+      "name": "bounded-main",
+      "status": "PASS",
+      "startedAt": "2026-10-03T05:38:16.330Z",
+      "workers": 2,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run --exclude=packages/server/test/autonomous-orchestrator.test.ts --exclude=packages/server/test/parallel-orchestrator-integration.test.ts --exclude=packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts --exclude=apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts --maxWorkers=2 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\r66-everyday-free-readiness\\R66-suite-bounded-main.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\r66-everyday-free-readiness\\R66-suite-bounded-main.json",
+      "completedFileLines": 526,
+      "latestProgress": "      Tests  4426 passed | 50 skipped (4476)",
+      "durationSeconds": 1478.856,
+      "exitCode": 0,
+      "totals": {
+        "files": 535,
+        "passed": 4426,
+        "failed": 0,
+        "skipped": 50,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    },
+    {
+      "name": "serial-heavy-1",
+      "status": "PASS",
+      "startedAt": "2026-10-03T06:02:55.206Z",
+      "workers": 1,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run packages/server/test/autonomous-orchestrator.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\r66-everyday-free-readiness\\R66-suite-serial-heavy-1.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\r66-everyday-free-readiness\\R66-suite-serial-heavy-1.json",
+      "completedFileLines": 1,
+      "latestProgress": "      Tests  22 passed (22)",
+      "durationSeconds": 100.152,
+      "exitCode": 0,
+      "totals": {
+        "files": 1,
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    },
+    {
+      "name": "serial-heavy-2",
+      "status": "PASS",
+      "startedAt": "2026-10-03T06:04:35.361Z",
+      "workers": 1,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run packages/server/test/parallel-orchestrator-integration.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\r66-everyday-free-readiness\\R66-suite-serial-heavy-2.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\r66-everyday-free-readiness\\R66-suite-serial-heavy-2.json",
+      "completedFileLines": 1,
+      "latestProgress": "      Tests  4 passed (4)",
+      "durationSeconds": 45.772,
+      "exitCode": 0,
+      "totals": {
+        "files": 1,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    },
+    {
+      "name": "serial-heavy-3",
+      "status": "PASS",
+      "startedAt": "2026-10-03T06:05:20.590Z",
+      "workers": 1,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run packages/repo-intelligence/test/cf14-large-repo-benchmark.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\r66-everyday-free-readiness\\R66-suite-serial-heavy-3.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\r66-everyday-free-readiness\\R66-suite-serial-heavy-3.json",
+      "completedFileLines": 1,
+      "latestProgress": "      Tests  1 passed (1)",
+      "durationSeconds": 41.419,
+      "exitCode": 0,
+      "totals": {
+        "files": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    },
+    {
+      "name": "serial-heavy-4",
+      "status": "PASS",
+      "startedAt": "2026-10-03T06:06:02.011Z",
+      "workers": 1,
+      "command": "node --max-old-space-size=2048 node_modules/vitest/vitest.mjs run apps/cloud-api/test/desktop-cloud-bridge.e2e.test.ts --maxWorkers=1 --exclude=tests/free-capacity-certificate.test.ts --reporter=default --reporter=json --outputFile.json=G:\\CodeForge\\docs\\evidence\\r66-everyday-free-readiness\\R66-suite-serial-heavy-4.json",
+      "report": "G:\\CodeForge\\docs\\evidence\\r66-everyday-free-readiness\\R66-suite-serial-heavy-4.json",
+      "completedFileLines": 1,
+      "latestProgress": "      Tests  6 passed (6)",
+      "durationSeconds": 29.145,
+      "exitCode": 0,
+      "totals": {
+        "files": 1,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0,
+        "pending": 0
+      },
+      "failedAssertions": [],
+      "failedSuitesWithoutAssertions": []
+    }
+  ],
+  "totals": {
+    "files": 539,
+    "passed": 4459,
+    "failed": 0,
+    "skipped": 50,
+    "todo": 0,
+    "pending": 0,
+    "durationSeconds": 1695.344
+  },
+  "finishedAt": "2026-10-03T06:06:31.158Z",
+  "restrictedSampler": {
+    "reportedTreeBytes": 0,
+    "scope": "Main test process only; restricted child enumeration was unavailable. Replaced below with independently enumerated process-tree samples."
+  },
+  "memoryEvidence": "R66-TEST-MEMORY.json",
+  "memorySampling": {
+    "intervalSeconds": 15,
+    "samples": 104,
+    "scope": "Canonical harness and recursively enumerated node descendants, sampled every 15 seconds outside the restricted execution environment.",
+    "measurement": "Observed peak, not a continuous maximum"
+  }
+}

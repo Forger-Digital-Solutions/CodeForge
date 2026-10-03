@@ -1,0 +1,71 @@
+{
+  "generatedAt": "2026-10-03T04:35:06.278Z",
+  "status": "AUDITED_BEFORE_RUNTIME_EDITS",
+  "baseline": {
+    "focusedFiles": 14,
+    "focusedPassed": 145,
+    "build": "PASS",
+    "certificate": "PASS"
+  },
+  "issues": [
+    {
+      "priority": "P1",
+      "id": "EXPLORER_UNANNOUNCED_BUDGET",
+      "evidence": "R66-KILO-ROLE-QUALITY.json: explorer reads relevant files but all six turns are spent on tools; no terminal JSON report. Batch tool calls are also represented as separate assistant messages.",
+      "action": "Expose remaining turns; reserve existing last turn for report; preserve call limit and scoring; represent one model tool batch as one assistant message."
+    },
+    {
+      "priority": "P1",
+      "id": "ROLE_TIER_BEHIND_DOMAIN",
+      "evidence": "packages/eight-bit/src/free-fabric.ts: domainRank precedes qualificationTierRank. Kilo probation can precede a fully qualified Horde role.",
+      "action": "Compare measured role tier before domain priority; keep provenance, privacy, health and reservations gates."
+    },
+    {
+      "priority": "P1",
+      "id": "REVIEW_INDEPENDENCE_BEHIND_DOMAIN",
+      "evidence": "packages/eight-bit/src/free-fabric.ts: Kilo PUBLIC_IP domain rank -1 always precedes independent Horde shared pool, irrespective of bounded reviewer independence bonus.",
+      "action": "Use existing bounded quality/independence preference across eligible domains for review; record reduced independence."
+    },
+    {
+      "priority": "P1",
+      "id": "AUTONOMOUS_PARENT_RESTART",
+      "evidence": "packages/server/src/autonomous-orchestrator.ts: recoverRuns blocks active parents, clears workspacePath and does not resume parent verification/integration. Child journal recovery alone does not prove end-to-end task resume.",
+      "action": "Exercise actual interrupted tasks; retain blocker until end-to-end recovery earned; do not assert child recovery as parent completion."
+    },
+    {
+      "priority": "P1",
+      "id": "DYNAMIC_MODEL_IDENTITY",
+      "evidence": "Qualification receipts keyed by provider/model and 30 day TTL; capability changes under same model ID need separate churn proof.",
+      "action": "Deterministic catalog churn campaign before claiming bounded dynamic qualification."
+    },
+    {
+      "priority": "P2",
+      "id": "QUALIFICATION_DURABILITY",
+      "evidence": "qualifyLane catches persistence save failures while admitting in memory.",
+      "action": "Fault campaign must distinguish in-memory evidence from restart durability."
+    },
+    {
+      "priority": "P2",
+      "id": "WINDOWS_PACKAGE_REVISION",
+      "evidence": "Existing packaged build identity must be inspected; workspace build does not rebuild ASAR.",
+      "action": "Use actual packaged build and record its revision; repack only after source validation."
+    }
+  ],
+  "additionalPathsAudited": [
+    "desktop automatic discovery and public consent binding",
+    "production GitHub PKCE and remote dispatch",
+    "completion evaluateCompletion",
+    "reservation fairness",
+    "anti-loop handoff",
+    "experience persistence"
+  ],
+  "mandatoryUnproven": [
+    "six real task classes",
+    "10 task endurance",
+    "multi-user live overlap",
+    "kill/resume",
+    "Windows everyday-use",
+    "provider recovery",
+    "DB fault recovery"
+  ]
+}

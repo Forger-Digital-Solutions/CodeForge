@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-10-03T05:46:56.031Z",
+  "status": "PASS_LOCAL_SIMULATION_LIVE_COMPLETION_INCOMPLETE",
+  "heavyAdmitted": 3,
+  "heavyFourth": "QUEUED_FOR_CAPACITY",
+  "lightUsers": 3,
+  "lightAdmitted": 3,
+  "starvationObserved": 0,
+  "scope": "Local overlapping reservations, not upstream community scheduling",
+  "liveLogicalUsers": 3,
+  "actualOverlappingTasks": 3,
+  "liveCompleted": 0,
+  "ledger": "One shared CapacityReservationLedger; separate FreeCloud owner connections, sessions, SQLite stores and worktrees",
+  "upstreamScope": "Kilo SOURCE_IP shared egress; Horde GLOBAL_SHARED",
+  "limitation": "Three blocked live tasks cannot establish sustained no-starvation completion."
+}

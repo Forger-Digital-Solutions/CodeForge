@@ -1,0 +1,363 @@
+{
+  "generatedAt": "2026-10-03T05:46:56.025Z",
+  "status": "MEASURED",
+  "roleCounts": {
+    "explorer:kilo-free-direct:blocked": 10,
+    "coder:kilo-free-direct:completed": 9,
+    "reviewer:ai-horde:blocked": 9,
+    "reviewer:kilo-free-direct:completed": 3,
+    "coder:kilo-free-direct:blocked": 1,
+    "explorer:ai-horde:blocked": 2,
+    "coder:ai-horde:completed": 2,
+    "explorer:NONE:failed": 7,
+    "coder:NONE:failed": 7,
+    "reviewer:kilo-free-direct:blocked": 2,
+    "reviewer:NONE:failed": 1
+  },
+  "handoffs": [
+    {
+      "kind": "semantic_verifier_handoff",
+      "id": "semantic-verifier-handoff-run-2c44e7d9-fd25-4f5b-8c4b-199e647fb6d3-0",
+      "sessionId": "r66-01-bug-fix-1791003918921",
+      "runId": "run-2c44e7d9-fd25-4f5b-8c4b-199e647fb6d3",
+      "role": "reviewer",
+      "reason": "SEMANTIC_VERIFIER_FALLBACK",
+      "oldOwner": {
+        "providerId": "kilo-free-direct",
+        "modelId": "kilo-auto/free"
+      },
+      "newOwner": null,
+      "reviewedBaseRevision": "19c8a0b2ec5f39d3f5e4a5f7aa4019deee662ad7",
+      "diffHash": "d06969405cbcd69075178d1ec2fc08b7b772bcfe75264e90725cc7834d52f7e7",
+      "priorVerdict": "NONE",
+      "createdAt": "2026-10-03T05:11:52.600Z",
+      "updatedAt": "2026-10-03T05:12:08.596Z",
+      "outcome": "blocked"
+    },
+    {
+      "kind": "semantic_verifier_handoff",
+      "id": "semantic-verifier-handoff-run-588a8222-3808-4109-a62e-81aef40631eb-0",
+      "sessionId": "r66-01-bug-fix-1791005925183",
+      "runId": "run-588a8222-3808-4109-a62e-81aef40631eb",
+      "role": "reviewer",
+      "reason": "SEMANTIC_VERIFIER_FALLBACK",
+      "oldOwner": {
+        "providerId": "ai-horde",
+        "modelId": "google/gemma-4-31b"
+      },
+      "newOwner": {
+        "providerId": "kilo-free-direct",
+        "modelId": "kilo-auto/free"
+      },
+      "reviewedBaseRevision": "32c16be712481325814a5a443383f4a7d97e081c",
+      "diffHash": "e9d45d8f3f6667c5b2c2618f79936ababf5819af923580ef778dc0323917060a",
+      "priorVerdict": "NONE",
+      "createdAt": "2026-10-03T05:41:07.343Z",
+      "updatedAt": "2026-10-03T05:41:34.800Z",
+      "outcome": "completed"
+    },
+    {
+      "kind": "semantic_verifier_handoff",
+      "id": "semantic-verifier-handoff-run-25606e14-9b0e-4184-ac98-1d9a9a8f8b73-0",
+      "sessionId": "r66-02-feature-1791006099308",
+      "runId": "run-25606e14-9b0e-4184-ac98-1d9a9a8f8b73",
+      "role": "reviewer",
+      "reason": "SEMANTIC_VERIFIER_FALLBACK",
+      "oldOwner": {
+        "providerId": "kilo-free-direct",
+        "modelId": "kilo-auto/free"
+      },
+      "newOwner": {
+        "providerId": "ai-horde",
+        "modelId": "google/gemma-4-31b"
+      },
+      "reviewedBaseRevision": "d9d3daf4e65f1835fe076700a37bff8e88905353",
+      "diffHash": "37bf2bb5ed4abe488428af75a55df332e237ca9b0902e9b5f3058a9c024e4c0c",
+      "priorVerdict": "NONE",
+      "createdAt": "2026-10-03T05:44:28.588Z",
+      "updatedAt": "2026-10-03T05:44:40.358Z",
+      "outcome": "blocked"
+    },
+    {
+      "kind": "semantic_verifier_handoff",
+      "id": "semantic-verifier-handoff-run-8cd1db2d-21cc-481f-b6e0-3aded8d58751-0",
+      "sessionId": "r66-03-refactor-1791006281521",
+      "runId": "run-8cd1db2d-21cc-481f-b6e0-3aded8d58751",
+      "role": "reviewer",
+      "reason": "SEMANTIC_VERIFIER_FALLBACK",
+      "oldOwner": {
+        "providerId": "ai-horde",
+        "modelId": "google/gemma-4-31b"
+      },
+      "newOwner": null,
+      "reviewedBaseRevision": "1f9a0e10ebc90987ba9a6958674c67595dac5fda",
+      "diffHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "priorVerdict": "NONE",
+      "createdAt": "2026-10-03T05:45:25.487Z",
+      "updatedAt": "2026-10-03T05:45:26.115Z",
+      "outcome": "failed"
+    }
+  ],
+  "independence": [
+    {
+      "id": "01-bug-fix",
+      "coder": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewers": [
+        {
+          "providerId": "ai-horde",
+          "modelId": "google/gemma-4-31b"
+        }
+      ],
+      "reviewPassed": false
+    },
+    {
+      "id": "02-feature",
+      "coder": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewers": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewPassed": true
+    },
+    {
+      "id": "03-refactor",
+      "coder": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewers": [],
+      "reviewPassed": false
+    },
+    {
+      "id": "04-test-creation",
+      "coder": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewers": [
+        {
+          "providerId": "ai-horde",
+          "modelId": "google/gemma-4-31b"
+        }
+      ],
+      "reviewPassed": false
+    },
+    {
+      "id": "05-debugging",
+      "coder": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewers": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewPassed": true
+    },
+    {
+      "id": "06-configuration",
+      "coder": [
+        {
+          "providerId": "ai-horde",
+          "modelId": "google/gemma-4-31b"
+        }
+      ],
+      "reviewers": [
+        {
+          "providerId": "ai-horde",
+          "modelId": "google/gemma-4-31b"
+        }
+      ],
+      "reviewPassed": false
+    },
+    {
+      "id": "07-bug-fix",
+      "coder": [
+        null
+      ],
+      "reviewers": [],
+      "reviewPassed": false
+    },
+    {
+      "id": "08-feature",
+      "coder": [
+        null
+      ],
+      "reviewers": [],
+      "reviewPassed": false
+    },
+    {
+      "id": "09-refactor",
+      "coder": [
+        null
+      ],
+      "reviewers": [],
+      "reviewPassed": false
+    },
+    {
+      "id": "10-test-creation",
+      "coder": [
+        null
+      ],
+      "reviewers": [],
+      "reviewPassed": false
+    },
+    {
+      "id": "01-bug-fix",
+      "coder": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewers": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        },
+        {
+          "providerId": "ai-horde",
+          "modelId": "google/gemma-4-31b"
+        }
+      ],
+      "reviewPassed": false
+    },
+    {
+      "id": "03-refactor",
+      "coder": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewers": [
+        {
+          "providerId": "ai-horde",
+          "modelId": "google/gemma-4-31b"
+        }
+      ],
+      "reviewPassed": false
+    },
+    {
+      "id": "02-feature",
+      "coder": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewers": [
+        {
+          "providerId": "ai-horde",
+          "modelId": "google/gemma-4-31b"
+        }
+      ],
+      "reviewPassed": false
+    },
+    {
+      "id": "01-bug-fix",
+      "coder": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewers": [
+        {
+          "providerId": "ai-horde",
+          "modelId": "google/gemma-4-31b"
+        },
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewPassed": true
+    },
+    {
+      "id": "02-feature",
+      "coder": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        }
+      ],
+      "reviewers": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "kilo-auto/free"
+        },
+        {
+          "providerId": "ai-horde",
+          "modelId": "google/gemma-4-31b"
+        }
+      ],
+      "reviewPassed": false
+    },
+    {
+      "id": "03-refactor",
+      "coder": [
+        {
+          "providerId": "ai-horde",
+          "modelId": "google/gemma-4-31b"
+        }
+      ],
+      "reviewers": [
+        {
+          "providerId": "ai-horde",
+          "modelId": "google/gemma-4-31b"
+        },
+        null
+      ],
+      "reviewPassed": false
+    },
+    {
+      "id": "04-test-creation",
+      "coder": [
+        null
+      ],
+      "reviewers": [],
+      "reviewPassed": false
+    },
+    {
+      "id": "05-debugging",
+      "coder": [
+        null
+      ],
+      "reviewers": [],
+      "reviewPassed": false
+    },
+    {
+      "id": "06-configuration",
+      "coder": [
+        null
+      ],
+      "reviewers": [],
+      "reviewPassed": false
+    }
+  ],
+  "limitations": [
+    "A different provider/quota domain is preferred; no-verdict fallback may reduce independence and is reported by the runtime.",
+    "Qualified fixture roles still fail ordinary task output contracts."
+  ]
+}

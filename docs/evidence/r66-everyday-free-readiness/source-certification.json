@@ -1,0 +1,901 @@
+{
+  "certificateId": "r66-everyday-free-readiness-v1",
+  "schemaVersion": "free-capacity-source-certification/v1",
+  "certifiedAt": "2026-10-03T06:12:43.885Z",
+  "implementationBase": "8b436277e6ebbb9620a4e61b085a447e96045727",
+  "implementationHead": "7d1c625d7c13c04d6538fcde11bd3acbfc84a756",
+  "sourceStateId": "9e3089f6689b3a1c9e406528a7603bd60c32f81c77967588bcce0c910dbf86a1",
+  "closureStatus": "PARTIAL",
+  "certificateMeaning": "Source and evidence byte integrity with green repository validation. Everyday-use mandatory gates remain incomplete; this is not a CLOSED readiness certificate.",
+  "validation": {
+    "repositoryWideStatus": "PASS",
+    "repositoryWideExactTotalsExcludingStandaloneCertificateCanary": {
+      "files": 539,
+      "passed": 4459,
+      "failed": 0,
+      "skipped": 50,
+      "todo": 0,
+      "pending": 0,
+      "durationSeconds": 1695.344
+    },
+    "workspaceBuild": "PASS",
+    "certificateCanary": "RUN_SEPARATELY_AFTER_FREEZE"
+  },
+  "mandatoryGates": {
+    "generatedAt": "2026-10-03T06:12:43.603Z",
+    "closureStatus": "CODEFORGE_R66_PARTIAL",
+    "gates": {
+      "A": {
+        "status": "PASS",
+        "meaning": "R65 certificate/focused baseline/build passed before edits; historical R65 evidence preserved."
+      },
+      "B": {
+        "status": "PARTIAL",
+        "meaning": "Bug fix, multi-file feature, and debugging completed. Refactor, test creation, and configuration did not complete; only bug fix is earned again on final source."
+      },
+      "C": {
+        "status": "NOT_MET",
+        "meaning": "19 live attempts, 3 completed; maximum consecutive completion 1."
+      },
+      "D": {
+        "status": "PARTIAL",
+        "meaning": "Both providers responded to all four spaced transport observations; failure-to-recovery state transitions are deterministic simulation, not live role-recovery certification."
+      },
+      "E": {
+        "status": "PARTIAL",
+        "meaning": "250 deterministic degraded-provider admissions, zero false waits. Live denials lack a per-denial healthy-eligible oracle; live count remains null."
+      },
+      "F": {
+        "status": "PASS_OBSERVED",
+        "meaning": "0 false completions across 19 live attempts; authoritative review/verification/integration checked."
+      },
+      "G": {
+        "status": "NOT_MET",
+        "meaning": "Four real worker kills/restarts passed; autonomous parent recovery still blocks active runs and clears its workspacePath."
+      },
+      "H": {
+        "status": "PARTIAL",
+        "meaning": "Three real overlapping logical users shared one ledger; all tasks blocked on review. Sustained completion and no starvation are unproven."
+      },
+      "I": {
+        "status": "PASS_ENFORCEMENT",
+        "meaning": "250 private-context denials with Horde as only healthy supply, zero selected private routes; all live source was public synthetic fixtures."
+      },
+      "J": {
+        "status": "PASS_ROUTE_ENFORCEMENT",
+        "meaning": "No paid/BYOK route selections or credentials; actual monetary billing remains UNKNOWN."
+      },
+      "K": {
+        "status": "NOT_MET",
+        "meaning": "Actual packaged startup, 10-minute onboarding liveness, blocked task and restart measured. Login and multi-task workbench use are unproven."
+      },
+      "L": {
+        "status": "PASS",
+        "meaning": "Canonical main plus four serial heavy phases; certificate canary separately."
+      },
+      "M": {
+        "status": "PENDING",
+        "meaning": "Exact validated runtime commit must be live on the named Render service."
+      },
+      "N": {
+        "status": "PARTIAL_SOURCE_CERTIFICATE",
+        "meaning": "Source/evidence integrity certificate supports this PARTIAL result; it does not certify daily-use closure."
+      }
+    }
+  },
+  "sourceFiles": [
+    {
+      "path": "Dockerfile.cloud",
+      "sha256": "96ff36a1b458d806cae26a00fcbb5ae0e1215ded88f521e99e5670e7c225061d"
+    },
+    {
+      "path": "apps/cloud-api/src/deployment-identity.ts",
+      "sha256": "171a60ddfbaa476141735edba5f41e27eac21cf7229e6e7dfbcb468cfb4c5e3b"
+    },
+    {
+      "path": "apps/cloud-api/src/production-remote-direct.ts",
+      "sha256": "3315ca03bf8c769387302f2d9a3c0039600bdd991a21a16c112d9034a025eb06"
+    },
+    {
+      "path": "apps/cloud-api/src/remote-direct-host.ts",
+      "sha256": "179c81ecc994217c1b4e2eaa61f4b4b51783fea199f2e6187cd73994055e212d"
+    },
+    {
+      "path": "apps/cloud-api/src/remote-direct-http.ts",
+      "sha256": "70d749fd2e46c4bf8d80ee54d774cc354b3f4d1e931671ecbe2cf4089df2757b"
+    },
+    {
+      "path": "apps/cloud-api/src/server.ts",
+      "sha256": "5c4534f8d2f2e2d152edc8f6a43a6b923e450b3c5201a5b10304c3d45cf9ac76"
+    },
+    {
+      "path": "apps/cloud-api/src/sponsor-operator-http.ts",
+      "sha256": "8cb7256d97b91e6e7e1d3375e15d7d94836d4a9820f7c9ff783656cec46dae12"
+    },
+    {
+      "path": "apps/cloud-api/src/sponsor-operator-service.ts",
+      "sha256": "79e5f26508edab0b80d6f3e5f5c08b773e052363cf8915987f672cf7b3b4fe1f"
+    },
+    {
+      "path": "apps/cloud-api/test/deployment-identity.test.ts",
+      "sha256": "14a860753798931b092371b3bc2494957b2258cdff721cfbb183273638ed6edd"
+    },
+    {
+      "path": "apps/cloud-api/test/remote-direct-dispatch.test.ts",
+      "sha256": "921cddb199251d408842beb409a7d30fa7418fbb8657dd6ebdadacf68fe6e05a"
+    },
+    {
+      "path": "apps/cloud-api/test/remote-direct-http.test.ts",
+      "sha256": "4230c03bb73bb8c0c9d3fc8957cee950ce183e0848c8683892db8098e2ea5f12"
+    },
+    {
+      "path": "apps/cloud-api/test/sponsor-operator.test.ts",
+      "sha256": "43d75b77322bebf053f16982dc9a8a2dc199a9dcda3ac1b515c3da683cc8e05c"
+    },
+    {
+      "path": "apps/desktop/src/main.ts",
+      "sha256": "0d07e47b9cbd69e3bf2020a894091abe06ab1f3fec676b7c90e41fd99348df1f"
+    },
+    {
+      "path": "apps/desktop/src/openrouter-oauth-flow.ts",
+      "sha256": "11d662c30e64bc9f831d058ae4647307d03dfacc70ae778676d6f08ae6e0324c"
+    },
+    {
+      "path": "apps/desktop/src/provider-connection-types.ts",
+      "sha256": "fbe22d64296d7a99504a829cc33c980b50a8011bf48e69f706639937e1597c6b"
+    },
+    {
+      "path": "apps/desktop/src/provider-connections.ts",
+      "sha256": "6fba65078fdefd5daecefbe110e179e258db0a5e15a09d85bb7eff21244b52ff"
+    },
+    {
+      "path": "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx",
+      "sha256": "13a63e1b4abe063b046266744c142292145a0f49b424e658bc0cae6e93cf4c41"
+    },
+    {
+      "path": "apps/desktop/src/renderer/settings/settings-registry.tsx",
+      "sha256": "0bd1c4223b9a81b3656762c489b67ad92db6890181317542095ad2997f36518a"
+    },
+    {
+      "path": "apps/desktop/test/ai-horde-fresh-user.test.ts",
+      "sha256": "35b2cceaf2f3653203736267571c23f9410e11d77de3945c5383ad1f3e044091"
+    },
+    {
+      "path": "apps/desktop/test/free-capacity-settings.test.tsx",
+      "sha256": "6ff8e5147d08707d2f2a256cff2c1f048f07194492a12bb5bb3a157d89f4920d"
+    },
+    {
+      "path": "apps/desktop/test/openrouter-oauth-browser.test.ts",
+      "sha256": "5be2a0d78812b94f85a5a8f1d253fd154aafafc88724fbebcf4276aeadf18ac0"
+    },
+    {
+      "path": "apps/desktop/test/provider-connections.test.ts",
+      "sha256": "9ffae36b6e4941321a11c524fd9aafd02065831d164f2844bdf808453d3aed28"
+    },
+    {
+      "path": "apps/desktop/test/settings-registry.test.tsx",
+      "sha256": "fe2d048b9f83a4dc018cbd7e7bde3e87dc689efdfbb3ccf45d07601b5af9abc4"
+    },
+    {
+      "path": "benchmarks/free-capacity-fabric/r64-kilo-autonomous.mjs",
+      "sha256": "c747c836e670ced6a364dd4be9c82c7293e99bdbc1db48562131772ee408eba0"
+    },
+    {
+      "path": "benchmarks/free-capacity-fabric/r65-dual-domain-failover.mjs",
+      "sha256": "67934bab6cf996eb845d2e4266fade88dd40ee82fbc91451e56d10d4e51e3b9b"
+    },
+    {
+      "path": "benchmarks/free-capacity-fabric/r65-horde-autonomous.mjs",
+      "sha256": "d3d416783c169389f08be9bffb916a1d217f7677855906174f29b294a2d35672"
+    },
+    {
+      "path": "benchmarks/free-capacity-fabric/r65-horde-qualify-model.mjs",
+      "sha256": "97d0a6eea79b1b0f6ea529073486ae77d789452c3534b7b89c239d8eeb961b5d"
+    },
+    {
+      "path": "benchmarks/free-capacity-fabric/r65-multiuser-isolation.mjs",
+      "sha256": "73e986667841958b8b7ecf9e8f40de51a32cf830baefa21cdffbacf87a744437"
+    },
+    {
+      "path": "benchmarks/free-capacity-fabric/r65-production-coding.mjs",
+      "sha256": "51099151ad65580ad7cdeff48d6c384b3c3ae67dfa4f023fbf732e670e493c50"
+    },
+    {
+      "path": "benchmarks/r65/closure-evidence.mjs",
+      "sha256": "f62556d7d316597537726b4bddc1a15c6b2c650305820fa8acbdb34ce3f3d254"
+    },
+    {
+      "path": "benchmarks/r65/closure-preservation.mjs",
+      "sha256": "2c11a02513bf145bd01d11e283ab72188f36a9594f2773fd0e7f61a5ce941f4f"
+    },
+    {
+      "path": "benchmarks/r66/accounting-faults.mjs",
+      "sha256": "e330cd5beb597a83e8241847f3ed9ed0e98e8b81cf310bc728537c4fa1990f64"
+    },
+    {
+      "path": "benchmarks/r66/bounded-tests.mjs",
+      "sha256": "7a3944ef9052bb677a5f85a79b7d09e2aa6db631e163e4bf46b799c7d00d5859"
+    },
+    {
+      "path": "benchmarks/r66/certificate.mjs",
+      "sha256": "9061c5634a9bbc3fc759d8620344842cfb70379b71657082ffe123974c1a3b6c"
+    },
+    {
+      "path": "benchmarks/r66/churn.mjs",
+      "sha256": "5314a3e9e6c976ce853bd408042138a740528d547a4e7e2638828018432723a3"
+    },
+    {
+      "path": "benchmarks/r66/evidence-scan.mjs",
+      "sha256": "846ff9f70b461e089ce6811f1717c3aee763794f3ddb53bff54a0d89f5460fe8"
+    },
+    {
+      "path": "benchmarks/r66/extract.mjs",
+      "sha256": "a5b648ba280a5e62f5fa9af28bff7bc4751a4fbd3da46dd19217ca0cf784936b"
+    },
+    {
+      "path": "benchmarks/r66/finalize-tests.mjs",
+      "sha256": "3fc1b0abcc79a676840c89802a6c32920ce6b164e22032a6d9b68e4b3598db93"
+    },
+    {
+      "path": "benchmarks/r66/gap-resolution.mjs",
+      "sha256": "70c1c997731d6b3582bf075ed743f7eba7793d0613abac8e8e327e17dfe3f8a5"
+    },
+    {
+      "path": "benchmarks/r66/kill-resume.mjs",
+      "sha256": "c3d0be172585e4e4a6b91eb0afd7b98912dc926933a6c8b5938b971b05e04060"
+    },
+    {
+      "path": "benchmarks/r66/live-campaign.mjs",
+      "sha256": "278344f8f61916e5119c3d590dcf212c7cfd671d80633acf8813320408ae70ab"
+    },
+    {
+      "path": "benchmarks/r66/live-final.mjs",
+      "sha256": "80c7049586aa91a81ab34da044ff314c97be2d61bcd75b6c48ada9de0b54edd4"
+    },
+    {
+      "path": "benchmarks/r66/memory.mjs",
+      "sha256": "7345ff085bddc029e159e0a7b78a7bdf53d7ffd4400b97e4bcc7e93d02e1ef7a"
+    },
+    {
+      "path": "benchmarks/r66/multi-user.mjs",
+      "sha256": "95d38eb53a79f4bc6aca015c3e60d22051742c15da3ad9dd8de2226e181d6838"
+    },
+    {
+      "path": "benchmarks/r66/preserve.mjs",
+      "sha256": "ae4613db2e4e8d549fb93776acf2ae97cd5e77f252bf3a0f6e7e9559a2f81a8d"
+    },
+    {
+      "path": "benchmarks/r66/qualify.mjs",
+      "sha256": "d7cb04e784cb89bc6950862870109f7324f578dc95c795b0766094f82561182a"
+    },
+    {
+      "path": "benchmarks/r66/recertify-source-state.mjs",
+      "sha256": "9849954c8f5544b6f4f0db20503a0766aede27b7cad08e3832c3a3609c14eb3b"
+    },
+    {
+      "path": "benchmarks/r66/recovery-live.mjs",
+      "sha256": "bfcf659ac573dfbc2e584c834b08157cb6144d58544969394feaa6e08ccb0104"
+    },
+    {
+      "path": "benchmarks/r66/report.mjs",
+      "sha256": "724ff7e5bfd0ce0664c2e3bdf1e38e1373f45aa2a3691c73edff396c2e93dfd7"
+    },
+    {
+      "path": "benchmarks/r66/scale.mjs",
+      "sha256": "8a091da1c7387c7962143cfe9f650cb28dc6b7b11c1eb2c1de9c9fa8bff4a710"
+    },
+    {
+      "path": "benchmarks/r66/start.mjs",
+      "sha256": "3aa262218e7c2d8b9d839d49ef977fb0c0cf6f4025fe2a72bfa98c8388d41201"
+    },
+    {
+      "path": "benchmarks/r66/summarize.mjs",
+      "sha256": "b14745689c8dfeadc760a464e194a2e35183e4e566fb109e283f4e819e18af1b"
+    },
+    {
+      "path": "benchmarks/r66/tasks.mjs",
+      "sha256": "9f96b00f384b0373c9f9f7d983aca9d41c4b7b78e24478bc0b673466cc00fe91"
+    },
+    {
+      "path": "benchmarks/r66/windows-soak.mjs",
+      "sha256": "4d992b260dacbd2cea8c919a4fc328569f38f62b5ae0fdf06265f5cab45f36b7"
+    },
+    {
+      "path": "docs/codeforge-forgegreen-certified-source-state.json",
+      "sha256": "7d7337a67045d19568eb42d400027428132aec078ae0c2ed00685a1f20a78e2b"
+    },
+    {
+      "path": "packages/cloud-entitlements/src/entitlement-service.ts",
+      "sha256": "5a4d01988268805516f94527c4197ad611af4cb784276a0205a5ab75ae194afe"
+    },
+    {
+      "path": "packages/cloud-gateway/src/gateway-service.ts",
+      "sha256": "c88c4176d5b8356b81b601e7896f9805e417adc8c5932bcfda470d715dc4d186"
+    },
+    {
+      "path": "packages/cloud-gateway/src/hosted-queue-worker.ts",
+      "sha256": "9320f5c2805127cf893a617ac632c5c4081e36a0a10d5dfa44bdbfdf905ce18b"
+    },
+    {
+      "path": "packages/eight-bit/src/failover.ts",
+      "sha256": "6129a5312d490146514b1dde9e91f7cf458ac7d45e72a17a16f92c29f5984779"
+    },
+    {
+      "path": "packages/eight-bit/src/free-fabric.ts",
+      "sha256": "da8d542532e3bd4e1729e6f515254fda15b2d1c6dc1641dffbacc85820b9d878"
+    },
+    {
+      "path": "packages/eight-bit/src/qualification/role-protocols.ts",
+      "sha256": "757c744d57a66b9a1def3b97122cb7d982da5b2e72306ef558b474c1fa1d3029"
+    },
+    {
+      "path": "packages/eight-bit/src/qualification/role-suite.ts",
+      "sha256": "73e1020d6d67db3d4c99601003402ca43513c7154e5adec099319c11e4f47923"
+    },
+    {
+      "path": "packages/eight-bit/src/route-health-authority.ts",
+      "sha256": "2bee1aa9599b91eceec8e8385de76aa2526e05b411a808d650a9923c09add485"
+    },
+    {
+      "path": "packages/eight-bit/src/route-ledger.ts",
+      "sha256": "f0e380c1dc74106916dfe4c42641398291fedbf91b74b93ac6b62f49eaba3545"
+    },
+    {
+      "path": "packages/eight-bit/test/r56-model-scoped-health.test.ts",
+      "sha256": "8bae99674edda6a1804eb63d1ec7035ea4e7fe2494ba477c5e8fda32a863e36d"
+    },
+    {
+      "path": "packages/eight-bit/test/role-qualification.test.ts",
+      "sha256": "2018ad3c2a59fcfd1ff8a640a17b488b86cd7f689ccadc5aa95fa377f5727112"
+    },
+    {
+      "path": "packages/forge-zero/src/capacity-independence.ts",
+      "sha256": "c41fbed0f4df97014eea455818fb498a2d9aaeddf44928d6b44a9462609997b5"
+    },
+    {
+      "path": "packages/forge-zero/src/capacity-policy.ts",
+      "sha256": "8bdebb71611b91d4beea3a73ecb321dfdd0e4ebb024ea90088643a4959d6895c"
+    },
+    {
+      "path": "packages/forge-zero/src/capacity-reservations.ts",
+      "sha256": "204e8195ba43d42f92e7b57072a21c24dadb25cde88274d7eb689fb38e693fae"
+    },
+    {
+      "path": "packages/forge-zero/src/capacity-types.ts",
+      "sha256": "0fe54148308061752e36b05b3120a9d344c84932d936f3a80f2c0ef65b03959d"
+    },
+    {
+      "path": "packages/forge-zero/src/index.ts",
+      "sha256": "40c70aff3451b1a39f1564f37173da2c731f5c5b401c70cf7aa260d80837987e"
+    },
+    {
+      "path": "packages/forge-zero/src/legacy-free-migration.ts",
+      "sha256": "c22b93a16cbc62a0a84145aaaf498041cee5ae262a09c6680f3c887dbd3d32b9"
+    },
+    {
+      "path": "packages/forge-zero/src/sponsor-manifests.ts",
+      "sha256": "c2cf090b362b598ef4fb8d190be5a330f591d390870e3193b79a01ac63e01309"
+    },
+    {
+      "path": "packages/forge-zero/src/sponsored-routes.ts",
+      "sha256": "ba7f6ca01b578c49ec366378bfe1dcf421382e619dc6778a298ccf0ee18242c9"
+    },
+    {
+      "path": "packages/forge-zero/test/capacity-independence.test.ts",
+      "sha256": "705949959c6d0d890bd69f840c0dda42eb1ceed798799574fda676eb0d601e74"
+    },
+    {
+      "path": "packages/forge-zero/test/capacity-policy.test.ts",
+      "sha256": "3b798859b1230cc097db37e21bf4377f5691c1fd95558788bf52e613be40ef57"
+    },
+    {
+      "path": "packages/forge-zero/test/legacy-free-migration.test.ts",
+      "sha256": "d478a9ba0c05a229993d3bda560c59be3b478b03f0e9ba77ded31752cd4d4f30"
+    },
+    {
+      "path": "packages/forge-zero/test/sponsor-manifests.test.ts",
+      "sha256": "77b2d11a4a1f0c6ba70a32780835b263dd444bbad755c92900ddfc338d29a1e8"
+    },
+    {
+      "path": "packages/forge-zero/test/sponsored-routes.test.ts",
+      "sha256": "e7376d4d779c54f10e6a4e00a1ebb2200f601f5c36c421a6b40af89cbabb991b"
+    },
+    {
+      "path": "packages/model-registry/src/free-cloud-registry.ts",
+      "sha256": "db0426c7125ee666c136665a45863d12a8d63df863ce4c149846121aaadbf4a5"
+    },
+    {
+      "path": "packages/model-registry/src/free-cloud-service.ts",
+      "sha256": "d378d81e515eb4301eb7dbb05c281795e56c2f31308a55f98ee67e814f8d7eff"
+    },
+    {
+      "path": "packages/model-registry/src/horde-policy-reverification.ts",
+      "sha256": "fc0fd857338a15708b748384b4a7cc38681149dae155518b0429131c939aa721"
+    },
+    {
+      "path": "packages/model-registry/src/index.ts",
+      "sha256": "d3af0ef34c29deadca769d9a646da29075374ad9750f01d374406f348c85eb1c"
+    },
+    {
+      "path": "packages/model-registry/src/kilo-policy-reverification.ts",
+      "sha256": "762a770fe459255f66b8b76df230c9a49f45e69635456573c6b6f064d5d03090"
+    },
+    {
+      "path": "packages/model-registry/src/quota.ts",
+      "sha256": "2ed05c09378463eac0ef97a71774cd2ce1e6b8e7857817c375f9e953eb7044d9"
+    },
+    {
+      "path": "packages/model-registry/test/community-anonymous-free.test.ts",
+      "sha256": "80345320de24022c9e0851be284be65ba44097e07ac743d5d59866798d6f4ddc"
+    },
+    {
+      "path": "packages/model-registry/test/free-cloud-registry.test.ts",
+      "sha256": "d2c0165fc4f608c37559af582053fbe0bff56072049e7cd6e041d2e21f2eefea"
+    },
+    {
+      "path": "packages/model-registry/test/kilo-policy-reverification.test.ts",
+      "sha256": "d5de1cf9a604b01c307cfaa0570a21155efc27706dede356412e21a373ad47d5"
+    },
+    {
+      "path": "packages/providers/src/ai-horde.ts",
+      "sha256": "a8d70e6b8851ca8a603ba6cd7e7e399003347c46b2bf5d93d2fe72cf5050a1ac"
+    },
+    {
+      "path": "packages/providers/src/capacity-governor.ts",
+      "sha256": "b7181e842012195ab541587b35055be66f79696819a9ae45dd809daef1c266b1"
+    },
+    {
+      "path": "packages/providers/src/hosted-text-tools.ts",
+      "sha256": "4aa4bccb895416a8940b505154c36f13c26c6034b0cb781a312df77c297f440b"
+    },
+    {
+      "path": "packages/providers/src/hosted.ts",
+      "sha256": "32ba7bc8fbc8d37b680703dc2d9604ecf5b77c22d382f245978ceb86d326ba58"
+    },
+    {
+      "path": "packages/providers/src/openrouter-entitlement.ts",
+      "sha256": "df6a4a1b85d22fcbc317b395be626de55c67560dc789b105b8ebf2a43c1a285b"
+    },
+    {
+      "path": "packages/providers/src/openrouter-oauth.ts",
+      "sha256": "e55b473d7f989a836b32a2dac6981289635c0a346b8cbf6f61922db1557f22fc"
+    },
+    {
+      "path": "packages/providers/test/ai-horde.test.ts",
+      "sha256": "0db1792f2611591630699e376bc92b1b451621371178b2818ae112513d524bcf"
+    },
+    {
+      "path": "packages/providers/test/openrouter-entitlement.test.ts",
+      "sha256": "ce8a19959acf09351093bcca54ced08e5f9076f148bccfef11e9e50d6ac318d4"
+    },
+    {
+      "path": "packages/server/src/agent-runtime.ts",
+      "sha256": "ef51d7e1524da6ee3b23cc3420ec86a789db0f9d1b276aa0c224c31f7cbdbb6b"
+    },
+    {
+      "path": "packages/server/src/autonomous-orchestrator.ts",
+      "sha256": "09cdaebcc4c6daa3ed1067366ee88b11731edc26da141c2261ed000b614aa854"
+    },
+    {
+      "path": "packages/server/src/experience-learning.ts",
+      "sha256": "0230dfa0a9b5cd6b8580a7d234267452e07f62d92c933d5e63b0188cda431b5a"
+    },
+    {
+      "path": "packages/server/src/index.ts",
+      "sha256": "23b8cb7159700c1a845f5a7ab8b22f6052432fbe1f6b148233f08b889e7e1868"
+    },
+    {
+      "path": "packages/server/src/model-execution-adapter.ts",
+      "sha256": "16622a06814ba640ec5796bda4053476a54b56d9d64876542b8c581c53a926af"
+    },
+    {
+      "path": "packages/server/src/remote-client-direct.ts",
+      "sha256": "93634d11e577c5368a8ba158439940e85333fda5d30f3b7702ed14cde82535e1"
+    },
+    {
+      "path": "packages/server/src/remote-direct-admission.ts",
+      "sha256": "5906d4303fc4028c6562756ff0d1d81b7267edeb8e91e7dfba21550632ec43c1"
+    },
+    {
+      "path": "packages/server/src/remote-direct-client.ts",
+      "sha256": "cee25d77decefd897b21ea236dee040a6555a50ea5f9de118f5ca57f0a9139d6"
+    },
+    {
+      "path": "packages/server/src/remote-direct-cloud-provider.ts",
+      "sha256": "40db3ba402c38d48d4dacc8c4bc1f55875125a5f17637aa152c1b63245ba30e4"
+    },
+    {
+      "path": "packages/server/src/remote-direct-provider.ts",
+      "sha256": "8df70acce331d3f7f862978bd3500975cf7167e00d54d1c0c617564f37c99e07"
+    },
+    {
+      "path": "packages/server/src/remote-direct-transport.ts",
+      "sha256": "3ddd0e12399c85ae854ef46c1f12c8bfbd20350bf6fed14a13586423929376d2"
+    },
+    {
+      "path": "packages/server/test/free-routing-authority.test.ts",
+      "sha256": "c6a4a0748c91a0af0cb5e632c7c7436a0f9422f9b2d6886b3e29acb5a61a4ee0"
+    },
+    {
+      "path": "packages/server/test/r54-quality-handoff.test.ts",
+      "sha256": "b6bb0797aad1fc1ad910e0803e91da9bf59af7327c74da1703034c7df9bde971"
+    },
+    {
+      "path": "packages/server/test/remote-client-direct.test.ts",
+      "sha256": "0417ba4f1f1a8381fe3924b40d533064168e29642c91ee116148124c0b087979"
+    },
+    {
+      "path": "packages/server/test/remote-control-pressure.test.ts",
+      "sha256": "79375a616ac89f31d07c031afa326a9c145eeff9ed3d90a683c81146f1ce8866"
+    },
+    {
+      "path": "packages/server/test/remote-direct-transport.test.ts",
+      "sha256": "8fc69c68457ea502e2adbbd96c9c3670de1228a6a5d9c691a25b581d97bc868e"
+    },
+    {
+      "path": "packages/server/tsconfig.json",
+      "sha256": "42fcbb02b58f0f85e134da32bd80a5c247a048161d8f6987564ec7842580ed17"
+    },
+    {
+      "path": "packages/sessions/src/persistence.ts",
+      "sha256": "97538ec168d852fd6c399623809abb6aabc6c044823824dce3269cd630ce3b1c"
+    },
+    {
+      "path": "packages/sessions/src/session-state.ts",
+      "sha256": "ef400d82793791fe134594749f6c075c2b704a211b1ee7bfe1a8ddfff10630fd"
+    },
+    {
+      "path": "packages/sessions/test/transaction-concurrency.test.ts",
+      "sha256": "b7c953d0830c34be41f83dd095f67ddab9d2fa26cf9f9e63d76db5af6744afc3"
+    },
+    {
+      "path": "packages/workflow/src/completion-gate.ts",
+      "sha256": "83de4becfedd27b43e63d9800a226190fe4d0a5bb01b4b5cfe175ba22b239b16"
+    },
+    {
+      "path": "packages/workflow/src/forge-verify.ts",
+      "sha256": "35310ea2b0743f00d4d962236b0c619df26febd557de3540b243a28285af58c1"
+    },
+    {
+      "path": "scripts/cloud/remote-direct-worker.mjs",
+      "sha256": "d92d70487b50c6523aa8d1bc8ad0a5175bfbe70fab5f845d23b586ded021f4b0"
+    },
+    {
+      "path": "scripts/free-capacity-certificate.mjs",
+      "sha256": "73783209acd776852392eb2906d77e65c78a098440fed04fc46c417f16832600"
+    },
+    {
+      "path": "scripts/r63-bounded-tests.mjs",
+      "sha256": "9d10b5c25033e8101a49a46ac46a2f2d726ed23d50e46ea3bea818e409b365aa"
+    },
+    {
+      "path": "scripts/r63-heap-diagnosis.mjs",
+      "sha256": "068f400df5823cf501a789659accbb52edc11dc72eb5a7f55f6b828b46d34afe"
+    },
+    {
+      "path": "scripts/r63-provider-candidates.mjs",
+      "sha256": "4431e770acc125d477b37b414e486f162b8fb4392d603b14bbddeadf391df901"
+    },
+    {
+      "path": "scripts/r63-provider-entitlement-probe.mjs",
+      "sha256": "3d85e02084b3424029ab850184308e1152db967ac66eb2bf554779c91efdcc35"
+    },
+    {
+      "path": "scripts/r63-recertify-source-state.mjs",
+      "sha256": "9a4d4ee2eaa1fbb72c4ae56aa671be04d3dc67ca48e205b2dfbab237b3381911"
+    },
+    {
+      "path": "scripts/r64-bounded-tests.mjs",
+      "sha256": "a9b65141ee49996a059b4dd4c3b4628a4301aa2b723a0d4fe2145c16d6c12a9b"
+    },
+    {
+      "path": "scripts/r64-evidence-snapshot.mjs",
+      "sha256": "23842ddce33ea5882346010254a0b99cd7a8465e41da9a82328546350e52b093"
+    },
+    {
+      "path": "scripts/r64-memory-observe.ps1",
+      "sha256": "d4d2a822f133cc8fb03a7cc429776aca14eec1efa30bcf5bb19826dea14c9a7b"
+    },
+    {
+      "path": "scripts/r64-production-health.mjs",
+      "sha256": "3ca13b5dc392067228acbf09143d705160c4abf4db4ef18bc74e92f7a89e5747"
+    },
+    {
+      "path": "scripts/r64-production-preflight.mjs",
+      "sha256": "69c58af73f533fc0568ea37080dbbf6ff07f87ba8f6e444f6dd4541b6899fb9f"
+    },
+    {
+      "path": "scripts/r64-production-transport-probe.mjs",
+      "sha256": "f3ded32bd051567e00e2e39433d6f977b4c301cfbec39128d59d39fae84a98a0"
+    },
+    {
+      "path": "scripts/r64-provider-entitlement-probe.mjs",
+      "sha256": "07e2433307ff4243e3a22bd14fb1decc2f3e79dfef2771a9bfe0aa4270d20bda"
+    },
+    {
+      "path": "scripts/r64-recertify-certificate.mjs",
+      "sha256": "4af08685f92afed7beb843b97f290a340f300c54129b5d817da0d317420ff38c"
+    },
+    {
+      "path": "scripts/r64-recertify-source-state.mjs",
+      "sha256": "41d7d9a8b996f6ed1c7b83dffe05e9909a2e41c3062b1bef3dc6a903260114c1"
+    },
+    {
+      "path": "scripts/r65-bounded-tests.mjs",
+      "sha256": "ff20763bf5f059dd7d9dcd5ad420f28b9c2adeb84ddbb0eda4a0d84d3be0e0f5"
+    },
+    {
+      "path": "scripts/r65-domain-sanity.mjs",
+      "sha256": "058c60555e1659932a81895fcba73225eb0d328e39cef162cf1006872c84c10c"
+    },
+    {
+      "path": "scripts/r65-preserve-start.mjs",
+      "sha256": "8f99bfca36f12c851e5434f636b485d7d34600d57b9e65d49380436a97852b60"
+    },
+    {
+      "path": "scripts/r65-production-closure.mjs",
+      "sha256": "957fe09510c7a4b49ad5936a496e317f2245c7acab943d5739877349dd44320f"
+    },
+    {
+      "path": "scripts/r65-production-health.mjs",
+      "sha256": "63494a4d22f4816e44bb8a8826a9ea28eb72571c2a61f85343f280b535334ad0"
+    },
+    {
+      "path": "scripts/r65-provider-entitlement-probe.mjs",
+      "sha256": "6681fe14c1bb005380346918816e1d703368cda921f12f6d85be73b11eb47557"
+    },
+    {
+      "path": "scripts/r65-recertify-certificate.mjs",
+      "sha256": "dc98fc6591b19bebfb7df453257f0c0005790e2dcd429d5113e5d9b442c9684d"
+    },
+    {
+      "path": "scripts/r65-recertify-source-state.mjs",
+      "sha256": "e6fad29a46852f50981de8cd2dd22b8b4e101f45ee887a96d73d30fdb3c90b5a"
+    },
+    {
+      "path": "scripts/security/secret-scan.mjs",
+      "sha256": "28625a88525c658376e941421e14fff8c7d9baa021463f46dc0962028a4ba7f1"
+    },
+    {
+      "path": "tests/free-capacity-certificate.test.ts",
+      "sha256": "8b1cc59f4296c66881e25c040c956f6328bf78868bbc2fc0362c5d421bfd49fa"
+    }
+  ],
+  "evidenceFiles": [
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-ACCOUNTING-FAULTS.json",
+      "sha256": "70ac335d8a1cf7e22b8a393ff620f3b2ddb8864b126a657e8ca84b67aa3ccd87"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-ACCOUNTING-REMOTE-REGRESSIONS.json",
+      "sha256": "6480ba190aab66ee5af2429a0b57fa5b37df3a25e54d8f2d3218411ccfb8e31b"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-ANTI-LOOP.json",
+      "sha256": "2663f3c0b4a5f238dfaae3567ac0cfdab397e6b1b20024f74b4eaa755e6af455"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-BASELINE-TESTS.json",
+      "sha256": "c0919ec8686eb58a0c5298b2822cf8616b231605c82f9af0518840ca6f0a7c80"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-CAPACITY-METRICS.json",
+      "sha256": "6de86a90c2397c82c0d70624bde8a7d5195e604f646a4615881f60a3d7892f7e"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-CLOSURE-GATES.json",
+      "sha256": "1042c1dc9023e48d26124f8cea2cc2874a6726fce649d7f93e5da78104548f2e"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-COMPLETION-TORTURE.json",
+      "sha256": "d5080a7ddc91bb5ca5ae4a8f4b4f688d3a004dd1b478a7bc6bb26325ffc966a4"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-CONSERVATION-REGRESSIONS.json",
+      "sha256": "39ae97ed7ac797303bbc123a2a9a060ba5faeeee00692726ce578f6cbd95465a"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-CONTROL-PLANE-BASELINE.json",
+      "sha256": "17f9e6e6ed0b0221268d6edc99be66cb5f5c3e05f6c7d3158d716437a2ce160f"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-DATABASE-RECOVERY.json",
+      "sha256": "b9093effa4873df02619abe730fe600e5fad9d5ce2cc994bb91636de0c038a68"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-ENDURANCE.json",
+      "sha256": "4efe428079c10b45aba4d6b94ea644dcf5b30eb137ede3b0f47bf6013eb8b435"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-EVIDENCE-SECRET-SCAN.json",
+      "sha256": "4d78d98f0b8bedbc19e654ef09075959fd3c84a2f9db86ab9d6b26489ed3dc16"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-EXPERIENCE-LEARNING.json",
+      "sha256": "24b55f133b654eb96d552aa1278565b2f5343f7adb15a74de4409ec2c48b3260"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-FAILURE-CLASSIFICATION.json",
+      "sha256": "35fca10c4577c69aff306326f61eb4252c02d7360fce9713221d2a9f786402b2"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-FAIRNESS.json",
+      "sha256": "8fa57777b11915d32c88f65f5568726a98c7f0b82ace708dd19b0d0ef3e5e200"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-FAULT-REGRESSIONS.json",
+      "sha256": "960b981e8dfdbe821e3b71bbb5a0eb6a6f54ca8d1e1c475df15f4fef43d7211d"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-FINAL-REPORT.md",
+      "sha256": "470e88a47cf847cdae42a0e2f7b2a7a5cb91406502682a41f38775a4496c76f0"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-FINAL-RUNTIME-REGRESSIONS.json",
+      "sha256": "277961b810a5b5860570716f4e55c264c0d68c3fcab97b3cfa02bac4fc1f0b80"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-GAP-AUDIT.json",
+      "sha256": "14bfe5a134349bc42a285b7ac638793e44e8863df2c13b6d3ee5e951a7e306de"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-GAP-RESOLUTION.json",
+      "sha256": "091679e83b048fc5e8977169326eb9d15cf1f9625b0f03eb5c8f31aa6d4419ea"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-HANDOFF-REGRESSIONS.json",
+      "sha256": "626c7db8624c8fa8d1bcbd8a0a49f1e1ce446c26e8c7dfa513051c45e99e9df5"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-HORDE-MODEL-CHURN.json",
+      "sha256": "b33bd7295241b93dc2961da018180cdab91aa119c273fdab52f8f96eecf8e755"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-KILL-RESUME-LEASE-CONTENTION.json",
+      "sha256": "9147524dea69231b3b3be184b71495eee0e58a98ad8e4d5485930b58cab22be2"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-KILL-RESUME.json",
+      "sha256": "3458ec1c447d7d8efd67843c5e060faf6d755579644ea78efe128462d9663f73"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-KILO-ROLE-QUALITY-after.json",
+      "sha256": "74bd4ed34b0b54a8dcbd78a734919010cc01dc385275050c616a65848f5e1af4"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-KILO-ROLE-QUALITY-final.json",
+      "sha256": "4330a1dcc46faad9a269e4ea4c6b61e35782324c9ad7a3b3e1c7f728d5bcad28"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-KILO-ROLE-QUALITY.json",
+      "sha256": "9ece0fb1702ffb747f32c20e7a49d90d0670cb74b983166dfa1a5d96fd009aab"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-LOST-ROUTE-REPRO.json",
+      "sha256": "2b1ab88bd11bffad8049cf2fe518de745a3b82c4b8422e6be9962885da6bef53"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-MULTI-USER-LIVE.json",
+      "sha256": "9a619a058dd0d91b7a1636223fcebd1853df3dd94a9eec5d470a42430dc326c7"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-NO-FALSE-WAIT.json",
+      "sha256": "ddd392c72ead2d66199ee6d775bdf2e40c67fdd3f1afc09af2c19bec3ce2b456"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-PERFORMANCE.json",
+      "sha256": "21cf53dbef1bcde637fa9ebee0d1ef0f536cd4483feb43b8c7e757cf84790ec1"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-PRIVACY.json",
+      "sha256": "434ba2f7d7db0e9b4c65269c5e28e054b4aa57dee56b6f808ae9c38743346c96"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-PRODUCTION-BASELINE.json",
+      "sha256": "ea34422831f60ef3af5e9b47047df4e1b69d6acfc3d4ffa02e03ce766236f48f"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-PRODUCTION-DEPLOYMENT.json",
+      "sha256": "dce8bb04110964548bd257eac1ae3d590f3d986d7134a8b5bbfe056c473feb33"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-PRODUCTION-FINAL-HEALTH.json",
+      "sha256": "9c4263a37bdc2c53bb54883657a3412130035c21853dd1f670c2b3f6c7a702fb"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-PROVIDER-RECOVERY-LIVE.json",
+      "sha256": "dded893b944518bf42a94980673f49ad71838b97078ff43278258635448c1075"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-REPOSITORY-TESTS.json",
+      "sha256": "3b7003e31b0a0f54b5f378125fc68fab2b72d0702b90f20000588274e8818fa0"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-ROLE-FINAL-REGRESSIONS.json",
+      "sha256": "2123f827401a826174270b1a3c33dcd094199d6496f2e8649f0ff1a6b9a8700c"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-ROLE-REGRESSIONS.json",
+      "sha256": "52fbe05d3ee698d6bb75cabf77403fa1d4d3681e1f8fd396cbf5f18d83193633"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-ROLE-ROUTING.json",
+      "sha256": "6a38392b31bf2e8fde32b5c38dfd3e11af8bba092ccb1e918ba48f1cd93e5a00"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-SCALE-SIMULATION.json",
+      "sha256": "d9609b6daa4b544e226ae264a9f54c5d9a87361f399318533870ab6bd01e077c"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-SECRET-SCAN.json",
+      "sha256": "d9009beffd135b7b7c33821f41d76d53596afc9f6e66033c4fc6a73cbcd88284"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-START-STATE.json",
+      "sha256": "c9b4f8a718e9fdb1dde18f353a5a1de233d66767e6660eac6ef9b65031082f3f"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-TASK-CAMPAIGN.json",
+      "sha256": "5bb1e81218283a97d70705374620178009010a5b5080ce7f2d5d0123deb834f9"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-TASK-FINAL-SOURCE.json",
+      "sha256": "d5941aaeb803513d7e8f6060a9e96841d49b438a0af941f00ca6191412078c08"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-TASK-OUTCOMES.json",
+      "sha256": "815cc6046439630ddd571b06f99a066d149bdf4315d9fbe8cbcc18a28aac409a"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-TEST-MEMORY.json",
+      "sha256": "378a2c8a4dd69c4b07dbce5a322f3033db162f4e1d01c859b888809b66695175"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-UI-RESPONSIVENESS.json",
+      "sha256": "3586264a7435e62f8e3eff562295bd5392e7b0f4cf6a874b8624993f54eee806"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-USER-WORK-PRESERVATION.json",
+      "sha256": "df888dd7e7cb65b78384903cc3bf4cee7ace0a04d0e8af984baf790d39e64992"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-WINDOWS-FINAL-CANDIDATE.json",
+      "sha256": "30203e09dd1f26c8c0545ba892417fdfe55a5cafbf924a47f16c6f374a62051e"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-WINDOWS-SOAK.json",
+      "sha256": "c122ab3e33a86822413529ace9c5ce6b77ce37c3c4f3422992f651f12ff26ac7"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-WINDOWS-STARTUP.json",
+      "sha256": "0a1d0af586b29f2577cf673d2fe94d2b83cffa44a1ed79f54bf0ec73d2212121"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-WORKSPACE-BUILD.json",
+      "sha256": "4fcb0659be5a30cbfbc433159d1703125af7d6e540d61af6c8101016f39cfd29"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-suite-bounded-main.json",
+      "sha256": "fe09a7b53ed01326c04fdac6401fb16d246cfc88c7ae2f3ccb9bbf388fdc7289"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-suite-serial-heavy-1.json",
+      "sha256": "23e9f756747c9f338277935d3a520f31963cec0453434a13dfc08822f4c3534e"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-suite-serial-heavy-2.json",
+      "sha256": "ae9daa0d5450d59a371fbac2abb98bfc211e3e8ba132d04eaae18a3275e7d3af"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-suite-serial-heavy-3.json",
+      "sha256": "1b889d15996215c8c4c9247fe4779af136722a23df3989b8bf40191fd19cb3f9"
+    },
+    {
+      "path": "docs/evidence/r66-everyday-free-readiness/R66-suite-serial-heavy-4.json",
+      "sha256": "cd5454bf887944f933a5381c7910e7b40e35173671e382b2eb17c66d8c16c137"
+    }
+  ],
+  "limitation": "Qualification fixtures improved, but ordinary autonomous review/exploration remains unreliable. Repeated parent kill/resume, sustained consecutive completion, and authenticated multi-task Windows daily use are not certified. Simulations are explicitly separate from live outcomes. Unknown billing measurements remain UNKNOWN. Historical R65 certificate is preserved.",
+  "sourceAggregateSha256": "ec98199848ab25ec2f4550dfc22fd3e1b8b3a9a79864753ca3964336a4954ead",
+  "evidenceAggregateSha256": "68b02cd7ad1a19f424a9792ae76963902aab0adf7d02644320cde07902436ed0"
+}
