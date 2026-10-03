@@ -42,7 +42,7 @@ const REPO_PATTERNS = [
 ];
 
 function listFiles() {
-  return execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], { cwd: root, encoding: "utf8" })
+  return execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], { cwd: root, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 })
     .split("\0")
     .filter(Boolean)
     .filter((file) => !file.split(/[\\/]/).some((segment) => EXCLUDED_SEGMENTS.has(segment)))

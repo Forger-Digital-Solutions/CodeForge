@@ -284,6 +284,7 @@ describe("R44 — structured-output telemetry", () => {
 
     expect(result.status).toBe("blocked");
     expect(result.error).toBe(ERROR_CODES.AGENT_INVALID_STRUCTURED_OUTPUT);
+    expect(result.route).toEqual({ providerId: "test-provider", modelId: "free-model-1" });
     const so = result.contextMetrics?.structuredOutput;
     expect(so).toBeDefined();
     expect(so!.repairs).toBe(1);

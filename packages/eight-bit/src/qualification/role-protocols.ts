@@ -9,7 +9,7 @@
  * their protocol so old evidence can never be silently reinterpreted under new rules.
  */
 
-export const ROLE_QUALIFICATION_SUITE_VERSION = "R41_ROLE_QUALIFICATION_V3";
+export const ROLE_QUALIFICATION_SUITE_VERSION = "R66_ROLE_QUALIFICATION_V4";
 
 export type RoleProtocolId = "EXPLORER" | "PLANNER" | "REVIEWER";
 
@@ -34,7 +34,7 @@ export interface RoleProtocol {
 
 export const EXPLORER_PROTOCOL: RoleProtocol = {
   protocolId: "role.explorer",
-  version: "EXPLORER_PROTOCOL_V1",
+  version: "EXPLORER_PROTOCOL_V2",
   role: "EXPLORER",
   caseTimeoutMs: 45_000,
   // edit_file is deliberately offered: a repository-understanding agent that reaches for a
@@ -94,7 +94,7 @@ export const PLANNER_PROTOCOL_V2: RoleProtocol = {
 /** R41 clarifies the machine-readable role enum in the prompt without relaxing scoring. */
 export const PLANNER_PROTOCOL: RoleProtocol = {
   ...PLANNER_PROTOCOL_V2,
-  version: "PLANNER_PROTOCOL_V3",
+  version: "PLANNER_PROTOCOL_V4",
 };
 
 export const REVIEWER_PROTOCOL: RoleProtocol = {

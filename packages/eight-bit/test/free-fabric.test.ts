@@ -101,6 +101,37 @@ function poolFor(route: CapacityRoute, overrides: Partial<ProviderCapacityPool> 
   };
 }
 
+describe("R66 role team selection across domains", () => {
+  function team(kilo: CapacityRoute, shared: CapacityRoute) {
+    return createFreeFabric({ managedRoutes: () => [kilo, shared], managedPools: () => [poolFor(kilo), poolFor(shared)], reservations: new CapacityReservationLedger({ routes: [], now: () => NOW }), now: () => NOW });
+  }
+  const publicContext = { dataClass: "PUBLIC_CODE" as const, userConsented: true };
+
+  it("uses a qualified shared role ahead of packaged probation", () => {
+    const kilo = { ...kiloRoute("alice", 100), roles: ["PLANNER"], qualityScore: 99 };
+    const horde = managedRoute("horde", { providerId: "ai-horde", roles: ["PLANNER"], qualityScore: 70 });
+    const decision = team(kilo, horde).decide({ requestId: "planner", userId: "alice", userIdentities: ["alice"], role: "PLANNER", dataContext: publicContext, roleQualificationTierFor: (provider) => provider === "kilo-free-direct" ? "PROBATION" : "QUALIFIED" });
+    expect(decision.selected?.providerId).toBe("ai-horde");
+  });
+
+  it("prefers a comparable independent reviewer across the packaged/shared domain boundary", () => {
+    const kilo = { ...kiloRoute("alice", 100), roles: ["REVIEWER"], qualityScore: 95 };
+    const horde = managedRoute("horde", { providerId: "ai-horde", roles: ["REVIEWER"], qualityScore: 90 });
+    const decision = team(kilo, horde).decide({ requestId: "review", userId: "alice", userIdentities: ["alice"], role: "REVIEWER", dataContext: publicContext, preferIndependentFromPoolId: kilo.capacityPoolId });
+    expect(decision.selected?.providerId).toBe("ai-horde");
+    expect(decision.explanation.reasonCodes).toContain("INDEPENDENT_POOL_PREFERRED");
+  });
+
+  it("retains quality and privacy gates when independent review is requested", () => {
+    const kilo = { ...kiloRoute("alice", 100), roles: ["REVIEWER"], qualityScore: 95 };
+    const weak = managedRoute("weak", { roles: ["REVIEWER"], qualityScore: 40 });
+    expect(team(kilo, weak).decide({ requestId: "weak", userId: "alice", userIdentities: ["alice"], role: "REVIEWER", dataContext: publicContext, preferIndependentFromPoolId: kilo.capacityPoolId }).selected?.providerId).toBe("kilo-free-direct");
+    const privateOnly = managedRoute("horde", { roles: ["REVIEWER"], qualityScore: 99, dataPolicyProfile: "PUBLIC_CODE_ONLY" });
+    const denied = team(kilo, privateOnly).decide({ requestId: "private", userId: "alice", userIdentities: ["alice"], role: "REVIEWER", dataContext: { dataClass: "PRIVATE_CODE" }, preferIndependentFromPoolId: kilo.capacityPoolId });
+    expect(denied.selected).toBeUndefined();
+  });
+});
+
 describe("R63 capacity group telemetry", () => {
   it("reports same-egress user routes conservatively and excludes another user's capacity", () => {
     const alice = kiloRoute("alice", 100);

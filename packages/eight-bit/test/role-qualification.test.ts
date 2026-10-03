@@ -89,7 +89,7 @@ describe("R27 — versioned role protocols", () => {
   it("keeps R24 evidence frozen while qualifying the R27 planner protocol", () => {
     expect(ROLE_PROTOCOLS.map((p) => p.role)).toEqual(["EXPLORER", "PLANNER", "REVIEWER"]);
     for (const p of ROLE_PROTOCOLS) {
-      expect(p.version).toMatch(p.role === "PLANNER" ? /_V3$/ : /_V1$/);
+      expect(p.version).toMatch(p.role === "PLANNER" ? /_V4$/ : p.role === "EXPLORER" ? /_V2$/ : /_V1$/);
       expect(p.evidenceFormat).toBe("per_case_details_v1");
       expect(p.scoringDimensions.length).toBeGreaterThan(0);
     }
@@ -340,6 +340,56 @@ describe("R48 — reasoning-starvation headroom", () => {
     const silentPlannerCalls = emptySilent.requests.filter((r) => body(r).includes("task planner"));
     // No reasoning evidence means an upstream interruption; later cases stay pending.
     expect(silentPlannerCalls.length).toBe(1);
+  });
+});
+
+describe("R66 — bounded role transport", () => {
+  it("accepts imports present in supplied findings while rejecting invented compiled paths", async () => {
+    const scripted = (invented: boolean) => new ScriptedAdapter((req) => {
+      if (!body(req).includes("task planner")) return goodScript(req);
+      const plan = JSON.parse(plannerJsonFor(req)) as { tasks: Array<{ objective: string }> };
+      if (body(req).includes("cancellation path")) plan.tasks[0]!.objective += invented ? " Import ./fabric/phantom.js" : " Import release from ./fabric/admission.js in src/server.ts";
+      return text(JSON.stringify(plan));
+    });
+    const grounded = await runRoleQualification(MODEL, scripted(false));
+    expect(grounded.roleResults.PLANNER?.status).toBe("QUALIFIED");
+    const invented = await runRoleQualification(MODEL, scripted(true));
+    expect(invented.roleResults.PLANNER?.status).toBe("PROBATION");
+    expect(invented.roleResults.PLANNER?.testCases[0]?.details?.inventedPaths).toEqual(["./fabric/phantom.js"]);
+  });
+
+  it("scores a complete plan even when the provider reports length and a retry would be empty", async () => {
+    let plannerCalls = 0;
+    const adapter = new ScriptedAdapter((req) => {
+      if (!body(req).includes("task planner")) return goodScript(req);
+      plannerCalls++;
+      return [...text(plannerJsonFor(req)).filter((event) => event.type !== "finish"), { type: "finish", finishReason: "length" }];
+    });
+    const out = await runRoleQualification(MODEL, adapter);
+    expect(out.roleResults.PLANNER?.status).toBe("QUALIFIED");
+    expect(plannerCalls).toBe(2);
+  });
+
+  it("reserves the final existing call for a grounded report and keeps parallel tool transcripts valid", async () => {
+    const explorerCalls: ChatRequest[] = [];
+    const adapter = new ScriptedAdapter((req) => {
+      if (!body(req).includes("read-only repository explorer")) return goodScript(req);
+      explorerCalls.push(structuredClone(req));
+      for (let index = 0; index < req.messages.length; index++) {
+        const message = req.messages[index]!;
+        if (message.role !== "assistant" || !message.toolCalls?.length) continue;
+        const results = req.messages.slice(index + 1, index + 1 + message.toolCalls.length);
+        expect(results.every((result) => result.role === "tool")).toBe(true);
+        expect(results.map((result) => result.toolCallId)).toEqual(message.toolCalls.map((tool) => tool.id));
+      }
+      if (req.toolChoice === "none") return text(JSON.stringify({ files: Object.keys(EXPLORER_REPO.files) }));
+      return [...call("read_file", { path: "src/router.ts" }), ...call("read_file", { path: "src/fabric/admission.ts" })];
+    });
+    const out = await runRoleQualification(MODEL, adapter);
+    expect(out.roleResults.EXPLORER?.status).toBe("QUALIFIED");
+    expect(explorerCalls).toHaveLength(12);
+    expect(explorerCalls.filter((req) => req.toolChoice === "none")).toHaveLength(2);
+    expect(out.roleResults.EXPLORER?.testCases.every((result) => result.details?.modelCalls === 6)).toBe(true);
   });
 });
 

@@ -846,7 +846,7 @@ export class AutonomousRunOrchestrator {
           const qualityStall = codeResult.status === "blocked"
             && /\[(?:AGENT_NO_PROGRESS_DETECTED|AGENT_TOOL_LOOP_DETECTED)\]/.test(codeResult.summary)
             && codeResult.route !== undefined
-            && /^(?:managed|owner):/.test(codeResult.routePoolId ?? "")
+            && (/^(?:managed|owner):/.test(codeResult.routePoolId ?? "") || ["kilo-free-direct", "ai-horde"].includes(codeResult.route.providerId))
             && !controller.signal.aborted;
           if (qualityStall && qualitySwitches === 0) {
             qualitySwitches++;
@@ -1076,7 +1076,7 @@ export class AutonomousRunOrchestrator {
         const firstReviewerVerdict = Boolean((reviewResult.structuredData as { verdict?: string } | undefined)?.verdict)
           || (!this.subagentsR1Enabled && (reviewResult.findings?.length ?? 0) > 0);
         if (!firstReviewerVerdict
-          && reviewResult.route && /^(?:managed|owner):/.test(reviewResult.routePoolId ?? "")
+          && reviewResult.route && (/^(?:managed|owner):/.test(reviewResult.routePoolId ?? "") || ["kilo-free-direct", "ai-horde"].includes(reviewResult.route.providerId))
           && !controller.signal.aborted) {
           const oldRoute = reviewResult.route;
           const handoffId = `semantic-verifier-handoff-${runId}-${run.reviewRounds}`;

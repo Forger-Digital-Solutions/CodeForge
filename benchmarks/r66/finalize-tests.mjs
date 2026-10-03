@@ -1,0 +1,12 @@
+import { readFile, writeFile } from 'node:fs/promises';
+const directory = 'docs/evidence/r66-everyday-free-readiness';
+const tests = JSON.parse(await readFile(`${directory}/R66-REPOSITORY-TESTS.json`, 'utf8'));
+if (tests.status === 'RUNNING') throw new Error('CANONICAL_RUN_STILL_ACTIVE');
+const memory = JSON.parse(await readFile(`${directory}/R66-TEST-MEMORY.json`, 'utf8'));
+tests.restrictedSampler = { reportedTreeBytes: tests.peakProcessTreeWorkingSetBytes, scope: 'Main test process only; restricted child enumeration was unavailable. Replaced below with independently enumerated process-tree samples.' };
+tests.peakProcessTreeWorkingSetBytes = memory.peakProcessTreeRssBytes;
+tests.peakSingleProcessWorkingSetBytes = memory.peakSingleProcessWorkingSetBytes;
+tests.memoryEvidence = 'R66-TEST-MEMORY.json';
+tests.memorySampling = { intervalSeconds: 15, samples: memory.samples.length, scope: memory.scope, measurement: 'Observed peak, not a continuous maximum' };
+await writeFile(`${directory}/R66-REPOSITORY-TESTS.json`, `${JSON.stringify(tests, null, 2)}\n`);
+console.log(JSON.stringify({ status: tests.status, totals: tests.totals, peakTreeBytes: tests.peakProcessTreeWorkingSetBytes }));

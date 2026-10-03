@@ -3183,6 +3183,8 @@ export class AgentRuntime {
                 filesChanged: Array.from(changedFiles),
                 error,
                 contextMetrics,
+                ...(servedPoolId ? { routePoolId: servedPoolId } : {}),
+                ...(journalActiveRoute ? { route: { ...journalActiveRoute } } : {}),
               };
             }
             structuredData = validation.data;

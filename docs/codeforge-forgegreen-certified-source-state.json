@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "2e40805e6bfa75a825ef5fa925fc075713c081e1480b0cb0e7f8a8aad2a4d184",
-  "surfaceVersion": "r65-free-capacity-fabric-v1",
+  "sourceStateId": "9e3089f6689b3a1c9e406528a7603bd60c32f81c77967588bcce0c910dbf86a1",
+  "surfaceVersion": "r66-everyday-free-readiness-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -52,13 +52,16 @@
     "packages/eight-bit/src/free-fabric.ts",
     "packages/eight-bit/src/health.ts",
     "packages/eight-bit/src/qualification/compact.ts",
+    "packages/eight-bit/src/qualification/role-protocols.ts",
     "packages/eight-bit/src/qualification/role-suite.ts",
+    "packages/eight-bit/src/role-quality.ts",
     "packages/eight-bit/src/route-ledger.ts",
     "packages/eight-bit/src/runtime.ts",
     "packages/eight-bit/src/types.ts",
     "packages/eight-bit/test/free-fabric.test.ts",
     "packages/eight-bit/test/r24-multi-pool.test.ts",
     "packages/eight-bit/test/r56-model-scoped-health.test.ts",
+    "packages/eight-bit/test/role-qualification.test.ts",
     "packages/eight-bit/test/role-quality.test.ts",
     "packages/eight-bit/test/runtime.test.ts",
     "packages/forge-green/src/optimization-candidate-a.ts",
@@ -129,6 +132,8 @@
     "packages/server/test/free-fabric-wiring.test.ts",
     "packages/server/test/free-routing-authority.test.ts",
     "packages/server/test/progress-watchdog.test.ts",
+    "packages/server/test/r44-edit-discipline.test.ts",
+    "packages/server/test/r54-quality-handoff.test.ts",
     "packages/server/test/remote-control-pressure.test.ts",
     "packages/server/test/remote-direct-transport.test.ts",
     "packages/server/test/role-output-budget.test.ts",
@@ -192,16 +197,19 @@
     "packages/context/test/cf14-context.test.ts": "aaf1dbdfabeaf6406e37c0fc258ba3a9fd89d7a5",
     "packages/context/test/fg3-budget.test.ts": "ee99da9a7bbc0438dbf62814bcf8940274f74375",
     "packages/eight-bit/src/failover.ts": "0bad73e8a33699b275b2d4815147f9dff9b1bfa3",
-    "packages/eight-bit/src/free-fabric.ts": "3796ef50815ac37cfa378e5d04f6a8c9928417ec",
+    "packages/eight-bit/src/free-fabric.ts": "786a394834674b1c4e6bef0d450d83113de4a468",
     "packages/eight-bit/src/health.ts": "4f67c963257dcb5c62597c7a2e72c8a7a06b9e36",
     "packages/eight-bit/src/qualification/compact.ts": "0711a1576b144aa2aabb7eb19d6b8d35377c67e6",
-    "packages/eight-bit/src/qualification/role-suite.ts": "4861d214efb11aeac9a28d4a6dcc3ba8029e2dd4",
+    "packages/eight-bit/src/qualification/role-protocols.ts": "57a4c4a5ee9cc0a5b9a4cdae4d768835f3c32bfb",
+    "packages/eight-bit/src/qualification/role-suite.ts": "4977f8b0b87cd527474ea22faad9347528edf831",
+    "packages/eight-bit/src/role-quality.ts": "d8992db15002f18d4ac1d7eed2246e3f73f26286",
     "packages/eight-bit/src/route-ledger.ts": "500cd8b1fefc4d5ae17d9e4d26f174517b97076b",
     "packages/eight-bit/src/runtime.ts": "a1fc87ce5a6715e7a2dcbef9bba20b68a222b3ff",
     "packages/eight-bit/src/types.ts": "734479dcd0d544b8cb9579762df54aacc772f185",
-    "packages/eight-bit/test/free-fabric.test.ts": "9261edf9c81a4fd8d41ddb5c83fd57efdc2ab925",
+    "packages/eight-bit/test/free-fabric.test.ts": "594f350dce0a49fcdbefd680d1f2ec5a22633afb",
     "packages/eight-bit/test/r24-multi-pool.test.ts": "9c7b12896e2e5e437408df4db565b7b90812272b",
     "packages/eight-bit/test/r56-model-scoped-health.test.ts": "a0bf3d123e153c530ea5d71c5c2f963ab7a02411",
+    "packages/eight-bit/test/role-qualification.test.ts": "c4eeb00edf813bba5e303c2db5d5cd1612e939d6",
     "packages/eight-bit/test/role-quality.test.ts": "3cdca370a2a3a9aed84c7a89f7218092888f74eb",
     "packages/eight-bit/test/runtime.test.ts": "2d0a99f78950db59a487e4ea95a96138d1e9f454",
     "packages/forge-green/src/optimization-candidate-a.ts": "67af82aaf7b9d20aac76238752c0532798a975a4",
@@ -240,8 +248,8 @@
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
     "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
-    "packages/server/src/agent-runtime.ts": "5bd30e3b901432eafd981f2f59dc0381198b06cf",
-    "packages/server/src/autonomous-orchestrator.ts": "1f2d1d92420b7085e1f721755956d60cbdc3d180",
+    "packages/server/src/agent-runtime.ts": "1a5a9a0a55d236ff70c3f0936f3d3fb25ab727a3",
+    "packages/server/src/autonomous-orchestrator.ts": "3cad1f9874c5cbc15dbbb15d83bab37e1411c7e0",
     "packages/server/src/checkpoint-service.ts": "667fe270d9c832b7c9bef217e6796a0bcbb82eb1",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
     "packages/server/src/experience-learning.ts": "4b2412fac97695e1568fdef4c0490c0f26446723",
@@ -272,6 +280,8 @@
     "packages/server/test/free-fabric-wiring.test.ts": "8006f2693fa252d38522350d78de49e814e672d8",
     "packages/server/test/free-routing-authority.test.ts": "42742440525c739189baabb148c40d7d8b3e5e7c",
     "packages/server/test/progress-watchdog.test.ts": "35b8ec1225cc4a63fc6666351263f11eb419b4f0",
+    "packages/server/test/r44-edit-discipline.test.ts": "faefd6ee701730d2e681e2879aa9433a917e383f",
+    "packages/server/test/r54-quality-handoff.test.ts": "ea1bedca22b53ab2492f18f9fafd8baef0e6d5fb",
     "packages/server/test/remote-control-pressure.test.ts": "f8badda83b8a2cdbd14a2e1b73ff65a8940ad5f7",
     "packages/server/test/remote-direct-transport.test.ts": "186705cceeeae2b93e1ffe637af09c2442aee4ed",
     "packages/server/test/role-output-budget.test.ts": "d012b2b6fc81acea22e4c7187b492f4bbc225579",
@@ -3586,17 +3596,110 @@
         }
       ],
       "regressionEvidence": "docs/evidence/free-capacity-fabric/R65-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R66 everyday Free role quality",
+      "reason": "R66 traced live qualification exposed missing Explorer report budget, invalid parallel tool transcript grouping, discarded complete JSON, and grounded NodeNext imports falsely scored as invented paths. Measured role tier now precedes domain order, with bounded independent review across domains. Scoring thresholds, call caps, privacy and completion authority are preserved.",
+      "priorSourceStateId": "2e40805e6bfa75a825ef5fa925fc075713c081e1480b0cb0e7f8a8aad2a4d184",
+      "priorSurfaceVersion": "r65-free-capacity-fabric-v1",
+      "resultingSourceStateId": "4eaef6a1f41c19993166b0e0c7dd2582925957b74700743e3882a38a99f971b3",
+      "resultingSurfaceVersion": "r66-everyday-free-readiness-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/eight-bit/src/free-fabric.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/src/qualification/role-protocols.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/src/qualification/role-suite.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/src/role-quality.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/test/free-fabric.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/test/role-qualification.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r66-everyday-free-readiness/R66-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R66 everyday Free role quality",
+      "reason": "R66 traced live qualification exposed missing Explorer report budget, invalid parallel tool transcript grouping, discarded complete JSON, and grounded NodeNext imports falsely scored as invented paths. Measured role tier now precedes domain order, with bounded independent review across domains. Scoring thresholds, call caps, privacy and completion authority are preserved.",
+      "priorSourceStateId": "4eaef6a1f41c19993166b0e0c7dd2582925957b74700743e3882a38a99f971b3",
+      "priorSurfaceVersion": "r66-everyday-free-readiness-v1",
+      "resultingSourceStateId": "9eee4d4b2f902e3afbebaddb7d3b6667919395ec877551133bb3510f181c8161",
+      "resultingSurfaceVersion": "r66-everyday-free-readiness-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/r54-quality-handoff.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r66-everyday-free-readiness/R66-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R66 everyday Free role quality",
+      "reason": "R66 traced live qualification exposed missing Explorer report budget, invalid parallel tool transcript grouping, discarded complete JSON, and grounded NodeNext imports falsely scored as invented paths. Measured role tier now precedes domain order, with bounded independent review across domains. Scoring thresholds, call caps, privacy and completion authority are preserved.",
+      "priorSourceStateId": "9eee4d4b2f902e3afbebaddb7d3b6667919395ec877551133bb3510f181c8161",
+      "priorSurfaceVersion": "r66-everyday-free-readiness-v1",
+      "resultingSourceStateId": "a996651c2530e2af54558cc2bc271e2bbc780309ee711ad61b9c32cddde23735",
+      "resultingSurfaceVersion": "r66-everyday-free-readiness-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/eight-bit/src/free-fabric.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r66-everyday-free-readiness/R66-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R66 everyday Free role quality",
+      "reason": "R66 traced live qualification exposed missing Explorer report budget, invalid parallel tool transcript grouping, discarded complete JSON, and grounded NodeNext imports falsely scored as invented paths. Measured role tier now precedes domain order, with bounded independent review across domains. Scoring thresholds, call caps, privacy and completion authority are preserved.",
+      "priorSourceStateId": "a996651c2530e2af54558cc2bc271e2bbc780309ee711ad61b9c32cddde23735",
+      "priorSurfaceVersion": "r66-everyday-free-readiness-v1",
+      "resultingSourceStateId": "9e3089f6689b3a1c9e406528a7603bd60c32f81c77967588bcce0c910dbf86a1",
+      "resultingSurfaceVersion": "r66-everyday-free-readiness-v1",
+      "recertifiedAt": "2026-10-03",
+      "changedFiles": [
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/r44-edit-discipline.test.ts",
+          "addedToMaterialFiles": true
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r66-everyday-free-readiness/R66-REPOSITORY-TESTS.json"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R63 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, R44, R59, and R63 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-10-02",
+  "recertifiedAt": "2026-10-03",
   "recertification": {
-    "phase": "R65 production dispatch and Domain B",
-    "reason": "R65 production acceptance exposed control-plane request-budget exhaustion: 250ms status polling and redundant idle heartbeats exceeded the shared 120-request minute. Status reads now use two-second intervals and idle heartbeats honor their existing five-second period. A deterministic shared-budget regression test preserves polling and lease renewal without HTTP 429. The existing R56 daily-reset test now fixes its Date clock at UTC noon so its unchanged one-hour assertion remains valid near midnight. Provider eligibility, privacy, role qualification, verification and completion gates are unchanged.",
+    "phase": "R66 role transport and role team",
+    "reason": "R66 traced live qualification exposed missing Explorer report budget, invalid parallel tool transcript grouping, discarded complete JSON, and grounded NodeNext imports falsely scored as invented paths. Measured role tier now precedes domain order, with bounded independent review across domains. Scoring thresholds, call caps, privacy and completion authority are preserved.",
     "changedFiles": [
-      "packages/eight-bit/test/r56-model-scoped-health.test.ts"
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/test/r44-edit-discipline.test.ts"
     ],
-    "priorSourceStateId": "2be493e5d3e1bdb65e9a9cd1754f41c431454127bd0adf466f331a78930c2420",
+    "priorSourceStateId": "a996651c2530e2af54558cc2bc271e2bbc780309ee711ad61b9c32cddde23735",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

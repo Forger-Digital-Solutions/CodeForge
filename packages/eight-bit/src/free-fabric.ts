@@ -428,11 +428,13 @@ export class FreeFabric {
       request.preferIndependentFromPoolId !== undefined && candidate.entry.capacityPoolId !== request.preferIndependentFromPoolId ? REVIEWER_INDEPENDENCE_BONUS : 0;
     ranked.sort((a, b) => {
       const priorPool = request.preferIndependentFromPoolId;
-      return a.domainRank - b.domainRank
-        // R37 G/H + R48: qualified tier strictly before probation, probation strictly before
+      return a.qualificationTierRank - b.qualificationTierRank
+        // Qualified tier strictly before probation, probation strictly before
         // unmeasured — a measured "close enough" or untested route never outranks a fully
         // qualified peer on score alone.
-        || a.qualificationTierRank - b.qualificationTierRank
+        // A review's bounded independence preference must also work across supply domains.
+        || (priorPool === undefined || request.role !== "REVIEWER" ? 0 : (b.effectiveScore + independenceBonus(b)) - (a.effectiveScore + independenceBonus(a)))
+        || a.domainRank - b.domainRank
         || (b.effectiveScore + independenceBonus(b)) - (a.effectiveScore + independenceBonus(a))
         || (priorPool === undefined ? 0 : Number(a.entry.capacityPoolId === priorPool) - Number(b.entry.capacityPoolId === priorPool))
         || a.entry.routeId.localeCompare(b.entry.routeId);

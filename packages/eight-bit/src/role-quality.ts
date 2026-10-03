@@ -45,6 +45,7 @@ export const SUPPORTED_RECEIPT_SUITE_VERSIONS: ReadonlySet<string> = new Set([
   "R10_FREE_QUALIFICATION_V1",
   "R1_FREE_CLOUD_COMPACT_V1",
   "R41_ROLE_QUALIFICATION_V3",
+  "R66_ROLE_QUALIFICATION_V4",
 ]);
 
 export function receiptSuiteSupported(receipt: ModelQualificationReceipt | undefined): boolean {

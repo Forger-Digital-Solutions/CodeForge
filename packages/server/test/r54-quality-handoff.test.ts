@@ -103,7 +103,11 @@ describe("R54 quality-driven Coder handoff", () => {
     expect(await persistence.getWorkItemsByKind("role_quality_handoff")).toHaveLength(0);
   });
 
-  it("requires a replacement semantic verdict when the first Reviewer has none", async () => {
+  it.each([
+    ["openrouter", "managed:openrouter:a"],
+    ["ai-horde", "shared:ai-horde"],
+    ["kilo-free-direct", "kilo-direct:egress"],
+  ])("requires a replacement semantic verdict when %s has none", async (providerId, routePoolId) => {
     const reviewerRoutes: Array<SpawnChildOptions["excludeRoleRoute"]> = [];
     const manager = {
       spawnChildAgent: async (options: SpawnChildOptions) => {
@@ -113,7 +117,7 @@ describe("R54 quality-driven Coder handoff", () => {
           return { status: "completed", summary: "implemented", findings: [], evidence: [], files: ["src/math.mjs"], risks: [], recommendations: [], route: { providerId: "groq", modelId: "coder" }, routePoolId: "managed:groq:coder" };
         }
         reviewerRoutes.push(options.excludeRoleRoute);
-        if (reviewerRoutes.length === 1) return { status: "blocked", summary: "[AGENT_MODEL_TURN_LIMIT] no verdict", findings: [], evidence: [], files: [], risks: [], recommendations: [], route: { providerId: "openrouter", modelId: "reviewer-a" }, routePoolId: "managed:openrouter:a" };
+        if (reviewerRoutes.length === 1) return { status: "blocked", summary: "[AGENT_MODEL_TURN_LIMIT] no verdict", findings: [], evidence: [], files: [], risks: [], recommendations: [], route: { providerId, modelId: "reviewer-a" }, routePoolId };
         return { status: "completed", summary: "pass", findings: [], evidence: [], files: [], risks: [], recommendations: [], structuredData: { verdict: "pass", summary: "pass", findings: [] }, route: { providerId: "mistral", modelId: "reviewer-b" }, routePoolId: "managed:mistral:b" };
       },
       cancelParent: () => undefined,
@@ -122,8 +126,8 @@ describe("R54 quality-driven Coder handoff", () => {
     const result = await orchestrator.startRun({ sessionId: "r54-semantic", workspacePath: repo, goal: "Implement partial and finish in the math module with tests", verificationCommands: ["node --test test/integration.test.mjs"] });
     expect(result.status).toBe("completed");
     expect(result.completion?.outcome).toBe("completed");
-    expect(reviewerRoutes).toEqual([undefined, { providerId: "openrouter", modelId: "reviewer-a" }]);
-    expect(await persistence.getWorkItemsByKind("semantic_verifier_handoff")).toMatchObject([{ oldOwner: { providerId: "openrouter", modelId: "reviewer-a" }, newOwner: { providerId: "mistral", modelId: "reviewer-b" }, priorVerdict: "NONE" }]);
+    expect(reviewerRoutes).toEqual([undefined, { providerId, modelId: "reviewer-a" }]);
+    expect(await persistence.getWorkItemsByKind("semantic_verifier_handoff")).toMatchObject([{ oldOwner: { providerId, modelId: "reviewer-a" }, newOwner: { providerId: "mistral", modelId: "reviewer-b" }, priorVerdict: "NONE" }]);
   });
 
   it("blocks when the alternate Reviewer also has no valid verdict", async () => {

@@ -135,14 +135,21 @@ async function observeOnce(adapter: CompactQualificationAdapter, req: ChatReques
 
 async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number, counter?: QualificationRequestCounter, suiteSignal?: AbortSignal): Promise<ObserveResult> {
   const first = await observeOnce(adapter, req, timeoutMs, counter, suiteSignal);
+  let completeJson = false;
+  if (first.error === undefined && first.toolCalls.length === 0) {
+    try {
+      const parsed: unknown = JSON.parse(first.text.trim());
+      completeJson = parsed !== null && typeof parsed === "object";
+    } catch {}
+  }
   // Starvation signature: the call returned without error yet delivered no usable payload —
   // either the provider truncated at the cap (length) or the answer never arrived (empty
   // text, no tool calls). A reasoning-only burn surfaces as an EMPTY_COMPLETION error — a
   // retry there is justified only by measured reasoning spend; without it the error is
   // genuine upstream failure and retrying just re-pays for silence.
-  const starved = first.error === undefined
+  const starved = first.error === undefined && !completeJson
     ? first.finishReason === "length" || (first.text.trim().length === 0 && first.toolCalls.length === 0)
-    : /EMPTY_COMPLETION|no usable completion/i.test(first.error) && (first.reasoningTokens ?? 0) > 0;
+    : /EMPTY_COMPLETION|no usable completion/i.test(first.error ?? "") && (first.reasoningTokens ?? 0) > 0;
   if (!starved) return first;
   const baseline = req.maxTokens ?? 0;
   const headroom = Math.max(first.reasoningTokens ?? 0, QUALIFICATION_REASONING_RESERVE_TOKENS);
@@ -229,7 +236,7 @@ async function runExplorerCase(adapter: CompactQualificationAdapter, modelId: st
       content:
         "You are a read-only repository explorer. Use the tools to inspect the repository, then " +
         'answer with JSON only: {"files": ["<repo-relative path>", ...]} listing the files that ' +
-        "answer the task. Do not edit files. Do not invent paths.",
+        `answer the task. Do not edit files. Do not invent paths. You have at most ${caze.maxModelCalls} model calls including your final report. Batch related inspections and finish as soon as the evidence answers the task.`,
     },
     { role: "user", content: caze.task },
   ];
@@ -243,17 +250,20 @@ async function runExplorerCase(adapter: CompactQualificationAdapter, modelId: st
 
   while (modelCalls < caze.maxModelCalls) {
     modelCalls++;
-    lastObs = await observe(adapter, { model: modelId, messages, tools: EXPLORER_TOOLS, toolChoice: "auto", temperature: 0, maxTokens: 800 }, timeoutMs, counter, suiteSignal);
+    const finalCall = modelCalls === caze.maxModelCalls;
+    if (finalCall) messages.push({ role: "user", content: 'This is your final call. Report only the files supported by your inspection as JSON: {"files": [...]}. Do not request more tools.' });
+    lastObs = await observe(adapter, { model: modelId, messages, tools: EXPLORER_TOOLS, toolChoice: finalCall ? "none" : "auto", temperature: 0, maxTokens: 800 }, timeoutMs, counter, suiteSignal);
     if (lastObs.reasoningRetried) reasoningRetries++;
     if (lastObs.error) return caseResult(caze.caseId, "explore", false, started, { error: lastObs.error.slice(0, 200) });
     totalToolCalls += lastObs.toolCalls.length;
+    const toolCalls = lastObs.toolCalls.map((call, index) => ({ id: `q_${modelCalls}_${index + 1}`, type: "function" as const, function: { name: call.name, arguments: JSON.stringify(call.args) } }));
+    if (toolCalls.length > 0) messages.push({ role: "assistant", content: lastObs.text, toolCalls });
     let executed = 0;
     for (const call of lastObs.toolCalls) {
       if (!call.malformed && EXPLORER_TOOLS.some((t) => t.function.name === call.name)) validCalls++;
       const result = executeExplorerTool(call.name, call.args, stats);
       executed++;
       const callId = `q_${modelCalls}_${executed}`;
-      messages.push({ role: "assistant", content: lastObs.text, toolCalls: [{ id: callId, type: "function", function: { name: call.name, arguments: JSON.stringify(call.args) } }] });
       messages.push({ role: "tool", content: result, toolCallId: callId });
     }
     if (lastObs.toolCalls.length === 0) {
@@ -369,6 +379,21 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
   });
 
   const knownPaths = new Set(caze.findingsFiles);
+  // NodeNext imports spell compiled .js paths in .ts source. An import already present in
+  // the supplied findings is grounded evidence only when its target is also supplied.
+  for (const file of caze.findingsFiles) {
+    const content = EXPLORER_REPO.files[file] ?? "";
+    for (const match of content.matchAll(/\bfrom\s+["'](\.[^"']+)["']/g)) {
+      const imported = match[1]!;
+      const parts = [...file.split("/").slice(0, -1)];
+      for (const part of imported.split("/")) {
+        if (part === "..") parts.pop();
+        else if (part !== ".") parts.push(part);
+      }
+      const target = parts.join("/");
+      if (knownPaths.has(target) || knownPaths.has(target.replace(/\.js$/, ".ts"))) knownPaths.add(imported);
+    }
+  }
   const pathToken = /(?:[\w.-]+\/)+[\w.-]+\.\w+/g;
   const inventedPaths = [...new Set(tasks.flatMap((t) => plannerTaskText(t).match(pathToken) ?? []).filter((p) => !knownPaths.has(p) && !p.startsWith("http")))];
   const verificationStepPresent = tasks.some((t) => /verif|test|review/i.test(plannerTaskText(t)) || String(t.assignedRole).toLowerCase() === "reviewer");
