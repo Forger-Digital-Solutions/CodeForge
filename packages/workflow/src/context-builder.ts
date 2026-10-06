@@ -16,7 +16,7 @@ export function explicitTaskFiles(intent: TaskIntent, files: Iterable<string>, p
     const clause = prefix.slice(boundary + 1);
     const verbs = [...clause.matchAll(/\b(read|inspect|examine|search|look at|change|edit|modify|update|fix|correct|implement|refactor|add|create|rename|remove|delete|write)\b/gi)];
     const lastVerb = verbs.at(-1)?.[0].toLowerCase();
-    const creates = lastVerb ? /^(?:add|create|write)$/.test(lastVerb) : boundary < 0 && creating;
+    const creates: boolean = lastVerb ? /^(?:add|create|write)$/.test(lastVerb) : boundary < 0 && creating;
     const existing = available.get(name.toLowerCase());
     const creationTarget = purpose === "edit" && creates
       && /\.(?:[cm]?[jt]sx?|json|ya?ml|toml|md|css|html|py|rs|go|sh)$/.test(name)
