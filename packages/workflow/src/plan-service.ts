@@ -33,7 +33,7 @@ function requiresApprovalForStep(step: PlanStep): boolean {
 
 function inferEditTargets(intent: TaskIntent, context: ContextBundle): Array<{ path: string; hint: string }> {
   const targets: Array<{ path: string; hint: string }> = [];
-  const mentioned = explicitTaskFiles(intent, context.primaryFiles);
+  const mentioned = explicitTaskFiles(intent, context.primaryFiles, "edit");
   for (const file of mentioned.length ? mentioned : context.primaryFiles.slice(0, 3)) {
     if (mentioned.includes(file) || /\.(?:ts|js|tsx|jsx)$/.test(file)) {
       targets.push({ path: file, hint: `Update ${file} to address: ${intent.title}` });

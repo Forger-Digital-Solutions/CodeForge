@@ -19,7 +19,7 @@ describe("ContextBuilder", () => {
     const context = buildContext(intent, repoMap);
     expect(context.primaryFiles.slice(0, 2)).toEqual([target, source]);
     const plan = createPlan(intent, context, repoMap, "task-explicit-paths");
-    expect(plan.steps.filter(step => step.kind === "edit").map(step => step.targetPath)).toEqual([target, source]);
+    expect(plan.steps.filter(step => step.kind === "edit").map(step => step.targetPath)).toEqual([target]);
     expect(plan.steps.filter(step => step.kind === "read").map(step => step.targetPath)).toEqual([target, source]);
   });
 
@@ -41,6 +41,14 @@ describe("ContextBuilder", () => {
     const plan = createPlan(intent, buildContext(intent, repoMap), repoMap, "multi-file-scope");
     expect(plan.steps.filter(step => step.kind === "edit").map(step => step.targetPath)).toEqual(targets);
     expect(plan.steps.filter(step => step.kind === "read").map(step => step.targetPath)).toEqual(targets);
+  });
+
+  it("retains reference reads without turning them into edit obligations", () => {
+    const intent = understandTask("Read `src/reference.ts`, then edit `src/target.ts`; inspect `src/reference.ts` again to preserve behavior.");
+    const repoMap: RepoMap = { workspacePath: "/tmp/ws", files: ["src/reference.ts", "src/target.ts"].map(relativePath => ({ path: `/tmp/ws/${relativePath}`, relativePath, size: 10, lines: 1 })), searchedMatches: [], readFiles: [] };
+    const plan = createPlan(intent, buildContext(intent, repoMap), repoMap, "read-reference-scope");
+    expect(plan.steps.filter(step => step.kind === "edit").map(step => step.targetPath)).toEqual(["src/target.ts"]);
+    expect(plan.steps.filter(step => step.kind === "read").map(step => step.targetPath)).toEqual(["src/reference.ts", "src/target.ts"]);
   });
 
   it("builds context with relevance scoring", () => {

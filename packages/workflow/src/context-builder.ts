@@ -1,13 +1,30 @@
 import type { ContextBundle, RepoMap, TaskIntent } from "./types.js";
 
-export function explicitTaskFiles(intent: TaskIntent, files: Iterable<string>): string[] {
+export function explicitTaskFiles(intent: TaskIntent, files: Iterable<string>, purpose: "context" | "edit" = "context"): string[] {
   const available = new Map([...files].map(file => [file.replaceAll("\\", "/").toLowerCase(), file]));
-  const mentions = (intent.rawMessage ?? "").replaceAll("\\", "/").match(/[A-Za-z0-9_@.+-]+(?:\/[A-Za-z0-9_@.+-]+)*/g) ?? [];
+  const message = (intent.rawMessage ?? "").replaceAll("\\", "/");
+  const mentions = message.matchAll(/[A-Za-z0-9_@.+-]+(?:\/[A-Za-z0-9_@.+-]+)*/g);
   const selected = new Set<string>();
+  const editable = new Set<string>();
+  let previousEnd = 0;
+  let readOnly = false;
   for (const mention of mentions) {
-    const file = available.get(mention.replace(/\.+$/, "").toLowerCase());
-    if (file) selected.add(file);
+    const name = mention[0].replace(/\.+$/, "");
+    const file = available.get(name.toLowerCase());
+    if (!file) continue;
+    const prefix = message.slice(previousEnd, mention.index);
+    const boundary = Math.max(...[".", "!", "?", ";", "\n"].map(separator => prefix.lastIndexOf(separator)));
+    const clause = prefix.slice(boundary + 1);
+    const verbs = [...clause.matchAll(/\b(read|inspect|examine|search|look at|change|edit|modify|update|fix|correct|implement|refactor|add|create|rename|remove|delete|write)\b/gi)];
+    const lastVerb = verbs.at(-1)?.[0].toLowerCase();
+    if (lastVerb) readOnly = /^(?:read|inspect|examine|search|look at)$/.test(lastVerb);
+    else if (boundary >= 0) readOnly = false;
+    selected.add(file);
+    if (!readOnly) editable.add(file);
+    previousEnd = mention.index + name.length;
   }
+  // Reference files must not become mandatory edits when the request names a separate change.
+  if (purpose === "edit" && editable.size > 0) return [...editable];
   return [...selected];
 }
 
