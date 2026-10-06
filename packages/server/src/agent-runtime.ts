@@ -34,6 +34,7 @@ import {
 } from "@codeforge/permissions";
 import { ApprovalService, type ApprovalRecord, type ApprovalGateResult } from "./approval-service.js";
 import { getSanitizedEnvForChild } from "./env-filter.js";
+import { describeExecutionEnvironment } from "./execution-environment.js";
 import { searchWorkspace } from "./search-service.js";
 import { computeDiff, readFileWithHash, replaceExact, sha256 } from "./edit-service.js";
 import { createRepositoryIntelligence, type RepositoryIntelligence } from "@codeforge/repo-intelligence";
@@ -75,7 +76,7 @@ import {
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
 import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, FABRIC_MODEL_ROLE, roleQualityAdvice, roleQualificationStatusFor, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider, type FabricOutcome, type FabricRouteDecision, type ModelQualificationReceipt, type RoleQualificationStatus, type RoleQualificationTier, type RoleOutcomeKind, type RoleFailureClass, type ToolCallOutcome } from "@codeforge/eight-bit";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
-import { compressToolOutput } from "@codeforge/tools";
+import { compressToolOutput, renderFileRead } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
 import { TERMINAL_TURN_STATUSES, type CanonicalTurnStatus } from "./turn-state-machine.js";
 import { BROWSER_READ_ONLY_TOOLS, BROWSER_STATE_CHANGING_TOOLS } from "./external-tools.js";
@@ -388,7 +389,6 @@ export function fromJournalMessages(records: AgentRunJournalMessage[]): ChatMess
 }
 
 const MAX_FILE_READ_BYTES = 100 * 1024;
-const MAX_FILE_READ_LINES = 400;
 const MAX_LIST_FILES_ENTRIES = 500;
 const MAX_COMMAND_OUTPUT_BYTES = 64 * 1024;
 const DEFAULT_APPROVAL_TIMEOUT_MS = 5 * 60 * 1000;
@@ -854,11 +854,13 @@ export function agentToolDefinitions(): ToolDefinition[] {
       type: "function",
       function: {
         name: "read_file",
-        description: "Read the contents of a file. Returns content hash for edit protection.",
+        description: "Read up to 400 lines of a file. Use startLine/endLine for source beyond the first page. Returns the whole-file hash for edit protection.",
         parameters: {
           type: "object",
           properties: {
             path: { type: "string", description: "The path to the file" },
+            startLine: { type: "integer", minimum: 1, description: "Optional 1-based start line" },
+            endLine: { type: "integer", minimum: 1, description: "Optional inclusive end line" },
           },
           required: ["path"],
         },
@@ -913,11 +915,12 @@ export function agentToolDefinitions(): ToolDefinition[] {
       type: "function",
       function: {
         name: "search_files",
-        description: "Search workspace for text/regex. Returns structured matches with file, line, preview.",
+        description: "Search file contents for text/regex. Pass path to restrict the search to a workspace file or directory; omit it to search the workspace. Returns matches with file, line, preview.",
         parameters: {
           type: "object",
           properties: {
-            query: { type: "string", description: "Search query or regex" },
+            query: { type: "string", description: "Text or regex to find in file contents, not a filename" },
+            path: { type: "string", description: "Optional workspace-relative file or directory to search" },
             regex: { type: "boolean", description: "Treat query as regex" },
             caseSensitive: { type: "boolean", description: "Case sensitive" },
             maxMatches: { type: "number", description: "Max matches to return" },
@@ -1836,7 +1839,7 @@ export class AgentRuntime {
       }
 
       messages = [
-        { role: "system", content: assembled.systemPrompt },
+        { role: "system", content: `${assembled.systemPrompt}\n\n${describeExecutionEnvironment(process.platform, getSanitizedEnvForChild())}` },
         { role: "user", content: assembled.contextPrompt },
       ];
       bootstrapContextMessageIndex = 1;
@@ -2879,7 +2882,10 @@ export class AgentRuntime {
                     }
                     const external = await this.externalTools?.execute?.(name, args);
                     if (external !== undefined) return external;
-                    return req.customToolExecutor?.(name, args);
+                    const custom = await req.customToolExecutor?.(name, args);
+                    if (custom !== undefined) return custom;
+                    if (name === "search_files") return this.executeSearchArguments(args, req.signal ?? new AbortController().signal, req.workspacePath);
+                    return undefined;
                   },
                 },
               );
@@ -3678,7 +3684,10 @@ export class AgentRuntime {
                 }
                 const external = await this.externalTools?.execute?.(name, args);
                 if (external !== undefined) return external;
-                return req.customToolExecutor?.(name, args);
+                const custom = await req.customToolExecutor?.(name, args);
+                if (custom !== undefined) return custom;
+                if (name === "search_files") return this.executeSearchArguments(args, req.signal ?? new AbortController().signal, req.workspacePath);
+                return undefined;
               },
             },
           );
@@ -5136,6 +5145,11 @@ export class AgentRuntime {
       state = this.activeTurns.get(turnId);
       if (!state) return;
 
+      if (error instanceof FreeCapacityQueued) {
+        await this.enterCapacityWait(state, error, adapter);
+        return;
+      }
+
       // The raw provider text drives health marking below; what the user reads is the
       // classified, owner-aware sentence (never a provider body, never "your API key" for a
       // route the user configured no credential for).
@@ -5318,6 +5332,16 @@ export class AgentRuntime {
   private admitForTurn(turnId: string | undefined): FabricRouteDecision | undefined {
     const requestId = `forgeauto:${turnId ?? this.sessionId}`;
     const hint = turnId ? this.turnCapacityHints.get(turnId) : undefined;
+    const selection = this.modelSelection;
+    const selectionAllows = (providerId: string, modelId: string): boolean => {
+      if (!selection || selection.providerId === "paid-auto") return true;
+      if (selection.lock === "route") return providerId === selection.providerId && modelId === selection.modelId;
+      if (providerId === selection.providerId && modelId === selection.modelId) return true;
+      if (!selection.canonicalModelId) return false;
+      return this.freeCloud
+        ? this.freeCloud.canonicalIdOf(providerId, modelId) === selection.canonicalModelId
+        : modelId === selection.modelId;
+    };
     const decide = (role: EightBitRole) => this.eightBit.admitThroughFabric({
       requestId,
       sessionId: this.sessionId,
@@ -5331,7 +5355,7 @@ export class AgentRuntime {
       // R48: the fabric must enforce the same per-role verdict floor the bare router does —
       // a route measured-failed for THIS role cannot admit on coarse SUBAGENT eligibility,
       // and a measured-QUALIFIED peer must outrank one merely untested.
-      routeAdmission: this.roleRouteFilter(role),
+      routeAdmission: (providerId, modelId) => selectionAllows(providerId, modelId) && (this.roleRouteFilter(role)?.(providerId, modelId) ?? true),
       roleQualificationTierFor: this.roleQualificationTierCallback(role),
     });
     let decision = decide(hint?.role ?? "CODER");
@@ -5494,6 +5518,11 @@ export class AgentRuntime {
           throw new Error(`Exact Paid Auto model ${modelId} is not registered. Exact model execution failed closed.`);
         }
         return paidModel as unknown as FreeModelRecord;
+      }
+      // Capacity wake-up and execution must admit the same selected model. Resolving a
+      // canonical route outside the fabric can repeatedly wake on unrelated free supply.
+      if (this.eightBit.hasFreeFabric && this.firewall.getModel(providerId, modelId)?.tier !== "gems_paid") {
+        return this.selectModel(turnId);
       }
       if (this.modelSelection.lock !== "route") {
         const viaCanonical = this.resolveCanonicalSelection(this.modelSelection);
@@ -5681,7 +5710,7 @@ export class AgentRuntime {
 
     let currentText = "";
     let toolCalls: Array<{ id: string; name: string; arguments: string }> = [];
-    let currentToolCall: { id: string; name: string; arguments: string } | null = null;
+    const pendingToolCalls = new Map<string, { id: string; name: string; arguments: string }>();
     let _usage: { inputTokens: number; outputTokens: number; totalTokens?: number } | null = null;
     // Assistant message segment boundary for this stream iteration. A turn may produce several
     // assistant messages interleaved with tool activity; each gets a stable messageId so the
@@ -5726,17 +5755,20 @@ export class AgentRuntime {
             break;
 
           case "tool_call_started":
-            currentToolCall = { id: event.toolCallId, name: event.toolName, arguments: "" };
+            pendingToolCalls.set(event.toolCallId, { id: event.toolCallId, name: event.toolName, arguments: "" });
             adapter.emitToolCallStarted(turnId, event.toolCallId, event.toolName, agentId);
             break;
 
-          case "tool_call_delta":
+          case "tool_call_delta": {
+            const currentToolCall = pendingToolCalls.get(event.toolCallId);
             if (currentToolCall) {
               currentToolCall.arguments += event.delta;
             }
             break;
+          }
 
-          case "tool_call_completed":
+          case "tool_call_completed": {
+            const currentToolCall = pendingToolCalls.get(event.toolCallId);
             if (currentToolCall) {
               // The completion event carries the full arguments (StreamEvent contract); adapters
               // that stream deltas also repeat them here. Prefer the authoritative final form so a
@@ -5755,8 +5787,9 @@ export class AgentRuntime {
               toolCalls.push(currentToolCall);
               adapter.emitToolCallCompleted(turnId, event.toolCallId, event.toolName, currentToolCall.arguments, agentId);
             }
-            currentToolCall = null;
+            pendingToolCalls.delete(event.toolCallId);
             break;
+          }
 
           case "usage":
             _usage = event.usage;
@@ -6490,6 +6523,7 @@ export class AgentRuntime {
       "When task scope or code ownership is unclear, use repository intelligence to locate relevant symbols, dependencies, dependents, and tests. For a small, already-scoped task, inspect the named task and affected files directly before expanding the search.",
       "Make the smallest complete change, run verification appropriate to the risk, and stop using tools once the requirements and checks pass. Do not repeat successful reads, edits, or commands without new evidence.",
       "Work methodically and keep explanations concise and evidence-based.",
+      describeExecutionEnvironment(process.platform, getSanitizedEnvForChild()),
     ];
 
     if (this.workspacePath) {
@@ -6775,9 +6809,9 @@ export class AgentRuntime {
 
       switch (toolName) {
         case "read_file": {
-          const args = parsedArgs as { path: string };
+          const args = parsedArgs as { path: string; startLine?: unknown; endLine?: unknown };
           if (!args.path || typeof args.path !== "string") throw new Error("path required");
-          result = await this.executeReadFile(args.path, adapter, turnId, toolCallId);
+          result = await this.executeReadFile(args.path, adapter, turnId, toolCallId, args);
           break;
         }
 
@@ -6805,9 +6839,7 @@ export class AgentRuntime {
         }
 
         case "search_files": {
-          const args = parsedArgs as { query: string; regex?: boolean; caseSensitive?: boolean; maxMatches?: number };
-          if (!args.query || typeof args.query !== "string") throw new Error("query required");
-          result = await this.executeSearch(args.query, args.regex, args.caseSensitive, args.maxMatches, adapter, signal);
+          result = await this.executeSearchArguments(parsedArgs as Record<string, unknown>, signal);
           break;
         }
 
@@ -7128,6 +7160,7 @@ export class AgentRuntime {
     adapter: WorkspaceEventAdapter,
     _turnId: string,
     _toolCallId: string,
+    range: { startLine?: unknown; endLine?: unknown } = {},
   ): Promise<string> {
     const validation = this.validatePath(filePath);
     if (!validation.valid) {
@@ -7146,21 +7179,10 @@ export class AgentRuntime {
         adapter.emitFileRead(crypto.randomUUID(), filePath, 0);
         return `Error: Binary file not displayed: ${filePath}`;
       }
-      const hash = sha256(raw);
       const lines = raw.split("\n").length;
+      const content = renderFileRead(raw, range, MAX_FILE_READ_BYTES);
       adapter.emitFileRead(crypto.randomUUID(), filePath, lines);
-      let content = raw;
-      let truncatedNotice = "";
-      if (raw.split("\n").length > MAX_FILE_READ_LINES || Buffer.byteLength(raw, "utf-8") > MAX_FILE_READ_BYTES) {
-        const truncated = raw.split("\n").slice(0, MAX_FILE_READ_LINES).join("\n");
-        const bounded = Buffer.byteLength(truncated, "utf-8") > MAX_FILE_READ_BYTES
-          ? Buffer.from(truncated, "utf-8").subarray(0, MAX_FILE_READ_BYTES).toString("utf-8")
-          : truncated;
-        content = bounded;
-        truncatedNotice = `\n[TRUNCATED: file exceeded ${MAX_FILE_READ_LINES} lines / ${MAX_FILE_READ_BYTES} bytes; showing first ${MAX_FILE_READ_LINES} lines]`;
-      }
-      const safeContent = redactSecrets(content);
-      return `${safeContent}${truncatedNotice}\n[hash:${hash}]`;
+      return redactSecrets(content);
     } catch (error) {
       return `Error reading file: ${error instanceof Error ? error.message : String(error)}`;
     }
@@ -7338,24 +7360,33 @@ export class AgentRuntime {
     return `Exit code: ${result.exitCode}\n${truncated}`;
   }
 
+  private async executeSearchArguments(args: Record<string, unknown>, signal: AbortSignal, workspacePath = this.workspacePath): Promise<string> {
+    if (!args.query || typeof args.query !== "string") throw new Error("query required");
+    if (args.path !== undefined && typeof args.path !== "string") throw new Error("path must be a string");
+    return this.executeSearch(args.query, args.regex as boolean | undefined, args.caseSensitive as boolean | undefined,
+      args.maxMatches as number | undefined, signal, args.path as string | undefined, workspacePath);
+  }
+
   private async executeSearch(
     query: string,
     regex: boolean | undefined,
     caseSensitive: boolean | undefined,
     maxMatches: number | undefined,
-    adapter: WorkspaceEventAdapter,
     signal: AbortSignal,
+    requestedPath?: string,
+    workspacePath = this.workspacePath,
   ): Promise<string> {
-    if (!this.workspacePath) return "Error: No workspace path configured";
+    if (!workspacePath) return "Error: No workspace path configured";
     try {
       const result = await searchWorkspace({
         query,
         regex: regex ?? false,
         caseSensitive: caseSensitive ?? false,
         maxMatches: Math.min(maxMatches ?? 500, 500),
-        workspacePath: this.workspacePath,
+        workspacePath,
         signal,
         timeoutMs: 8000,
+        path: requestedPath,
       });
       const header = `Found ${result.matches.length} matches (${result.filesScanned} files scanned${result.truncated ? `, truncated: ${result.reason}` : ""})`;
       const lines = result.matches.map((m) => `${m.file}:${m.line}:${m.column}: ${m.preview}`);
@@ -7397,7 +7428,7 @@ export class AgentRuntime {
     adapter.emitFileChangeProposed(changeId, filePath, "modified", additions, deletions, undefined, result.diff);
     adapter.emitFileChangeApplied(changeId, filePath);
     const diff = result.diff ? `\nDiff:\n${result.diff}` : "";
-    return `Edited ${filePath} (before ${result.beforeHash.slice(0, 12)} -> after ${result.afterHash?.slice(0, 12)})${diff}`;
+    return `Edited ${filePath} (before ${result.beforeHash} -> after ${result.afterHash})\n[hash:${result.afterHash}]${diff}`;
   }
 
   private async executeCreateCheckpoint(

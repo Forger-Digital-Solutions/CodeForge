@@ -386,7 +386,8 @@ export class EightBitRuntime {
     // R33: remember the fabric's verdict. `no_replacement` must distinguish a durable
     // capacity wait (eligible supply is busy) and a fail-closed absence of eligible supply.
     let lastFabricDecision: FabricRouteDecision | undefined;
-    const reqWithFabric: typeof req = this.options.freeFabric && (req.pinMode ?? (req.isExactPin ? "route" : "auto")) === "auto"
+    const pinMode = req.pinMode ?? (req.isExactPin ? "route" : "auto");
+    const reqWithFabric: typeof req = this.options.freeFabric && (pinMode === "auto" || (pinMode === "model" && (req.sameModelAlternates?.length ?? 0) > 0))
       ? {
         ...req,
         fabricReplacement: (exclude) => {
@@ -402,7 +403,8 @@ export class EightBitRuntime {
             roleQualityAdjustment: req.roleQualityAdjustment,
             // R48: the re-decide must honor the same per-role floor the original admission
             // did — failover cannot route a role onto a route that role measured-failed.
-            routeAdmission: req.routeFilter,
+            routeAdmission: (providerId, modelId) => (req.routeFilter?.(providerId, modelId) ?? true)
+              && (pinMode !== "model" || (req.sameModelAlternates ?? []).some(route => route.providerId === providerId && route.modelId === modelId)),
             roleQualificationTierFor: req.roleQualificationTierFor,
             // R49: a transport failure is evidence about the served physical pool — prefer an
             // independent pool so the rotation does not re-admit the same outage.

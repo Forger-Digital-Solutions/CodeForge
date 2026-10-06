@@ -13,6 +13,7 @@ export interface SearchMatch {
 
 export interface SearchOptions {
   query: string;
+  path?: string;
   regex?: boolean;
   caseSensitive?: boolean;
   maxFiles?: number;
@@ -100,6 +101,28 @@ export async function searchWorkspace(options: SearchOptions): Promise<SearchRes
 
   const deadline = Date.now() + timeoutMs;
   const collectedBytes = { value: 0 };
+  let sliceStartedAt = Date.now();
+  let scopedFile: string | undefined;
+  let searchRoot = workspacePath;
+  if (options.path !== undefined) {
+    if (typeof options.path !== "string") throw new Error("path must be a string");
+    const scope = resolveWithinWorkspace(workspacePath, options.path);
+    if (!scope.valid || !scope.resolvedPath) throw new Error(scope.error ?? "Path traversal denied");
+    let stat: fs.Stats;
+    try { stat = await fs.promises.lstat(scope.resolvedPath); }
+    catch (error) { throw new Error(`Search path unavailable: ${error instanceof Error ? error.message : String(error)}`); }
+    if (stat.isDirectory()) searchRoot = scope.resolvedPath;
+    else if (stat.isFile()) {
+      scopedFile = scope.resolvedPath;
+      searchRoot = path.dirname(scopedFile);
+    } else throw new Error("Search path unavailable: expected a regular file or directory");
+  }
+
+  const yieldSlice = async (): Promise<void> => {
+    if (Date.now() - sliceStartedAt < 30) return;
+    await new Promise<void>(resolve => setImmediate(resolve));
+    sliceStartedAt = Date.now();
+  };
 
   function shouldAbort(): boolean {
     if (signal?.aborted) return true;
@@ -120,11 +143,12 @@ export async function searchWorkspace(options: SearchOptions): Promise<SearchRes
     }
     let entries: fs.Dirent[];
     try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
+      entries = await fs.promises.readdir(dir, { withFileTypes: true });
     } catch {
       return;
     }
     for (const entry of entries) {
+      await yieldSlice();
       if (shouldAbort() || matches.length >= maxMatches || collectedBytes.value >= maxBytes) {
         truncated = true;
         if (shouldAbort()) reason = signal?.aborted ? "cancelled" : "timeout";
@@ -139,9 +163,10 @@ export async function searchWorkspace(options: SearchOptions): Promise<SearchRes
       if (DEFAULT_EXCLUDE_DIRS.has(entry.name)) continue;
 
       const fullPath = path.join(dir, entry.name);
+      if (scopedFile && fullPath !== scopedFile) continue;
       let stat: fs.Stats;
       try {
-        stat = fs.statSync(fullPath);
+        stat = await fs.promises.lstat(fullPath);
       } catch {
         continue;
       }
@@ -157,13 +182,14 @@ export async function searchWorkspace(options: SearchOptions): Promise<SearchRes
         }
         let content: string;
         try {
-          content = fs.readFileSync(fullPath, "utf-8");
+          content = await fs.promises.readFile(fullPath, { encoding: "utf-8", signal });
         } catch {
           continue;
         }
         if (isBinaryLike(content)) continue;
         const lines = content.split("\n");
         for (let i = 0; i < lines.length; i++) {
+          if (i % 64 === 0) await yieldSlice();
           if (shouldAbort() || matches.length >= maxMatches || collectedBytes.value >= maxBytes) {
             truncated = true;
             if (shouldAbort()) reason = signal?.aborted ? "cancelled" : "timeout";
@@ -216,13 +242,13 @@ export async function searchWorkspace(options: SearchOptions): Promise<SearchRes
 
   // Validate workspace exists and is directory
   try {
-    const wsStat = fs.statSync(workspacePath);
+    const wsStat = await fs.promises.stat(workspacePath);
     if (!wsStat.isDirectory()) throw new Error("Workspace not a directory");
   } catch (e) {
     throw new Error(`Workspace unavailable: ${e instanceof Error ? e.message : String(e)}`);
   }
 
-  await walk(workspacePath);
+  await walk(searchRoot);
 
   if (Date.now() > deadline && !reason) {
     truncated = true;

@@ -78,6 +78,16 @@ describe("describeRunFailure", () => {
     expect(failure.ownership).toBe("managed_free");
   });
 
+  it("a rejected free supply domain stops the workflow before verification or repair", () => {
+    const failure = describeRunFailure(new Error("FREE_SUPPLY_DOMAIN_NOT_ADMITTED"), {
+      providerId: "codeforge-cloud", modelId: "codeforge/forgeauto-free",
+    });
+    expect(failure.code).toBe("route_exhausted");
+    expect(failure.ownership).toBe("managed_free");
+    expect(failure.detail).toBe("FREE_SUPPLY_DOMAIN_NOT_ADMITTED");
+    expect(failure.message).toMatch(/stopped safely without using a paid or unknown-cost route/);
+  });
+
   it("capability mismatch passes through the curated message (tool calling)", () => {
     const failure = describeRunFailure(
       new Error("Selected model codeforge::music/no-tools:free does not support tool calling and cannot run agent tasks."),

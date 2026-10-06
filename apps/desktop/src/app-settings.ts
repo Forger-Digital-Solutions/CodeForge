@@ -62,7 +62,8 @@ const ModelsSettingsSchema = z.object({
    * on startup via /api/model-selection once the catalog confirms the model still exists —
    * the server's own selection is per-process and was never durable before this key.
    */
-  defaultModelId: z.string().min(1).max(200).default("auto"),
+  defaultModelId: z.string().min(1).max(200).default("auto").transform((id) =>
+    ["codeforge-auto", "codeforge/forgeauto-free", "canonical:codeforge/forgeauto", "canonical:codeforge/forgeauto-free"].includes(id) ? "auto" : id),
 });
 
 const NotificationsSettingsSchema = z.object({

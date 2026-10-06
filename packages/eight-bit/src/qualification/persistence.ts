@@ -1,6 +1,14 @@
 import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import type { ModelQualificationReceipt } from "./types.js";
 
+export interface QualificationSpend {
+  providerId: string;
+  day: string;
+  requests: number;
+  lastCycleAt: number;
+  recoveries: number;
+}
+
 /** Qualification persistence interface */
 export interface QualificationPersistence {
   /** Save a qualification receipt */
@@ -13,11 +21,22 @@ export interface QualificationPersistence {
   loadAll(): Promise<ModelQualificationReceipt[]>;
   /** Delete a receipt */
   delete(providerId: string, modelId: string): Promise<boolean>;
+  loadSpend?(): Promise<QualificationSpend[]>;
+  saveSpend?(spend: QualificationSpend): Promise<void>;
 }
 
 /** In-memory qualification persistence (for testing) */
 export class InMemoryQualificationPersistence implements QualificationPersistence {
   private readonly receipts = new Map<string, ModelQualificationReceipt>();
+  private readonly spend = new Map<string, QualificationSpend>();
+
+  async loadSpend(): Promise<QualificationSpend[]> {
+    return [...this.spend.values()].map(entry => ({ ...entry }));
+  }
+
+  async saveSpend(spend: QualificationSpend): Promise<void> {
+    this.spend.set(spend.providerId, { ...spend });
+  }
 
   private key(providerId: string, modelId: string): string {
     return `${providerId}::${modelId}`;
@@ -53,6 +72,27 @@ export class InMemoryQualificationPersistence implements QualificationPersistenc
 /** SQLite-backed qualification persistence */
 export class SqliteQualificationPersistence implements QualificationPersistence {
   constructor(private readonly persistence: ISessionPersistence) {}
+
+  async loadSpend(): Promise<QualificationSpend[]> {
+    const items = await this.persistence.getWorkItemsByKind("activity");
+    return items.filter(item => item.id.startsWith("qualification-spend::")).map(item => {
+      if (item.kind !== "activity") throw new Error("Invalid qualification spend record kind");
+      const entry = JSON.parse(item.detail ?? "") as QualificationSpend;
+      if (!entry.providerId || !/^\d{4}-\d{2}-\d{2}$/.test(entry.day) ||
+          ![entry.requests, entry.lastCycleAt, entry.recoveries].every(value => Number.isSafeInteger(value) && value >= 0)) {
+        throw new Error("Invalid persisted qualification spend");
+      }
+      return entry;
+    });
+  }
+
+  async saveSpend(spend: QualificationSpend): Promise<void> {
+    await this.persistence.upsertWorkItem({
+      kind: "activity", id: `qualification-spend::${spend.providerId}`,
+      title: `Qualification budget: ${spend.providerId}`, status: "completed",
+      detail: JSON.stringify(spend), startedAt: new Date(spend.lastCycleAt).toISOString(),
+    } as unknown as WorkItem);
+  }
 
   private key(providerId: string, modelId: string): string {
     return `qualification::${providerId}::${modelId}`;

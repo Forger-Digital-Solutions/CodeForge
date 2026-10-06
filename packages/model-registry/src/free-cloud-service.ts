@@ -116,7 +116,7 @@ export interface FreeCloudServiceOptions {
   /** Cooldown base for route failures recorded through the hooks. */
   failureCooldownMs?: number;
   /** Free quota is shared with real work: cap qualification requests per provider per day.
-   *  Default 24 — one worst-case role-aware suite (13 probes + retries) per provider per day. */
+   *  Default 24; every adapter dispatch is bounded, including suite retries. */
   qualificationDailyBudgetPerProvider?: number;
   /** Estimated requests one qualification cycle spends; used for the daily-budget pre-check
    *  before a suite runs (the receipt's reported count reconciles the real spend after).
@@ -340,6 +340,8 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private readonly probeNextAllowedAt = new Map<string, number>();
   /** Qualification requests spent per provider, keyed by UTC day. */
   private readonly qualificationSpend = new Map<string, { day: string; requests: number; lastCycleAt: number; recoveries: number }>();
+  private qualificationSpendLoaded = false;
+  private qualificationSpendWrite: Promise<void> = Promise.resolve();
   /** R59: cooldown-aligned recovery retries — one armed timer per provider at most. */
   private readonly recoveryTimers = new Map<string, { timer: ReturnType<typeof setTimeout>; at: string }>();
   private qualifying = false;
@@ -570,9 +572,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
 
   attachQualificationStore(store: QualificationPersistence): void {
     this.qualificationStore = store;
+    this.qualificationSpendLoaded = false;
   }
 
   async loadQualification(): Promise<number> {
+    await this.loadQualificationSpend();
     const all = await this.qualificationStore.loadAll();
     for (const r of all) {
       this.receipts.set(`${r.providerId}::${r.modelId}`, r);
@@ -657,6 +661,9 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     // the known mismatch. Capacity failures never create this priority.
     const penalty = (r: ProviderRouteView): number => (r.health === "DEGRADED" ? 1 : 0);
     const urgentRoleFailure = (r: ProviderRouteView): number => this.runtimeRequalificationRoles(r.providerId, r.providerModelId).length > 0 ? 1 : 0;
+    // A fresh public-IP profile can afford only one full suite. Measure the gateway's free
+    // coding alias before speculative family priors spend that allowance on a transient result.
+    const bootstrapPriority = (r: ProviderRouteView): number => r.providerId === "kilo-free-direct" && r.providerModelId === "kilo-auto/free" ? 1 : 0;
     const seen = new Set<string>();
     return snap.models
       .flatMap((m) => m.routes)
@@ -674,7 +681,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         seen.add(key);
         return true;
       })
-      .sort((a, b) => urgentRoleFailure(b) - urgentRoleFailure(a) || penalty(a) - penalty(b) || score(b) - score(a));
+      .sort((a, b) => urgentRoleFailure(b) - urgentRoleFailure(a) || penalty(a) - penalty(b) || bootstrapPriority(b) - bootstrapPriority(a) || score(b) - score(a));
   }
 
   /**
@@ -711,18 +718,13 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     });
   }
 
-  private async *pacedStream(providerId: string, open: () => AsyncIterable<StreamEvent>, signal?: AbortSignal): AsyncIterable<StreamEvent> {
-    await this.probePace(providerId, signal);
-    yield* open();
-  }
-
   /**
    * Pace every provider-bound request an adapter can make inside a measurement path. Test
    * providers are exempt — they bypass the global capacity governor for the same reason:
    * a scripted adapter has no real rate limit to spend.
    */
-  private paceProviderAdapter(adapter: ProviderAdapter): ProviderAdapter {
-    if (adapter.isTestProvider === true) return adapter;
+  private paceProviderAdapter(adapter: ProviderAdapter, beforeDispatch?: () => Promise<void>): ProviderAdapter {
+    if (adapter.isTestProvider === true && !beforeDispatch) return adapter;
     const providerId = adapter.providerId;
     return {
       providerId,
@@ -731,23 +733,49 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       listModels: () => adapter.listModels(),
       healthCheck: () => adapter.healthCheck(),
       chat: async (req: ChatRequest) => {
-        await this.probePace(providerId);
+        if (adapter.isTestProvider !== true) await this.probePace(providerId);
+        await beforeDispatch?.();
         return adapter.chat(req);
       },
-      streamChat: (req: ChatRequest, signal?: AbortSignal) => this.pacedStream(providerId, () => adapter.streamChat(req, signal), signal),
+      streamChat: (req: ChatRequest, signal?: AbortSignal) => this.qualificationStream(adapter, () => adapter.streamChat(req, signal), signal, beforeDispatch),
       ...(adapter.streamChatWithContext !== undefined ? {
         streamChatWithContext: (req: ChatRequest, context: ProviderExecutionContext, signal?: AbortSignal) =>
-          this.pacedStream(providerId, () => adapter.streamChatWithContext!(req, context, signal), signal),
+          this.qualificationStream(adapter, () => adapter.streamChatWithContext!(req, context, signal), signal, beforeDispatch),
       } : {}),
       ...(adapter.canRoute !== undefined ? { canRoute: (modelId: string) => adapter.canRoute!(modelId) } : {}),
       ...(adapter.getPromptCacheCapability !== undefined ? { getPromptCacheCapability: (modelId: string) => adapter.getPromptCacheCapability!(modelId) } : {}),
       ...(adapter.probeAccountQuota !== undefined ? {
         probeAccountQuota: async () => {
-          await this.probePace(providerId);
+          if (adapter.isTestProvider !== true) await this.probePace(providerId);
+          await beforeDispatch?.();
           return adapter.probeAccountQuota!();
         },
       } : {}),
     };
+  }
+
+  private async *qualificationStream(adapter: ProviderAdapter, open: () => AsyncIterable<StreamEvent>, signal?: AbortSignal, beforeDispatch?: () => Promise<void>): AsyncIterable<StreamEvent> {
+    if (adapter.isTestProvider !== true) await this.probePace(adapter.providerId, signal);
+    await beforeDispatch?.();
+    yield* open();
+  }
+
+  private async loadQualificationSpend(): Promise<void> {
+    if (this.qualificationSpendLoaded) return;
+    const entries = await this.qualificationStore.loadSpend?.() ?? [];
+    for (const entry of entries) {
+      const current = this.qualificationSpend.get(entry.providerId);
+      if (!current || current.day < entry.day || (current.day === entry.day && current.requests < entry.requests)) {
+        this.qualificationSpend.set(entry.providerId, { ...entry });
+      }
+    }
+    this.qualificationSpendLoaded = true;
+  }
+
+  private persistQualificationSpend(providerId: string): Promise<void> {
+    const entry = { providerId, ...this.spendFor(providerId) };
+    this.qualificationSpendWrite = this.qualificationSpendWrite.then(async () => { await this.qualificationStore.saveSpend?.(entry); });
+    return this.qualificationSpendWrite;
   }
 
   private spendFor(providerId: string): { day: string; requests: number; lastCycleAt: number; recoveries: number } {
@@ -784,6 +812,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     const produced: ModelQualificationReceipt[] = [];
     const transientCooldowns = new Map<string, number>();
     try {
+      await this.loadQualificationSpend();
       const budget = opts.budget ?? this.maxQualificationsPerCycle;
       const pending = this.pendingQualification().filter((r) => !opts.providerId || r.providerId === opts.providerId);
       // R59: provider lanes run concurrently — provider quotas are independent, so one
@@ -855,14 +884,32 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       spend.lastCycleAt = this.now().getTime();
       if (ctx.recovery) spend.recoveries += 1;
       spend.requests += this.qualificationRequestsPerCycle;
+      const priorSpend = spend.requests - this.qualificationRequestsPerCycle;
+      const dispatchLimit = this.qualificationDailyBudget - priorSpend;
+      let dispatches = 0;
+      let budgetExhausted = false;
       ctx.inflight++;
       const suiteDeadline = new AbortController();
       const deadlineTimer = setTimeout(() => suiteDeadline.abort(), this.qualificationSuiteDeadlineMs);
       try {
-        const receipt = await this.qualificationRunner(model, this.paceProviderAdapter(adapter), { signal: suiteDeadline.signal });
-        if (typeof receipt.metadata?.requests === "number") {
-          spend.requests += receipt.metadata.requests - this.qualificationRequestsPerCycle;
-        }
+        // Reserve before sending; a crash retains an upper bound on calls already dispatched.
+        await this.persistQualificationSpend(providerId);
+        const beforeDispatch = async (): Promise<void> => {
+          if (dispatches >= dispatchLimit) {
+            budgetExhausted = true;
+            throw new Error("Qualification request budget exhausted");
+          }
+          dispatches++;
+          spend.requests = priorSpend + Math.max(this.qualificationRequestsPerCycle, dispatches);
+          await this.persistQualificationSpend(providerId);
+        };
+        const receipt = await this.qualificationRunner(model, this.paceProviderAdapter(adapter, beforeDispatch), { signal: suiteDeadline.signal });
+        const reported = receipt.metadata?.requests;
+        const measured = dispatches || (typeof reported === "number" && Number.isSafeInteger(reported) && reported >= 0 ? reported : this.qualificationRequestsPerCycle);
+        spend.requests = priorSpend + Math.min(dispatchLimit, measured);
+        await this.persistQualificationSpend(providerId);
+        // A partial suite cannot certify a model or poison its runtime capacity/role health.
+        if (budgetExhausted || measured > dispatchLimit) { ctx.taken++; continue; }
         // A transient (429/401/timeout) probe is not evidence about the model; keep it pending.
         // It still counts against the provider's daily spend (conservative), but not against the
         // per-cycle slots, so the lane moves on to a route that can actually be scored.

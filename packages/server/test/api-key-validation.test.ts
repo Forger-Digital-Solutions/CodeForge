@@ -41,6 +41,38 @@ describe("API Key Validation", () => {
           server.stop();
         });
       });
+
+      describe("and the missing-credential startup diagnostic is emitted", () => {
+        it("should not claim that an API key is required or that inference will fail", () => {
+          process.env.CODEFORGE_REAL_RUNTIME = "true";
+          delete process.env.OPENROUTER_API_KEY;
+
+          const warnings: string[] = [];
+          const originalWarn = console.warn;
+          console.warn = (...args: unknown[]) => {
+            warnings.push(args.map((arg) => String(arg)).join(" "));
+          };
+
+          try {
+            const server = new CodeForgeServer({ port: 3210 });
+            server.stop();
+          } finally {
+            console.warn = originalWarn;
+          }
+
+          const emitted = warnings.find((line) =>
+            line.includes("CODEFORGE_REAL_RUNTIME=true but no provider API keys configured"),
+          );
+          expect(emitted).toBeDefined();
+
+          // CodeForge Free can legitimately serve inference over anonymous free
+          // cloud routes, so the diagnostic must not present a key as required.
+          const diagnostic = emitted ?? "";
+          expect(diagnostic).not.toContain("requires at least one provider API key");
+          expect(diagnostic).not.toContain("real inference will fail");
+          expect(diagnostic).toContain("anonymous free");
+        });
+      });
     });
 
     describe("when CODEFORGE_REAL_RUNTIME is not set or false", () => {

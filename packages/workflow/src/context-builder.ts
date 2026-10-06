@@ -1,5 +1,16 @@
 import type { ContextBundle, RepoMap, TaskIntent } from "./types.js";
 
+export function explicitTaskFiles(intent: TaskIntent, files: Iterable<string>): string[] {
+  const available = new Map([...files].map(file => [file.replaceAll("\\", "/").toLowerCase(), file]));
+  const mentions = (intent.rawMessage ?? "").replaceAll("\\", "/").match(/[A-Za-z0-9_@.+-]+(?:\/[A-Za-z0-9_@.+-]+)+/g) ?? [];
+  const selected = new Set<string>();
+  for (const mention of mentions) {
+    const file = available.get(mention.replace(/\.+$/, "").toLowerCase());
+    if (file) selected.add(file);
+  }
+  return [...selected];
+}
+
 function scoreFile(intent: TaskIntent, filePath: string, matchCount: number): number {
   let score = matchCount * 10;
   const lowerPath = filePath.toLowerCase();
@@ -31,7 +42,9 @@ export function buildContext(intent: TaskIntent, repoMap: RepoMap): ContextBundl
   }
 
   const sorted = [...scores.entries()].sort((a, b) => b[1] - a[1]);
-  const primaryFiles = sorted.filter(([, s]) => s > 0).slice(0, 10).map(([p]) => p);
+  // Explicit paths survive title truncation and must outrank incidental keyword matches.
+  const mentioned = explicitTaskFiles(intent, scores.keys());
+  const primaryFiles = [...new Set([...mentioned, ...sorted.filter(([, s]) => s > 0).map(([p]) => p)])].slice(0, 10);
   if (primaryFiles.length === 0 && repoMap.files.length > 0) {
     // fallback: top 3 smallest files
     primaryFiles.push(...repoMap.files.slice(0, 3).map((f) => f.relativePath));

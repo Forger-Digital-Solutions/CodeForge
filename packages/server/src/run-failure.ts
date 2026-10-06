@@ -102,6 +102,10 @@ export function describeRunFailure(error: unknown, context: RunFailureContext = 
   const route = routeLabel(context);
   const detail = raw.length > 0 ? { detail: clip(raw, 300) } : {};
 
+  if (raw === "FREE_SUPPLY_DOMAIN_NOT_ADMITTED") {
+    return { ...base, ...detail, ownership: "managed_free", code: "route_exhausted", retryable: true,
+      message: "No eligible verified-free route is currently available. CodeForge stopped safely without using a paid or unknown-cost route." };
+  }
   if (context.routeExhausted) {
     return {
       ...base,

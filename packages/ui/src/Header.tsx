@@ -94,7 +94,7 @@ export default function Header({
         <span>{statusText}</span>
         {timerActive && <span style={{ fontFamily: "var(--cf-font-mono)" }}>{formatTime(elapsedShown)}</span>}
       </div>
-      <div style={{ display: "flex", gap: 6, marginLeft: "auto" }}>
+      <div style={{ display: "flex", gap: 6, marginLeft: "auto", flexShrink: 0 }}>
         {showPause && (
           <button type="button" className="task-header-btn" onClick={onPause}>
             Pause

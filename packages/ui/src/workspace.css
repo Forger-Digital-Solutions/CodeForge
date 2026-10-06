@@ -492,6 +492,7 @@ body {
 }
 
 .task-header-title {
+  min-width: 0;
   font-size: 14px;
   font-weight: 600;
   color: var(--cf-text);
@@ -503,10 +504,19 @@ body {
 
 .task-header-status {
   display: flex;
+  min-width: 0;
+  flex: 0 1 50%;
   align-items: center;
   gap: 6px;
   font-size: 11px;
   color: var(--cf-text-secondary);
+}
+
+.task-header-status > span:nth-child(2) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .task-header-btn {

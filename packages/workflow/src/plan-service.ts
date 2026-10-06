@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { ContextBundle, PlanStep, RepoMap, TaskIntent, WorkflowPlan } from "./types.js";
+import { explicitTaskFiles } from "./context-builder.js";
 
 function riskForKind(kind: PlanStep["kind"]): PlanStep["risk"] {
   switch (kind) {
@@ -32,7 +33,8 @@ function requiresApprovalForStep(step: PlanStep): boolean {
 
 function inferEditTargets(intent: TaskIntent, context: ContextBundle): Array<{ path: string; hint: string }> {
   const targets: Array<{ path: string; hint: string }> = [];
-  for (const file of context.primaryFiles.slice(0, 3)) {
+  const mentioned = explicitTaskFiles(intent, context.primaryFiles);
+  for (const file of (mentioned.length ? mentioned : context.primaryFiles).slice(0, 3)) {
     if (file.endsWith(".ts") || file.endsWith(".js") || file.endsWith(".tsx") || file.endsWith(".jsx")) {
       targets.push({ path: file, hint: `Update ${file} to address: ${intent.title}` });
     }

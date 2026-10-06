@@ -745,6 +745,7 @@ export class WorkflowService {
       lines.push(`You are CodeForge, an autonomous coding agent. Implement the following plan disciplinedly.`);
       lines.push(`Task: ${redactSecrets(intent.title)}`);
       lines.push(`Type: ${intent.taskType}, Goals: ${intent.goals.join(" | ")}`);
+      lines.push(`\nOriginal user request and scope:\n${redactSecrets(intent.rawMessage)}`);
       lines.push(`\nPlan ${plan.id}: ${redactSecrets(plan.title)}`);
       lines.push(`Steps:`);
       for (const s of plan.steps.filter((st) => st.status === "queued" || st.status === "active")) {
@@ -772,6 +773,8 @@ export class WorkflowService {
       const lines: string[] = [];
       lines.push(`Verification failed; diagnose and repair.`);
       lines.push(`Task: ${redactSecrets(intent.title)}`);
+      lines.push(`\nOriginal user request and scope:\n${redactSecrets(intent.rawMessage)}`);
+      lines.push(`Preserve the user's scope and constraints during repair. A verifier failure does not authorize unrelated edits; report a block when repair would exceed that scope.`);
       lines.push(`\nVerification output:\n${redactSecrets(verification.output.slice(0, 4000))}`);
       lines.push(`\nFailures: ${redactSecrets(verification.failures.map((f) => `${f.test}: ${f.message}`).join("\n").slice(0, 2000))}`);
       lines.push(`\nDiagnostics:\n${redactSecrets(analysis.diagnostics.slice(0, 10).join("\n"))}`);
@@ -792,6 +795,7 @@ export class WorkflowService {
       lines.push(`Your job is to prove or refute that claim against the ACTUAL workspace — not the agent's claims.`);
       lines.push(`\nTask: ${redactSecrets(intent.title)}`);
       lines.push(`Stated goals: ${goals.map((goal) => redactSecrets(goal)).join(" | ")}`);
+      lines.push(`\nOriginal user request and scope:\n${redactSecrets(intent.rawMessage)}`);
       lines.push(`\nApproved plan steps:`);
       for (const step of plan.steps) {
         lines.push(`- [${step.kind}] ${redactSecrets(step.description)}${step.targetPath ? ` → ${step.targetPath}` : ""} (${step.status})`);
@@ -878,7 +882,7 @@ export class WorkflowService {
         if (result.status === "cancelled" || sig?.aborted || signal.aborted) {
           return { success: false, output: `Turn ${turnId} cancelled` };
         }
-        return { success: false, output: `Turn ${turnId} failed: ${result.turn?.error ?? "unknown"}`, ...describeExecutorFailure(result.turn) };
+        return { success: false, output: `Turn ${turnId} failed: ${result.turn?.error ?? "unknown"}`, filesChanged, ...describeExecutorFailure(result.turn) };
       },
       executeRepair: async (
         analysis: FailureAnalysis,

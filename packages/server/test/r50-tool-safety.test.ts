@@ -73,7 +73,7 @@ describe("R50 tool-safety feedback (§9, §26)", () => {
 
   beforeEach(async () => {
     ws = await mkdtemp(join(tmpdir(), "cf-r50-safety-"));
-    await writeFile(join(ws, "note.txt"), "fixture");
+    await writeFile(join(ws, "note.txt"), "fixture one\nfixture two\nfixture three");
     eventStore = new EventStore();
     persistence = createSessionPersistence({ dbPath: ":memory:" });
     firewall = new ForgeZero();

@@ -69,7 +69,7 @@ export function selectorAvailability(m: ApiModel): { available: boolean; unavail
 
 // Muse Spark is a promotional model excluded from normal routing entirely — hide any stray record.
 // These are the hosted gateway's logical auto aliases, already represented by the pinned row.
-const HIDDEN_MODEL_RE = /muse[-\s]?spark|(^|\/|::)(codeforge-auto|codeforge\/forgeauto-free)$/i;
+const HIDDEN_MODEL_RE = /muse[-\s]?spark|(^|\/|::)(codeforge-auto|codeforge\/forgeauto(?:-free)?)$/i;
 export function isHiddenModel(id: string): boolean {
   return HIDDEN_MODEL_RE.test(id);
 }
@@ -308,7 +308,14 @@ export function resolveRuntimeLabel(selectedModelId: string | null, selected: Ap
 /** Picker description text for a canonical model (R1 §66, §125). */
 export function canonicalDescription(m: CanonicalModelView): string {
   const category = m.category === "Recommended" || m.category === "Strong" || m.category === "Fast" || m.category === "Experimental" ? m.category : "";
-  return category ? `${m.freeBadge} · ${category}` : m.freeBadge;
+  let badge = m.freeBadge;
+  if (m.readiness === "FREE_AVAILABLE" && m.qualificationState !== "QUALIFIED") {
+    const status = m.qualificationState === "STALE" ? "Requalification required"
+      : m.qualificationState === "NOT_QUALIFIED" || m.qualificationState === "HARD_FAILURE" ? "Qualification failed"
+      : "Qualification required";
+    badge = `${m.freeBadge.startsWith("CodeForge Free") ? "CodeForge Free" : "Free"} · ${status}`;
+  }
+  return category ? `${badge} · ${category}` : badge;
 }
 
 export function canonicalAvailability(m: CanonicalModelView): { available: boolean; unavailableReason?: string } {

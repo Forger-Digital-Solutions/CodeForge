@@ -266,6 +266,7 @@ export class CodeForgeServer {
   private firewall: ForgeZero;
   private providerCatalog: ProviderCatalog;
   private readonly freeCloud?: FreeCloudService;
+  private readonly freeDataContext?: ServerOptions["freeDataContext"];
   private readonly sponsorCapacitySource?: ServerOptions["sponsorCapacitySource"];
   /** R24: the process-wide measured route-health authority every AgentRuntime shares. */
   readonly routeHealth: EightBitRouteHealthAuthority;
@@ -345,6 +346,7 @@ export class CodeForgeServer {
     });
     this.providerCatalog = options.providerCatalog ?? new InMemoryProviderCatalog();
     this.freeCloud = options.freeCloud;
+    this.freeDataContext = options.freeDataContext;
     this.sponsorCapacitySource = options.sponsorCapacitySource;
     this.refreshSponsorCapacity();
     if (options.remoteDirect) this.providerCatalog.register(new RemoteDirectProviderAdapter(options.remoteDirect.transport, options.remoteDirect.bindingForContext));
@@ -404,7 +406,7 @@ export class CodeForgeServer {
       });
       this.fabricContext = ({ userId }) => {
         const uid = userId ?? this.localUserId ?? "anonymous";
-        return { userId: uid, userIdentities: freeCloud?.capacityIdentitiesFor(uid) ?? [], dataContext: options.freeDataContext?.() ?? { dataClass: "PRIVATE_CODE" } };
+        return { userId: uid, userIdentities: freeCloud?.capacityIdentitiesFor(uid) ?? [], dataContext: this.freeDataContext?.() ?? { dataClass: "PRIVATE_CODE" } };
       };
     }
     if (!options.paidAuto) {
@@ -521,9 +523,9 @@ export class CodeForgeServer {
     if (!hasAtLeastOneApiKey) {
       console.warn(
         "⚠️  CODEFORGE_REAL_RUNTIME=true but no provider API keys configured.\n" +
-        "Real runtime mode requires at least one provider API key (e.g., OPENROUTER_API_KEY).\n" +
-        "The server will start but real inference will fail at runtime.\n" +
-        "Set API keys in environment variables or configure credentials in the app."
+        "No credentialed providers are available; only anonymous free cloud routes (CodeForge Free) can serve inference.\n" +
+        "The server will start and anonymous free routes may still serve inference; only credentialed models will be unavailable.\n" +
+        "To reach credentialed and paid models, set API keys in environment variables or configure credentials in the app."
       );
     }
   }
@@ -3051,7 +3053,8 @@ export class CodeForgeServer {
     }
     const snapshot = this.freeCloud.snapshot();
     const capacityRoutes = this.freeCloud.capacityRoutes();
-    const ledger = buildRouteLedger({ routes: capacityRoutes, pools: this.freeCloud.capacityPools() });
+    const dataContext = this.freeDataContext?.();
+    const ledger = buildRouteLedger({ routes: capacityRoutes, pools: this.freeCloud.capacityPools(), dataContext });
     // The plan must be computed with the local user's owned capacity identities — passing none
     // would mark every per-user entitlement route unreachable and report a false empty plan.
     const coderPlan = new Set(

@@ -3,7 +3,7 @@ import { getSanitizedEnvForChild } from "@codeforge/secrets";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
+import { execFile } from "node:child_process";
 import { openSqliteDatabase, type SQLiteDatabase } from "@codeforge/sessions";
 import { detectLanguage, parseStructuredFallback, parseTypeScript, resolveImport } from "./languages.js";
 import {
@@ -101,22 +101,20 @@ function normalizeRelative(relativePath: string): string {
   return relativePath.replace(/\\/g, "/").replace(/^\.\//, "");
 }
 
-function execGit(root: string, args: string[]): string | undefined {
-  try {
-    return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 20_000, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } }).trim();
-  } catch {
-    return undefined;
-  }
+async function execGit(root: string, args: string[], signal?: AbortSignal): Promise<string | undefined> {
+  return (await execGitNulDelimited(root, args, signal))?.trim();
 }
 
 /** NUL-delimited Git output must not be trimmed: a leading-space status code (e.g. " M")
  * would be corrupted, silently dropping the modified flag for the most common dirty state. */
-function execGitNulDelimited(root: string, args: string[]): string | undefined {
-  try {
-    return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 20_000, windowsHide: true, env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" } });
-  } catch {
-    return undefined;
-  }
+function execGitNulDelimited(root: string, args: string[], signal?: AbortSignal): Promise<string | undefined> {
+  return new Promise(resolve => {
+    const child = execFile("git", ["-C", root, ...args], {
+      encoding: "utf8", timeout: 20_000, windowsHide: true, signal,
+      env: { ...getSanitizedEnvForChild(), GIT_TERMINAL_PROMPT: "0" },
+    }, (error, stdout) => resolve(error ? undefined : stdout));
+    child.stdin?.end();
+  });
 }
 
 function defaultCacheRoot(): string {
@@ -204,6 +202,8 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
   private watchTimer?: NodeJS.Timeout;
   private pendingWatchPaths = new Set<string>();
   private lastRefresh?: RefreshResult;
+  private countsCache?: { revision: string; counts: Row };
+  private insertStatements = new Map<string, ReturnType<SQLiteDatabase["prepare"]>>();
 
   constructor(options: RepositoryIntelligenceOptions = {}) {
     this.options = { ...options, maxFileBytes: options.maxFileBytes ?? DEFAULT_MAX_FILE_BYTES, maxFiles: options.maxFiles ?? DEFAULT_MAX_FILES, batchSize: options.batchSize ?? 250, includeHidden: options.includeHidden ?? false };
@@ -213,11 +213,11 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
     const resolved = path.resolve(root);
     const realRoot = fs.realpathSync.native ? fs.realpathSync.native(resolved) : fs.realpathSync(resolved);
     if (!fs.statSync(realRoot).isDirectory()) throw new Error(`Workspace is not a directory: ${root}`);
-    const gitCommonRaw = execGit(realRoot, ["rev-parse", "--git-common-dir"]);
-    const gitWorktreeRaw = execGit(realRoot, ["rev-parse", "--git-dir"]);
+    const gitCommonRaw = await execGit(realRoot, ["rev-parse", "--git-common-dir"]);
+    const gitWorktreeRaw = await execGit(realRoot, ["rev-parse", "--git-dir"]);
     const gitCommonDirectory = gitCommonRaw ? path.resolve(realRoot, gitCommonRaw) : undefined;
     const gitWorktreeDirectory = gitWorktreeRaw ? path.resolve(realRoot, gitWorktreeRaw) : undefined;
-    const marker = execGit(realRoot, ["rev-parse", "--show-toplevel"]) ?? this.rootMarker(realRoot);
+    const marker = await execGit(realRoot, ["rev-parse", "--show-toplevel"]) ?? this.rootMarker(realRoot);
     const repositoryFingerprint = sha256([path.normalize(marker), gitCommonDirectory ?? "non-git", this.rootMarker(realRoot)].join("\0"));
     const repositoryNamespace = sha256([gitCommonDirectory ? path.normalize(gitCommonDirectory) : path.normalize(realRoot), this.rootMarker(realRoot)].join("\0"));
     const id = sha256([path.normalize(realRoot), path.normalize(gitWorktreeDirectory ?? realRoot), repositoryFingerprint].join("\0")).slice(0, 40);
@@ -236,6 +236,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
 
   private openDatabase(): void {
     if (!this.identity) throw new Error("No workspace is open");
+    this.insertStatements.clear();
     try {
       this.db = openSqliteDatabase(this.indexPath).db;
       this.initializeSchema();
@@ -267,6 +268,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
   }
 
   private recoverCorruption(original: unknown): void {
+    this.insertStatements.clear();
     try { this.db?.close(); } catch {}
     if (fs.existsSync(this.indexPath)) {
       try {
@@ -303,7 +305,8 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       CREATE TABLE IF NOT EXISTS calls (id TEXT PRIMARY KEY, path TEXT NOT NULL REFERENCES files(path) ON DELETE CASCADE, kind TEXT NOT NULL, callee_name TEXT NOT NULL, line INTEGER NOT NULL, enclosing_symbol_id TEXT);
       CREATE INDEX IF NOT EXISTS idx_calls_path ON calls(path); CREATE INDEX IF NOT EXISTS idx_calls_name ON calls(callee_name);
       CREATE TABLE IF NOT EXISTS runtime_observations (id TEXT PRIMARY KEY, source_path TEXT NOT NULL, source_symbol_id TEXT, target_path TEXT, target_symbol_id TEXT, relation TEXT NOT NULL, run_id TEXT NOT NULL, observer TEXT NOT NULL, revision TEXT, observed_at TEXT NOT NULL, evidence_hash TEXT NOT NULL);
-      CREATE VIRTUAL TABLE IF NOT EXISTS content_fts USING fts5(path UNINDEXED, content, tokenize='unicode61 tokenchars _');`);
+      CREATE VIRTUAL TABLE IF NOT EXISTS content_fts USING fts5(path UNINDEXED, content, tokenize='unicode61 tokenchars _');
+      CREATE TABLE IF NOT EXISTS content_fts_paths (path TEXT NOT NULL, row_id INTEGER NOT NULL UNIQUE, PRIMARY KEY(path,row_id));`);
   }
 
   private meta(key: string): string | undefined {
@@ -320,29 +323,37 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
     return { db: this.db, identity: this.identity };
   }
 
-  private discover(): Array<{ path: string; tracked: boolean; gitStatus?: string }> {
+  private async discover(signal?: AbortSignal): Promise<Array<{ path: string; tracked: boolean; gitStatus?: string }>> {
     const { identity } = this.ensureOpen();
-    const listed = execGitNulDelimited(identity.realRoot, ["ls-files", "-z", "--cached", "--others", "--exclude-standard"]);
+    const listed = await execGitNulDelimited(identity.realRoot, ["ls-files", "-z", "--cached", "--others", "--exclude-standard"], signal);
     const statuses = new Map<string, string>();
-    const statusRaw = execGitNulDelimited(identity.realRoot, ["status", "--porcelain=v1", "-z"]);
+    const statusRaw = await execGitNulDelimited(identity.realRoot, ["status", "--porcelain=v1", "-z"], signal);
     if (statusRaw) {
       const parts = statusRaw.split("\0").filter(Boolean);
       for (const part of parts) statuses.set(normalizeRelative(part.slice(3)), part.slice(0, 2));
     }
-    const trackedRaw = execGitNulDelimited(identity.realRoot, ["ls-files", "-z"]);
+    const trackedRaw = await execGitNulDelimited(identity.realRoot, ["ls-files", "-z"], signal);
     const tracked = new Set((trackedRaw ?? "").split("\0").filter(Boolean).map(normalizeRelative));
     const gitPaths = listed?.split("\0").filter(Boolean).map(normalizeRelative) ?? [];
-    const paths = gitPaths.length > 0 ? gitPaths : this.walk(identity.realRoot);
-    return paths.slice(0, this.options.maxFiles).filter((relativePath) => safeRealFile(identity.realRoot, relativePath)).map((relativePath) => ({ path: relativePath, tracked: tracked.has(relativePath), gitStatus: statuses.get(relativePath) }));
+    const paths = gitPaths.length > 0 ? gitPaths : await this.walk(identity.realRoot, signal);
+    const output: Array<{ path: string; tracked: boolean; gitStatus?: string }> = [];
+    for (let index = 0; index < Math.min(paths.length, this.options.maxFiles); index++) {
+      if (signal?.aborted) throw new Error("Repository indexing cancelled");
+      const relativePath = paths[index]!;
+      if (safeRealFile(identity.realRoot, relativePath)) output.push({ path: relativePath, tracked: tracked.has(relativePath), gitStatus: statuses.get(relativePath) });
+      if (index % 64 === 0) await new Promise<void>(resolve => setImmediate(resolve));
+    }
+    return output;
   }
 
-  private walk(root: string): string[] {
+  private async walk(root: string, signal?: AbortSignal): Promise<string[]> {
     const output: string[] = [];
     const stack = [root];
     while (stack.length && output.length < this.options.maxFiles) {
+      if (signal?.aborted) throw new Error("Repository indexing cancelled");
       const directory = stack.pop()!;
       let entries: fs.Dirent[];
-      try { entries = fs.readdirSync(directory, { withFileTypes: true }); } catch { continue; }
+      try { entries = await fs.promises.readdir(directory, { withFileTypes: true }); } catch { continue; }
       for (const entry of entries) {
         if (entry.isSymbolicLink()) continue;
         const relativePath = normalizeRelative(path.relative(root, path.join(directory, entry.name)));
@@ -360,10 +371,16 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       const started = Date.now();
       this.state = "INDEXING";
       this.writeMeta("state", this.state);
-      const discovered = this.discover();
-      this.progress("discover", discovered.length, 0, 0, 0, 0, started);
-      await this.refreshInternal(discovered.map((entry) => entry.path), signal, discovered, started);
-      return this.status();
+      try {
+        const discovered = await this.discover(signal);
+        this.progress("discover", discovered.length, 0, 0, 0, 0, started);
+        await this.refreshInternal(discovered.map((entry) => entry.path), signal, discovered, started);
+        return this.status();
+      } catch (error) {
+        this.state = signal?.aborted ? "STALE" : "ERROR";
+        this.writeMeta("state", this.state);
+        throw error;
+      }
     });
   }
 
@@ -377,11 +394,12 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
         // intelligence stays honest without rediscovering the whole workspace.
         const identity = this.identity!;
         const statuses = new Map<string, string>();
-        const statusRaw = execGitNulDelimited(identity.realRoot, ["status", "--porcelain=v1", "-z"]);
+        const statusRaw = await execGitNulDelimited(identity.realRoot, ["status", "--porcelain=v1", "-z"], signal);
         if (statusRaw) {
           for (const part of statusRaw.split("\0").filter(Boolean)) statuses.set(normalizeRelative(part.slice(3)), part.slice(0, 2));
         }
-        const trackedRaw = execGitNulDelimited(identity.realRoot, ["ls-files", "-z"]);
+        const trackedRaw = await execGitNulDelimited(identity.realRoot, ["ls-files", "-z"], signal);
+        if (signal?.aborted) throw new Error("Repository indexing cancelled");
         const trackedSet = trackedRaw ? new Set(trackedRaw.split("\0").filter(Boolean).map(normalizeRelative)) : undefined;
         discovered = requested.flatMap((relativePath) => {
           const absolute = safeRealFile(identity.realRoot, relativePath);
@@ -394,7 +412,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
           }];
         });
       } else {
-        discovered = this.discover();
+        discovered = await this.discover(signal);
       }
       return this.refreshInternal(requested, signal, discovered, started);
     });
@@ -443,7 +461,8 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
     let cacheHits = 0;
     let bytesRead = 0;
     let graphChanged = false;
-    const currentHead = execGit(identity.realRoot, ["rev-parse", "HEAD"]);
+    const currentHead = await execGit(identity.realRoot, ["rev-parse", "HEAD"], signal);
+    if (signal?.aborted) throw new Error("Repository indexing cancelled");
     const storedHead = this.meta("head");
     const headChanged = Boolean(storedHead && currentHead && storedHead !== currentHead);
 
@@ -473,6 +492,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
 
     db.exec("BEGIN IMMEDIATE");
     try {
+      await this.ensureFtsPathIndex(signal);
       for (const removed of deleted) {
         graphChanged = true;
         this.deleteFile(removed, true);
@@ -482,6 +502,13 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       // batch of large TypeScript files block every control-plane request (approvals, SSE, tool
       // calls) for 10+ seconds on a monorepo. Yield whenever a slice has consumed its budget.
       let sliceStartedAt = Date.now();
+      const yieldSlice = async (): Promise<void> => {
+        if (Date.now() - sliceStartedAt < PARSE_SLICE_BUDGET_MS) return;
+        this.progress("parse", worklist.length, processed, symbolsIndexed, edgesIndexed, errors, started);
+        await new Promise<void>((resolve) => setImmediate(resolve));
+        if (signal?.aborted) throw new Error("Repository indexing cancelled");
+        sliceStartedAt = Date.now();
+      };
       for (const relativePath of worklist) {
         if (signal?.aborted) throw new Error("Repository indexing cancelled");
         if (Date.now() - sliceStartedAt >= PARSE_SLICE_BUDGET_MS) {
@@ -586,14 +613,29 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
           }
         }
         if (parserError) errors++;
-        this.deleteFile(relativePath);
+        // New files have no committed rows to replace; an FTS path deletion scans stored content.
+        if (existing.has(relativePath)) this.deleteFile(relativePath);
         const file: RepositoryFile = { path: relativePath, language, size: stat.size, mtimeMs: stat.mtimeMs, hash, lines: content ? content.split(/\r?\n/).length : 0, binary, generated, sensitive, tracked: discovery.tracked, gitStatus: discovery.gitStatus, parserStatus, parserError };
         this.insertFile(file);
-        for (const symbol of symbols) this.insertSymbol(symbol);
-        for (const edge of edges) this.insertEdge(edge, bindings);
-        calls.forEach((call, callIndex) => this.insertCall(relativePath, call, callIndex));
+        // A single evidence/config file can contain tens of thousands of symbols.
+        // File-boundary yields alone cannot keep the desktop responsive or accept cancellation.
+        for (let index = 0; index < symbols.length; index++) {
+          this.insertSymbol(symbols[index]!);
+          if (index % 64 === 0) await yieldSlice();
+        }
+        for (let index = 0; index < edges.length; index++) {
+          this.insertEdge(edges[index]!, bindings);
+          if (index % 64 === 0) await yieldSlice();
+        }
+        for (let index = 0; index < calls.length; index++) {
+          this.insertCall(relativePath, calls[index]!, index);
+          if (index % 64 === 0) await yieldSlice();
+        }
         this.insertTestEdges(file, knownPaths);
-        if (!binary && !tooLarge && !sensitive) db.prepare("INSERT INTO content_fts(path,content) VALUES($path,$content)").run({ $path: relativePath, $content: content });
+        if (!binary && !tooLarge && !sensitive) {
+          const inserted = this.prepareInsert("INSERT INTO content_fts(path,content) VALUES($path,$content)").run({ $path: relativePath, $content: content });
+          this.prepareInsert("INSERT INTO content_fts_paths(path,row_id) VALUES($path,$id)").run({ $path: relativePath, $id: inserted.lastInsertRowid });
+        }
         symbolsIndexed += symbols.length; edgesIndexed += edges.length;
         const digestAfter = this.fileGraphDigest(relativePath);
         if (digestBefore !== digestAfter) graphChanged = true;
@@ -606,8 +648,9 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       }
       this.insertPackageEdges();
       const now = new Date().toISOString();
-      const branch = execGit(identity.realRoot, ["branch", "--show-current"]);
-      const head = currentHead ?? execGit(identity.realRoot, ["rev-parse", "HEAD"]);
+      const branch = await execGit(identity.realRoot, ["branch", "--show-current"], signal);
+      const head = currentHead ?? await execGit(identity.realRoot, ["rev-parse", "HEAD"], signal);
+      if (signal?.aborted) throw new Error("Repository indexing cancelled");
       // Two revisions are maintained. `generation` describes indexed content: it advances
       // only when a refresh added, changed, or deleted file content. `graph_generation`
       // describes structural intelligence: it advances only when symbol/edge/call records
@@ -626,12 +669,14 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       this.state = errors ? "DEGRADED" : "READY";
       this.writeMeta("state", this.state);
       db.exec("COMMIT");
+      this.countsCache = undefined;
       this.progress("ready", worklist.length, worklist.length, symbolsIndexed, edgesIndexed, errors, started);
       const result: RefreshResult = { added, changed, deleted, unchanged, durationMs: Date.now() - started, generation: nextGen, graphGeneration: nextGraphGen, filesParsed, cacheHits, bytesRead, invalidatedDependents, invalidatedDependentsTruncated };
       this.lastRefresh = result;
       return result;
     } catch (error) {
       db.exec("ROLLBACK");
+      this.countsCache = undefined;
       this.state = signal?.aborted ? "STALE" : "ERROR";
       this.writeMeta("state", this.state);
       throw error;
@@ -643,25 +688,55 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
   }
 
   private deleteFile(relativePath: string, removeIncoming = false): void {
-    this.db!.prepare("DELETE FROM content_fts WHERE path=$path").run({ $path: relativePath });
+    this.db!.prepare("DELETE FROM content_fts WHERE rowid IN (SELECT row_id FROM content_fts_paths WHERE path=$path)").run({ $path: relativePath });
+    this.db!.prepare("DELETE FROM content_fts_paths WHERE path=$path").run({ $path: relativePath });
     this.db!.prepare("DELETE FROM calls WHERE path=$path").run({ $path: relativePath });
     this.db!.prepare(removeIncoming ? "DELETE FROM edges WHERE source_path=$path OR target_path=$path" : "DELETE FROM edges WHERE source_path=$path").run({ $path: relativePath });
     this.db!.prepare("DELETE FROM symbols WHERE path=$path").run({ $path: relativePath });
     this.db!.prepare("DELETE FROM files WHERE path=$path").run({ $path: relativePath });
   }
 
+  private async ensureFtsPathIndex(signal?: AbortSignal): Promise<void> {
+    if (this.meta("fts_paths_ready") === "1") return;
+    // Older caches lack the path-to-row index. Page the migration so stored content cannot
+    // turn every changed-file deletion into a synchronous scan of the entire FTS corpus.
+    const select = this.db!.prepare("SELECT rowid,path FROM content_fts WHERE rowid > $after ORDER BY rowid LIMIT 64");
+    const insert = this.prepareInsert("INSERT OR IGNORE INTO content_fts_paths(path,row_id) VALUES($path,$id)");
+    let after = 0;
+    while (true) {
+      if (signal?.aborted) throw new Error("Repository indexing cancelled");
+      const rows = select.all({ $after: after }) as Row[];
+      if (!rows.length) break;
+      for (const row of rows) {
+        after = Number(row.rowid);
+        insert.run({ $path: String(row.path), $id: after });
+      }
+      await new Promise<void>(resolve => setImmediate(resolve));
+    }
+    this.writeMeta("fts_paths_ready", "1");
+  }
+
   private insertFile(file: RepositoryFile): void {
-    this.db!.prepare("INSERT INTO files(path,language,size,mtime_ms,hash,lines,binary,generated,sensitive,tracked,git_status,parser_status,parser_error) VALUES($path,$language,$size,$mtime,$hash,$lines,$binary,$generated,$sensitive,$tracked,$git,$parser,$error)").run({ $path: file.path, $language: file.language, $size: file.size, $mtime: file.mtimeMs, $hash: file.hash, $lines: file.lines, $binary: file.binary ? 1 : 0, $generated: file.generated ? 1 : 0, $sensitive: file.sensitive ? 1 : 0, $tracked: file.tracked ? 1 : 0, $git: file.gitStatus ?? null, $parser: file.parserStatus, $error: file.parserError ?? null });
+    this.prepareInsert("INSERT INTO files(path,language,size,mtime_ms,hash,lines,binary,generated,sensitive,tracked,git_status,parser_status,parser_error) VALUES($path,$language,$size,$mtime,$hash,$lines,$binary,$generated,$sensitive,$tracked,$git,$parser,$error)").run({ $path: file.path, $language: file.language, $size: file.size, $mtime: file.mtimeMs, $hash: file.hash, $lines: file.lines, $binary: file.binary ? 1 : 0, $generated: file.generated ? 1 : 0, $sensitive: file.sensitive ? 1 : 0, $tracked: file.tracked ? 1 : 0, $git: file.gitStatus ?? null, $parser: file.parserStatus, $error: file.parserError ?? null });
+  }
+
+  private prepareInsert(sql: string): ReturnType<SQLiteDatabase["prepare"]> {
+    let statement = this.insertStatements.get(sql);
+    if (!statement) {
+      statement = this.db!.prepare(sql);
+      this.insertStatements.set(sql, statement);
+    }
+    return statement;
   }
 
   private insertSymbol(symbol: RepositorySymbol): void {
-    this.db!.prepare("INSERT OR REPLACE INTO symbols(id,name,qualified_name,kind,path,start_line,end_line,exported,signature,parent_id) VALUES($id,$name,$qualified,$kind,$path,$start,$end,$exported,$signature,$parent)").run({ $id: symbol.id, $name: symbol.name, $qualified: symbol.qualifiedName, $kind: symbol.kind, $path: symbol.path, $start: symbol.startLine, $end: symbol.endLine, $exported: symbol.exported ? 1 : 0, $signature: symbol.signature ?? null, $parent: symbol.parentId ?? null });
+    this.prepareInsert("INSERT OR REPLACE INTO symbols(id,name,qualified_name,kind,path,start_line,end_line,exported,signature,parent_id) VALUES($id,$name,$qualified,$kind,$path,$start,$end,$exported,$signature,$parent)").run({ $id: symbol.id, $name: symbol.name, $qualified: symbol.qualifiedName, $kind: symbol.kind, $path: symbol.path, $start: symbol.startLine, $end: symbol.endLine, $exported: symbol.exported ? 1 : 0, $signature: symbol.signature ?? null, $parent: symbol.parentId ?? null });
   }
 
   private insertEdge(edge: RepositoryEdge, bindings: CachedParse["bindings"] = []): void {
     const edgeKey = `${edge.specifier ?? ""}\0${edge.reason.includes("dynamic") ? "dynamic" : "static"}`;
     const edgeBindings = edge.kind === "imports" ? bindings.filter((b) => b.edgeKey === edgeKey) : [];
-    this.db!.prepare("INSERT OR REPLACE INTO edges(id,kind,source_path,target_path,source_symbol_id,target_symbol_id,specifier,confidence,reason,provenance,binding_names) VALUES($id,$kind,$source,$target,$sourceSymbol,$targetSymbol,$specifier,$confidence,$reason,$provenance,$bindings)").run({
+    this.prepareInsert("INSERT OR REPLACE INTO edges(id,kind,source_path,target_path,source_symbol_id,target_symbol_id,specifier,confidence,reason,provenance,binding_names) VALUES($id,$kind,$source,$target,$sourceSymbol,$targetSymbol,$specifier,$confidence,$reason,$provenance,$bindings)").run({
       $id: edge.id, $kind: edge.kind, $source: edge.sourcePath, $target: edge.targetPath ?? null, $sourceSymbol: edge.sourceSymbolId ?? null, $targetSymbol: edge.targetSymbolId ?? null,
       $specifier: edge.specifier ?? null, $confidence: edge.confidence, $reason: edge.reason, $provenance: edge.provenance,
       $bindings: edgeBindings.length ? JSON.stringify(edgeBindings.map((b) => ({ binding: b.binding, importKind: b.importKind, reExport: b.reExport }))) : null,
@@ -669,7 +744,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
   }
 
   private insertCall(relativePath: string, call: { kind: string; calleeName: string; line: number; enclosingSymbolId?: string }, occurrence: number): void {
-    this.db!.prepare("INSERT OR REPLACE INTO calls(id,path,kind,callee_name,line,enclosing_symbol_id) VALUES($id,$path,$kind,$name,$line,$enclosing)").run({
+    this.prepareInsert("INSERT OR REPLACE INTO calls(id,path,kind,callee_name,line,enclosing_symbol_id) VALUES($id,$path,$kind,$name,$line,$enclosing)").run({
       $id: sha256(["call", relativePath, String(call.line), call.kind, call.calleeName, String(occurrence)].join("\0")),
       $path: relativePath, $kind: call.kind, $name: call.calleeName, $line: call.line, $enclosing: call.enclosingSymbolId ?? null,
     });
@@ -705,7 +780,16 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
 
   status(): IndexStatus {
     const { db, identity } = this.ensureOpen();
-    const counts = db.prepare("SELECT (SELECT count(*) FROM files) file_count,(SELECT count(*) FROM symbols) symbol_count,(SELECT count(*) FROM edges) edge_count,(SELECT count(*) FROM files WHERE parser_status='error') error_count").get() as Row;
+    const generation = Number(this.meta("generation")) || 1;
+    const graphGeneration = Number(this.meta("graph_generation")) || 1;
+    const revision = `${identity.id}:${generation}:${graphGeneration}`;
+    // Desktop polling must not scan millions of rows each time. Generation changes
+    // invalidate counts across connections; local commits/rollbacks invalidate them too.
+    if (this.countsCache?.revision !== revision) {
+      const counts = db.prepare("SELECT (SELECT count(*) FROM files) file_count,(SELECT count(*) FROM symbols) symbol_count,(SELECT count(*) FROM edges) edge_count,(SELECT count(*) FROM files WHERE parser_status='error') error_count").get() as Row;
+      this.countsCache = { revision, counts };
+    }
+    const counts = this.countsCache.counts;
     let sizeBytes = 0; try { sizeBytes = fs.statSync(this.indexPath).size; } catch {}
     return {
       state: this.state,
@@ -719,8 +803,8 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       symbolCount: Number(counts.symbol_count),
       edgeCount: Number(counts.edge_count),
       errorCount: Number(counts.error_count),
-      generation: Number(this.meta("generation")) || 1,
-      graphGeneration: Number(this.meta("graph_generation")) || 1,
+      generation,
+      graphGeneration,
       lastSuccessfulUpdate: this.meta("last_successful_update"),
       gitHead: this.meta("head") || undefined,
       gitBranch: this.meta("branch") || undefined,
@@ -770,14 +854,49 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
     if (!query.trim()) return page([], options);
     const escaped = query.trim().split(/\s+/).map((term) => `"${term.replace(/"/g, "\"\"")}"`).join(" AND ");
     let rows: Row[] = [];
-    try { rows = this.db!.prepare("SELECT path, snippet(content_fts,1,'','', ' … ',24) preview, bm25(content_fts) rank FROM content_fts WHERE content_fts MATCH $query LIMIT 1000").all({ $query: escaped }) as Row[]; } catch { return page([], options); }
-    const results = rows.map((row) => ({ path: String(row.path), preview: redactPreview(String(row.preview)), score: Math.max(1, 50 - Number(row.rank)), reasons: ["lexical_content_match"], confidence: "medium" as const }));
-    return page(results, options);
+    try { rows = this.db!.prepare("SELECT rowid,path,bm25(content_fts) rank FROM content_fts WHERE content_fts MATCH $query LIMIT 1000").all({ $query: escaped }) as Row[]; } catch { return page([], options); }
+    const results: RepositoryMatch[] = rows.map((row) => ({ path: String(row.path), score: Math.max(1, 50 - Number(row.rank)), reasons: ["lexical_content_match"], confidence: "medium" }));
+    const selected = page(results, options);
+    // FTS snippets scan document content. Generating 1,000 previews for a 50-item page
+    // stalled the main process on large evidence files; retain pagination and rank, then preview.
+    const ids = new Map(rows.map(row => [String(row.path), row.rowid]));
+    const preview = this.db!.prepare("SELECT snippet(content_fts,1,'','', ' … ',24) preview FROM content_fts WHERE rowid=$id AND content_fts MATCH $query");
+    let sliceStarted = Date.now();
+    for (const match of selected.items) {
+      const row = preview.get({ $id: Number(ids.get(match.path)), $query: escaped }) as Row | undefined;
+      if (row) match.preview = redactPreview(String(row.preview));
+      if (Date.now() - sliceStarted >= PARSE_SLICE_BUDGET_MS) {
+        await new Promise<void>((resolve) => setImmediate(resolve));
+        sliceStarted = Date.now();
+      }
+    }
+    return selected;
   }
 
   async searchSymbols(query: string, options: QueryOptions = {}): Promise<QueryPage<RepositorySymbol>> {
     const lower = query.toLowerCase();
-    const rows = this.db!.prepare("SELECT * FROM symbols WHERE lower(name) LIKE $query OR lower(qualified_name) LIKE $query LIMIT 2000").all({ $query: `%${lower}%` }) as Row[];
+    const { db } = this.ensureOpen();
+    const boundary = db.prepare("SELECT rowid AS scanned_id FROM symbols WHERE rowid > $after ORDER BY rowid LIMIT 1 OFFSET 2047");
+    const tail = db.prepare("SELECT max(rowid) AS scanned_id FROM symbols");
+    const scan = db.prepare("SELECT * FROM symbols WHERE rowid > $after AND rowid <= $through AND (lower(name) LIKE $query OR lower(qualified_name) LIKE $query) ORDER BY rowid LIMIT $remaining");
+    const rows: Row[] = [];
+    let after = 0;
+    // Sparse substring matches otherwise scan the entire symbol table in one synchronous
+    // SQLite call, freezing desktop controls even though this method returns a promise.
+    let sliceStarted = Date.now();
+    while (rows.length < 2_000) {
+      const edge = boundary.get({ $after: after }) as Row | undefined;
+      const through = Number((edge ?? tail.get() as Row | undefined)?.scanned_id ?? 0);
+      if (through <= after) break;
+      rows.push(...scan.all({ $after: after, $through: through, $query: `%${lower}%`, $remaining: 2_000 - rows.length }) as Row[]);
+      after = through;
+      if (Date.now() - sliceStarted >= PARSE_SLICE_BUDGET_MS || !edge) {
+        await new Promise<void>(resolve => setImmediate(resolve));
+        if (this.db !== db) throw new Error("Workspace changed during symbol search");
+        sliceStarted = Date.now();
+      }
+      if (!edge) break;
+    }
     const symbols = rows.map(rowSymbol).sort((a, b) => Number(b.name.toLowerCase() === lower) - Number(a.name.toLowerCase() === lower) || a.name.length - b.name.length || a.path.localeCompare(b.path));
     return page(symbols, options);
   }
@@ -854,6 +973,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       for (const match of (await this.searchText(tokens.join(" "), { limit: 100 })).items) add({ ...match, score: match.score + 80, reasons: [...match.reasons, "multi_token_match"] });
     }
     for (const token of lexicalTokens) {
+      await new Promise<void>((resolve) => setImmediate(resolve));
       for (const symbol of (await this.searchSymbols(token, { limit: 100 })).items) {
         const exact = symbol.name.toLowerCase() === token.toLowerCase();
         const testLike = symbol.kind === "test" || /(?:^|\/)(?:test|tests|__tests__)\/|\.(?:test|spec)\./i.test(symbol.path);
@@ -862,6 +982,7 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
       for (const match of (await this.searchFiles(token, { limit: 50 })).items) add(match);
     }
     for (const token of tokens) {
+      await new Promise<void>((resolve) => setImmediate(resolve));
       for (const match of (await this.searchText(token, { limit: 50 })).items) add(match);
     }
     for (const match of [...scores.values()].slice(0, 50)) {
@@ -1468,7 +1589,9 @@ export class LocalRepositoryIntelligence implements RepositoryIntelligence {
   async closeWorkspace(): Promise<void> {
     this.stopWatching();
     await this.writeChain;
+    this.insertStatements.clear();
     this.db?.close(); this.db = undefined; this.identity = undefined; this.state = "NOT_INDEXED";
+    this.countsCache = undefined;
   }
 }
 

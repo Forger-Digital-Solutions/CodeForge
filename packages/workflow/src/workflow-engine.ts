@@ -327,7 +327,7 @@ export class WorkflowEngine {
     try {
       this.ensureNotAborted();
       // Snapshot before
-      if (!this.resumeState) this.snapshotBefore();
+      if (!this.resumeState) await this.snapshotBefore();
 
       // 1. Understand
       this.setPhase("understanding", "reconnaissance");
@@ -726,21 +726,24 @@ export class WorkflowEngine {
     }
   }
 
-  private snapshotBefore(): void {
+  private async snapshotBefore(): Promise<void> {
     this.beforeSnapshots.clear();
     this.snapshotTakenAtMs = Date.now();
     try {
-      const walk = (dir: string): void => {
+      const walk = async (dir: string): Promise<void> => {
         let entries: fs.Dirent[];
-        try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+        try { entries = await fs.promises.readdir(dir, { withFileTypes: true }); } catch { return; }
         for (const e of entries) {
+          this.ensureNotAborted();
           if (e.name === ".git" || e.name === "node_modules" || e.name === "dist") continue;
           if (e.name.startsWith(".") && e.name !== ".gitignore") continue;
           const full = path.join(dir, e.name);
-          if (e.isDirectory()) walk(full);
+          if (e.isDirectory()) await walk(full);
           else if (e.isFile()) {
             try {
-              const content = fs.readFileSync(full);
+              // Packages and logs can be gigabytes; enforce the existing snapshot cap before allocating.
+              if ((await fs.promises.stat(full)).size >= 500 * 1024) continue;
+              const content = await fs.promises.readFile(full);
               // Evidence paths are logical repository paths, never host-specific renderer paths.
               const rel = path.relative(this.workspacePath, full).split(path.sep).join("/");
               if (content.byteLength < 500 * 1024) {
@@ -760,8 +763,10 @@ export class WorkflowEngine {
           }
         }
       };
-      walk(this.workspacePath);
-    } catch {}
+      await walk(this.workspacePath);
+    } catch (error) {
+      if (this.signal?.aborted) throw error;
+    }
   }
 
   private async executeImplementation(
@@ -805,6 +810,10 @@ export class WorkflowEngine {
           };
           return { plan: currentPlan, appliedCount: currentPlan.steps.filter((s) => s.status === "completed").length, failedSteps: 0 };
         } else {
+          // A failed turn that wrote nothing cannot own unrelated repository test failures.
+          if (result.filesChanged?.length === 0 && !this.terminalStop) {
+            this.terminalStop = { code: result.failure?.code ?? "implementation_failed", message: this.implementationStopReason ?? "Implementation failed before any files were changed." };
+          }
           currentPlan = {
             ...currentPlan,
             steps: currentPlan.steps.map((s) => (s.kind === "edit" || s.kind === "write" ? { ...s, status: "failed" as const } : s)),

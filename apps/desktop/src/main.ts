@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, Menu, shell, safeStorage, Tray, nativeImage, screen, Notification } from "electron";
 import { createOwnerScopedCredentialResolver, isUserApiCredentialRef, migrateLegacyPlaintextCredentials, openCredential, sealCredential } from "./secure-credential-codec.js";
 import { resolveCloudCatalogSyncMode } from "./cloud-catalog-sync.js";
+import { createQualificationScheduler } from "./qualification-scheduler.js";
 import { checkGitExecArgs } from "./git-exec-allowlist.js";
 import path from "node:path";
 import os from "node:os";
@@ -1227,17 +1228,17 @@ function pruneStaleRoutes(providerId: string, keep: Set<string>): void {
  * background after discovery; ForgeAuto/Free only admits a route once its receipt is QUALIFIED.
  * Never blocks discovery or window paint; the renderer refreshes on `provider:changed`.
  */
-function scheduleQualification(providerId?: string): void {
+const qualificationScheduler = createQualificationScheduler(async () => {
   if (!freeCloud || PACKAGED_SMOKE) return;
-  setTimeout(() => {
-    void freeCloud
-      ?.qualifyPending({ providerId })
-      .then((receipts) => {
-        if (receipts.length > 0) smokeRecord(`QUALIFIED_${receipts.map((r) => `${r.providerId}/${r.modelId}=${r.qualificationState}`).join(",")}`);
-        notifyProviderChanged();
-      })
-      .catch(() => undefined);
-  }, 250).unref?.();
+  // Provider lanes share one cycle so a slow provider cannot discard another's discovery.
+  const receipts = await freeCloud.qualifyPending();
+  if (receipts.length > 0) smokeRecord(`QUALIFIED_${receipts.map((r) => `${r.providerId}/${r.modelId}=${r.qualificationState}`).join(",")}`);
+  notifyProviderChanged();
+}, 250, () => discoveringProviders.size === 0 && !freeCloud?.isQualifying());
+
+function scheduleQualification(_providerId?: string): void {
+  if (!freeCloud || PACKAGED_SMOKE) return;
+  qualificationScheduler.schedule();
 }
 
 function notifyProviderChanged(): void {
@@ -2586,7 +2587,7 @@ async function startPrimaryInstance(): Promise<void> {
         const id = adapter.providerId;
         if (id === "codeforge-cloud" || adapter.isTestProvider === true) continue;
         void discoverProviderFree(id)
-          .then(() => freeCloud?.qualifyPending({ providerId: id }))
+          .then(() => scheduleQualification(id))
           .catch(() => undefined);
       }
     }, PROVIDER_REDISCOVERY_INTERVAL_MS);
@@ -2675,6 +2676,7 @@ app.on("before-quit", (event) => {
 });
 
 app.on("will-quit", () => {
+  qualificationScheduler.dispose();
   if (isQuitting) cleanupRuntimeMetadata();
   tray?.destroy();
   tray = null;

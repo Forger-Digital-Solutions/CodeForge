@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import { createHash } from "node:crypto";
 import { ForgeZero, createGenericFreeRecord } from "@codeforge/forge-zero";
 import {
   type ProviderAdapter,
@@ -12,7 +13,7 @@ import {
   InMemoryProviderCatalog,
 } from "@codeforge/providers";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
-import { createAgentRuntime } from "../src/agent-runtime.js";
+import { createAgentRuntime, agentToolDefinitions } from "../src/agent-runtime.js";
 import { ERROR_CODES } from "@codeforge/agent";
 import { UserIntentHoldController } from "../src/user-intent-hold.js";
 
@@ -83,6 +84,84 @@ describe("AgentRuntime — Production Invocation & Lifecycle Certification (CF-0
   afterEach(async () => {
     persistence.close();
     await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
+  async function readRange(args: Record<string, unknown>, toolName = "read_file"): Promise<string> {
+    const catalog = new InMemoryProviderCatalog();
+    const provider = new DeterministicScriptedProvider("test-provider", [
+      async function* () {
+        yield { type: "tool_call_started", toolCallId: "range-read", toolName };
+        yield { type: "tool_call_completed", toolCallId: "range-read", toolName, arguments: JSON.stringify(args) };
+        yield { type: "finish", finishReason: "tool_calls" };
+      },
+      async function* () {
+        yield { type: "text_delta", delta: "Inspected the requested source lines." };
+        yield { type: "finish", finishReason: "stop" };
+      },
+    ]);
+    catalog.register(provider);
+    const runtime = createAgentRuntime({ sessionId: "test-session", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: tmpDir });
+    try {
+      const result = await runtime.executeAgentRun({
+        runId: "run-range-read", agentId: "explorer", role: "explorer", goal: "Inspect a source declaration", workspaceId: "ws-1", workspacePath: tmpDir,
+        permissions: { read: true, search: true, write: false, executeCommand: false, network: false },
+      });
+      const execution = result.toolExecutions[0];
+      return execution?.output ?? execution?.error ?? result.summary;
+    } finally { await runtime.shutdown(); }
+  }
+
+  it("reads source below line 400 while retaining the whole-file edit hash", async () => {
+    const source = Array.from({ length: 600 }, (_, index) => `source-line-${index + 1}`).join("\n");
+    await fs.writeFile(path.join(tmpDir, "long.ts"), source);
+    const output = await readRange({ path: "long.ts", startLine: 505, endLine: 531 });
+    expect(output).toContain("source-line-505\n");
+    expect(output).toContain("source-line-531");
+    expect(output).not.toContain("source-line-504");
+    expect(output).not.toContain("source-line-532");
+    expect(output).toContain(`[hash:${createHash("sha256").update(source).digest("hex")}]`);
+    expect(await fs.readFile(path.join(tmpDir, "long.ts"), "utf8")).toBe(source);
+    const definition = agentToolDefinitions().find(tool => tool.function.name === "read_file");
+    expect(definition?.function.parameters.properties).toHaveProperty("startLine");
+    expect(definition?.function.parameters.properties).toHaveProperty("endLine");
+  });
+
+  it("honors the model's search file scope instead of returning unrelated workspace matches", async () => {
+    await fs.writeFile(path.join(tmpDir, "a-unrelated.ts"), "const Needle = 'unrelated';\n");
+    await fs.writeFile(path.join(tmpDir, "target.ts"), "const Needle = 'target';\n");
+    const output = await readRange({ path: "target.ts", query: "Needle", maxMatches: 1 }, "search_files");
+    expect(output).toContain("target.ts:1:7");
+    expect(output).not.toContain("a-unrelated.ts");
+    expect(output).toContain("1 files scanned");
+    expect(agentToolDefinitions().find(tool => tool.function.name === "search_files")?.function.parameters.properties).toHaveProperty("path");
+  });
+
+  it("rejects a non-string search scope instead of silently searching the workspace", async () => {
+    await fs.writeFile(path.join(tmpDir, "target.ts"), "const PrivateNeedle = true;\n");
+    const output = await readRange({ path: 42, query: "PrivateNeedle" }, "search_files");
+    expect(output).toContain("path must be a string");
+    expect(output).not.toContain("target.ts:1");
+  });
+
+  it("caps a requested line range and makes truncation truthful", async () => {
+    await fs.writeFile(path.join(tmpDir, "long.ts"), Array.from({ length: 1000 }, (_, index) => `source-line-${index + 1}`).join("\n"));
+    const output = await readRange({ path: "long.ts", startLine: 450, endLine: 1000 });
+    expect(output).toContain("source-line-450\n");
+    expect(output).toContain("source-line-849");
+    expect(output).not.toContain("source-line-850");
+    expect(output).toContain("TRUNCATED");
+    expect(output).toContain("450-849");
+  });
+
+  it.each([
+    { startLine: 0 }, { startLine: -1 }, { startLine: 1.5 }, { startLine: null }, { startLine: "2" },
+    { startLine: 2, endLine: 1 }, { startLine: 999 },
+  ])("rejects invalid source ranges rather than returning the file prefix: %j", async range => {
+    await fs.writeFile(path.join(tmpDir, "note.txt"), "protected-prefix\nsecond-line");
+    const output = await readRange({ path: "note.txt", ...range });
+    expect(output).toMatch(/Error|invalid|Invalid/);
+    expect(output).not.toContain("protected-prefix");
+    expect(output).not.toContain("[hash:");
   });
 
   it("executes a standalone Explorer run that discovers files and returns structured advisory findings", async () => {

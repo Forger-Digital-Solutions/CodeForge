@@ -238,6 +238,22 @@ export class EightBitFailoverCoordinator {
     };
     const alternates = req.sameModelAlternates ?? [];
 
+    // Model pins constrain candidates; they still require a real fabric reservation.
+    if (req.fabricReplacement) {
+      const replacement = req.fabricReplacement(req.current);
+      if (replacement === undefined) {
+        const retry = await this.retrySameAfterCapacityBlip(req, reason, health.consecutiveFailures, health.cooldownUntil);
+        if (retry) return retry;
+        const receipt = this.buildReceipt(req, "NO_ELIGIBLE_ROUTE", [reason, "FABRIC_NO_ADMISSIBLE_ROUTE"]);
+        await this.store.recordReceipt(receipt);
+        return { action: "no_replacement", reason, receipt };
+      }
+      const receipt = this.buildReceipt(req, "ROTATE", [reason, "FABRIC_ADMITTED_REPLACEMENT", ...(pinMode === "model" ? ["SAME_MODEL_ALTERNATE_ROUTE"] : []), ...replacement.reasonCodes], replacement.route);
+      receipt.evidence = { ...replacement.evidence, ...(req.currentCapacityPoolId ? { previousCapacityPoolId: req.currentCapacityPoolId } : {}) };
+      await this.store.recordReceipt(receipt);
+      return { action: "rotate", reason, replacement: replacement.route, ...(replacement.capacityPoolId ? { capacityPoolId: replacement.capacityPoolId } : {}), receipt };
+    }
+
     if (pinMode === "model") {
       // A user-selected model keeps its identity: only a same-model route swap is allowed. With
       // no alternate route known for this model, the pin behaves exactly like a route pin — the
@@ -266,24 +282,6 @@ export class EightBitFailoverCoordinator {
       const receipt = this.buildReceipt(req, "ROTATE", [reason, "SAME_MODEL_ALTERNATE_ROUTE"], replacement);
       await this.store.recordReceipt(receipt);
       return { action: "rotate", reason, replacement, receipt };
-    }
-
-    // R24 Mission C: fabric-governed rotation. The fabric's admission verdict replaces the
-    // ranking selectReplacement — its re-decide already applied the failure's health evidence
-    // (recorded before this call) and holds the replacement's reservation.
-    if (req.fabricReplacement) {
-      const replacement = req.fabricReplacement(req.current);
-      if (replacement === undefined) {
-        const retry = await this.retrySameAfterCapacityBlip(req, reason, health.consecutiveFailures, health.cooldownUntil);
-        if (retry) return retry;
-        const receipt = this.buildReceipt(req, "NO_ELIGIBLE_ROUTE", [reason, "FABRIC_NO_ADMISSIBLE_ROUTE"]);
-        await this.store.recordReceipt(receipt);
-        return { action: "no_replacement", reason, receipt };
-      }
-      const receipt = this.buildReceipt(req, "ROTATE", [reason, "FABRIC_ADMITTED_REPLACEMENT", ...replacement.reasonCodes], replacement.route);
-      receipt.evidence = { ...replacement.evidence, ...(req.currentCapacityPoolId ? { previousCapacityPoolId: req.currentCapacityPoolId } : {}) };
-      await this.store.recordReceipt(receipt);
-      return { action: "rotate", reason, replacement: replacement.route, ...(replacement.capacityPoolId ? { capacityPoolId: replacement.capacityPoolId } : {}), receipt };
     }
 
     const result = this.router.selectReplacement(options, req.current, alternates);

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
@@ -261,6 +261,37 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
   });
 
+  it("keeps interleaved streamed tool calls paired with their own identity and arguments in an interactive turn", async () => {
+    const route = managedRoute("provider-a");
+    registerFleet("provider-a", "provider-a-model");
+    const fabric = makeFabric([route], [poolFor(route)]);
+    await fs.writeFile(path.join(tmpDir, "a.txt"), "independent read result");
+    const provider = new ScriptedRouteProvider("provider-a", "provider-a-model", call => call === 1 ? [
+      { type: "tool_call_started", toolCallId: "read-a", toolName: "read_file" },
+      { type: "tool_call_started", toolCallId: "list-b", toolName: "list_files" },
+      { type: "tool_call_delta", toolCallId: "read-a", delta: '{"path":' },
+      { type: "tool_call_delta", toolCallId: "list-b", delta: '{"path":' },
+      { type: "tool_call_delta", toolCallId: "read-a", delta: '"a.txt"}' },
+      { type: "tool_call_delta", toolCallId: "list-b", delta: '"."}' },
+      { type: "tool_call_completed", toolCallId: "read-a", toolName: "read_file", arguments: '{"path":"a.txt"}' },
+      { type: "tool_call_completed", toolCallId: "list-b", toolName: "list_files", arguments: '{"path":"."}' },
+      { type: "finish", finishReason: "tool_calls" },
+    ] : okEvents("Inspected both sources."));
+    catalog.register(provider);
+    const runtime = makeRuntime("sess-interleaved-tools", fabric);
+    await runtime.init();
+    const turnId = await runtime.startTurn("Read a.txt and list this workspace");
+    const final = await waitForTerminal(runtime, persistence, "sess-interleaved-tools", turnId);
+    expect(final?.status).toBe("completed");
+    const observations = provider.requests[1]?.messages.filter(message => message.role === "tool");
+    expect(observations).toHaveLength(2);
+    expect(observations?.[0]).toMatchObject({ toolCallId: "read-a" });
+    expect(observations?.[0]?.content).toContain("independent read result");
+    expect(observations?.[1]).toMatchObject({ toolCallId: "list-b" });
+    expect(observations?.[1]?.content).toContain("a.txt");
+    expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+  });
+
   it("a queued ForgeAuto turn remains durable and resumes only after free capacity returns", async () => {
     // One request slot in the shared pool; an earlier user already holds it.
     const route = managedRoute("provider-a", { windows: [quotaWindow({ limit: 1, remaining: 1 }), quotaWindow({ unit: "input_tokens", limit: 2_000_000, remaining: 2_000_000 })] });
@@ -302,6 +333,69 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(provider.callCount).toBe(1);
     expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toMatchObject({ state: "resumed" });
     expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+  });
+
+  it.each(["model", "route"] as const)("a %s selection stays parked while unrelated free supply is available", async (lock) => {
+    const routeA = managedRoute("provider-a", { windows: [quotaWindow({ remaining: 0 })] });
+    const routeB = managedRoute("provider-b");
+    registerFleet("provider-a", routeA.modelId);
+    registerFleet("provider-b", routeB.modelId);
+    const fabric = makeFabric([routeA, routeB], [poolFor(routeA), poolFor(routeB)]);
+    const providerA = new ScriptedRouteProvider("provider-a", routeA.modelId, () => okEvents());
+    const providerB = new ScriptedRouteProvider("provider-b", routeB.modelId, () => okEvents());
+    catalog.register(providerA);
+    catalog.register(providerB);
+    const runtime = makeRuntime(`sess-selected-${lock}`, fabric);
+    await runtime.init();
+    runtime.setModelSelection({ providerId: "provider-a", modelId: routeA.modelId, canonicalModelId: routeA.modelId, lock });
+    const turnId = await runtime.startTurn("Use the selected free model");
+    try {
+      for (let i = 0; i < 100 && runtime.getTurn(turnId)?.status === "running"; i++) await new Promise(resolve => setTimeout(resolve, 10));
+      expect(runtime.getTurn(turnId)?.status).toBe("waiting_for_free_capacity");
+      for (let i = 0; i < 3; i++) expect(await runtime.probeCapacityWait(turnId)).toBe("QUEUED_FOR_CAPACITY");
+      expect(providerA.callCount).toBe(0);
+      expect(providerB.callCount).toBe(0);
+      expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+
+      routeA.windows[0]!.remaining = 1;
+      expect(await runtime.probeCapacityWait(turnId)).toBe("ADMITTED");
+      await runtime.resumeTurn(turnId);
+      const final = await waitForTerminal(runtime, persistence, `sess-selected-${lock}`, turnId);
+      expect(final?.status).toBe("completed");
+      expect(final?.providerId).toBe("provider-a");
+      expect(providerA.callCount).toBe(1);
+      expect(providerB.callCount).toBe(0);
+      expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+    } finally { await runtime.shutdown(); }
+  });
+
+  it("a canonical model selection admits an available same-model route before dispatch", async () => {
+    const routeA = managedRoute("provider-a", { windows: [quotaWindow({ remaining: 0 })] });
+    const routeB = managedRoute("provider-b", { modelId: routeA.modelId, canonicalModelId: routeA.canonicalModelId });
+    registerFleet("provider-a", routeA.modelId);
+    registerFleet("provider-b", routeB.modelId);
+    const fabric = makeFabric([routeA, routeB], [poolFor(routeA), poolFor(routeB)]);
+    const providerA = new ScriptedRouteProvider("provider-a", routeA.modelId, () => okEvents());
+    let holdsDuringCall: Record<string, number> | undefined;
+    const providerB = new ScriptedRouteProvider("provider-b", routeB.modelId, () => {
+      holdsDuringCall = fabric.reservationSnapshot()?.byRoute;
+      return okEvents();
+    });
+    catalog.register(providerA);
+    catalog.register(providerB);
+    const runtime = makeRuntime("sess-selected-alternate", fabric);
+    await runtime.init();
+    runtime.setModelSelection({ providerId: "provider-a", modelId: routeA.modelId, canonicalModelId: routeA.canonicalModelId, lock: "model" });
+    try {
+      const turnId = await runtime.startTurn("Use the selected free model");
+      const final = await waitForTerminal(runtime, persistence, "sess-selected-alternate", turnId);
+      expect(final?.status).toBe("completed");
+      expect(final?.providerId).toBe("provider-b");
+      expect(providerA.callCount).toBe(0);
+      expect(providerB.callCount).toBe(1);
+      expect(holdsDuringCall).toEqual({ [routeB.routeId]: 1 });
+      expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+    } finally { await runtime.shutdown(); }
   });
 
   it("a role-routed run decides through the fabric and releases its reservation when the run ends", async () => {
@@ -553,6 +647,36 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
     expect(provider.callCount).toBe(1);
     expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toMatchObject({ state: "resumed" });
     expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+  });
+
+  it("a production dispatch admission that becomes queued parks durably instead of failing or verifying", async () => {
+    const route = managedRoute("provider-a");
+    registerFleet("provider-a", "provider-a-model");
+    const pool = poolFor(route);
+    const fabric = makeFabric([route], [pool]);
+    const provider = new ScriptedRouteProvider("provider-a", "provider-a-model", () => okEvents());
+    catalog.register(provider);
+    const runtime = makeRuntime("sess-dispatch-queued", fabric);
+    const boundary = runtime as unknown as {
+      simulateAgentWork(turnId: string): Promise<void>;
+      authorizeProductionFreeDispatch(selection: { providerId: string; modelId: string }, requestId: string, role: "CODER", userId: string | undefined, demand: { requests: number; estimatedPromptTokens: number; outputTokens: number }): void;
+    };
+    const dispatch = vi.spyOn(boundary, "simulateAgentWork").mockImplementationOnce(async (turnId) => {
+      pool.windows[0]!.remaining = 0;
+      boundary.authorizeProductionFreeDispatch({ providerId: "provider-a", modelId: "provider-a-model" }, `forgeauto:${turnId}`, "CODER", undefined,
+        { requests: 1, estimatedPromptTokens: 100, outputTokens: 100 });
+    });
+    try {
+      await runtime.init();
+      const turnId = await runtime.startTurn("Investigate a source file");
+      for (let i = 0; i < 100 && runtime.getTurn(turnId)?.status === "running"; i++) await new Promise(resolve => setTimeout(resolve, 20));
+      expect(runtime.getTurn(turnId)?.status).toBe("waiting_for_free_capacity");
+      expect(await persistence.getWorkItem(`free-capacity-wait-${turnId}`)).toMatchObject({ kind: "free_capacity_wait", state: "waiting", midTurn: true });
+      expect(provider.callCount).toBe(0);
+      await runtime.cancelTurn(turnId, "Test cancellation");
+      expect(runtime.getTurn(turnId)?.status).toBe("cancelled");
+      expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+    } finally { dispatch.mockRestore(); }
   });
 
   it("mid-turn provider exhaustion parks the turn and resumes on an independent pool", async () => {

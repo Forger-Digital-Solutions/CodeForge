@@ -4,6 +4,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { afterEach, describe, expect, it } from "vitest";
 import { createRepositoryIntelligence, REPOSITORY_INDEX_VERSION } from "../src/index.js";
+import { openSqliteDatabase } from "@codeforge/sessions";
 
 const roots: string[] = [];
 
@@ -29,6 +30,194 @@ afterEach(() => {
 });
 
 describe("LocalRepositoryIntelligence", () => {
+  it("keeps control-plane work responsive during a sparse symbol search and preserves late matches", async () => {
+    const { root, cache } = fixture();
+    const intelligence = createRepositoryIntelligence({ cacheRoot: cache });
+    const identity = await intelligence.openWorkspace(root);
+    await intelligence.indexWorkspace();
+    await intelligence.closeWorkspace();
+    const { db } = openSqliteDatabase(path.join(cache, identity.id, "repository-index.sqlite"));
+    try {
+      const insert = db.prepare("INSERT INTO symbols(id,name,qualified_name,kind,path,start_line,end_line,exported) VALUES($id,$name,$qualified,'variable','src/util.ts',$line,$line,0)");
+      db.exec("BEGIN");
+      for (let index = 0; index < 6_000; index++) {
+        insert.run({ $id: `bulk-${index}`, $name: `bulk${index}`, $qualified: index === 5_999 ? "Scope.LateSearchNeedle" : `Scope.bulk${index}`, $line: index + 1 });
+      }
+      db.exec("COMMIT");
+    } finally { db.close(); }
+    await intelligence.openWorkspace(root);
+    let controlPlaneRan = false;
+    const heartbeat = setImmediate(() => { controlPlaneRan = true; });
+    try {
+      const late = await intelligence.searchSymbols("latesearchneedle");
+      expect(controlPlaneRan).toBe(true);
+      expect(late.items.map(symbol => symbol.id)).toEqual(["bulk-5999"]);
+      const first = await intelligence.searchSymbols("bulk", { limit: 2 });
+      const next = await intelligence.searchSymbols("bulk", { limit: 2, cursor: first.nextCursor });
+      expect(first.truncated).toBe(true);
+      expect(next.items).toHaveLength(2);
+      expect(next.items.every(symbol => !first.items.some(previous => previous.id === symbol.id))).toBe(true);
+    } finally {
+      clearImmediate(heartbeat);
+      await intelligence.closeWorkspace();
+    }
+  });
+  it("keeps the event loop available while Git workspace identity is discovered", async () => {
+    const { root, cache } = fixture();
+    const intelligence = createRepositoryIntelligence({ cacheRoot: cache });
+    let controlPlaneRan = false;
+    const heartbeat = setImmediate(() => { controlPlaneRan = true; });
+    try {
+      await intelligence.openWorkspace(root);
+      expect(controlPlaneRan).toBe(true);
+    } finally {
+      clearImmediate(heartbeat);
+      await intelligence.closeWorkspace();
+    }
+  });
+  it("replaces FTS rows by indexed identity and migrates legacy caches without stale results", async () => {
+    const { root, cache } = fixture();
+    const intelligence = createRepositoryIntelligence({ cacheRoot: cache });
+    const identity = await intelligence.openWorkspace(root);
+    await intelligence.indexWorkspace();
+    await intelligence.closeWorkspace();
+    const databasePath = path.join(cache, identity.id, "repository-index.sqlite");
+    const { db } = openSqliteDatabase(databasePath);
+    try {
+      expect(db.prepare("SELECT COUNT(*) count FROM content_fts_paths").get()).toEqual(db.prepare("SELECT COUNT(*) count FROM content_fts").get());
+      const plan = db.prepare("EXPLAIN QUERY PLAN SELECT row_id FROM content_fts_paths WHERE path=$path").all({ $path: "src/util.ts" });
+      expect(JSON.stringify(plan)).toContain("SEARCH");
+      db.exec("DROP TABLE content_fts_paths; DELETE FROM meta WHERE key='fts_paths_ready'");
+    } finally { db.close(); }
+    try {
+      await intelligence.openWorkspace(root);
+      fs.writeFileSync(path.join(root, "src", "util.ts"), "export const replacementLexicalNeedle = true;\n");
+      await intelligence.refresh(["src/util.ts"]);
+      expect((await intelligence.searchText("replacementLexicalNeedle")).items.map(item => item.path)).toEqual(["src/util.ts"]);
+      expect((await intelligence.searchText("helper")).items.some(item => item.path === "src/util.ts")).toBe(false);
+      expect((await intelligence.searchText("AuthService")).items.some(item => item.path === "src/service.ts")).toBe(true);
+      fs.unlinkSync(path.join(root, "src", "util.ts"));
+      await intelligence.refresh(["src/util.ts"]);
+      expect((await intelligence.searchText("replacementLexicalNeedle")).items).toHaveLength(0);
+    } finally { await intelligence.closeWorkspace(); }
+  });
+  it("rebinds index writes when the same intelligence instance switches repositories", async () => {
+    const first = fixture();
+    const second = fixture();
+    fs.writeFileSync(path.join(first.root, "src", "first.ts"), "export const firstRepositoryOnly = true;\n");
+    fs.writeFileSync(path.join(second.root, "src", "second.ts"), "export const secondRepositoryOnly = true;\n");
+    const intelligence = createRepositoryIntelligence({ cacheRoot: first.cache });
+    try {
+      await intelligence.openWorkspace(first.root);
+      await intelligence.indexWorkspace();
+      expect((await intelligence.searchSymbols("firstRepositoryOnly")).items).toHaveLength(1);
+      await intelligence.closeWorkspace();
+      await intelligence.openWorkspace(second.root);
+      await intelligence.indexWorkspace();
+      expect((await intelligence.searchSymbols("firstRepositoryOnly")).items).toHaveLength(0);
+      expect((await intelligence.searchSymbols("secondRepositoryOnly")).items).toHaveLength(1);
+      fs.writeFileSync(path.join(second.root, "src", "second.ts"), "export const renamedRepositoryOnly = true;\n");
+      await intelligence.refresh(["src/second.ts"]);
+      expect((await intelligence.searchSymbols("secondRepositoryOnly")).items).toHaveLength(0);
+      expect((await intelligence.searchSymbols("renamedRepositoryOnly")).items).toHaveLength(1);
+    } finally { await intelligence.closeWorkspace(); }
+  });
+
+  it("refreshes cached status counts after another connection commits an index generation", async () => {
+    const { root, cache } = fixture();
+    const writer = createRepositoryIntelligence({ cacheRoot: cache });
+    const reader = createRepositoryIntelligence({ cacheRoot: cache });
+    await writer.openWorkspace(root);
+    await writer.indexWorkspace();
+    await reader.openWorkspace(root);
+    try {
+      const before = reader.status();
+      expect(reader.status().symbolCount).toBe(before.symbolCount);
+      fs.writeFileSync(path.join(root, "src", "extra.ts"), "export function addedFunction() { return 1; }\n");
+      await writer.refresh(["src/extra.ts"]);
+      const after = reader.status();
+      expect(after.fileCount).toBe(before.fileCount + 1);
+      expect(after.symbolCount).toBe(before.symbolCount + 1);
+      expect(after.generation).toBeGreaterThan(before.generation);
+      fs.unlinkSync(path.join(root, "src", "extra.ts"));
+      await writer.refresh(["src/extra.ts"]);
+      expect(reader.status().fileCount).toBe(before.fileCount);
+      expect(reader.status().symbolCount).toBe(before.symbolCount);
+    } finally {
+      await reader.closeWorkspace();
+      await writer.closeWorkspace();
+    }
+  });
+
+  it("retains text-search pagination, scores and redacted previews when only the selected page is rendered", async () => {
+    const { root, cache } = fixture();
+    for (let index = 0; index < 5; index++) {
+      fs.writeFileSync(path.join(root, `note${index}.md`), `paginationNeedle sk-abcdefghijklmnopqrst note ${index}\n`);
+    }
+    const intelligence = createRepositoryIntelligence({ cacheRoot: cache });
+    await intelligence.openWorkspace(root);
+    await intelligence.indexWorkspace();
+    try {
+      const all = await intelligence.searchText("paginationNeedle", { limit: 10 });
+      const first = await intelligence.searchText("paginationNeedle", { limit: 2 });
+      const second = await intelligence.searchText("paginationNeedle", { limit: 2, cursor: first.nextCursor });
+      const third = await intelligence.searchText("paginationNeedle", { limit: 2, cursor: second.nextCursor });
+      expect([...first.items, ...second.items, ...third.items]).toEqual(all.items);
+      expect(all.items).toHaveLength(5);
+      expect(third.nextCursor).toBeUndefined();
+      for (const match of all.items) {
+        expect(match.preview).toContain("paginationNeedle");
+        expect(match.preview).toContain("[REDACTED]");
+        expect(match.preview).not.toContain("sk-abcdefghijklmnopqrst");
+        expect(match.score).toBeGreaterThan(0);
+      }
+    } finally { await intelligence.closeWorkspace(); }
+  });
+
+  it("lets the control plane run between relevance queries and retains useful context", async () => {
+    const { root, cache } = fixture();
+    const intelligence = createRepositoryIntelligence({ cacheRoot: cache });
+    await intelligence.openWorkspace(root);
+    await intelligence.indexWorkspace();
+    let controlPlaneRan = false;
+    const pending = setImmediate(() => { controlPlaneRan = true; });
+    try {
+      const context = await intelligence.findRelevantContext("AuthService verifyToken helper");
+      expect(context.items.some(item => item.path === "src/service.ts")).toBe(true);
+      expect(controlPlaneRan).toBe(true);
+    } finally {
+      clearImmediate(pending);
+      await intelligence.closeWorkspace();
+    }
+  });
+
+  it("can cancel while indexing the symbols of one large file without publishing a partial index", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "codeforge-single-file-index-"));
+    const cache = fs.mkdtempSync(path.join(os.tmpdir(), "codeforge-single-file-cache-"));
+    roots.push(root, cache);
+    fs.writeFileSync(path.join(root, "large.json"), JSON.stringify(Object.fromEntries(
+      Array.from({ length: 12_000 }, (_, index) => [`property${index}`, index]),
+    ), null, 2));
+    const controller = new AbortController();
+    let timer: NodeJS.Timeout | undefined;
+    const intelligence = createRepositoryIntelligence({
+      cacheRoot: cache,
+      onProgress: progress => {
+        if (progress.phase === "discover") timer = setTimeout(() => controller.abort(), 0);
+      },
+    });
+    await intelligence.openWorkspace(root);
+    try {
+      await expect(intelligence.indexWorkspace(controller.signal)).rejects.toThrow("cancelled");
+      expect(intelligence.status().state).toBe("STALE");
+      expect(intelligence.status().symbolCount).toBe(0);
+      expect((await intelligence.searchSymbols("property11999")).items).toHaveLength(0);
+    } finally {
+      clearTimeout(timer);
+      await intelligence.closeWorkspace();
+    }
+  });
+
   it("persists symbols and dependency/test graphs while respecting ignore, binary, and secret boundaries", async () => {
     const { root, cache } = fixture();
     const intelligence = createRepositoryIntelligence({ cacheRoot: cache });

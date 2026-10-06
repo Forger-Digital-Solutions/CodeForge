@@ -4,6 +4,8 @@ import crypto from "node:crypto";
 import { type AgentPermissions, ERROR_CODES } from "@codeforge/agent";
 import { redactSecrets } from "@codeforge/secrets";
 import { execute, execInWsl } from "@codeforge/terminal";
+import { renderFileRead } from "./file-read.js";
+export { renderFileRead } from "./file-read.js";
 
 export interface ToolDefinition {
   name: string;
@@ -214,13 +216,13 @@ export function getSanitizedEnvForChild(): NodeJS.ProcessEnv {
 export const BUILT_IN_TOOL_DEFINITIONS: Record<string, ToolDefinition> = {
   read_file: {
     name: "read_file",
-    description: "Read the contents of a file in the workspace. Returns content and SHA-256 hash.",
+    description: "Read up to 400 lines of a workspace file. Use startLine/endLine for another page. Returns the whole-file SHA-256 hash for safe edits.",
     parameters: {
       type: "object",
       properties: {
         path: { type: "string", description: "Path to file relative to workspace root" },
-        startLine: { type: "number", description: "Optional 1-based start line" },
-        endLine: { type: "number", description: "Optional 1-based end line" },
+        startLine: { type: "integer", minimum: 1, description: "Optional 1-based start line" },
+        endLine: { type: "integer", minimum: 1, description: "Optional inclusive end line" },
       },
       required: ["path"],
     },
@@ -245,11 +247,12 @@ export const BUILT_IN_TOOL_DEFINITIONS: Record<string, ToolDefinition> = {
   },
   search_files: {
     name: "search_files",
-    description: "Search workspace files for matching text or regex pattern.",
+    description: "Search file contents for text or regex. Pass path to restrict the search to a workspace file or directory; omit it to search the workspace.",
     parameters: {
       type: "object",
       properties: {
-        query: { type: "string", description: "Text or pattern to search for" },
+        query: { type: "string", description: "Text or pattern to find in file contents, not a filename" },
+        path: { type: "string", description: "Optional workspace-relative file or directory to search" },
         regex: { type: "boolean", description: "Treat query as regex" },
         caseSensitive: { type: "boolean", description: "Case sensitive match" },
         maxMatches: { type: "number", description: "Max matches to return" },
@@ -295,7 +298,7 @@ export const BUILT_IN_TOOL_DEFINITIONS: Record<string, ToolDefinition> = {
   },
   run_command: {
     name: "run_command",
-    description: "Execute a shell command in the workspace directory with sanitized environment. Defaults to the Windows host; set environment to wsl to run inside a WSL distribution at the same workspace path.",
+    description: "Execute a command with sanitized environment in the native host shell. Native Windows uses cmd.exe /d /c, not PowerShell or a Unix shell; use Windows-compatible commands and cwd for the working directory. Set environment to wsl only when an available WSL distribution is explicitly selected.",
     parameters: {
       type: "object",
       properties: {
@@ -722,14 +725,8 @@ export class ToolBroker {
           if (raw.includes("\0")) {
             rawResult = `[Binary file not displayed: ${targetPath}]`;
           } else {
-            const hash = crypto.createHash("sha256").update(raw).digest("hex");
-            const lines = raw.split("\n");
-            let start = 1;
-            let end = lines.length;
-            if (typeof args.startLine === "number" && args.startLine > 0) start = Math.floor(args.startLine);
-            if (typeof args.endLine === "number" && args.endLine >= start) end = Math.min(lines.length, Math.floor(args.endLine));
-            const slice = lines.slice(start - 1, end).join("\n");
-            rawResult = `${slice}\n[hash:${hash}]`;
+            // Leave room for provenance so the broker's final output cap preserves the edit hash.
+            rawResult = renderFileRead(raw, args, MAX_TOOL_OUTPUT_BYTES - 1024);
           }
           break;
         }
@@ -773,6 +770,19 @@ export class ToolBroker {
           const caseSensitive = Boolean(args.caseSensitive);
           const maxMatches = typeof args.maxMatches === "number" ? Math.min(args.maxMatches, 200) : 50;
           const root = context.workspacePath;
+          let searchRoot = root;
+          let scopedFile: string | undefined;
+          if (args.path !== undefined) {
+            if (typeof args.path !== "string") throw new Error("path must be a string");
+            const confinement = resolveWithinWorkspace(root, args.path);
+            if (!confinement.valid || !confinement.resolvedPath) throw new Error(`[${ERROR_CODES.TOOL_WORKSPACE_ESCAPE}] ${confinement.error}`);
+            const stat = fs.lstatSync(confinement.resolvedPath);
+            if (stat.isDirectory()) searchRoot = confinement.resolvedPath;
+            else if (stat.isFile()) {
+              scopedFile = confinement.resolvedPath;
+              searchRoot = path.dirname(scopedFile);
+            } else throw new Error("Search path unavailable: expected a regular file or directory");
+          }
           const matches: string[] = [];
           const reg = isRegex
             ? new RegExp(query, caseSensitive ? "g" : "gi")
@@ -785,6 +795,7 @@ export class ToolBroker {
               if (matches.length >= maxMatches) break;
               if (item.name.startsWith(".") || item.name === "node_modules" || item.name === "dist") continue;
               const full = path.join(dir, item.name);
+              if (scopedFile && full !== scopedFile) continue;
               if (item.isDirectory()) {
                 searchDir(full);
               } else if (item.isFile()) {
@@ -803,7 +814,7 @@ export class ToolBroker {
               }
             }
           };
-          searchDir(root);
+          searchDir(searchRoot);
           rawResult = matches.length > 0 ? matches.join("\n") : "No matches found.";
           break;
         }

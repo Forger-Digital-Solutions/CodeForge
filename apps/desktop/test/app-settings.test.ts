@@ -9,6 +9,14 @@ import {
 } from "../src/app-settings.js";
 
 describe("canonical app settings schema", () => {
+  it.each(["codeforge-auto", "codeforge/forgeauto-free", "canonical:codeforge/forgeauto", "canonical:codeforge/forgeauto-free"])("restores routing sentinel %s as automatic routing", (defaultModelId) => {
+    expect(parseAppSettings({ models: { defaultModelId } }).models.defaultModelId).toBe("auto");
+  });
+  it("preserves real canonical and exact model choices", () => {
+    for (const defaultModelId of ["canonical:kilo-auto/free", "canonical:openai/gpt-oss-120b", "kilo-auto/free"]) {
+      expect(parseAppSettings({ models: { defaultModelId } }).models.defaultModelId).toBe(defaultModelId);
+    }
+  });
   it("binds broader Free data consent to one workspace and fails closed without that binding", () => {
     const settings = parseAppSettings({ privacy: { freeCodeSharing: "PUBLIC_AND_CONSENTED", freeCodeSharingWorkspace: "G:\\public-fixture" } });
     expect(freeCodeContextForWorkspace(settings, "G:\\public-fixture")).toEqual({ dataClass: "PUBLIC_CODE", userConsented: true });

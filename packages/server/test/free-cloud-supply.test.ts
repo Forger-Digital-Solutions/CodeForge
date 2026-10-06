@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { createServer, type CodeForgeServer } from "../src/index.js";
-import { ForgeZero, type FreeModelRecord } from "@codeforge/forge-zero";
+import { ForgeZero, type FreeModelRecord, type RouteDataContext } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider } from "@codeforge/providers";
 import { NormalizedModelRegistry, createFreeCloudService } from "@codeforge/model-registry";
 
@@ -108,5 +108,21 @@ describe("GET /api/free-cloud/supply (R59)", () => {
     await server.start();
     const denied = await fetch(`http://127.0.0.1:${server.port}/api/free-cloud/supply`);
     expect(denied.status).toBe(401);
+  });
+
+  it("reports the active workspace's consent context and returns to private when consent is absent", async () => {
+    const freeCloud = serviceWith([{ providerId: "kilo-free-direct", modelId: "kilo-auto/free" }]);
+    freeCloud.setConnection({ providerId: "kilo-free-direct", connected: true, credentialSource: "ANONYMOUS_DIRECT", authState: "ok" });
+    let context: RouteDataContext = { dataClass: "PUBLIC_CODE", userConsented: true };
+    server = createServer({ port: 0, dbPath: ":memory:", freeCloud, freeDataContext: () => context });
+    await server.start();
+    const row = async () => {
+      const response = await fetch(`http://127.0.0.1:${server.port}/api/free-cloud/supply`);
+      const body = await response.json() as { routes: Array<{ providerId: string; fabric: { exclusionReason?: string } }> };
+      return body.routes.find(route => route.providerId === "kilo-free-direct")!;
+    };
+    expect((await row()).fabric.exclusionReason).not.toBe("PRIVATE_CODE_CONSENT_REQUIRED");
+    context = { dataClass: "PRIVATE_CODE" };
+    expect((await row()).fabric.exclusionReason).toBe("PRIVATE_CODE_CONSENT_REQUIRED");
   });
 });

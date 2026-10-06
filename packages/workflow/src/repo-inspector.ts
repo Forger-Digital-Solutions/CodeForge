@@ -135,10 +135,10 @@ export async function inspectRepository(
   }
   if (options.signal?.aborted) throw new Error("Inspection aborted");
 
+  const intelligence = createRepositoryIntelligence({
+    cacheRoot: process.env.CODEFORGE_REPOSITORY_INDEX_ROOT ?? (process.env.VITEST ? path.join(os.tmpdir(), "codeforge-test-repository-indexes") : undefined),
+  });
   try {
-    const intelligence = createRepositoryIntelligence({
-      cacheRoot: process.env.CODEFORGE_REPOSITORY_INDEX_ROOT ?? (process.env.VITEST ? path.join(os.tmpdir(), "codeforge-test-repository-indexes") : undefined),
-    });
     await intelligence.openWorkspace(workspacePath);
     const initial = intelligence.status();
     if (initial.fileCount === 0 || initial.state === "NOT_INDEXED" || initial.state === "ERROR") await intelligence.indexWorkspace(options.signal);
@@ -165,10 +165,11 @@ export async function inspectRepository(
       searchedMatches: relevant.items.map((match) => ({ file: match.path, line: match.line ?? match.symbol?.startLine ?? 1, column: match.column ?? 1, preview: match.preview ?? match.symbol?.signature ?? match.reasons.join(", ") })),
       readFiles,
     };
-    await intelligence.closeWorkspace();
     return repoMap;
   } catch (error) {
     if (options.signal?.aborted) throw error;
+  } finally {
+    await intelligence.closeWorkspace();
   }
 
   const allFiles = collectFiles(workspacePath);

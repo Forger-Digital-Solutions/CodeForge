@@ -51,6 +51,36 @@ beforeEach(async () => {
 });
 
 describe("EightBitRuntime — end-to-end facade", () => {
+  it.each([0, 1])("a model-pinned failover respects the alternate's remaining quota (%i)", async remaining => {
+    const primary = fabricRoute("provider-a");
+    const alternate = fabricRoute("provider-b", { modelId: primary.modelId, canonicalModelId: primary.canonicalModelId });
+    alternate.windows[0]!.remaining = remaining;
+    const unrelated = fabricRoute("provider-c", { qualityScore: 99 });
+    for (const route of [primary, alternate, unrelated]) fw.register(makeModel({ providerId: route.providerId, modelId: route.modelId }));
+    const health = new EightBitRouteHealthAuthority();
+    const fabric = createFreeFabric({ managedRoutes: () => [primary, alternate, unrelated], health, reservations: new CapacityReservationLedger({ routes: [] }) });
+    const facade = new EightBitRuntime({ firewall: fw, persistence, freeFabric: fabric, routeHealth: health });
+    const outcome = await facade.handleTurnFailure({
+      sessionId: "s1", turnId: "model-pinned", role: "CODER", policyMode: "adaptive",
+      current: { providerId: primary.providerId, modelId: primary.modelId }, currentCapacityPoolId: primary.capacityPoolId,
+      isExactPin: false, pinMode: "model", sameModelAlternates: [{ providerId: alternate.providerId, modelId: alternate.modelId }],
+      hasAdapter: () => true, error: new Error("daily quota exhausted"),
+    });
+    if (remaining === 0) {
+      expect(outcome.action).toBe("no_replacement");
+      expect(outcome.action === "no_replacement" ? outcome.capacityWait : undefined).toBeDefined();
+      expect(fabric.reservationSnapshot()?.activeReservations).toBe(0);
+      expect((await facade.store.listReceipts("s1")).some(receipt => receipt.action === "ROTATE")).toBe(false);
+    } else {
+      expect(outcome.action).toBe("rotate");
+      expect(outcome.action === "rotate" ? outcome.replacement : undefined).toEqual({ providerId: alternate.providerId, modelId: alternate.modelId });
+      expect(outcome.receipt?.reasonCodes).toContain("SAME_MODEL_ALTERNATE_ROUTE");
+      expect(outcome.receipt?.reasonCodes).toContain("FABRIC_ADMITTED_REPLACEMENT");
+      expect(fabric.reservationSnapshot()?.byRoute).toEqual({ [alternate.routeId]: 1 });
+      facade.releaseFabricAdmission("model-pinned");
+    }
+  });
+
   it("rotates between same-model independent pools without cooling the healthy pool or global model", async () => {
     fw.register(makeModel({ providerId: "provider-a", modelId: "provider-a-model" }));
     const primary = fabricRoute("provider-a", { routeId: "account-a", capacityPoolId: "account-a", qualityScore: 90 });

@@ -19,7 +19,7 @@ const catalog = new InMemoryProviderCatalog();
 catalog.register({
   providerId: "codeforge",
   displayName: mode === "first" ? "First attempt provider" : "Recovered attempt provider",
-  isTestProvider: false,
+  isTestProvider: true,
   models: () => [createGenericFreeRecord()],
   streamChat: (request) => {
     appendFileSync(ledgerFile, JSON.stringify({

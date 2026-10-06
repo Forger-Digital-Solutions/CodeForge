@@ -1,9 +1,27 @@
 import { describe, it, expect } from "vitest";
 import { buildContext } from "../src/context-builder.js";
+import { createPlan } from "../src/plan-service.js";
 import { understandTask } from "../src/task-intelligence.js";
 import type { RepoMap } from "../src/types.js";
 
 describe("ContextBuilder", () => {
+  it("prioritizes full paths from the complete request and keeps inferred edits on those paths", () => {
+    const target = "packages/model-registry/test/free-cloud-registry.test.ts";
+    const source = "packages/model-registry/src/free-cloud-service.ts";
+    const unrelated = "apps/cloud-api/test/account-deletion.test.ts";
+    const intent = understandTask(`Add regression tests for shared qualification request budgets across streaming calls. Change \`${target}\` and inspect \`${source}\`. Preserve unrelated work.`);
+    const repoMap: RepoMap = {
+      workspacePath: "/tmp/ws",
+      files: [unrelated, source, target].map(relativePath => ({ path: `/tmp/ws/${relativePath}`, relativePath, size: 100, lines: 10 })),
+      searchedMatches: Array.from({ length: 30 }, () => ({ file: unrelated, line: 1, column: 1, preview: "request budgets test" })),
+      readFiles: [],
+    };
+    const context = buildContext(intent, repoMap);
+    expect(context.primaryFiles.slice(0, 2)).toEqual([target, source]);
+    const plan = createPlan(intent, context, repoMap, "task-explicit-paths");
+    expect(plan.steps.filter(step => step.kind === "edit").map(step => step.targetPath)).toEqual([target, source]);
+  });
+
   it("builds context with relevance scoring", () => {
     const intent = understandTask("Fix add function in calc.ts");
     const repoMap: RepoMap = {

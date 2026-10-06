@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { createServer } from "../src/index.js";
 import { checkStatedContracts } from "../src/workflow-service.js";
 import { InMemoryProviderCatalog, createMockProvider } from "@codeforge/providers";
+import type { ChatRequest } from "@codeforge/providers";
 import type { DiffEntry } from "@codeforge/workflow";
 
 type Server = ReturnType<typeof createServer>;
@@ -56,9 +57,15 @@ describe("workflow goal-conformance review", () => {
     await rm(workspace, { recursive: true, force: true });
   });
 
-  async function runToTerminal(sessionId: string, streamEvents: unknown[][], verification: string, serverOptions: Record<string, unknown> = {}, message = "Fix sum so it adds two numbers"): Promise<{ status: string; events: Array<{ type: string; payload?: { label?: string; blockers?: Array<{ code: string }> } }> }> {
+  async function runToTerminal(sessionId: string, streamEvents: unknown[][], verification: string, serverOptions: Record<string, unknown> = {}, message = "Fix sum so it adds two numbers", capturedRequests?: ChatRequest[]): Promise<{ status: string; events: Array<{ type: string; payload?: { label?: string; blockers?: Array<{ code: string }> } }> }> {
     const catalog = new InMemoryProviderCatalog();
-    catalog.register(createMockProvider({ providerId: "codeforge", streamEvents: streamEvents as never }));
+    const provider = createMockProvider({ providerId: "codeforge", streamEvents: streamEvents as never });
+    const streamChat = provider.streamChat.bind(provider);
+    provider.streamChat = (request, signal) => {
+      capturedRequests?.push(structuredClone(request));
+      return streamChat(request, signal);
+    };
+    catalog.register(provider);
     server = createServer({ port: 0, dbPath: ":memory:", providerCatalog: catalog, useRealRuntime: true, ...serverOptions });
     await server.start();
     const base = `http://localhost:${server.httpPort}`;
@@ -104,6 +111,26 @@ describe("workflow goal-conformance review", () => {
     expect(decided).toBeDefined();
     expect(JSON.stringify(decided?.payload ?? {})).toContain("review_rejected");
     expect(JSON.stringify(decided?.payload ?? {})).toContain("still subtracts");
+  }, 30_000);
+
+  it("retains the full user scope in implementation, verification repair, and independent review", async () => {
+    const before = await readFile(join(workspace, "src", "calc.ts"), "utf8");
+    const wrong = before.replace("a - b", "a * b");
+    const requests: ChatRequest[] = [];
+    const message = "Fix sum so it adds two numbers in src/calc.ts, keeping its exported signature and existing workspace behavior. This task is limited to src/calc.ts. Do not repair unrelated source-certificate or repository failures; report those blocks truthfully. Keep all existing evidence and user edits intact.";
+    const { status } = await runToTerminal("goal-review-retained-scope", [
+      toolCall("edit_file", { path: "src/calc.ts", oldText: "a - b", newText: "a * b", expectedHash: createHash("sha256").update(before).digest("hex") }, "wrong-edit"),
+      finalText("Implementation finished."),
+      toolCall("edit_file", { path: "src/calc.ts", oldText: "a * b", newText: "a + b", expectedHash: createHash("sha256").update(wrong).digest("hex") }, "repair-edit"),
+      finalText("Repaired the implementation."),
+      finalText(MET_VERDICT),
+    ], "node -e \"const fs=require('fs');process.exit(fs.readFileSync('src/calc.ts','utf8').includes('a + b')?0:1)\"", {}, message, requests);
+    expect(status).toBe("complete");
+    for (const prefix of ["You are CodeForge, an autonomous coding agent.", "Verification failed; diagnose and repair.", "You are CodeForge's independent completion reviewer."]) {
+      const prompt = requests.flatMap(request => request.messages).find(item => item.role === "user" && item.content.startsWith(prefix));
+      expect(prompt, prefix).toBeDefined();
+      expect(prompt?.content).toContain(message);
+    }
   }, 30_000);
 
   it("repairs an unmet goal once, then completes when the re-review confirms", async () => {

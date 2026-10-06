@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtemp, writeFile, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -16,6 +16,45 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
     await writeFile(join(ws, "package.json"), JSON.stringify({ type: "module", name: "test" }));
   });
   afterEach(async () => { await rm(ws, { recursive: true, force: true }); });
+
+  it("does not load oversized build artifacts while taking the pre-run snapshot", async () => {
+    const artifact = join(ws, "package.asar");
+    await writeFile(artifact, Buffer.alloc(2 * 1024 * 1024));
+    const syncRead = vi.spyOn(fs, "readFileSync");
+    const asyncRead = vi.spyOn(fs.promises, "readFile");
+    try {
+      const result = await createWorkflowEngine({ workspacePath: ws, sessionId: "bounded-snapshot" }).run("");
+      expect(result.status).toBe("failed");
+      expect(syncRead.mock.calls.some(([file]) => String(file) === artifact)).toBe(false);
+      expect(asyncRead.mock.calls.some(([file]) => String(file) === artifact)).toBe(false);
+      expect(fs.statSync(artifact).size).toBe(2 * 1024 * 1024);
+    } finally {
+      syncRead.mockRestore();
+      asyncRead.mockRestore();
+    }
+  });
+
+  it("does not repair unrelated verification failures after implementation failed without writing files", async () => {
+    const phases: string[] = [];
+    let repairCalls = 0;
+    const engine = createWorkflowEngine({
+      workspacePath: ws, sessionId: "sess-no-edit-failure", askForApproval: approvePlan,
+      onPhaseChange: phase => phases.push(phase),
+      verificationCommands: ['node -e "process.exit(1)"'],
+      agentExecutor: {
+        executePlan: async () => ({ success: false, output: "Implementation could not proceed", filesChanged: [], failure: { code: "unknown", message: "Implementation could not proceed" } }),
+        executeRepair: async () => { repairCalls++; return { success: false, output: "Unexpected repair" }; },
+      },
+    });
+    const result = await engine.run("Fix the add function in src/calc.ts");
+    expect(result.status).toBe("failed");
+    expect(result.stop?.message).toBe("Implementation could not proceed");
+    expect(phases).not.toContain("verifying");
+    expect(phases).not.toContain("repairing");
+    expect(phases).not.toContain("completed");
+    expect(repairCalls).toBe(0);
+    expect(fs.readFileSync(join(ws, "src/calc.ts"), "utf8")).toContain("a - b");
+  });
 
   it("turns natural-language task into disciplined workflow: Understand → Inspect → Context → Plan → Implement → Verify → Repair → Review → Summarize", async () => {
     const phases: string[] = [];

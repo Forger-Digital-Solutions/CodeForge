@@ -308,6 +308,12 @@ describe("buildCanonicalModelSections (R1 canonical picker)", async () => {
     providers: [],
   });
 
+  it("keeps the normalized hosted ForgeAuto sentinel out of the canonical picker", () => {
+    const sentinel = model("codeforge/forgeauto", "Forgeauto", "FREE_AVAILABLE", [route("codeforge-cloud", "codeforge/forgeauto-free")]);
+    const sections = buildCanonicalModelSections(snapshot([sentinel]) as never, [], autoModels);
+    expect(sections.flatMap(section => section.models).map(item => item.id)).toEqual(["auto"]);
+  });
+
   it("shows one row per canonical model with a route count — never one row per provider", () => {
     const gpt = model("openai/gpt-oss-120b", "GPT-OSS 120B", "FREE_AVAILABLE", [route("groq", "openai/gpt-oss-120b"), route("cerebras", "gpt-oss-120b"), route("openrouter", "openai/gpt-oss-120b:free")]);
     const sections = buildCanonicalModelSections(snapshot([gpt]) as never, [], autoModels);
@@ -329,6 +335,23 @@ describe("buildCanonicalModelSections (R1 canonical picker)", async () => {
     expect(item.available).toBe(false);
     expect(item.unavailableReason).toContain("Z.AI · provider key required");
     expect(item.description).toContain("Free · Connect");
+  });
+
+  it.each([
+    ["NOT_TESTED", "Qualification required"],
+    ["PROBATION", "Qualification required"],
+    ["STALE", "Requalification required"],
+    ["NOT_QUALIFIED", "Qualification failed"],
+    ["HARD_FAILURE", "Qualification failed"],
+  ])("does not label an executable but %s model ready for coding", (qualificationState, status) => {
+    const unqualified = model("horde/impish", "Impish", "FREE_AVAILABLE", [route("ai-horde", "impish", {
+      qualificationState, forgeAutoEligible: false,
+    })], { qualificationState, freeBadge: "Free · Ready", category: "Unrated" });
+    const sections = buildCanonicalModelSections(snapshot([unqualified], 0) as never, [], autoModels);
+    const item = sections.find((section) => section.sectionLabel === "FREE CODING")!.models[0]!;
+    expect(item.description).toBe(`Free · ${status}`);
+    expect(item.description).not.toContain("Ready");
+    expect(sections[0]!.models[0]!.available).toBe(false);
   });
 
   it("keeps paid BYOK models out of the free section and fails trust closed for them", () => {
