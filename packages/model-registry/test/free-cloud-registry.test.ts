@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ForgeZero, CapacityReservationLedger, freeRouteExclusionReason, type FreeModelRecord } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog, createMockProvider, classifyOpenRouterEntitlement } from "@codeforge/providers";
+import { InMemoryProviderCatalog, createMockProvider, classifyOpenRouterEntitlement, type ProviderExecutionContext, type StreamEvent } from "@codeforge/providers";
 import { InMemoryQualificationPersistence, type ModelQualificationReceipt } from "@codeforge/eight-bit";
 import {
   PROVIDER_DEFINITIONS,
@@ -79,6 +79,92 @@ describe("R68 fresh packaged qualification", () => {
     expect(runnerCalls).toBe(0);
     expect(service.isForgeAutoEligible("kilo-free-direct", "kilo-auto/free")).toBe(false);
   });
+  it("recovers durable spend writes after an outage without sending an unreserved probe", async () => {
+    const store = new InMemoryQualificationPersistence();
+    const save = store.saveSpend.bind(store);
+    let unavailable = true;
+    store.saveSpend = async entry => { if (unavailable) throw new Error("storage outage"); await save(entry); };
+    const firewall = new ForgeZero();
+    firewall.register(freeRecord("kilo-free-direct", "kilo-auto/free", { accessClass: "FREE_ROUTED", privacyClass: "permissive" }));
+    const catalog = new InMemoryProviderCatalog();
+    const mock = createMockProvider({ providerId: "kilo-free-direct" });
+    let requests = 0;
+    catalog.register({ ...mock, chat: async request => { requests++; return mock.chat(request); } });
+    const service = new FreeCloudService({ firewall, providerCatalog: catalog, registry: new NormalizedModelRegistry(), qualificationStore: store,
+      now: () => NOW, qualificationRequestsPerCycle: 2, qualificationDailyBudgetPerProvider: 6, qualificationCycleIntervalMs: 0,
+      qualificationRunner: async (model, adapter) => { await adapter.chat({ model: model.modelId, messages: [] }); return receipt(model.providerId, model.modelId); },
+    });
+    service.setConnection(connected("kilo-free-direct", { credentialSource: "ANONYMOUS_DIRECT", supplyClass: "PACKAGED_FREE_DIRECT" }));
+    expect(await service.qualifyPending()).toEqual([]);
+    expect(requests).toBe(0);
+    unavailable = false;
+    expect(await service.qualifyPending()).toHaveLength(1);
+    expect(requests).toBe(1);
+    expect((await store.loadSpend())[0]?.requests).toBe(3);
+  });
+
+  it.each(["stream", "context"] as const)("reserves every %s request, caps the partial suite, and keeps spend on restart", async mode => {
+    const store = new InMemoryQualificationPersistence();
+    let requests = 0;
+    const context: ProviderExecutionContext = { sessionId: "qualification-stream-fixture" };
+    const makeService = () => {
+      const firewall = new ForgeZero();
+      firewall.register(freeRecord("kilo-free-direct", "kilo-auto/free", { accessClass: "FREE_ROUTED", privacyClass: "permissive" }));
+      const catalog = new InMemoryProviderCatalog();
+      const mock = createMockProvider({ providerId: "kilo-free-direct" });
+      async function* stream(): AsyncIterable<StreamEvent> {
+        const durableSpend = (await store.loadSpend())[0]?.requests ?? 0;
+        expect(durableSpend).toBeGreaterThanOrEqual(requests + 1);
+        requests++;
+        yield { type: "finish", finishReason: "stop" };
+      }
+      catalog.register({ ...mock, streamChat: stream, streamChatWithContext: stream });
+      const service = new FreeCloudService({ firewall, providerCatalog: catalog, registry: new NormalizedModelRegistry(), qualificationStore: store,
+        now: () => NOW, qualificationRequestsPerCycle: 2, qualificationDailyBudgetPerProvider: 4, qualificationCycleIntervalMs: 0,
+        qualificationRunner: async (model, adapter) => {
+          for (let i = 0; i < 6; i++) {
+            const request = { model: model.modelId, messages: [] };
+            try { for await (const _event of mode === "stream" ? adapter.streamChat(request) : adapter.streamChatWithContext!(request, context)) {} } catch {}
+          }
+          return receipt(model.providerId, model.modelId);
+        },
+      });
+      service.setConnection(connected("kilo-free-direct", { credentialSource: "ANONYMOUS_DIRECT", supplyClass: "PACKAGED_FREE_DIRECT" }));
+      return service;
+    };
+    const service = makeService();
+    expect(await service.qualifyPending()).toEqual([]);
+    expect(requests).toBe(4);
+    expect(service.isForgeAutoEligible("kilo-free-direct", "kilo-auto/free")).toBe(false);
+    const restarted = makeService();
+    await restarted.loadQualification();
+    expect(await restarted.qualifyPending()).toEqual([]);
+    expect(requests).toBe(4);
+  });
+  it("honors cancellation that arrives while a streaming reservation is being persisted", async () => {
+    const store = new InMemoryQualificationPersistence();
+    const save = store.saveSpend.bind(store);
+    const controller = new AbortController();
+    let writes = 0;
+    store.saveSpend = async entry => { await save(entry); if (++writes === 2) controller.abort(); };
+    const firewall = new ForgeZero();
+    firewall.register(freeRecord("kilo-free-direct", "kilo-auto/free", { accessClass: "FREE_ROUTED", privacyClass: "permissive" }));
+    const catalog = new InMemoryProviderCatalog();
+    let requests = 0;
+    catalog.register({ ...createMockProvider({ providerId: "kilo-free-direct" }), async *streamChat(): AsyncIterable<StreamEvent> { requests++; yield { type: "finish", finishReason: "stop" }; } });
+    const service = new FreeCloudService({ firewall, providerCatalog: catalog, registry: new NormalizedModelRegistry(), qualificationStore: store,
+      now: () => NOW, qualificationRequestsPerCycle: 2, qualificationDailyBudgetPerProvider: 4,
+      qualificationRunner: async (model, adapter) => {
+        for await (const _event of adapter.streamChat({ model: model.modelId, messages: [] }, controller.signal)) {}
+        return receipt(model.providerId, model.modelId);
+      },
+    });
+    service.setConnection(connected("kilo-free-direct", { credentialSource: "ANONYMOUS_DIRECT", supplyClass: "PACKAGED_FREE_DIRECT" }));
+    expect(await service.qualifyPending()).toEqual([]);
+    expect(requests).toBe(0);
+    expect((await store.loadSpend())[0]?.requests).toBe(2);
+    expect(service.isForgeAutoEligible("kilo-free-direct", "kilo-auto/free")).toBe(false);
+  });
   function bootstrap(runner: (model: FreeModelRecord) => Promise<ModelQualificationReceipt>) {
     const firewall = new ForgeZero();
     for (const modelId of ["poolside/laguna-s-2.1:free", "kilo-auto/free"])
@@ -111,6 +197,21 @@ describe("R68 fresh packaged qualification", () => {
     expect(await service.qualifyPending()).toEqual([]);
     expect(service.isForgeAutoEligible("kilo-free-direct", "kilo-auto/free")).toBe(false);
     expect(service.pendingQualification()[0]?.providerModelId).toBe("poolside/laguna-s-2.1:free");
+  });
+  it("orders an equivalent anonymous free alias by metadata without depending on the provider name", () => {
+    const providerId = "fixture-public-gateway";
+    const firewall = new ForgeZero();
+    for (const modelId of ["poolside/laguna-s-2.1:free", "fixture-auto/free"]) {
+      firewall.register(freeRecord(providerId, modelId, { accessClass: "FREE_ROUTED", privacyClass: "permissive" }));
+    }
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(createMockProvider({ providerId }));
+    const service = new FreeCloudService({ firewall, providerCatalog: catalog, registry: new NormalizedModelRegistry(),
+      definitions: { [providerId]: { ...PROVIDER_DEFINITIONS["kilo-free-direct"]!, id: providerId } }, now: () => NOW,
+    });
+    service.setConnection(connected(providerId, { credentialSource: "ANONYMOUS_DIRECT", supplyClass: "PACKAGED_FREE_DIRECT" }));
+    expect(service.pendingQualification()[0]?.providerModelId).toBe("fixture-auto/free");
+    expect(service.isForgeAutoEligible(providerId, "fixture-auto/free")).toBe(false);
   });
 });
 

@@ -829,7 +829,7 @@ export class WorkflowService {
         adapter.emitAgentStarted(`agent-${plan.id.slice(0, 8)}`, "Builder", plan.id);
         const runtime = getRuntime(sessionId, userId, hostedWorker);
         const seqBefore = this.eventStore.getLastSeq();
-        let turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Implementing the approved plan", inferenceBudget, inferenceLane: "primary" });
+        let turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Implementing the approved plan", codingProgress: plan.steps.some(step => step.kind === "edit" || step.kind === "write"), inferenceBudget, inferenceLane: "primary" });
         let result = await waitForTurn(runtime, turnId);
         const changedFilesSinceStart = (): string[] => [...new Set(
           this.eventStore
@@ -855,13 +855,14 @@ export class WorkflowService {
             const recoveryPrompt = [
               `Continue the approved implementation for: ${redactSecrets(intent.title)}`,
               `Task goals: ${intent.goals.map((goal) => redactSecrets(goal)).join(" | ")}`,
+              `Original user request and scope: ${redactSecrets(intent.rawMessage)}`,
               `Approved plan: ${plan.steps.filter((step) => step.kind !== "verify" && step.kind !== "review").map((step) => `${step.kind}: ${redactSecrets(step.description)}${step.targetPath ? ` → ${step.targetPath}` : ""}`).join(" | ")}`,
               `The previous turn changed: ${changed.join(", ")}. It then stopped because it repeated actions without making progress.`,
               `Check the current workspace against the original task and plan. Preserve completed edits. Make only changes still needed.`,
               `Do not repeat a read or search without a specific unanswered question. When implementation is complete, give a concise final response and stop using tools.`,
               `The workflow will run verification and review after this turn.`,
             ].join("\n");
-            turnId = await runtime.startTurn(recoveryPrompt, adapter, { origin: "workflow", label: "Recovering a stalled implementation", inferenceBudget, inferenceLane: "primary" });
+            turnId = await runtime.startTurn(recoveryPrompt, adapter, { origin: "workflow", label: "Recovering a stalled implementation", codingProgress: true, inferenceBudget, inferenceLane: "primary" });
             result = await waitForTurn(runtime, turnId, remainingWorkingMs);
           }
         }
@@ -894,7 +895,7 @@ export class WorkflowService {
       ): Promise<{ success: boolean; output: string; turnId?: string; failure?: { code: string; message: string; terminal?: boolean } }> => {
         const prompt = buildRepairPrompt(analysis, verification, context, intent);
         const runtime = getRuntime(sessionId, userId, hostedWorker);
-        const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Repairing verification failures", inferenceBudget, inferenceLane: repairLane() });
+        const turnId = await runtime.startTurn(prompt, adapter, { origin: "workflow", label: "Repairing verification failures", codingProgress: true, inferenceBudget, inferenceLane: repairLane() });
         const result = await waitForTurn(runtime, turnId);
         if (result.status === "completed") return { success: true, output: `Repair turn ${turnId} completed`, turnId };
         return { success: false, output: `Repair turn ${turnId} ${result.status}${result.reason ? `: ${result.reason}` : ""}`, ...describeExecutorFailure(result.turn) };

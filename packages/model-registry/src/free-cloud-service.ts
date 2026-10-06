@@ -663,7 +663,12 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     const urgentRoleFailure = (r: ProviderRouteView): number => this.runtimeRequalificationRoles(r.providerId, r.providerModelId).length > 0 ? 1 : 0;
     // A fresh public-IP profile can afford only one full suite. Measure the gateway's free
     // coding alias before speculative family priors spend that allowance on a transient result.
-    const bootstrapPriority = (r: ProviderRouteView): number => r.providerId === "kilo-free-direct" && r.providerModelId === "kilo-auto/free" ? 1 : 0;
+    const bootstrapPriority = (r: ProviderRouteView): number => {
+      const definition = this.definitions[r.providerId];
+      return definition?.kind === "gateway" && definition.freeAccess.class === "FREE_API" && definition.freeAccess.spillover === "NONE"
+        && definition.authClasses.includes("ZERO_TOUCH")
+        && /(?:^|[-/])auto\/free$/.test(r.providerModelId) ? 1 : 0;
+    };
     const seen = new Set<string>();
     return snap.models
       .flatMap((m) => m.routes)
@@ -757,6 +762,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private async *qualificationStream(adapter: ProviderAdapter, open: () => AsyncIterable<StreamEvent>, signal?: AbortSignal, beforeDispatch?: () => Promise<void>): AsyncIterable<StreamEvent> {
     if (adapter.isTestProvider !== true) await this.probePace(adapter.providerId, signal);
     await beforeDispatch?.();
+    if (signal?.aborted) throw new Error("qualification dispatch aborted after durable reservation");
     yield* open();
   }
 
@@ -774,7 +780,8 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
 
   private persistQualificationSpend(providerId: string): Promise<void> {
     const entry = { providerId, ...this.spendFor(providerId) };
-    this.qualificationSpendWrite = this.qualificationSpendWrite.then(async () => { await this.qualificationStore.saveSpend?.(entry); });
+    // A failed reservation still aborts its dispatch, but must not poison later writes.
+    this.qualificationSpendWrite = this.qualificationSpendWrite.catch(() => undefined).then(async () => { await this.qualificationStore.saveSpend?.(entry); });
     return this.qualificationSpendWrite;
   }
 

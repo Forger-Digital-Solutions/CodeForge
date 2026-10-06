@@ -2,7 +2,7 @@ import type { ContextBundle, RepoMap, TaskIntent } from "./types.js";
 
 export function explicitTaskFiles(intent: TaskIntent, files: Iterable<string>): string[] {
   const available = new Map([...files].map(file => [file.replaceAll("\\", "/").toLowerCase(), file]));
-  const mentions = (intent.rawMessage ?? "").replaceAll("\\", "/").match(/[A-Za-z0-9_@.+-]+(?:\/[A-Za-z0-9_@.+-]+)+/g) ?? [];
+  const mentions = (intent.rawMessage ?? "").replaceAll("\\", "/").match(/[A-Za-z0-9_@.+-]+(?:\/[A-Za-z0-9_@.+-]+)*/g) ?? [];
   const selected = new Set<string>();
   for (const mention of mentions) {
     const file = available.get(mention.replace(/\.+$/, "").toLowerCase());

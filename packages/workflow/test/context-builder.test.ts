@@ -20,6 +20,27 @@ describe("ContextBuilder", () => {
     expect(context.primaryFiles.slice(0, 2)).toEqual([target, source]);
     const plan = createPlan(intent, context, repoMap, "task-explicit-paths");
     expect(plan.steps.filter(step => step.kind === "edit").map(step => step.targetPath)).toEqual([target, source]);
+    expect(plan.steps.filter(step => step.kind === "read").map(step => step.targetPath)).toEqual([target, source]);
+  });
+
+  it("plans a root configuration target and Windows source path without inventing a feature module", () => {
+    const intent = understandTask("Implement the build configuration correction in `package.json` and `src\\build.ts`. Preserve other files.");
+    const repoMap: RepoMap = {
+      workspacePath: "/tmp/ws", files: ["package.json", "src/build.ts", "src/unrelated.ts"].map(relativePath => ({ path: `/tmp/ws/${relativePath}`, relativePath, size: 100, lines: 10 })),
+      searchedMatches: [], readFiles: [],
+    };
+    const plan = createPlan(intent, buildContext(intent, repoMap), repoMap, "config-task");
+    expect(plan.steps.filter(step => step.kind === "edit").map(step => step.targetPath)).toEqual(["package.json", "src/build.ts"]);
+    expect(plan.steps.filter(step => step.kind === "read").map(step => step.targetPath)).toEqual(["package.json", "src/build.ts"]);
+  });
+
+  it("keeps every explicit target in a multi-file plan instead of silently dropping the fourth", () => {
+    const targets = ["src/a.ts", "src/b.ts", "src/c.ts", "src/d.ts"];
+    const intent = understandTask(`Implement the API migration in ${targets.join(", ")}.`);
+    const repoMap: RepoMap = { workspacePath: "/tmp/ws", files: targets.map(relativePath => ({ path: `/tmp/ws/${relativePath}`, relativePath, size: 10, lines: 1 })), searchedMatches: [], readFiles: [] };
+    const plan = createPlan(intent, buildContext(intent, repoMap), repoMap, "multi-file-scope");
+    expect(plan.steps.filter(step => step.kind === "edit").map(step => step.targetPath)).toEqual(targets);
+    expect(plan.steps.filter(step => step.kind === "read").map(step => step.targetPath)).toEqual(targets);
   });
 
   it("builds context with relevance scoring", () => {

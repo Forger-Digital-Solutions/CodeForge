@@ -34,13 +34,13 @@ function requiresApprovalForStep(step: PlanStep): boolean {
 function inferEditTargets(intent: TaskIntent, context: ContextBundle): Array<{ path: string; hint: string }> {
   const targets: Array<{ path: string; hint: string }> = [];
   const mentioned = explicitTaskFiles(intent, context.primaryFiles);
-  for (const file of (mentioned.length ? mentioned : context.primaryFiles).slice(0, 3)) {
-    if (file.endsWith(".ts") || file.endsWith(".js") || file.endsWith(".tsx") || file.endsWith(".jsx")) {
+  for (const file of mentioned.length ? mentioned : context.primaryFiles.slice(0, 3)) {
+    if (mentioned.includes(file) || /\.(?:ts|js|tsx|jsx)$/.test(file)) {
       targets.push({ path: file, hint: `Update ${file} to address: ${intent.title}` });
     }
   }
   // If no suitable file, suggest creating a new file for implementation tasks
-  if (targets.length === 0 && (intent.taskType === "implementation" || intent.taskType === "multi_file_feature")) {
+  if (targets.length === 0 && mentioned.length === 0 && (intent.taskType === "implementation" || intent.taskType === "multi_file_feature")) {
     targets.push({ path: "src/feature.ts", hint: `Create new module for: ${intent.title}` });
   }
   return targets;
@@ -84,7 +84,8 @@ export function createPlan(
   });
 
   // 3. Read primary files (if any)
-  for (const file of context.primaryFiles.slice(0, 4)) {
+  const mentioned = explicitTaskFiles(intent, context.primaryFiles);
+  for (const file of mentioned.length ? mentioned : context.primaryFiles.slice(0, 4)) {
     steps.push({
       id: nextId(),
       description: `Read and analyze ${file}`,

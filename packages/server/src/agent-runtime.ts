@@ -109,6 +109,7 @@ import type { RosterRouteAllowance, RosterUserRoute } from "./forgeauto-roster.j
 import { isUserApiAdapter, userApiAdapterIdentity } from "./user-intelligence.js";
 import { createShillingEntry, ManagedPaidAllowanceError, ShillingLedger, type ManagedPaidAllowanceLedger, type ManagedPaidPolicy, type ShillingSourceClass } from "@codeforge/cloud-usage";
 import { assessCoderProgress, type RoleProgressAssessment } from "./role-progress.js";
+import { CodingProgress } from "./coding-progress.js";
 
 export interface AgentRuntimeRequest {
   runId: string;
@@ -1070,6 +1071,7 @@ export class AgentRuntime {
   private readonly runtimeOwnerId = crypto.randomUUID();
   private parentContinuationId?: string;
   private readonly lastAssistantResponseByTurn = new Map<string, string>();
+  private readonly codingProgressByTurn = new Map<string, CodingProgress>();
 
   constructor(options: AgentRuntimeOptions) {
     this.sessionId = options.sessionId;
@@ -1289,6 +1291,10 @@ export class AgentRuntime {
         ...(record.error ? { error: record.error } : {}),
         ...(record.agentId ? { agentId: record.agentId } : {}),
       };
+      const progress = workItems.find(item => item.id === `coding-progress-${record.id}`);
+      if (progress?.kind === "activity") {
+        this.codingProgressByTurn.set(record.id, new CodingProgress(JSON.parse(progress.detail ?? "null")));
+      }
       this.recoveryGenerationByTurn.set(record.id, generation);
       this.recoveryOriginalStatusByTurn.set(record.id, originalStatus);
 
@@ -4263,6 +4269,7 @@ export class AgentRuntime {
     options?: {
       origin?: "user" | "workflow" | "repair";
       label?: string;
+      codingProgress?: boolean;
       /**
        * Shared run-scoped inference budget. `lane` selects the partition the turn may draw
        * from — implementation lanes stop short of the reserve so the review tail can never
@@ -4296,6 +4303,7 @@ export class AgentRuntime {
 
     const turnId = crypto.randomUUID();
     this.turnCount++;
+    if (options?.codingProgress && !this.hostedWorker) this.codingProgressByTurn.set(turnId, new CodingProgress());
 
     if (options?.inferenceBudget) {
       this.turnInferenceBudgets.set(turnId, { budget: options.inferenceBudget, lane: options.inferenceLane ?? "primary" });
@@ -5605,6 +5613,8 @@ export class AgentRuntime {
     this.messageHistory.length = 0;
     if (systemPrompt) this.messageHistory.push({ role: "system", content: systemPrompt });
     if (recoveryDirective) this.messageHistory.push({ role: "system", content: recoveryDirective });
+    const progress = this.codingProgressByTurn.get(turnId)?.snapshot();
+    if (progress) this.messageHistory.push({ role: "system", content: `Coding investigation is bounded: twelve tool actions without an applied source mutation trigger a six-action recovery allowance, with at most two interventions per turn. Durable state: ${JSON.stringify(progress)}. Search explicit task files first, then nearby symbols and the relevant package. Explain any repository-wide search expansion. Changed read ranges, query timings, plans, and repeated commands do not replenish this allowance.` });
     this.messageHistory.push(userMessage);
     this.recoveryRequiredTurns.delete(turnId);
     this.capacityResumeTurns.delete(turnId);
@@ -5673,6 +5683,9 @@ export class AgentRuntime {
     if (signal.aborted) {
       return { kind: "cancelled", reason: "aborted" };
     }
+
+    // Recovery and capacity wake-ups retain spent allowance before another provider request.
+    this.codingProgressByTurn.get(turnId)?.intervene();
 
     const turnState = this.activeTurns.get(turnId);
     if (turnState?.providerId && turnState?.modelId) {
@@ -5876,13 +5889,22 @@ export class AgentRuntime {
         return await this.dispatchHostedTool(turnId, agentId, tc, adapter, signal, duplicateSupervisor);
       }
 
+      let progressDirective: string | undefined;
       for (const tc of toolCalls) {
         if (this.userIntentHold?.hasQueuedSteer(this.sessionId)) {
           return await this.runAgentLoop(turnId, agentId, provider, request, adapter, signal, iteration + 1, duplicateSupervisor);
         }
         await this.userIntentHold?.waitForDispatch(this.sessionId, "tool");
+        if (signal.aborted) return { kind: "cancelled", reason: "aborted" };
+        const progress = this.codingProgressByTurn.get(turnId);
+        progress?.chargeAction();
+        await this.persistCodingProgress(turnId);
+        const seqBefore = this.eventStore.getLastSeq();
         const toolResult = await this.executeTool(turnId, tc.id, tc.name, tc.arguments, adapter, signal, duplicateSupervisor);
         if (signal.aborted) return { kind: "cancelled", reason: "aborted" };
+        if (this.eventStore.getAll({ sessionId: this.sessionId, types: ["file.change_applied"], afterSeq: seqBefore }).length > 0) {
+          progress?.recordMutation();
+        }
 
         // Pipeline: raw -> size limit -> secret redaction -> history
         // executeTool already returns sanitized bounded result
@@ -5891,7 +5913,14 @@ export class AgentRuntime {
           content: toolResult,
           toolCallId: tc.id,
         });
+        const directive = progress?.intervene();
+        if (directive) {
+          progressDirective = directive;
+          adapter.emitSubagentProgress?.(agentId, "Coding investigation reached its bounded progress checkpoint; six tool actions remain to edit, check a hypothesis, or report a blocker.");
+        }
+        await this.persistCodingProgress(turnId);
       }
+      if (progressDirective) this.messageHistory.push({ role: "system", content: progressDirective });
 
       const nextRequest: ChatRequest = {
         ...request,
@@ -7454,6 +7483,7 @@ export class AgentRuntime {
   }
 
   private async persistTurn(state: TurnState): Promise<void> {
+    await this.persistCodingProgress(state.turnId);
     await this.persistence.upsertTurn({
       id: state.turnId,
       sessionId: state.sessionId,
@@ -7464,6 +7494,16 @@ export class AgentRuntime {
       startedAt: state.startedAt.toISOString(),
       completedAt: state.completedAt?.toISOString(),
       error: state.error,
+    });
+  }
+
+  private async persistCodingProgress(turnId: string): Promise<void> {
+    const progress = this.codingProgressByTurn.get(turnId);
+    if (!progress) return;
+    await this.persistence.upsertWorkItem({
+      kind: "activity", id: `coding-progress-${turnId}`, sessionId: this.sessionId, turnId,
+      title: "Coding progress budget", status: "completed", startedAt: this.activeTurns.get(turnId)?.startedAt.toISOString() ?? new Date().toISOString(), completedAt: new Date().toISOString(),
+      detail: JSON.stringify(progress.snapshot()),
     });
   }
 
