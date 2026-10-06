@@ -447,13 +447,14 @@ export function describeWorkflowOutcome(result: WorkflowResult, turnId: string):
   }
   if (result.stop) {
     const routeExhausted = result.stop.code === "route_exhausted";
+    const blocked = result.status === "blocked" && !routeExhausted;
     const failure: RunFailure = { code: routeExhausted ? "route_exhausted" : "unknown", ownership: routeExhausted ? "managed_free" : "runtime", message: result.stop.message, retryable: true };
     return {
       ...base,
-      outcome: routeExhausted ? "route_exhausted" : "failed",
+      outcome: routeExhausted ? "route_exhausted" : blocked ? "blocked" : "failed",
       reasonCode: result.stop.code,
       summary: `${result.stop.message}${changedFiles ? ` ${changedFiles} file${changedFiles === 1 ? "" : "s"} changed before the stop; not verified.` : ""}`,
-      execution: routeExhausted ? "route_exhausted" : "failed",
+      execution: routeExhausted ? "route_exhausted" : blocked ? "interrupted" : "failed",
       verification: "not_run",
       review: "not_run",
       completion: "not_evaluated",
@@ -586,14 +587,14 @@ export class WorkflowService {
       const sessions = await this.persistence.listSessions();
       for (const sess of sessions) {
         const statusStr = sess.status as string;
-        const isTerminal = statusStr === "completed" || statusStr === "failed" || statusStr === "cancelled" || statusStr === "failed_safely";
+        const isTerminal = statusStr === "completed" || statusStr === "blocked" || statusStr === "failed" || statusStr === "cancelled" || statusStr === "failed_safely";
         if (isTerminal) {
           // A terminal user task owns its turns and approvals. A previous workflow version could
           // persist the workflow's failed session while leaving its underlying agent turn in an
           // approval wait; on the next launch that made one task simultaneously failed and active.
           // Converge that historical state before any runtime hydrates it. This never replays work.
           const now = new Date().toISOString();
-          const turnStatus = statusStr === "completed" ? "completed" : statusStr === "cancelled" ? "cancelled" : "failed";
+          const turnStatus = statusStr === "completed" ? "completed" : statusStr === "blocked" ? "blocked" : statusStr === "cancelled" ? "cancelled" : "failed";
           for (const turn of await this.persistence.getTurns(sess.id)) {
             if (["idle", "completed", "failed", "cancelled", "blocked"].includes(turn.status)) continue;
             await this.persistence.upsertTurn({
@@ -1551,7 +1552,7 @@ export class WorkflowService {
         } else if (safeResult.status === "blocked") {
           adapter.emitTaskStateChanged(taskId, previousTaskStatus, "blocked");
           await adapter.emitTurnFailed(turnId, runOutcome.summary, runOutcome.failure);
-          adapter.emitStatusChanged("running", "failed");
+          adapter.emitStatusChanged("running", "blocked");
         } else if (safeResult.status === "failed") {
           adapter.emitTaskStateChanged(taskId, previousTaskStatus, "failed_safely");
           await adapter.emitTurnFailed(turnId, runOutcome.summary, runOutcome.failure);
@@ -1570,7 +1571,7 @@ export class WorkflowService {
           await this.persistence.upsertSession({
             ...(await sessionIdentity(redactedTitle, task.createdAt)),
             updatedAt: new Date().toISOString(),
-            status: safeResult.status === "completed" ? "completed" : safeResult.status === "cancelled" ? "cancelled" : "failed",
+            status: sessionStatusForPhase(safeResult.status === "requires_approval" ? "failed" : safeResult.status),
             outcome: runOutcome.reasonCode,
           });
           await this.persistence.upsertTurn({
@@ -1578,7 +1579,7 @@ export class WorkflowService {
             sessionId,
             seq: this.eventStore.getLastSeq(),
             userMessage: redactSecrets(request.message),
-            status: safeResult.status === "completed" ? "completed" : safeResult.status === "cancelled" ? "cancelled" : "failed",
+            status: sessionStatusForPhase(safeResult.status === "requires_approval" ? "failed" : safeResult.status),
             startedAt: task.createdAt,
             completedAt: new Date().toISOString(),
             error: safeResult.status !== "completed" ? runOutcome.summary : undefined,
@@ -1837,14 +1838,14 @@ export class WorkflowService {
         workspacePath: existingSession?.workspacePath ?? validated.resolved,
         createdAt: existingSession?.createdAt ?? workflow.createdAt,
         updatedAt,
-        status: safeResult.status === "completed" ? "completed" : "failed",
+        status: sessionStatusForPhase(safeResult.status === "requires_approval" ? "failed" : safeResult.status),
       });
       await this.persistence.upsertTurn({
         id: workflowTurnId,
         sessionId: workflow.sessionId,
         seq: this.eventStore.getLastSeq(),
         userMessage: redactSecrets(message),
-        status: safeResult.status === "completed" ? "completed" : "failed",
+        status: sessionStatusForPhase(safeResult.status === "requires_approval" ? "failed" : safeResult.status),
         startedAt: workflow.createdAt,
         completedAt: updatedAt,
         ...(safeResult.status === "completed" ? {} : { error: safeResult.summary }),
@@ -1941,7 +1942,7 @@ export class WorkflowService {
 
   cancelAll(reason = "Workspace changed"): void {
     for (const [_id, entry] of Array.from(this.workflows.entries())) {
-      if (entry.task.phase !== "completed" && entry.task.phase !== "failed" && entry.task.phase !== "cancelled") {
+      if (isActivePhase(entry.engine.getTask().phase)) {
         entry.controller.abort();
         this.approvalService.cancelForTurn(entry.task.turnId, reason);
         try {
@@ -1997,7 +1998,7 @@ export class WorkflowService {
     const entry = this.workflows.get(taskId);
     if (!entry) return false;
     const phase = entry.engine.getTask().phase;
-    return phase === "completed" || phase === "failed" || phase === "cancelled";
+    return phase === "completed" || phase === "blocked" || phase === "failed" || phase === "cancelled";
   }
 }
 

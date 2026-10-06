@@ -400,6 +400,14 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
       }
       case "command.executed": {
         const p = e.payload as { commandId: string; command: string; output: string; exitCode: number };
+        const existingCommand = commandById.get(p.commandId);
+        if (existingCommand) {
+          existingCommand.command = p.command;
+          existingCommand.exitCode = p.exitCode;
+          existingCommand.output = p.output;
+          existingCommand.status = p.exitCode === 0 ? "completed" : "failed";
+          break;
+        }
         // The run_command tool call this execution belongs to already has a row; showing the same
         // command again as a second row reads as two commands. The command card is the richer
         // presentation, so the tool row is replaced in place — its seq keeps the slot in order.

@@ -12,6 +12,10 @@ describe("workspace-sse - task session allocation", () => {
       activeTaskId: "task-1",
       workflowTasks: [{ taskId: "task-1", title: "In progress", status: "testing", phase: "testing", progress: 75, createdAt: "2026-09-12T00:00:00.000Z" }],
     })).toBe(false);
+    expect(hasTerminalActiveWorkflow({
+      activeTaskId: "task-1",
+      workflowTasks: [{ taskId: "task-1", title: "Blocked work", status: "blocked", phase: "blocked", progress: 100, createdAt: "2026-09-12T00:00:00.000Z" }],
+    })).toBe(true);
   });
 
   it("persists only a canonical execution selection and fails corrupted storage to Agent", () => {

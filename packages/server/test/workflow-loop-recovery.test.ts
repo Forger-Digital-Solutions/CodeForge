@@ -138,6 +138,11 @@ describe("workflow recovery after a post-edit tool loop", () => {
     expect(events.some(event => event.type === "task.state_changed" && (event.payload as { to?: string })?.to === "completed")).toBe(false);
     expect(await readFile(join(workspace, "src", "calc.ts"), "utf8")).toBe(before);
     expect(status).toBe("blocked");
+    expect(session.body.session).toMatchObject({ status: "blocked" });
+    const outcome = events.find(event => event.type === "run.outcome");
+    expect(outcome?.payload).toMatchObject({ outcome: "blocked", execution: "interrupted", verification: "not_run", review: "not_run", completion: "not_evaluated" });
+    const root = (session.body.turns as Array<{ status: string; userMessage: string }>).find(turn => turn.userMessage === "Fix sum so it adds two numbers");
+    expect(root).toMatchObject({ status: "blocked" });
   }, 30_000);
 
   it("stops after one continuation when the model loops again", async () => {

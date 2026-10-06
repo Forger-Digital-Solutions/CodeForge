@@ -99,6 +99,22 @@ describe("VerificationService", () => {
     expect(prepared.runtimeKind).toBe("electron-as-node");
   });
 
+  it.each(["node cli.js --inc release 1.0.0; echo EXIT_CODE=$?", "npm test; echo done", "python -m pytest; echo done"])("rejects unsupported Windows chaining instead of passing it as program arguments: %s", command => {
+    expect(() => prepareShellCommand(command, {}, ws, { platform: "win32" })).toThrow("Run one command per tool call");
+  });
+
+  it("preserves quoted semicolons in Node programs and literal filenames", () => {
+    const prepared = prepareShellCommand('node -e "const x=1; console.log(x)" "file;name.js"', {}, ws, { platform: "win32" });
+    expect(prepared.shell).toBe(false);
+    expect(prepared.args).toEqual(["-e", "const x=1; console.log(x)", "file;name.js"]);
+  });
+
+  it("keeps POSIX semicolon chaining on the shell execution path", () => {
+    const prepared = prepareShellCommand("node cli.js; echo done", {}, ws, { platform: "linux" });
+    expect(prepared.shell).toBe(true);
+    expect(prepared.command).toContain("cli.js; echo done");
+  });
+
   it("reports timeout deterministically and terminates descendants", async () => {
     // The descendant announces itself only after DESCENDANT_WRITE_DELAY_MS. The tree kill therefore
     // has that long to reach it; the assertion is made after a longer wait still, so a surviving

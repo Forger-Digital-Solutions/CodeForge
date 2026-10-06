@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, rm, utimes } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { reviewDiff } from "../src/diff-review.js";
@@ -33,12 +35,36 @@ describe("DiffReview", () => {
   it("detects new file", async () => {
     const before = new Map<string, string>([["file.txt", "hello\nworld\n"]]);
     await writeFile(join(ws, "new.txt"), "new content\n");
-    // Simulate git status by not having before entry; we need to also have file exist
-    // Our reviewDiff will detect new files via statusFiles fallback only if git; otherwise via beforeSnapshots new detection requires statusFiles.
-    // To test, we pass beforeSnapshots and new file will be detected via extra logic for missing before entry? Actually new file detection needs statusFiles from git; without git, it won't be detected.
-    // So we test that at least modification is detected; new file may not be detected without git, but we ensure no crash.
     const review = await reviewDiff(ws, { beforeSnapshots: before });
-    expect(review).toBeDefined();
+    expect(review.diffs).toEqual([expect.objectContaining({ path: "new.txt", changeType: "created" })]);
+  });
+
+  it.each([true, false])("reviews nested untracked files with snapshots=%s", async (snapshots) => {
+    const git = (...args: string[]) => execFileSync("git", args, { cwd: ws, windowsHide: true });
+    git("init");
+    await writeFile(join(ws, ".gitignore"), "ignored/\n");
+    git("add", ".");
+    git("-c", "user.name=Review Test", "-c", "user.email=review@example.invalid", "commit", "-m", "baseline");
+    await mkdir(join(ws, "new tests"));
+    await mkdir(join(ws, "ignored"));
+    const nestedPath = "new tests/régression → spec.cjs";
+    const content = "const answer = 42;\n";
+    await writeFile(join(ws, nestedPath), content);
+    await writeFile(join(ws, "root-test.cjs"), content);
+    await writeFile(join(ws, "ignored", "ignored.cjs"), content);
+    await writeFile(join(ws, "old-untracked.cjs"), content);
+    await utimes(join(ws, "old-untracked.cjs"), 1, 1);
+    const review = await reviewDiff(ws, snapshots ? {
+      beforeSnapshots: new Map([["file.txt", "hello\nworld\n"]]),
+      sinceMs: Date.now() - 60_000,
+    } : {});
+    expect(review.diffs.map(entry => entry.path).sort()).toEqual([
+      nestedPath, ...(snapshots ? [] : ["old-untracked.cjs"]), "root-test.cjs",
+    ].sort());
+    expect(review.diffs.find(entry => entry.path === nestedPath)).toMatchObject({
+      changeType: "created", afterHash: createHash("sha256").update(content).digest("hex"),
+    });
+    expect(review.diffs.find(entry => entry.path === nestedPath)?.diff).toContain("+const answer = 42;");
   });
 
   it("redacts secrets in diff", async () => {

@@ -164,6 +164,12 @@ function parseDirectArguments(input: string, platform: NodeJS.Platform): string[
       }
       continue;
     }
+    if (character === ";") {
+      if (platform === "win32") {
+        throw new Error("Unquoted ';' is not a Windows cmd.exe command separator. Run one command per tool call; its result already includes the exit code and captured output. Quote a literal semicolon argument, or explicitly invoke a verified shell that supports this syntax.");
+      }
+      return undefined;
+    }
     if (/[&|<>`]/.test(character) || (platform !== "win32" && /[$()*?{}[\]]/.test(character))) {
       return undefined;
     }

@@ -9,6 +9,7 @@ export const SessionStatusSchema = z.enum([
   "waiting_for_free_capacity",
   "recovering",
   "completed",
+  "blocked",
   "failed",
   "cancelled",
 ]);

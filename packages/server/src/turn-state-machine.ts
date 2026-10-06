@@ -29,6 +29,7 @@ export type CanonicalTurnStatus =
 
 export const TERMINAL_TURN_STATUSES: ReadonlySet<CanonicalTurnStatus> = new Set([
   "completed",
+  "blocked",
   "failed",
   "cancelled",
 ]);
@@ -77,7 +78,7 @@ export const TURN_TRANSITIONS: Readonly<Record<CanonicalTurnStatus, readonly Can
   waiting_for_question: ["running", "cancelled", "failed"],
   waiting_for_free_capacity: ["running", "cancelled", "failed"],
   waiting_for_worker: ["running", "cancelled", "failed", "blocked"],
-  blocked: ["cancelled"],
+  blocked: [],
   recovering: ["running", "cancelled", "failed", "blocked"],
   completed: [],
   failed: [],
@@ -127,9 +128,7 @@ export function taskStatusForPhase(phase: string): TaskStatus {
 }
 
 /**
- * WorkflowPhase → SessionStatus. Session records may only carry SessionStatus;
- * `blocked` folds into `failed` because the session vocabulary has no blocked
- * terminal (the task-level event keeps the precise outcome).
+ * WorkflowPhase → SessionStatus. Terminal outcomes stay identical across task and session records.
  */
 export const WORKFLOW_PHASE_TO_SESSION_STATUS: Readonly<Record<string, SessionStatus>> = {
   received: "running",
@@ -145,7 +144,7 @@ export const WORKFLOW_PHASE_TO_SESSION_STATUS: Readonly<Record<string, SessionSt
   reviewing: "running",
   summarizing: "running",
   completed: "completed",
-  blocked: "failed",
+  blocked: "blocked",
   failed: "failed",
   cancelled: "cancelled",
 };
@@ -166,6 +165,7 @@ export const SESSION_STATUSES: readonly SessionStatus[] = [
   "waiting_for_free_capacity",
   "recovering",
   "completed",
+  "blocked",
   "failed",
   "cancelled",
 ];

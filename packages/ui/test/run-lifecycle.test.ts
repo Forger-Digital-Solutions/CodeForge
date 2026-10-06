@@ -307,6 +307,14 @@ describe("lifecycleFromSessionRecord — restored truth", () => {
     expect(presentRun(lifecycle).label).toBe("No free route available");
   });
 
+  it("a restored blocked session remains terminal with its original stop reason", () => {
+    const lifecycle = lifecycleFromSessionRecord(record("blocked", "invalid_model_output"), [])!;
+    expect(lifecycle.state).toBe("BLOCKED");
+    expect(lifecycle.reasonCode).toBe("invalid_model_output");
+    expect(presentSessionSummary({ status: "blocked", outcome: "invalid_model_output" }).label).toBe("Blocked");
+    expectFullySettled(presentRun(lifecycle));
+  });
+
   it("a running record with no in-flight turn is INTERRUPTED, not running", () => {
     const lifecycle = lifecycleFromSessionRecord(record("running"), [])!;
     expect(lifecycle.state).toBe("INTERRUPTED");

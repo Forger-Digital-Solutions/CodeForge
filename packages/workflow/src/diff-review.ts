@@ -287,16 +287,19 @@ function createdEntryFromDisk(workspacePath: string, relPath: string): DiffEntry
 
 function getGitStatusFiles(workspacePath: string): Array<{ path: string; status: string }> {
   try {
-    const res = spawnSync("git", ["status", "--porcelain"], { cwd: workspacePath, encoding: "utf-8", timeout: 5000, windowsHide: true });
+    const res = spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=all", "-z"], { cwd: workspacePath, encoding: "utf-8", timeout: 5000, windowsHide: true, maxBuffer: GIT_DIFF_MAX_BUFFER });
     if (res.status !== 0 || !res.stdout) return [];
-    return res.stdout
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => {
-        const status = line.slice(0, 2).trim();
-        const file = line.slice(3).trim().replace(/^"/, "").replace(/"$/, "");
-        return { path: file, status };
-      });
+    const records = res.stdout.split("\0");
+    const files: Array<{ path: string; status: string }> = [];
+    for (let index = 0; index < records.length; index++) {
+      const record = records[index]!;
+      if (record.length < 4) continue;
+      const status = record.slice(0, 2);
+      files.push({ path: record.slice(3), status: status.trim() });
+      // NUL porcelain reports rename/copy destinations first, followed by the source path.
+      if (/[RC]/.test(status)) index++;
+    }
+    return files;
   } catch {
     return [];
   }

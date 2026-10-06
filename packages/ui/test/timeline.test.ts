@@ -238,6 +238,21 @@ describe("buildTimeline — streaming command lifecycle", () => {
     expect(tl.map((i) => i.kind)).toEqual(["user", "command"]);
     expect((tl[1] as any).output).toBe("ok\n");
   });
+
+  it("settles the live command row when the runtime emits command.executed", () => {
+    reset();
+    const result = { commandId: "cmd1", command: "npm test", output: "5 passed\n", exitCode: 0 };
+    const tl = buildTimeline([
+      ev("tool.call_started", { turnId: "t1", toolCallId: "t1c", toolName: "run_command" }),
+      ev("tool.call_completed", { turnId: "t1", toolCallId: "t1c", toolName: "run_command", argsJson: JSON.stringify({ command: "npm test" }) }),
+      ev("tool.execution_started", { turnId: "t1", toolCallId: "t1c", toolName: "run_command" }),
+      ev("command.started", { commandId: "cmd1", command: "npm test", workingDirectory: "G:/repo" }),
+      ev("command.executed", result),
+      ev("tool.execution_completed", { toolCallId: "t1c", result: "Exit code: 0\n5 passed" }),
+      ev("command.executed", result),
+    ]);
+    expect(tl).toEqual([expect.objectContaining({ kind: "command", id: "cmd-cmd1", command: "npm test", status: "completed", exitCode: 0, output: "5 passed\n", turnId: "t1", workingDirectory: "G:/repo" })]);
+  });
 });
 
 describe("buildTimeline — steering, capacity, and file changes", () => {

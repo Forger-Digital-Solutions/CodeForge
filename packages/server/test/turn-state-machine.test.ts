@@ -81,6 +81,10 @@ describe("R35 Mission B — canonical turn/task state machine", () => {
     }
     expect(taskStatusForPhase("completed")).toBe("complete");
     expect(taskStatusForPhase("failed")).toBe("failed_safely");
+    expect(taskStatusForPhase("blocked")).toBe("blocked");
+    expect(sessionStatusForPhase("blocked")).toBe("blocked");
+    expect(TERMINAL_TURN_STATUSES.has("blocked")).toBe(true);
+    expect(RESTORABLE_TURN_STATUSES.has("blocked")).toBe(false);
     expect(() => taskStatusForPhase("not_a_phase")).toThrow();
   });
 

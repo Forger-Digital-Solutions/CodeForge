@@ -7,6 +7,8 @@ describe("model command environment", () => {
     expect(prompt).toContain("cmd.exe /d /c");
     expect(prompt).toContain("PowerShell syntax and Unix utilities");
     expect(prompt).toContain("run_command.cwd");
+    expect(prompt).toContain("Semicolons are not command separators");
+    expect(prompt).toContain("already returns its exit code");
     expect(prompt).toContain("explicitly selected, available WSL");
   });
 

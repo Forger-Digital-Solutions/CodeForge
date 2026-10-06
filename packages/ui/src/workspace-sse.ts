@@ -254,7 +254,7 @@ export function executionStartFailureMessage(mode: ExecutionMode, message: strin
 /** A later bookkeeping event must never revive a workflow which has already settled. */
 export function hasTerminalActiveWorkflow(state: Pick<WorkspaceState, "activeTaskId" | "workflowTasks">): boolean {
   const task = state.workflowTasks.find((candidate) => candidate.taskId === state.activeTaskId);
-  return task?.phase === "completed" || task?.phase === "complete" || task?.phase === "failed_safely" || task?.phase === "cancelled";
+  return task?.phase === "completed" || task?.phase === "complete" || task?.phase === "blocked" || task?.phase === "failed" || task?.phase === "failed_safely" || task?.phase === "cancelled";
 }
 
 export function applyExecutionLifecycleEvent(state: WorkspaceState, event: WorkspaceEvent): WorkspaceState {
@@ -327,7 +327,7 @@ const RUN_STATE_TO_SESSION_STATUS: Record<RunState, SessionStatus> = {
   INTERRUPTED: "recovering",
   COMPLETED: "completed",
   FAILED: "failed",
-  BLOCKED: "failed",
+  BLOCKED: "blocked",
   CANCELLED: "cancelled",
   ROUTE_EXHAUSTED: "failed",
 };
@@ -463,7 +463,7 @@ export function deriveRestoredRunState(
     case "complete":
       return { agentStatus: "completed", activePhase: "complete", isRunning: false, workflowProgress: 100 };
     case "blocked":
-      return { agentStatus: "failed", activePhase: "blocked", isRunning: false, workflowProgress: 100 };
+      return { agentStatus: "blocked", activePhase: "blocked", isRunning: false, workflowProgress: 100 };
     default:
       return null;
   }
@@ -912,9 +912,9 @@ export function useWorkspaceSSE(url: string) {
               next.activePhase = to;
               if (prog !== 0 || to === "cancelled") next.workflowProgress = prog;
               // Trustworthy terminal states: surface succinctly
-              if (to === "complete" || to === "failed_safely" || to === "cancelled") {
+              if (to === "complete" || to === "blocked" || to === "failed_safely" || to === "cancelled") {
                 next.isRunning = false;
-                next.agentStatus = to === "complete" ? "idle" : (to as SessionStatus);
+                next.agentStatus = to === "complete" ? "idle" : to === "failed_safely" ? "failed" : to;
                 if (to === "failed_safely") next.workflowError = "The task could not be completed safely. Review the run details below.";
                 // A stop is a user decision, not an error — no red banner.
                 next.workflowActionPending = "none";
