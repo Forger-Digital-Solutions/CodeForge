@@ -195,7 +195,7 @@ export class WorkflowEngine {
   /** Why the agent's implementation stopped short, when it did — surfaced in the summary. */
   private implementationStopReason: string | null = null;
   /** A failure that ends the run outright (route exhaustion): set by the executor, honoured by run(). */
-  private terminalStop: { code: string; message: string } | null = null;
+  private terminalStop: { code: string; message: string; outcome?: "blocked" } | null = null;
   private readonly verificationObserver?: ForgeVerifyObserver;
   private readonly completionPolicy?: Partial<CompletionPolicy>;
   private readonly signal?: AbortSignal;
@@ -812,7 +812,7 @@ export class WorkflowEngine {
         } else {
           // A failed turn that wrote nothing cannot own unrelated repository test failures.
           if (result.filesChanged?.length === 0 && !this.terminalStop) {
-            this.terminalStop = { code: result.failure?.code ?? "implementation_failed", message: this.implementationStopReason ?? "Implementation failed before any files were changed." };
+            this.terminalStop = { code: result.failure?.code ?? "implementation_failed", message: this.implementationStopReason ?? "Implementation failed before any files were changed.", outcome: "blocked" };
           }
           currentPlan = {
             ...currentPlan,
@@ -1071,11 +1071,12 @@ export class WorkflowEngine {
         ? `${changed} file${changed === 1 ? "" : "s"} changed before the stop; the changes were not verified.`
         : "No files were changed.",
     ].join(" ");
-    this.setPhase("failed", "failed_safely");
+    const outcome = stop.outcome ?? "failed";
+    this.setPhase(outcome, outcome === "blocked" ? "blocked" : "failed_safely");
     return {
       taskId: this.task.id,
-      status: "failed",
-      phase: "failed",
+      status: outcome,
+      phase: outcome,
       summary,
       plan,
       ...(partial.verification ? { verification: partial.verification } : {}),

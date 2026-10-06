@@ -5,6 +5,24 @@ import { understandTask } from "../src/task-intelligence.js";
 import type { RepoMap } from "../src/types.js";
 
 describe("ContextBuilder", () => {
+  it("retains coordinated explicit creation targets in a single directive", () => {
+    const intent = understandTask("Create test/api.test.cjs and test/cli.test.cjs; inspect index.js.");
+    const repoMap: RepoMap = { workspacePath: "/tmp/ws", files: [{ path: "/tmp/ws/index.js", relativePath: "index.js", size: 100, lines: 10 }], searchedMatches: [], readFiles: [] };
+    const plan = createPlan(intent, buildContext(intent, repoMap), repoMap, "create-two-test-files");
+    expect(plan.steps.filter(step => step.kind === "write").map(step => step.targetPath)).toEqual(["test/api.test.cjs", "test/cli.test.cjs"]);
+    expect(plan.steps.filter(step => step.kind === "edit")).toEqual([]);
+  });
+
+  it("creates the requested absent test file without requiring edits to its library references", () => {
+    const intent = understandTask("Add node:test coverage in test/range.test.cjs. Inspect ranges/intersects.js and ranges/subset.js; keep runtime behavior unchanged.");
+    const files = ["ranges/intersects.js", "ranges/subset.js", "ranges/gtr.js"];
+    const repoMap: RepoMap = { workspacePath: "/tmp/ws", files: files.map(relativePath => ({ path: `/tmp/ws/${relativePath}`, relativePath, size: 100, lines: 10 })), searchedMatches: [], readFiles: [] };
+    const plan = createPlan(intent, buildContext(intent, repoMap), repoMap, "create-test-file");
+    expect(plan.steps.filter(step => step.kind === "edit" || step.kind === "write").map(step => [step.kind, step.targetPath])).toEqual([["write", "test/range.test.cjs"]]);
+    expect(plan.steps.filter(step => step.kind === "read").map(step => step.targetPath)).toEqual(["ranges/intersects.js", "ranges/subset.js"]);
+    expect(plan.steps.find(step => step.kind === "write")?.requiresApproval).toBe(true);
+  });
+
   it("prioritizes full paths from the complete request and keeps inferred edits on those paths", () => {
     const target = "packages/model-registry/test/free-cloud-registry.test.ts";
     const source = "packages/model-registry/src/free-cloud-service.ts";

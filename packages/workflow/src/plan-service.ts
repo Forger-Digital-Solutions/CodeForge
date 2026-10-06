@@ -31,17 +31,19 @@ function requiresApprovalForStep(step: PlanStep): boolean {
   return false;
 }
 
-function inferEditTargets(intent: TaskIntent, context: ContextBundle): Array<{ path: string; hint: string }> {
-  const targets: Array<{ path: string; hint: string }> = [];
+function inferEditTargets(intent: TaskIntent, context: ContextBundle, repoMap: RepoMap): Array<{ path: string; hint: string; kind: "edit" | "write" }> {
+  const targets: Array<{ path: string; hint: string; kind: "edit" | "write" }> = [];
+  const existing = new Set(repoMap.files.map(file => file.relativePath));
   const mentioned = explicitTaskFiles(intent, context.primaryFiles, "edit");
   for (const file of mentioned.length ? mentioned : context.primaryFiles.slice(0, 3)) {
     if (mentioned.includes(file) || /\.(?:ts|js|tsx|jsx)$/.test(file)) {
-      targets.push({ path: file, hint: `Update ${file} to address: ${intent.title}` });
+      const kind = existing.has(file) ? "edit" : "write";
+      targets.push({ path: file, kind, hint: `${kind === "write" ? "Create" : "Update"} ${file} to address: ${intent.title}` });
     }
   }
   // If no suitable file, suggest creating a new file for implementation tasks
   if (targets.length === 0 && mentioned.length === 0 && (intent.taskType === "implementation" || intent.taskType === "multi_file_feature")) {
-    targets.push({ path: "src/feature.ts", hint: `Create new module for: ${intent.title}` });
+    targets.push({ path: "src/feature.ts", kind: "write", hint: `Create new module for: ${intent.title}` });
   }
   return targets;
 }
@@ -56,7 +58,7 @@ function isReadOnlyIntent(intent: TaskIntent): boolean {
 export function createPlan(
   intent: TaskIntent,
   context: ContextBundle,
-  _repoMap: RepoMap,
+  repoMap: RepoMap,
   taskId: string,
 ): WorkflowPlan {
   const steps: PlanStep[] = [];
@@ -98,13 +100,13 @@ export function createPlan(
   }
 
   // 4. Implementation steps — a read-only task answers questions and must never plan edits
-  const editTargets = isReadOnlyIntent(intent) ? [] : inferEditTargets(intent, context);
+  const editTargets = isReadOnlyIntent(intent) ? [] : inferEditTargets(intent, context, repoMap);
   for (const target of editTargets) {
     steps.push({
       id: nextId(),
       description: target.hint,
       status: "queued",
-      kind: "edit",
+      kind: target.kind,
       targetPath: target.path,
       risk: "moderate",
       requiresApproval: true,

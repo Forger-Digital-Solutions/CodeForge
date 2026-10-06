@@ -191,6 +191,11 @@
         "filter": ["**/*"]
       },
       {
+        "from": "node_modules/electron-updater/node_modules/semver",
+        "to": "node_modules/semver",
+        "filter": ["**/*"]
+      },
+      {
         "from": "node_modules/fs-extra",
         "to": "node_modules/fs-extra",
         "filter": ["**/*"]

@@ -8,15 +8,22 @@ export function explicitTaskFiles(intent: TaskIntent, files: Iterable<string>, p
   const editable = new Set<string>();
   let previousEnd = 0;
   let readOnly = false;
+  let creating = false;
   for (const mention of mentions) {
     const name = mention[0].replace(/\.+$/, "");
-    const file = available.get(name.toLowerCase());
-    if (!file) continue;
     const prefix = message.slice(previousEnd, mention.index);
     const boundary = Math.max(...[".", "!", "?", ";", "\n"].map(separator => prefix.lastIndexOf(separator)));
     const clause = prefix.slice(boundary + 1);
     const verbs = [...clause.matchAll(/\b(read|inspect|examine|search|look at|change|edit|modify|update|fix|correct|implement|refactor|add|create|rename|remove|delete|write)\b/gi)];
     const lastVerb = verbs.at(-1)?.[0].toLowerCase();
+    const creates = lastVerb ? /^(?:add|create|write)$/.test(lastVerb) : boundary < 0 && creating;
+    const existing = available.get(name.toLowerCase());
+    const creationTarget = purpose === "edit" && creates
+      && /\.(?:[cm]?[jt]sx?|json|ya?ml|toml|md|css|html|py|rs|go|sh)$/.test(name)
+      && !name.split("/").includes("..") && message[mention.index - 1] !== "/";
+    const file = existing ?? (creationTarget ? name : undefined);
+    if (!file) continue;
+    creating = creates;
     if (lastVerb) readOnly = /^(?:read|inspect|examine|search|look at)$/.test(lastVerb);
     else if (boundary >= 0) readOnly = false;
     selected.add(file);

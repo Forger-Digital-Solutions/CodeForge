@@ -12,6 +12,7 @@ import { createAgentRuntime, type AgentRuntime } from "../src/agent-runtime.js";
 import { createAutonomousRunOrchestrator, type AutonomousRunResult } from "../src/autonomous-orchestrator.js";
 import { createWorkspaceService } from "../src/workspace-service.js";
 import { createWorkspaceEventAdapter } from "../src/workspace-event-adapter.js";
+import { parallelProviderRendezvous } from "./fixtures/parallel-provider-rendezvous.js";
 
 const execFile = promisify(execFileCallback);
 
@@ -88,6 +89,7 @@ class RoleScriptedProvider implements ProviderAdapter {
   readonly providerId = "fabric-a";
   readonly isTestProvider = true;
   readonly calls: CallRecord[] = [];
+  constructor(private readonly rendezvous?: () => Promise<void>) {}
 
   async listModels(): Promise<ProviderModel[]> {
     return [{ modelId: "fabric-a-model", displayName: "Fabric A", isFree: true, freeStatus: "verified_free", capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: true } }];
@@ -95,6 +97,7 @@ class RoleScriptedProvider implements ProviderAdapter {
   async chat(_req: ChatRequest): Promise<ChatResponse> { throw new Error("Use streamChat"); }
   async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
     const role = roleOf(req);
+    if (role === "explorer") await this.rendezvous?.();
     const toolResults = req.messages.filter((m) => m.role === "tool").length;
     const events: StreamEvent[] =
       role === "planner" ? finalJson(PLANNER_RESULT, 900)
@@ -185,7 +188,7 @@ describe("R24 paired benchmark — fixed_r1 baseline vs adaptive topology under 
 
   async function runArm(arm: "fixed_r1" | "adaptive_constrained"): Promise<{ result: AutonomousRunResult; calls: CallRecord[]; maxHolds: number; totalAdmissions: number; leakedHolds: number }> {
     const targetRepo = await createTargetRepo();
-    const provider = new RoleScriptedProvider();
+    const provider = new RoleScriptedProvider(arm === "fixed_r1" ? parallelProviderRendezvous() : undefined);
     const catalog = new InMemoryProviderCatalog();
     catalog.register(provider);
     const firewall = new ForgeZero();

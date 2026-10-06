@@ -47,7 +47,8 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
       },
     });
     const result = await engine.run("Fix the add function in src/calc.ts");
-    expect(result.status).toBe("failed");
+    expect(result.status).toBe("blocked");
+    expect(result.phase).toBe("blocked");
     expect(result.stop?.message).toBe("Implementation could not proceed");
     expect(phases).not.toContain("verifying");
     expect(phases).not.toContain("repairing");

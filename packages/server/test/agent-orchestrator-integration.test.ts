@@ -19,6 +19,7 @@ import { createWorkspaceService } from "../src/workspace-service.js";
 import { createSubagentManager } from "../src/subagent-manager.js";
 import { createAgentRuntime, type AgentRuntime, type AgentRuntimeRequest, type AgentRuntimeResult } from "../src/agent-runtime.js";
 import { createWorkspaceEventAdapter } from "../src/workspace-event-adapter.js";
+import { parallelProviderRendezvous } from "./fixtures/parallel-provider-rendezvous.js";
 
 const execFile = promisify(execFileCallback);
 
@@ -30,7 +31,7 @@ class FullFlowScriptedProvider implements ProviderAdapter {
   explorerActive = 0;
   maxExplorerConcurrency = 0;
 
-  constructor(providerId: string, plannerTasks?: unknown[], private readonly plannerOutput?: unknown) {
+  constructor(providerId: string, plannerTasks?: unknown[], private readonly plannerOutput?: unknown, private readonly rendezvous?: () => Promise<void>) {
     this.providerId = providerId;
     this.plannerTasks = plannerTasks ?? [
       { id: "implement-multiply", title: "Implement multiply", objective: "Update math.mjs to multiply inputs", dependencies: [], assignedRole: "coder" },
@@ -55,7 +56,8 @@ class FullFlowScriptedProvider implements ProviderAdapter {
       this.explorerActive++;
       this.maxExplorerConcurrency = Math.max(this.maxExplorerConcurrency, this.explorerActive);
       try {
-        await new Promise((resolve) => setTimeout(resolve, 25));
+        if (this.rendezvous) await this.rendezvous();
+        else await new Promise((resolve) => setTimeout(resolve, 25));
         yield { type: "text_delta", delta: JSON.stringify({ summary: "Found the math module and its focused test.", findings: [{ id: "explore-math", severity: "advisory", category: "architecture", message: "math.mjs is the target module", evidence: "math.mjs" }], evidence: [{ kind: "file", ref: "math.mjs", description: "target module" }, { kind: "file", ref: "test/math.test.mjs", description: "focused verification" }] }) };
         yield { type: "finish", finishReason: "stop" };
       } finally {
@@ -270,7 +272,7 @@ describe("Autonomous Orchestrator & Agent Runtime Full Pipeline (CF-07)", () => 
 
   it("runs the flagged R1 path with parallel read-only explorers and one durable isolated writer", async () => {
     const catalog = new InMemoryProviderCatalog();
-    const provider = new FullFlowScriptedProvider("r1-provider");
+    const provider = new FullFlowScriptedProvider("r1-provider", undefined, undefined, parallelProviderRendezvous());
     catalog.register(provider);
     const workspaceService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
     const runtime = createAgentRuntime({ sessionId: "session-r1", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: repoDir });

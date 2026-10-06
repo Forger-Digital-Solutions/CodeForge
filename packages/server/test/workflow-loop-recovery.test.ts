@@ -132,9 +132,10 @@ describe("workflow recovery after a post-edit tool loop", () => {
     const events = session.body.events as Array<{ type: string; payload?: { label?: string } }>;
     expect(events.filter((event) => event.type === "turn.started" && event.payload?.label === "Implementing the approved plan")).toHaveLength(1);
     expect(events.some((event) => event.type === "turn.started" && event.payload?.label === "Recovering a stalled implementation")).toBe(false);
-    // The review never reaches a verdict (scripted calls loop), so the engine re-reviews
-    // once and the gate then blocks the unproven run.
-    expect(events.filter((event) => event.type === "turn.started" && event.payload?.label === "Reviewing goal conformance")).toHaveLength(2);
+    // A failed implementation with no mutation cannot own verification or repair work.
+    expect(events.filter((event) => event.type === "turn.started" && event.payload?.label === "Reviewing goal conformance")).toHaveLength(0);
+    expect(events.some(event => event.type === "workflow.verification_completed")).toBe(false);
+    expect(events.some(event => event.type === "task.state_changed" && (event.payload as { to?: string })?.to === "completed")).toBe(false);
     expect(await readFile(join(workspace, "src", "calc.ts"), "utf8")).toBe(before);
     expect(status).toBe("blocked");
   }, 30_000);
