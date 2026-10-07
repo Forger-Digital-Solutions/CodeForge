@@ -69,7 +69,7 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
 
     const result = await engine.run("Fix the add function that incorrectly returns a - b instead of a + b");
 
-    expect(result.status).toBe("completed");
+    expect(result.status, result.summary).toBe("completed");
     expect(result.phase).toBe("completed");
     expect(phases).toContain("understanding");
     expect(phases).toContain("inspecting");
@@ -126,7 +126,7 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
 
     const result = await engine.run("Fix the add function that incorrectly returns a - b instead of a + b");
 
-    expect(result.status).toBe("completed");
+    expect(result.status, result.summary).toBe("completed");
     expect(result.completion).toBeDefined();
     expect(result.completion!.outcome).toBe("completed");
     expect(result.completion!.blockers).toHaveLength(0);
@@ -226,6 +226,45 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
     expect(result.status).toBe("cancelled");
   });
 
+  it.each([
+    { label: "watchdog timeout", reason: new Error("Workflow timed out after 30 minutes"), status: "failed", taskStatus: "failed_safely", verdictAfterAbort: false },
+    { label: "user stop", reason: undefined, status: "cancelled", taskStatus: "cancelled", verdictAfterAbort: false },
+    { label: "user stop followed by a late verdict", reason: undefined, status: "cancelled", taskStatus: "cancelled", verdictAfterAbort: true },
+  ] as const)("retains completed verification when $label interrupts independent review", async ({ reason, status, taskStatus, verdictAfterAbort }) => {
+    const controller = new AbortController();
+    const phases: string[] = [];
+    let reviewCalls = 0;
+    const engine = createWorkflowEngine({
+      workspacePath: ws, sessionId: `review-interruption-${status}`, signal: controller.signal,
+      askForApproval: approvePlan, onPhaseChange: phase => phases.push(phase),
+      verificationCommands: ['node -e "console.log(\'1 passed\')"'],
+      agentExecutor: {
+        executePlan: async () => {
+          await writeFile(join(ws, "src/calc.ts"), "export const add = (a: number, b: number) => a + b;\n");
+          return { success: true, output: "Implemented", filesChanged: ["src/calc.ts"] };
+        },
+        executeGoalReview: async (_intent, _plan, _diffs, verification) => {
+          reviewCalls++;
+          expect(verification.passed).toBe(1);
+          controller.abort(reason);
+          if (verdictAfterAbort) return { findings: [] };
+          throw new Error("Review interrupted before a verdict");
+        },
+      },
+    });
+    const result = await engine.run("Fix add in src/calc.ts to return a + b");
+    expect(result.status).toBe(status);
+    expect(engine.getTask()).toMatchObject({ phase: status, status: taskStatus });
+    expect(phases.filter(phase => ["failed", "cancelled", "completed"].includes(phase))).toEqual([status]);
+    expect(reviewCalls).toBe(1);
+    expect(result.verification).toMatchObject({ passed: 1, failed: 0, exitCode: 0 });
+    expect(result.verificationAttempts).toHaveLength(1);
+    expect(result.review).toMatchObject({ approved: verdictAfterAbort });
+    if (!verdictAfterAbort) expect(result.review?.findings).toContainEqual(expect.objectContaining({ code: "goal_review_inconclusive", severity: "blocking" }));
+    expect(result.completion).toBeUndefined();
+    expect(result.checkpointId).toBeUndefined();
+  });
+
   it("re-test after repair succeeds", async () => {
     await writeFile(join(ws, "src", "calc.ts"), "export function add(a: number, b: number): number {\n  return a - b;\n}\n");
     const engine = createWorkflowEngine({
@@ -237,7 +276,7 @@ describe("WorkflowEngine — Real Autonomous Coding Workflow", () => {
       ],
     });
     const result = await engine.run("Fix add bug");
-    expect(result.status).toBe("completed");
+    expect(result.status, result.summary).toBe("completed");
     expect(result.verification!.failed).toBe(0);
     expect(result.review!.diffs.length).toBeGreaterThan(0);
   });

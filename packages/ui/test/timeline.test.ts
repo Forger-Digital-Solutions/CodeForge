@@ -12,6 +12,21 @@ function reset() {
 }
 
 describe("buildTimeline — assistant prose reconstruction", () => {
+  it("settles a runtime coding checkpoint when that agent completes, without finishing another worker", () => {
+    reset();
+    const events = [
+      ev("agent.started", { agentId: "coder", role: "Lead Agent", taskId: "implementation" }),
+      ev("subagent.progress", { agentId: "coder", message: "Bounded investigation checkpoint" }),
+      ev("subagent.started", { agentId: "reviewer", role: "Reviewer", task: "Check behavior" }),
+      ev("agent.completed", { agentId: "coder", taskId: "implementation" }),
+    ];
+    const workers = buildTimeline(events).filter(item => item.kind === "subagent");
+    expect(workers).toHaveLength(2);
+    expect(workers.find(item => item.agentId === "coder")).toMatchObject({ status: "completed", progressLog: ["Bounded investigation checkpoint"] });
+    expect(workers.find(item => item.agentId === "reviewer")).toMatchObject({ status: "running" });
+    expect(buildTimeline([ev("agent.completed", { agentId: "unseen" })])).toEqual([]);
+  });
+
   it("reconstructs a streamed assistant message from started + deltas + completed", () => {
     reset();
     const events = [

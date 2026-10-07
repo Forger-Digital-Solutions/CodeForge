@@ -513,8 +513,9 @@ export function describeWorkflowOutcome(result: WorkflowResult, turnId: string):
     };
   }
   // failed
+  const timedOut = /timed out/i.test(result.summary);
   const planRejected = /plan rejected by user/i.test(result.summary);
-  const reasonCode = planRejected ? "plan_rejected" : verificationFailed ? "verification_failed" : interrupted ? "implementation_failed" : "failed";
+  const reasonCode = timedOut ? "timed_out" : planRejected ? "plan_rejected" : verificationFailed ? "verification_failed" : interrupted ? "implementation_failed" : "failed";
   const failure: RunFailure | undefined = verificationFailed
     ? { code: "verification_failed", ownership: "runtime", message: "Required verification failed.", retryable: true }
     : planRejected ? { code: "plan_rejected", ownership: "user", message: "You declined the plan, so nothing was changed.", retryable: true } : undefined;

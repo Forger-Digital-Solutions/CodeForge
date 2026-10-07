@@ -314,7 +314,6 @@ export class WorkflowEngine {
 
   private ensureNotAborted(): void {
     if (this.signal?.aborted) {
-      this.setPhase("cancelled", "cancelled");
       throw new Error("Workflow cancelled");
     }
   }
@@ -323,6 +322,12 @@ export class WorkflowEngine {
     this.task.userMessage = userMessage;
     this.task.title = userMessage.slice(0, 80);
     this.task.updatedAt = new Date().toISOString();
+
+    // Keep already observed work when a later phase throws; it cannot authorize completion.
+    let plan: WorkflowPlan | undefined;
+    let verification: VerificationResult | undefined;
+    const verificationAttempts: VerificationResult[] = [];
+    let review: ReviewDecision | undefined;
 
     try {
       this.ensureNotAborted();
@@ -351,7 +356,7 @@ export class WorkflowEngine {
 
       // 4. Create Plan
       this.setPhase("planning", "planning");
-      let plan = this.resumeState?.plan ?? createPlan(intent, context, repoMap, this.task.id);
+      plan = this.resumeState?.plan ?? createPlan(intent, context, repoMap, this.task.id);
       plan = this.resumeState
         ? {
             ...plan,
@@ -445,8 +450,8 @@ export class WorkflowEngine {
       let verificationAttempt = 1;
       this.onEvent?.({ type: "workflow.verification_started", phase: this.phase, payload: { attempt: verificationAttempt, recommendation: verificationRecommendation } });
       await this.beforeVerificationDispatch?.();
-      let verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver, executionRevision: plan.revision, changedPaths });
-      const verificationAttempts: VerificationResult[] = [verification];
+      verification = await runVerification(this.workspacePath, this.verificationCommands, { signal: this.signal, runId: this.task.id, observer: this.verificationObserver, executionRevision: plan.revision, changedPaths });
+      verificationAttempts.push(verification);
       this.onEvent?.({ type: "workflow.verification_completed", phase: this.phase, payload: { attempt: verificationAttempt, verification } });
 
       // 8. Analyze Failures
@@ -515,7 +520,7 @@ export class WorkflowEngine {
       // the diff satisfies the task. The goal-conformance cycle below supplies that judgement.
       this.setPhase("reviewing", "reviewing");
       this.ensureNotAborted();
-      let review = await reviewDiff(this.workspacePath, { beforeSnapshots: this.beforeSnapshots, sinceMs: this.snapshotTakenAtMs || undefined, signal: this.signal });
+      review = await reviewDiff(this.workspacePath, { beforeSnapshots: this.beforeSnapshots, sinceMs: this.snapshotTakenAtMs || undefined, signal: this.signal });
 
       // 10c. Independent goal-conformance review. A fresh turn reads the workspace itself and
       // judges each stated goal against the real diff and the verification output — not the
@@ -546,7 +551,7 @@ export class WorkflowEngine {
             message: `Independent goal review could not finish: ${error instanceof Error ? error.message : String(error)}. Goal conformance is unproven.`,
           }];
         }
-        const mergedFindings = [...review.findings.filter((f) => !GOAL_FINDING_CODES.has(f.code)), ...goalFindings];
+        const mergedFindings: ReviewFinding[] = [...review.findings.filter((f) => !GOAL_FINDING_CODES.has(f.code)), ...goalFindings];
         review = {
           ...review,
           approved: !mergedFindings.some((f) => f.severity === "blocking"),
@@ -608,21 +613,24 @@ export class WorkflowEngine {
       // The completion gate requires every non-skipped plan step to be terminal. Record the
       // actual verification and review outcomes before asking it for a verdict; leaving these
       // steps queued would make a successful run indistinguishable from an interrupted one.
+      const verificationForPlan = verification;
+      const reviewForPlan = review;
       plan = {
         ...plan,
         updatedAt: new Date().toISOString(),
         steps: plan.steps.map((step) => {
           if (step.kind === "verify") {
-            return { ...step, status: verificationPassed(verification) ? "completed" as const : "failed" as const };
+            return { ...step, status: verificationPassed(verificationForPlan) ? "completed" as const : "failed" as const };
           }
           if (step.kind === "review") {
-            return { ...step, status: review.findings.some((finding) => finding.severity === "blocking") ? "blocked" as const : "completed" as const };
+            return { ...step, status: reviewForPlan.findings.some((finding) => finding.severity === "blocking") ? "blocked" as const : "completed" as const };
           }
           return step;
         }),
       };
 
       // 11. Summarize Result — the completion gate, not this method, decides the outcome.
+      this.ensureNotAborted();
       this.setPhase("summarizing", "validating");
       const evidenceId = crypto.randomUUID();
       const checkpointId = crypto.randomUUID();
@@ -691,6 +699,11 @@ export class WorkflowEngine {
         verificationRecommendation,
       };
     } catch (error) {
+      const observed = {
+        ...(plan ? { plan } : {}),
+        ...(verification ? { verification, verificationAttempts } : {}),
+        ...(review ? { review, diffSummary: formatDiffSummary(review.diffs) } : {}),
+      };
       if (this.signal?.aborted || (error instanceof Error && error.message === "Workflow cancelled")) {
         // The abort reason distinguishes a watchdog timeout from a user stop — reporting a
         // timeout as "cancelled" hides the actual failure from the user.
@@ -703,6 +716,7 @@ export class WorkflowEngine {
             status: "failed",
             phase: "failed",
             summary: redact(`Task timed out: ${abortReason}`),
+            ...observed,
           };
         }
         this.setPhase("cancelled", "cancelled");
@@ -713,6 +727,7 @@ export class WorkflowEngine {
           // "Cancelled" duplicated from the internal error message reads as a defect to users;
           // the phase itself is the fact, the summary only needs to say the task ended early.
           summary: "Task stopped before completion.",
+          ...observed,
         };
       }
       this.setPhase("failed", "failed_safely");
@@ -722,6 +737,7 @@ export class WorkflowEngine {
         status: "failed",
         phase: "failed",
         summary: redact(`Workflow failed: ${msg}`),
+        ...observed,
       };
     }
   }

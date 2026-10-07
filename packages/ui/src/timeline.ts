@@ -477,6 +477,12 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
         item.result = p.result;
         break;
       }
+      case "agent.completed": {
+        const p = e.payload as { agentId: string };
+        const item = subagentById.get(p.agentId);
+        if (item) item.status = "completed";
+        break;
+      }
       case "subagent.failed": {
         const p = e.payload as { agentId: string; error: string };
         const item = ensureSubagent(p.agentId, e.seq, e.timestamp);
