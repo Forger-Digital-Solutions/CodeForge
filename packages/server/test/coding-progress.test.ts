@@ -14,7 +14,7 @@ describe("bounded workflow coding investigation", () => {
   const cleanup: Array<() => Promise<void>> = [];
   afterEach(async () => { for (const close of cleanup.splice(0).reverse()) await close(); });
 
-  async function run(editAfterIntervention: boolean, enabled = true) {
+  async function run(editAfterIntervention: boolean, enabled = true, prematureFinish = false) {
     const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "cf-coding-progress-"));
     cleanup.push(() => fs.rm(workspace, { recursive: true, force: true }));
     const source = "broken\n" + Array.from({ length: 30 }, (_, i) => `line-${i}`).join("\n");
@@ -28,6 +28,11 @@ describe("bounded workflow coding investigation", () => {
         requests.push(structuredClone(request));
         const call = requests.length;
         const prompted = request.messages.some(message => message.role === "system" && message.content.startsWith("Coding progress intervention:"));
+        if (prematureFinish && (!prompted || !editAfterIntervention || call > 2)) {
+          yield { type: "text_delta", delta: "Now let me implement the requested change." };
+          yield { type: "finish", finishReason: "stop" };
+          return;
+        }
         if ((editAfterIntervention && call > 13) || (!enabled && call > 20)) {
           yield { type: "text_delta", delta: "Implementation finished; workflow verification must judge it." };
           yield { type: "finish", finishReason: "stop" };
@@ -86,6 +91,34 @@ describe("bounded workflow coding investigation", () => {
     expect(result.turn?.status).toBe("completed");
     expect(result.requests).toHaveLength(21);
     expect(result.budget).toBeUndefined();
+  });
+
+  it("recovers a promise to edit through real tool execution before ending the coding turn", async () => {
+    const result = await run(true, true, true);
+    expect(result.turn?.status).toBe("completed");
+    expect(result.requests).toHaveLength(3);
+    expect(result.content.startsWith("fixed\n")).toBe(true);
+    expect(result.eventStore.getAll({ types: ["file.change_applied"] })).toHaveLength(1);
+    if (result.budget?.kind === "activity") expect(JSON.parse(result.budget.detail ?? "{}")).toMatchObject({ mutations: 1, interventions: [{ actionBudget: 6, actions: 1 }] });
+    expect(result.eventStore.getAll({ types: ["task.state_changed"] }).some(event => (event.payload as { status?: string }).status === "completed")).toBe(false);
+  });
+
+  it("stops a repeated text-only promise instead of spending quota on endless continuation calls", async () => {
+    const result = await run(false, true, true);
+    expect(result.turn?.status).toBe("failed");
+    expect(result.turn?.error).toContain("AGENT_NO_PROGRESS_DETECTED");
+    expect(result.requests).toHaveLength(2);
+    expect(result.eventStore.getAll({ types: ["file.change_applied"] })).toHaveLength(0);
+    expect(result.content.startsWith("broken\n")).toBe(true);
+  });
+
+  it("enforces the six-action limit even when recovery begins before twelve reads", () => {
+    const progress = new CodingProgress();
+    progress.chargeAction();
+    expect(progress.interveneOnFinish()).toContain("next six tool actions");
+    for (let index = 0; index < 6; index++) progress.chargeAction();
+    expect(() => new CodingProgress(progress.snapshot()).intervene()).toThrow("six-action recovery budget");
+    expect(() => new CodingProgress(progress.snapshot()).interveneOnFinish()).toThrow("bounded recovery intervention");
   });
 
   it("rehydrates a spent workflow allowance before dispatching another model request", async () => {

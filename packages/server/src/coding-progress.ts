@@ -38,16 +38,25 @@ export class CodingProgress {
   }
 
   intervene(): string | undefined {
-    if (this.state.actionsWithoutMutation < 12) return;
     const latest = this.state.interventions.at(-1);
     if (latest && latest.mutations === this.state.mutations && latest.actions >= latest.actionBudget) {
       throw new Error("[AGENT_NO_PROGRESS_DETECTED] coding investigation exhausted its six-action recovery budget without a source mutation");
     }
+    if (this.state.actionsWithoutMutation < 12) return;
     if (latest && latest.mutations === this.state.mutations) return;
     if (this.state.interventions.length >= 2) {
       throw new Error("[AGENT_NO_PROGRESS_DETECTED] coding investigation exhausted its two interventions");
     }
     this.state.interventions.push({ reason: "Twelve tool actions without an applied source mutation", actionBudget: 6, actions: 0, mutations: this.state.mutations });
     return "Coding progress intervention: twelve tool actions have produced no applied source mutation. Summarize the located implementation, remaining question, and next executable action concisely. Preserve the original request and approved scope. Use the next six tool actions to make the required edit, check a concrete hypothesis, or report a blocker. Do not repeat exhausted searches or reads. Verification and independent review still follow; do not claim completion without implementing the task.";
+  }
+
+  interveneOnFinish(): string | undefined {
+    if (this.state.mutations > 0) return;
+    if (this.state.interventions.length > 0) {
+      throw new Error("[AGENT_NO_PROGRESS_DETECTED] coding turn ended without an applied source mutation after its bounded recovery intervention");
+    }
+    this.state.interventions.push({ reason: "Coding turn ended before an applied source mutation", actionBudget: 6, actions: 0, mutations: 0 });
+    return "Coding progress intervention: this implementation turn ended without an applied source mutation. The requested code change is still unimplemented. Preserve the original request and approved scope. Use the next six tool actions to apply the required edit, check one concrete remaining hypothesis, or report a blocker. Announcing a next step does not execute it: call the appropriate tool. Do not repeat exhausted reads. Verification and independent review still follow; do not claim completion without implementing the task.";
   }
 }

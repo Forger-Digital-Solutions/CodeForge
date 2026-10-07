@@ -5930,6 +5930,13 @@ export class AgentRuntime {
       return await this.runAgentLoop(turnId, agentId, provider, nextRequest, adapter, signal, iteration + 1, duplicateSupervisor);
     } else {
       await this.userIntentHold?.waitForDispatch(this.sessionId, "other");
+      const directive = this.codingProgressByTurn.get(turnId)?.interveneOnFinish();
+      if (directive) {
+        await this.persistCodingProgress(turnId);
+        this.messageHistory.push({ role: "system", content: directive });
+        adapter.emitSubagentProgress?.(agentId, "Implementation ended before an edit; using its bounded recovery allowance to execute the next action or report a blocker.");
+        return await this.runAgentLoop(turnId, agentId, provider, { ...request, messages: [...this.messageHistory] }, adapter, signal, iteration + 1, duplicateSupervisor);
+      }
       return { kind: "completed" };
     }
   }

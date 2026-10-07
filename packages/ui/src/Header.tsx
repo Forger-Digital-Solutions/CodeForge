@@ -76,6 +76,7 @@ export default function Header({
   const statusText = run
     ? `${run.label}${run.detail ? ` · ${run.detail}` : ""}`
     : `${isRunning ? (isPaused ? "Paused" : "Running") : agentStatus === "completed" ? "Completed" : "Idle"}${isRunning && activePhase ? ` · ${activePhase.replace(/_/g, " ")}` : ""}`;
+  const visibleStatusText = run?.state === "WAITING_FOR_CAPACITY" ? run.label : statusText;
   const elapsedShown = timerOrigin !== null ? Math.max(0, Math.floor((Date.now() - timerOrigin) / 1000)) : elapsed;
   // Workflow phases are authoritative; a raw percentage suggests precision the runtime does not claim.
   void workflowProgress;
@@ -91,7 +92,7 @@ export default function Header({
       <span className="task-header-title">{session.taskTitle || session.title || "Active Task"}</span>
       <div className="task-header-status">
         <span className={`nav-status-dot ${statusDotClass}`} />
-        <span>{statusText}</span>
+        <span title={statusText}>{visibleStatusText}</span>
         {timerActive && <span style={{ fontFamily: "var(--cf-font-mono)" }}>{formatTime(elapsedShown)}</span>}
       </div>
       <div style={{ display: "flex", gap: 6, marginLeft: "auto", flexShrink: 0 }}>
