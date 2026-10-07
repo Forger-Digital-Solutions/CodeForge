@@ -4270,6 +4270,7 @@ export class AgentRuntime {
       origin?: "user" | "workflow" | "repair";
       label?: string;
       codingProgress?: boolean;
+      codingProgressFromTurnId?: string;
       /**
        * Shared run-scoped inference budget. `lane` selects the partition the turn may draw
        * from — implementation lanes stop short of the reserve so the review tail can never
@@ -4301,9 +4302,20 @@ export class AgentRuntime {
       }
     }
 
+    let codingProgress: CodingProgress | undefined;
+    if (options?.codingProgress && !this.hostedWorker) {
+      const previous = options.codingProgressFromTurnId
+        ? this.codingProgressByTurn.get(options.codingProgressFromTurnId)
+        : undefined;
+      if (options.codingProgressFromTurnId && !previous) {
+        throw new Error("[AGENT_NO_PROGRESS_DETECTED] continuation has no authoritative coding progress budget");
+      }
+      // A continuation owns the same mutations and spent allowance as its original coding turn.
+      codingProgress = new CodingProgress(previous?.snapshot());
+    }
     const turnId = crypto.randomUUID();
     this.turnCount++;
-    if (options?.codingProgress && !this.hostedWorker) this.codingProgressByTurn.set(turnId, new CodingProgress());
+    if (codingProgress) this.codingProgressByTurn.set(turnId, codingProgress);
 
     if (options?.inferenceBudget) {
       this.turnInferenceBudgets.set(turnId, { budget: options.inferenceBudget, lane: options.inferenceLane ?? "primary" });

@@ -82,7 +82,7 @@ describe("bounded workflow coding investigation", () => {
     expect(result.turn?.status).toBe("completed");
     expect(result.content.startsWith("fixed\n")).toBe(true);
     expect(result.eventStore.getAll({ types: ["file.change_applied"] })).toHaveLength(1);
-    expect(result.eventStore.getAll({ types: ["task.state_changed"] }).some(event => (event.payload as { status?: string }).status === "completed")).toBe(false);
+    expect(result.eventStore.getAll({ types: ["task.state_changed", "task.completed"] })).toHaveLength(0);
     if (result.budget?.kind === "activity") expect(JSON.parse(result.budget.detail ?? "{}").mutations).toBe(1);
   });
 
@@ -100,7 +100,7 @@ describe("bounded workflow coding investigation", () => {
     expect(result.content.startsWith("fixed\n")).toBe(true);
     expect(result.eventStore.getAll({ types: ["file.change_applied"] })).toHaveLength(1);
     if (result.budget?.kind === "activity") expect(JSON.parse(result.budget.detail ?? "{}")).toMatchObject({ mutations: 1, interventions: [{ actionBudget: 6, actions: 1 }] });
-    expect(result.eventStore.getAll({ types: ["task.state_changed"] }).some(event => (event.payload as { status?: string }).status === "completed")).toBe(false);
+    expect(result.eventStore.getAll({ types: ["task.state_changed", "task.completed"] })).toHaveLength(0);
   });
 
   it("stops a repeated text-only promise instead of spending quota on endless continuation calls", async () => {
@@ -119,6 +119,26 @@ describe("bounded workflow coding investigation", () => {
     for (let index = 0; index < 6; index++) progress.chargeAction();
     expect(() => new CodingProgress(progress.snapshot()).intervene()).toThrow("six-action recovery budget");
     expect(() => new CodingProgress(progress.snapshot()).interveneOnFinish()).toThrow("bounded recovery intervention");
+  });
+
+  it("preserves a spent investigation allowance across coding continuations", async () => {
+    const result = await run(false);
+    const requestCount = result.requests.length;
+    const turnId = await result.runtime.startTurn("Continue the same approved implementation", undefined,
+      { origin: "workflow", codingProgress: true, codingProgressFromTurnId: result.turn!.id });
+    await expect.poll(async () => (await result.persistence.getTurn(turnId))?.status).toBe("failed");
+    expect(result.requests).toHaveLength(requestCount);
+    expect((await result.persistence.getTurn(turnId))?.error).toContain("AGENT_NO_PROGRESS_DETECTED");
+    const budget = await result.persistence.getWorkItem(`coding-progress-${turnId}`);
+    expect(budget?.kind).toBe("activity");
+    if (budget?.kind === "activity") expect(JSON.parse(budget.detail ?? "{}")).toMatchObject({ actionsWithoutMutation: 18, mutations: 0, interventions: [{ actionBudget: 6, actions: 6 }] });
+  });
+
+  it("rejects a continuation without an authoritative prior coding budget", async () => {
+    const result = await run(false);
+    await expect(result.runtime.startTurn("Continue implementation", undefined,
+      { origin: "workflow", codingProgress: true, codingProgressFromTurnId: "missing-turn" })).rejects.toThrow("no authoritative coding progress budget");
+    expect(result.requests).toHaveLength(18);
   });
 
   it("rehydrates a spent workflow allowance before dispatching another model request", async () => {

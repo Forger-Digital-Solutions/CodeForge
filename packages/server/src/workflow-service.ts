@@ -864,7 +864,7 @@ export class WorkflowService {
               `Do not repeat a read or search without a specific unanswered question. When implementation is complete, give a concise final response and stop using tools.`,
               `The workflow will run verification and review after this turn.`,
             ].join("\n");
-            turnId = await runtime.startTurn(recoveryPrompt, adapter, { origin: "workflow", label: "Recovering a stalled implementation", codingProgress: true, inferenceBudget, inferenceLane: "primary" });
+            turnId = await runtime.startTurn(recoveryPrompt, adapter, { origin: "workflow", label: "Recovering a stalled implementation", codingProgress: true, codingProgressFromTurnId: turnId, inferenceBudget, inferenceLane: "primary" });
             result = await waitForTurn(runtime, turnId, remainingWorkingMs);
           }
         }
