@@ -271,6 +271,31 @@ describe("buildTimeline — streaming command lifecycle", () => {
 });
 
 describe("buildTimeline — steering, capacity, and file changes", () => {
+  it("updates one capacity notice across coder and reviewer retries in the same workflow", () => {
+    reset();
+    const first = ev("eightbit.status", { event: "FREE_CAPACITY_WAIT", role: "CODER", reasonCodes: [], accessibleText: "Retry at 12:00" });
+    const second = ev("eightbit.status", { event: "FREE_CAPACITY_WAIT", role: "REVIEWER", reasonCodes: [], accessibleText: "Retry at 12:01" });
+    first.runId = second.runId = "workflow-1";
+    const before = buildTimeline([first]);
+    const after = buildTimeline([first, second]);
+    expect(after).toHaveLength(1);
+    expect(after[0]).toMatchObject({ id: before[0].id, seq: first.seq, detail: "Retry at 12:01" });
+  });
+
+  it("keeps separate user tasks separate when old events have no workflow run ID", () => {
+    reset();
+    const notices = buildTimeline([
+      ev("turn.started", { turnId: "first", userMessage: "Fix a bug" }),
+      ev("eightbit.status", { event: "FREE_CAPACITY_WAIT", role: "CODER", reasonCodes: [], accessibleText: "Busy" }),
+      ev("turn.started", { turnId: "repair", origin: "workflow", userMessage: "Repair" }),
+      ev("eightbit.status", { event: "FREE_CAPACITY_WAIT", role: "CODER", reasonCodes: [], accessibleText: "Still busy" }),
+      ev("turn.started", { turnId: "second", userMessage: "Add a feature" }),
+      ev("eightbit.status", { event: "FREE_CAPACITY_WAIT", role: "CODER", reasonCodes: [], accessibleText: "Busy again" }),
+    ]).filter(item => item.kind === "notice");
+    expect(notices).toHaveLength(2);
+    expect(notices.map(item => item.detail)).toEqual(["Still busy", "Busy again"]);
+  });
+
   it("renders a steering message as a steer row", () => {
     reset();
     const tl = buildTimeline([

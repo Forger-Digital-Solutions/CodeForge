@@ -22,6 +22,7 @@ export type EightBitStatusEventType =
   | "ROUTE_ROTATION_STARTED"
   | "ROUTE_ROTATED"
   | "ROUTE_READY"
+  | "FREE_CAPACITY_WAIT"
   | "NO_ELIGIBLE_FREE_MODEL";
 
 export interface EightBitStatusPayload {
@@ -43,6 +44,7 @@ const EVENT_ASSET_MAP: Record<EightBitStatusEventType, ActivityAssetName> = {
   ROUTE_ROTATION_STARTED: "8bit-swapping-model",
   ROUTE_ROTATED: "8bit-success",
   ROUTE_READY: "8bit-online",
+  FREE_CAPACITY_WAIT: "8bit-waiting",
   NO_ELIGIBLE_FREE_MODEL: "8bit-error",
 };
 
@@ -65,7 +67,14 @@ export function deriveLatestEightBitStatus(events: WorkspaceEvent[] | undefined)
   if (!events || events.length === 0) return undefined;
   for (let i = events.length - 1; i >= 0; i--) {
     const e = events[i];
-    if (e && isEightBitStatusEvent(e)) return e.payload as EightBitStatusPayload;
+    if (e && (e.type === "run.outcome" || e.type === "task.completed" || e.type === "task.cancelled"
+      || e.type === "turn.completed" || e.type === "turn.cancelled" || e.type === "turn.failed"
+      || e.type === "turn.resumed" || e.type === "tool.execution_started" || e.type === "tool.started")) return undefined;
+    if (e && isEightBitStatusEvent(e)) {
+      const status = e.payload as EightBitStatusPayload;
+      // The task header and stable transcript notice already expose capacity waits.
+      return status.event === "FREE_CAPACITY_WAIT" ? undefined : status;
+    }
   }
   return undefined;
 }

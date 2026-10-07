@@ -45,6 +45,16 @@ function markup(events: WorkspaceEvent[]): string {
 }
 
 describe("Conversation — 8-Bit status wiring", () => {
+  it("keeps repeated quota waits in one transcript row without a second live announcement", () => {
+    const waits = Array.from({ length: 100 }, (_, index) =>
+      eightBitStatusEvent(index + 2, "FREE_CAPACITY_WAIT", `Free quota reset ${index}`));
+    const html = markup([...baseEvents(), ...waits]);
+    expect(html.match(/Waiting for free capacity/g)).toHaveLength(1);
+    expect(html).toContain("Free quota reset 99");
+    expect(html).not.toContain("eight-bit-status-row");
+    expect(html).not.toContain('aria-live="polite"');
+  });
+
   it("[PASS] renders no 8-Bit status row when the event stream has never carried one", () => {
     const html = markup(baseEvents());
     expect(html).not.toContain("eight-bit-status-row");

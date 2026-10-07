@@ -111,6 +111,8 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
   const subagentById = new Map<string, Extract<TimelineItem, { kind: "subagent" }>>();
   /** file.change_* records by changeId so apply/revert updates the proposal row. */
   const fileChangeById = new Map<string, Extract<TimelineItem, { kind: "file" }>>();
+  const capacityNoticeByRun = new Map<string, Extract<TimelineItem, { kind: "notice" }>>();
+  let userTurnId: string | undefined;
   const seenUserTurns = new Set<string>();
   // Track the last open assistant message per turn for delta fallback (no messageId case).
   const lastOpenMsgByTurn = new Map<string, string>();
@@ -170,6 +172,7 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
           // the phase strip and grouped activity carry that meaning; a transcript
           // row per dispatch is event spam, not conversation.
           if (p.origin !== "workflow") {
+            userTurnId = p.turnId;
             items.push({ kind: "user", id: `user-${p.turnId}`, seq: e.seq, turnId: p.turnId, text: p.userMessage, ts: e.timestamp });
           } else {
             workflowTurns.add(p.turnId);
@@ -495,7 +498,15 @@ export function buildTimeline(events: WorkspaceEvent[]): TimelineItem[] {
         // Capacity waits and route switches are the honest "why nothing is moving" story — a quiet
         // notice row, never a failure. Steady-state catalog noise stays out of the feed.
         if (p.event === "FREE_CAPACITY_WAIT") {
-          items.push({ kind: "notice", id: `notice-${e.seq}`, seq: e.seq, notice: "capacity_wait", text: "Waiting for free capacity", detail: p.accessibleText || undefined, ts: e.timestamp });
+          const runKey = e.runId ?? userTurnId ?? e.sessionId;
+          const existing = capacityNoticeByRun.get(runKey);
+          if (existing) {
+            existing.detail = p.accessibleText || undefined;
+          } else {
+            const item: Extract<TimelineItem, { kind: "notice" }> = { kind: "notice", id: `capacity-${runKey}`, seq: e.seq, notice: "capacity_wait", text: "Waiting for free capacity", detail: p.accessibleText || undefined, ts: e.timestamp };
+            capacityNoticeByRun.set(runKey, item);
+            items.push(item);
+          }
         } else if (p.event === "ROUTE_ROTATED" && p.selected) {
           items.push({ kind: "notice", id: `notice-${e.seq}`, seq: e.seq, notice: "route_switch", text: `Switched to ${p.selected.providerId}/${p.selected.modelId}`, detail: p.accessibleText || undefined, ts: e.timestamp });
         } else if (p.event === "NO_ELIGIBLE_FREE_MODEL") {

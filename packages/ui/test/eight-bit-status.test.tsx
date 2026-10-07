@@ -21,6 +21,18 @@ function statusEvent(payload: EightBitStatusPayload, seq: number): WorkspaceEven
 }
 
 describe("8-Bit status — event to certified visual mapping (presentation only)", () => {
+  it("clears old capacity and route banners after real work resumes or the task ends", () => {
+    const waiting = statusEvent({ event: "FREE_CAPACITY_WAIT", role: "CODER", reasonCodes: [], accessibleText: "Waiting" }, 1);
+    expect(resolveEightBitStatusAsset("FREE_CAPACITY_WAIT")).toBe("8bit-waiting");
+    const route = statusEvent({ event: "ROUTE_READY", role: "CODER", reasonCodes: [], accessibleText: "Continuing" }, 1);
+    expect(deriveLatestEightBitStatus([waiting])).toBeUndefined();
+    for (const type of ["turn.resumed", "tool.execution_started", "run.outcome", "task.cancelled", "turn.completed"]) {
+      const advanced = { ...waiting, type, seq: 2, payload: {} } as unknown as WorkspaceEvent;
+      expect(deriveLatestEightBitStatus([route, advanced])).toBeUndefined();
+      expect(deriveLatestEightBitStatus([route, advanced, { ...route, seq: 3 }])?.event).toBe("ROUTE_READY");
+    }
+  });
+
   it("[PASS] maps every known runtime event to a certified 8bit asset name", () => {
     expect(resolveEightBitStatusAsset("CATALOG_SCAN_STARTED")).toBe("8bit-loading");
     expect(resolveEightBitStatusAsset("ROUTE_DEGRADED")).toBe("8bit-warning");

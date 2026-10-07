@@ -1053,9 +1053,19 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
 
   // --- health / quota ------------------------------------------------------------------------
 
-  private routeHealthLookup = (providerId: string, modelId: string): { status: RouteHealth; cooldownUntil?: number } | undefined => {
+  private connectionQuotaDomainId(providerId: string): string | undefined {
+    const connection = this.connections.get(providerId);
+    if (connection?.userConnectedFree?.capacityPoolId) return connection.userConnectedFree.capacityPoolId;
+    const delegated = connection?.credentialSource === "OAUTH" ? connection.delegatedEntitlement : undefined;
+    if (delegated?.accountIdentityHash) return `${providerId}:user:${delegated.accountIdentityHash}`;
+    if (connection?.credentialSource !== "ANONYMOUS_DIRECT") return undefined;
+    return supplyClassFor(this.definitions[providerId], connection) === "COMMUNITY_ANONYMOUS_FREE"
+      ? `shared:${providerId}` : `${providerId}:user:localconn:${providerId}`;
+  }
+
+  private routeHealthLookup = (providerId: string, modelId: string, includeConnectionQuota = true): { status: RouteHealth; cooldownUntil?: number } | undefined => {
     if (this.routeHealth) {
-      const assessment = this.routeHealth.assess(providerId, modelId, { now: this.now().getTime() });
+      const assessment = this.routeHealth.assess(providerId, modelId, { now: this.now().getTime(), quotaDomainId: includeConnectionQuota ? this.connectionQuotaDomainId(providerId) : undefined });
       if (assessment.state !== "UNKNOWN") {
         let status: RouteHealth;
         let cooldownUntil: number | undefined = assessment.expiresAt;
@@ -1187,9 +1197,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     const observedPool = obs.accountId === undefined ? undefined : this.managedPoolsFor(obs.providerId).find((pool) => pool.accountId === obs.accountId);
     // An anonymous community connection's evidence belongs to the provider's one global pool —
     // there is no per-user domain to stamp, and the kilo `localconn:` identity would fabricate one.
-    const community = directConnection?.credentialSource === "ANONYMOUS_DIRECT"
-      && supplyClassFor(this.definitions[obs.providerId], directConnection) === "COMMUNITY_ANONYMOUS_FREE";
-    const quotaDomainId = observedPool?.poolId ?? (community ? `shared:${obs.providerId}` : delegatedIdentity ? `${obs.providerId}:user:${delegatedIdentity}` : directConnection?.credentialSource === "ANONYMOUS_DIRECT" ? `${obs.providerId}:user:localconn:${obs.providerId}` : undefined);
+    const quotaDomainId = observedPool?.poolId ?? this.connectionQuotaDomainId(obs.providerId);
     if (this.routeHealth && obs.modelId && (!managed || attributed)) {
       const observation = rateLimitObservationFromHeaders({
         providerId: obs.providerId,
@@ -1346,13 +1354,17 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   // --- snapshot / hooks ----------------------------------------------------------------------
 
   snapshot(): FreeCloudSnapshot {
+    return this.buildSnapshot(true);
+  }
+
+  private buildSnapshot(includeConnectionQuota: boolean): FreeCloudSnapshot {
     return buildFreeCloudSnapshot({
       firewall: this.firewall,
       registry: this.registry,
       connections: [...this.connections.values()],
       definitions: this.definitions,
       qualification: this.receipts,
-      routeHealth: this.routeHealthLookup,
+      routeHealth: (providerId, modelId) => this.routeHealthLookup(providerId, modelId, includeConnectionQuota),
       quota: (p, m) => this.quotaForConnection(p, m),
       now: this.now,
     });
@@ -1363,7 +1375,9 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   }
 
   isForgeAutoEligible(providerId: string, modelId: string): boolean {
-    const snap = this.snapshot();
+    // The fabric assesses each physical pool itself; removing temporary quota waits here
+    // would misclassify recoverable supply as permanent role ineligibility.
+    const snap = this.buildSnapshot(false);
     for (const m of snap.models) {
       const r = m.routes.find((x) => x.providerId === providerId && x.providerModelId === modelId);
       if (r) return r.forgeAutoEligible;
@@ -1413,7 +1427,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
    * nothing is invented.
    */
   capacityRoutes(options: { qualityScoreOf?: (providerId: string, modelId: string) => number | undefined } = {}): CapacityRoute[] {
-    const snap = this.snapshot();
+    const snap = this.buildSnapshot(false);
     const routes: CapacityRoute[] = [];
     for (const model of snap.models) {
       for (const r of model.routes) {

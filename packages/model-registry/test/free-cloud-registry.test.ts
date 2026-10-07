@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ForgeZero, CapacityReservationLedger, freeRouteExclusionReason, type FreeModelRecord } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider, classifyOpenRouterEntitlement, type ProviderExecutionContext, type StreamEvent } from "@codeforge/providers";
-import { InMemoryQualificationPersistence, type ModelQualificationReceipt } from "@codeforge/eight-bit";
+import { createFreeFabric, EightBitRouteHealthAuthority, InMemoryQualificationPersistence, type ModelQualificationReceipt } from "@codeforge/eight-bit";
 import {
   PROVIDER_DEFINITIONS,
   PROVIDER_POLICIES,
@@ -318,6 +318,38 @@ describe("canonical model identity", () => {
 });
 
 describe("Kilo direct Free projection", () => {
+  it("projects the connection quota cooldown across aliases without cooling a different account", async () => {
+    let time = NOW.getTime();
+    const fw = new ForgeZero();
+    const authority = new EightBitRouteHealthAuthority(undefined, () => time);
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(createMockProvider({ providerId: "kilo-free-direct" }));
+    for (const modelId of ["kilo-auto/free", "poolside/laguna-s-2.1:free"]) {
+      fw.register(freeRecord("kilo-free-direct", modelId, { accessClass: "FREE_ROUTED", privacyClass: "permissive" }));
+    }
+    const svc = new FreeCloudService({ firewall: fw, providerCatalog: catalog, registry: new NormalizedModelRegistry(), routeHealth: authority, now: () => new Date(time) });
+    svc.setConnection(connected("kilo-free-direct", { credentialSource: "ANONYMOUS_DIRECT", ownerUserId: "alice" }));
+    for (const modelId of ["kilo-auto/free", "poolside/laguna-s-2.1:free"]) await svc.recordReceipt(receipt("kilo-free-direct", modelId));
+    svc.setKiloPolicyReceipt({ sourceDocumentation: "fixture-policy", termsEvidence: "fixture-terms", priceEvidence: "fixture-zero-price", privacyEvidence: "fixture-privacy", verifiedAt: NOW.toISOString(), recheckAt: new Date(time + 86_400_000).toISOString(), qualificationAt: NOW.toISOString() });
+    svc.quota.record("kilo-free-direct", "", { remainingRequests: 100, limitRequests: 100, remainingTokens: 100_000, limitTokens: 100_000, observedAt: NOW.toISOString() });
+    const fabric = createFreeFabric({ managedRoutes: () => [], managedPools: () => [], userSources: [svc], health: authority,
+      reservations: new CapacityReservationLedger({ routes: [], pools: [], now: () => time }), now: () => time });
+    const request = { requestId: "quota-wait", userId: "alice", userIdentities: ["localconn:kilo-free-direct"], role: "PRIMARY_CODING_AGENT", dataContext: { dataClass: "PUBLIC_CODE" as const, userConsented: true }, routeAdmission: (providerId: string, modelId: string) => svc.isForgeAutoEligible(providerId, modelId), demand: { requests: 1, inputTokens: 1, outputTokens: 1 } };
+    const domain = "kilo-free-direct:user:localconn:kilo-free-direct";
+    authority.observe({ kind: "call_failure", providerId: "kilo-free-direct", modelId: "kilo-auto/free", reason: "RATE_LIMITED", retryAfterMs: 60_000, observedAt: NOW.toISOString(), source: "runtime", quotaDomainId: domain });
+    const routes = svc.snapshot().models.flatMap(model => model.routes);
+    expect(routes).toHaveLength(2);
+    expect(routes.every(route => route.health === "COOLDOWN" && !route.forgeAutoEligible && route.cooldownUntil! > time)).toBe(true);
+    const queued = fabric.decide(request);
+    expect(queued.outcome).toBe("QUEUED_FOR_CAPACITY");
+    expect(Date.parse(queued.nextAvailableAt!)).toBeGreaterThan(time);
+    expect(queued.explanation.candidates.every(candidate => candidate.status === "HEALTH_EXCLUDED")).toBe(true);
+    expect(authority.assess("kilo-free-direct", "poolside/laguna-s-2.1:free", { quotaDomainId: "another-account" }).hardExclude).toBe(false);
+    time = Math.max(...routes.map(route => route.cooldownUntil!)) + 1;
+    expect(svc.snapshot().models.flatMap(model => model.routes).every(route => route.health !== "COOLDOWN" && route.forgeAutoEligible)).toBe(true);
+    expect(fabric.decide(request).outcome).toBe("ADMITTED");
+  });
+
   it("keeps the public-IP pool user-scoped and private code excluded", async () => {
     const fw = new ForgeZero();
     fw.setPrivacyMode("MAXIMUM_FREE");
