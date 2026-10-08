@@ -1714,12 +1714,24 @@ export class AgentRuntime {
         }
         bootstrapEvidence = [];
       };
-      const invalidateReadToolMessages = (changedPaths?: readonly string[]): void => {
+      const invalidateReadToolMessages = async (changedPaths?: readonly string[]): Promise<void> => {
         const paths = changedPaths && changedPaths.length > 0 ? new Set(changedPaths) : undefined;
         for (const [filePath, observations] of readToolMessages) {
           if (paths && !paths.has(filePath)) continue;
+          if (!paths) {
+            const observed = observedFileState.get(filePath);
+            const confinement = resolveWithinWorkspace(req.workspacePath, filePath);
+            if (observed && confinement.valid && confinement.resolvedPath) {
+              try {
+                const current = sha256(await fs.promises.readFile(confinement.resolvedPath, "utf8"));
+                if (current === observed.hash) continue;
+              } catch {
+                // Unreadable or deleted files cannot retain current-state evidence.
+              }
+            }
+          }
           for (const observation of observations) {
-            observation.content = `Runtime invalidated this prior read of ${filePath} after a successful workspace mutation. Re-read the file before relying on its content.`;
+            observation.content = `Runtime invalidated this prior read of ${filePath} after workspace execution. Re-read the file before relying on its content.`;
           }
         }
       };
@@ -1900,7 +1912,7 @@ export class AgentRuntime {
       }
       if (!contextMetrics) throw new Error("Agent run context metrics were not initialized");
       const refreshBootstrapContext = async (changedPaths?: readonly string[]): Promise<void> => {
-        invalidateReadToolMessages(changedPaths);
+        await invalidateReadToolMessages(changedPaths);
         invalidateResumedToolMessages();
         if (bootstrapContextMessageIndex === undefined) return;
         const prior = contextMetrics!;
@@ -1921,7 +1933,7 @@ export class AgentRuntime {
           clearBootstrapEvidence();
           messages[bootstrapContextMessageIndex] = {
             role: "user",
-            content: `Goal:\n${req.goal}\n\nRuntime refreshed the repository index after a successful workspace mutation. Prior repository excerpts were removed because they are stale. Re-read any file before relying on its content.`,
+            content: `Goal:\n${req.goal}\n\nRuntime refreshed the repository index after workspace execution. Prior repository excerpts were removed. File observations whose content hashes still match remain current; re-read invalidated observations before relying on them.`,
           };
           const status = intelligence.status();
           contextMetrics = withGreenPolicy({
@@ -2445,6 +2457,7 @@ export class AgentRuntime {
               modelSelection: activeSelection,
               messages: dispatchMessages,
               tools: availableTools,
+              toolChoice: expectedStructuredOutput && !req.permissions.write && !req.permissions.executeCommand && turnCount >= effectiveMaxModelTurns() ? "none" : "auto",
               maxTokens: dispatchOutputBudget.maxTokens,
               signal: req.signal,
               userId: req.userId ?? this.userId,
@@ -3784,7 +3797,7 @@ export class AgentRuntime {
             }
           }
 
-          if (toolExec.success && (tc.name === "write_file" || tc.name === "edit_file" || tc.name === "run_command")) {
+          if ((toolExec.success && (tc.name === "write_file" || tc.name === "edit_file")) || tc.name === "run_command") {
             const parsedArgs = parseToolArgs(tc.arguments);
             const changedPath = (tc.name === "write_file" || tc.name === "edit_file") && typeof parsedArgs === "object" && parsedArgs && "path" in parsedArgs
               ? String((parsedArgs as { path: string }).path)

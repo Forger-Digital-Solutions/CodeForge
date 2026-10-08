@@ -57,6 +57,11 @@ export interface ReasoningRouteProfile {
  *   was all reasoning); every role passed at 1500.
  */
 export const DEFAULT_REASONING_ROUTE_PROFILES: Readonly<Record<string, ReasoningRouteProfile>> = {
+  "kilo-free-direct/cohere/north-mini-code:free": {
+    reasoningReserveTokens: 2_560,
+    expiresAtMs: Date.parse("2026-11-08T00:00:00.000Z"),
+    evidence: "R71 Explorer final JSON truncated at 1024 tokens; measured Kilo qualification reasoning up to 2311 tokens",
+  },
   "openrouter/cohere/north-mini-code:free": {
     reasoningReserveTokens: DEFAULT_REASONING_RESERVE_TOKENS,
     expiresAtMs: Date.parse("2026-11-25T00:00:00.000Z"),

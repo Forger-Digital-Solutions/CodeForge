@@ -59,6 +59,13 @@ const STALE_REASONING_PROFILES: Readonly<Record<string, ReasoningRouteProfile>> 
 };
 
 describe("roleOutputBudget — per-role, per-route output budgeting", () => {
+  it("reserves measured Kilo reasoning overhead without lifting the output cap", () => {
+    const input = { role: "explorer", providerId: "kilo-free-direct", modelId: "cohere/north-mini-code:free" };
+    const live = roleOutputBudget({ ...input, now: Date.parse("2026-10-08T00:00:00Z") });
+    expect(live.maxTokens).toBe(3_584);
+    expect(live.maxTokens).toBeLessThanOrEqual(ROLE_OUTPUT_HARD_CAP_TOKENS);
+    expect(roleOutputBudget({ ...input, now: Date.parse("2026-11-09T00:00:00Z") }).reasoningProfileApplied).toBe(false);
+  });
   const budget = (input: Parameters<typeof roleOutputBudget>[0]) =>
     roleOutputBudget({ profiles: LIVE_REASONING_PROFILES, now: NOW, ...input });
 

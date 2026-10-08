@@ -116,6 +116,40 @@ describe("ProviderConnections — delegated entitlement authority", () => {
   });
 });
 
+describe("ProviderConnections — Puter observation isolation", () => {
+  it("restores owner observations without admitting inference or exposing credentials", () => {
+    const h = harness({});
+    const observation = { token: "fixture-puter-secret", accountId: "puter-account-one", catalogModels: 100, remainingMicrocents: 9_000_000 };
+    expect(h.connections.savePuterAccount(observation)).toMatchObject({ connected: true, automaticFreeAdmission: false });
+    const restarted = new ProviderConnections(h.host);
+    expect(restarted.puterAccount()).toMatchObject({ connected: true, catalogModels: 100, automaticFreeAdmission: false });
+    expect(JSON.stringify([h.settings, restarted.puterAccount()])).not.toContain(observation.token);
+    expect(JSON.stringify(h.settings)).not.toContain(observation.accountId);
+    expect(h.catalog.get("puter")).toBeUndefined();
+    expect(h.host.freeCloud.productionCapacityRoutes().filter(route => route.providerId === "puter")).toEqual([]);
+    h.host.userId = "user-b";
+    expect(restarted.puterAccount().connected).toBe(false);
+    restarted.savePuterAccount({ ...observation, token: "second-user-secret", accountId: "puter-account-two" });
+    restarted.disconnectPuterAccount();
+    expect(restarted.puterAccount().connected).toBe(false);
+    h.host.userId = "user-a";
+    expect(restarted.puterAccount().connected).toBe(true);
+    restarted.disconnectPuterAccount();
+    expect(h.secrets.size).toBe(0);
+  });
+
+  it("rejects malformed observations and rolls credentials back on persistence failure", () => {
+    const h = harness({});
+    const observation = { token: "fixture-puter-secret", accountId: "account", catalogModels: 100 };
+    expect(() => h.connections.savePuterAccount({ ...observation, remainingMicrocents: -1 })).toThrow();
+    expect(h.secrets.size).toBe(0);
+    h.host.writeSettings = () => false;
+    expect(() => h.connections.savePuterAccount(observation)).toThrow();
+    expect(h.secrets.size).toBe(0);
+    expect(h.connections.puterAccount().connected).toBe(false);
+  });
+});
+
 describe("ProviderConnections — environment credentials", () => {
   it("detects credentials by name and never exposes values through any renderer-facing view", () => {
     const h = harness({ GROQ_API_KEY: GROQ_SECRET, OPENAI_API_KEY: OPENAI_SECRET });

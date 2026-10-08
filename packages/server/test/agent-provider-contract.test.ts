@@ -159,6 +159,23 @@ describe("Model Execution Adapter & Provider Contract (CF-07)", () => {
 });
 
 describe("R48 — parallel tool-call event assembly", () => {
+  it("uses the authoritative terminal tool name even without a start event", async () => {
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register({
+      providerId: "managed-free-provider", isTestProvider: true,
+      listModels: async () => [], chat: async () => { throw new Error("Use streamChat"); },
+      streamChat: async function* () {
+        yield { type: "tool_call_delta", toolCallId: "terminal-only", delta: '{"path":"x.ts"}' };
+        yield { type: "tool_call_completed", toolCallId: "terminal-only", toolName: "read_file", arguments: '{"path":"x.ts"}' };
+        yield { type: "finish", finishReason: "tool_calls" };
+      },
+      healthCheck: async () => ({ status: "available" }),
+    });
+    const firewall = new ForgeZero();
+    firewall.register(createGenericFreeRecord({ providerId: "managed-free-provider", modelId: "free-model" }));
+    const result = await new ModelExecutionAdapter(catalog, firewall).execute({ modelSelection: { providerId: "managed-free-provider", modelId: "free-model" }, messages: [{ role: "user", content: "inspect" }] });
+    expect(result.toolCalls).toEqual([{ id: "terminal-only", name: "read_file", arguments: '{"path":"x.ts"}' }]);
+  });
   it("keeps interleaved tool-call events separated by toolCallId", async () => {
     const catalog = new InMemoryProviderCatalog();
     catalog.register({

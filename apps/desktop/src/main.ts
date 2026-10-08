@@ -59,6 +59,7 @@ import {
   type EnvironmentCredentialPolicy,
 } from "@codeforge/model-registry";
 import { runOpenRouterOAuth } from "./openrouter-oauth-flow.js";
+import { runPuterAccountFlow } from "./puter-account-flow.js";
 import { describeCloudAuthFailure, CloudAuthError, runCodeForgeCloudAuth } from "./cloud-auth-flow.js";
 import { initDiagnostics, closeDiagnostics, logDiagnostic, writeDiagnosticBundle } from "./diagnostics.js";
 import { checkForUpdates, downloadUpdate, getUpdaterStatus, installDownloadedUpdate } from "./updater.js";
@@ -3428,6 +3429,29 @@ ipcMain.handle("oauth:openrouter:start", async (event, browser: unknown) => {
   } catch (e) {
     return { ok: false, error: (e instanceof Error ? e.message : String(e)).slice(0, 200) };
   }
+});
+
+ipcMain.handle("freecloud:puter:status", (event) => {
+  assertMainWindowSender(event);
+  return requireConnections().puterAccount();
+});
+
+ipcMain.handle("freecloud:puter:connect", async (event) => {
+  assertMainWindowSender(event);
+  if (PACKAGED_SMOKE) return { ok: false, error: "Unavailable in smoke mode" };
+  try {
+    const connections = requireConnections();
+    const owner = connections.accountOwnerUserId();
+    if (!owner) return { ok: false, error: "Sign in to CodeForge before connecting Puter" };
+    const authorization = await runPuterAccountFlow({ openExternal: (url) => shell.openExternal(url) });
+    if (owner !== connections.accountOwnerUserId()) return { ok: false, error: "The CodeForge account changed during authorization. Connect again." };
+    return { ok: true, account: connections.savePuterAccount(authorization) };
+  } catch { return { ok: false, error: "Puter account connection did not complete. Try again." }; }
+});
+
+ipcMain.handle("freecloud:puter:disconnect", (event) => {
+  assertMainWindowSender(event);
+  requireConnections().disconnectPuterAccount();
 });
 
 ipcMain.handle("provider:deleteCredential", async (event, providerId: string) => {

@@ -529,6 +529,7 @@ export class ModelExecutionAdapter {
           // authoritative schema validation before any execution.
           toolCalls.push({
             ...pending,
+            name: event.toolName || pending.name,
             arguments: event.arguments ?? pending.arguments,
           });
           break;

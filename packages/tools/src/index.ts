@@ -897,7 +897,13 @@ export class ToolBroker {
           }
 
           {
-            const sanitizedEnv = getSanitizedEnvForChild();
+            const sanitizedEnv = {
+              ...getSanitizedEnvForChild(),
+              // A headless Windows PTY otherwise makes git launch a pager and await input.
+              GIT_PAGER: "cat",
+              PAGER: "cat",
+              GIT_TERMINAL_PROMPT: "0",
+            };
             // Headless ConPTY execution keeps console-subsystem grandchildren
             // (npm shims, cmd internals) invisible on Windows; pipes on POSIX.
             // WSL runs the same confined workspace path translated to /mnt/<drive>

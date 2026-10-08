@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import type { PuterAccountView } from "../../../puter-account-types.js";
 import { useSettings } from "../settings-context.js";
 import { SettingsButton, SettingsGroup, SettingsRow, StatusBadge } from "../settings-controls.js";
 import { connectOpenRouterOAuth, disconnectProvider, notifyProviderUpdated, useProviderConnections, type ProviderConnectionView } from "../../provider-connections-client.js";
@@ -8,7 +9,7 @@ const candidates = [
   { id: "cloudflare-workers-ai", name: "Cloudflare Workers AI", scope: "Cloudflare account", url: "https://developers.cloudflare.com/api/resources/accounts/subresources/subscriptions/methods/get/", blocker: "Verification needs Account Read, Billing Read and Workers AI usage access. A token restricted to inference cannot verify the Workers Free plan. Free admission remains blocked." },
   { id: "groq", name: "Groq", scope: "Organization", url: "https://console.groq.com/docs/rate-limits", blocker: "Organization ownership, Free billing tier and current quota must be verified. A key alone is insufficient." },
   { id: "cerebras", name: "Cerebras", scope: "Account / project", url: "https://inference-docs.cerebras.ai/support/rate-limits", blocker: "The current offer is a trial. A durable Free entitlement is required." },
-  { id: "puter", name: "Puter", scope: "Puter user", url: "https://docs.puter.com/Objects/monthlyusage/", blocker: "Free and purchased allowance cannot yet be distinguished. Free admission is blocked." },
+  { id: "puter", name: "Puter", scope: "Puter user", url: "https://docs.puter.com/rate-limits-and-quotas/", blocker: "Purchased credits may be consumed after the monthly allowance. A provider-enforced free-only guard is required for Free inference." },
 ] as const;
 
 export function freeCapacityStatus(connection?: ProviderConnectionView): string {
@@ -28,6 +29,23 @@ export function FreeCapacitySection(props: { connections?: ProviderConnectionVie
   const connections = props.connections ?? live.connections;
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  const [puter, setPuter] = useState<PuterAccountView | undefined>();
+  useEffect(() => { void window.electronAPI?.getPuterAccount?.().then(setPuter).catch(() => undefined); }, []);
+  const connectPuter = async () => {
+    setBusy(true); setNote("Complete Puter sign-in in your browser. This connection only reads allowance and model availability.");
+    try {
+      const result = await window.electronAPI?.connectPuterAccount?.();
+      if (result?.ok) { setPuter(result.account); setNote("Puter account connected. Automatic Free inference remains blocked because purchased credits may be spent."); }
+      else setNote(result?.error ?? "Puter account bridge unavailable.");
+    } catch { setNote("Puter account connection failed."); }
+    finally { setBusy(false); }
+  };
+  const disconnectPuter = async () => {
+    setBusy(true);
+    try { await window.electronAPI?.disconnectPuterAccount?.(); setPuter(undefined); setNote("Puter connection removed from this device. You can revoke the app in Puter account settings."); }
+    catch { setNote("Puter disconnect failed."); }
+    finally { setBusy(false); }
+  };
   const kilo = connections.find((connection) => connection.providerId === "kilo-free-direct");
   const horde = connections.find((connection) => connection.providerId === "ai-horde");
   const refresh = async () => { notifyProviderUpdated(); await live.reload(); await ctx.refreshModels(); };
@@ -65,7 +83,9 @@ export function FreeCapacitySection(props: { connections?: ProviderConnectionVie
           <StatusBadge kind={status.includes("HEALTHY") ? "ok" : "warn"}>{status}</StatusBadge>
           <p className="provider-description">Quota scope: {candidate.scope} · {connection?.freeCapacity?.independentGroups ?? 0} admitted groups</p>
           <p className="provider-description">{candidate.blocker}</p>
+          {candidate.id === "puter" && puter?.connected ? <p className="provider-description">Account connected · {puter.catalogModels ?? "Unknown"} catalog models · Free inference blocked. Allowance observed {puter.checkedAt ? new Date(puter.checkedAt).toLocaleString() : "at an unknown time"}; refresh to check current usage.</p> : null}
           {candidate.id === "openrouter" ? <><SettingsButton variant="primary" disabled={busy} onClick={() => void connect()}>{busy ? "Connecting…" : "Connect OpenRouter Free"}</SettingsButton><SettingsButton disabled={busy} onClick={() => void connect("firefox")}>Connect in Firefox</SettingsButton></>
+            : candidate.id === "puter" ? <><SettingsButton disabled={busy} onClick={() => void connectPuter()}>{puter?.connected ? "Refresh Puter account" : "Connect Puter account"}</SettingsButton>{puter?.connected ? <SettingsButton disabled={busy} onClick={() => void disconnectPuter()}>Disconnect Puter</SettingsButton> : null}<SettingsButton onClick={() => ctx.openExternal(candidate.url)}>Billing requirements</SettingsButton></>
             : <SettingsButton onClick={() => ctx.openExternal(candidate.url)}>Account requirements</SettingsButton>}
           {connection?.connected && connection.credentialSource === "OAUTH" ? <SettingsButton disabled={busy} onClick={() => void disconnect(candidate.id)}>Disconnect</SettingsButton> : null}
         </div>;

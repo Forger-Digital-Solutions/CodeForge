@@ -35,6 +35,8 @@ import {
 export interface RoleQualificationOptions {
   caseTimeoutMs?: number;
   now?: () => Date;
+  /** Recheck an unfinished role without repeating already measured role protocols. */
+  roles?: readonly ("EXPLORER" | "PLANNER" | "REVIEWER")[];
   /** Suite wall-clock bound set by the caller. Its abort cancels in-flight probes and the
    *  observe records a timeout-classified transient — a saturated upstream stays pending and
    *  retries at its cooldown rather than earning a starvation verdict it never gave evidence for. */
@@ -491,19 +493,19 @@ export async function runRoleQualification(
   let interrupted = false;
 
   const explorerCases: TestCaseResult[] = [];
-  for (const caze of EXPLORER_CASES) {
+  for (const caze of options.roles && !options.roles.includes("EXPLORER") ? [] : EXPLORER_CASES) {
     const result = await withRetry(() => runExplorerCase(adapter, model.modelId, caze, timeoutMs, counter, suiteSignal));
     explorerCases.push(result);
     if (result.error && TRANSIENT_RE.test(result.error)) { interrupted = true; break; }
   }
   const plannerCases: TestCaseResult[] = [];
-  if (!interrupted) for (const caze of PLANNER_CASES) {
+  if (!interrupted) for (const caze of options.roles && !options.roles.includes("PLANNER") ? [] : PLANNER_CASES) {
     const result = await withRetry(() => runPlannerCase(adapter, model.modelId, caze, timeoutMs, counter, suiteSignal));
     plannerCases.push(result);
     if (result.error && TRANSIENT_RE.test(result.error)) { interrupted = true; break; }
   }
   const reviewerCases: TestCaseResult[] = [];
-  if (!interrupted) for (const caze of REVIEWER_CASES) {
+  if (!interrupted) for (const caze of options.roles && !options.roles.includes("REVIEWER") ? [] : REVIEWER_CASES) {
     const result = await withRetry(() => runReviewerCase(adapter, model.modelId, caze, timeoutMs, counter, suiteSignal));
     reviewerCases.push(result);
     if (result.error && TRANSIENT_RE.test(result.error)) break;

@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { CloudAccount, CloudUsage } from "./cloud-account.js";
+import type { PuterAccountView } from "./puter-account-types.js";
 
 // Startup-chain marks at verbose console level (see renderer/lifecycle.ts). Observation only:
 // nothing is exposed to the page and nothing is read from the main process.
@@ -60,6 +61,9 @@ const api = {
   connectOpenRouter: (browser?: "default" | "firefox"): Promise<{ ok: boolean; verifiedFree?: number; error?: string }> => {
     return ipcRenderer.invoke("oauth:openrouter:start", browser);
   },
+  getPuterAccount: (): Promise<PuterAccountView> => ipcRenderer.invoke("freecloud:puter:status"),
+  connectPuterAccount: (): Promise<{ ok: boolean; account?: PuterAccountView; error?: string }> => ipcRenderer.invoke("freecloud:puter:connect"),
+  disconnectPuterAccount: (): Promise<void> => ipcRenderer.invoke("freecloud:puter:disconnect"),
   deleteProviderCredential: (providerId: string): Promise<void> => {
     return ipcRenderer.invoke("provider:deleteCredential", providerId);
   },

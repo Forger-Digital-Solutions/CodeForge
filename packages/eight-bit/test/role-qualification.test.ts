@@ -86,6 +86,15 @@ function goodScript(req: ChatRequest): StreamEvent[] {
 }
 
 describe("R27 — versioned role protocols", () => {
+  it("selectively measures all Reviewer cases without granting skipped roles", async () => {
+    const adapter = new ScriptedAdapter(goodScript);
+    const out = await runRoleQualification(MODEL, adapter, { roles: ["REVIEWER"] });
+    expect(out.roleResults.REVIEWER?.status).toBe("QUALIFIED");
+    expect(out.roleResults.REVIEWER?.testCases.length).toBeGreaterThan(1);
+    expect(out.roleResults.EXPLORER?.status).toBe("NOT_TESTED");
+    expect(out.roleResults.PLANNER?.status).toBe("NOT_TESTED");
+    expect(adapter.requests.every(req => body(req).includes("independent change reviewer"))).toBe(true);
+  });
   it("keeps R24 evidence frozen while qualifying the R27 planner protocol", () => {
     expect(ROLE_PROTOCOLS.map((p) => p.role)).toEqual(["EXPLORER", "PLANNER", "REVIEWER"]);
     for (const p of ROLE_PROTOCOLS) {

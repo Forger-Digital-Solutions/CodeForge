@@ -35,6 +35,7 @@ import {
   type RegionResolution,
   REGION_UNKNOWN,
 } from "@codeforge/legal-policy";
+import { parsePuterAuthorization, type PuterAuthorization, type PuterAccountView } from "./puter-account-types.js";
 
 /**
  * Desktop provider connections (R1 §13-§31, §59-§64, §97-§99, §104-§106).
@@ -103,6 +104,49 @@ export class ProviderConnections {
 
   accountOwnerUserId(): string {
     return this.host.userId ?? "";
+  }
+
+  puterAccount(): PuterAccountView {
+    const owner = this.accountOwnerUserId();
+    const key = owner ? hashUserAccountIdentity(owner) : "";
+    const stored = this.host.readSettings()["codeforge:puter-account-observations"] as Record<string, PuterAccountView> | undefined;
+    if (!owner || !this.host.secrets.get(`puter:user:${key}`)) return { connected: false, automaticFreeAdmission: false, reason: "PROVIDER_FREE_ONLY_GUARD_UNAVAILABLE" };
+    return { ...stored?.[key], connected: true, automaticFreeAdmission: false, reason: "PROVIDER_FREE_ONLY_GUARD_UNAVAILABLE" };
+  }
+
+  savePuterAccount(raw: PuterAuthorization): PuterAccountView {
+    const owner = this.accountOwnerUserId();
+    if (!owner) throw new Error("Sign in to CodeForge before connecting Puter");
+    const authorization = parsePuterAuthorization(raw);
+    const key = hashUserAccountIdentity(owner);
+    const secretKey = `puter:user:${key}`;
+    const priorToken = this.host.secrets.get(secretKey);
+    const view: PuterAccountView = { connected: true, checkedAt: this.now().toISOString(), accountIdentity: hashUserAccountIdentity(authorization.accountId), catalogModels: authorization.catalogModels,
+      monthlyAllowanceMicrocents: authorization.monthlyAllowanceMicrocents, remainingMicrocents: authorization.remainingMicrocents,
+      automaticFreeAdmission: false, reason: "PROVIDER_FREE_ONLY_GUARD_UNAVAILABLE" };
+    const settings = this.host.readSettings();
+    const previous = settings["codeforge:puter-account-observations"];
+    this.host.secrets.set(secretKey, authorization.token);
+    settings["codeforge:puter-account-observations"] = { ...(previous as Record<string, PuterAccountView> | undefined), [key]: view };
+    try { this.persistSettings(settings, "Puter account observation"); }
+    catch (error) {
+      if (priorToken) this.host.secrets.set(secretKey, priorToken); else this.host.secrets.delete(secretKey);
+      settings["codeforge:puter-account-observations"] = previous;
+      throw error;
+    }
+    return view;
+  }
+
+  disconnectPuterAccount(): void {
+    const owner = this.accountOwnerUserId();
+    if (!owner) return;
+    const key = hashUserAccountIdentity(owner);
+    this.host.secrets.delete(`puter:user:${key}`);
+    const settings = this.host.readSettings();
+    const observations = { ...(settings["codeforge:puter-account-observations"] as Record<string, PuterAccountView> | undefined) };
+    delete observations[key];
+    settings["codeforge:puter-account-observations"] = observations;
+    this.persistSettings(settings, "Puter account disconnection");
   }
 
   constructor(host: ProviderConnectionsHost) {

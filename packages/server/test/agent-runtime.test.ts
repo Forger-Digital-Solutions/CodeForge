@@ -304,9 +304,77 @@ describe("AgentRuntime — Production Invocation & Lifecycle Certification (CF-0
     expect(updatedContent).toContain("return a + b;");
     expect(result.contextMetrics).toMatchObject({ contextRefreshes: 1, staleContextInvalidations: 1 });
     const finalRequest = provider.requests.at(-1)!;
-    expect(finalRequest.messages[1]?.content).toContain("Prior repository excerpts were removed because they are stale");
+    expect(finalRequest.messages[1]?.content).toContain("Prior repository excerpts were removed");
     expect(finalRequest.messages[1]?.content).not.toContain("return a - b;");
     expect(finalRequest.messages.some((message) => message.content.includes("Runtime invalidated this prior read of calculator.ts"))).toBe(true);
+  });
+
+  it.each([{ mutates: false, fails: false }, { mutates: true, fails: false }, { mutates: true, fails: true }])("keeps unchanged observations and invalidates command-mutated files (%j)", async ({ mutates, fails }) => {
+    await fs.writeFile(path.join(tmpDir, "current.ts"), "export const value = 1;\n");
+    await fs.writeFile(path.join(tmpDir, "unchanged.ts"), "export const stable = true;\n");
+    const catalog = new InMemoryProviderCatalog();
+    const provider = new DeterministicScriptedProvider("test-provider", [
+      async function* () {
+        for (const file of ["current.ts", "unchanged.ts"]) {
+          yield { type: "tool_call_started", toolCallId: file, toolName: "read_file" };
+          yield { type: "tool_call_completed", toolCallId: file, toolName: "read_file", arguments: JSON.stringify({ path: file }) };
+        }
+        yield { type: "finish", finishReason: "tool_calls" };
+      },
+      async function* () {
+        yield { type: "tool_call_started", toolCallId: "test", toolName: "run_command" };
+        yield { type: "tool_call_completed", toolCallId: "test", toolName: "run_command", arguments: '{"command":"node --test"}' };
+        yield { type: "finish", finishReason: "tool_calls" };
+      },
+      async function* () {
+        yield { type: "text_delta", delta: "Inspected both files and ran the command." };
+        yield { type: "finish", finishReason: "stop" };
+      },
+    ]);
+    catalog.register(provider);
+    const runtime = createAgentRuntime({ sessionId: "test-session", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: tmpDir });
+    await runtime.executeAgentRun({
+      runId: `command-observation-${mutates}`, agentId: "coder", role: "coder", goal: "Inspect current source and execute node --test", workspaceId: "ws-1", workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: true, executeCommand: true, network: false },
+      customToolExecutor: async (name, args) => {
+        if (name === "read_file") {
+          const content = await fs.readFile(path.join(tmpDir, String(args.path)), "utf8");
+          return `${content}\n[hash:${createHash("sha256").update(content).digest("hex")}]`;
+        }
+        if (mutates) await fs.writeFile(path.join(tmpDir, "current.ts"), "export const value = 2;\n");
+        if (fails) throw new Error("Exit code: 1\nPartial command mutation");
+        return "Exit code: 0\nTests passed";
+      },
+    });
+    const observations = provider.requests.at(-1)!.messages.filter(m => m.role === "tool");
+    expect(observations.find(m => m.toolCallId === "unchanged.ts")?.content).toContain("export const stable = true;");
+    expect(observations.find(m => m.toolCallId === "current.ts")?.content).toContain(mutates ? "Runtime invalidated" : "export const value = 1;");
+    await runtime.shutdown();
+  });
+
+  it("reserves the final read-only role turn for a validated verdict", async () => {
+    const catalog = new InMemoryProviderCatalog();
+    const provider = new DeterministicScriptedProvider("test-provider", [
+      async function* () {
+        yield { type: "tool_call_started", toolCallId: "list", toolName: "list_files" };
+        yield { type: "tool_call_completed", toolCallId: "list", toolName: "list_files", arguments: '{"path":"."}' };
+        yield { type: "finish", finishReason: "tool_calls" };
+      },
+      async function* () {
+        yield { type: "text_delta", delta: '{"summary":"Inspected the fixture.","findings":[],"evidence":[]}' };
+        yield { type: "finish", finishReason: "stop" };
+      },
+    ]);
+    catalog.register(provider);
+    const runtime = createAgentRuntime({ sessionId: "test-session", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: tmpDir });
+    const result = await runtime.executeAgentRun({
+      runId: "final-verdict", agentId: "explorer", role: "explorer", goal: "Inspect the fixture", workspaceId: "ws-1", workspacePath: tmpDir,
+      permissions: { read: true, search: true, write: false, executeCommand: false, network: false }, structuredOutput: "explorer", executionBudget: { maxModelTurns: 2, maxToolCalls: 4, maxContextTokens: 4000 },
+    });
+    expect(provider.requests.map(r => r.toolChoice)).toEqual(["auto", "none"]);
+    expect(result.structuredData).toMatchObject({ summary: "Inspected the fixture." });
+    expect(result.status).toBe("completed");
+    await runtime.shutdown();
   });
 
   it("handles Reviewer run using validated findings rather than prose", async () => {

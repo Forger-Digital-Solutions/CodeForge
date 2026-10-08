@@ -47,6 +47,9 @@ const api = {
   connectOpenRouter: (browser) => {
     return ipcRenderer.invoke("oauth:openrouter:start", browser);
   },
+  getPuterAccount: () => ipcRenderer.invoke("freecloud:puter:status"),
+  connectPuterAccount: () => ipcRenderer.invoke("freecloud:puter:connect"),
+  disconnectPuterAccount: () => ipcRenderer.invoke("freecloud:puter:disconnect"),
   deleteProviderCredential: (providerId) => {
     return ipcRenderer.invoke("provider:deleteCredential", providerId);
   },
