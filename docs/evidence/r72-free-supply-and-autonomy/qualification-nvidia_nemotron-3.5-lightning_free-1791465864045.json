@@ -1,0 +1,1933 @@
+{
+  "startedAt": "2026-10-08T13:24:24.045Z",
+  "modelId": "nvidia/nemotron-3.5-lightning:free",
+  "providerId": "kilo-free-direct",
+  "evidenceClass": "LIVE_ROLE_QUALIFICATION_NOT_CODING_COMPLETION",
+  "frames": [
+    {
+      "at": "2026-10-08T13:24:24.785Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-adf76f5b-0817-4c99-8118-277b509b2774",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-adf76f5b-0817-4c99-8118-277b509b2774",
+          "delta": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-adf76f5b-0817-4c99-8118-277b509b2774",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 446,
+            "outputTokens": 82,
+            "totalTokens": 528,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 51
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 200,
+      "finishedAt": "2026-10-08T13:24:27.278Z"
+    },
+    {
+      "at": "2026-10-08T13:24:27.281Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-c7566efd-ce51-4617-9cec-ba0bcc8b79d8",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-c7566efd-ce51-4617-9cec-ba0bcc8b79d8",
+          "delta": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-c7566efd-ce51-4617-9cec-ba0bcc8b79d8",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 470,
+            "outputTokens": 42,
+            "totalTokens": 512,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 11
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 400,
+      "finishedAt": "2026-10-08T13:24:28.862Z"
+    },
+    {
+      "at": "2026-10-08T13:24:28.864Z",
+      "events": [],
+      "maxTokens": 400,
+      "finishedAt": "2026-10-08T13:25:13.871Z"
+    },
+    {
+      "at": "2026-10-08T13:25:13.875Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-1fde50f7-bc8c-4f1c-917e-8608c69248c1",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-1fde50f7-bc8c-4f1c-917e-8608c69248c1",
+          "delta": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-1fde50f7-bc8c-4f1c-917e-8608c69248c1",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 470,
+            "outputTokens": 42,
+            "totalTokens": 512,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 11
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 400,
+      "finishedAt": "2026-10-08T13:25:15.247Z"
+    },
+    {
+      "at": "2026-10-08T13:25:15.249Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-5d903792-94fd-4410-94ab-75d3a8c10698",
+          "toolName": "edit_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-5d903792-94fd-4410-94ab-75d3a8c10698",
+          "delta": "{\"path\":\"src/calc.ts\",\"newText\":\"export function add(a: number, b: number): number {\\n  return a + b;\\n}\",\"oldText\":\"export function add(a: number, b: number): number {\\n  return a - b;\\n}\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-5d903792-94fd-4410-94ab-75d3a8c10698",
+          "toolName": "edit_file",
+          "arguments": "{\"path\":\"src/calc.ts\",\"newText\":\"export function add(a: number, b: number): number {\\n  return a + b;\\n}\",\"oldText\":\"export function add(a: number, b: number): number {\\n  return a - b;\\n}\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 534,
+            "outputTokens": 127,
+            "totalTokens": 661,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 43
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 400,
+      "finishedAt": "2026-10-08T13:25:27.815Z"
+    },
+    {
+      "at": "2026-10-08T13:25:27.816Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "Here's a thinking process:\n\n1.  **Analyze User Input:**\n   - User wants a JSON object\n   - Keys required: \"files\" (array of strings) and \"verified\" (boolean)\n   - \"files\" must be exactly [\"src/calc.ts\",\"test/calc.test.ts\"]\n   - \"verified\" must be true\n   - Additional constraint: \"Respond with JSON only. No prose, no code fences.\"\n\n2.  **Identify Output Format:**\n   - Must output valid JSON\n   - No text before/after\n   - No markdown"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 66,
+            "outputTokens": 120,
+            "totalTokens": 186,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 112
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 120,
+      "finishedAt": "2026-10-08T13:25:32.233Z"
+    },
+    {
+      "at": "2026-10-08T13:25:32.237Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-a538e14e-3306-41be-86b7-63c8bcfeba70",
+          "toolName": "list_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-a538e14e-3306-41be-86b7-63c8bcfeba70",
+          "delta": "{\"path\":\"\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-a538e14e-3306-41be-86b7-63c8bcfeba70",
+          "toolName": "list_files",
+          "arguments": "{\"path\":\"\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 613,
+            "outputTokens": 113,
+            "totalTokens": 726,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 110
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:25:35.430Z"
+    },
+    {
+      "at": "2026-10-08T13:25:35.433Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-b73404f0-50c0-4b37-9168-ab49aea40aa6",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-b73404f0-50c0-4b37-9168-ab49aea40aa6",
+          "delta": "{\"path\":\"src/router.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-b73404f0-50c0-4b37-9168-ab49aea40aa6",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/router.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 710,
+            "outputTokens": 65,
+            "totalTokens": 775,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 49
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:25:47.020Z"
+    },
+    {
+      "at": "2026-10-08T13:25:47.023Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-73b72f23-0466-41aa-8cd4-8278d472abfc",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-73b72f23-0466-41aa-8cd4-8278d472abfc",
+          "delta": "{\"path\":\"src/provider/client.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-73b72f23-0466-41aa-8cd4-8278d472abfc",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/provider/client.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 897,
+            "outputTokens": 59,
+            "totalTokens": 956,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 37
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:25:54.729Z"
+    },
+    {
+      "at": "2026-10-08T13:25:54.731Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "files"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/router"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/client"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"]"
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 989,
+            "outputTokens": 126,
+            "totalTokens": 1115,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 135
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:26:25.489Z"
+    },
+    {
+      "at": "2026-10-08T13:26:25.661Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-d06455bb-c153-4083-9aa5-b4f271d1837c",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-d06455bb-c153-4083-9aa5-b4f271d1837c",
+          "delta": "{\"query\":\"release reservation\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-d06455bb-c153-4083-9aa5-b4f271d1837c",
+          "toolName": "search_files",
+          "arguments": "{\"query\":\"release reservation\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 608,
+            "outputTokens": 75,
+            "totalTokens": 683,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 59
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:26:28.196Z"
+    },
+    {
+      "at": "2026-10-08T13:26:28.278Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-519e48ab-0f83-4dc6-8ee6-7e887237cc7c",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-519e48ab-0f83-4dc6-8ee6-7e887237cc7c",
+          "delta": "{\"query\":\"capacity reservation\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-519e48ab-0f83-4dc6-8ee6-7e887237cc7c",
+          "toolName": "search_files",
+          "arguments": "{\"query\":\"capacity reservation\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 655,
+            "outputTokens": 54,
+            "totalTokens": 709,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 29
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:26:31.883Z"
+    },
+    {
+      "at": "2026-10-08T13:26:31.941Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-7cb491d2-eb2a-4164-962b-d800936519bf",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-7cb491d2-eb2a-4164-962b-d800936519bf",
+          "delta": "{\"query\":\"reservation\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-7cb491d2-eb2a-4164-962b-d800936519bf",
+          "toolName": "search_files",
+          "arguments": "{\"query\":\"reservation\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 703,
+            "outputTokens": 50,
+            "totalTokens": 753,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 28
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:26:59.444Z"
+    },
+    {
+      "at": "2026-10-08T13:26:59.456Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-d0b4eab6-f11f-4374-9054-5e26920a9f21",
+          "toolName": "list_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-d0b4eab6-f11f-4374-9054-5e26920a9f21",
+          "delta": "{}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-d0b4eab6-f11f-4374-9054-5e26920a9f21",
+          "toolName": "list_files",
+          "arguments": "{}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 750,
+            "outputTokens": 37,
+            "totalTokens": 787,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 27
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:27:05.233Z"
+    },
+    {
+      "at": "2026-10-08T13:27:05.302Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-0201bfc3-9a88-4683-abe1-18496a9fdf73",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-0201bfc3-9a88-4683-abe1-18496a9fdf73",
+          "delta": "{\"query\":\"release\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-0201bfc3-9a88-4683-abe1-18496a9fdf73",
+          "toolName": "search_files",
+          "arguments": "{\"query\":\"release\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 839,
+            "outputTokens": 35,
+            "totalTokens": 874,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 9
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:27:06.244Z"
+    },
+    {
+      "at": "2026-10-08T13:27:06.443Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "files"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/f"
+        },
+        {
+          "type": "text_delta",
+          "delta": "abric"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/ad"
+        },
+        {
+          "type": "text_delta",
+          "delta": "mission"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/f"
+        },
+        {
+          "type": "text_delta",
+          "delta": "abric"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/"
+        },
+        {
+          "type": "text_delta",
+          "delta": "led"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ger"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"]"
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 440,
+            "outputTokens": 262,
+            "totalTokens": 702,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 280
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:27:15.038Z"
+    },
+    {
+      "at": "2026-10-08T13:27:15.063Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-0fa9dd90-4bee-4a8e-904c-a93bd8d57cf2",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-0fa9dd90-4bee-4a8e-904c-a93bd8d57cf2",
+          "delta": "{\"query\":\"release.*capacity.*reservation|capacity.*reservation.*release\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-0fa9dd90-4bee-4a8e-904c-a93bd8d57cf2",
+          "toolName": "search_files",
+          "arguments": "{\"query\":\"release.*capacity.*reservation|capacity.*reservation.*release\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 608,
+            "outputTokens": 88,
+            "totalTokens": 696,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 59
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:27:17.952Z"
+    },
+    {
+      "at": "2026-10-08T13:27:17.969Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-6a3ce7c9-7a97-4a08-a32e-3ef0ad8b2034",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-6a3ce7c9-7a97-4a08-a32e-3ef0ad8b2034",
+          "delta": "{\"query\":\"release_reservation\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-6a3ce7c9-7a97-4a08-a32e-3ef0ad8b2034",
+          "toolName": "search_files",
+          "arguments": "{\"query\":\"release_reservation\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 668,
+            "outputTokens": 38,
+            "totalTokens": 706,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 11
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:27:19.282Z"
+    },
+    {
+      "at": "2026-10-08T13:27:19.523Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-9244e82c-d4f4-4757-a118-0bfd4b4f191d",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-9244e82c-d4f4-4757-a118-0bfd4b4f191d",
+          "delta": "{\"query\":\"reservation\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-9244e82c-d4f4-4757-a118-0bfd4b4f191d",
+          "toolName": "search_files",
+          "arguments": "{\"query\":\"reservation\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 716,
+            "outputTokens": 38,
+            "totalTokens": 754,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 17
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:27:22.907Z"
+    },
+    {
+      "at": "2026-10-08T13:27:23.071Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-7df01231-6acc-4313-ba50-7c7096f7adcd",
+          "toolName": "list_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-7df01231-6acc-4313-ba50-7c7096f7adcd",
+          "delta": "{}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-7df01231-6acc-4313-ba50-7c7096f7adcd",
+          "toolName": "list_files",
+          "arguments": "{}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 763,
+            "outputTokens": 45,
+            "totalTokens": 808,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 35
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:27:31.314Z"
+    },
+    {
+      "at": "2026-10-08T13:27:31.550Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call-b2912738-c4f7-4b07-9cbc-0fe64e46f157",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call-b2912738-c4f7-4b07-9cbc-0fe64e46f157",
+          "delta": "{\"query\":\"Reservation\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call-b2912738-c4f7-4b07-9cbc-0fe64e46f157",
+          "toolName": "search_files",
+          "arguments": "{\"query\":\"Reservation\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 852,
+            "outputTokens": 49,
+            "totalTokens": 901,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 26
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:27:33.910Z"
+    },
+    {
+      "at": "2026-10-08T13:27:33.913Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "<tool_call>"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "<function"
+        },
+        {
+          "type": "text_delta",
+          "delta": "="
+        },
+        {
+          "type": "text_delta",
+          "delta": "read"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_file"
+        },
+        {
+          "type": "text_delta",
+          "delta": ">\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "<parameter"
+        },
+        {
+          "type": "text_delta",
+          "delta": "="
+        },
+        {
+          "type": "text_delta",
+          "delta": "path"
+        },
+        {
+          "type": "text_delta",
+          "delta": ">\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/client"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "</parameter"
+        },
+        {
+          "type": "text_delta",
+          "delta": ">\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "</function"
+        },
+        {
+          "type": "text_delta",
+          "delta": ">\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "</tool_call>"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\n"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 438,
+            "outputTokens": 169,
+            "totalTokens": 607,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 155
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:27:38.577Z"
+    },
+    {
+      "at": "2026-10-08T13:27:38.581Z",
+      "events": [],
+      "maxTokens": 1200,
+      "finishedAt": "2026-10-08T13:28:23.582Z"
+    },
+    {
+      "at": "2026-10-08T13:28:23.587Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "protocol"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "task"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_graph"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_v"
+        },
+        {
+          "type": "text_delta",
+          "delta": "1"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Add"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release"
+        },
+        {
+          "type": "text_delta",
+          "delta": "()"
+        },
+        {
+          "type": "text_delta",
+          "delta": " call"
+        },
+        {
+          "type": "text_delta",
+          "delta": " on"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancellation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " path"
+        },
+        {
+          "type": "text_delta",
+          "delta": " in"
+        },
+        {
+          "type": "text_delta",
+          "delta": " src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/server"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": " using"
+        },
+        {
+          "type": "text_delta",
+          "delta": " src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/f"
+        },
+        {
+          "type": "text_delta",
+          "delta": "abric"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/ad"
+        },
+        {
+          "type": "text_delta",
+          "delta": "mission"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "'s"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release"
+        },
+        {
+          "type": "text_delta",
+          "delta": "(),"
+        },
+        {
+          "type": "text_delta",
+          "delta": " ensuring"
+        },
+        {
+          "type": "text_delta",
+          "delta": " reservation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " holds"
+        },
+        {
+          "type": "text_delta",
+          "delta": " are"
+        },
+        {
+          "type": "text_delta",
+          "delta": " freed"
+        },
+        {
+          "type": "text_delta",
+          "delta": " when"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " run"
+        },
+        {
+          "type": "text_delta",
+          "delta": " is"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancelled"
+        },
+        {
+          "type": "text_delta",
+          "delta": "."
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\"tasks\":[{\"id\":\"C\",\"title\":\"Integrate"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release"
+        },
+        {
+          "type": "text_delta",
+          "delta": "()"
+        },
+        {
+          "type": "text_delta",
+          "delta": " on"
+        },
+        {
+          "type": "text_delta",
+          "delta": " run"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancellation"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "object"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ive"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Modify"
+        },
+        {
+          "type": "text_delta",
+          "delta": " src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/server"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " invoke"
+        },
+        {
+          "type": "text_delta",
+          "delta": " admission"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".release"
+        },
+        {
+          "type": "text_delta",
+          "delta": "() when a run is cancelled, freeing associated reservation holds.\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": "[],"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "assigned"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Role"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "c"
+        },
+        {
+          "type": "text_delta",
+          "delta": "oder"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"},"
+        },
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "R"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Review"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " integration"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "object"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ive"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Verify"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/server"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": " correctly"
+        },
+        {
+          "type": "text_delta",
+          "delta": " releases"
+        },
+        {
+          "type": "text_delta",
+          "delta": " reservation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " holds"
+        },
+        {
+          "type": "text_delta",
+          "delta": " on"
+        },
+        {
+          "type": "text_delta",
+          "delta": " run"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancellation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " using"
+        },
+        {
+          "type": "text_delta",
+          "delta": " admission"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".release"
+        },
+        {
+          "type": "text_delta",
+          "delta": "(),"
+        },
+        {
+          "type": "text_delta",
+          "delta": " with"
+        },
+        {
+          "type": "text_delta",
+          "delta": " no"
+        },
+        {
+          "type": "text_delta",
+          "delta": " unint"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ended"
+        },
+        {
+          "type": "text_delta",
+          "delta": " side"
+        },
+        {
+          "type": "text_delta",
+          "delta": " effects"
+        },
+        {
+          "type": "text_delta",
+          "delta": "."
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": "[\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "C"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"],"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "assigned"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Role"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "review"
+        },
+        {
+          "type": "text_delta",
+          "delta": "er"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"}"
+        },
+        {
+          "type": "text_delta",
+          "delta": "]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 376,
+            "outputTokens": 1698,
+            "totalTokens": 2074,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1628
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 2224,
+      "finishedAt": "2026-10-08T13:28:55.708Z"
+    },
+    {
+      "at": "2026-10-08T13:28:55.716Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "Here's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Role:** Task planner\n   - **Protocol:** Must use exactly one JSON object, no markdown\n   - **Format Options:** `task_graph_v1` or `semantic_steps_v1`\n   - **task_graph_v1 structure:** `{\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}`\n   - **semantic_steps_v1:** phase investigation/planning/implementation/verification with after:string[]\n   - **Constraint:** Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\"\n   - **Alternative:** semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]\n   - **Never mix protocols.**\n   - **Implementation must precede verification.**\n   - **Plan only what the task requires - no invented files, no rewrites.**\n\n   - **User Task:** \"Plan the smallest change that fixes executeProviderCall returning the wrong status when the provider answers 429.\"\n   - **Explorer findings provided:**\n     - `src/provider/client.ts`: `executeProviderCall` always returns `{ route, task, status: 200 }`\n     - `test/router.test.ts`: Empty test\n\n2.  **Identify the Problem:**\n   - `executeProviderCall` hardcodes `status: 200` regardless of the actual provider response.\n   - When provider answers 429, it should return 429, not 200.\n   - The fix needs to make `executeProviderCall` actually use/return the status from the provider response.\n\n3.  **Determine the Protocol to Use:**\n   - The user says: \"Use task_graph_v1: ... Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols.\"\n   - The task is to \"Plan the smallest change that fixes executeProviderCall returning the wrong status when the provider answers 429.\"\n   - This is a planning task. I should use `task_graph_v1` or `semantic_steps_v1`.\n   - Let's check the constraints: \"Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\".\" This applies to task_graph_v1 tasks.\n   - The task says: \"Plan the smallest change that fixes executeProviderCall returning the wrong status when the provider answers 429.\"\n   - I need to output a JSON object following one of the protocols.\n\n   Let's consider `task_graph_v1`:\n   - Needs tasks with id, title, objective, dependencies, assignedRole.\n   - Roles must be from {\"explorer\", \"planner\", \"coder\", \"reviewer\"}.\n   - Since the task is to plan a fix, I might need explorer to investigate, planner to plan, coder to implement, reviewer to verify.\n   - But the user says: \"Plan only what the task requires - no invented files, no rewrites.\"\n   - The explorer findings are given. The task is to plan the smallest change.\n   - I think I should use `task_graph_v1` with tasks that represent the planning/fixing steps.\n\n   Let's re-read carefully: \"Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites.\"\n\n   I need to produce exactly one JSON object. I'll choose `task_graph_v1` since it's explicitly listed first and fits a planning task with roles.\n\n   The task: \"Plan the smallest change that fixes executeProviderCall returning the wrong status when the provider answers 429.\"\n\n   I need to break this down into tasks with proper roles. The roles available: explorer, planner, coder, reviewer.\n\n   Let's think about what tasks are needed:\n   - Explorer: investigate the current code and the 429 handling issue.\n   - Planner: plan the smallest change.\n   - Coder: implement the change.\n   - Reviewer: verify the change.\n\n   But the task says \"Plan the smallest change\". Maybe I just need a planner task? However, the protocol requires tasks with dependencies and roles. I can create a minimal set.\n\n   Let's look at the example in the prompt for task_graph_v1:\n   ```\n   {\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"}\n   {\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}\n   ```\n   So C has no dependencies, R depends on C.\n\n   I need to create tasks that plan the fix. The summary should describe the overall plan.\n\n   Let's design:\n   - Task C: Explorer investigates the issue with executeProviderCall not reflecting provider status codes like 429.\n   - Task R: Planner plans"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 272,
+            "outputTokens": 1200,
+            "totalTokens": 1472,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1260
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "maxTokens": 1200,
+      "finishedAt": "2026-10-08T13:29:09.363Z"
+    },
+    {
+      "at": "2026-10-08T13:29:09.366Z",
+      "events": [],
+      "maxTokens": 2460,
+      "finishedAt": "2026-10-08T13:29:24.796Z"
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T13:24:24.045Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-08T13:24:24.045Z",
+      "recheckAt": "2026-10-15T13:24:24.045Z",
+      "qualificationAt": "2026-10-08T13:24:24.045Z",
+      "termsVerifiedAt": "2026-10-08T13:24:24.045Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-15T13:24:24.045Z",
+      "privacyVerifiedAt": "2026-10-08T13:24:24.045Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-15T13:24:24.045Z",
+      "priceVerifiedAt": "2026-10-08T13:24:24.045Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-15T13:24:24.045Z",
+      "nextReverifyAt": "2026-10-08T19:24:24.045Z"
+    }
+  },
+  "catalog": {
+    "modelId": "nvidia/nemotron-3.5-lightning:free",
+    "displayName": "NVIDIA: Nemotron 3.5 Lightning (free)",
+    "contextWindow": 1000000,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "qualification": {
+    "suiteVersion": "R66_ROLE_QUALIFICATION_V4",
+    "providerId": "kilo-free-direct",
+    "modelId": "nvidia/nemotron-3.5-lightning:free",
+    "modelDisplayName": "NVIDIA: Nemotron 3.5 Lightning (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2496,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 13941,
+            "retries": 1,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 42
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 127
+                }
+              ],
+              "firstAttempt": {
+                "calls": 2,
+                "toolCalls": [],
+                "turns": [
+                  {
+                    "toolCalls": [
+                      "read_file"
+                    ],
+                    "finishReason": "tool_calls",
+                    "textLength": 0,
+                    "outputTokens": 42
+                  },
+                  {
+                    "toolCalls": [],
+                    "textLength": 0
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T13:24:24.785Z",
+        "completedAt": "2026-10-08T13:25:32.235Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2496,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 13941,
+            "retries": 1,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 42
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 127
+                }
+              ],
+              "firstAttempt": {
+                "calls": 2,
+                "toolCalls": [],
+                "turns": [
+                  {
+                    "toolCalls": [
+                      "read_file"
+                    ],
+                    "finishReason": "tool_calls",
+                    "textLength": 0,
+                    "outputTokens": 42
+                  },
+                  {
+                    "toolCalls": [],
+                    "textLength": 0
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 4419,
+            "retries": 0,
+            "details": {
+              "textLength": 435,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-08T13:24:24.785Z",
+        "completedAt": "2026-10-08T13:25:32.235Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 4419,
+            "retries": 0,
+            "details": {
+              "textLength": 435,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T13:24:24.785Z",
+        "completedAt": "2026-10-08T13:25:32.235Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "explorer.route_execution",
+            "category": "explore",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 53425,
+            "retries": 0,
+            "details": {
+              "modelCalls": 4,
+              "filesRead": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "relevantFilesRead": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "searches": 0,
+              "totalToolCalls": 3,
+              "validCalls": 3,
+              "validToolCallRate": 1,
+              "readPrecision": 1,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "answerFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "recall": 1,
+              "reasoningRetries": 0,
+              "reasoningTokens": 135
+            }
+          },
+          {
+            "caseId": "explorer.reservation_release",
+            "category": "explore",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 23516,
+            "retries": 1,
+            "details": {
+              "modelCalls": 6,
+              "filesRead": [],
+              "relevantFilesRead": [],
+              "searches": 4,
+              "totalToolCalls": 5,
+              "validCalls": 5,
+              "validToolCallRate": 1,
+              "readPrecision": 0,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [],
+              "answerFiles": [
+                "src/fabric/admission.ts",
+                "src/fabric/ledger.ts"
+              ],
+              "recall": 0,
+              "reasoningRetries": 0,
+              "reasoningTokens": 155,
+              "firstAttempt": {
+                "modelCalls": 6,
+                "filesRead": [],
+                "relevantFilesRead": [],
+                "searches": 4,
+                "totalToolCalls": 5,
+                "validCalls": 5,
+                "validToolCallRate": 1,
+                "readPrecision": 0,
+                "hallucinatedPaths": [],
+                "mutationAttempts": 0,
+                "reportedFiles": [
+                  "src/fabric/admission.ts",
+                  "src/fabric/ledger.ts"
+                ],
+                "answerFiles": [
+                  "src/fabric/admission.ts",
+                  "src/fabric/ledger.ts"
+                ],
+                "recall": 1,
+                "reasoningRetries": 0,
+                "reasoningTokens": 280
+              }
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.5,
+        "startedAt": "2026-10-08T13:25:32.236Z",
+        "completedAt": "2026-10-08T13:29:24.804Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "planner.release_callsite",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 77136,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 2,
+              "roles": [
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": true,
+              "reasoningTokens": 1628,
+              "starvedAttempt": {
+                "maxTokens": 1200
+              }
+            }
+          },
+          {
+            "caseId": "planner.schema",
+            "category": "plan",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 29088,
+            "retries": 0,
+            "error": "suite deadline elapsed (timed out)"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T13:25:32.236Z",
+        "completedAt": "2026-10-08T13:29:24.804Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T13:25:32.236Z",
+        "completedAt": "2026-10-08T13:29:24.804Z"
+      }
+    },
+    "startedAt": "2026-10-08T13:24:24.785Z",
+    "completedAt": "2026-10-08T13:25:32.235Z",
+    "totalLatencyMs": 67450,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 24,
+      "transient": true,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R66_ROLE_QUALIFICATION_V4",
+      "roleTransientCases": 1
+    }
+  },
+  "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+  "finishedAt": "2026-10-08T13:29:24.804Z"
+}

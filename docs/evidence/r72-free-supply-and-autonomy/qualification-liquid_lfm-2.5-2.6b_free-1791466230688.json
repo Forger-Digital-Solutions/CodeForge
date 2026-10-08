@@ -1,0 +1,585 @@
+{
+  "startedAt": "2026-10-08T13:30:30.688Z",
+  "modelId": "liquid/lfm-2.5-2.6b:free",
+  "providerId": "kilo-free-direct",
+  "evidenceClass": "LIVE_ROLE_QUALIFICATION_NOT_CODING_COMPLETION",
+  "frames": [
+    {
+      "at": "2026-10-08T13:30:31.472Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-92a17e5ac58e7182",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-92a17e5ac58e7182",
+          "delta": "{\"path\": \"src/calc"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-92a17e5ac58e7182",
+          "delta": ".ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-92a17e5ac58e7182",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 223,
+            "outputTokens": 49,
+            "totalTokens": 272,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 34
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "maxTokens": 200,
+      "finishedAt": "2026-10-08T13:30:34.093Z"
+    },
+    {
+      "at": "2026-10-08T13:30:34.699Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-8416d01abe98228b",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-8416d01abe98228b",
+          "delta": "{\"path\": \"src"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-8416d01abe98228b",
+          "delta": "/calc.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-8416d01abe98228b",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 246,
+            "outputTokens": 65,
+            "totalTokens": 311,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 50
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "maxTokens": 400,
+      "finishedAt": "2026-10-08T13:30:35.796Z"
+    },
+    {
+      "at": "2026-10-08T13:30:35.828Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-83fdc7d7525a1640",
+          "toolName": "edit_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-83fdc7d7525a1640",
+          "delta": "{\"path\": \"src/"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-83fdc7d7525a1640",
+          "delta": "calc.ts\", \"oldText\": \"return"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-83fdc7d7525a1640",
+          "delta": " a - b;"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-83fdc7d7525a1640",
+          "delta": "\", \"newText\": \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-83fdc7d7525a1640",
+          "delta": "return a + b"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-83fdc7d7525a1640",
+          "delta": ";\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-83fdc7d7525a1640",
+          "toolName": "edit_file",
+          "arguments": "{\"path\": \"src/calc.ts\", \"oldText\": \"return a - b;\", \"newText\": \"return a + b;\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 289,
+            "outputTokens": 122,
+            "totalTokens": 411,
+            "cachedInputTokens": 240,
+            "reasoningTokens": 89
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "maxTokens": 400,
+      "finishedAt": "2026-10-08T13:30:36.832Z"
+    },
+    {
+      "at": "2026-10-08T13:30:37.068Z",
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 65,
+            "outputTokens": 120,
+            "totalTokens": 185,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 120
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "maxTokens": 120,
+      "finishedAt": "2026-10-08T13:30:38.036Z"
+    },
+    {
+      "at": "2026-10-08T13:30:38.268Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "```json\n{\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "  \"verdict"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"reject"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n  \"find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings\": [\n   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " {\n      \"message"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"The diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " changes"
+        },
+        {
+          "type": "text_delta",
+          "delta": " subtraction"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to multiplication,"
+        },
+        {
+          "type": "text_delta",
+          "delta": " but the intent requires"
+        },
+        {
+          "type": "text_delta",
+          "delta": " returning"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the sum of arguments"
+        },
+        {
+          "type": "text_delta",
+          "delta": " (add"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ition). The corrected"
+        },
+        {
+          "type": "text_delta",
+          "delta": " line"
+        },
+        {
+          "type": "text_delta",
+          "delta": " should be 'return"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a + b;"
+        },
+        {
+          "type": "text_delta",
+          "delta": "' not 'return"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a * b;"
+        },
+        {
+          "type": "text_delta",
+          "delta": "'.\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"path\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"src/calc"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts\"\n    }\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "  ]\n}\n```"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 139,
+            "outputTokens": 453,
+            "totalTokens": 592,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 368
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "maxTokens": 900,
+      "finishedAt": "2026-10-08T13:30:43.298Z"
+    },
+    {
+      "at": "2026-10-08T13:30:43.337Z",
+      "events": [],
+      "maxTokens": 900,
+      "error": {
+        "code": "RATE_LIMITED",
+        "status": 429,
+        "rateLimitScope": "provider",
+        "message": "kilo-free-direct error (429): {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"liquid/lfm-2.5-2.6b:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your "
+      },
+      "finishedAt": "2026-10-08T13:30:43.702Z"
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T13:30:30.688Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-08T13:30:30.688Z",
+      "recheckAt": "2026-10-15T13:30:30.688Z",
+      "qualificationAt": "2026-10-08T13:30:30.688Z",
+      "termsVerifiedAt": "2026-10-08T13:30:30.688Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-15T13:30:30.688Z",
+      "privacyVerifiedAt": "2026-10-08T13:30:30.688Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-15T13:30:30.688Z",
+      "priceVerifiedAt": "2026-10-08T13:30:30.688Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-15T13:30:30.688Z",
+      "nextReverifyAt": "2026-10-08T19:30:30.688Z"
+    }
+  },
+  "catalog": {
+    "modelId": "liquid/lfm-2.5-2.6b:free",
+    "displayName": "LiquidAI: LFM2.5-2.6B (free)",
+    "contextWindow": 65536,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": true,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "requestedRoles": [
+    "REVIEWER"
+  ],
+  "qualification": {
+    "suiteVersion": "R66_ROLE_QUALIFICATION_V4",
+    "providerId": "kilo-free-direct",
+    "modelId": "liquid/lfm-2.5-2.6b:free",
+    "modelDisplayName": "LiquidAI: LFM2.5-2.6B (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3228,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2368,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 65
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 122
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T13:30:31.471Z",
+        "completedAt": "2026-10-08T13:30:38.266Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3228,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2368,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 65
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 122
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 1198,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-08T13:30:31.471Z",
+        "completedAt": "2026-10-08T13:30:38.266Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 1198,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T13:30:31.471Z",
+        "completedAt": "2026-10-08T13:30:38.266Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T13:30:38.267Z",
+        "completedAt": "2026-10-08T13:30:43.788Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T13:30:38.267Z",
+        "completedAt": "2026-10-08T13:30:43.788Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5070,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The diff changes subtraction to multiplication, but the intent requires returning the sum of arguments (addition). The corrected line should be 'return a + b;' not 'return a * b;'."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 368
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 450,
+            "retries": 0,
+            "error": "kilo-free-direct error (429): {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"liquid/lfm-2.5-2.6b:free is temporarily rate-limited upstream. Please retry shortly, or add yo"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T13:30:38.267Z",
+        "completedAt": "2026-10-08T13:30:43.788Z"
+      }
+    },
+    "startedAt": "2026-10-08T13:30:31.471Z",
+    "completedAt": "2026-10-08T13:30:38.266Z",
+    "totalLatencyMs": 6795,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 5,
+      "transient": true,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R66_ROLE_QUALIFICATION_V4",
+      "roleTransientCases": 1
+    }
+  },
+  "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+  "finishedAt": "2026-10-08T13:30:43.788Z"
+}

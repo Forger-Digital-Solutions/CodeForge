@@ -1,0 +1,85 @@
+[
+  {
+    "file": "qualification-dots-studio_dots-3-note-preview_free-1791464849592.json",
+    "model": "dots-studio/dots-3-note-preview:free",
+    "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+    "requests": 19,
+    "roles": {
+      "CODER": "QUALIFIED",
+      "TOOL_AGENT": "PROBATION",
+      "ANALYST": "NOT_QUALIFIED",
+      "EXPLORER": "PROBATION",
+      "PLANNER": "QUALIFIED",
+      "REVIEWER": "NOT_TESTED"
+    }
+  },
+  {
+    "file": "qualification-liquid_lfm-2.5-2.6b_free-1791466230688.json",
+    "model": "liquid/lfm-2.5-2.6b:free",
+    "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+    "requests": 6,
+    "roles": {
+      "CODER": "QUALIFIED",
+      "TOOL_AGENT": "PROBATION",
+      "ANALYST": "NOT_QUALIFIED",
+      "EXPLORER": "NOT_TESTED",
+      "PLANNER": "NOT_TESTED",
+      "REVIEWER": "NOT_TESTED"
+    }
+  },
+  {
+    "file": "qualification-nvidia_nemotron-3.5-lightning_free-1791465864045.json",
+    "model": "nvidia/nemotron-3.5-lightning:free",
+    "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+    "requests": 26,
+    "roles": {
+      "CODER": "QUALIFIED",
+      "TOOL_AGENT": "PROBATION",
+      "ANALYST": "NOT_QUALIFIED",
+      "EXPLORER": "PROBATION",
+      "PLANNER": "NOT_TESTED",
+      "REVIEWER": "NOT_TESTED"
+    }
+  },
+  {
+    "file": "qualification-poolside_laguna-s-2.1_free-1791464804626.json",
+    "model": "poolside/laguna-s-2.1:free",
+    "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+    "requests": 2,
+    "roles": {
+      "CODER": "PROBATION",
+      "TOOL_AGENT": "NOT_QUALIFIED",
+      "ANALYST": "NOT_QUALIFIED"
+    }
+  },
+  {
+    "file": "qualification-summary.json",
+    "requests": 0,
+    "roles": {}
+  },
+  {
+    "file": "qualification-thinkingmachines_inkling-small_free-1791466536425.json",
+    "model": "thinkingmachines/inkling-small:free",
+    "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+    "requests": 1,
+    "roles": {
+      "CODER": "NOT_QUALIFIED",
+      "TOOL_AGENT": "NOT_QUALIFIED",
+      "ANALYST": "NOT_QUALIFIED"
+    }
+  },
+  {
+    "file": "reviewer-dots-studio_dots-3-note-preview_free-1791465616770.json",
+    "model": "dots-studio/dots-3-note-preview:free",
+    "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+    "requests": 8,
+    "roles": {
+      "CODER": "QUALIFIED",
+      "TOOL_AGENT": "PROBATION",
+      "ANALYST": "NOT_QUALIFIED",
+      "EXPLORER": "PROBATION",
+      "PLANNER": "QUALIFIED",
+      "REVIEWER": "NOT_TESTED"
+    }
+  }
+]

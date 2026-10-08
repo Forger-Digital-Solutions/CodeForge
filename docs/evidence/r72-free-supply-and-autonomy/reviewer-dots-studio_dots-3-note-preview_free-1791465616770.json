@@ -1,0 +1,963 @@
+{
+  "startedAt": "2026-10-08T13:20:16.770Z",
+  "modelId": "dots-studio/dots-3-note-preview:free",
+  "previousFile": "docs/evidence/r72-free-supply-and-autonomy/qualification-dots-studio_dots-3-note-preview_free-1791464849592.json",
+  "evidenceClass": "LIVE_SELECTIVE_REVIEWER_QUALIFICATION",
+  "frames": [
+    {
+      "at": "2026-10-08T13:20:17.732Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "{\"verdict\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "reject\",\"findings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[{\"message\":\"The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " diff changes the operator"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to multiplication (*)"
+        },
+        {
+          "type": "text_delta",
+          "delta": " instead of addition (+"
+        },
+        {
+          "type": "text_delta",
+          "delta": "). To return the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " sum of the arguments"
+        },
+        {
+          "type": "text_delta",
+          "delta": " as"
+        },
+        {
+          "type": "text_delta",
+          "delta": " intended, the code"
+        },
+        {
+          "type": "text_delta",
+          "delta": " should be 'return"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a + b;"
+        },
+        {
+          "type": "text_delta",
+          "delta": "'.\",\"path\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src/calc.ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"}]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 127,
+            "outputTokens": 481,
+            "totalTokens": 608,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 410
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T13:20:35.836Z"
+    },
+    {
+      "at": "2026-10-08T13:20:35.840Z",
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 130,
+            "outputTokens": 900,
+            "totalTokens": 1030,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1025
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T13:20:59.038Z"
+    },
+    {
+      "at": "2026-10-08T13:20:59.041Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "verdict\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "reject\", \"find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings\": [{\"message"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"Renaming"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the exported symbol `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "log` to `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "writeLog` without"
+        },
+        {
+          "type": "text_delta",
+          "delta": " updating any importers"
+        },
+        {
+          "type": "text_delta",
+          "delta": " will"
+        },
+        {
+          "type": "text_delta",
+          "delta": " break consumers"
+        },
+        {
+          "type": "text_delta",
+          "delta": " of this module. The diff must"
+        },
+        {
+          "type": "text_delta",
+          "delta": " include corresponding"
+        },
+        {
+          "type": "text_delta",
+          "delta": " import changes"
+        },
+        {
+          "type": "text_delta",
+          "delta": " or confirm"
+        },
+        {
+          "type": "text_delta",
+          "delta": " no"
+        },
+        {
+          "type": "text_delta",
+          "delta": " other files"
+        },
+        {
+          "type": "text_delta",
+          "delta": " import `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "log`.\", \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "path\": \"src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/util/logger.ts\"}"
+        },
+        {
+          "type": "text_delta",
+          "delta": "]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 130,
+            "outputTokens": 1693,
+            "totalTokens": 1823,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1870
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T13:21:33.000Z"
+    },
+    {
+      "at": "2026-10-08T13:21:33.001Z",
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 130,
+            "outputTokens": 900,
+            "totalTokens": 1030,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1028
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T13:21:54.822Z"
+    },
+    {
+      "at": "2026-10-08T13:21:54.825Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "verdict\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "approve\", \"find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings\": []"
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 130,
+            "outputTokens": 693,
+            "totalTokens": 823,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 769
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T13:22:11.873Z"
+    },
+    {
+      "at": "2026-10-08T13:22:11.875Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "{\"verdict\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"approve\", \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "findings\": []"
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 152,
+            "outputTokens": 385,
+            "totalTokens": 537,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 434
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T13:22:23.674Z"
+    },
+    {
+      "at": "2026-10-08T13:22:23.676Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "verdict\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "reject\",\"findings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[{\"message\":\"The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " function recordFailure only"
+        },
+        {
+          "type": "text_delta",
+          "delta": " sends telemetry but"
+        },
+        {
+          "type": "text_delta",
+          "delta": " does not maintain"
+        },
+        {
+          "type": "text_delta",
+          "delta": " any failure state ("
+        },
+        {
+          "type": "text_delta",
+          "delta": "e.g., counters"
+        },
+        {
+          "type": "text_delta",
+          "delta": ", timestamps) needed"
+        },
+        {
+          "type": "text_delta",
+          "delta": " for route demotion"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 133,
+            "outputTokens": 825,
+            "totalTokens": 958,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 938
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T13:22:44.026Z"
+    },
+    {
+      "at": "2026-10-08T13:22:44.027Z",
+      "events": [
+        {
+          "type": "error",
+          "code": "PROVIDER_ERROR",
+          "message": "kilo-free-direct stream error (502) after HTTP 200: JSON error injected into SSE stream",
+          "retryable": true,
+          "status": 502
+        }
+      ],
+      "finishedAt": "2026-10-08T13:22:59.709Z"
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T13:20:16.770Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-08T13:20:16.770Z",
+      "recheckAt": "2026-10-15T13:20:16.770Z",
+      "qualificationAt": "2026-10-08T13:20:16.770Z",
+      "termsVerifiedAt": "2026-10-08T13:20:16.770Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-15T13:20:16.770Z",
+      "privacyVerifiedAt": "2026-10-08T13:20:16.770Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-15T13:20:16.770Z",
+      "priceVerifiedAt": "2026-10-08T13:20:16.770Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-15T13:20:16.770Z",
+      "nextReverifyAt": "2026-10-08T19:20:16.770Z"
+    }
+  },
+  "reviewer": {
+    "roleResults": {
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T13:20:17.732Z",
+        "completedAt": "2026-10-08T13:22:59.711Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T13:20:17.732Z",
+        "completedAt": "2026-10-08T13:22:59.711Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 18108,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The diff changes the operator to multiplication (*) instead of addition (+). To return the sum of the arguments as intended, the code should be 'return a + b;'."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 410
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 38874,
+            "retries": 1,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": true,
+              "reasoningTokens": 769,
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "reject",
+                "expectedApproved": true,
+                "verdictCorrect": false,
+                "findingLocalized": true,
+                "findings": [
+                  "Renaming the exported symbol `log` to `writeLog` without updating any importers will break consumers of this module. The diff must include corresponding import changes or confirm no other files import `log`."
+                ],
+                "reasoningRetried": true,
+                "reasoningTokens": 1870
+              }
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 11801,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 434
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 15683,
+            "retries": 1,
+            "details": {
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "reject",
+                "expectedApproved": false,
+                "verdictCorrect": true,
+                "findingLocalized": false,
+                "findings": [
+                  "The function recordFailure only sends telemetry but does not maintain any failure state (e.g., counters, timestamps) needed for route demotion."
+                ],
+                "reasoningRetried": false,
+                "reasoningTokens": 938
+              }
+            },
+            "error": "kilo-free-direct stream error (502) after HTTP 200: JSON error injected into SSE stream"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T13:20:17.732Z",
+        "completedAt": "2026-10-08T13:22:59.711Z"
+      }
+    },
+    "requestCount": 8,
+    "transientCases": 1
+  },
+  "qualification": {
+    "suiteVersion": "R66_ROLE_QUALIFICATION_V4",
+    "providerId": "kilo-free-direct",
+    "modelId": "dots-studio/dots-3-note-preview:free",
+    "modelDisplayName": "Dots Studio: Dots3-Note Preview (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5853,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 19887,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 3,
+                  "outputTokens": 89
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 3,
+                  "outputTokens": 98
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T13:07:30.402Z",
+        "completedAt": "2026-10-08T13:08:02.080Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5853,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 19887,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 3,
+                  "outputTokens": 89
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 3,
+                  "outputTokens": 98
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 5937,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-08T13:07:30.402Z",
+        "completedAt": "2026-10-08T13:08:02.080Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 5937,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T13:07:30.402Z",
+        "completedAt": "2026-10-08T13:08:02.080Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "explorer.route_execution",
+            "category": "explore",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 31822,
+            "retries": 0,
+            "details": {
+              "modelCalls": 3,
+              "filesRead": [
+                "src/router.ts",
+                "src/provider/client.ts",
+                "test/router.test.ts"
+              ],
+              "relevantFilesRead": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "searches": 0,
+              "totalToolCalls": 4,
+              "validCalls": 4,
+              "validToolCallRate": 1,
+              "readPrecision": 0.6666666666666666,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "answerFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "recall": 1,
+              "reasoningRetries": 0,
+              "reasoningTokens": 233
+            }
+          },
+          {
+            "caseId": "explorer.reservation_release",
+            "category": "explore",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 6200,
+            "retries": 0,
+            "error": "kilo-free-direct stream ended before the provider sent [DONE] (HTTP 200, 38 byte(s), 0 frame(s), no terminal finish_reason, body: : KILO PROCESSING : KILO PROCESSING )"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.5,
+        "startedAt": "2026-10-08T13:08:02.081Z",
+        "completedAt": "2026-10-08T13:12:30.413Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "planner.release_callsite",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 57364,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 3,
+              "roles": [
+                "coder",
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": true,
+              "reasoningTokens": 1761,
+              "starvedAttempt": {
+                "maxTokens": 1200,
+                "reasoningTokens": 1423,
+                "finishReason": "length"
+              }
+            }
+          },
+          {
+            "caseId": "planner.schema",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 42341,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 2,
+              "roles": [
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": true,
+              "reasoningTokens": 983,
+              "starvedAttempt": {
+                "maxTokens": 1200,
+                "reasoningTokens": 1398,
+                "finishReason": "length"
+              }
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T13:08:02.081Z",
+        "completedAt": "2026-10-08T13:12:30.413Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 18108,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The diff changes the operator to multiplication (*) instead of addition (+). To return the sum of the arguments as intended, the code should be 'return a + b;'."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 410
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 38874,
+            "retries": 1,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": true,
+              "reasoningTokens": 769,
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "reject",
+                "expectedApproved": true,
+                "verdictCorrect": false,
+                "findingLocalized": true,
+                "findings": [
+                  "Renaming the exported symbol `log` to `writeLog` without updating any importers will break consumers of this module. The diff must include corresponding import changes or confirm no other files import `log`."
+                ],
+                "reasoningRetried": true,
+                "reasoningTokens": 1870
+              }
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 11801,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 434
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 15683,
+            "retries": 1,
+            "details": {
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "reject",
+                "expectedApproved": false,
+                "verdictCorrect": true,
+                "findingLocalized": false,
+                "findings": [
+                  "The function recordFailure only sends telemetry but does not maintain any failure state (e.g., counters, timestamps) needed for route demotion."
+                ],
+                "reasoningRetried": false,
+                "reasoningTokens": 938
+              }
+            },
+            "error": "kilo-free-direct stream error (502) after HTTP 200: JSON error injected into SSE stream"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T13:20:17.732Z",
+        "completedAt": "2026-10-08T13:22:59.711Z"
+      }
+    },
+    "startedAt": "2026-10-08T13:07:30.402Z",
+    "completedAt": "2026-10-08T13:08:02.080Z",
+    "totalLatencyMs": 31678,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 18,
+      "transient": true,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R66_ROLE_QUALIFICATION_V4",
+      "roleTransientCases": 1,
+      "previousReceipt": "docs/evidence/r72-free-supply-and-autonomy/qualification-dots-studio_dots-3-note-preview_free-1791464849592.json",
+      "reviewerRequests": 8
+    }
+  },
+  "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+  "finishedAt": "2026-10-08T13:22:59.711Z"
+}

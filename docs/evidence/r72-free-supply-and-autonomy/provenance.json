@@ -1,0 +1,463 @@
+{
+  "at": "2026-10-08T12:58:34.194Z",
+  "original": "G:/CodeForge",
+  "originalBranch": "codex/r29-release-closure",
+  "originalHead": "6f8ad979fb9de0a17f69571d03358d7db5a35459",
+  "source": "G:\\CodeForge\\worktrees\\r72-free-supply-and-autonomy",
+  "startingHead": "8ef7847019b49380ecf519463c6b527920770124",
+  "branch": "codex/r72-free-supply-and-autonomy",
+  "r71CheckoutHead": "8ef7847019b49380ecf519463c6b527920770124",
+  "ancestry": [
+    {
+      "sha": "516a3c30d93b089935d09672c970a3998e25603d",
+      "isAncestor": true,
+      "objectType": "commit"
+    },
+    {
+      "sha": "2ac1ede001debf3c5e52f38e52b91d7d26832d12",
+      "isAncestor": true,
+      "objectType": "commit"
+    },
+    {
+      "sha": "b61af87b5a5dbc66fd6b37c807c87b789348eb7b",
+      "isAncestor": true,
+      "objectType": "commit"
+    }
+  ],
+  "preservedFiles": [
+    {
+      "file": "apps/desktop/scripts/packaged-endurance.mjs",
+      "sha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c"
+    },
+    {
+      "file": "benchmarks/r57/extract-packaged-repeat.mjs",
+      "sha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7"
+    },
+    {
+      "file": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+      "sha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b"
+    },
+    {
+      "file": "docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md",
+      "sha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497"
+    },
+    {
+      "file": "docs/evidence/r60-usable-free-inference/postgres-parity.json",
+      "sha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243"
+    },
+    {
+      "file": "packages/server/test/fixtures/run-recovery-worker.mjs",
+      "sha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd"
+    }
+  ],
+  "originalStatus": "M apps/desktop/scripts/packaged-endurance.mjs\n M benchmarks/r57/extract-packaged-repeat.mjs\n M docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json\n M docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md\n M docs/evidence/r60-usable-free-inference/postgres-parity.json\n M packages/server/test/fixtures/run-recovery-worker.mjs\n?? .playwright-mcp/page-2026-09-30T14-12-25-645Z.yml\n?? .playwright-mcp/page-2026-09-30T14-12-42-896Z.png\n?? .playwright-mcp/page-2026-09-30T14-15-00-716Z.png\n?? .playwright-mcp/page-2026-09-30T14-15-34-155Z.png\n?? .playwright-mcp/page-2026-09-30T14-15-58-443Z.png\n?? .playwright-mcp/page-2026-09-30T14-16-43-820Z.yml\n?? .playwright-mcp/page-2026-09-30T14-16-56-910Z.png\n?? .playwright-mcp/page-2026-09-30T14-17-19-365Z.png\n?? .playwright-mcp/page-2026-09-30T14-17-39-765Z.png\n?? .playwright-mcp/page-2026-09-30T14-34-08-934Z.yml\n?? .playwright-mcp/page-2026-09-30T14-34-21-922Z.png\n?? .playwright-mcp/page-2026-09-30T20-28-46-481Z.yml\n?? atom-v41-default.png\n?? benchmarks/r57/accounting-fault-campaign.mjs\n?? benchmarks/r57/audit-evidence.mjs\n?? benchmarks/r57/kill-resume-campaign.mjs\n?? benchmarks/r57/live-task-campaign.mjs\n?? benchmarks/r57/packaged-selfdogfood.mjs\n?? benchmarks/r57/selfdogfood-acceptance.mjs\n?? benchmarks/r57/selfdogfood-goal.json\n?? benchmarks/r57/summarize-continuation.mjs\n?? benchmarks/r58/tmp/\n?? benchmarks/r59/tmp/asarcheck.mjs\n?? benchmarks/r59/tmp/asarcheck2.mjs\n?? benchmarks/r59/tmp/asarcheck3.mjs\n?? benchmarks/r59/tmp/chk-asar.cjs\n?? benchmarks/r59/tmp/dbg.mjs\n?? benchmarks/r59/tmp/dogfood-profile-v10/\n?? benchmarks/r59/tmp/dogfood-run.err\n?? benchmarks/r59/tmp/dogfood-run10.err\n?? benchmarks/r59/tmp/dogfood-run11.err\n?? benchmarks/r59/tmp/dogfood-run12.err\n?? benchmarks/r59/tmp/dogfood-run13.err\n?? benchmarks/r59/tmp/dogfood-run2.err\n?? benchmarks/r59/tmp/dogfood-run4.err\n?? benchmarks/r59/tmp/dogfood-run5.err\n?? benchmarks/r59/tmp/dogfood-run6.err\n?? benchmarks/r59/tmp/dogfood-run7.err\n?? benchmarks/r59/tmp/dogfood-run8.err\n?? benchmarks/r59/tmp/dogfood-run9.err\n?? benchmarks/r59/tmp/dogfood.pid\n?? benchmarks/r59/tmp/measure-context.mjs\n?? benchmarks/r59/tmp/measure-context2.mjs\n?? benchmarks/r59/tmp/measure-demand.mjs\n?? benchmarks/r59/tmp/measure-ratio.mjs\n?? benchmarks/r59/tmp/monitor.mjs\n?? benchmarks/r59/tmp/repro-demand.mjs\n?? benchmarks/r59/tmp/repro-demand2.mjs\n?? benchmarks/r59/tmp/runcheck.mjs\n?? benchmarks/r59/tmp/workspace/\n?? benchmarks/r60/\n?? benchmarks/r62/\n?? benchmarks/r63/\n?? benchmarks/r64/\n?? benchmarks/r65/tmp/\n?? benchmarks/r67/add-routing-tests.mjs\n?? benchmarks/r67/edit-recovery.mjs\n?? benchmarks/r67/pagination-audit.mjs\n?? benchmarks/r67/preserve-recovery-telemetry.mjs\n?? benchmarks/r67/wire-parent-recovery.mjs\n?? benchmarks/r68/\n?? benchmarks/r69/\n?? benchmarks/r70/\n?? benchmarks/r71/\n?? deploy/inference/qwen-coder-free/Dockerfile.modal\n?? deploy/inference/qwen-coder-free/__pycache__/\n?? deploy/inference/qwen-coder-free/modal_app.py\n?? docs/evidence/r57-autonomous-endurance-learning/R57-FINAL-REPORT.md\n?? docs/evidence/r57-autonomous-endurance-learning/accounting-fault-campaign.json\n?? docs/evidence/r57-autonomous-endurance-learning/adaptive-learning-runtime-proof.json\n?? docs/evidence/r57-autonomous-endurance-learning/anti-loop-runtime-proof.json\n?? docs/evidence/r57-autonomous-endurance-learning/endurance-campaign.json\n?? docs/evidence/r57-autonomous-endurance-learning/fairness-report.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-dependency-audit.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-doc-links.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-evidence-privacy-scan.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-public-claims.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-sbom.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-secret-scan.json\n?? docs/evidence/r57-autonomous-endurance-learning/kill-resume-campaign.json\n?? docs/evidence/r57-autonomous-endurance-learning/live-concurrent-bugfix.json\n?? docs/evidence/r57-autonomous-endurance-learning/live-feature.json\n?? docs/evidence/r57-autonomous-endurance-learning/live-regression.json\n?? docs/evidence/r57-autonomous-endurance-learning/live-task-matrix.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-live-alt-qwen-diagnostic.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-diagnostic.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-longpath-failure.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-checkpoint-restored-verification-blocked.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-cohere-watchdog-ceiling.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-groq-catalog-empty.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-groq-model-not-found.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-lfm25-killed.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-lightning-stalled.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-ling-watchdog-ceiling.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-nanoomni-502.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-openrouter-auto-ceiling.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-openrouter-gptoss-not-registered.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-poolside-429.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-qwen-429.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-stub-coder-path-blocked.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-watchdog-ceiling-openrouter-120b.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-soak-10min.json\n?? docs/evidence/r57-autonomous-endurance-learning/real-concurrency.json\n?? docs/evidence/r57-autonomous-endurance-learning/self-dogfood-live-groq.json\n?? docs/evidence/r57-autonomous-endurance-learning/self-dogfood-live-retry.json\n?? docs/evidence/r57-autonomous-endurance-learning/self-dogfood-live.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory-roles.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory-v10-profile.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory-v10.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory.pre-dedupe-fix.json\n?? docs/evidence/r59-supply-recovery/packaged-self-dogfood-v12.json\n?? docs/evidence/r59-supply-recovery/packaged-self-dogfood-v8-capacity-denied-evidence.json\n?? docs/evidence/r59-supply-recovery/packaged-self-dogfood.json\n?? docs/evidence/r60-usable-free-inference/gpu-infrastructure.json\n?? docs/evidence/r69-everyday-completion-closure/\n?? docs/evidence/r70-free-supply-independence/\n?? shots/\n?? verify-homepage-default.png\n?? worktrees/",
+  "previousEvidence": [
+    {
+      "file": "affected-tests.json",
+      "bytes": 447786,
+      "sha256": "a67d57ee549d4f58d39d1d92729cef24e40d700aa97f7565b38a8afd513b762c",
+      "schema": [
+        "numTotalTestSuites",
+        "numPassedTestSuites",
+        "numFailedTestSuites",
+        "numPendingTestSuites",
+        "numTotalTests",
+        "numPassedTests",
+        "numFailedTests",
+        "numPendingTests",
+        "numTodoTests",
+        "snapshot",
+        "startTime",
+        "success",
+        "testResults"
+      ]
+    },
+    {
+      "file": "baseline.json",
+      "bytes": 852339,
+      "sha256": "6ee40c047eb6f842f776d0b0c4257aebd3147510b977e5089a439feefe0fc267",
+      "schema": [
+        "observedAt",
+        "repository",
+        "originalBranch",
+        "originalHead",
+        "branch",
+        "startingHead",
+        "remote",
+        "baselineCommits",
+        "lockfileSha256",
+        "preservedTracked",
+        "originalUntracked",
+        "r70Report"
+      ]
+    },
+    {
+      "file": "desktop-connection-tests-verified.json",
+      "bytes": 10473,
+      "sha256": "fdfc8ee29ace6012db69827c6d167dcdbd89ce1702b3d6c1610f40f33ca07563",
+      "schema": [
+        "numTotalTestSuites",
+        "numPassedTestSuites",
+        "numFailedTestSuites",
+        "numPendingTestSuites",
+        "numTotalTests",
+        "numPassedTests",
+        "numFailedTests",
+        "numPendingTests",
+        "numTodoTests",
+        "snapshot",
+        "startTime",
+        "success",
+        "testResults"
+      ]
+    },
+    {
+      "file": "desktop-connection-tests.json",
+      "bytes": 3212,
+      "sha256": "c726b879b9391315791b1953908d3505d004c449f2c06a930d35ccf80701607a",
+      "schema": [
+        "numTotalTestSuites",
+        "numPassedTestSuites",
+        "numFailedTestSuites",
+        "numPendingTestSuites",
+        "numTotalTests",
+        "numPassedTests",
+        "numFailedTests",
+        "numPendingTests",
+        "numTodoTests",
+        "snapshot",
+        "startTime",
+        "success",
+        "testResults"
+      ]
+    },
+    {
+      "file": "evidence-manifest.json",
+      "bytes": 8709,
+      "sha256": "006b22dd6d5b356303912b61dc26841dc491313eacb1b81f21392bdef85ade45",
+      "schema": [
+        "observedAt",
+        "files"
+      ]
+    },
+    {
+      "file": "final-affected-tests.json",
+      "bytes": 454130,
+      "sha256": "3a8681497ca23dfa3d91d68a9a7348d6523d11d7821b533fd1c5efcef786e1e3",
+      "schema": [
+        "numTotalTestSuites",
+        "numPassedTestSuites",
+        "numFailedTestSuites",
+        "numPendingTestSuites",
+        "numTotalTests",
+        "numPassedTests",
+        "numFailedTests",
+        "numPendingTests",
+        "numTodoTests",
+        "snapshot",
+        "startTime",
+        "success",
+        "testResults"
+      ]
+    },
+    {
+      "file": "final-audit.json",
+      "bytes": 3302,
+      "sha256": "b9b27fd789732f10a70ddf7a49f2e5b1607ca3012b561bbd1bd5eb8bbbd4fb1a",
+      "schema": [
+        "observedAt",
+        "sourceFreezeCommit",
+        "currentHead",
+        "originalHeadMatches",
+        "originalBranchMatches",
+        "preserved",
+        "missingOriginalUntracked",
+        "r70ReportMatches",
+        "lockfileMatches",
+        "credentialAudit",
+        "taskMetrics"
+      ]
+    },
+    {
+      "file": "focused-tests.json",
+      "bytes": 11638,
+      "sha256": "8ef4fccd0080bdd495c97c7fec104238018afb7b59de6517d1e25695c2bf051b",
+      "schema": [
+        "numTotalTestSuites",
+        "numPassedTestSuites",
+        "numFailedTestSuites",
+        "numPendingTestSuites",
+        "numTotalTests",
+        "numPassedTests",
+        "numFailedTests",
+        "numPendingTests",
+        "numTodoTests",
+        "snapshot",
+        "startTime",
+        "success",
+        "testResults"
+      ]
+    },
+    {
+      "file": "kilo-free-direct-cohere_north-mini-code_free-2026-10-08T12-03-32-552Z-qualification.json",
+      "bytes": 77095,
+      "sha256": "ce5ef7a4e84b93b073ccc2db9a4920711542a4a5266aa7f5dfe4b218515347ad",
+      "schema": [
+        "startedAt",
+        "provider",
+        "modelId",
+        "kind",
+        "frames",
+        "policy",
+        "qualification",
+        "status",
+        "finishedAt"
+      ]
+    },
+    {
+      "file": "kilo-free-direct-poolside_laguna-s-2.1_free-2026-10-08T12-09-53-585Z-qualification.json",
+      "bytes": 5212,
+      "sha256": "6623bd495cbeb5870870766467467d97350f28ab183f0b970acf0ddf2baa060a",
+      "schema": [
+        "startedAt",
+        "provider",
+        "modelId",
+        "kind",
+        "frames",
+        "policy",
+        "qualification",
+        "status",
+        "finishedAt"
+      ]
+    },
+    {
+      "file": "live-failover-2026-10-08T12-09-05-404Z.json",
+      "bytes": 2527,
+      "sha256": "05b55f08c783729e5d740f8b96af1573e44c5cb93b8e445d00d52af144e86e52",
+      "schema": [
+        "startedAt",
+        "kind",
+        "calls",
+        "observations",
+        "policy",
+        "health",
+        "status",
+        "finishedAt"
+      ]
+    },
+    {
+      "file": "live-failover.json",
+      "bytes": 2461,
+      "sha256": "d04d75035ebd91cd9ca2e1204495990659e4e28a3165d1f3d15b513a90a58bc3",
+      "schema": [
+        "startedAt",
+        "kind",
+        "calls",
+        "observations",
+        "policy",
+        "health",
+        "status",
+        "finishedAt"
+      ]
+    },
+    {
+      "file": "openrouter-account-proof.json",
+      "bytes": 47247,
+      "sha256": "363f050f51bffb6d14f9c98560cabecb172158ba76abe5fbdb506bb91f182418",
+      "schema": [
+        "startedAt",
+        "kind",
+        "status",
+        "frames",
+        "entitlement",
+        "qualification",
+        "capacityMeasured",
+        "routes",
+        "foreignUserRoutes",
+        "coding",
+        "finishedAt",
+        "receiptSerialization"
+      ]
+    },
+    {
+      "file": "production-seam-tests.json",
+      "bytes": 1550,
+      "sha256": "94291f359b24e4e8c30e86d0d449c47530dbd01ddc979a37b837be6a1f786b67",
+      "schema": [
+        "numTotalTestSuites",
+        "numPassedTestSuites",
+        "numFailedTestSuites",
+        "numPendingTestSuites",
+        "numTotalTests",
+        "numPassedTests",
+        "numFailedTests",
+        "numPendingTests",
+        "numTodoTests",
+        "snapshot",
+        "startTime",
+        "success",
+        "testResults"
+      ]
+    },
+    {
+      "file": "R71-ENDURANCE.md",
+      "bytes": 3027,
+      "sha256": "c91c547f71c0adabd29330096e4e24577badc02430857f02a85964ef6c6efc4e"
+    },
+    {
+      "file": "R71-FAILOVER.md",
+      "bytes": 2009,
+      "sha256": "031003c8a18d2ece490c8173a071dde283a0235791266edcb1fdc0891e659674"
+    },
+    {
+      "file": "R71-FINAL-REPORT.md",
+      "bytes": 7586,
+      "sha256": "08b258937ae3c2704c62e5ac906b908215875e5e75f014d6b4a2054d156c2334"
+    },
+    {
+      "file": "R71-LIVE-INFERENCE.md",
+      "bytes": 3120,
+      "sha256": "5b63d95ae39bdf1ec4677fd4c83b5cb7103a74dfff0f4839972741f424353c2a"
+    },
+    {
+      "file": "R71-QUOTA-ISOLATION.md",
+      "bytes": 2430,
+      "sha256": "1ad42f4ade2dc3d3bc0b73cce14f89bcb61b759acbe854c17e2ba3432eca2bf7"
+    },
+    {
+      "file": "R71-SUPPLY-MATRIX.md",
+      "bytes": 21973,
+      "sha256": "fa4d21e1b306d5778f87dda65f4757ef83c6fb7fcee26ebaf5775971299e4c0d"
+    },
+    {
+      "file": "R71-TASK-CAMPAIGN.json",
+      "bytes": 111389,
+      "sha256": "95741ab13554c28df272a190e65d4b1f70e3d52713c3bdb9ebcaa6b256fea4c9",
+      "schema": [
+        "startedAt",
+        "evidenceClass",
+        "sourceRevision",
+        "status",
+        "tasks",
+        "supply",
+        "costState",
+        "stopReason",
+        "finishedAt"
+      ]
+    },
+    {
+      "file": "R71-VALIDATION.md",
+      "bytes": 4852,
+      "sha256": "446c9dc7283a1a3fe162ec1fcde2039360abf2e59edb92b7050595f5319e55e7"
+    },
+    {
+      "file": "R71-WINDOWS-PACKAGE.md",
+      "bytes": 2261,
+      "sha256": "fdce15df8738977fbaf2056b3cf38ece95c6ae408ee45d3db254feb2b287bce8"
+    },
+    {
+      "file": "secret-scan.json",
+      "bytes": 404,
+      "sha256": "db6eab2265ea164e5401b290e46237367c801f0adbe75eff781d8659e668c6be",
+      "schema": [
+        "schemaVersion",
+        "generatedAt",
+        "filesScanned",
+        "totalFindings",
+        "synthetic",
+        "allowlisted",
+        "ownerReviewRequired",
+        "status",
+        "policy"
+      ]
+    },
+    {
+      "file": "supply-preflight.json",
+      "bytes": 20307,
+      "sha256": "6a2a626f88588372541f1c5db473ff253312b447d5e0d6f145f886805b64f82c",
+      "schema": [
+        "startedAt",
+        "kind",
+        "providers",
+        "finishedAt"
+      ]
+    },
+    {
+      "file": "transport-tests.json",
+      "bytes": 18972,
+      "sha256": "3350f5f2821f3aa22058ebc0466a3a95ecebd85eef9e30f64841e0b4508d5a0e",
+      "schema": [
+        "numTotalTestSuites",
+        "numPassedTestSuites",
+        "numFailedTestSuites",
+        "numPendingTestSuites",
+        "numTotalTests",
+        "numPassedTests",
+        "numFailedTests",
+        "numPendingTests",
+        "numTodoTests",
+        "snapshot",
+        "startTime",
+        "success",
+        "testResults"
+      ]
+    },
+    {
+      "file": "windows-artifact-manifest.json",
+      "bytes": 1388,
+      "sha256": "c5dc6d55f8630bc892fd1d2448260bc5fe2647011e2ce6136872403fb0d78f0e",
+      "schema": [
+        "observedAt",
+        "executable",
+        "signatureStatus",
+        "signatureMessage",
+        "sourceCommit",
+        "launched",
+        "installerBuilt",
+        "files"
+      ]
+    },
+    {
+      "file": "windows-auth-endpoint.log",
+      "bytes": 185,
+      "sha256": "96b1d4068923949b6d5bd3df3abe424f2c8ecaa329d5b165f6b9110172cb45f1"
+    },
+    {
+      "file": "windows-browser-security.log",
+      "bytes": 267,
+      "sha256": "58710cafa59e9f5cc5d9625eb5aa327bcd0e7057c78eedd76746b1f58a133dca"
+    },
+    {
+      "file": "windows-build-identity.log",
+      "bytes": 228,
+      "sha256": "e267612285119395963091862ca02cd6226e66c4be35180982d94f7f8e006954"
+    },
+    {
+      "file": "windows-internal-dependencies.log",
+      "bytes": 368,
+      "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+    },
+    {
+      "file": "windows-native-hashes.json",
+      "bytes": 559,
+      "sha256": "4024ef79859d55eecdc2879d1f55b874fd58e1049025327645180dc4db2ab327",
+      "schema": "array"
+    },
+    {
+      "file": "windows-package-build.log",
+      "bytes": 6525,
+      "sha256": "dce004f0515dbfeb82268117ec6cd007e3c1166479e71da027a7b8295ba2b068"
+    },
+    {
+      "file": "windows-runtime-dependencies.log",
+      "bytes": 102,
+      "sha256": "dc407faf1e4efc46ec99c28bea6ea17adbf9fc92de1d39740b29a60e570d00bd"
+    },
+    {
+      "file": "workspace-build.log",
+      "bytes": 4570,
+      "sha256": "aed5d4fb4c46f66427d341b4f0efddb6113ba0ef643ecfa6bd4ba7f6d06b842b"
+    }
+  ],
+  "lockfileSha256": "8cc332bdd8b2a53126592aa45960497d1892223ce2b37162f47496690dc31d45"
+}

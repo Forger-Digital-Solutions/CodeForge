@@ -1,0 +1,1560 @@
+<head><meta charset="utf-8"><title>Rate Limits and Quotas - Puter.js Docs</title><meta name="title" content="Rate Limits and Quotas - Puter.js Docs" /><link rel="canonical" href="https://docs.puter.com/rate-limits-and-quotas/"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="The rate limits, usage credits, and storage quotas that apply to Puter.js apps, and how to handle hitting them."><meta property="og:title" content="Rate Limits and Quotas - Puter.js Docs"><meta property="og:image" content="https://assets.puter.site/twitter.png"><meta name="twitter:image" content="https://assets.puter.site/twitter.png"><meta name="robots" content="index, follow" /><meta property="og:site_name" content="Puter.js Docs" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/assets/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="/assets/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="/assets/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="/assets/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="/assets/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="/assets/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="/assets/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="/assets/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192"  href="/assets/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="/assets/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png">
+        <link rel="manifest" href="/assets/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/assets/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <link rel="stylesheet" href="/./assets/js/bundle.css"><link rel="stylesheet" href="/./assets/css/bootstrap.min.css"><link rel="stylesheet" href="/./assets/css/style.css"><script src="/./assets/js/bundle.js"></script>
+        <script type="application/ld+json">
+            {
+                "@context":"https://schema.org",
+                "@type":"WebSite",
+                "@id": "https://docs.puter.com/#website",
+                "name":"Puter.js Docs",
+                "alternateName": "Puter.js Documentation",
+                "url":"https://docs.puter.com",
+                "about": { "@id": "https://developer.puter.com/#puterjs" },
+                "publisher": { "@id": "https://puter.com/#organization" }
+            }
+        </script>
+        <script defer data-domain="docs.puter.com" src="https://plausible.io/js/script.js"></script>
+        <script type="text/javascript">
+            (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+                c[a]("identify", (sessionStorage.cid ??= crypto.randomUUID()));
+            })(window, document, "clarity", "script", "ubxybtas0w");
+        </script></head><body id="docs"><div class="progress-bar-container" style="position: fixed; width: 100%; height: 5px; z-index: 99999999999;"><div id="progress-bar" style="width: 0%; height: 5px; background-color: #dbdbe3; transition: 0.2s all; z-index: 99999999999;"></div></div><script>hljs.highlightAll();</script><div style="max-width: 1400px; margin: 0 auto;"><div><button class="sidebar-toggle hidden-lg hidden-xl"><div class="sidebar-toggle-button"><span></span><span></span><span></span></div></button><div class="col-xl-3 col-lg-3 hidden-md hidden-sm hidden-xs" id="sidebar-wrapper"><div id="sidebar"><div id="sidebar-title" style="font-weight: normal;"><a href="/">Puter.js Docs</a></div>
+        <div class="search-trigger">
+            <div class="search-trigger-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+            </div>
+            <div class="search-trigger-placeholder">Search</div>
+        </div>
+    <a target="_blank" href="https://github.com/heyPuter/puter/" class="download-prompt skip-insta-load" style="margin-top: 40px; font-size: 15px;"><svg role="img" style="margin-right:10px; margin-bottom: -3px;" width="20" height="20" viewBox="0 0 24 24" fill="#444" xmlns="http://www.w3.org/2000/svg"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span class="github-stars"></span></a><a target="_blank" href="https://builder.puter.com/?utm_source=docs.puter.com&utm_medium=referral&utm_campaign=docs_sidebar" data-tooltip="Create Puter.js apps with our AI app builder" class="download-prompt ai-builder-link skip-insta-load" style="margin-top: 10px; font-size: 15px;"><svg style="margin-right: 10px; margin-bottom: -5px" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="1 0.5 22 22" fill="none" stroke="#444" stroke-width="1.83" stroke-linecap="round" stroke-linejoin="round" class="ai-builder-icon"><path d="M15.5 2Q16.28 7.72 22 8.5Q16.28 9.28 15.5 15Q14.72 9.28 9 8.5Q14.72 7.72 15.5 2Z"/><path d="M7 11Q7.6 15.4 12 16Q7.6 16.6 7 21Q6.4 16.6 2 16Q6.4 15.4 7 11Z"/><circle cx="4.5" cy="6.5" r="0.5"/><circle cx="20" cy="17.5" r="0.5"/></svg>Build with AI</a><a target="_blank" href="/recipes/" class="download-prompt skip-insta-load" style="margin-top: 10px; font-size: 15px;"><svg style="margin-right: 10px; margin-bottom: -5px" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open-icon lucide-book-open"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>Browse recipes</a><a target="_blank" href="/playground/" class="download-prompt skip-insta-load" style="margin-top: 10px; font-size: 15px;"><svg style="margin-right: 10px; margin-bottom: -5px" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code-xml-icon lucide-code-xml"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>Open playground</a><a href="/llms.txt" class="download-prompt skip-insta-load" target="_blank"><svg style="margin-right: 10px; margin-bottom: -5px" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot-icon lucide-bot"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg><span style="font-size: 14px; font-family: monospace;">llms.txt</span></a><div class="section-title">Overview</div><p><a href="/./getting-started/" class="">Getting Started</a></p><p><a href="/./supported-platforms/" class="">Supported Platforms</a></p><p><a href="/./security/" class="">Security and Permissions</a></p><p><a href="/./rate-limits-and-quotas/" class="active">Rate Limits and Quotas</a></p><p><a href="/./user-pays-model/" class="">User-Pays Model</a></p><p><a href="/./frameworks/" class="">Framework Integrations</a></p><p><a href="/./mcp/" class="">MCP Server</a></p><p><a href="/./cli/" class="">CLI</a></p><p><a href="/./deployments/" class="">Deployments</a></p><p><a href="/./site-config/" class="">Site Configuration</a></p><p><a href="/./examples/" class="">Examples</a></p><div class="section-title"><img src="/./assets/img/ai.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./AI/" class="">AI</a></div><p><a href="/./AI/chat/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>chat()</code></a></p><p><a href="/./AI/listModels/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>listModels()</code></a></p><p><a href="/./AI/listModelProviders/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>listModelProviders()</code></a></p><p><a href="/./AI/txt2img/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>txt2img()</code></a></p><p><a href="/./AI/txt2speech/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>txt2speech()</code></a></p><p><a href="/./AI/txt2speech.listEngines/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>txt2speech.listEngines()</code></a></p><p><a href="/./AI/txt2speech.listVoices/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>txt2speech.listVoices()</code></a></p><p><a href="/./AI/txt2vid/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>txt2vid()</code></a></p><p><a href="/./AI/img2txt/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>img2txt()</code></a></p><p><a href="/./AI/speech2txt/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>speech2txt()</code></a></p><p><a href="/./AI/speech2speech/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>speech2speech()</code></a></p><div class="section-title"><img src="/./assets/img/apps.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./Apps/" class="">Apps</a></div><p><a href="/./Apps/create/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>create()</code></a></p><p><a href="/./Apps/list/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>list()</code></a></p><p><a href="/./Apps/delete/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>delete()</code></a></p><p><a href="/./Apps/update/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>update()</code></a></p><p><a href="/./Apps/get/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>get()</code></a></p><p><a href="/./Apps/checkName/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>checkName()</code></a></p><div class="section-title"><img src="/./assets/img/auth.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./Auth/" class="">Auth</a></div><p><a href="/./Auth/signIn/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>signIn()</code></a></p><p><a href="/./Auth/signOut/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>signOut()</code></a></p><p><a href="/./Auth/isSignedIn/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>isSignedIn()</code></a></p><p><a href="/./Auth/getUser/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>getUser()</code></a></p><p><a href="/./Auth/getProfile/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>getProfile()</code></a></p><p><a href="/./Auth/getProfilePicture/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>getProfilePicture()</code></a></p><p><a href="/./Auth/getMonthlyUsage/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>getMonthlyUsage()</code></a></p><p><a href="/./Auth/getDetailedAppUsage/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>getDetailedAppUsage()</code></a></p><div class="section-title"><img src="/./assets/img/fs.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./FS/" class="">Cloud Storage</a></div><p><a href="/./FS/write/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>write()</code></a></p><p><a href="/./FS/read/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>read()</code></a></p><p><a href="/./FS/mkdir/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>mkdir()</code></a></p><p><a href="/./FS/readdir/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>readdir()</code></a></p><p><a href="/./FS/rename/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>rename()</code></a></p><p><a href="/./FS/copy/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>copy()</code></a></p><p><a href="/./FS/move/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>move()</code></a></p><p><a href="/./FS/stat/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>stat()</code></a></p><p><a href="/./FS/delete/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>delete()</code></a></p><p><a href="/./FS/getReadURL/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>getReadURL()</code></a></p><p><a href="/./FS/revokeReadURL/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>revokeReadURL()</code></a></p><p><a href="/./FS/upload/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>upload()</code></a></p><p><a href="/./FS/share/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>share()</code></a></p><p><a href="/./FS/unshare/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>unshare()</code></a></p><p><a href="/./FS/listShared/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>listShared()</code></a></p><p><a href="/./FS/getShares/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>getShares()</code></a></p><p><a href="/./FS/getShareLink/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>getShareLink()</code></a></p><div class="section-title"><a href="/./Events/" class="">Events</a></div><p><a href="/./Events/onLocal/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>onLocal()</code></a></p><p><a href="/./Events/off/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>off()</code></a></p><p><a href="/./Events/onPersistent/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>onPersistent()</code></a></p><p><a href="/./Events/list/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>list()</code></a></p><p><a href="/./Events/unsubscribe/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>unsubscribe()</code></a></p><p><a href="/./Events/fetch/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>fetch()</code></a></p><p><a href="/./Events/handlers/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>handlers</code></a></p><p><a href="/./Events/workers/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>workers</code></a></p><div class="section-title"><img src="/./assets/img/workers.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./Workers/" class="">Serverless Workers</a></div><p><a href="/./Workers/router/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>router</code></a></p><p><a href="/./Workers/types/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;">TypeScript Types</a></p><p><a href="/./Workers/dynamic/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;">Dynamic Workers</a></p><p><a href="/./Workers/create/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>create()</code></a></p><p><a href="/./Workers/delete/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>delete()</code></a></p><p><a href="/./Workers/list/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>list()</code></a></p><p><a href="/./Workers/get/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>get()</code></a></p><p><a href="/./Workers/exec/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>exec()</code></a></p><div class="section-title"><img src="/./assets/img/hosting.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./Hosting/" class="">Hosting</a></div><p><a href="/./Hosting/create/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>create()</code></a></p><p><a href="/./Hosting/list/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>list()</code></a></p><p><a href="/./Hosting/delete/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>delete()</code></a></p><p><a href="/./Hosting/update/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>update()</code></a></p><p><a href="/./Hosting/get/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>get()</code></a></p><div class="section-title"><img src="/./assets/img/email.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./Email/" class="">Email</a></div><p><a href="/./Email/sendTransactional/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>sendTransactional()</code></a></p><p><a href="/./Email/list/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>list()</code></a></p><p><a href="/./Email/get/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>get()</code></a></p><div class="section-title"><img src="/./assets/img/kv.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./KV/" class="">Key-Value Store</a></div><p><a href="/./KV/set/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>set()</code></a></p><p><a href="/./KV/get/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>get()</code></a></p><p><a href="/./KV/incr/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>incr()</code></a></p><p><a href="/./KV/decr/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>decr()</code></a></p><p><a href="/./KV/add/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>add()</code></a></p><p><a href="/./KV/remove/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>remove()</code></a></p><p><a href="/./KV/update/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>update()</code></a></p><p><a href="/./KV/del/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>del()</code></a></p><p><a href="/./KV/list/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>list()</code></a></p><p><a href="/./KV/flush/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>flush()</code></a></p><p><a href="/./KV/expire/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>expire()</code></a></p><p><a href="/./KV/expireAt/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>expireAt()</code></a></p><p><a href="/./KV/MAX_KEY_SIZE/" class=""><img src="/./assets/img/attr.svg" style="width:12px; height: 12px; margin-right:7px;"><code>MAX_KEY_SIZE</code></a></p><p><a href="/./KV/MAX_VALUE_SIZE/" class=""><img src="/./assets/img/attr.svg" style="width:12px; height: 12px; margin-right:7px;"><code>MAX_VALUE_SIZE</code></a></p><div class="section-title"><img src="/./assets/img/networking.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./Networking/" class="">Networking</a></div><p><a href="/./Networking/Socket/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>Socket</code></a></p><p><a href="/./Networking/TLSSocket/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>TLSSocket</code></a></p><p><a href="/./Networking/fetch/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>fetch()</code></a></p><div class="section-title"><img src="/./assets/img/peer.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./Peer/" class="">Peer</a></div><p><a href="/./Peer/serve/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>serve()</code></a></p><p><a href="/./Peer/connect/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>connect()</code></a></p><p><a href="/./Peer/createGuestGrant/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>createGuestGrant()</code></a></p><p><a href="/./Peer/ensureTurnRelays/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>ensureTurnRelays()</code></a></p><div class="section-title"><img src="/./assets/img/ui.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./UI/" class="">UI</a></div><p><a href="/./UI/authenticateWithPuter/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>authenticateWithPuter()</code></a></p><p><a href="/./UI/alert/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>alert()</code></a></p><p><a href="/./UI/notify/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>notify()</code></a></p><p><a href="/./UI/contextMenu/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>contextMenu()</code></a></p><p><a href="/./UI/createWindow/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>createWindow()</code></a></p><p><a href="/./UI/exit/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>exit()</code></a></p><p><a href="/./UI/getLanguage/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>getLanguage()</code></a></p><p><a href="/./UI/hideWindow/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>hideWindow()</code></a></p><p><a href="/./UI/launchApp/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>launchApp()</code></a></p><p><a href="/./UI/on/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>on()</code></a></p><p><a href="/./UI/onItemsOpened/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>onItemsOpened()</code></a></p><p><a href="/./UI/onLaunchedWithItems/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>onLaunchedWithItems()</code></a></p><p><a href="/./UI/onWindowClose/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>onWindowClose()</code></a></p><p><a href="/./UI/parentApp/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>parentApp()</code></a></p><p><a href="/./UI/prompt/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>prompt()</code></a></p><p><a href="/./UI/setMenubar/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>setMenubar()</code></a></p><p><a href="/./UI/setWindowHeight/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>setWindowHeight()</code></a></p><p><a href="/./UI/setWindowPosition/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>setWindowPosition()</code></a></p><p><a href="/./UI/setWindowSize/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>setWindowSize()</code></a></p><p><a href="/./UI/setWindowTitle/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>setWindowTitle()</code></a></p><p><a href="/./UI/setWindowWidth/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>setWindowWidth()</code></a></p><p><a href="/./UI/setWindowX/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>setWindowX()</code></a></p><p><a href="/./UI/setWindowY/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>setWindowY()</code></a></p><p><a href="/./UI/requestPictureInPicture/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>requestPictureInPicture()</code></a></p><p><a href="/./UI/exitPictureInPicture/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>exitPictureInPicture()</code></a></p><p><a href="/./UI/showColorPicker/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>showColorPicker()</code></a></p><p><a href="/./UI/showDirectoryPicker/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>showDirectoryPicker()</code></a></p><p><a href="/./UI/showFeedbackDialog/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>showFeedbackDialog()</code></a></p><p><a href="/./UI/showFontPicker/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>showFontPicker()</code></a></p><p><a href="/./UI/showOpenFilePicker/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>showOpenFilePicker()</code></a></p><p><a href="/./UI/showSaveFilePicker/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>showSaveFilePicker()</code></a></p><p><a href="/./UI/showSpinner/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>showSpinner()</code></a></p><p><a href="/./UI/hideSpinner/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>hideSpinner()</code></a></p><p><a href="/./UI/showWindow/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>showWindow()</code></a></p><p><a href="/./UI/socialShare/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>socialShare()</code></a></p><p><a href="/./UI/wasLaunchedWithItems/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>wasLaunchedWithItems()</code></a></p><div class="section-title"><img src="/./assets/img/auth.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./Perms/" class="">Perms</a></div><p><a href="/./Perms/request/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>request()</code></a></p><p><a href="/./Perms/check/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>check()</code></a></p><p><a href="/./Perms/appData/" class="">Using another app's data</a></p><div class="section-title"><img src="/./assets/img/auth.svg" style="width:16px; height: 16px; margin-right: 5px;"><a href="/./Teams/" class="">Teams</a></div><p><a href="/./Teams/list/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>list()</code></a></p><p><a href="/./Teams/listDirectory/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>listDirectory()</code></a></p><div class="section-title"><a href="/./Utils/" class="">Utilities</a></div><p><a href="/./Utils/appID/" class=""><img src="/./assets/img/attr.svg" style="width:12px; height: 12px; margin-right:7px;"><code>appID</code></a></p><p><a href="/./Utils/env/" class=""><img src="/./assets/img/attr.svg" style="width:12px; height: 12px; margin-right:7px;"><code>env</code></a></p><p><a href="/./Utils/print/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>print()</code></a></p><p><a href="/./Utils/randName/" class=""><img src="/./assets/img/function.svg" style="width:12px; height: 12px; margin-right:7px;"><code>randName()</code></a></p><div class="section-title"><a href="/./Objects/" class="">Objects</a></div><p><a href="/./Objects/AppConnection/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>AppConnection</code></a></p><p><a href="/./Objects/app/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>App</code></a></p><p><a href="/./Objects/createappresult/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>CreateAppResult</code></a></p><p><a href="/./Objects/chatresponse/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>ChatResponse</code></a></p><p><a href="/./Objects/chatresponsechunk/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>ChatResponseChunk</code></a></p><p><a href="/./Objects/detailedappusage/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>DetailedAppUsage</code></a></p><p><a href="/./Objects/emaillistpage/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>EmailListPage</code></a></p><p><a href="/./Objects/emailmessage/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>EmailMessage</code></a></p><p><a href="/./Objects/emailmessageattachment/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>EmailMessageAttachment</code></a></p><p><a href="/./Objects/emailsummary/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>EmailSummary</code></a></p><p><a href="/./Objects/fsitem/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>FSItem</code></a></p><p><a href="/./Objects/kvpair/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>KVPair</code></a></p><p><a href="/./Objects/kvlistpage/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>KVListPage</code></a></p><p><a href="/./Objects/monthlyusage/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>MonthlyUsage</code></a></p><p><a href="/./Objects/puterpeerconnection/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>PuterPeerConnection</code></a></p><p><a href="/./Objects/puterpeerserver/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>PuterPeerServer</code></a></p><p><a href="/./Objects/signinresult/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>SignInResult</code></a></p><p><a href="/./Objects/speech2txtresult/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>Speech2TxtResult</code></a></p><p><a href="/./Objects/subdomain/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>Subdomain</code></a></p><p><a href="/./Objects/team/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>Team</code></a></p><p><a href="/./Objects/teamdirectoryentry/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>TeamDirectoryEntry</code></a></p><p><a href="/./Objects/ttsengine/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>TTSEngine</code></a></p><p><a href="/./Objects/ttsvoice/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>TTSVoice</code></a></p><p><a href="/./Objects/toolcall/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>ToolCall</code></a></p><p><a href="/./Objects/user/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>User</code></a></p><p><a href="/./Objects/userprofile/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>UserProfile</code></a></p><p><a href="/./Objects/workerdeployment/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>WorkerDeployment</code></a></p><p><a href="/./Objects/workerinfo/" class=""><img src="/./assets/img/object.svg" style="width:12px; height: 12px; margin-right:7px;"><code>WorkerInfo</code></a></p></div></div><div id="docs-content-" class="docs-content col-xl-7 col-lg-7 col-md-12 col-sm-12 col-xs-12"><div class="menu-dropdown">
+        <div class="menu-item-main">
+            <div class="menu-item-content" id="menu-copy-page">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy-icon lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <span>Copy page</span>
+            </div>
+            <div class="dropdown-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down-icon lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+        </div>
+    <div class="menu-dropdown-items" style="display: none;">
+                <div class="menu-item" id="menu-view-markdown">
+                    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Markdown</title><path d="M22.27 19.385H1.73A1.73 1.73 0 010 17.655V6.345a1.73 1.73 0 011.73-1.73h20.54A1.73 1.73 0 0124 6.345v11.308a1.73 1.73 0 01-1.73 1.731zM5.769 15.923v-4.5l2.308 2.885 2.307-2.885v4.5h2.308V8.078h-2.308l-2.307 2.885-2.308-2.885H3.46v7.847zM21.232 12h-2.309V8.077h-2.307V12h-2.308l3.461 4.039z"/></svg>
+                    <span>View as Markdown</span>
+                </div>
+            
+                <div class="menu-item" id="menu-open-chatgpt">
+                    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>OpenAI</title><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg>
+                    <span>Open in ChatGPT</span>
+                </div>
+            
+                <div class="menu-item" id="menu-open-claude">
+                    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Anthropic</title><path d="M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z"/></svg>
+                    <span>Open in Claude</span>
+                </div>
+            </div></div><h1>Rate Limits and Quotas</h1><hr class="hr-inset"><div class="info">This is an advanced reference. Puter.js already handles the common cases: a call that runs out of credit or storage shows the user an upgrade prompt automatically. Read on if you expect high request volumes or want to handle limit errors yourself.</div>
+
+<p>Three independent checks can stop a request:</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>What it limits</th>
+<th>Resets</th>
+<th>Error</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Usage credit</strong></td>
+<td>What usage costs (AI, egress, KV, storage operations, workers)</td>
+<td>Monthly, per plan</td>
+<td><code>402</code> <code>insufficient_funds</code></td>
+</tr>
+<tr>
+<td><strong>Rate limit</strong></td>
+<td>How many requests are made in a window</td>
+<td>Rolling window (10 s, 1 min or 1 h)</td>
+<td><code>429</code> <code>too_many_requests</code></td>
+</tr>
+<tr>
+<td><strong>Storage quota</strong></td>
+<td>How many bytes are stored</td>
+<td>When the user deletes files or upgrades</td>
+<td><code>413</code> <code>storage_limit_reached</code></td>
+</tr>
+</tbody></table>
+<p>Credit doesn&#39;t buy rate-limit headroom, and an empty balance doesn&#39;t block reads that cost nothing.</p>
+
+            <h2 class="anchored-heading" id="how-limits-are-counted">
+              <a class="anchor" href="#how-limits-are-counted"></a>
+              How limits are counted
+            </h2><p>Under the <a href="/user-pays-model">User-Pays Model</a>, limits are counted against each user&#39;s own account, so one heavy user can&#39;t use up your app for everyone else. Every limit on this page is counted in one of these scopes:</p>
+<table>
+<thead>
+<tr>
+<th>Scope</th>
+<th>What shares one budget</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Per user, per app</strong></td>
+<td>One user in one app. <strong>This is the default</strong>: a limit that names no scope uses it. The same user in another app has a separate budget. The Puter desktop and API tokens count as one more app, and each <a href="/Workers/">worker</a> gets its own budget too.</td>
+</tr>
+<tr>
+<td><strong>Per user, all apps</strong></td>
+<td>One user, summed across every app they use. Used for quotas on things an account keeps (subscriptions, share handles, shares per day, uploads in progress) and a few call budgets.</td>
+</tr>
+<tr>
+<td><strong>Per app, all users</strong></td>
+<td>One app, summed across all of its users. Used for things a developer publishes, such as event handlers.</td>
+</tr>
+<tr>
+<td><strong>Per network</strong></td>
+<td>One IP address or device. Used by routes with no signed-in user, such as signed URLs and WebDAV.</td>
+</tr>
+</tbody></table>
+<p>When a quota has both a per-app and an all-apps number, both apply: one app can use up to its per-app share, and all apps together can use up to the all-apps total.</p>
+<p>Where a table shows three numbers, they are <strong>paid / free / anonymous</strong>. Paid is any subscription tier. Anonymous is a temporary (guest) account.</p>
+
+            <h2 class="anchored-heading" id="usage-credit">
+              <a class="anchor" href="#usage-credit"></a>
+              Usage credit
+            </h2><p>Usage is charged against the account&#39;s monthly allowance at real cost.</p>
+<ul>
+<li>Every account gets a free monthly allowance (<a href="https://puter.com/dashboard#usage">shown in the dashboard</a>). Paid plans get more; see the <a href="https://puter.com/dashboard#billing">plans page</a>.</li>
+<li>The allowance resets monthly and doesn&#39;t roll over. Purchased credits never expire and are spent after the allowance runs out.</li>
+</ul>
+<p>The main costs:</p>
+<ul>
+<li><strong>Egress</strong>: every byte sent to a client, on all responses, not just file downloads. This is the one developers underestimate.</li>
+<li><strong>AI</strong>: priced per model. <code>puter.ai.listModels()</code> lists the models, and <code>GET /metering/allCosts</code> returns the per-model rates.</li>
+<li><strong>KV and storage operations</strong>: small per-operation costs. Reads served from cache cost a fraction of uncached reads.</li>
+</ul>
+<p>For AI:</p>
+<ul>
+<li>A streamed response that stops before the model reports its token counts (an upstream error mid-stream, for example) is charged on an estimate of what was streamed. A request that produced no output is free.</li>
+<li>In-flight chat, text-to-speech, speech-to-text and voice-changer requests reserve the most they could cost until they finish, then settle at their real cost. If several expensive requests start at once and the balance can&#39;t cover all of them, the later ones fail with <code>402 insufficient_funds</code>.</li>
+</ul>
+
+            <h2 class="anchored-heading" id="rate-limits">
+              <a class="anchor" href="#rate-limits"></a>
+              Rate limits
+            </h2><p>All rate limits are rolling windows, counted per user, per app unless a scope is given.</p>
+
+            <h3 class="anchored-heading" id="ai">
+              <a class="anchor" href="#ai"></a>
+              AI
+            </h3><p>Shared by chat, image generation, video, TTS, speech and OCR. Each interface and method has its own budget, so an image generation and a chat completion don&#39;t compete.</p>
+<table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Paid</th>
+<th>Free</th>
+<th>Anonymous</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Requests per 10 s</td>
+<td>200</td>
+<td>30</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Concurrent requests</td>
+<td>20</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Text for <code>txt2speech()</code></td>
+<td>3,000 characters</td>
+</tr>
+<tr>
+<td>Audio for <code>speech2speech()</code></td>
+<td>25 MiB</td>
+</tr>
+<tr>
+<td>Image inlined in a chat message</td>
+<td>5 MB</td>
+</tr>
+<tr>
+<td>File attached to a chat message, Claude models</td>
+<td>30 MB</td>
+</tr>
+<tr>
+<td>File attached to a chat message, OpenAI models</td>
+<td>5 MB</td>
+</tr>
+</tbody></table>
+<p>An input over its limit is rejected before it reaches the model. OCR input limits are under <a href="#ocr">OCR</a>.</p>
+<p>The OpenAI- and Anthropic-compatible endpoints (<code>/puterai/openai/v1/*</code>, <code>/puterai/anthropic/v1/messages</code>) require a paid plan; a free account gets <code>402 subscription_required</code>. The same models are available to every account through <code>puter.ai.*</code> and <code>/drivers/call</code>, and the model catalogue endpoints are open to everyone.</p>
+<p><code>/puterai/anthropic/v1/messages/count_tokens</code> has its own budget of 120 requests per minute per user, with no concurrency limit, and is not charged.</p>
+<p>Claude&#39;s server-executed tools are clamped so a request can&#39;t reserve an unbounded amount of credit:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Web search / web fetch <code>max_uses</code></td>
+<td>Defaults to 10 when omitted; capped at 20.</td>
+</tr>
+<tr>
+<td>Advisor <code>max_uses</code></td>
+<td>Defaults to 3; capped at 10.</td>
+</tr>
+<tr>
+<td>Advisor <code>max_tokens</code></td>
+<td>Defaults to 16,384; capped at 32,768.</td>
+</tr>
+</tbody></table>
+<p>A web search is metered at a flat per-request rate in addition to the tokens it reads back; an advisor call is metered under the named advisor model&#39;s own rates (an advisor model outside the catalog is priced at the most expensive entry, never left unpriced).</p>
+
+            <h3 class="anchored-heading" id="image-generation">
+              <a class="anchor" href="#image-generation"></a>
+              Image generation
+            </h3><p><code>puter.ai.txt2img()</code> returns one image per call. These limits apply on top of the AI limits above:</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>xAI</td>
+<td>Up to 5 reference images; more fails with <code>bad_request</code>.</td>
+</tr>
+<tr>
+<td>Together</td>
+<td>Image routes are excluded because they require third-party data sharing; generation fails before any upstream call.</td>
+</tr>
+<tr>
+<td>Cloudflare</td>
+<td>Output dimensions are clamped per side: FLUX.2 256–1920; Lucid Origin 64–2500; Phoenix 64–2048; SDXL and Inpainting 256–2048. Schnell is fixed at 1024×1024. One reference image on FLUX.2 and Inpainting models. Steps: Schnell 1–8; Lucid Origin 1–40; Phoenix and FLUX.2 Dev 1–50; Klein exactly 4; SDXL and Inpainting 1–20.</td>
+</tr>
+<tr>
+<td>Replicate</td>
+<td>At most 10 references, or the model&#39;s lower limit; FLUX 1.1 Pro accepts one. Each fetched reference is capped at 30 MB. Riverflow accepts at most two fonts. Native options follow each model&#39;s schema. For other models with width/height controls, dimensions round to multiples of 8 and clamp to the schema bounds (64–4096 per side if none are given). Predictions expire after 10 minutes and are polled every 2 seconds. Cancellation cleanup polls for up to 30 seconds, plus an in-flight request. Network timeouts: 90 seconds for creation, 30 seconds for other requests.</td>
+</tr>
+<tr>
+<td>BytePlus</td>
+<td>Pro: 10 references; other Seedream models: 14.</td>
+</tr>
+<tr>
+<td>BytePlus explicit output size</td>
+<td>Pro: 921,600–4,624,220 total pixels. Lite and 4.5: 3,686,400–16,777,216. 4.0: 921,600–16,777,216. All require integer dimensions and an aspect ratio between 1:16 and 16:1. Sizes under 921,600 total pixels are treated as aspect-ratio hints, not exact sizes.</td>
+</tr>
+</tbody></table>
+<p>See <a href="/AI/txt2img"><code>txt2img()</code></a> for provider-specific options and supported models.</p>
+
+            <h3 class="anchored-heading" id="ocr">
+              <a class="anchor" href="#ocr"></a>
+              OCR
+            </h3><p><code>puter.ai.img2txt()</code> input limits apply in addition to the shared AI limits above:</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AWS Textract</td>
+<td>10 MB per input. JPEG, PNG, TIFF, or a single-page PDF.</td>
+</tr>
+<tr>
+<td>Mistral</td>
+<td>50 MB per input. PDFs up to 1,000 pages.</td>
+</tr>
+</tbody></table>
+<p><code>File</code>, <code>Blob</code> and data URI inputs are checked by the SDK before upload: 10 MB for Textract, and 36 MB when a Mistral model or provider is named, since the base64 upload must fit the 50 MB request body. URLs and Puter paths are read up to the provider&#39;s limit and rejected with <code>413 storage_limit_reached</code> beyond it. See <a href="/AI/img2txt"><code>img2txt()</code></a> for models and options.</p>
+<p>Before the provider runs, the balance must cover every page the call can be billed for, or it fails with <code>402 insufficient_funds</code>. A PDF counts its own pages, or only the <code>pages</code> selected when that is fewer. An image, and any Textract input, counts as one page. Other documents, and PDFs whose pages can&#39;t be read, count 20 pages per MB, up to 1,000. That amount is reserved while the call runs; the charge is for the pages actually processed.</p>
+
+            <h3 class="anchored-heading" id="key-value-store">
+              <a class="anchor" href="#key-value-store"></a>
+              Key-value store
+            </h3><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Paid</th>
+<th>Free</th>
+<th>Anonymous</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>get</code> / <code>set</code> / etc. per 10 s</td>
+<td>400</td>
+<td>400</td>
+<td>200</td>
+</tr>
+<tr>
+<td><code>list</code> (prefix scan) per minute</td>
+<td>240</td>
+<td>120</td>
+<td>60</td>
+</tr>
+<tr>
+<td>Concurrent calls</td>
+<td>30</td>
+<td>15</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Concurrent <code>list</code></td>
+<td>5</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>Sizes are the same for every account:</p>
+<table>
+<thead>
+<tr>
+<th>Size</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Key</td>
+<td>1 KB</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>400 KB</td>
+</tr>
+<tr>
+<td>Any number inside a value</td>
+<td>±9,007,199,254,740,991 (2<sup>53</sup>−1)</td>
+</tr>
+<tr>
+<td>Path nesting (<code>add</code>/<code>update</code>/<code>incr</code>/<code>decr</code>/<code>remove</code>)</td>
+<td>31 levels</td>
+</tr>
+<tr>
+<td>Path segments in one call, all paths together</td>
+<td>1,500</td>
+</tr>
+<tr>
+<td>Nesting depth of a value, counting its path</td>
+<td>32 levels</td>
+</tr>
+</tbody></table>
+<p>A key or value over its size limit is rejected. A number out of range is not rejected: it&#39;s stored clamped to the bound, and <code>NaN</code> is stored as <code>null</code> (as <code>JSON.stringify()</code> does). This applies at any depth inside an object or array. Store values that must stay exact past 2<sup>53</sup>, such as large ids or running totals, as strings.</p>
+<p>A path such as <code>a.b.c</code> may chain at most 31 levels, and one call&#39;s paths at most 1,500 segments together. All of a call&#39;s paths go into one write of limited size, so in practice a call fits about 140 short paths (about 60 for <code>incr</code> and <code>decr</code>), fewer when the paths are long. A value nests at most 32 levels deep: the stored value is the first level, and each object or array inside it, or path segment above it, adds one, so <code>{ a: { b: 1 } }</code> stored with <code>set()</code> is 3 levels deep and written by <code>update()</code> at <code>x.y</code> is 5; <code>add()</code> counts the list it appends to as one more. Past any of these, the call rejects with <code>bad_request</code>.</p>
+<p>Each call is also capped, the same for every account:</p>
+<table>
+<thead>
+<tr>
+<th>Per call</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Keys in one <code>get()</code></td>
+<td>1,000</td>
+</tr>
+<tr>
+<td>Items in one batch <code>set()</code></td>
+<td>1,000</td>
+</tr>
+<tr>
+<td><code>limit</code> on <code>list()</code></td>
+<td>1,000</td>
+</tr>
+<tr>
+<td><code>offset</code> on <code>list()</code></td>
+<td>5,000</td>
+</tr>
+</tbody></table>
+<p>A <code>get()</code> or batch <code>set()</code> over its cap, or an <code>offset</code> over 5,000, is rejected with <code>bad_request</code> and nothing is read or written. A <code>limit</code> over 1,000 is lowered to 1,000, and the page&#39;s <code>cursor</code> picks up from there.</p>
+
+            <h3 class="anchored-heading" id="filesystem">
+              <a class="anchor" href="#filesystem"></a>
+              Filesystem
+            </h3><p>Per minute unless stated:</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Paid</th>
+<th>Free</th>
+<th>Anonymous</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>stat</code></td>
+<td>1,200</td>
+<td>600</td>
+<td>300</td>
+</tr>
+<tr>
+<td><code>readdir</code></td>
+<td>600</td>
+<td>300</td>
+<td>120</td>
+</tr>
+<tr>
+<td><code>readdir</code> burst (per 10 s)</td>
+<td>120</td>
+<td>60</td>
+<td>30</td>
+</tr>
+<tr>
+<td><code>read</code></td>
+<td>600</td>
+<td>300</td>
+<td>120</td>
+</tr>
+<tr>
+<td><code>write</code></td>
+<td>300</td>
+<td>120</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Multipart upload calls</td>
+<td>2,400</td>
+<td>1,200</td>
+<td>600</td>
+</tr>
+<tr>
+<td>Mutations (mkdir/rename/delete/move/copy)</td>
+<td>1,200</td>
+<td>900</td>
+<td>600</td>
+</tr>
+<tr>
+<td>Mutations, sustained (per hour)</td>
+<td>6,000</td>
+<td>3,000</td>
+<td>1,800</td>
+</tr>
+<tr>
+<td>Search</td>
+<td>60</td>
+<td>30</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>space()</code></td>
+<td>60</td>
+<td>30</td>
+<td>15</td>
+</tr>
+<tr>
+<td>Sign a URL</td>
+<td>300</td>
+<td>150</td>
+<td>60</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Concurrency</th>
+<th>Paid</th>
+<th>Free</th>
+<th>Anonymous</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>read</code></td>
+<td>10</td>
+<td>5</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>write</code></td>
+<td>15</td>
+<td>6</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Search</td>
+<td>5</td>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Uploads in progress</td>
+<td>10,000</td>
+<td>Per user, all apps</td>
+</tr>
+<tr>
+<td>Entries in one <code>readdir</code> response</td>
+<td>10,000 (1,000 per page by default when paginated or <code>recursive</code>)</td>
+<td>Per request</td>
+</tr>
+<tr>
+<td>Levels a <code>recursive</code> <code>readdir</code> descends</td>
+<td>10</td>
+<td>Per request</td>
+</tr>
+<tr>
+<td>Files and folders in one <code>startBatchWrite</code>, <code>completeBatchWrite</code> or <code>batchWrite</code></td>
+<td>500</td>
+<td>Per request</td>
+</tr>
+<tr>
+<td>Entries in one <code>/sign</code> request</td>
+<td>500</td>
+<td>Per request</td>
+</tr>
+<tr>
+<td>Part numbers in one <code>signMultipartParts</code></td>
+<td>10,000</td>
+<td>Per request</td>
+</tr>
+<tr>
+<td>Legacy <code>/batch</code> request</td>
+<td>256 multipart parts (fields and files combined) or 256 JSON operations, 64 files, 100 MiB per file, 1 MiB per field, 256 MiB in total</td>
+<td>Per request</td>
+</tr>
+<tr>
+<td>Signed-URL reads</td>
+<td>3,000/min</td>
+<td>Per network</td>
+</tr>
+<tr>
+<td>Signed-URL writes</td>
+<td>600/min</td>
+<td>Per network</td>
+</tr>
+<tr>
+<td>Signed-URL concurrent requests</td>
+<td>60</td>
+<td>Per network</td>
+</tr>
+<tr>
+<td><code>getReadURL()</code> (shared with all access-token creation)</td>
+<td>20/hour</td>
+<td></td>
+</tr>
+<tr>
+<td><code>revokeReadURL()</code></td>
+<td>60/min</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>Non-write operations (mkdir/shortcut/move/delete) inside a legacy <code>/batch</code> request also count against the Mutations limits above.</p>
+<p>A request over one of the per-request caps fails as a whole before any item is processed, with <code>400 bad_request</code> (<code>413</code> for legacy <code>/batch</code>). <code>puter.fs.upload()</code> already splits larger uploads into requests of 500.</p>
+<p>An upload is in progress from <code>startWrite</code>/<code>startBatchWrite</code> (which <code>puter.fs.upload()</code> and <code>puter.fs.write()</code> use) until it completes, is cancelled, or expires. The count includes uploads by collaborators into the account&#39;s folders. Over the limit, new uploads fail with <code>429 too_many_requests</code> until some finish.</p>
+<p>The Puter desktop makes PDF upload thumbnails locally within these budgets. Going over one skips the preview; the upload itself is unaffected.</p>
+<table>
+<thead>
+<tr>
+<th>PDF thumbnail</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Input PDF size</td>
+<td>20 MiB</td>
+</tr>
+<tr>
+<td>PDF renderers per desktop page</td>
+<td>1 at a time</td>
+</tr>
+<tr>
+<td>Preparation per upload, including queued PDFs</td>
+<td>5 seconds from the first eligible PDF</td>
+</tr>
+<tr>
+<td>Renderer lifetime per PDF, including loading and cleanup</td>
+<td>4 seconds</td>
+</tr>
+<tr>
+<td>Embedded image or intermediate canvas area</td>
+<td>4,194,304 pixels</td>
+</tr>
+<tr>
+<td>Image resize budget passed to PDF.js</td>
+<td>16 MiB</td>
+</tr>
+<tr>
+<td>Output</td>
+<td>First page, at most 128 × 128 pixels, aspect ratio preserved</td>
+</tr>
+<tr>
+<td>Thumbnail payload</td>
+<td>2 MiB</td>
+</tr>
+<tr>
+<td>Thumbnail transfer</td>
+<td>5 seconds each</td>
+</tr>
+</tbody></table>
+
+            <h3 class="anchored-heading" id="permissions">
+              <a class="anchor" href="#permissions"></a>
+              Permissions
+            </h3><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Grant / revoke calls</td>
+<td>60/min</td>
+</tr>
+<tr>
+<td>Permissions per grant, revoke, or access-token request</td>
+<td>16</td>
+</tr>
+<tr>
+<td><code>extra</code> / <code>meta</code> on a grant or access-token permission</td>
+<td>4 KiB each</td>
+</tr>
+<tr>
+<td>Filesystem entries one <code>create</code> grant may create per request</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Path depth a <code>create</code> grant may create below the home directory</td>
+<td>16 components</td>
+</tr>
+</tbody></table>
+<p>The last two apply to an <code>fs:</code> permission request for a path that doesn&#39;t exist yet, which is <a href="/Perms/request/#creating-a-path-on-request">created on approval</a> along with any missing parent directories, unless <code>create: false</code> is passed.</p>
+
+            <h3 class="anchored-heading" id="webdav">
+              <a class="anchor" href="#webdav"></a>
+              WebDAV
+            </h3><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Requests</td>
+<td>600/min</td>
+<td>Per network</td>
+</tr>
+<tr>
+<td>Concurrent requests</td>
+<td>10</td>
+<td>Per network</td>
+</tr>
+<tr>
+<td>Failed sign-ins</td>
+<td>10 per 15 min</td>
+<td>Per account being signed into</td>
+</tr>
+<tr>
+<td>Failed sign-ins</td>
+<td>50 per 15 min</td>
+<td>Per network</td>
+</tr>
+</tbody></table>
+<p>Successful sign-ins don&#39;t count. Over either sign-in limit, <code>dav</code> answers <code>429</code> until the window passes, even for the right password, so a client retrying a stale password keeps itself locked out: fix the password, then wait. This only affects <code>dav</code>; the desktop, the API and <code>puter.auth</code> keep working.</p>
+<p>For long-lived mounts, sign in with a <code>-token</code> username and an API token as the password. That skips the per-account sign-in limit, and the token can be revoked from the dashboard without changing the account password.</p>
+
+            <h3 class="anchored-heading" id="sites-and-workers">
+              <a class="anchor" href="#sites-and-workers"></a>
+              Sites and workers
+            </h3><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Paid</th>
+<th>Free</th>
+<th>Anonymous</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Subdomain reads per 10 s</td>
+<td>200</td>
+<td>200</td>
+<td>100</td>
+</tr>
+<tr>
+<td>Subdomain <code>create</code> per minute</td>
+<td>120</td>
+<td>60</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Concurrent subdomain calls</td>
+<td>20</td>
+<td>10</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Worker metadata reads per minute</td>
+<td>600</td>
+<td>300</td>
+<td>150</td>
+</tr>
+<tr>
+<td>Worker <code>create</code> (deploy) per minute</td>
+<td>120</td>
+<td>80</td>
+<td>40</td>
+</tr>
+<tr>
+<td>Worker <code>destroy</code> per minute</td>
+<td>30</td>
+<td>20</td>
+<td>10</td>
+</tr>
+<tr>
+<td>Concurrent worker calls</td>
+<td>10</td>
+<td>5</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Concurrent deploys</td>
+<td>5</td>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody></table>
+
+            <h3 class="anchored-heading" id="apps">
+              <a class="anchor" href="#apps"></a>
+              Apps
+            </h3><table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Paid</th>
+<th>Free</th>
+<th>Anonymous</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>puter.apps.get()</code> / <code>puter.apps.list()</code></td>
+<td>100/10 s</td>
+<td>100/10 s</td>
+<td>50/10 s</td>
+</tr>
+<tr>
+<td>REST reads (<code>GET /apps</code>, <code>GET /apps/:names</code>, <code>POST /query/app</code>, record open)</td>
+<td>1,800/min</td>
+<td>1,800/min</td>
+<td>1,800/min</td>
+</tr>
+<tr>
+<td>Writes (create, update, delete)</td>
+<td>240/min</td>
+<td>120/min</td>
+<td>60/min</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>nameAvailable</code></td>
+<td>60/min</td>
+<td></td>
+</tr>
+<tr>
+<td>App icon</td>
+<td>12,000/min</td>
+<td>Per network</td>
+</tr>
+<tr>
+<td>App landing page (<code>/app/&lt;name&gt;</code>, <code>/desktop/app/&lt;name&gt;</code>)</td>
+<td>600/min</td>
+<td>Per network</td>
+</tr>
+<tr>
+<td>Names per batch app lookup (<code>GET /apps/:names</code>, <code>POST /query/app</code>)</td>
+<td>200, up to 200 characters each</td>
+<td></td>
+</tr>
+<tr>
+<td><code>metadata</code></td>
+<td>16 KiB, measured as JSON</td>
+<td></td>
+</tr>
+<tr>
+<td><code>filetypeAssociations</code></td>
+<td>200 entries, 60 characters each</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>An app&#39;s <code>name</code> and <code>title</code> may be up to 100 characters and its <code>description</code> up to 7,000. A create or update over any of these is rejected with <code>400 bad_request</code>; nothing is truncated.</p>
+
+            <h3 class="anchored-heading" id="profiles">
+              <a class="anchor" href="#profiles"></a>
+              Profiles
+            </h3><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>getProfile</code> reads</td>
+<td>120/min, per network</td>
+</tr>
+<tr>
+<td>Profile writes</td>
+<td>30/min</td>
+</tr>
+<tr>
+<td>Profile picture (data URL)</td>
+<td>512 KiB</td>
+</tr>
+<tr>
+<td>Display name</td>
+<td>64 characters</td>
+</tr>
+<tr>
+<td>Bio</td>
+<td>280 characters</td>
+</tr>
+</tbody></table>
+<p>Another user&#39;s profile is readable only while that user is on a paid plan. Owners can always read and write their own.</p>
+
+            <h3 class="anchored-heading" id="email">
+              <a class="anchor" href="#email"></a>
+              Email
+            </h3><p><a href="/Email/sendTransactional/"><code>puter.email.sendTransactional()</code></a> requires a paid plan.</p>
+<table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sends</td>
+<td>600/min</td>
+</tr>
+<tr>
+<td>Concurrent sends</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Recipients per send (to + cc + bcc)</td>
+<td>10</td>
+</tr>
+<tr>
+<td>Attachments per send</td>
+<td>10, up to 25 MB in total</td>
+</tr>
+</tbody></table>
+
+            <h3 class="anchored-heading" id="sharing">
+              <a class="anchor" href="#sharing"></a>
+              Sharing
+            </h3><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>share</code> / <code>revoke</code> calls</td>
+<td>60/min, 500/day</td>
+<td></td>
+</tr>
+<tr>
+<td>Reads (<code>getShares</code>, <code>listShared</code>, <code>listSharedByMe</code>)</td>
+<td>600/min</td>
+<td></td>
+</tr>
+<tr>
+<td>New shares</td>
+<td>200/day</td>
+<td>Per user, all apps</td>
+</tr>
+<tr>
+<td>Recipients per request</td>
+<td>10</td>
+<td></td>
+</tr>
+<tr>
+<td>Items per request</td>
+<td>50</td>
+<td></td>
+</tr>
+</tbody></table>
+<ul>
+<li>All share-listing reads spend one budget, including <code>stat()</code> with <code>returnShares</code> (on top of its own <code>stat</code> budget).</li>
+<li>A new share gives someone access they didn&#39;t have. Changing the mode of an existing share, or re-sharing something the recipient already has, is free. Over the daily limit, <code>share</code> fails with <code>share_daily_limit_reached</code>.</li>
+<li>Sharing with <strong>anyone with the link</strong> (<a href="/FS/share/"><code>puter.fs.share()</code></a> with <code>{ anyone: true }</code>) requires a paid plan. A free account gets <code>subscription_required</code>, and the link stops working while the owner&#39;s plan has lapsed. Sharing with named people and teams is open to every account.</li>
+</ul>
+<p>The notification and email that tell a recipient about a share have their own limits:</p>
+<table>
+<thead>
+<tr>
+<th>Announcement</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>From one sender to one recipient</td>
+<td>1 per 15 minutes, 20 per day</td>
+</tr>
+<tr>
+<td>To one recipient, from anyone</td>
+<td>10 per hour, 50 per day</td>
+</tr>
+</tbody></table>
+<p>Over these, <strong>the share still succeeds</strong>; only the announcement is skipped. The recipient&#39;s notification still updates and groups senders (&quot;alice and bob shared 5 items with you&quot;). Emails triggered for one recipient within 5 seconds are sent as one digest.</p>
+<p>Recipients can opt out of share email with the link in the email, and a deployment can turn it off with <code>share_email_notifications: false</code>. Recipients can also block shares from one sender or from everyone (<strong>Settings → Security → Blocked people</strong>); the sender&#39;s <code>share</code> then fails with <code>recipient_not_accepting_shares</code>.</p>
+
+            <h3 class="anchored-heading" id="teams">
+              <a class="anchor" href="#teams"></a>
+              Teams
+            </h3><p>Available only where the deployment has teams turned on; elsewhere <code>puter.teams</code> rejects with <code>not_found</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Team mutations</td>
+<td>60/min, 500/day</td>
+</tr>
+<tr>
+<td>Team reads</td>
+<td>600/min</td>
+</tr>
+<tr>
+<td>Teams one account may own</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Seats per team, free owner</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Seats per team, paid owner</td>
+<td>40</td>
+</tr>
+<tr>
+<td>Member password resets</td>
+<td>20/day</td>
+</tr>
+</tbody></table>
+<p>The mutation and read budgets are per user, per app, not per team: administering several teams spends one budget.</p>
+<ul>
+<li><strong>Seats.</strong> A seat is a Puter account the team creates and its owner pays for. Over the seat limit, provisioning fails with <code>seat_limit_reached</code>; over the team limit, creation fails with <code>team_limit_reached</code>. Both errors include the limit in <code>fields.limit</code>.</li>
+<li><strong>Seat plan.</strong> A seat on a team with no paid tier is on the <code>org_seat_free</code> plan, which gets <strong>half</strong> the free allowance and the free rate limits. A seat on a paid team tier gets that tier.</li>
+<li><strong>Changing the seat limit.</strong> The limit follows the owner&#39;s plan, so upgrading raises it immediately. Lowering it never disables anyone; a team over the new limit just can&#39;t add seats until it&#39;s back under.</li>
+<li><strong>Deployment config.</strong> <code>max_seats_per_team_free</code> and <code>max_seats_per_team_paid</code> set the two seat limits; <code>max_seats_per_team</code> sets one flat limit that overrides both. <code>max_teams_per_user</code> sets the team limit. These apply to every team on the deployment.</li>
+<li><strong>Password resets.</strong> A reset returns a temporary password once, valid for 24 hours. Until the member sets their own password, every request except signing in fails with <code>password_change_required</code>.</li>
+<li><strong>Required 2FA.</strong> A team can require two-factor authentication for the accounts it created (not for members who joined with their own accounts). Until a seat sets it up, every request except signing in and setting up 2FA fails with <code>two_factor_required</code>. The owner needs 2FA to turn this on, and can clear a member&#39;s second factor if they lose their device; the reset is logged and the member is emailed.</li>
+<li><strong>Deleting a team</strong> frees the owner&#39;s team slot but not the seats. Its accounts are disabled, not removed, and keep their files and usernames.</li>
+<li><strong>Deleting a seat</strong> requires disabling it first (<code>account_must_be_disabled_first</code> otherwise). Deletion is permanent, with no restore window: files, username and credentials are all removed. Disabled accounts are never deleted automatically.</li>
+<li><strong>No sharing policy.</strong> A team is configured only by its name, its handle, and whether its directory is open to apps. Members share like any other account.</li>
+</ul>
+
+            <h3 class="anchored-heading" id="events">
+              <a class="anchor" href="#events"></a>
+              Events
+            </h3><p>See <a href="/Events/">Events</a> for an overview, <a href="/Events/onLocal/#gaps"><code>onLocal()</code></a> for gap markers, and <a href="/Events/onPersistent/#suspended-subscriptions"><code>onPersistent()</code></a> for suspension.</p>
+
+            <h4 class="anchored-heading" id="what-an-account-can-hold">
+              <a class="anchor" href="#what-an-account-can-hold"></a>
+              What an account can hold
+            </h4><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Scope</th>
+<th>Paid</th>
+<th>Free</th>
+<th>Anonymous</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Persistent subscriptions</td>
+<td>Per user, all apps</td>
+<td>500</td>
+<td>100</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Persistent subscriptions</td>
+<td>Per user, per app</td>
+<td>100</td>
+<td>25</td>
+<td>0</td>
+</tr>
+<tr>
+<td>KV share handles</td>
+<td>Per user, all apps</td>
+<td>512</td>
+<td>200</td>
+<td>0</td>
+</tr>
+<tr>
+<td>KV share handles</td>
+<td>Per user, per app</td>
+<td>512</td>
+<td>128</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Session subscriptions</td>
+<td>Per connection</td>
+<td>50</td>
+<td>50</td>
+<td>50</td>
+</tr>
+</tbody></table>
+<ul>
+<li>Over a subscription limit: <code>events_subscription_limit</code>. Over a share-handle limit: <code>events_kv_handle_limit_reached</code>.</li>
+<li>Anonymous accounts get <code>events_durable_requires_account</code> for persistent subscriptions and <code>events_kv_handle_requires_account</code> for share handles.</li>
+<li>Unsubscribing or revoking frees a slot immediately. Revoked handles stay listed but don&#39;t count.</li>
+<li>A share handle minted without naming an app counts only toward the all-apps limit.</li>
+</ul>
+
+            <h4 class="anchored-heading" id="how-many-subscriptions-one-event-reaches">
+              <a class="anchor" href="#how-many-subscriptions-one-event-reaches"></a>
+              How many subscriptions one event reaches
+            </h4><p>Counted per event, per region:</p>
+<table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>KV, paid owner</th>
+<th>KV, free or anonymous owner</th>
+<th>Other events</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Subscriptions that receive the event</td>
+<td>512</td>
+<td>128</td>
+<td>50</td>
+</tr>
+<tr>
+<td>Subscription filters checked</td>
+<td>2,048</td>
+<td>512</td>
+<td>200</td>
+</tr>
+</tbody></table>
+<ul>
+<li>KV limits follow the plan of the <strong>key&#39;s owner</strong>, not the writer&#39;s or the subscribers&#39;. If the owner&#39;s plan can&#39;t be looked up, the free numbers apply. A server with no metering uses the paid numbers.</li>
+<li>They count subscriptions, not people. A user with three tabs open counts three times.</li>
+<li>Past the limit, the next subscriptions get a <a href="/Events/onLocal/#gaps">gap marker</a> instead of the event (up to the same number again), and any after that get nothing. With 1,100 subscriptions on a paid owner&#39;s key: 512 get the event, 512 get a gap, 76 get nothing.</li>
+<li>The region that handles the write delivers to every persistent subscription plus its own connected clients. Other regions deliver only to their own connected clients. So persistent subscriptions share one budget per event, while session subscriptions spread across regions can reach more in total.</li>
+<li><code>includeValue</code> values are left out of every delivery for a change when more than <strong>128</strong> subscriptions match it (whatever the owner&#39;s plan), when the filter-check limit stops the count early, or when the value is over <strong>16 KB</strong>.</li>
+</ul>
+
+            <h4 class="anchored-heading" id="call-budgets">
+              <a class="anchor" href="#call-budgets"></a>
+              Call budgets
+            </h4><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>Limit</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>subscribe</code></td>
+<td>60/min</td>
+<td>Per user, all apps</td>
+</tr>
+<tr>
+<td><code>unsubscribe</code></td>
+<td>600/min</td>
+<td>Per user, all apps</td>
+</tr>
+<tr>
+<td>Acknowledgements</td>
+<td>600/min</td>
+<td>Per user, all apps</td>
+</tr>
+<tr>
+<td>Share-handle mint / revoke</td>
+<td>60/min</td>
+<td>Per user, all apps</td>
+</tr>
+<tr>
+<td>Handler publish / remove</td>
+<td>60/min</td>
+<td>Per user, all apps</td>
+</tr>
+<tr>
+<td>Subscription and share-handle listings (combined)</td>
+<td>120/min</td>
+<td>Per user, per app</td>
+</tr>
+<tr>
+<td>Handler listings</td>
+<td>120/min</td>
+<td>Per user, per app</td>
+</tr>
+<tr>
+<td>Events worker listings</td>
+<td>120/min</td>
+<td>Per user, per app</td>
+</tr>
+<tr>
+<td><code>fetch()</code></td>
+<td>120/min</td>
+<td>Per user, per app</td>
+</tr>
+</tbody></table>
+<p>Over any of these: <code>too_many_requests</code>. Listing pages hold up to 200 items. A <code>fetch()</code> page defaults to 50 events and holds up to 200.</p>
+<p>Unsubscribing counts toward its own <code>unsubscribe</code> limit, not the <code>subscribe</code> one.</p>
+
+            <h4 class="anchored-heading" id="delivery">
+              <a class="anchor" href="#delivery"></a>
+              Delivery
+            </h4><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Broadcast deliveries</td>
+<td>600/min</td>
+<td>Per subscription</td>
+</tr>
+<tr>
+<td><code>single</code> deliveries</td>
+<td>120/min</td>
+<td>Per subscription</td>
+</tr>
+<tr>
+<td>Handler runs</td>
+<td>60/min</td>
+<td>Per user, per app</td>
+</tr>
+<tr>
+<td>Coalescing window</td>
+<td>250 ms</td>
+<td>Per subscription and subject</td>
+</tr>
+<tr>
+<td>Time to acknowledge a <code>single</code> delivery</td>
+<td>60 seconds</td>
+<td>Per delivery</td>
+</tr>
+<tr>
+<td>Undelivered backlog</td>
+<td>10,000</td>
+<td>Per subscription</td>
+</tr>
+<tr>
+<td>Undelivered backlog</td>
+<td>1,000,000</td>
+<td>Per region</td>
+</tr>
+<tr>
+<td>KV value inlined in a delivery</td>
+<td>16 KB</td>
+<td>Per delivery</td>
+</tr>
+</tbody></table>
+<ul>
+<li>Over a delivery rate, the event is replaced by a gap marker (<code>delivery_rate_limit</code>).</li>
+<li>Over the handler-run rate, a <code>single</code> delivery waits and goes out later, and a <code>broadcast</code> one runs only in connected clients. Neither counts as a handler failure.</li>
+<li>When a backlog is full, the oldest deliveries are dropped and replaced by one gap marker (<code>backlog_overflow</code>).</li>
+</ul>
+
+            <h4 class="anchored-heading" id="handlers">
+              <a class="anchor" href="#handlers"></a>
+              Handlers
+            </h4><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Published handlers</td>
+<td>100</td>
+<td>Per app, all users</td>
+</tr>
+<tr>
+<td>Source per handler</td>
+<td>64 KB</td>
+<td>Per handler</td>
+</tr>
+<tr>
+<td>Source for all handlers combined</td>
+<td>5 MB</td>
+<td>Per app, all users</td>
+</tr>
+<tr>
+<td>Handlers per <code>publishAll()</code> call</td>
+<td>50</td>
+<td>Per call</td>
+</tr>
+<tr>
+<td>Events worker deploys</td>
+<td>30/hour</td>
+<td>Per app, all users</td>
+</tr>
+<tr>
+<td>Run timeout</td>
+<td>30 seconds</td>
+<td>Per run</td>
+</tr>
+<tr>
+<td>Retry delay</td>
+<td>2 seconds, doubling, up to 5 minutes</td>
+<td>Per delivery</td>
+</tr>
+<tr>
+<td>Failures in a row before suspension</td>
+<td>5</td>
+<td>Per subscription</td>
+</tr>
+<tr>
+<td><code>user</code> token lifetime in the events worker</td>
+<td>15 minutes</td>
+<td>Per run</td>
+</tr>
+</tbody></table>
+<p>Failures count as in a row until the handler takes a delivery or an hour passes without another failure; either resets the count to zero.</p>
+<p>Over the deploy limit, deliveries stay queued and retry after the hour rolls over.</p>
+
+            <h4 class="anchored-heading" id="handler-chains">
+              <a class="anchor" href="#handler-chains"></a>
+              Handler chains
+            </h4><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Scope</th>
+<th>Paid</th>
+<th>Free</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Handler runs in one chain</td>
+<td>Per account holding the subscription</td>
+<td>12</td>
+<td>4</td>
+</tr>
+</tbody></table>
+<ul>
+<li>A write made through a handler&#39;s <code>user</code> in the events worker, or through a token <code>user</code> creates, is one run deeper than the event that ran the handler. Writes from anywhere else start a new chain. <code>user.workers.create</code> is refused rather than counted — a handler cannot start an untracked chain through a worker of its own.</li>
+<li>When an event reaches the limit, the events worker runs no handler for it. A <code>broadcast</code> one still reaches connected clients without running the persistent handler; a <code>single</code> one is still offered to a connected client first and runs there. The dropped run leaves no gap marker and doesn&#39;t count as a handler failure.</li>
+<li>If the holder&#39;s plan can&#39;t be looked up, the free number applies. A server with no metering uses the paid number.</li>
+</ul>
+
+            <h4 class="anchored-heading" id="suspended-subscriptions">
+              <a class="anchor" href="#suspended-subscriptions"></a>
+              Suspended subscriptions
+            </h4><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Backlog kept</td>
+<td>100 deliveries</td>
+</tr>
+<tr>
+<td>How long the backlog is kept</td>
+<td>24 hours for <code>handler_not_found</code> and <code>failures</code>; 1 hour for <code>no_credit</code>; dropped immediately for <code>permission_revoked</code></td>
+</tr>
+<tr>
+<td>Suspended subscription deleted after</td>
+<td>30 days</td>
+</tr>
+</tbody></table>
+<p>When a kept backlog expires, it&#39;s replaced by one gap marker (<code>suspended_backlog_expired</code>).</p>
+
+            <h4 class="anchored-heading" id="subjects-and-context">
+              <a class="anchor" href="#subjects-and-context"></a>
+              Subjects and context
+            </h4><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Subject length</td>
+<td>4,096 characters</td>
+</tr>
+<tr>
+<td>Match pattern</td>
+<td>256 characters and 16 segments; one <code>*</code> per segment, one <code>**</code> in total</td>
+</tr>
+<tr>
+<td>KV key indexed on</td>
+<td>The first 6 <code>:</code>-segments or 160 bytes, whichever is shorter; the rest is matched as a pattern</td>
+</tr>
+<tr>
+<td><code>context</code> on a persistent subscription</td>
+<td>4 KB</td>
+</tr>
+</tbody></table>
+<p>Over a pattern limit: <code>invalid_subject_pattern</code>. Over the context limit: <code>events_context_too_large</code>.</p>
+
+            <h4 class="anchored-heading" id="what-events-cost">
+              <a class="anchor" href="#what-events-cost"></a>
+              What events cost
+            </h4><p>Deliveries are billed to the account holding the subscription:</p>
+<table>
+<thead>
+<tr>
+<th>Line</th>
+<th>Rate</th>
+<th>Counted per</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>events:delivery:broadcast</code></td>
+<td>10 µ¢ ($0.10 per million)</td>
+<td>Delivered event</td>
+</tr>
+<tr>
+<td><code>events:delivery:single</code></td>
+<td>100 µ¢ ($1 per million)</td>
+<td>Delivered event</td>
+</tr>
+</tbody></table>
+<p>µ¢ is a microcent (a millionth of a cent). Session subscriptions bill at the broadcast rate. Handler runs bill separately as worker usage.</p>
+<p>Free: idle subscriptions, events a filter excluded, writes merged by coalescing, deliveries stopped by a permission check, and gap markers.</p>
+<p>When the holder&#39;s balance runs out, deliveries stop and persistent subscriptions are suspended with <code>no_credit</code>, and the holder is notified. The backlog is kept for 1 hour. Topping up resumes them within a few minutes.</p>
+
+            <h3 class="anchored-heading" id="networking">
+              <a class="anchor" href="#networking"></a>
+              Networking
+            </h3><p><a href="/Networking/"><code>puter.net</code></a> sockets connect through a relay that takes a single-use token. A page fetches one token when it opens its first socket and reuses the connection for later sockets; <code>puter.net.generateWispV1URL()</code> fetches a new one on every call.</p>
+<table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Paid</th>
+<th>Free</th>
+<th>Anonymous</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Relay tokens per minute</td>
+<td>60</td>
+<td>30</td>
+<td>10</td>
+</tr>
+</tbody></table>
+<p>The relay checks each token against Puter, at most <strong>300 checks/min</strong> per relay IP.</p>
+
+            <h3 class="anchored-heading" id="peer-connections">
+              <a class="anchor" href="#peer-connections"></a>
+              Peer connections
+            </h3><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Paid</th>
+<th>Free</th>
+<th>Anonymous</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Relay credentials per minute</td>
+<td>30</td>
+<td>10</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Guest grants issued per minute</td>
+<td>30</td>
+<td>10</td>
+<td>5</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Signalling details reads</td>
+<td>3,000/min</td>
+<td>Per network</td>
+</tr>
+<tr>
+<td>Relay credentials for guests</td>
+<td>60/min</td>
+<td>Shared by all guests of one host account</td>
+</tr>
+</tbody></table>
+<p>Relay traffic a guest sends is billed to the account that issued the grant. Issue a grant for the session you mean to host and let it expire rather than reusing it.</p>
+
+            <h3 class="anchored-heading" id="live-connections">
+              <a class="anchor" href="#live-connections"></a>
+              Live connections
+            </h3><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Paid</th>
+<th>Free</th>
+<th>Anonymous</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Open realtime connections per account</td>
+<td>400</td>
+<td>200</td>
+<td>100</td>
+</tr>
+</tbody></table>
+<p>An account can also hold at most <strong>150</strong> open connections from one origin, so a single page can&#39;t use up the whole allowance. Over either limit, the new connection is closed as soon as it opens; connections already open stay up.</p>
+
+            <h3 class="anchored-heading" id="all-driver-calls">
+              <a class="anchor" href="#all-driver-calls"></a>
+              All driver calls
+            </h3><p>Every driver call also counts toward <strong>8,000 calls/min</strong>, before the per-API limits above. It only exists to catch runaway loops; a client that hits it is looping.</p>
+
+            <h2 class="anchored-heading" id="storage-quota">
+              <a class="anchor" href="#storage-quota"></a>
+              Storage quota
+            </h2><p>Every account has a filesystem quota (100 MiB free; paid plans add more). It counts bytes stored, not bytes transferred, and deleting files frees space immediately. At the limit, writes fail with <code>413 storage_limit_reached</code>; reads keep working. <code>puter.fs.space()</code> returns <code>{ capacity, used }</code>.</p>
+<p>An upload reserves its declared size, minus the size of any file it replaces, from the moment it starts. The reservation is released when the upload completes (the real size counts instead), is cancelled, or expires (15 minutes after starting by default, at most 1 hour, plus 5 minutes&#39; grace). An abandoned upload holds its space until it expires. A <code>startBatchWrite</code> that doesn&#39;t fit fails as a whole, up front. <code>space()</code> counts stored bytes only, not reservations.</p>
+
+            <h2 class="anchored-heading" id="what-happens-when-you-hit-a-limit">
+              <a class="anchor" href="#what-happens-when-you-hit-a-limit"></a>
+              What happens when you hit a limit
+            </h2><table>
+<thead>
+<tr>
+<th>Status</th>
+<th><code>code</code></th>
+<th>Meaning</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>429</code></td>
+<td><code>too_many_requests</code></td>
+<td>Rate or concurrency limit</td>
+<td>Back off and retry. Windows are at most 60 s, or 1 h for sustained filesystem mutations. The uploads-in-progress limit clears only when uploads finish, are cancelled, or expire.</td>
+</tr>
+<tr>
+<td><code>402</code></td>
+<td><code>insufficient_funds</code></td>
+<td>Monthly credit spent</td>
+<td>The user buys credit or upgrades; the allowance resets next month.</td>
+</tr>
+<tr>
+<td><code>402</code></td>
+<td><code>subscription_required</code></td>
+<td>The endpoint requires a paid plan</td>
+<td>The user upgrades. Retrying or waiting doesn&#39;t help.</td>
+</tr>
+<tr>
+<td><code>413</code></td>
+<td><code>storage_limit_reached</code></td>
+<td>Storage quota reached</td>
+<td>The user deletes files or upgrades.</td>
+</tr>
+</tbody></table>
+<p>Errors are JSON: <code>{ &quot;error&quot;: …, &quot;message&quot;: …, &quot;code&quot;: … }</code>.</p>
+
+            <h3 class="anchored-heading" id="what-puter-js-already-does-for-you">
+              <a class="anchor" href="#what-puter-js-already-does-for-you"></a>
+              What Puter.js already does for you
+            </h3><p>For <code>insufficient_funds</code>, <code>subscription_required</code> and <code>storage_limit_reached</code>, the SDK shows the user an upgrade dialog automatically: through <code>puter.ui.requestUpgrade()</code> in an app, or a dialog the SDK renders on the web. The dialog names the refused call and, for a plan gate, what needs the plan (the SDK&#39;s own wording where it has one, otherwise the server&#39;s <code>message</code>).</p>
+<p>The promise still rejects with the error above. An app that writes files should handle <code>storage_limit_reached</code> so a save doesn&#39;t fail silently, and anything running in a loop should back off on <code>429</code>.</p>
+
+            <h2 class="anchored-heading" id="checking-usage-from-your-app">
+              <a class="anchor" href="#checking-usage-from-your-app"></a>
+              Checking usage from your app
+            </h2><ul>
+<li><code>puter.fs.space()</code> → <code>{ capacity, used }</code> in bytes, live.</li>
+<li><code>puter.auth.getMonthlyUsage()</code> → month-to-date spend and remaining allowance, per API.</li>
+</ul>
+<p>Total spend and remaining allowance are always current. The per-API and per-app breakdowns can lag by up to about a minute. Past 5,000 distinct APIs in a month, the rest are grouped under <code>other</code>.</p>
+<div class="next-prev-buttons"><a href="/./user-pays-model/" class="next-prev-button next-button">
+                                <div class="next-btn-text-wrapper" style="flex-grow:1;">
+                                    <p style="color: #868686; font-weight: 600;">NEXT</p>
+                                    <p class="btn-page-title">User-Pays Model</p>
+                                </div>
+                                <svg style="margin-left: 15px;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+                            </a><a href="/./security/" class="next-prev-button prev-button">
+                                <svg style="margin-right: 15px;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+                                <div>
+                                    <p style="color: #868686; font-weight: 600;">PREVIOUS</p>
+                                    <p class="btn-page-title">Security and Permissions</p>
+                                </div>
+                            </a></div><footer><div><a href="https://puter.com" target="_blank">Puter.com</a><span class="bull">&bull;</span><a href="mailto:hey@puter.com" target="_blank">hey@puter.com</a><span class="bull">&bull;</span><a href="https://twitter.com/heyputer" target="_blank">X (Twitter)</a><span class="bull">&bull;</span><a href="https://github.com/HeyPuter" target="_blank">GitHub</a><span class="bull">&bull;</span><a href="/llms.txt" class="skip-insta-load" target="_blank">llms.txt</a></div><p class="copyright-notice">&copy; 2026 Puter Technologies Inc.</p></footer></div><div class="col-xl-2 col-lg-2 hidden-xs hidden-sm hidden-md" id="toc-wrapper"><div class="table-of-contents"><div class="toc-title">On this page</div><nav class="toc-nav"><a href="#" class="toc-link toc-level-1" data-level="1">Rate Limits and Quotas</a><a href="#how-limits-are-counted" class="toc-link toc-level-1" data-level="1">How limits are counted</a><a href="#usage-credit" class="toc-link toc-level-1" data-level="1">Usage credit</a><a href="#rate-limits" class="toc-link toc-level-1" data-level="1">Rate limits</a><a href="#ai" class="toc-link toc-level-2" data-level="2">AI</a><a href="#image-generation" class="toc-link toc-level-2" data-level="2">Image generation</a><a href="#ocr" class="toc-link toc-level-2" data-level="2">OCR</a><a href="#key-value-store" class="toc-link toc-level-2" data-level="2">Key-value store</a><a href="#filesystem" class="toc-link toc-level-2" data-level="2">Filesystem</a><a href="#permissions" class="toc-link toc-level-2" data-level="2">Permissions</a><a href="#webdav" class="toc-link toc-level-2" data-level="2">WebDAV</a><a href="#sites-and-workers" class="toc-link toc-level-2" data-level="2">Sites and workers</a><a href="#apps" class="toc-link toc-level-2" data-level="2">Apps</a><a href="#profiles" class="toc-link toc-level-2" data-level="2">Profiles</a><a href="#email" class="toc-link toc-level-2" data-level="2">Email</a><a href="#sharing" class="toc-link toc-level-2" data-level="2">Sharing</a><a href="#teams" class="toc-link toc-level-2" data-level="2">Teams</a><a href="#events" class="toc-link toc-level-2" data-level="2">Events</a><a href="#networking" class="toc-link toc-level-2" data-level="2">Networking</a><a href="#peer-connections" class="toc-link toc-level-2" data-level="2">Peer connections</a><a href="#live-connections" class="toc-link toc-level-2" data-level="2">Live connections</a><a href="#all-driver-calls" class="toc-link toc-level-2" data-level="2">All driver calls</a><a href="#storage-quota" class="toc-link toc-level-1" data-level="1">Storage quota</a><a href="#what-happens-when-you-hit-a-limit" class="toc-link toc-level-1" data-level="1">What happens when you hit a limit</a><a href="#what-puter-js-already-does-for-you" class="toc-link toc-level-2" data-level="2">What Puter.js already does for you</a><a href="#checking-usage-from-your-app" class="toc-link toc-level-1" data-level="1">Checking usage from your app</a></nav></div></div></div></div>
+        <div class="search-overlay">
+            <div class="search-modal">
+                <div class="search-bar">
+                    <div class="search-bar-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+                    </div>
+                    <input type="text" class="search-input" placeholder="Search documentation..." />
+                </div>
+
+                <div class="search-results">
+                </div>
+            </div>
+        </div>
+    </body>

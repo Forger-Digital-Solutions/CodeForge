@@ -1,0 +1,82 @@
+{
+  "startedFrom": "affected-tests.json",
+  "environment": {
+    "temp": "G:\\CodeForge\\worktrees\\r72-free-supply-and-autonomy\\t",
+    "npmShell": "C:\\WINDOWS\\system32\\cmd.exe",
+    "fsmonitor": false
+  },
+  "results": [
+    {
+      "file": "G:/CodeForge/worktrees/r72-free-supply-and-autonomy/packages/server/test/autonomous-orchestrator.test.ts",
+      "output": "docs/evidence/r72-free-supply-and-autonomy/isolated-autonomous-orchestrator.json",
+      "exitCode": 0,
+      "tests": 22,
+      "passed": 22,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "G:/CodeForge/worktrees/r72-free-supply-and-autonomy/packages/server/test/fg12f-production-reuse.test.ts",
+      "output": "docs/evidence/r72-free-supply-and-autonomy/isolated-fg12f-production-reuse.json",
+      "exitCode": 1,
+      "tests": 12,
+      "passed": 10,
+      "failed": 2,
+      "skipped": 0
+    },
+    {
+      "file": "G:/CodeForge/worktrees/r72-free-supply-and-autonomy/packages/server/test/forge-workspaces.test.ts",
+      "output": "docs/evidence/r72-free-supply-and-autonomy/isolated-forge-workspaces.json",
+      "exitCode": 0,
+      "tests": 11,
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "G:/CodeForge/worktrees/r72-free-supply-and-autonomy/packages/server/test/remote-publication.test.ts",
+      "output": "docs/evidence/r72-free-supply-and-autonomy/isolated-remote-publication.json",
+      "exitCode": 0,
+      "tests": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "G:/CodeForge/worktrees/r72-free-supply-and-autonomy/packages/server/test/workflow-goal-review.test.ts",
+      "output": "docs/evidence/r72-free-supply-and-autonomy/isolated-workflow-goal-review.json",
+      "exitCode": 1,
+      "tests": 17,
+      "passed": 15,
+      "failed": 2,
+      "skipped": 0
+    },
+    {
+      "file": "G:/CodeForge/worktrees/r72-free-supply-and-autonomy/packages/workflow/test/diff-review.test.ts",
+      "output": "docs/evidence/r72-free-supply-and-autonomy/isolated-diff-review.json",
+      "exitCode": 1,
+      "tests": 7,
+      "passed": 6,
+      "failed": 1,
+      "skipped": 0
+    },
+    {
+      "file": "G:/CodeForge/worktrees/r72-free-supply-and-autonomy/packages/workflow/test/forge-verify-evidence.test.ts",
+      "output": "docs/evidence/r72-free-supply-and-autonomy/isolated-forge-verify-evidence.json",
+      "exitCode": 1,
+      "tests": 5,
+      "passed": 4,
+      "failed": 1,
+      "skipped": 0
+    },
+    {
+      "file": "G:/CodeForge/worktrees/r72-free-supply-and-autonomy/packages/workflow/test/forge-verify.test.ts",
+      "output": "docs/evidence/r72-free-supply-and-autonomy/isolated-forge-verify.json",
+      "exitCode": 0,
+      "tests": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    }
+  ]
+}

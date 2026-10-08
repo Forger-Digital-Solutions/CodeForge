@@ -1,0 +1,1600 @@
+{
+  "startedAt": "2026-10-08T13:07:29.592Z",
+  "modelId": "dots-studio/dots-3-note-preview:free",
+  "providerId": "kilo-free-direct",
+  "evidenceClass": "LIVE_ROLE_QUALIFICATION_NOT_CODING_COMPLETION",
+  "frames": [
+    {
+      "at": "2026-10-08T13:07:30.403Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n\n"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call_bee9862300c14726a6eab470",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_bee9862300c14726a6eab470",
+          "delta": "{\"path\": \"src/calc.ts\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_bee9862300c14726a6eab470",
+          "delta": "}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call_bee9862300c14726a6eab470",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 305,
+            "outputTokens": 60,
+            "totalTokens": 365,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 32
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 200,
+      "finishedAt": "2026-10-08T13:07:36.249Z"
+    },
+    {
+      "at": "2026-10-08T13:07:36.255Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n\n"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call_50f4a2ba58e241e3b6eb2235",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_50f4a2ba58e241e3b6eb2235",
+          "delta": "{\"path\": \"src/calc.ts\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_50f4a2ba58e241e3b6eb2235",
+          "delta": "}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call_50f4a2ba58e241e3b6eb2235",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 329,
+            "outputTokens": 89,
+            "totalTokens": 418,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 59
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 400,
+      "finishedAt": "2026-10-08T13:07:43.634Z"
+    },
+    {
+      "at": "2026-10-08T13:07:43.636Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n\n"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call_e645061102714890bd86d33b",
+          "toolName": "edit_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_e645061102714890bd86d33b",
+          "delta": "{\"path\": \"src/calc.ts\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_e645061102714890bd86d33b",
+          "delta": ", \"oldText\": \"return a - b;\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_e645061102714890bd86d33b",
+          "delta": ", \"newText\": \"return a + b;\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_e645061102714890bd86d33b",
+          "delta": "}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call_e645061102714890bd86d33b",
+          "toolName": "edit_file",
+          "arguments": "{\"path\": \"src/calc.ts\", \"oldText\": \"return a - b;\", \"newText\": \"return a + b;\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 385,
+            "outputTokens": 98,
+            "totalTokens": 483,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 42
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 400,
+      "finishedAt": "2026-10-08T13:07:56.139Z"
+    },
+    {
+      "at": "2026-10-08T13:07:56.143Z",
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 55,
+            "outputTokens": 120,
+            "totalTokens": 175,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 121
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 120,
+      "finishedAt": "2026-10-08T13:08:02.078Z"
+    },
+    {
+      "at": "2026-10-08T13:08:02.081Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n\n"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call_33a53a24b5a54f83b8160079",
+          "toolName": "list_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_33a53a24b5a54f83b8160079",
+          "delta": "{}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call_33a53a24b5a54f83b8160079",
+          "toolName": "list_files",
+          "arguments": "{}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 450,
+            "outputTokens": 74,
+            "totalTokens": 524,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 75
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:08:10.274Z"
+    },
+    {
+      "at": "2026-10-08T13:08:10.276Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n\n"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call_fde6111425754cf0a12fda2f",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_fde6111425754cf0a12fda2f",
+          "delta": "{\"path\": \"src/router.ts\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_fde6111425754cf0a12fda2f",
+          "delta": "}"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\n"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call_6773d64c8c13462687c77a51",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_6773d64c8c13462687c77a51",
+          "delta": "{\"path\": \"src/provider/client.ts\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_6773d64c8c13462687c77a51",
+          "delta": "}"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\n"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call_e9175b6ce6ca4d86a8205a7e",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_e9175b6ce6ca4d86a8205a7e",
+          "delta": "{\"path\": \"test/router.test.ts\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_e9175b6ce6ca4d86a8205a7e",
+          "delta": "}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call_fde6111425754cf0a12fda2f",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/router.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call_6773d64c8c13462687c77a51",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/provider/client.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call_e9175b6ce6ca4d86a8205a7e",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"test/router.test.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 528,
+            "outputTokens": 188,
+            "totalTokens": 716,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 127
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:08:20.879Z"
+    },
+    {
+      "at": "2026-10-08T13:08:20.881Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n{\"files\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [\"src/router.ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\", \"src/provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/client.ts\"]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 841,
+            "outputTokens": 225,
+            "totalTokens": 1066,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 233
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 800,
+      "finishedAt": "2026-10-08T13:08:33.901Z"
+    },
+    {
+      "at": "2026-10-08T13:08:33.903Z",
+      "events": [],
+      "maxTokens": 800,
+      "error": {
+        "code": "STREAM_INTERRUPTED",
+        "status": 200,
+        "message": "kilo-free-direct stream ended before the provider sent [DONE] (HTTP 200, 38 byte(s), 0 frame(s), no terminal finish_reason, body: : KILO PROCESSING : KILO PROCESSING )"
+      },
+      "finishedAt": "2026-10-08T13:08:40.100Z"
+    },
+    {
+      "at": "2026-10-08T13:08:40.104Z",
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 354,
+            "outputTokens": 1200,
+            "totalTokens": 1554,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1423
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 1200,
+      "finishedAt": "2026-10-08T13:09:03.105Z"
+    },
+    {
+      "at": "2026-10-08T13:09:03.109Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n{\n  \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "protocol\": \"task"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_graph_v1\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "  \"summary\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"Add release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " call"
+        },
+        {
+          "type": "text_delta",
+          "delta": " on cancellation path in"
+        },
+        {
+          "type": "text_delta",
+          "delta": " server.ts by"
+        },
+        {
+          "type": "text_delta",
+          "delta": " importing release from admission"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts and adding a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancellation handler.\",\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"tasks\": [\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "    {\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id\": \"C"
+        },
+        {
+          "type": "text_delta",
+          "delta": "1\",\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title\": \"Import"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release function in server"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts\",\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective\": \"Add"
+        },
+        {
+          "type": "text_delta",
+          "delta": " import statement"
+        },
+        {
+          "type": "text_delta",
+          "delta": " for release from ./"
+        },
+        {
+          "type": "text_delta",
+          "delta": "fabric/admission.js"
+        },
+        {
+          "type": "text_delta",
+          "delta": " in src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/server.ts\",\n     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"dependencies\": [],\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"assignedRole"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"coder\"\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "    },\n    {\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"id\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"C2\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"title\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"Add cancellation handler"
+        },
+        {
+          "type": "text_delta",
+          "delta": " calling"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release\",\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective\": \"Add"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancellation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " handler in src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/server.ts that calls"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release(request"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Id) when"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a run is cancelled"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n      \"dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": [\"C1"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"],\n      \"assigned"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Role\": \"coder"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"\n    },\n   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " {\n      \"id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"R1"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n      \"title"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"Review the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancellation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " change\",\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective\": \"Verify"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " is properly"
+        },
+        {
+          "type": "text_delta",
+          "delta": " imported and called on"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the cancellation path in"
+        },
+        {
+          "type": "text_delta",
+          "delta": " src/server.ts\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"dependencies\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [\"C2\"],\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"assignedRole"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"reviewer"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"\n    }\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " ]\n}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 354,
+            "outputTokens": 1779,
+            "totalTokens": 2133,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1761
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 2623,
+      "finishedAt": "2026-10-08T13:09:37.462Z"
+    },
+    {
+      "at": "2026-10-08T13:09:37.469Z",
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 253,
+            "outputTokens": 1200,
+            "totalTokens": 1453,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1398
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 1200,
+      "finishedAt": "2026-10-08T13:09:58.699Z"
+    },
+    {
+      "at": "2026-10-08T13:09:58.700Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n{\"protocol\":\"task_graph_v1"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\"summary\":\"Fix"
+        },
+        {
+          "type": "text_delta",
+          "delta": " executeProviderCall to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " return the provider's"
+        },
+        {
+          "type": "text_delta",
+          "delta": " actual"
+        },
+        {
+          "type": "text_delta",
+          "delta": " status code instead of"
+        },
+        {
+          "type": "text_delta",
+          "delta": " always returning 2"
+        },
+        {
+          "type": "text_delta",
+          "delta": "00,"
+        },
+        {
+          "type": "text_delta",
+          "delta": " so that a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " 429"
+        },
+        {
+          "type": "text_delta",
+          "delta": " response from the provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": " is correctly propagated.\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "tasks\":[{\"id\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "C\",\"title\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Update executeProviderCall"
+        },
+        {
+          "type": "text_delta",
+          "delta": " signature"
+        },
+        {
+          "type": "text_delta",
+          "delta": " and return value"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\"objective\":\"Add"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a status"
+        },
+        {
+          "type": "text_delta",
+          "delta": " parameter to execute"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ProviderCall and return"
+        },
+        {
+          "type": "text_delta",
+          "delta": " it instead of the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " hardcoded 20"
+        },
+        {
+          "type": "text_delta",
+          "delta": "0, enabling"
+        },
+        {
+          "type": "text_delta",
+          "delta": " callers to pass "
+        },
+        {
+          "type": "text_delta",
+          "delta": "429 ("
+        },
+        {
+          "type": "text_delta",
+          "delta": "or any other status"
+        },
+        {
+          "type": "text_delta",
+          "delta": ") as"
+        },
+        {
+          "type": "text_delta",
+          "delta": " returned"
+        },
+        {
+          "type": "text_delta",
+          "delta": " by the provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\",\"dependencies\":[],\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "assignedRole\":\"coder"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"},{\"id\":\"R"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\"title\":\"Review"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the status code fix"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\"objective\":\"Verify"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that the modified"
+        },
+        {
+          "type": "text_delta",
+          "delta": " function correctly returns the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " supplied"
+        },
+        {
+          "type": "text_delta",
+          "delta": " status code,"
+        },
+        {
+          "type": "text_delta",
+          "delta": " with"
+        },
+        {
+          "type": "text_delta",
+          "delta": " specific"
+        },
+        {
+          "type": "text_delta",
+          "delta": " attention to the "
+        },
+        {
+          "type": "text_delta",
+          "delta": "429 case"
+        },
+        {
+          "type": "text_delta",
+          "delta": ", and that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " no other"
+        },
+        {
+          "type": "text_delta",
+          "delta": " behavior is inadvertently"
+        },
+        {
+          "type": "text_delta",
+          "delta": " broken.\",\"dependencies\":[\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "C\"],\"assignedRole"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\"reviewer\"}"
+        },
+        {
+          "type": "text_delta",
+          "delta": "]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 253,
+            "outputTokens": 1062,
+            "totalTokens": 1315,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 983
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 2598,
+      "finishedAt": "2026-10-08T13:10:19.806Z"
+    },
+    {
+      "at": "2026-10-08T13:10:19.811Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "verdict\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "reject\", \"find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings\": [{\"message"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"The diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " changes the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " operator"
+        },
+        {
+          "type": "text_delta",
+          "delta": " from subtraction (-"
+        },
+        {
+          "type": "text_delta",
+          "delta": ") to multiplication (*"
+        },
+        {
+          "type": "text_delta",
+          "delta": "), but the intent"
+        },
+        {
+          "type": "text_delta",
+          "delta": " is to return the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " sum of the arguments"
+        },
+        {
+          "type": "text_delta",
+          "delta": ", which requires addition"
+        },
+        {
+          "type": "text_delta",
+          "delta": " (+).\", \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "path\": \"src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/calc.ts\"}"
+        },
+        {
+          "type": "text_delta",
+          "delta": "]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 127,
+            "outputTokens": 359,
+            "totalTokens": 486,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 294
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 900,
+      "finishedAt": "2026-10-08T13:10:31.932Z"
+    },
+    {
+      "at": "2026-10-08T13:10:31.936Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n{\"ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict\": \"approve"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\", \"findings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": []}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 130,
+            "outputTokens": 818,
+            "totalTokens": 948,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 902
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 900,
+      "finishedAt": "2026-10-08T13:10:57.028Z"
+    },
+    {
+      "at": "2026-10-08T13:10:57.032Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "verdict\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "approve\", \"find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings\": []}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 152,
+            "outputTokens": 281,
+            "totalTokens": 433,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 302
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 900,
+      "finishedAt": "2026-10-08T13:11:06.164Z"
+    },
+    {
+      "at": "2026-10-08T13:11:06.168Z",
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 133,
+            "outputTokens": 900,
+            "totalTokens": 1033,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 980
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 900,
+      "finishedAt": "2026-10-08T13:11:26.474Z"
+    },
+    {
+      "at": "2026-10-08T13:11:26.475Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "\n\n{\"ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict\": \"approve"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\", \"findings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": []}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 133,
+            "outputTokens": 1292,
+            "totalTokens": 1425,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1461
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 1924,
+      "finishedAt": "2026-10-08T13:11:50.475Z"
+    },
+    {
+      "at": "2026-10-08T13:11:50.476Z",
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 133,
+            "outputTokens": 900,
+            "totalTokens": 1033,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1027
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "maxTokens": 900,
+      "finishedAt": "2026-10-08T13:12:09.178Z"
+    },
+    {
+      "at": "2026-10-08T13:12:09.179Z",
+      "events": [],
+      "maxTokens": 1927,
+      "finishedAt": "2026-10-08T13:12:30.410Z"
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T13:07:29.593Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-08T13:07:29.593Z",
+      "recheckAt": "2026-10-15T13:07:29.593Z",
+      "qualificationAt": "2026-10-08T13:07:29.592Z",
+      "termsVerifiedAt": "2026-10-08T13:07:29.593Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-15T13:07:29.593Z",
+      "privacyVerifiedAt": "2026-10-08T13:07:29.593Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-15T13:07:29.593Z",
+      "priceVerifiedAt": "2026-10-08T13:07:29.593Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-15T13:07:29.593Z",
+      "nextReverifyAt": "2026-10-08T19:07:29.593Z"
+    }
+  },
+  "catalog": {
+    "modelId": "dots-studio/dots-3-note-preview:free",
+    "displayName": "Dots Studio: Dots3-Note Preview (free)",
+    "contextWindow": 512000,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": true,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "qualification": {
+    "suiteVersion": "R66_ROLE_QUALIFICATION_V4",
+    "providerId": "kilo-free-direct",
+    "modelId": "dots-studio/dots-3-note-preview:free",
+    "modelDisplayName": "Dots Studio: Dots3-Note Preview (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5853,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 19887,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 3,
+                  "outputTokens": 89
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 3,
+                  "outputTokens": 98
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T13:07:30.402Z",
+        "completedAt": "2026-10-08T13:08:02.080Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5853,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 19887,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 3,
+                  "outputTokens": 89
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 3,
+                  "outputTokens": 98
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 5937,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-08T13:07:30.402Z",
+        "completedAt": "2026-10-08T13:08:02.080Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 5937,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T13:07:30.402Z",
+        "completedAt": "2026-10-08T13:08:02.080Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "explorer.route_execution",
+            "category": "explore",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 31822,
+            "retries": 0,
+            "details": {
+              "modelCalls": 3,
+              "filesRead": [
+                "src/router.ts",
+                "src/provider/client.ts",
+                "test/router.test.ts"
+              ],
+              "relevantFilesRead": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "searches": 0,
+              "totalToolCalls": 4,
+              "validCalls": 4,
+              "validToolCallRate": 1,
+              "readPrecision": 0.6666666666666666,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "answerFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "recall": 1,
+              "reasoningRetries": 0,
+              "reasoningTokens": 233
+            }
+          },
+          {
+            "caseId": "explorer.reservation_release",
+            "category": "explore",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 6200,
+            "retries": 0,
+            "error": "kilo-free-direct stream ended before the provider sent [DONE] (HTTP 200, 38 byte(s), 0 frame(s), no terminal finish_reason, body: : KILO PROCESSING : KILO PROCESSING )"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.5,
+        "startedAt": "2026-10-08T13:08:02.081Z",
+        "completedAt": "2026-10-08T13:12:30.413Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "planner.release_callsite",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 57364,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 3,
+              "roles": [
+                "coder",
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": true,
+              "reasoningTokens": 1761,
+              "starvedAttempt": {
+                "maxTokens": 1200,
+                "reasoningTokens": 1423,
+                "finishReason": "length"
+              }
+            }
+          },
+          {
+            "caseId": "planner.schema",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 42341,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 2,
+              "roles": [
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": true,
+              "reasoningTokens": 983,
+              "starvedAttempt": {
+                "maxTokens": 1200,
+                "reasoningTokens": 1398,
+                "finishReason": "length"
+              }
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T13:08:02.081Z",
+        "completedAt": "2026-10-08T13:12:30.413Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 12125,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "reject",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The diff changes the operator from subtraction (-) to multiplication (*), but the intent is to return the sum of the arguments, which requires addition (+)."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 294
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 25096,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 902
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 9136,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "approve",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 302
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 39937,
+            "retries": 1,
+            "details": {
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "approve",
+                "expectedApproved": false,
+                "verdictCorrect": false,
+                "findingLocalized": false,
+                "findings": [],
+                "reasoningRetried": true,
+                "reasoningTokens": 1461
+              }
+            },
+            "error": "suite deadline elapsed (timed out)"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T13:08:02.081Z",
+        "completedAt": "2026-10-08T13:12:30.413Z"
+      }
+    },
+    "startedAt": "2026-10-08T13:07:30.402Z",
+    "completedAt": "2026-10-08T13:08:02.080Z",
+    "totalLatencyMs": 31678,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 18,
+      "transient": true,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R66_ROLE_QUALIFICATION_V4",
+      "roleTransientCases": 1
+    }
+  },
+  "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+  "finishedAt": "2026-10-08T13:12:30.413Z"
+}

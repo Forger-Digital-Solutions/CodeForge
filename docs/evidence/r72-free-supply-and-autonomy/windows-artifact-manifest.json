@@ -1,0 +1,59 @@
+{
+  "observedAt": "2026-10-08T14:04:43.617Z",
+  "sourceRevision": "5ebe3fbca2250f01e9bf1188ab14ff24429c4727",
+  "artifact": "G:\\CodeForge\\worktrees\\r72-free-supply-and-autonomy\\apps\\desktop\\release-r72-final\\win-unpacked",
+  "files": [
+    {
+      "file": "CodeForge.exe",
+      "path": "G:\\CodeForge\\worktrees\\r72-free-supply-and-autonomy\\apps\\desktop\\release-r72-final\\win-unpacked\\CodeForge.exe",
+      "bytes": 246415872,
+      "sha256": "53819435e8e7cc5a01ee755b6ebaabe7b070c87532974d920cdf105c22f60846"
+    },
+    {
+      "file": "resources/app.asar",
+      "path": "G:\\CodeForge\\worktrees\\r72-free-supply-and-autonomy\\apps\\desktop\\release-r72-final\\win-unpacked\\resources\\app.asar",
+      "bytes": 46070964,
+      "sha256": "a10f51d1b3720646f2177ef77247ec9e7c0950c6be8d55a98d32bac03253b18a"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+      "path": "G:\\CodeForge\\worktrees\\r72-free-supply-and-autonomy\\apps\\desktop\\release-r72-final\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\better-sqlite3\\build\\Release\\better_sqlite3.node",
+      "bytes": 1936896,
+      "sha256": "79577e09de966d9bf937d1f490841ea37b8726844350a629796652f53800fe78"
+    }
+  ],
+  "audits": [
+    {
+      "name": "build-identity",
+      "log": "docs/evidence/r72-free-supply-and-autonomy/windows-build-identity.log",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "internal-dependencies",
+      "log": "docs/evidence/r72-free-supply-and-autonomy/windows-internal-dependencies.log",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "runtime-dependencies",
+      "log": "docs/evidence/r72-free-supply-and-autonomy/windows-runtime-dependencies.log",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "browser-security",
+      "log": "docs/evidence/r72-free-supply-and-autonomy/windows-browser-security.log",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "auth-endpoint",
+      "log": "docs/evidence/r72-free-supply-and-autonomy/windows-auth-endpoint.log",
+      "exitCode": 0,
+      "passed": true
+    }
+  ],
+  "execution": "NOT_EXECUTED_NO_AUTHORIZED_ISOLATED_WINDOWS_ENVIRONMENT",
+  "installer": "NOT_BUILT_NOT_CERTIFIED"
+}

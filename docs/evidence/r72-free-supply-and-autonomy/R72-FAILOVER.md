@@ -1,0 +1,5 @@
+# Failover certification
+
+Actual qualification receipts preserve upstream failures (including Dots Reviewer in-band HTTP-200 SSE error reporting 502), Poolside rate-limit/provider failure and bounded suite timeouts. A separate candidate probe is an engineering qualification action, not automatic coding-task failover. All measured candidates share Kilo's provider/IP allowance. No new independent eligible domain was established.
+
+The R72 coding run completed child work without an upstream failure, then blocked on Reviewer admission. No alternate qualified reviewer/provider was selected. Organic production-path cross-provider continuation to a reviewed completion is unproven. The existing failover, scope classification, reservations, durable journals, no-paid fallback and completion gates are preserved and included in affected regression suites. Account/IP exhaustion must not be treated as a new allowance on a sibling model. Do not count synthetic failure fixtures as organic certification.

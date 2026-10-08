@@ -1,0 +1,190 @@
+{
+  "observedAt": "2026-10-08T14:08:33.316Z",
+  "currentHead": "5ebe3fbca2250f01e9bf1188ab14ff24429c4727",
+  "branch": "codex/r72-free-supply-and-autonomy",
+  "originalHeadMatches": true,
+  "originalBranchMatches": true,
+  "originalStatusMatches": true,
+  "r71HeadMatches": true,
+  "preserved": [
+    {
+      "file": "apps/desktop/scripts/packaged-endurance.mjs",
+      "sha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c",
+      "matches": true
+    },
+    {
+      "file": "benchmarks/r57/extract-packaged-repeat.mjs",
+      "sha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7",
+      "matches": true
+    },
+    {
+      "file": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+      "sha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+      "matches": true
+    },
+    {
+      "file": "docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md",
+      "sha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497",
+      "matches": true
+    },
+    {
+      "file": "docs/evidence/r60-usable-free-inference/postgres-parity.json",
+      "sha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243",
+      "matches": true
+    },
+    {
+      "file": "packages/server/test/fixtures/run-recovery-worker.mjs",
+      "sha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd",
+      "matches": true
+    }
+  ],
+  "historical": [
+    {
+      "file": "affected-tests.json",
+      "matches": true
+    },
+    {
+      "file": "baseline.json",
+      "matches": true
+    },
+    {
+      "file": "desktop-connection-tests-verified.json",
+      "matches": true
+    },
+    {
+      "file": "desktop-connection-tests.json",
+      "matches": true
+    },
+    {
+      "file": "evidence-manifest.json",
+      "matches": true
+    },
+    {
+      "file": "final-affected-tests.json",
+      "matches": true
+    },
+    {
+      "file": "final-audit.json",
+      "matches": true
+    },
+    {
+      "file": "focused-tests.json",
+      "matches": true
+    },
+    {
+      "file": "kilo-free-direct-cohere_north-mini-code_free-2026-10-08T12-03-32-552Z-qualification.json",
+      "matches": true
+    },
+    {
+      "file": "kilo-free-direct-poolside_laguna-s-2.1_free-2026-10-08T12-09-53-585Z-qualification.json",
+      "matches": true
+    },
+    {
+      "file": "live-failover-2026-10-08T12-09-05-404Z.json",
+      "matches": true
+    },
+    {
+      "file": "live-failover.json",
+      "matches": true
+    },
+    {
+      "file": "openrouter-account-proof.json",
+      "matches": true
+    },
+    {
+      "file": "production-seam-tests.json",
+      "matches": true
+    },
+    {
+      "file": "R71-ENDURANCE.md",
+      "matches": true
+    },
+    {
+      "file": "R71-FAILOVER.md",
+      "matches": true
+    },
+    {
+      "file": "R71-FINAL-REPORT.md",
+      "matches": true
+    },
+    {
+      "file": "R71-LIVE-INFERENCE.md",
+      "matches": true
+    },
+    {
+      "file": "R71-QUOTA-ISOLATION.md",
+      "matches": true
+    },
+    {
+      "file": "R71-SUPPLY-MATRIX.md",
+      "matches": true
+    },
+    {
+      "file": "R71-TASK-CAMPAIGN.json",
+      "matches": true
+    },
+    {
+      "file": "R71-VALIDATION.md",
+      "matches": true
+    },
+    {
+      "file": "R71-WINDOWS-PACKAGE.md",
+      "matches": true
+    },
+    {
+      "file": "secret-scan.json",
+      "matches": true
+    },
+    {
+      "file": "supply-preflight.json",
+      "matches": true
+    },
+    {
+      "file": "transport-tests.json",
+      "matches": true
+    },
+    {
+      "file": "windows-artifact-manifest.json",
+      "matches": true
+    },
+    {
+      "file": "windows-auth-endpoint.log",
+      "matches": true
+    },
+    {
+      "file": "windows-browser-security.log",
+      "matches": true
+    },
+    {
+      "file": "windows-build-identity.log",
+      "matches": true
+    },
+    {
+      "file": "windows-internal-dependencies.log",
+      "matches": true
+    },
+    {
+      "file": "windows-native-hashes.json",
+      "matches": true
+    },
+    {
+      "file": "windows-package-build.log",
+      "matches": true
+    },
+    {
+      "file": "windows-runtime-dependencies.log",
+      "matches": true
+    },
+    {
+      "file": "workspace-build.log",
+      "matches": true
+    }
+  ],
+  "lockfileMatches": true,
+  "credentialAudit": {
+    "filesScanned": 82,
+    "findings": [],
+    "scope": "Recursive R72 delivered benchmark/evidence files, including archived candidate receipts; ignored tmp/session/native test data excluded."
+  },
+  "status": "PASS"
+}

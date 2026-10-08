@@ -1,0 +1,4 @@
+PACKAGED_AUTH_ENDPOINT_VALID=PASS
+channel=development
+endpoint=http://127.0.0.1:3220
+archive=G:\CodeForge\worktrees\r72-free-supply-and-autonomy\apps\desktop\release-r72-final\win-unpacked\resources\app.asar

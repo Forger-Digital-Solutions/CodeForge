@@ -1,0 +1,7 @@
+# Frozen Windows x64 candidate
+
+Runtime/source revision 5ebe3fbca2250f01e9bf1188ab14ff24429c4727, clean tracked source, CodeForge 0.4.0 / Electron 44.4.1. [Final full workspace build](final-workspace-build.log) passed, including stamped desktop main/renderer. Builder --dir --win --x64 passed with npmRebuild=false; no shared native rebuild. Candidate retained at G:\CodeForge\worktrees\r72-free-supply-and-autonomy\apps\desktop\release-r72-final\win-unpacked. The earlier b119 candidate and its receipts are preserved separately. [Artifact sizes/hashes](windows-artifact-manifest.json); [build log](windows-package-build.log).
+
+All five static audits passed: matching clean main/renderer source identity, internal/runtime dependency closure, Electron browser security and development/smoke endpoint. The auth audit certifies http://127.0.0.1:3220 development configuration, not a production deployment. [Signature](windows-signature.json) reports NotSigned despite builder's generic signtool lines.
+
+No package launch on the production host, insecure Electron settings, unsigned host install or isolation bypass occurred. No authorized isolated Windows machine or signing identity was available. Native module loading, GitHub/Puter/OpenRouter real login, restart restoration, multi-user operation, package inference/endurance, installer upgrade/uninstall and signed release certification remain unverified. Static audits do not substitute for execution. No installer was built.

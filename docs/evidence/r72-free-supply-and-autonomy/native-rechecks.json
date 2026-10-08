@@ -1,0 +1,46 @@
+{
+  "startedFrom": "isolated-rechecks.json",
+  "environment": {
+    "temp": "C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\codeforge-r72",
+    "npmShell": "C:\\WINDOWS\\system32\\cmd.exe",
+    "fsmonitor": false
+  },
+  "results": [
+    {
+      "file": "G:/CodeForge/worktrees/r72-free-supply-and-autonomy/packages/server/test/fg12f-production-reuse.test.ts",
+      "output": "docs/evidence/r72-free-supply-and-autonomy/native-fg12f-production-reuse.json",
+      "exitCode": 0,
+      "tests": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "G:/CodeForge/worktrees/r72-free-supply-and-autonomy/packages/server/test/workflow-goal-review.test.ts",
+      "output": "docs/evidence/r72-free-supply-and-autonomy/native-workflow-goal-review.json",
+      "exitCode": 0,
+      "tests": 17,
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "G:/CodeForge/worktrees/r72-free-supply-and-autonomy/packages/workflow/test/diff-review.test.ts",
+      "output": "docs/evidence/r72-free-supply-and-autonomy/native-diff-review.json",
+      "exitCode": 0,
+      "tests": 7,
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "G:/CodeForge/worktrees/r72-free-supply-and-autonomy/packages/workflow/test/forge-verify-evidence.test.ts",
+      "output": "docs/evidence/r72-free-supply-and-autonomy/native-forge-verify-evidence.json",
+      "exitCode": 0,
+      "tests": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    }
+  ]
+}

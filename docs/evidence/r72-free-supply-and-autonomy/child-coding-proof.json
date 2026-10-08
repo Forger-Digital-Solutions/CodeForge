@@ -1,0 +1,27 @@
+{
+  "observedAt": "2026-10-08T13:37:00.923Z",
+  "kind": "CHILD_WORKTREE_ONLY_NOT_INTEGRATED_NOT_REVIEWED",
+  "workspace": "G:\\CodeForge\\worktrees\\r72-free-supply-and-autonomy\\benchmarks\\r72\\tmp\\worktrees\\public-task-1pPdOo\\wt-3a263a60",
+  "runId": "run-b6b0a999-f4ae-4519-ada9-7d1a49386487",
+  "tests": {
+    "exitCode": 0,
+    "stdout": "✔ bounded backoff (3.1128ms)\n✔ zero retries (0.3305ms)\n✔ one retry (0.2745ms)\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 292.8686\n",
+    "stderr": ""
+  },
+  "status": {
+    "exitCode": 0,
+    "stdout": " M src/retry.mjs\n",
+    "stderr": ""
+  },
+  "diff": {
+    "exitCode": 0,
+    "stdout": "diff --git a/src/retry.mjs b/src/retry.mjs\nindex d4e4122..75b7534 100644\n--- a/src/retry.mjs\n+++ b/src/retry.mjs\n@@ -1 +1 @@\n-export function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt <= maxAttempts; attempt++) delays.push(baseMs * 2 ** attempt); return delays; }\n+export function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt < maxAttempts; attempt++) delays.push(baseMs * 2 ** attempt); return delays; }\n",
+    "stderr": ""
+  },
+  "head": {
+    "exitCode": 0,
+    "stdout": "46e119657cda4d6d6c4d75a33037deebe4b200da\n",
+    "stderr": ""
+  },
+  "parentStatus": "blocked"
+}
