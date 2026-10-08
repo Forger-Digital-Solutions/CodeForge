@@ -99,7 +99,7 @@ import {
   STRUCTURED_OUTPUT_CONTRACTS,
 } from "@codeforge/agent";
 import { createToolBroker, type ToolDefinition as RegistryToolDefinition, type ToolExecutionRecord } from "@codeforge/tools";
-import { createModelExecutionAdapter, convertToProviderTools, normalizeProviderError, type ModelExecutionResponse } from "./model-execution-adapter.js";
+import { createModelExecutionAdapter, convertToProviderTools, normalizeProviderError, type ModelExecutionResponse, type FreeDispatchCapacityAuthority } from "./model-execution-adapter.js";
 import { roleOutputBudget, type ReasoningRouteProfile } from "./role-output-budget.js";
 import { ForgeGreenRunPolicy, type ForgeGreenPolicySnapshot } from "./forgegreen-run-policy.js";
 import type { UserIntentHoldController } from "./user-intent-hold.js";
@@ -537,6 +537,9 @@ export interface TurnState {
   /** Physical quota pool the admitted route draws from — the identity reviewer independence
    * is measured against. Different models in one pool are NOT independent capacity. */
   capacityPoolId?: string;
+  /** Admission-derived quota-domain key for capacity pacing/cooldown. Set only by fabric
+   *  admission; absent means the dispatch must pace on shared provider state (conservative). */
+  independenceKey?: string;
   /** 8-Bit found no eligible replacement route after a failure; the turn ends for routing reasons. */
   routeExhausted?: boolean;
   /** Classified terminal failure (what `error` says, structured). */
@@ -1599,6 +1602,10 @@ export class AgentRuntime {
     // the free path, paid routeId on the paid path. Declared outside the try like the
     // journal so terminal/catch evidence still carries the last admitted pool.
     let servedPoolId: string | undefined;
+    // The quota-domain key the served route's dispatch actually paced under — pressure
+    // projections read the domain governor, not a provider-global aggregate that no longer
+    // holds the route's post-call state.
+    let servedIndependenceKey: string | undefined;
     let finalSummary = "";
     let stopReason: AgentStopReason = "completed" as AgentStopReason;
     // R21: "completed" is only earned by the model finishing its answer. A loop that ends because
@@ -2255,6 +2262,7 @@ export class AgentRuntime {
         roleRouteRotatable = true;
         journalActiveRoute = activeSelection;
         servedPoolId = routing.fabric?.selected?.capacityPoolId;
+        servedIndependenceKey = routing.fabric?.selected?.independenceKey;
         adapter.emitRouterSelection(req.runId, routing.model.modelId, routing.model.providerId, Math.round(routing.score), routing.reasons);
         await recordRouteDecision(activeSelection, routing.reasons, req.excludeRoleRoute ? `${req.excludeRoleRoute.providerId}/${req.excludeRoleRoute.modelId}` : undefined);
         if (req.excludeRoleRoute) {
@@ -2309,6 +2317,7 @@ export class AgentRuntime {
         roleRouteRotatable = true;
         journalActiveRoute = activeSelection;
         servedPoolId = selection.selected.route.routeId;
+        servedIndependenceKey = undefined;
         adapter.emitRouterSelection(req.runId, selection.selected.canonicalModelId, PAID_AUTO_PROVIDER_ID, selection.selected.expectedCostUsd, selection.reasonCodes);
         await recordRouteDecision(activeSelection, selection.reasonCodes);
       }
@@ -2495,7 +2504,7 @@ export class AgentRuntime {
                   correlationId: req.runId,
                   quotaDomainId: servedPoolId,
                 });
-                this.observeGovernorPressure(activeSelection.providerId, activeSelection.modelId, req.runId);
+                this.observeGovernorPressure(activeSelection.providerId, activeSelection.modelId, req.runId, servedIndependenceKey);
                 this.freeCloud?.recordRouteSuccess(activeSelection.providerId, activeSelection.modelId, servedPoolId);
               } else {
                 // R41: an empty or cap-truncated payload is not provider-outage evidence —
@@ -2609,6 +2618,7 @@ export class AgentRuntime {
               activeSelection = { providerId: PAID_AUTO_PROVIDER_ID, modelId: next.canonicalModelId };
               journalActiveRoute = activeSelection;
               servedPoolId = next.route.routeId;
+              servedIndependenceKey = undefined;
               rotations++;
               await recordRouteDecision(activeSelection, [normalized.code], `${failing.providerId}/${failing.modelId}`);
               continue;
@@ -2723,7 +2733,7 @@ export class AgentRuntime {
                 failing,
               ),
             });
-            this.observeGovernorPressure(failing.providerId, failing.modelId, req.runId);
+            this.observeGovernorPressure(failing.providerId, failing.modelId, req.runId, servedIndependenceKey);
             if (outcome.action !== "retry_same" && outcome.action !== "surface") {
               const retryAfter = (err as { retryAfter?: unknown }).retryAfter;
               const retryAfterMs = typeof retryAfter === "number" ? Math.max(0, retryAfter - Date.now()) : undefined;
@@ -2754,6 +2764,7 @@ export class AgentRuntime {
             // pre-failover selection makes role evidence attribute work to a dead route.
             journalActiveRoute = activeSelection;
             servedPoolId = outcome.capacityPoolId ?? servedPoolId;
+            servedIndependenceKey = outcome.independenceKey;
             rotations++;
             await recordRouteDecision(activeSelection, [outcome.reason], `${failing.providerId}/${failing.modelId}`);
           }
@@ -5417,7 +5428,7 @@ export class AgentRuntime {
   }
 
   private authorizeProductionFreeDispatch(selection: { providerId: string; modelId: string }, requestId: string, role: EightBitRole, userId: string | undefined,
-    demand: { requests: number; estimatedPromptTokens: number; outputTokens: number }): void {
+    demand: { requests: number; estimatedPromptTokens: number; outputTokens: number }): FreeDispatchCapacityAuthority {
     if (!this.eightBit.hasFreeFabric) throw new Error("FREE_FABRIC_AUTHORITY_REQUIRED");
     const qualified = this.roleRouteFilter(role);
     const decision = this.eightBit.admitThroughFabric({ requestId, sessionId: this.sessionId, role, userId, demand,
@@ -5429,6 +5440,11 @@ export class AgentRuntime {
       this.eightBit.releaseFabricAdmission(requestId);
       throw new FreeSupplyDomainNotAdmittedError();
     }
+    if (!admitted.independenceKey) {
+      this.eightBit.releaseFabricAdmission(requestId);
+      throw new FreeSupplyDomainNotAdmittedError();
+    }
+    return { independenceKey: admitted.independenceKey };
   }
 
   private selectModel(turnId?: string): FreeModelRecord | null {
@@ -5449,6 +5465,7 @@ export class AgentRuntime {
           const state = this.activeTurns.get(turnId);
           if (state) {
             state.capacityPoolId = selected!.capacityPoolId;
+            state.independenceKey = selected!.independenceKey;
             this.activeTurns.set(turnId, state);
           }
         }
@@ -5702,8 +5719,12 @@ export class AgentRuntime {
     const turnState = this.activeTurns.get(turnId);
     if (turnState?.providerId && turnState?.modelId) {
       if (provider.isTestProvider !== true && turnState.providerId !== "paid-auto" && this.firewall.getModel(turnState.providerId, turnState.modelId)?.tier !== "gems_paid") {
-        this.authorizeProductionFreeDispatch({ providerId: turnState.providerId, modelId: turnState.modelId }, `forgeauto:${turnId}`, "CODER", this.userId,
+        const authority = this.authorizeProductionFreeDispatch({ providerId: turnState.providerId, modelId: turnState.modelId }, `forgeauto:${turnId}`, "CODER", this.userId,
           { requests: 1, estimatedPromptTokens: estimatePromptOnlyTokens(request), outputTokens: request.maxTokens ?? 2_048 });
+        if (authority.independenceKey !== turnState.independenceKey) {
+          turnState.independenceKey = authority.independenceKey;
+          this.activeTurns.set(turnId, turnState);
+        }
       }
       const rec = this.firewall.getModel(turnState.providerId, turnState.modelId);
       if (rec && rec.tier !== "gems_paid") {
@@ -5863,7 +5884,7 @@ export class AgentRuntime {
           correlationId: turnId,
           quotaDomainId: okState.capacityPoolId,
         });
-        this.observeGovernorPressure(okState.providerId, okState.modelId, turnId);
+        this.observeGovernorPressure(okState.providerId, okState.modelId, turnId, okState.independenceKey);
         this.freeCloud?.recordRouteSuccess(okState.providerId, okState.modelId, okState.capacityPoolId);
       }
     }
@@ -5960,8 +5981,8 @@ export class AgentRuntime {
    * projection so 8-Bit can rank around a provider under pressure instead of discovering the
    * next 429 by sending it.
    */
-  private observeGovernorPressure(providerId: string, modelId: string, correlationId?: string): void {
-    const report = this.capacityGovernor.getCapacityReport(providerId);
+  private observeGovernorPressure(providerId: string, modelId: string, correlationId?: string, independenceKey?: string): void {
+    const report = (this.capacityGovernor.quotaDomainGovernor(providerId, independenceKey) ?? this.capacityGovernor).getCapacityReport(providerId);
     this.eightBit.observe({
       kind: "governor_pressure",
       providerId,
@@ -5985,7 +6006,15 @@ export class AgentRuntime {
     const state = this.activeTurns.get(turnId);
     const model = state?.modelId ? this.firewall.getModel(provider.providerId, state.modelId) : undefined;
     if (provider.providerId === "paid-auto" || model?.tier === "gems_paid") return provider;
-    return this.capacityGovernor.wrapAdapter(provider);
+    // Quota-domain pacing: an admitted route's cooldowns and reservations live under its
+    // verified quota-domain key so one exhausted account cannot suppress an unrelated domain
+    // on the same provider. Absent or mismatched keys stay on the shared provider governor —
+    // unknown independence always fails toward shared state.
+    const key = state?.independenceKey;
+    const governor = key?.startsWith(`${provider.providerId}:`)
+      ? this.capacityGovernor.forQuotaDomain(provider.providerId, key)
+      : this.capacityGovernor;
+    return governor.wrapAdapter(provider);
   }
 
   private async dispatchHostedTool(
@@ -6433,7 +6462,7 @@ export class AgentRuntime {
     // call_failure(INVALID_TOOL_OUTPUT), which pushed the role-scoped malformed sample — a second
     // tool_outcome would double-count one event (R24 §16 observation provenance).
     if (outcome.reason === "INVALID_TOOL_OUTPUT") this.eightBit.reliability.record(state.providerId, state.modelId, "malformed");
-    this.observeGovernorPressure(state.providerId, state.modelId, turnId);
+    this.observeGovernorPressure(state.providerId, state.modelId, turnId, state.independenceKey);
 
     // Shared (cross-session) 8-Bit health: the registry and Settings see the same cooldown the
     // turn just observed, so a rate-limited route is not re-picked by the next session either.
@@ -6507,6 +6536,7 @@ export class AgentRuntime {
     state.modelId = outcome.replacement.modelId;
     state.providerId = outcome.replacement.providerId;
     if (outcome.capacityPoolId) state.capacityPoolId = outcome.capacityPoolId;
+    state.independenceKey = outcome.independenceKey;
     this.activeTurns.set(turnId, state);
     await this.persistTurn(state);
     adapter.emitRouterFailover(turnId, `${previousRoute.providerId}/${previousRoute.modelId}`, `${outcome.replacement.providerId}/${outcome.replacement.modelId}`, outcome.reason);

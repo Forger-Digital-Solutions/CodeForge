@@ -7,6 +7,7 @@ import {
   type ToolDefinition as ProviderToolDefinition,
   type PromptCacheCapability,
   ProviderCapacityGovernor,
+  GovernedProviderAdapter,
   ProviderError,
   defaultCapacityGovernor,
   rateLimitScopeFor,
@@ -38,6 +39,10 @@ export interface ModelExecutionRequest {
   workspaceId?: string;
   authorityState?: string;
   dedupeScope?: string;
+}
+
+export interface FreeDispatchCapacityAuthority {
+  independenceKey: string;
 }
 
 export interface ModelExecutionResponse {
@@ -182,7 +187,7 @@ export class ModelExecutionAdapter {
     governor?: ProviderCapacityGovernor,
     private readonly greenPolicy?: ForgeGreenRunPolicy,
     private readonly paidAuto?: PaidAutoService,
-    private readonly authorizeFreeDispatch?: (selection: { providerId: string; modelId: string }, request: ModelExecutionRequest) => void,
+    private readonly authorizeFreeDispatch?: (selection: { providerId: string; modelId: string }, request: ModelExecutionRequest) => FreeDispatchCapacityAuthority | void,
   ) {
     this.providerCatalog = providerCatalog;
     this.firewall = firewall;
@@ -303,8 +308,9 @@ export class ModelExecutionAdapter {
    */
   async *streamExecution(req: ModelExecutionRequest): AsyncIterable<StreamEvent> {
     const { providerId, modelId } = this.resolveModel(req.modelSelection);
-    this.assertFreeDispatch({ providerId, modelId }, req);
-    const provider = this.providerCatalog.get(providerId);
+    const capacityAuthority = this.assertFreeDispatch({ providerId, modelId }, req);
+    const registeredProvider = this.providerCatalog.get(providerId);
+    const provider = capacityAuthority && registeredProvider instanceof GovernedProviderAdapter ? registeredProvider.inner : registeredProvider;
     if (!provider) {
       throw new Error(`[${ERROR_CODES.PROVIDER_UNAVAILABLE}] Provider "${providerId}" not found in catalog.`);
     }
@@ -322,11 +328,12 @@ export class ModelExecutionAdapter {
 
     let reservation: { release: (actualTokens?: number) => void } | undefined;
     let actualTokens: number | undefined;
-    const pacingGovernor = this.governorFor(provider);
+    const baseGovernor = registeredProvider instanceof GovernedProviderAdapter ? registeredProvider.governor : this.governorFor(provider);
+    const pacingGovernor = capacityAuthority && baseGovernor ? baseGovernor.forQuotaDomain(providerId, capacityAuthority.independenceKey) : baseGovernor;
 
     if (pacingGovernor && !(provider as any).isGoverned) {
       const estimatedTokens = estimatePromptTokens(chatRequest);
-      reservation = await pacingGovernor.acquire(providerId, estimatedTokens, req.signal, { promptTokens: estimatePromptOnlyTokens(chatRequest) });
+      reservation = await pacingGovernor.acquire(providerId, estimatedTokens, req.signal, { promptTokens: estimatePromptOnlyTokens(chatRequest), modelId });
     }
 
     try {
@@ -461,12 +468,12 @@ export class ModelExecutionAdapter {
     };
   }
 
-  private assertFreeDispatch(selection: { providerId: string; modelId: string }, request: ModelExecutionRequest): void {
+  private assertFreeDispatch(selection: { providerId: string; modelId: string }, request: ModelExecutionRequest): FreeDispatchCapacityAuthority | void {
     const provider = this.providerCatalog.get(selection.providerId);
     if (provider?.isTestProvider === true || isUserApiAdapter(provider) || selection.providerId === "paid-auto"
       || this.firewall.getModel(selection.providerId, selection.modelId)?.tier === "gems_paid") return;
     if (!this.authorizeFreeDispatch) throw new Error("FREE_FABRIC_AUTHORITY_REQUIRED");
-    this.authorizeFreeDispatch(selection, request);
+    return this.authorizeFreeDispatch(selection, request);
   }
 
   private async executeUncached(req: ModelExecutionRequest): Promise<ModelExecutionResponse> {
@@ -585,7 +592,7 @@ export function createModelExecutionAdapter(
   governor?: ProviderCapacityGovernor,
   greenPolicy?: ForgeGreenRunPolicy,
   paidAuto?: PaidAutoService,
-  authorizeFreeDispatch?: (selection: { providerId: string; modelId: string }, request: ModelExecutionRequest) => void,
+  authorizeFreeDispatch?: (selection: { providerId: string; modelId: string }, request: ModelExecutionRequest) => FreeDispatchCapacityAuthority | void,
 ): ModelExecutionAdapter {
   return new ModelExecutionAdapter(providerCatalog, firewall, forgeGreen, governor, greenPolicy, paidAuto, authorizeFreeDispatch);
 }

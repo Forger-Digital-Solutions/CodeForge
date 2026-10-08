@@ -92,9 +92,10 @@ export interface FailoverRequest {
    * returns routes the fabric actually admitted. Returning undefined falls back to the
    * bounded same-route path, which still holds the original reservation. `capacityPoolId`
    * identifies the admitted replacement's physical quota pool so callers can keep pool
-   * identity truthful across a migration.
+   * identity truthful across a migration. `independenceKey` carries the admitted route's
+   * quota-domain identity so capacity pacing follows the replacement's real account scope.
    */
-  fabricReplacement?: (exclude: RouteKey) => { route: RouteKey; reasonCodes: string[]; capacityPoolId?: string; evidence?: Record<string, string | number | boolean> } | undefined;
+  fabricReplacement?: (exclude: RouteKey) => { route: RouteKey; reasonCodes: string[]; capacityPoolId?: string; independenceKey?: string; evidence?: Record<string, string | number | boolean> } | undefined;
   /**
    * The physical capacity pool that served the failed call. Forwarded into the fabric re-decide
    * so an auto-mode rotation prefers a different pool — retrying the same pool after a
@@ -123,7 +124,7 @@ export interface FailoverRequest {
 
 export type FailoverOutcome =
   | { action: "retry_same"; reason: FailureReason }
-  | { action: "rotate"; reason: FailureReason; replacement: RouteKey; capacityPoolId?: string; receipt: DecisionReceipt }
+  | { action: "rotate"; reason: FailureReason; replacement: RouteKey; capacityPoolId?: string; independenceKey?: string; receipt: DecisionReceipt }
   | {
     action: "no_replacement";
     reason: FailureReason;
@@ -251,7 +252,7 @@ export class EightBitFailoverCoordinator {
       const receipt = this.buildReceipt(req, "ROTATE", [reason, "FABRIC_ADMITTED_REPLACEMENT", ...(pinMode === "model" ? ["SAME_MODEL_ALTERNATE_ROUTE"] : []), ...replacement.reasonCodes], replacement.route);
       receipt.evidence = { ...replacement.evidence, ...(req.currentCapacityPoolId ? { previousCapacityPoolId: req.currentCapacityPoolId } : {}) };
       await this.store.recordReceipt(receipt);
-      return { action: "rotate", reason, replacement: replacement.route, ...(replacement.capacityPoolId ? { capacityPoolId: replacement.capacityPoolId } : {}), receipt };
+      return { action: "rotate", reason, replacement: replacement.route, ...(replacement.capacityPoolId ? { capacityPoolId: replacement.capacityPoolId } : {}), ...(replacement.independenceKey ? { independenceKey: replacement.independenceKey } : {}), receipt };
     }
 
     if (pinMode === "model") {

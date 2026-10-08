@@ -425,7 +425,7 @@ export class EightBitRuntime {
             // executes under exactly this reservation.
             return undefined;
           }
-          return { route: { providerId: sel.providerId, modelId: sel.modelId }, reasonCodes: decision.explanation.reasonCodes, capacityPoolId: sel.capacityPoolId, evidence: fabricDecisionEvidence(sel) };
+          return { route: { providerId: sel.providerId, modelId: sel.modelId }, reasonCodes: decision.explanation.reasonCodes, capacityPoolId: sel.capacityPoolId, ...(sel.independenceKey ? { independenceKey: sel.independenceKey } : {}), evidence: fabricDecisionEvidence(sel) };
         },
       }
       : req;
@@ -537,5 +537,6 @@ function fabricDecisionEvidence(selected: NonNullable<FabricRouteDecision["selec
     ...(selected.quotaDomainId ? { quotaDomainId: selected.quotaDomainId } : {}),
     ...(selected.egressMode ? { egressMode: selected.egressMode } : {}),
     ...(selected.marginalCostToCodeForge !== undefined ? { marginalCostToCodeForge: selected.marginalCostToCodeForge } : {}),
+    ...(selected.independenceKey ? { independenceKey: selected.independenceKey } : {}),
   };
 }

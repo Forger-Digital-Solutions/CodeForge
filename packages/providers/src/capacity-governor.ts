@@ -127,6 +127,10 @@ export interface ProviderCapacityGovernorOptions {
   maxQueueDepth?: number;
   now?: () => number;
   sleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
+  /** Internal: set by forQuotaDomain so estimator calibration (a property of the provider's
+   *  tokenizer, not of any quota domain) still aggregates fleet-wide. Quota state — cooldowns,
+   *  in-flight reservations, observed buckets — is never shared upward. */
+  calibrationParent?: ProviderCapacityGovernor;
 }
 
 /** Estimator error distribution — R37 Mission F. Ratios are actualInputTokens/promptEstimate. */
@@ -199,10 +203,12 @@ function defaultSleep(ms: number, signal?: AbortSignal): Promise<void> {
  */
 export class ProviderCapacityGovernor {
   private readonly states = new Map<string, ProviderState>();
+  private readonly quotaDomains = new Map<string, ProviderCapacityGovernor>();
   private readonly now: () => number;
   private readonly sleep: (ms: number, signal?: AbortSignal) => Promise<void>;
   private readonly defaultLimits: Record<string, Partial<ProviderCapacityLimit>>;
   private readonly maxQueueDepth?: number;
+  private readonly calibrationParent?: ProviderCapacityGovernor;
   /** Model-scoped cooldowns for 429s whose bodies name a per-model bucket (see
    *  rateLimitScopeFor). Keyed `${providerId}${modelId}`. */
   private readonly modelCooldowns = new Map<string, number>();
@@ -212,6 +218,26 @@ export class ProviderCapacityGovernor {
     this.sleep = options.sleep ?? defaultSleep;
     this.defaultLimits = options.limits ?? {};
     this.maxQueueDepth = options.maxQueueDepth;
+    this.calibrationParent = options.calibrationParent;
+  }
+
+  /** Only an admission authority may supply this key; user/session IDs do not prove quota independence. */
+  forQuotaDomain(providerId: string, independenceKey: string): ProviderCapacityGovernor {
+    if (!providerId || !independenceKey.startsWith(`${providerId}:`)) throw new Error("CAPACITY_DOMAIN_AUTHORITY_INVALID");
+    const key = JSON.stringify([providerId, independenceKey]);
+    let governor = this.quotaDomains.get(key);
+    if (!governor) {
+      governor = new ProviderCapacityGovernor({ limits: this.defaultLimits, now: this.now, sleep: this.sleep, maxQueueDepth: this.maxQueueDepth, calibrationParent: this });
+      this.quotaDomains.set(key, governor);
+    }
+    return governor;
+  }
+
+  /** Read-side lookup: returns the admitted domain's governor, never creates one and never
+   *  mints authority — a caller without a valid admission-derived key gets nothing. */
+  quotaDomainGovernor(providerId: string, independenceKey: string | undefined): ProviderCapacityGovernor | undefined {
+    if (!providerId || !independenceKey?.startsWith(`${providerId}:`)) return undefined;
+    return this.quotaDomains.get(JSON.stringify([providerId, independenceKey]));
   }
 
   private getState(providerId: string): ProviderState {
@@ -248,7 +274,22 @@ export class ProviderCapacityGovernor {
    * teaches it — callers must apply their own floor rather than treating undefined as 1.
    */
   tokenizerRatio(providerId: string): number | undefined {
-    return this.states.get(providerId)?.tokenizerRatio;
+    return this.states.get(providerId)?.tokenizerRatio ?? this.calibrationParent?.tokenizerRatio(providerId);
+  }
+
+  /** EMA update shared with the domain's own release path AND reported upward: a tokenizer's
+   *  density is identical for every account on a provider, so domain governors feed their
+   *  parent the same calibration a provider-global governor would have learned. */
+  private learnTokenizerRatio(providerId: string, observed: number): number {
+    const state = this.getState(providerId);
+    state.tokenizerRatio = state.tokenizerRatio === undefined ? observed : state.tokenizerRatio * 0.7 + observed * 0.3;
+    return state.tokenizerRatio;
+  }
+
+  private noteDispatchTelemetry(row: DispatchTelemetry): void {
+    const state = this.getState(row.providerId);
+    state.dispatchTelemetry.push(row);
+    if (state.dispatchTelemetry.length > 100) state.dispatchTelemetry.splice(0, state.dispatchTelemetry.length - 100);
   }
 
   /** Per-dispatch estimate-vs-actual records (newest last), all providers or one. */
@@ -368,7 +409,7 @@ export class ProviderCapacityGovernor {
         // per-minute bucket and the observation is fresh, admission follows the provider's rule
         // (prompt fits the projected bucket) instead of the conservative sliding window, and a
         // wait is the exact refill time rather than a full minute.
-        const bucket = promptEstimate !== undefined ? this.tokenBucketDecision(state, promptEstimate, now) : undefined;
+        const bucket = promptEstimate !== undefined ? this.tokenBucketDecision(providerId, state, promptEstimate, now) : undefined;
         const isTpmFull = bucket ? !bucket.admit : windowTpmFull;
 
         if (isCooldown || isConcurrencyFull || isRpmFull || isTpmFull) {
@@ -447,12 +488,13 @@ export class ProviderCapacityGovernor {
             });
             if (promptEstimate !== undefined && promptEstimate > 0 && typeof actualInputTokens === "number" && actualInputTokens > 0) {
               const observed = actualInputTokens / promptEstimate;
-              state.tokenizerRatio = state.tokenizerRatio === undefined ? observed : state.tokenizerRatio * 0.7 + observed * 0.3;
+              this.learnTokenizerRatio(providerId, observed);
+              this.calibrationParent?.learnTokenizerRatio(providerId, observed);
             }
             // Per-dispatch truth for the estimator: every settled call records estimate vs
             // billed so tokenizerRatio claims stay auditable per call, not just in aggregate.
             if (actualInputTokens !== undefined || actualTokens !== undefined) {
-              state.dispatchTelemetry.push({
+              const row: DispatchTelemetry = {
                 at: releasedAt,
                 providerId,
                 estimatedTokens,
@@ -460,8 +502,9 @@ export class ProviderCapacityGovernor {
                 ...(actualInputTokens !== undefined ? { actualInputTokens } : {}),
                 ...(actualTokens !== undefined ? { actualTotalTokens: actualTokens } : {}),
                 ...(state.tokenizerRatio !== undefined ? { tokenizerRatio: state.tokenizerRatio } : {}),
-              });
-              if (state.dispatchTelemetry.length > 100) state.dispatchTelemetry.splice(0, state.dispatchTelemetry.length - 100);
+              };
+              this.noteDispatchTelemetry(row);
+              this.calibrationParent?.noteDispatchTelemetry(row);
             }
             // Rate-limit headers arrive with the response HEAD, after the prompt was debited but
             // before the completion existed; the provider debits the completion when generation
@@ -487,7 +530,7 @@ export class ProviderCapacityGovernor {
    * Header-derived admission for providers with a refilling per-minute token bucket. Returns
    * undefined when no fresh bucket observation exists (caller falls back to the sliding window).
    */
-  private tokenBucketDecision(state: ProviderState, promptEstimate: number, now: number): { admit: boolean; waitMs: number; projectedRemaining: number; need: number } | undefined {
+  private tokenBucketDecision(providerId: string, state: ProviderState, promptEstimate: number, now: number): { admit: boolean; waitMs: number; projectedRemaining: number; need: number } | undefined {
     const quota = state.observedQuota;
     if (!quota || quota.limitTokens === undefined || quota.remainingTokens === undefined || quota.resetTokensMs === undefined) return undefined;
     if (now - quota.observedAt > TOKEN_BUCKET_FRESH_MS) return undefined;
@@ -497,7 +540,7 @@ export class ProviderCapacityGovernor {
     // degenerate horizon falls back to the nominal limit-per-minute rate.
     const refillPerMs = consumed > 0 && quota.resetTokensMs > 0 ? consumed / quota.resetTokensMs : limit / 60_000;
     const projectedRemaining = Math.min(limit, quota.remainingTokens + refillPerMs * Math.max(0, now - quota.observedAt)) - state.inFlightTokens;
-    const margin = Math.max(PROMPT_ESTIMATE_MIN_MARGIN, (state.tokenizerRatio ?? 1) * 1.1);
+    const margin = Math.max(PROMPT_ESTIMATE_MIN_MARGIN, (this.tokenizerRatio(providerId) ?? 1) * 1.1);
     const need = Math.ceil(promptEstimate * margin);
     if (need > limit) {
       // The prompt can never fit this bucket; let the request through so the provider's own
