@@ -1,0 +1,12 @@
+[
+  {
+    "path": "G:\\CodeForge\\benchmarks\\r71\\tmp\\source\\node_modules\\better-sqlite3\\build\\Release\\better_sqlite3.node",
+    "bytes": 1936896,
+    "sha256": "79577e09de966d9bf937d1f490841ea37b8726844350a629796652f53800fe78"
+  },
+  {
+    "path": "G:\\CodeForge\\benchmarks\\r71\\tmp\\source\\apps\\desktop\\release\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\better-sqlite3\\build\\Release\\better_sqlite3.node",
+    "bytes": 1936896,
+    "sha256": "79577e09de966d9bf937d1f490841ea37b8726844350a629796652f53800fe78"
+  }
+]

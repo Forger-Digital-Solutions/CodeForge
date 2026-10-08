@@ -1,0 +1,26 @@
+{
+  "observedAt": "2026-10-08T12:25:48.2410525Z",
+  "executable": "G:\\CodeForge\\benchmarks\\r71\\tmp\\source\\apps\\desktop\\release\\win-unpacked\\CodeForge.exe",
+  "signatureStatus": "NotSigned",
+  "signatureMessage": "The file G:\\CodeForge\\benchmarks\\r71\\tmp\\source\\apps\\desktop\\release\\win-unpacked\\CodeForge.exe is not digitally signed. You cannot run this script on the current system. For more information about running scripts and setting execution policy, see about_Execution_Policies at https://go.microsoft.com/fwlink/?LinkID=135170",
+  "sourceCommit": "b61af87b5a5dbc66fd6b37c807c87b789348eb7b",
+  "launched": false,
+  "installerBuilt": false,
+  "files": [
+    {
+      "bytes": 246415872,
+      "path": "G:\\CodeForge\\benchmarks\\r71\\tmp\\source\\apps\\desktop\\release\\win-unpacked\\CodeForge.exe",
+      "sha256": "ddd5646aca1d82be5a094a376f3b3ed9c360a8cef221d63dd5fa4a78293863c3"
+    },
+    {
+      "bytes": 46054156,
+      "path": "G:\\CodeForge\\benchmarks\\r71\\tmp\\source\\apps\\desktop\\release\\win-unpacked\\resources\\app.asar",
+      "sha256": "e60f3aff5f6a81dc1f4f39f6687a1306362d0c5c4b5166bc177907d92257ac82"
+    },
+    {
+      "bytes": 294499,
+      "path": "G:\\CodeForge\\benchmarks\\r71\\tmp\\source\\package-lock.json",
+      "sha256": "8cc332bdd8b2a53126592aa45960497d1892223ce2b37162f47496690dc31d45"
+    }
+  ]
+}

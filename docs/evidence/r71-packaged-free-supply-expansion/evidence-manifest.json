@@ -1,0 +1,220 @@
+{
+  "observedAt": "2026-10-08T12:40:25.093Z",
+  "files": [
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/affected-tests.json",
+      "bytes": 447786,
+      "sha256": "a67d57ee549d4f58d39d1d92729cef24e40d700aa97f7565b38a8afd513b762c"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/baseline.json",
+      "bytes": 852339,
+      "sha256": "6ee40c047eb6f842f776d0b0c4257aebd3147510b977e5089a439feefe0fc267"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/desktop-connection-tests-verified.json",
+      "bytes": 10473,
+      "sha256": "fdfc8ee29ace6012db69827c6d167dcdbd89ce1702b3d6c1610f40f33ca07563"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/desktop-connection-tests.json",
+      "bytes": 3212,
+      "sha256": "c726b879b9391315791b1953908d3505d004c449f2c06a930d35ccf80701607a"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/final-affected-tests.json",
+      "bytes": 454130,
+      "sha256": "3a8681497ca23dfa3d91d68a9a7348d6523d11d7821b533fd1c5efcef786e1e3"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/focused-tests.json",
+      "bytes": 11638,
+      "sha256": "8ef4fccd0080bdd495c97c7fec104238018afb7b59de6517d1e25695c2bf051b"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/kilo-free-direct-cohere_north-mini-code_free-2026-10-08T12-03-32-552Z-qualification.json",
+      "bytes": 77095,
+      "sha256": "ce5ef7a4e84b93b073ccc2db9a4920711542a4a5266aa7f5dfe4b218515347ad"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/kilo-free-direct-poolside_laguna-s-2.1_free-2026-10-08T12-09-53-585Z-qualification.json",
+      "bytes": 5212,
+      "sha256": "6623bd495cbeb5870870766467467d97350f28ab183f0b970acf0ddf2baa060a"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/live-failover-2026-10-08T12-09-05-404Z.json",
+      "bytes": 2527,
+      "sha256": "05b55f08c783729e5d740f8b96af1573e44c5cb93b8e445d00d52af144e86e52"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/live-failover.json",
+      "bytes": 2461,
+      "sha256": "d04d75035ebd91cd9ca2e1204495990659e4e28a3165d1f3d15b513a90a58bc3"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/openrouter-account-proof.json",
+      "bytes": 47247,
+      "sha256": "363f050f51bffb6d14f9c98560cabecb172158ba76abe5fbdb506bb91f182418"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/production-seam-tests.json",
+      "bytes": 1550,
+      "sha256": "94291f359b24e4e8c30e86d0d449c47530dbd01ddc979a37b837be6a1f786b67"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/R71-ENDURANCE.md",
+      "bytes": 3027,
+      "sha256": "c91c547f71c0adabd29330096e4e24577badc02430857f02a85964ef6c6efc4e"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/R71-FAILOVER.md",
+      "bytes": 2009,
+      "sha256": "031003c8a18d2ece490c8173a071dde283a0235791266edcb1fdc0891e659674"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/R71-FINAL-REPORT.md",
+      "bytes": 7586,
+      "sha256": "08b258937ae3c2704c62e5ac906b908215875e5e75f014d6b4a2054d156c2334"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/R71-LIVE-INFERENCE.md",
+      "bytes": 3120,
+      "sha256": "5b63d95ae39bdf1ec4677fd4c83b5cb7103a74dfff0f4839972741f424353c2a"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/R71-QUOTA-ISOLATION.md",
+      "bytes": 2430,
+      "sha256": "1ad42f4ade2dc3d3bc0b73cce14f89bcb61b759acbe854c17e2ba3432eca2bf7"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/R71-SUPPLY-MATRIX.md",
+      "bytes": 21973,
+      "sha256": "fa4d21e1b306d5778f87dda65f4757ef83c6fb7fcee26ebaf5775971299e4c0d"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/R71-TASK-CAMPAIGN.json",
+      "bytes": 111389,
+      "sha256": "95741ab13554c28df272a190e65d4b1f70e3d52713c3bdb9ebcaa6b256fea4c9"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/R71-VALIDATION.md",
+      "bytes": 4852,
+      "sha256": "446c9dc7283a1a3fe162ec1fcde2039360abf2e59edb92b7050595f5319e55e7"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/R71-WINDOWS-PACKAGE.md",
+      "bytes": 2261,
+      "sha256": "fdce15df8738977fbaf2056b3cf38ece95c6ae408ee45d3db254feb2b287bce8"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/secret-scan.json",
+      "bytes": 404,
+      "sha256": "db6eab2265ea164e5401b290e46237367c801f0adbe75eff781d8659e668c6be"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/supply-preflight.json",
+      "bytes": 20307,
+      "sha256": "6a2a626f88588372541f1c5db473ff253312b447d5e0d6f145f886805b64f82c"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/transport-tests.json",
+      "bytes": 18972,
+      "sha256": "3350f5f2821f3aa22058ebc0466a3a95ecebd85eef9e30f64841e0b4508d5a0e"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/windows-artifact-manifest.json",
+      "bytes": 1388,
+      "sha256": "c5dc6d55f8630bc892fd1d2448260bc5fe2647011e2ce6136872403fb0d78f0e"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/windows-auth-endpoint.log",
+      "bytes": 185,
+      "sha256": "96b1d4068923949b6d5bd3df3abe424f2c8ecaa329d5b165f6b9110172cb45f1"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/windows-browser-security.log",
+      "bytes": 267,
+      "sha256": "58710cafa59e9f5cc5d9625eb5aa327bcd0e7057c78eedd76746b1f58a133dca"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/windows-build-identity.log",
+      "bytes": 228,
+      "sha256": "e267612285119395963091862ca02cd6226e66c4be35180982d94f7f8e006954"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/windows-internal-dependencies.log",
+      "bytes": 368,
+      "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/windows-native-hashes.json",
+      "bytes": 559,
+      "sha256": "4024ef79859d55eecdc2879d1f55b874fd58e1049025327645180dc4db2ab327"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/windows-package-build.log",
+      "bytes": 6525,
+      "sha256": "dce004f0515dbfeb82268117ec6cd007e3c1166479e71da027a7b8295ba2b068"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/windows-runtime-dependencies.log",
+      "bytes": 102,
+      "sha256": "dc407faf1e4efc46ec99c28bea6ea17adbf9fc92de1d39740b29a60e570d00bd"
+    },
+    {
+      "file": "docs/evidence/r71-packaged-free-supply-expansion/workspace-build.log",
+      "bytes": 4570,
+      "sha256": "aed5d4fb4c46f66427d341b4f0efddb6113ba0ef643ecfa6bd4ba7f6d06b842b"
+    },
+    {
+      "file": "benchmarks/r71/.gitignore",
+      "bytes": 5,
+      "sha256": "1a9ba1479331c1ee35add00917198fb47e2c75de2e39eae2c6ed9963f4eca2cd"
+    },
+    {
+      "file": "benchmarks/r71/baseline.mjs",
+      "bytes": 1839,
+      "sha256": "e93efef1e1babe1e21884d16da44146b65557d9967a4111f42a196500b682c87"
+    },
+    {
+      "file": "benchmarks/r71/final-audit.mjs",
+      "bytes": 4248,
+      "sha256": "110a2091c26be7cf12d5b545505cf8b2b8cafc7c908028de67f232f703434b64"
+    },
+    {
+      "file": "benchmarks/r71/link-dependencies.mjs",
+      "bytes": 983,
+      "sha256": "f95b28f67113c909d11978483c264008cad79e2e764d617c915ea1c129ef59be"
+    },
+    {
+      "file": "benchmarks/r71/live-campaign.mjs",
+      "bytes": 10521,
+      "sha256": "10f965c21a3a9ab7efd0a74f3b6ccb97d34be989a1247c89c085a493a13bb612"
+    },
+    {
+      "file": "benchmarks/r71/live-failover.mjs",
+      "bytes": 2994,
+      "sha256": "bba24500c27cb9ada9ea0654257693cb77440cf6ef381458b9c382467d2b9c8a"
+    },
+    {
+      "file": "benchmarks/r71/openrouter-account-proof.mjs",
+      "bytes": 8536,
+      "sha256": "c1da98d61b26fffce07447780970babeda8f74225a1dd7d1534dc6fcd9cbc104"
+    },
+    {
+      "file": "benchmarks/r71/qualify.mjs",
+      "bytes": 2831,
+      "sha256": "69c88e43c33a0b66145d2ec4ecdaa30816c0620973b7cfad7915939fb65c2621"
+    },
+    {
+      "file": "benchmarks/r71/supply-preflight.mjs",
+      "bytes": 2840,
+      "sha256": "4293c95e58fb6ed6e498de9b442feaf3cbe40a53bc416c46b3ebf2e54bbdf456"
+    },
+    {
+      "file": "benchmarks/r71/tasks.mjs",
+      "bytes": 2364,
+      "sha256": "103217a99ebb82b7901fe9b920215a0496c7d35d680ef210892d38b508567adf"
+    }
+  ]
+}

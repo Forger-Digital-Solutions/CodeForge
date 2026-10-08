@@ -1,0 +1,1525 @@
+{
+  "startedAt": "2026-10-08T12:19:26.604Z",
+  "kind": "OFFICIAL_PKCE_PERSONAL_ACCOUNT_VALIDATION",
+  "status": "REAL_CODING_TURN_VERIFIED",
+  "frames": [
+    {
+      "startedAt": "2026-10-08T12:21:39.871Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "read_file_f0p7e88ereb2",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_f0p7e88ereb2",
+          "delta": "{\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_f0p7e88ereb2",
+          "delta": "path"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_f0p7e88ereb2",
+          "delta": "\":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_f0p7e88ereb2",
+          "delta": " \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_f0p7e88ereb2",
+          "delta": "src"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_f0p7e88ereb2",
+          "delta": "/c"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_f0p7e88ereb2",
+          "delta": "alc"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_f0p7e88ereb2",
+          "delta": ".ts"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_f0p7e88ereb2",
+          "delta": "\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "read_file_f0p7e88ereb2",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 137,
+            "outputTokens": 64,
+            "totalTokens": 201,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 57,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T12:21:40.881Z"
+    },
+    {
+      "startedAt": "2026-10-08T12:21:40.885Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "read_file_rvvj8eyza0et",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_rvvj8eyza0et",
+          "delta": "{\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_rvvj8eyza0et",
+          "delta": "path"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_rvvj8eyza0et",
+          "delta": "\":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_rvvj8eyza0et",
+          "delta": " \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_rvvj8eyza0et",
+          "delta": "src"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_rvvj8eyza0et",
+          "delta": "/c"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_rvvj8eyza0et",
+          "delta": "alc"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_rvvj8eyza0et",
+          "delta": ".ts"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "read_file_rvvj8eyza0et",
+          "delta": "\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "read_file_rvvj8eyza0et",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 161,
+            "outputTokens": 83,
+            "totalTokens": 244,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 74,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T12:21:43.471Z"
+    },
+    {
+      "startedAt": "2026-10-08T12:21:43.473Z",
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "toolName": "edit_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "{\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "path"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "\":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "src"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "/c"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "alc"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": ".ts"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "\","
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "old"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "Text"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "\":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "export"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " function"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " add"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "(a"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": ":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " number"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": ","
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " b"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": ":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " number"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "):"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " number"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " {\\n"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " "
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " return"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " a"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " -"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " b"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": ";\\n"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "}\","
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "new"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "Text"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "\":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "export"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " function"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " add"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "(a"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": ":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " number"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": ","
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " b"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": ":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " number"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "):"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " number"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " {\\n"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " "
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " return"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " a"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " +"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": " b"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": ";\\n"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "}\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "delta": "}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "edit_file_sac9kbgant1r",
+          "toolName": "edit_file",
+          "arguments": "{\"path\": \"src/calc.ts\", \"oldText\": \"export function add(a: number, b: number): number {\\n  return a - b;\\n}\", \"newText\": \"export function add(a: number, b: number): number {\\n  return a + b;\\n}\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 183,
+            "outputTokens": 109,
+            "totalTokens": 292,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 50,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T12:21:45.172Z"
+    },
+    {
+      "startedAt": "2026-10-08T12:21:45.174Z",
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "files"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/c"
+        },
+        {
+          "type": "text_delta",
+          "delta": "alc"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "test"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/c"
+        },
+        {
+          "type": "text_delta",
+          "delta": "alc"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".test"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"],\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "verified"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": "true"
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 48,
+            "outputTokens": 111,
+            "totalTokens": 159,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 91,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T12:21:48.601Z"
+    }
+  ],
+  "entitlement": {
+    "provider": "openrouter",
+    "ownerUserId": "r71-openrouter-public-fixture",
+    "credentialFingerprint": "4d63d2dd50e9478a18828e2873b2e44a3989af99520b6a564d5a3e593544edc4",
+    "accountClass": "FREE_VERIFIED",
+    "verifiedAt": "2026-10-08T12:21:39.153Z",
+    "recheckAt": "2026-10-08T18:21:39.153Z",
+    "reason": "PERSONAL_FREE_TIER_AND_RECURRING_QUOTA_VERIFIED",
+    "accountIdentityHash": "5c0dd7f0ab7ebc60e229814bae2733290631dd1999da3e7a16fea2cd541744e9",
+    "freeRequests": {
+      "limit": 50,
+      "remaining": 50,
+      "used": 0
+    },
+    "quotaScopeEvidence": {
+      "scope": "USER_ACCOUNT",
+      "identityHash": "5c0dd7f0ab7ebc60e229814bae2733290631dd1999da3e7a16fea2cd541744e9",
+      "source": "https://openrouter.ai/api/v1/key",
+      "verifiedAt": "2026-10-08T12:21:39.153Z",
+      "recheckAt": "2026-10-08T18:21:39.153Z"
+    },
+    "admissionEvidence": {
+      "sourceDocumentation": "https://openrouter.ai/docs/guides/overview/auth/oauth",
+      "termsEvidence": "https://openrouter.ai/terms",
+      "privacyEvidence": "https://openrouter.ai/privacy",
+      "priceEvidence": "https://openrouter.ai/docs/api_reference/limits; /api/v1/key is_free_tier=true; exact-zero model catalog required",
+      "verifiedAt": "2026-10-08T12:21:39.153Z",
+      "recheckAt": "2026-10-08T18:21:39.153Z",
+      "termsVerifiedAt": "2026-10-08T12:21:39.153Z",
+      "termsEvidenceHash": "2de964de11b7bb38901edd385d0c846ce5829422c68d703598ac0ac7503f4860",
+      "termsExpiresAt": "2026-10-08T18:21:39.153Z",
+      "privacyVerifiedAt": "2026-10-08T12:21:39.153Z",
+      "privacyEvidenceHash": "a6399e9ffa7289c33e22dad976a87c5d4e8aea659b6474f167c7b444c7302e25",
+      "privacyExpiresAt": "2026-10-08T18:21:39.153Z",
+      "priceVerifiedAt": "2026-10-08T12:21:39.153Z",
+      "priceEvidenceHash": "3a354bf27e44bdf0e0e6a10f4d21feb776669b2da128f91dba08f967968c56e2",
+      "priceExpiresAt": "2026-10-08T18:21:39.153Z"
+    }
+  },
+  "qualification": {
+    "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+    "providerId": "openrouter",
+    "modelId": "cohere/north-mini-code:free",
+    "modelDisplayName": "CodeForge Free Model",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1014,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4288,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 83
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 109
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T12:21:39.871Z",
+        "completedAt": "2026-10-08T12:21:48.603Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1014,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4288,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 83
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 109
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3429,
+            "retries": 0,
+            "details": {
+              "textLength": 61,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T12:21:39.871Z",
+        "completedAt": "2026-10-08T12:21:48.603Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3429,
+            "retries": 0,
+            "details": {
+              "textLength": 61,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-08T12:21:39.871Z",
+        "completedAt": "2026-10-08T12:21:48.603Z"
+      }
+    },
+    "startedAt": "2026-10-08T12:21:39.871Z",
+    "completedAt": "2026-10-08T12:21:48.603Z",
+    "totalLatencyMs": 8732,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 3,
+      "transient": false,
+      "quotaExhausted": false
+    }
+  },
+  "capacityMeasured": true,
+  "routes": [
+    {
+      "routeId": "fabric:openrouter::cohere/north-mini-code:free",
+      "providerId": "openrouter",
+      "modelId": "cohere/north-mini-code:free",
+      "canonicalModelId": "cohere/north-mini-code",
+      "family": "north",
+      "gateway": "openrouter",
+      "supplyClass": "USER_ENTITLED_FREE",
+      "quotaDomainType": "USER_ACCOUNT",
+      "quotaDomainId": "openrouter:user:5c0dd7f0ab7ebc60e229814bae2733290631dd1999da3e7a16fea2cd541744e9",
+      "egressMode": "USER_DELEGATED",
+      "marginalCostToCodeForge": 0,
+      "freePrivacyClass": "PROVIDER_RETENTION",
+      "trainingUse": "YES",
+      "quotaScopeEvidence": {
+        "scope": "USER_ACCOUNT",
+        "identityHash": "5c0dd7f0ab7ebc60e229814bae2733290631dd1999da3e7a16fea2cd541744e9",
+        "source": "https://openrouter.ai/api/v1/key",
+        "verifiedAt": "2026-10-08T12:21:39.153Z",
+        "recheckAt": "2026-10-08T18:21:39.153Z"
+      },
+      "admissionReceipt": {
+        "sourceDocumentation": "https://openrouter.ai/docs/guides/overview/auth/oauth",
+        "termsEvidence": "https://openrouter.ai/terms",
+        "privacyEvidence": "https://openrouter.ai/privacy",
+        "priceEvidence": "https://openrouter.ai/docs/api_reference/limits; /api/v1/key is_free_tier=true; exact-zero model catalog required",
+        "verifiedAt": "2026-10-08T12:21:39.153Z",
+        "recheckAt": "2026-10-08T18:21:39.153Z",
+        "termsVerifiedAt": "2026-10-08T12:21:39.153Z",
+        "termsEvidenceHash": "2de964de11b7bb38901edd385d0c846ce5829422c68d703598ac0ac7503f4860",
+        "termsExpiresAt": "2026-10-08T18:21:39.153Z",
+        "privacyVerifiedAt": "2026-10-08T12:21:39.153Z",
+        "privacyEvidenceHash": "a6399e9ffa7289c33e22dad976a87c5d4e8aea659b6474f167c7b444c7302e25",
+        "privacyExpiresAt": "2026-10-08T18:21:39.153Z",
+        "priceVerifiedAt": "2026-10-08T12:21:39.153Z",
+        "priceEvidenceHash": "3a354bf27e44bdf0e0e6a10f4d21feb776669b2da128f91dba08f967968c56e2",
+        "priceExpiresAt": "2026-10-08T18:21:39.153Z",
+        "qualificationAt": "2026-10-08T12:21:48.603Z"
+      },
+      "capacityPoolId": "openrouter:user:5c0dd7f0ab7ebc60e229814bae2733290631dd1999da3e7a16fea2cd541744e9",
+      "capacityPoolScope": "PER_USER_POOL",
+      "capacityScope": "USER_ACCOUNT",
+      "dataPolicyProfile": "USER_CONSENT_REQUIRED",
+      "lifecycle": "APPROVED",
+      "explicitZeroPrice": true,
+      "freeOnlyAdmissionProven": true,
+      "paidFallbackDisabled": true,
+      "managedMultiUserAllowed": true,
+      "privacyClass": "permissive",
+      "roles": [
+        "PRIMARY_CODING_AGENT",
+        "SUBAGENT",
+        "SEARCH_ASSIST",
+        "SUMMARIZER"
+      ],
+      "contextWindow": 256000,
+      "qualityScore": 90,
+      "healthy": true,
+      "enabled": true,
+      "windows": [
+        {
+          "unit": "requests",
+          "limit": 50,
+          "remaining": 50,
+          "resetAt": "2026-10-09T00:00:00.000Z",
+          "scope": "USER_ACCOUNT",
+          "observedAt": "2026-10-08T12:21:39.153Z",
+          "authoritative": true,
+          "period": "DAILY_RESET"
+        }
+      ],
+      "capacityIdentity": "5c0dd7f0ab7ebc60e229814bae2733290631dd1999da3e7a16fea2cd541744e9",
+      "independenceKey": "openrouter:USER_ACCOUNT:5c0dd7f0ab7ebc60e229814bae2733290631dd1999da3e7a16fea2cd541744e9"
+    }
+  ],
+  "foreignUserRoutes": 0,
+  "coding": {
+    "kind": "INTERACTIVE_TOOL_TURN_NOT_REVIEWED_WORKFLOW",
+    "workspacePath": "G:\\CodeForge\\benchmarks\\r71\\tmp\\source\\benchmarks\\r71\\tmp\\openrouter-public-cStD74",
+    "turn": {
+      "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+      "sessionId": "r71-or-1791462108693",
+      "status": "completed",
+      "userMessage": "Public synthetic fixture. Read greeting.txt, change its contents to 'Goodbye', then stop. Use workspace tools.",
+      "startedAt": "2026-10-08T12:21:48.695Z",
+      "origin": "user",
+      "agentId": "agent-3531a81b",
+      "capacityPoolId": "openrouter:user:5c0dd7f0ab7ebc60e229814bae2733290631dd1999da3e7a16fea2cd541744e9",
+      "independenceKey": "openrouter:USER_ACCOUNT:5c0dd7f0ab7ebc60e229814bae2733290631dd1999da3e7a16fea2cd541744e9",
+      "modelId": "cohere/north-mini-code:free",
+      "providerId": "openrouter",
+      "completedAt": "2026-10-08T12:21:52.854Z"
+    },
+    "fileContent": "Goodbye",
+    "items": [
+      {
+        "kind": "eight_bit_route_state",
+        "id": "eight-bit-route-r71-or-1791462108693-CODER-default",
+        "sessionId": "r71-or-1791462108693",
+        "role": "CODER",
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free",
+        "policyMode": "adaptive",
+        "isExactPin": false,
+        "health": {
+          "providerId": "openrouter",
+          "modelId": "cohere/north-mini-code:free",
+          "consecutiveFailures": 0,
+          "status": "HEALTHY"
+        },
+        "createdAt": "2026-10-08T12:21:48.709Z",
+        "updatedAt": "2026-10-08T12:21:48.709Z"
+      },
+      {
+        "kind": "approval",
+        "id": "5f18de4c-c85b-4171-b6da-fd2d0aae1f5b",
+        "sessionId": "r71-or-1791462108693",
+        "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+        "tool": "edit_file",
+        "action": "write",
+        "description": "edit_file: edit greeting.txt",
+        "risk": "moderate",
+        "scope": "G:\\CodeForge\\benchmarks\\r71\\tmp\\source\\benchmarks\\r71\\tmp\\openrouter-public-cStD74",
+        "createdAt": "2026-10-08T12:21:51.453Z",
+        "decision": "allow_once",
+        "resolvedAt": "2026-10-08T12:21:51.567Z"
+      },
+      {
+        "id": "agent-final-response-3531a81b-5e85-46b3-961c-8434df76d305",
+        "kind": "agent_final_response",
+        "sessionId": "r71-or-1791462108693",
+        "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+        "status": "completed",
+        "response": "Task completed. Read greeting.txt (contained \"Hello\") and changed its contents to \"Goodbye\".",
+        "providerId": "openrouter",
+        "modelId": "cohere/north-mini-code:free",
+        "source": "model",
+        "createdAt": "2026-10-08T12:21:52.854Z",
+        "updatedAt": "2026-10-08T12:21:52.854Z"
+      }
+    ],
+    "reservations": {
+      "generatedAt": "2026-10-08T12:21:52.867Z",
+      "activeReservations": 0,
+      "byUser": {},
+      "byRoute": {},
+      "byPool": {},
+      "protectedFirstRunRequests": 0,
+      "protectedFirstRunTokens": 0
+    },
+    "events": [
+      {
+        "type": "status.changed",
+        "payload": {
+          "from": "idle",
+          "to": "running"
+        },
+        "seq": 1,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:48.698Z"
+      },
+      {
+        "type": "turn.started",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "userMessage": "Public synthetic fixture. Read greeting.txt, change its contents to 'Goodbye', then stop. Use workspace tools."
+        },
+        "seq": 2,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:48.698Z"
+      },
+      {
+        "type": "agent.started",
+        "payload": {
+          "agentId": "agent-3531a81b",
+          "role": "Lead Agent",
+          "taskId": "3531a81b-5e85-46b3-961c-8434df76d305"
+        },
+        "seq": 3,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:48.699Z"
+      },
+      {
+        "type": "router.selection",
+        "payload": {
+          "taskId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "modelId": "cohere/north-mini-code:free",
+          "providerId": "openrouter",
+          "score": 75,
+          "reasons": [
+            "forgezero_adaptive",
+            "coding_capable"
+          ]
+        },
+        "seq": 4,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:48.709Z"
+      },
+      {
+        "type": "tool.call_started",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "toolCallId": "read_file_yxr4e8t4htnw",
+          "toolName": "read_file",
+          "agentId": "agent-3531a81b"
+        },
+        "seq": 5,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:49.631Z"
+      },
+      {
+        "type": "tool.call_completed",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "toolCallId": "read_file_yxr4e8t4htnw",
+          "toolName": "read_file",
+          "argsJson": "{\"path\":\"greeting.txt\"}",
+          "agentId": "agent-3531a81b"
+        },
+        "seq": 6,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:49.697Z"
+      },
+      {
+        "type": "token.usage",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "inputTokens": 1633,
+          "outputTokens": 80,
+          "totalTokens": 1713
+        },
+        "seq": 7,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:49.698Z"
+      },
+      {
+        "type": "tool.execution_started",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "toolCallId": "read_file_yxr4e8t4htnw",
+          "toolName": "read_file",
+          "argsJson": "{\"path\":\"greeting.txt\"}"
+        },
+        "seq": 8,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:49.704Z"
+      },
+      {
+        "type": "file.read",
+        "payload": {
+          "fileCallId": "05b824a3-e7a6-41e9-b5e9-0aac05c11988",
+          "path": "greeting.txt",
+          "lines": 2
+        },
+        "seq": 9,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:49.704Z"
+      },
+      {
+        "type": "tool.execution_completed",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "toolCallId": "read_file_yxr4e8t4htnw",
+          "toolName": "read_file",
+          "result": "Hello\n\n[hash:66a045b452102c59d840ec097d59d9467e13a3f34f6494e539ffd32c1bb35f18]"
+        },
+        "seq": 10,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:49.706Z"
+      },
+      {
+        "type": "tool.call_started",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "toolCallId": "edit_file_8c8zf5f2qk0x",
+          "toolName": "edit_file",
+          "agentId": "agent-3531a81b"
+        },
+        "seq": 11,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:51.033Z"
+      },
+      {
+        "type": "tool.call_completed",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "toolCallId": "edit_file_8c8zf5f2qk0x",
+          "toolName": "edit_file",
+          "argsJson": "{\"path\":\"greeting.txt\",\"oldText\":\"Hello\",\"newText\":\"Goodbye\",\"expectedHash\":\"66a045b452102c59d840ec097d59d9467e13a3f34f6494e539ffd32c1bb35f18\"}",
+          "agentId": "agent-3531a81b"
+        },
+        "seq": 12,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:51.448Z"
+      },
+      {
+        "type": "token.usage",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "inputTokens": 1677,
+          "outputTokens": 83,
+          "totalTokens": 1760
+        },
+        "seq": 13,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:51.450Z"
+      },
+      {
+        "type": "status.changed",
+        "payload": {
+          "from": "running",
+          "to": "waiting_for_approval"
+        },
+        "seq": 14,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:51.453Z"
+      },
+      {
+        "type": "approval.requested",
+        "payload": {
+          "approvalId": "5f18de4c-c85b-4171-b6da-fd2d0aae1f5b",
+          "tool": "edit_file",
+          "action": "write",
+          "description": "edit_file: edit greeting.txt",
+          "risk": "moderate",
+          "scope": "G:\\CodeForge\\benchmarks\\r71\\tmp\\source\\benchmarks\\r71\\tmp\\openrouter-public-cStD74"
+        },
+        "seq": 15,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:51.455Z"
+      },
+      {
+        "type": "approval.resolved",
+        "payload": {
+          "approvalId": "5f18de4c-c85b-4171-b6da-fd2d0aae1f5b",
+          "decision": "allow_once"
+        },
+        "seq": 16,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:51.566Z"
+      },
+      {
+        "type": "status.changed",
+        "payload": {
+          "from": "waiting_for_approval",
+          "to": "running"
+        },
+        "seq": 17,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:51.568Z"
+      },
+      {
+        "type": "tool.execution_started",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "toolCallId": "edit_file_8c8zf5f2qk0x",
+          "toolName": "edit_file",
+          "argsJson": "{\"path\":\"greeting.txt\",\"oldText\":\"Hello\",\"newText\":\"Goodbye\",\"expectedHash\":\"66a045b452102c59d840ec097d59d9467e13a3f34f6494e539ffd32c1bb35f18\"}"
+        },
+        "seq": 18,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:51.569Z"
+      },
+      {
+        "type": "file.written",
+        "payload": {
+          "fileCallId": "922a62f5-53a6-4905-b8a3-2a79e47e0d71",
+          "path": "greeting.txt",
+          "bytesOrChars": 8
+        },
+        "seq": 19,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:51.573Z"
+      },
+      {
+        "type": "file.change_proposed",
+        "payload": {
+          "changeId": "c9ad7d03-5990-47af-8386-20f350b5e956",
+          "path": "greeting.txt",
+          "changeType": "modified",
+          "additions": 1,
+          "deletions": 1,
+          "diff": "--- a/greeting.txt\n+++ b/greeting.txt\n-Hello\n+Goodbye"
+        },
+        "seq": 20,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:51.573Z"
+      },
+      {
+        "type": "file.change_applied",
+        "payload": {
+          "changeId": "c9ad7d03-5990-47af-8386-20f350b5e956",
+          "path": "greeting.txt"
+        },
+        "seq": 21,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:51.573Z"
+      },
+      {
+        "type": "tool.execution_completed",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "toolCallId": "edit_file_8c8zf5f2qk0x",
+          "toolName": "edit_file",
+          "result": "Edited greeting.txt (before 66a045b452102c59d840ec097d59d9467e13a3f34f6494e539ffd32c1bb35f18 -> after 6537a9340193debef5c8681576dd2c2b2b16be92a675f9ba32f405a667f52e23)\n[hash:6537a9340193debef5c8681576dd2c2b2b16be92a675f9ba32f405a667f52e23]\nDiff:\n--- a/greeting.txt\n+++ b/greeting.txt\n-Hello\n+Goodbye"
+        },
+        "seq": 22,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:51.576Z"
+      },
+      {
+        "type": "assistant.message.started",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562",
+          "agentId": "agent-3531a81b"
+        },
+        "seq": 23,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.552Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": "Task",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 24,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.552Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": " completed",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 25,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.664Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": ".",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 26,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.665Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": " Read",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 27,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.666Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": " greeting",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 28,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.667Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": ".txt",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 29,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.668Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": " (",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 30,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.669Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": "contained",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 31,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.670Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": " \"",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 32,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.670Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": "Hello",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 33,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.671Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": "\")",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 34,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.672Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": " and",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 35,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.840Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": " changed",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 36,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.842Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": " its",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 37,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.847Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": " contents",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 38,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.848Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": " to",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 39,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.849Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": " \"",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 40,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.850Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": "Goodbye",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 41,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.850Z"
+      },
+      {
+        "type": "text.delta",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "delta": "\".",
+          "agentId": "agent-3531a81b",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562"
+        },
+        "seq": 42,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.851Z"
+      },
+      {
+        "type": "token.usage",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "inputTokens": 1822,
+          "outputTokens": 59,
+          "totalTokens": 1881
+        },
+        "seq": 43,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.852Z"
+      },
+      {
+        "type": "assistant.message.completed",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "messageId": "769292bd-3005-4952-8020-ffbb648c5562",
+          "text": "Task completed. Read greeting.txt (contained \"Hello\") and changed its contents to \"Goodbye\".",
+          "agentId": "agent-3531a81b"
+        },
+        "seq": 44,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.853Z"
+      },
+      {
+        "type": "turn.completed",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "result": "Task completed successfully"
+        },
+        "seq": 45,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.856Z"
+      },
+      {
+        "type": "run.outcome",
+        "payload": {
+          "turnId": "3531a81b-5e85-46b3-961c-8434df76d305",
+          "executionMode": "chat",
+          "outcome": "completed",
+          "reasonCode": "completed",
+          "summary": "CodeForge answered.",
+          "execution": "completed",
+          "verification": "not_run",
+          "review": "not_run",
+          "completion": "not_evaluated",
+          "runId": "3531a81b-5e85-46b3-961c-8434df76d305"
+        },
+        "seq": 46,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.857Z"
+      },
+      {
+        "type": "status.changed",
+        "payload": {
+          "from": "running",
+          "to": "completed"
+        },
+        "seq": 47,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.857Z"
+      },
+      {
+        "type": "agent.completed",
+        "payload": {
+          "agentId": "agent-3531a81b",
+          "taskId": "3531a81b-5e85-46b3-961c-8434df76d305"
+        },
+        "seq": 48,
+        "sessionId": "r71-or-1791462108693",
+        "timestamp": "2026-10-08T12:21:52.857Z"
+      }
+    ]
+  },
+  "finishedAt": "2026-10-08T12:21:52.870Z",
+  "receiptSerialization": "Runtime adapter internals omitted; durable public-fixture events extracted read-only from the original session database."
+}

@@ -1,0 +1,76 @@
+{
+  "startedAt": "2026-10-08T12:09:05.404Z",
+  "kind": "LIVE_TRANSPORT_AND_PRODUCTION_HEALTH_NOT_CODING_COMPLETION",
+  "calls": [
+    {
+      "modelId": "kilo-auto/free",
+      "startedAt": "2026-10-08T12:09:06.232Z",
+      "status": "FAILURE",
+      "code": "PROVIDER_ERROR",
+      "httpStatus": 503,
+      "finishedAt": "2026-10-08T12:09:06.739Z"
+    },
+    {
+      "modelId": "cohere/north-mini-code:free",
+      "startedAt": "2026-10-08T12:09:06.741Z",
+      "status": "ANSWER_VERIFIED",
+      "content": "5",
+      "usage": {
+        "inputTokens": 18,
+        "outputTokens": 61,
+        "totalTokens": 79,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 56
+      },
+      "finishedAt": "2026-10-08T12:09:09.200Z"
+    }
+  ],
+  "observations": [
+    {
+      "providerId": "kilo-free-direct",
+      "status": 200,
+      "headers": [],
+      "observedAt": 1791461346053
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "kilo-auto/free",
+      "status": 503,
+      "headers": [],
+      "observedAt": 1791461346738
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "cohere/north-mini-code:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": 1791461349200
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T12:09:05.406Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-08T12:09:05.406Z",
+      "recheckAt": "2026-10-15T12:09:05.406Z",
+      "qualificationAt": "2026-10-08T12:09:05.404Z",
+      "termsVerifiedAt": "2026-10-08T12:09:05.406Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-15T12:09:05.406Z",
+      "privacyVerifiedAt": "2026-10-08T12:09:05.406Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-15T12:09:05.406Z",
+      "priceVerifiedAt": "2026-10-08T12:09:05.406Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-15T12:09:05.406Z",
+      "nextReverifyAt": "2026-10-08T18:09:05.406Z"
+    }
+  },
+  "health": [],
+  "status": "RECORDED",
+  "finishedAt": "2026-10-08T12:09:09.202Z"
+}

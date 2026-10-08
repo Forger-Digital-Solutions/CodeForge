@@ -1,0 +1,93 @@
+{
+  "observedAt": "2026-10-08T12:40:25.093Z",
+  "sourceFreezeCommit": "b61af87b5a5dbc66fd6b37c807c87b789348eb7b",
+  "currentHead": "b249dbe8c2437551b2d705253638fc302456387e",
+  "originalHeadMatches": true,
+  "originalBranchMatches": true,
+  "preserved": [
+    {
+      "file": "apps/desktop/scripts/packaged-endurance.mjs",
+      "sha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c",
+      "matches": true
+    },
+    {
+      "file": "benchmarks/r57/extract-packaged-repeat.mjs",
+      "sha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7",
+      "matches": true
+    },
+    {
+      "file": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+      "sha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b",
+      "matches": true
+    },
+    {
+      "file": "docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md",
+      "sha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497",
+      "matches": true
+    },
+    {
+      "file": "docs/evidence/r60-usable-free-inference/postgres-parity.json",
+      "sha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243",
+      "matches": true
+    },
+    {
+      "file": "packages/server/test/fixtures/run-recovery-worker.mjs",
+      "sha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd",
+      "matches": true
+    }
+  ],
+  "missingOriginalUntracked": [],
+  "r70ReportMatches": true,
+  "lockfileMatches": true,
+  "credentialAudit": {
+    "filesScanned": 43,
+    "credentialFindings": [],
+    "scope": "All new top-level R71 benchmark and evidence files, including evidence omitted by the generic secret scanner; ignored tmp credentials/session files excluded from delivery."
+  },
+  "taskMetrics": [
+    {
+      "id": "01-bug-fix",
+      "taskClass": "bug fix",
+      "status": "cancelled",
+      "wallTimeMs": 182385,
+      "changedFiles": [],
+      "reviewPassed": false,
+      "verificationAttempts": 0,
+      "integratedDiffBytes": 0,
+      "reservations": 0,
+      "telemetry": {
+        "wallTimeMs": 177617,
+        "modelRequests": 24,
+        "inputTokens": 74840,
+        "outputTokens": 3986,
+        "toolCalls": 22,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 0
+      },
+      "reason": "Autonomous run cancelled: Agent coder cancelled: [AGENT_CANCELLED] Agent execution was cancelled."
+    },
+    {
+      "id": "02-feature",
+      "taskClass": "small feature",
+      "status": "blocked",
+      "wallTimeMs": 105118,
+      "changedFiles": [],
+      "reviewPassed": false,
+      "verificationAttempts": 0,
+      "integratedDiffBytes": 0,
+      "reservations": 0,
+      "telemetry": {
+        "wallTimeMs": 101027,
+        "modelRequests": 32,
+        "inputTokens": 100429,
+        "outputTokens": 2154,
+        "toolCalls": 31,
+        "retryCount": 0,
+        "duplicateWorkCount": 0,
+        "providerFailures": 1
+      },
+      "reason": "Writer did not complete: Agent coder failed: [PROVIDER_RATE_LIMITED] kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m"
+    }
+  ]
+}

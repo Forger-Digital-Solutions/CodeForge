@@ -1,0 +1,143 @@
+{
+  "startedAt": "2026-10-08T12:09:53.586Z",
+  "provider": "kilo-free-direct",
+  "modelId": "poolside/laguna-s-2.1:free",
+  "kind": "DEVELOPMENT_QUALIFICATION_NOT_PRODUCT_COMPLETION",
+  "frames": [
+    {
+      "at": "2026-10-08T12:09:54.281Z",
+      "events": [],
+      "finishedAt": "2026-10-08T12:09:54.736Z"
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T12:09:53.587Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-08T12:09:53.587Z",
+      "recheckAt": "2026-10-15T12:09:53.587Z",
+      "qualificationAt": "2026-10-08T12:09:53.586Z",
+      "termsVerifiedAt": "2026-10-08T12:09:53.587Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-15T12:09:53.587Z",
+      "privacyVerifiedAt": "2026-10-08T12:09:53.587Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-15T12:09:53.587Z",
+      "priceVerifiedAt": "2026-10-08T12:09:53.587Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-15T12:09:53.587Z",
+      "nextReverifyAt": "2026-10-08T18:09:53.587Z"
+    }
+  },
+  "qualification": {
+    "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+    "providerId": "kilo-free-direct",
+    "modelId": "poolside/laguna-s-2.1:free",
+    "modelDisplayName": "Poolside: Laguna S 2.1 (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 456,
+            "retries": 0,
+            "error": "kilo-free-direct error (429): {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"{\\\"error\\\":\\\"Rate limit exceeded\\\"}\\n\",\"provider_name\":\"Poolside\",\"is_byok\":true,\"limit_source"
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 0,
+            "retries": 0,
+            "error": "skipped: provider unavailable during qualification"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T12:09:54.281Z",
+        "completedAt": "2026-10-08T12:09:54.738Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 456,
+            "retries": 0,
+            "error": "kilo-free-direct error (429): {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"{\\\"error\\\":\\\"Rate limit exceeded\\\"}\\n\",\"provider_name\":\"Poolside\",\"is_byok\":true,\"limit_source"
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 0,
+            "retries": 0,
+            "error": "skipped: provider unavailable during qualification"
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 0,
+            "retries": 0,
+            "error": "skipped: provider unavailable during qualification"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T12:09:54.281Z",
+        "completedAt": "2026-10-08T12:09:54.738Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 0,
+            "retries": 0,
+            "error": "skipped: provider unavailable during qualification"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T12:09:54.281Z",
+        "completedAt": "2026-10-08T12:09:54.738Z"
+      }
+    },
+    "startedAt": "2026-10-08T12:09:54.281Z",
+    "completedAt": "2026-10-08T12:09:54.738Z",
+    "totalLatencyMs": 457,
+    "qualificationState": "NOT_QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 1,
+      "transient": true,
+      "quotaExhausted": false
+    }
+  },
+  "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+  "finishedAt": "2026-10-08T12:09:54.738Z"
+}

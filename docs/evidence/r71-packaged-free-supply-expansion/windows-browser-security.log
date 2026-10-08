@@ -1,0 +1,8 @@
+PACKAGED_BROWSER_SECURITY_VALID=PASS
+sandbox=true
+nodeIntegration=false
+contextIsolation=true
+webSecurity=true
+controlPlaneBearerInjection=true
+preloadBearerFree=true
+archive=G:\CodeForge\benchmarks\r71\tmp\source\apps\desktop\release\win-unpacked\resources\app.asar
