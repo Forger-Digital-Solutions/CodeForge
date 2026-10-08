@@ -5850,7 +5850,7 @@ export class AgentRuntime {
             // (status → MODEL_RETIRED at 410, RATE_LIMITED + retry horizon at 429) and the
             // failover cooldown both read them — a bare message loses the provider's own timing.
             const streamError = new Error(`Provider error: ${event.code} - ${event.message}`);
-            Object.assign(streamError, { code: event.code, status: event.status, retryAfter: event.retryAfter });
+            Object.assign(streamError, { code: event.code, status: event.status, retryAfter: event.retryAfter, rateLimitScope: event.rateLimitScope });
             throw streamError;
           }
         }

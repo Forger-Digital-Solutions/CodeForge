@@ -353,7 +353,7 @@ export class ModelExecutionAdapter {
         if (event.type === "error") {
           const norm = normalizeProviderError(event);
           if (norm.code === ERROR_CODES.PROVIDER_RATE_LIMITED && pacingGovernor) {
-            pacingGovernor.recordRateLimit(providerId, event.retryAfter, { modelId, scope: rateLimitScopeFor(event.message) });
+            pacingGovernor.recordRateLimit(providerId, event.retryAfter, { modelId, scope: rateLimitScopeFor(event.message, event.rateLimitScope) });
           }
           yield {
             type: "error",
@@ -362,6 +362,7 @@ export class ModelExecutionAdapter {
             retryable: event.retryable,
             status: event.status,
             retryAfter: event.retryAfter,
+            rateLimitScope: event.rateLimitScope,
           };
           return;
         }
@@ -377,12 +378,13 @@ export class ModelExecutionAdapter {
       if ((err as { executionCertainty?: unknown }).executionCertainty === "not_started") throw err;
       const norm = normalizeProviderError(err);
       if (norm.code === ERROR_CODES.PROVIDER_RATE_LIMITED && pacingGovernor) {
-        pacingGovernor.recordRateLimit(providerId, (err as { retryAfter?: unknown }).retryAfter as number | undefined, { modelId, scope: rateLimitScopeFor(err instanceof Error ? err.message : String(err)) });
+        pacingGovernor.recordRateLimit(providerId, (err as { retryAfter?: unknown }).retryAfter as number | undefined, { modelId, scope: rateLimitScopeFor(err instanceof Error ? err.message : String(err), (err as { rateLimitScope?: "model" | "provider" }).rateLimitScope) });
       }
       yield {
         type: "error",
         code: norm.code,
         message: norm.message,
+        ...(["model", "provider"].includes((err as { rateLimitScope?: string }).rateLimitScope ?? "") ? { rateLimitScope: (err as { rateLimitScope: "model" | "provider" }).rateLimitScope } : {}),
         ...(typeof (err as { retryable?: unknown }).retryable === "boolean" ? { retryable: (err as { retryable: boolean }).retryable } : {}),
         ...(typeof (err as { status?: unknown }).status === "number" ? { status: (err as { status: number }).status } : {}),
         ...(typeof (err as { retryAfter?: unknown }).retryAfter === "number" ? { retryAfter: (err as { retryAfter: number }).retryAfter } : {}),

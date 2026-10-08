@@ -1207,7 +1207,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         observedAt: obs.observedAt,
         source: "registry",
       });
-      if (observation) this.routeHealth.observe({ ...observation, quotaDomainId });
+      if (observation) this.routeHealth.observe({ ...observation, quotaDomainId, rateLimitScope: obs.rateLimitScope });
     }
     if (obs.status === 429 && obs.modelId) {
       // Providers commonly omit Retry-After but expose an absolute X-RateLimit-Reset value.

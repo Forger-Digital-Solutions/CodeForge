@@ -166,7 +166,8 @@ export interface ProviderCapacityReport {
  * roster-pinned sibling). An account-allocation wall or an unclassifiable 429 stays
  * provider-scoped — shared capacity is the safe default when the body names no bucket.
  */
-export function rateLimitScopeFor(errorMessage: string | undefined): "model" | "provider" {
+export function rateLimitScopeFor(errorMessage: string | undefined, observedScope?: "model" | "provider"): "model" | "provider" {
+  if (observedScope) return observedScope;
   const cls = classifyRateLimit(errorMessage ?? "");
   return cls === "ACCOUNT" || cls === "UNKNOWN" ? "provider" : "model";
 }
@@ -762,7 +763,7 @@ export class GovernedProviderAdapter implements ProviderAdapter {
       // observed 429, so its cooldown/backoff (and any future evidence-driven limit) never
       // engaged for calls that only ever throw rather than returning an error response.
       if (err instanceof ProviderError && err.status === 429) {
-        this.governor.recordRateLimit(this.providerId, err.retryAfter, { modelId: req.model, scope: rateLimitScopeFor(err.message) });
+        this.governor.recordRateLimit(this.providerId, err.retryAfter, { modelId: req.model, scope: rateLimitScopeFor(err.message, err.rateLimitScope) });
       }
       throw err;
     }
@@ -796,13 +797,13 @@ export class GovernedProviderAdapter implements ProviderAdapter {
           totalTokens = (u.inputTokens ?? 0) + (u.outputTokens ?? 0);
           inputTokens = u.inputTokens;
         } else if (event.type === "error" && event.status === 429) {
-          this.governor.recordRateLimit(this.providerId, event.retryAfter, { modelId: req.model, scope: rateLimitScopeFor(event.message) });
+          this.governor.recordRateLimit(this.providerId, event.retryAfter, { modelId: req.model, scope: rateLimitScopeFor(event.message, event.rateLimitScope) });
         }
         yield event;
       }
     } catch (error) {
       if (error instanceof ProviderError && error.status === 429) {
-        this.governor.recordRateLimit(this.providerId, error.retryAfter, { modelId: req.model, scope: rateLimitScopeFor(error.message) });
+        this.governor.recordRateLimit(this.providerId, error.retryAfter, { modelId: req.model, scope: rateLimitScopeFor(error.message, error.rateLimitScope) });
       }
       throw error;
     } finally {

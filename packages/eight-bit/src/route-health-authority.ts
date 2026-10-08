@@ -1,6 +1,7 @@
 import { routeKeyOf, type EightBitRole, type FailureReason } from "./types.js";
 import type { ToolCallOutcome } from "./reliability.js";
 import { classifyRateLimit, type RateLimitClass } from "@codeforge/forge-zero";
+import { rateLimitScopeFor } from "@codeforge/providers";
 
 /**
  * 8-Bit Route Health Authority (R24 Mission A).
@@ -95,6 +96,7 @@ interface ObservationBase {
   modelId: string;
   /** Capacity facts are scoped to the pool that actually served the call. */
   quotaDomainId?: string;
+  rateLimitScope?: "model" | "provider";
   /** ISO-8601 time the fact was observed (not ingested). */
   observedAt: string;
   source: ObservationSource;
@@ -561,7 +563,10 @@ export class EightBitRouteHealthAuthority {
       const capacityFact = observation.kind === "rate_limit_headers" || observation.kind === "daily_allowance"
         || observation.kind === "governor_pressure"
         || (observation.kind === "call_failure" && ["RATE_LIMITED", "QUOTA_EXHAUSTED", "TEMPORARY_CAPACITY", "PROVIDER_OUTAGE", "AUTH_FAILURE", "TIMEOUT", "TRANSIENT_NETWORK"].includes(observation.reason));
-      const snapshot = this.domainAuthority(quotaDomainId).observe({ ...scoped, ...(capacityFact ? { modelId: "__quota_domain__" } : {}) });
+      const modelWall = (observation.kind === "rate_limit_headers" && observation.rateLimitScope === "model")
+        || (observation.kind === "call_failure" && observation.reason === "RATE_LIMITED"
+          && rateLimitScopeFor(observation.message, observation.rateLimitScope) === "model");
+      const snapshot = this.domainAuthority(quotaDomainId).observe({ ...scoped, ...(capacityFact && !modelWall ? { modelId: "__quota_domain__" } : {}) });
       return { ...snapshot, quotaDomainId };
     }
     const state = this.stateFor(observation.providerId, observation.modelId);

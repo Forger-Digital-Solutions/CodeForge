@@ -399,14 +399,16 @@ export class ProviderError extends Error {
   readonly status?: number;
   /** Epoch millis after which the provider may be retried (from Retry-After / rate-limit headers). */
   readonly retryAfter?: number;
+  readonly rateLimitScope?: "model" | "provider";
 
-  constructor(message: string, code?: string, retryable?: boolean, extra?: { status?: number; retryAfter?: number }) {
+  constructor(message: string, code?: string, retryable?: boolean, extra?: { status?: number; retryAfter?: number; rateLimitScope?: "model" | "provider" }) {
     super(message);
     this.name = "ProviderError";
     this.code = code;
     this.retryable = retryable;
     this.status = extra?.status;
     this.retryAfter = extra?.retryAfter;
+    this.rateLimitScope = extra?.rateLimitScope;
   }
 }
 
@@ -422,6 +424,7 @@ export interface ProviderResponseObservation {
    *  provider, each an independent quota domain). Undefined = the provider's default domain. */
   accountId?: string;
   status: number;
+  rateLimitScope?: "model" | "provider";
   headers: Array<[string, string]>;
   observedAt: number;
 }

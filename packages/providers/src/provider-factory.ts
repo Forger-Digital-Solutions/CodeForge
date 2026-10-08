@@ -67,11 +67,14 @@ export function createKiloFreeDirectAdapter(opts: Pick<ProviderFactoryOptions, "
       const zero = (id === "kilo-auto/free" || id.endsWith(":free"))
         && price !== undefined && explicitZero(price.prompt) && explicitZero(price.completion);
       if (!zero) return null;
+      const parameters = Array.isArray(m.supported_parameters) ? m.supported_parameters : undefined;
+      const contextWindow = typeof m.context_length === "number" ? m.context_length : undefined;
       return {
         modelId: id,
         displayName: typeof m.name === "string" ? m.name : id,
-        contextWindow: typeof m.context_length === "number" ? m.context_length : undefined,
-        capabilities: { text: true, coding: true, toolCalling: true, vision: false, structuredOutput: true, longContext: false },
+        contextWindow,
+        capabilities: { text: true, coding: true, toolCalling: parameters ? parameters.includes("tools") : m.supports_tools === true,
+          vision: false, structuredOutput: parameters?.includes("response_format") ?? false, longContext: (contextWindow ?? 0) > 32_000 },
         isFree: true,
         freeStatus: "verified_free",
       };

@@ -1,6 +1,7 @@
 import type { CredentialStore, ProviderAdapter, ProviderHealthResponse, ProviderModel, PromptCacheCapability, ProviderResponseObserver } from "./index.js";
 import { EnvironmentCredentialStore, ProviderError, quotaHeadersOf } from "./index.js";
 import { redactSecrets } from "./redact.js";
+import { gatewayBodyRateLimitScope, gatewayRateLimitScope } from "./gateway-rate-limit.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
 import {
   CloudflareNeuronBudgetGuard,
@@ -177,9 +178,19 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         signal: controller.signal,
         ...(this.cfg.anonymousFree ? { redirect: "manual" as const } : {}),
       });
-      this.observe(res, req.model);
-      if (!res.ok) throw this.handleError(res.status, await safeText(res), res);
+      if (!res.ok) throw this.handleError(res.status, await safeText(res), res, req.model);
       const data = (await res.json()) as OaiChatResponse;
+      const inBand = data.error ?? data.x_groq?.error;
+      if (inBand && typeof inBand === "object") {
+        const error = this.inBandStreamError(inBand, res.status);
+        this.observe(res, req.model, error.rateLimitScope, error.status);
+        throw new ProviderError(error.message, error.code, error.retryable ?? true, {
+          status: error.status, rateLimitScope: error.rateLimitScope,
+          retryAfter: error.status === 429 ? parseRetryAfter(res) : undefined,
+        });
+      }
+      this.observe(res, req.model);
+      if (!Array.isArray(data.choices) || data.choices.length === 0) throw new ProviderError(`${this.providerId} returned no assistant choices`, "EMPTY_RESPONSE", true);
       const response = this.fromResponse(data);
       usage = response.usage;
       return response;
@@ -220,8 +231,8 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         signal: controller.signal,
         ...(this.cfg.anonymousFree ? { redirect: "manual" as const } : {}),
       });
+      if (!res.ok) throw this.handleError(res.status, await safeText(res), res, req.model);
       this.observe(res, req.model);
-      if (!res.ok) throw this.handleError(res.status, await safeText(res), res);
       if (!res.body) throw new ProviderError(`${this.providerId} returned no body`, "NO_BODY", true);
 
       const reader = res.body.getReader();
@@ -376,7 +387,10 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       }
     } catch (e) {
       if (e instanceof ProviderError) throw e;
-      if (e instanceof Error && e.name === "AbortError") return;
+      if (e instanceof Error && e.name === "AbortError") {
+        if (signal?.aborted) return;
+        throw new ProviderError(`${this.providerId} stream timed out`, "TIMEOUT", true);
+      }
       throw new ProviderError(
         `${this.providerId} stream failed: ${e instanceof Error ? e.message : String(e)}`,
         "STREAM_FAILED",
@@ -499,10 +513,10 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     };
   }
 
-  private observe(res: Response, modelId?: string): void {
+  private observe(res: Response, modelId?: string, rateLimitScope?: "model" | "provider", status = res.status): void {
     if (!this.cfg.onResponse) return;
     try {
-      this.cfg.onResponse({ providerId: this.providerId, modelId, status: res.status, headers: quotaHeadersOf(res), observedAt: Date.now() });
+      this.cfg.onResponse({ providerId: this.providerId, modelId, status, headers: quotaHeadersOf(res), observedAt: Date.now(), rateLimitScope });
     } catch {
       // Observation is advisory; never let a listener break a request.
     }
@@ -513,7 +527,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
    * the structured fields (numeric `code`, `type`) over message text; the message is redacted and
    * truncated before it can reach a log or an evidence ledger.
    */
-  private inBandStreamError(error: OaiStreamError, httpStatus: number): StreamEvent {
+  private inBandStreamError(error: OaiStreamError, httpStatus: number): Extract<StreamEvent, { type: "error" }> {
     const message = typeof error.message === "string" && error.message.length > 0 ? error.message : "upstream stream error";
     const rawCode = error.code !== undefined && error.code !== null ? String(error.code) : undefined;
     const numericCode = rawCode !== undefined && /^\d{3}$/.test(rawCode) ? Number(rawCode) : undefined;
@@ -557,10 +571,13 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       message: `${this.providerId} stream error${rawCode ? ` (${rawCode})` : type ? ` (${type})` : ""} after HTTP ${httpStatus}: ${safe}`,
       retryable,
       ...(status !== undefined && status >= 100 && status <= 599 ? { status } : {}),
+      ...(status === 429 ? { rateLimitScope: gatewayRateLimitScope(this.providerId, error) } : {}),
     };
   }
 
-  private handleError(status: number, body: string, res?: Response): ProviderError {
+  private handleError(status: number, body: string, res?: Response, modelId?: string): ProviderError {
+    const rateLimitScope = status === 429 ? gatewayBodyRateLimitScope(this.providerId, body) : undefined;
+    if (res && modelId) this.observe(res, modelId, rateLimitScope);
     let code = "PROVIDER_ERROR";
     let retryable = false;
     if (status === 401 || status === 403) code = "AUTH_ERROR";
@@ -573,6 +590,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     return new ProviderError(`${this.providerId} error (${status}): ${safe}`, code, retryable, {
       status,
       retryAfter: res && status === 429 ? parseRetryAfter(res) : undefined,
+      rateLimitScope,
     });
   }
 }
@@ -582,6 +600,8 @@ interface OaiChatResponse {
   model?: string;
   choices?: Array<{ message?: { content?: string; tool_calls?: Array<{ id: string; function: { name: string; arguments: string } }> }; finish_reason?: string }>;
   usage?: OaiUsage;
+  error?: OaiStreamError;
+  x_groq?: { error?: OaiStreamError };
 }
 
 interface OaiStreamError {

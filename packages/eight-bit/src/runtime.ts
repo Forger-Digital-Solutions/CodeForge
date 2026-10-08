@@ -246,7 +246,10 @@ export class EightBitRuntime {
     const reason = classifyFailure(error);
     const status = typeof (error as { status?: unknown })?.status === "number" ? (error as { status: number }).status : undefined;
     const message = error instanceof Error ? error.message : String(error ?? "");
-    this.observe({ kind: "call_failure", providerId, modelId, quotaDomainId: context.quotaDomainId, observedAt: new Date(this.now()).toISOString(), source: "runtime", reason, status, retryAfterMs: context.retryAfterMs, message: message.slice(0, 300), role: context.role, correlationId: context.correlationId, requestShape: "production" });
+    const scope = (error as { rateLimitScope?: unknown })?.rateLimitScope;
+    this.observe({ kind: "call_failure", providerId, modelId, quotaDomainId: context.quotaDomainId,
+      ...(scope === "model" || scope === "provider" ? { rateLimitScope: scope } : {}),
+      observedAt: new Date(this.now()).toISOString(), source: "runtime", reason, status, retryAfterMs: context.retryAfterMs, message: message.slice(0, 300), role: context.role, correlationId: context.correlationId, requestShape: "production" });
   }
 
   /** Generic sink for every producer (probe gates, headers, allowances, catalog, entitlement, governor). */
