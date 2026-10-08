@@ -27,7 +27,7 @@ await writeFile(`${dir}/R72-FINAL-REPORT.md`, `# CodeForge R72 final delivery
 
 ## 1. Repository
 
-Authoritative original: G:\\CodeForge, branch ${baseline.originalBranch}, HEAD ${baseline.originalHead}, preserved. Durable R72: ${baseline.source}, branch ${baseline.branch}, starting R71 delivery ${baseline.startingHead}. Frozen final runtime/source ${windows.sourceRevision}; implementation commits b1190dae and 5ebe3fbc. Evidence delivery is a separate subsequent commit, identified by this file's containing commit and the final chat response. Push receipt is recorded separately if the authorized branch push succeeds. R70 ancestry, R71 checkout/35 evidence files, unchanged lockfile and six unrelated dirty file hashes pass the final audit. No historical evidence, unrelated project or original checkout was reset.
+Authoritative original: G:\\CodeForge, branch ${baseline.originalBranch}, HEAD ${baseline.originalHead}, preserved. Durable R72: ${baseline.source}, branch ${baseline.branch}, starting R71 delivery ${baseline.startingHead}. Frozen final runtime/source ${windows.sourceRevision}; implementation commits b1190dae and 5ebe3fbc. Evidence delivery is a separate subsequent commit, identified by this file's containing commit and the final chat response. Authorized branch publication was attempted but blocked by unavailable Git credentials; the exact remote branch was absent on the subsequent anonymous read. See delivery-publication.json. R70 ancestry, R71 checkout/35 evidence files, unchanged lockfile and six unrelated dirty file hashes pass the final audit. No historical evidence, unrelated project or original checkout was reset.
 
 ## 2. Free Supply
 

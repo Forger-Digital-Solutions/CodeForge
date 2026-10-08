@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-10-08T14:14:35.045Z",
+  "observedAt": "2026-10-08T14:16:45.541Z",
   "files": [
     {
       "file": "docs/evidence/r72-free-supply-and-autonomy/affected-tests.json",
@@ -55,6 +55,11 @@
       "file": "docs/evidence/r72-free-supply-and-autonomy/child-coding-proof.json",
       "bytes": 1378,
       "sha256": "da0ff4b30b55d31d3cf7aa03dadff5b0d206c4b04c169fb791b3eddf8423e5e6"
+    },
+    {
+      "file": "docs/evidence/r72-free-supply-and-autonomy/delivery-publication.json",
+      "bytes": 925,
+      "sha256": "758ebf257f8bf04e2b867fea412420b10c7c34939ebf645b807f4439f23044e3"
     },
     {
       "file": "docs/evidence/r72-free-supply-and-autonomy/final-boundary-tests.json",
@@ -248,8 +253,8 @@
     },
     {
       "file": "docs/evidence/r72-free-supply-and-autonomy/R72-FINAL-REPORT.md",
-      "bytes": 8341,
-      "sha256": "0d25b52ae297c23a5442fb56bb9e0533b5ec983487a8d68c1fe1147ea592cae0"
+      "bytes": 8453,
+      "sha256": "244f16a18d1a883147fb07d5bc19ad1a9bf7c8fb31142473dbe347657ea8c9a1"
     },
     {
       "file": "docs/evidence/r72-free-supply-and-autonomy/R72-LIVE-QUALIFICATION.md",
@@ -403,8 +408,8 @@
     },
     {
       "file": "benchmarks/r72/write-final-report.mjs",
-      "bytes": 11311,
-      "sha256": "c4049f72a8f821655626d2af846013fac1497e24c6107a8570b4905ea2adcf5c"
+      "bytes": 11423,
+      "sha256": "358a93dea1a30ba080dcafa23ea7dcc5a657769df6bcf7e1db6f4e9811ae852f"
     },
     {
       "file": "benchmarks/r72/write-reports.mjs",

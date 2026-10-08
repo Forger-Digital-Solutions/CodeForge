@@ -1,0 +1,19 @@
+{
+  "branch": "codex/r72-free-supply-and-autonomy",
+  "origin": "https://github.com/Forger-Digital-Solutions/CodeForge.git",
+  "attemptedHead": "6dfa7d2efa5195181d91d9fa7232babdd68fc93e",
+  "status": "BLOCKED_GIT_AUTHENTICATION",
+  "initialPush": "Credential Manager stalled; only the matching R72 push process tree was terminated.",
+  "noninteractiveRetry": {
+    "exitCode": 1,
+    "error": "Cannot prompt because user interactivity has been disabled; unable to get password from user."
+  },
+  "anonymousRemoteVerification": {
+    "command": "git -c credential.helper= ls-remote origin refs/heads/codex/r72-free-supply-and-autonomy",
+    "exitCode": 0,
+    "matchingRefs": 0
+  },
+  "published": false,
+  "requiredPrerequisite": "An authorized Git credential for the verified CodeForge origin.",
+  "finalLocalDelivery": "The containing commit of this receipt and the final response identify the final local delivery SHA."
+}
