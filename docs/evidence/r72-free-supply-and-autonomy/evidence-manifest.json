@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-10-08T14:08:33.316Z",
+  "observedAt": "2026-10-08T14:14:35.045Z",
   "files": [
     {
       "file": "docs/evidence/r72-free-supply-and-autonomy/affected-tests.json",
@@ -218,8 +218,8 @@
     },
     {
       "file": "docs/evidence/r72-free-supply-and-autonomy/qualification-summary.json",
-      "bytes": 2390,
-      "sha256": "c7f41ce2f19890e91f3c588315239926a74456cdb44a94050776f8a3492a05a4"
+      "bytes": 2304,
+      "sha256": "ff9cfde1f11a8da74b5d3bf421fd95fe00712fe56f26156b709cac18c14b1145"
     },
     {
       "file": "docs/evidence/r72-free-supply-and-autonomy/qualification-thinkingmachines_inkling-small_free-1791466536425.json",
@@ -253,8 +253,8 @@
     },
     {
       "file": "docs/evidence/r72-free-supply-and-autonomy/R72-LIVE-QUALIFICATION.md",
-      "bytes": 2867,
-      "sha256": "458497b50183ca981c52db9d348958769396be982668bc0337e6b83f9bc739d3"
+      "bytes": 2794,
+      "sha256": "c483d1a7e09722bcfb906cf03fb0818003fe8fe78b9242cf44758a30ba85570b"
     },
     {
       "file": "docs/evidence/r72-free-supply-and-autonomy/R72-PACKAGED-ANONYMOUS.md",
@@ -408,8 +408,8 @@
     },
     {
       "file": "benchmarks/r72/write-reports.mjs",
-      "bytes": 19333,
-      "sha256": "378c24710ffe370bde0e2c5c3598482c293974920d7647b106486b0ecc77fe20"
+      "bytes": 19340,
+      "sha256": "8d37d6c55aca9e6279b284bd4e650548e31b23fc1cbfbcc70c1256d3ce42103b"
     }
   ]
 }

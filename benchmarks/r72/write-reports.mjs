@@ -48,7 +48,7 @@ Puter now has a system-browser official SDK sign-in page on a random one-use loo
 OpenRouter official PKCE, secure credential connection, persisted owner-bound receipt, recheck/revocation and fail-closed account switching are preserved and tested through existing production modules. R71's genuinely personal 50/day key was transient and is unavailable here. R72's environment key metadata says paid-tier; it was read once without inference and never admitted to Free. Real persistent account login/restart and two distinct live unpaid users remain unverified. SambaNova/Z.ai/SiliconFlow/Bytez/Awan authorized account credentials are absent. No keys were invented, transferred or shared.`);
 const qualifications = [];
 for (const name of await readdir(dir)) {
-  if (!/^(qualification-|reviewer-).*\.json$/.test(name)) continue;
+  if (!/^(qualification-|reviewer-).*-[0-9]+\.json$/.test(name)) continue;
   const document = await json(name);
   qualifications.push({ file: name, model: document.modelId, status: document.status, requests: document.frames?.length ?? 0,
     roles: Object.fromEntries(Object.entries(document.qualification?.roleResults ?? {}).map(([role, value]) => [role, value.status])) });

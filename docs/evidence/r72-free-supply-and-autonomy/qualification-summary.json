@@ -53,11 +53,6 @@
     }
   },
   {
-    "file": "qualification-summary.json",
-    "requests": 0,
-    "roles": {}
-  },
-  {
     "file": "qualification-thinkingmachines_inkling-small_free-1791466536425.json",
     "model": "thinkingmachines/inkling-small:free",
     "status": "INCONCLUSIVE_PROVIDER_FAILURE",

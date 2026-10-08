@@ -8,7 +8,6 @@ All requests used exact catalog-verified free Kilo models and current reverified
 | liquid/lfm-2.5-2.6b:free ([receipt](qualification-liquid_lfm-2.5-2.6b_free-1791466230688.json)) | INCONCLUSIVE_PROVIDER_FAILURE | 6 | CODER: QUALIFIED; TOOL_AGENT: PROBATION; ANALYST: NOT_QUALIFIED; EXPLORER: NOT_TESTED; PLANNER: NOT_TESTED; REVIEWER: NOT_TESTED |
 | nvidia/nemotron-3.5-lightning:free ([receipt](qualification-nvidia_nemotron-3.5-lightning_free-1791465864045.json)) | INCONCLUSIVE_PROVIDER_FAILURE | 26 | CODER: QUALIFIED; TOOL_AGENT: PROBATION; ANALYST: NOT_QUALIFIED; EXPLORER: PROBATION; PLANNER: NOT_TESTED; REVIEWER: NOT_TESTED |
 | poolside/laguna-s-2.1:free ([receipt](qualification-poolside_laguna-s-2.1_free-1791464804626.json)) | INCONCLUSIVE_PROVIDER_FAILURE | 2 | CODER: PROBATION; TOOL_AGENT: NOT_QUALIFIED; ANALYST: NOT_QUALIFIED |
-| undefined ([receipt](qualification-summary.json)) | undefined | 0 |  |
 | thinkingmachines/inkling-small:free ([receipt](qualification-thinkingmachines_inkling-small_free-1791466536425.json)) | INCONCLUSIVE_PROVIDER_FAILURE | 1 | CODER: NOT_QUALIFIED; TOOL_AGENT: NOT_QUALIFIED; ANALYST: NOT_QUALIFIED |
 | dots-studio/dots-3-note-preview:free ([receipt](reviewer-dots-studio_dots-3-note-preview_free-1791465616770.json)) | INCONCLUSIVE_PROVIDER_FAILURE | 8 | CODER: QUALIFIED; TOOL_AGENT: PROBATION; ANALYST: NOT_QUALIFIED; EXPLORER: PROBATION; PLANNER: QUALIFIED; REVIEWER: NOT_TESTED |
 
