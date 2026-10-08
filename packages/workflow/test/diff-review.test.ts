@@ -39,6 +39,19 @@ describe("DiffReview", () => {
     expect(review.diffs).toEqual([expect.objectContaining({ path: "new.txt", changeType: "created" })]);
   });
 
+  it("reviews files created inside an ignored child workspace of a parent Git repository", async () => {
+    const git = (...args: string[]) => execFileSync("git", args, { cwd: ws, windowsHide: true });
+    git("init");
+    await writeFile(join(ws, ".gitignore"), "child/\n");
+    git("add", ".");
+    git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false", "commit", "-m", "baseline");
+    const child = join(ws, "child");
+    await mkdir(child);
+    await writeFile(join(child, "new.txt"), "new content\n");
+    const review = await reviewDiff(child, { beforeSnapshots: new Map() });
+    expect(review.diffs).toEqual([expect.objectContaining({ path: "new.txt", changeType: "created" })]);
+  });
+
   it.each([true, false])("reviews nested untracked files with snapshots=%s", async (snapshots) => {
     const git = (...args: string[]) => execFileSync("git", args, { cwd: ws, windowsHide: true });
     git("init");

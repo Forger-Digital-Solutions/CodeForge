@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -26,6 +27,26 @@ describe("ForgeVerify evidence graph", () => {
   let workspace: string;
   beforeEach(async () => { workspace = await mkdtemp(join(tmpdir(), "forgeverify-evidence-")); });
   afterEach(async () => { await rm(workspace, { recursive: true, force: true }); });
+
+  it("invalidates passing evidence for an ignored workspace inside a parent repository", async () => {
+    execFileSync("git", ["init"], { cwd: workspace, windowsHide: true });
+    await writeFile(join(workspace, ".gitignore"), "child/\n");
+    execFileSync("git", ["add", ".gitignore"], { cwd: workspace, windowsHide: true });
+    execFileSync("git", ["-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false", "commit", "-m", "baseline"], { cwd: workspace, windowsHide: true });
+    const child = join(workspace, "child");
+    await mkdir(child);
+    await writeFile(join(child, "source.txt"), "first");
+    const registry = createVerifierRegistry([definition("tests.child", "process.exit(0)")]);
+    const plan = createVerificationPlan(registry, policy, { runId: "nested-workspace", workspacePath: child, scope: "workspace" });
+    const result = await executeVerificationPlan(registry, plan);
+    expect(result.summary.verificationComplete).toBe(true);
+    await writeFile(join(workspace, ".gitignore"), "child/\nother/\n");
+    expect(summarizeVerification(plan, registry, result.evidence).verificationComplete).toBe(true);
+    await writeFile(join(child, "source.txt"), "second");
+    const stale = summarizeVerification(plan, registry, result.evidence);
+    expect(stale.staleCount).toBe(1);
+    expect(stale.verificationComplete).toBe(false);
+  });
 
   it("runs every required verifier and only current passing evidence satisfies the plan", async () => {
     await writeFile(join(workspace, "source.txt"), "first");

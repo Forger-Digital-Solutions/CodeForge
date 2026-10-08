@@ -5,6 +5,7 @@ import path from "node:path";
 import { prepareShellCommand } from "./child-process.js";
 import { execute } from "@codeforge/terminal";
 import { redactSecrets } from "@codeforge/secrets";
+import { workspaceOwnsGitRoot } from "./workspace-git-boundary.js";
 import type { Verifier } from "./types.js";
 
 export type Brand<Value, Name extends string> = Value & { readonly __brand: Name };
@@ -360,13 +361,15 @@ function untrackedHash(workspacePath: string): string {
  */
 export function createVerificationInputStateHash(workspacePath: string): VerificationInputStateHash {
   const resolved = path.resolve(workspacePath);
-  const head = gitValue(resolved, ["rev-parse", "HEAD"]) ?? "no-git";
-  const tracked = gitValue(resolved, ["diff", "--binary", "HEAD"]) ?? "no-git";
+  const ownsGitRoot = workspaceOwnsGitRoot(resolved);
+  const head = (ownsGitRoot ? gitValue(resolved, ["rev-parse", "HEAD"]) : undefined) ?? "no-git";
+  const tracked = (ownsGitRoot ? gitValue(resolved, ["diff", "--binary", "HEAD"]) : undefined) ?? "no-git";
   // `--cached` without a revision diffs the index against HEAD (or the empty tree before the first
   // commit), so a freshly initialised repository is covered too.
-  const staged = gitValue(resolved, ["diff", "--binary", "--cached"]) ?? "no-git";
-  const untracked = untrackedHash(resolved);
-  return digest({ workspacePath: resolved, head, tracked, ...(staged !== "" ? { staged } : {}), untracked, ...(head === "no-git" ? { directory: directoryHash(resolved) } : {}) }) as VerificationInputStateHash;
+  const staged = (ownsGitRoot ? gitValue(resolved, ["diff", "--binary", "--cached"]) : undefined) ?? "no-git";
+  const untracked = ownsGitRoot ? untrackedHash(resolved) : "no-git";
+  // A parent repository can ignore this entire workspace; its Git state cannot bind our files.
+  return digest({ workspacePath: resolved, head, tracked, ...(staged !== "" ? { staged } : {}), untracked, ...(head === "no-git" || !ownsGitRoot ? { directory: directoryHash(resolved) } : {}) }) as VerificationInputStateHash;
 }
 
 export function createVerificationPlan(registry: VerifierRegistry, policy: VerificationPolicy, input: VerificationPolicyInput): VerificationPlan {

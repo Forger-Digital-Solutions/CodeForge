@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 import type { DiffEntry, ReviewDecision, ReviewFinding } from "./types.js";
 import { semanticDiffFindings } from "./semantic-diff-review.js";
+import { workspaceOwnsGitRoot } from "./workspace-git-boundary.js";
 
 /** A bounded pre-run snapshot. Binary content is identified and hashed but never retained as text. */
 export type BeforeSnapshot =
@@ -311,8 +312,10 @@ export async function reviewDiff(
 ): Promise<ReviewDecision> {
   if (options.signal?.aborted) throw new Error("Review aborted");
 
-  const gitDiff = getGitDiff(workspacePath, options.base);
-  const statusFiles = getGitStatusFiles(workspacePath);
+  // Parent Git ignores and root-relative paths must not hide this workspace's review inputs.
+  const ownsGitRoot = workspaceOwnsGitRoot(workspacePath);
+  const gitDiff = ownsGitRoot ? getGitDiff(workspacePath, options.base) : null;
+  const statusFiles = ownsGitRoot ? getGitStatusFiles(workspacePath) : [];
   const diffs: DiffEntry[] = [];
 
   // If we have before snapshots, compute precise diffs regardless of git status (temp workspaces may not be git repos)
