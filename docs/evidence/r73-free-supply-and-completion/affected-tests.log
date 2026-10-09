@@ -1,0 +1,3 @@
+Release packaging supports only the staging or production channel.
+The production Cloud URL must be HTTPS and must not be loopback.
+JSON report written to G:/CodeForge/worktrees/r73-free-supply-and-completion/docs/evidence/r73-free-supply-and-completion/affected-tests.json

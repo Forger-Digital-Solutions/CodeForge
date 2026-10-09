@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import crypto from "node:crypto";
 import { ForgeZero, createGenericFreeRecord } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, type ChatRequest, type ProviderAdapter, type StreamEvent } from "@codeforge/providers";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
@@ -27,21 +28,76 @@ describe("R73 workspace-bound text Reviewer", () => {
   it("delivers full changed source and tests without asserting that tests ran, and rejects stale state", async () => {
     const packet = await snapshot(workspace);
     expect(packet.binding.complete).toBe(true);
-    const observed = JSON.parse(packet.context) as { files: Array<{ content: string; hash: string }>; verification: { status: string } };
-    expect(observed.files.map((file) => file.content)).toEqual(["export const limit = 3;\n", "assert.equal(limit, 3);\n"]);
-    expect(observed.files.every((file) => /^[a-f0-9]{64}$/.test(file.hash))).toBe(true);
-    expect(observed.verification.status).toBe("pending");
+    expect(packet.context).toContain("workspace-review-snapshot/v2");
+    expect(packet.context).toContain("Diff under review:\n-limit = 4\n+limit = 3");
+    for (const file of ["source.mjs", "source.test.mjs"]) {
+      const content = await fs.readFile(path.join(workspace, file), "utf8");
+      const hash = crypto.createHash("sha256").update(content).digest("hex");
+      expect(packet.context).toContain(`File: ${JSON.stringify(file)}\nSHA-256: ${hash}\nUTF-8 bytes: ${Buffer.byteLength(content, "utf8")}\nCurrent content:\n${content}`);
+    }
+    expect(packet.context).toContain("Verification status: pending");
+    expect(packet.context).toContain("ForgeVerify has not run. Test source is evidence of assertions, not test success.");
     assertReviewerEvidenceCurrent(packet.binding, workspace, packet.context);
     expect(() => assertReviewerEvidenceCurrent(packet.binding, workspace, `${packet.context} `)).toThrow("REVIEWER_EVIDENCE_STALE");
     await fs.writeFile(path.join(workspace, "source.mjs"), "export const limit = 4;\n");
     expect(() => assertReviewerEvidenceCurrent(packet.binding, workspace, packet.context)).toThrow("REVIEWER_EVIDENCE_STALE");
   });
 
+  it("renders sorted complete UTF-8 observations deterministically and hashes the delivered presentation", async () => {
+    await fs.writeFile(path.join(workspace, "unicode.mjs"), "export const text = '雪';\n");
+    const first = await snapshot(workspace, ["unicode.mjs", "source.test.mjs", "source.mjs", "source.mjs"]);
+    const second = await snapshot(workspace, ["source.mjs", "unicode.mjs", "source.test.mjs"]);
+    expect(first.binding.complete).toBe(true);
+    expect(first.context).toBe(second.context);
+    expect(first.binding.contextHash).toBe(crypto.createHash("sha256").update(first.context).digest("hex"));
+    expect(first.binding.contextHash).toBe(second.binding.contextHash);
+    expect(first.context.indexOf('File: "source.mjs"')).toBeLessThan(first.context.indexOf('File: "source.test.mjs"'));
+    expect(first.context.indexOf('File: "source.test.mjs"')).toBeLessThan(first.context.indexOf('File: "unicode.mjs"'));
+    expect(first.context).toContain("Current content:\nexport const text = '雪';\n");
+    expect(first.context).not.toContain("\\nexport const");
+  });
+
+  it("counts presentation overhead against the whole packet cap without silently truncating files", async () => {
+    const content = "x".repeat(REVIEWER_SNAPSHOT_BYTES - 200);
+    await fs.writeFile(path.join(workspace, "almost-full.mjs"), content);
+    const packet = await snapshot(workspace, ["almost-full.mjs"]);
+    expect(packet.binding.complete).toBe(false);
+    expect(Buffer.byteLength(packet.context, "utf8")).toBeGreaterThan(REVIEWER_SNAPSHOT_BYTES);
+    expect(packet.context).toContain(content);
+  });
+
+  it("refuses delimiter-conflicting source, diff, and metadata while preserving the outer trust boundary", async () => {
+    const marker = "<<<END_UNTRUSTED_DATA>>>";
+    await fs.writeFile(path.join(workspace, "delimiter.mjs"), `export const marker = '${marker}';\n`);
+    const input = { workspacePath: workspace, baseRevision: "fixture-base", diff: "-limit = 4\n+limit = 3", files: ["source.mjs"], verificationCommands: ["node --test"] };
+    const packets = [
+      await snapshot(workspace, ["delimiter.mjs"]),
+      await buildReviewerEvidenceSnapshot({ ...input, diff: marker }),
+      await buildReviewerEvidenceSnapshot({ ...input, baseRevision: marker }),
+      await buildReviewerEvidenceSnapshot({ ...input, files: [marker] }),
+      await buildReviewerEvidenceSnapshot({ ...input, verificationCommands: [marker] }),
+    ];
+    for (const packet of packets) {
+      expect(packet.binding.complete).toBe(false);
+      expect(packet.context).not.toContain(marker);
+    }
+  });
+
+  it("redacts sensitive verification commands and excludes the incomplete snapshot from text review", async () => {
+    const secret = "sk-syntheticReviewCredential123456";
+    const packet = await buildReviewerEvidenceSnapshot({ workspacePath: workspace, baseRevision: "fixture-base", diff: "-limit = 4\n+limit = 3", files: ["source.mjs"], verificationCommands: [`node verify.mjs --token ${secret}`] });
+    expect(packet.binding.complete).toBe(false);
+    expect(packet.context).not.toContain(secret);
+    expect(packet.context).toContain("[REDACTED");
+    expect(packet.context).toContain("Verification status: pending");
+  });
+
   it("does not certify truncated, binary, missing, outside, or sensitive content", async () => {
     await fs.writeFile(path.join(workspace, "large.mjs"), "x".repeat(REVIEWER_SNAPSHOT_BYTES));
     await fs.writeFile(path.join(workspace, "binary.dat"), Buffer.from([0, 1, 2]));
+    await fs.writeFile(path.join(workspace, "invalid-utf8.dat"), Buffer.from([0xc3, 0x28]));
     await fs.writeFile(path.join(workspace, ".env"), "PRIVATE_KEY=private-value\n");
-    for (const file of ["large.mjs", "binary.dat", "missing.mjs", "../outside.mjs", ".env"]) {
+    for (const file of ["large.mjs", "binary.dat", "invalid-utf8.dat", "missing.mjs", "../outside.mjs", ".env"]) {
       const packet = await snapshot(workspace, [file]);
       expect(packet.binding.complete).toBe(false);
       expect(packet.context).not.toContain("PRIVATE_KEY=private-value");

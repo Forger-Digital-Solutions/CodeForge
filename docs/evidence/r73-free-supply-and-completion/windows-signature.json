@@ -1,0 +1,9 @@
+{
+  "observedAt": "2026-10-09T10:24:49.5588307Z",
+  "sourceRevision": "eade8b0d7f775dd382cfae65b7ae80289a0aaa77",
+  "method": "Direct host PowerShell Get-AuthenticodeSignature",
+  "Status": "NotSigned",
+  "StatusMessage": "The file G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\CodeForge.exe is not digitally signed. You cannot run this script on the current system. For more information about running scripts and setting execution policy, see about_Execution_Policies at https://go.microsoft.com/fwlink/?LinkID=135170",
+  "Path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\CodeForge.exe",
+  "SignerSubject": null
+}

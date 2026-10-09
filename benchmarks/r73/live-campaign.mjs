@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { ForgeZero, CapacityReservationLedger } from '@codeforge/forge-zero';
 import { createKiloFreeDirectAdapter, createBlockRunFreeAdapter, InMemoryProviderCatalog } from '@codeforge/providers';
 import { FreeCloudService, NormalizedModelRegistry, reverifyKiloPolicy, reverifyBlockRunPolicy } from '@codeforge/model-registry';
-import { createEightBitRouteHealthAuthority, createFreeFabric } from '@codeforge/eight-bit';
+import { createEightBitRouteHealthAuthority, createFreeFabric, roleQualificationStatusFor } from '@codeforge/eight-bit';
 import { createSessionPersistence, EventStore } from '@codeforge/sessions';
 import { createAgentRuntime, createWorkspaceService, createWorkspaceEventAdapter, createAutonomousRunOrchestrator } from '@codeforge/server';
 import { taskAt } from '../r71/tasks.mjs';
@@ -43,7 +43,8 @@ try {
     const policyFn = blockrun ? reverifyBlockRunPolicy : reverifyKiloPolicy;
     const policy = await policyFn(new Date().toISOString());
     if (policy.status !== 'VERIFIED') { campaign.supply.push({ providerId: adapter.providerId, status: 'POLICY_DENIED' }); continue; }
-    if (Date.now() - Date.parse(qualification.completedAt) > 86_400_000 || qualification.metadata?.transient) throw new Error('CURRENT_CONCLUSIVE_QUALIFICATION_REQUIRED');
+    const roleStatuses = Object.fromEntries(Object.keys(qualification.roleResults).map(role => [role, roleQualificationStatusFor(qualification, role)]));
+    if (qualification.metadata?.transient || !Object.values(roleStatuses).some(status => status === 'QUALIFIED')) throw new Error('CURRENT_CONCLUSIVE_QUALIFICATION_REQUIRED');
     const models = await adapter.listModels();
     const model = models.find((item) => item.modelId === qualification.modelId && item.isFree && item.freeStatus === 'verified_free');
     if (!model) { campaign.supply.push({ providerId: adapter.providerId, status: 'MODEL_ABSENT', modelId: qualification.modelId }); continue; }
@@ -54,7 +55,7 @@ try {
     freeCloud.setDirectPolicyReceipt(adapter.providerId, policy.receipt);
     await freeCloud.recordReceipt(qualification);
     freeCloud.applyReceiptToFirewall(qualification);
-    campaign.supply.push({ providerId: adapter.providerId, modelId: model.modelId, qualificationAt: qualification.completedAt, qualificationSource: qualificationPath, roles: Object.fromEntries(Object.entries(qualification.roleResults).map(([role, value]) => [role, value.status])) });
+    campaign.supply.push({ providerId: adapter.providerId, modelId: model.modelId, qualificationAt: qualification.completedAt, qualificationSource: qualificationPath, qualificationFreshness: 'PRODUCTION_ROLE_QUALITY_AUTHORITY', roles: roleStatuses });
   }
   for (const role of ['EXPLORER', 'CODER', 'REVIEWER']) {
     if (!campaign.supply.some(route => route.roles?.[role] === 'QUALIFIED')) throw new Error(`CURRENT_QUALIFIED_${role}_ROSTER_UNAVAILABLE`);

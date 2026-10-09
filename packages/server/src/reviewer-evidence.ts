@@ -20,6 +20,8 @@ export interface ReviewerEvidenceSnapshot {
 
 const digest = (value: string): string => crypto.createHash("sha256").update(value).digest("hex");
 const sensitivePath = /(?:^|\/)(?:\.env(?:\.[^/]*)?|[^/]+\.(?:pem|p12|pfx|key)|id_(?:rsa|ed25519))$/i;
+const untrustedDelimiter = /<<<(?:END_)?UNTRUSTED_DATA(?:\s|>)/;
+const metadata = (value: string): string => JSON.stringify(redactSecrets(value)).replaceAll("<", "\\u003c");
 
 export async function buildReviewerEvidenceSnapshot(input: {
   workspacePath: string;
@@ -31,14 +33,19 @@ export async function buildReviewerEvidenceSnapshot(input: {
   const workspacePath = path.resolve(input.workspacePath);
   const before = createVerificationInputStateHash(workspacePath);
   const observations: Array<{ path: string; hash?: string; content?: string; unavailable?: string }> = [];
-  let complete = Buffer.byteLength(input.diff, "utf8") < REVIEWER_SNAPSHOT_BYTES && redactSecrets(input.diff) === input.diff;
+  const diff = redactSecrets(input.diff);
+  const commands = input.verificationCommands.map((command) => redactSecrets(command));
+  let complete = Buffer.byteLength(input.diff, "utf8") < REVIEWER_SNAPSHOT_BYTES && diff === input.diff
+    && !untrustedDelimiter.test(input.diff) && !untrustedDelimiter.test(input.baseRevision) && redactSecrets(input.baseRevision) === input.baseRevision
+    && input.verificationCommands.every((command, index) => commands[index] === command && !untrustedDelimiter.test(command));
   let bytes = Buffer.byteLength(input.diff, "utf8");
   const paths = [...new Set(input.files)].sort();
   if (paths.length > 256) complete = false;
   for (const relative of paths.slice(0, 256)) {
     const resolved = path.resolve(workspacePath, relative);
     const confined = path.relative(workspacePath, resolved);
-    if (!confined || confined.startsWith("..") || path.isAbsolute(confined) || sensitivePath.test(relative.replaceAll("\\", "/"))) {
+    if (!confined || confined.startsWith("..") || path.isAbsolute(confined) || sensitivePath.test(relative.replaceAll("\\", "/"))
+      || untrustedDelimiter.test(relative) || redactSecrets(relative) !== relative) {
       complete = false;
       observations.push({ path: relative, unavailable: "excluded from inference snapshot" });
       continue;
@@ -54,9 +61,9 @@ export async function buildReviewerEvidenceSnapshot(input: {
       }
       const buffer = await fs.readFile(resolved);
       const content = buffer.toString("utf8");
-      if (buffer.includes(0) || !Buffer.from(content, "utf8").equals(buffer) || redactSecrets(content) !== content) {
+      if (buffer.includes(0) || !Buffer.from(content, "utf8").equals(buffer) || redactSecrets(content) !== content || untrustedDelimiter.test(content)) {
         complete = false;
-        observations.push({ path: relative, unavailable: "binary or sensitive content excluded" });
+        observations.push({ path: relative, unavailable: "binary, sensitive, or delimiter-conflicting content excluded" });
         continue;
       }
       bytes += buffer.length;
@@ -66,13 +73,18 @@ export async function buildReviewerEvidenceSnapshot(input: {
       observations.push({ path: relative, unavailable: "file unavailable" });
     }
   }
-  const context = JSON.stringify({
-    schema: "workspace-review-snapshot/v1",
-    baseRevision: input.baseRevision,
-    diff: redactSecrets(input.diff),
-    files: observations,
-    verification: { status: "pending", commands: input.verificationCommands, note: "ForgeVerify has not run. Test source is evidence of assertions, not test success." },
-  });
+  const context = [
+    "Workspace review snapshot: workspace-review-snapshot/v2",
+    `Base revision: ${metadata(input.baseRevision)}`,
+    `Diff under review:\n${untrustedDelimiter.test(input.diff) ? "[Diff unavailable: untrusted-data delimiter conflict]" : diff}`,
+    `Full current files (${observations.length}):`,
+    ...observations.map((file) => file.content !== undefined
+      ? `File: ${metadata(file.path)}\nSHA-256: ${file.hash}\nUTF-8 bytes: ${Buffer.byteLength(file.content, "utf8")}\nCurrent content:\n${file.content}`
+      : `File: ${metadata(file.path)}\nUnavailable: ${file.unavailable}`),
+    "Verification status: pending",
+    `Verification commands:\n${commands.map(metadata).join("\n")}`,
+    "ForgeVerify has not run. Test source is evidence of assertions, not test success.",
+  ].join("\n\n");
   complete &&= Buffer.byteLength(context, "utf8") <= REVIEWER_SNAPSHOT_BYTES && before === createVerificationInputStateHash(workspacePath);
   return { context, binding: { workspacePath, inputStateHash: before, contextHash: digest(context), complete } };
 }

@@ -1,0 +1,9 @@
+  • electron-builder  version=26.15.3 os=10.0.26300
+  ⨯ ENOENT: no such file or directory, open 'G:\CodeForge\worktrees\r73-free-supply-and-completion\apps\desktop\.electronDist=C:\Users\Daddy_FDS\AppData\Local\electron\Cache\ac7f9bbe5344a6f3ccf5cdc4671361a3baaec6426c7c2896b00280b871d31359\electron-v44.4.1-win32-x64.zip'  failedTask=build stackTrace=Error: ENOENT: no such file or directory, open 'G:\CodeForge\worktrees\r73-free-supply-and-completion\apps\desktop\.electronDist=C:\Users\Daddy_FDS\AppData\Local\electron\Cache\ac7f9bbe5344a6f3ccf5cdc4671361a3baaec6426c7c2896b00280b871d31359\electron-v44.4.1-win32-x64.zip'
+    at open (node:internal/fs/promises:697:25)
+    at Object.readFile (node:internal/fs/promises:1348:14)
+    at readConfig (G:\CodeForge\node_modules\app-builder-lib\src\util\config\load.ts:19:16)
+    at getConfig (G:\CodeForge\node_modules\app-builder-lib\src\util\config\config.ts:43:34)
+    at Packager.validateConfig (G:\CodeForge\node_modules\app-builder-lib\src\packager.ts:367:27)
+    at Packager.build (G:\CodeForge\node_modules\app-builder-lib\src\packager.ts:398:5)
+    at executeFinally (G:\CodeForge\node_modules\builder-util\src\promise.ts:12:14)

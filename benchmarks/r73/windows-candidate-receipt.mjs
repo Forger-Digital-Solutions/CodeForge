@@ -10,6 +10,9 @@ const evidence = resolve(root, "docs/evidence/r73-free-supply-and-completion");
 const artifact = resolve(process.argv[2] ?? join(root, "apps/desktop/release-r73-final/win-unpacked"));
 const frozenRevision = process.argv[3];
 if (!/^[a-f0-9]{40}$/.test(frozenRevision ?? "")) throw new Error("Pass the frozen 40-character source SHA as the second argument.");
+const receiptPrefix = process.argv[4] ?? frozenRevision.slice(0, 12);
+if (!/^[a-zA-Z0-9_-]+$/.test(receiptPrefix)) throw new Error("Receipt prefix must contain only letters, digits, underscores, and hyphens.");
+const receiptName = (name, extension) => `windows-${name}-${receiptPrefix}.${extension}`;
 const run = (program, args) => spawnSync(program, args, { cwd: root, encoding: "utf8", windowsHide: true });
 const git = (...args) => {
   const result = run("git", ["-c", "core.fsmonitor=false", ...args]);
@@ -37,7 +40,7 @@ for (const [name, script, args] of [
   ["auth-endpoint", "audit-packaged-auth-endpoint.mjs", ["--channel", "development", "--mode", "smoke", "--expected-url", "http://127.0.0.1:3220"]],
 ]) {
   const result = run(process.execPath, [join(root, "apps/desktop/scripts", script), artifact, ...args]);
-  const log = `windows-${name}.log`;
+  const log = receiptName(name, "log");
   writeFileSync(join(evidence, log), `${result.stdout ?? ""}${result.stderr ?? ""}`, "utf8");
   audits.push({ name, log, exitCode: result.status, passed: result.status === 0, error: result.error?.message });
 }
@@ -77,22 +80,30 @@ visit(nativeRoot);
 const signaturePath = join(artifact, "CodeForge.exe").replaceAll("'", "''");
 const signature = run("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", `$r73Signature = Get-AuthenticodeSignature -LiteralPath '${signaturePath}'; [pscustomobject]@{ Status = [string]$r73Signature.Status; StatusMessage = $r73Signature.StatusMessage; Path = $r73Signature.Path; SignerSubject = $r73Signature.SignerCertificate.Subject } | ConvertTo-Json -Depth 3`]);
 let signatureReceipt;
-try { signatureReceipt = JSON.parse(signature.stdout); } catch { signatureReceipt = { status: "UNAVAILABLE", exitCode: signature.status, error: signature.stderr }; }
-writeFileSync(join(evidence, "windows-signature.json"), `${JSON.stringify(signatureReceipt, null, 2)}\n`);
+try {
+  const parsed = JSON.parse(signature.stdout);
+  const statuses = ["Valid", "UnknownError", "NotSigned", "HashMismatch", "NotTrusted", "NotSupportedFileFormat", "Incompatible"];
+  if (signature.status !== 0 || !statuses.includes(parsed.Status) || typeof parsed.Path !== "string" || resolve(parsed.Path) !== resolve(join(artifact, "CodeForge.exe"))) throw new Error("Signature subprocess returned no authoritative file status.");
+  signatureReceipt = { ...parsed, method: "Subprocess powershell.exe Get-AuthenticodeSignature" };
+} catch (error) {
+  signatureReceipt = { Status: "UNAVAILABLE", method: "Subprocess powershell.exe Get-AuthenticodeSignature", exitCode: signature.status,
+    stdout: signature.stdout, stderr: signature.stderr, error: signature.error?.message ?? (error instanceof Error ? error.message : String(error)) };
+}
+writeFileSync(join(evidence, receiptName("signature", "json")), `${JSON.stringify(signatureReceipt, null, 2)}\n`);
 const stamp = JSON.parse(readEntry("apps/desktop/dist/build-identity.json").toString("utf8"));
 const dependencyVersions = {};
 for (const name of ["electron", "electron-builder", "@electron/asar", "better-sqlite3", "node-pty", "electron-updater", "typescript", "vite"]) {
   dependencyVersions[name] = JSON.parse(readFileSync(join(root, "node_modules", name, "package.json"))).version;
 }
 const receipt = {
-  observedAt: new Date().toISOString(), sourceRevision: frozenRevision, artifact,
+  observedAt: new Date().toISOString(), sourceRevision: frozenRevision, artifact, receiptPrefix, signatureReceiptFile: receiptName("signature", "json"),
   sourceIdentity: stamp, sourceTrackedStatusAtAudit: git("status", "--porcelain", "--untracked-files=no"),
   node: process.version, dependencyVersions, packageLockSha256: hash(readFileSync(join(root, "package-lock.json"))),
   files: [fileReceipt(join(artifact, "CodeForge.exe")), fileReceipt(archive)], nativeFiles,
   archiveEntries: listPackage(archive).length, included, audits, signature: signatureReceipt,
   execution: "NOT_EXECUTED_NO_AUTHORIZED_ISOLATED_WINDOWS_ENVIRONMENT", installer: "NOT_BUILT_NOT_CERTIFIED", nativeRebuild: false,
 };
-writeFileSync(join(evidence, "windows-artifact-manifest.json"), `${JSON.stringify(receipt, null, 2)}\n`);
+writeFileSync(join(evidence, receiptName("artifact-manifest", "json")), `${JSON.stringify(receipt, null, 2)}\n`);
 const passed = audits.every((audit) => audit.passed) && included.every((entry) => entry.matchesFrozenBuildOutput) && stamp.commit === frozenRevision && stamp.dirty === false;
 console.log(JSON.stringify({ sourceRevision: frozenRevision, artifact, staticAuditsPassed: audits.filter((audit) => audit.passed).length, includedModules: included.length, nativeFiles: nativeFiles.length, signature: signatureReceipt.Status, passed }, null, 2));
 if (!passed) process.exitCode = 1;

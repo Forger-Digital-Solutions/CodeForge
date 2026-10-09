@@ -1,0 +1,266 @@
+{
+  "observedAt": "2026-10-09T10:23:17.617Z",
+  "sourceRevision": "eade8b0d7f775dd382cfae65b7ae80289a0aaa77",
+  "artifact": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked",
+  "sourceIdentity": {
+    "version": "0.4.0",
+    "commit": "eade8b0d7f775dd382cfae65b7ae80289a0aaa77",
+    "shortCommit": "eade8b0d7f77",
+    "branch": "codex/r73-free-supply-and-completion",
+    "dirty": false,
+    "builtAt": "2026-10-09T10:19:50.793Z"
+  },
+  "sourceTrackedStatusAtAudit": "",
+  "node": "v24.19.0",
+  "dependencyVersions": {
+    "electron": "44.4.1",
+    "electron-builder": "26.15.3",
+    "@electron/asar": "3.4.1",
+    "better-sqlite3": "12.11.1",
+    "node-pty": "1.1.0",
+    "electron-updater": "6.8.9",
+    "typescript": "5.9.3",
+    "vite": "8.3.0"
+  },
+  "packageLockSha256": "8cc332bdd8b2a53126592aa45960497d1892223ce2b37162f47496690dc31d45",
+  "files": [
+    {
+      "file": "CodeForge.exe",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\CodeForge.exe",
+      "bytes": 246415872,
+      "sha256": "f916673dc368b195beb1193dd11752f0f8fb8f723911eff164e4675bc3cd67c4"
+    },
+    {
+      "file": "resources/app.asar",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\resources\\app.asar",
+      "bytes": 46137101,
+      "sha256": "59a7b58378f484fddcc929154b663c9923e3012fb3daf68cc41868e9e6fd9aff"
+    }
+  ],
+  "nativeFiles": [
+    {
+      "file": "resources/app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\better-sqlite3\\build\\Release\\better_sqlite3.node",
+      "bytes": 1936896,
+      "sha256": "79577e09de966d9bf937d1f490841ea37b8726844350a629796652f53800fe78"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/build/Release/conpty/conpty.dll",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\build\\Release\\conpty\\conpty.dll",
+      "bytes": 109600,
+      "sha256": "7c7430632052ff703540b68371ec43821820aa1335d8e11dfbcd9ff00e9daaed"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/build/Release/conpty/OpenConsole.exe",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\build\\Release\\conpty\\OpenConsole.exe",
+      "bytes": 1148448,
+      "sha256": "d1fe7faa62f9e955e2ac2371f95d7e5513df4d496255097158f979c94782c5fc"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/conpty/conpty.dll",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty\\conpty.dll",
+      "bytes": 109600,
+      "sha256": "7c7430632052ff703540b68371ec43821820aa1335d8e11dfbcd9ff00e9daaed"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/conpty/OpenConsole.exe",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty\\OpenConsole.exe",
+      "bytes": 1148448,
+      "sha256": "d1fe7faa62f9e955e2ac2371f95d7e5513df4d496255097158f979c94782c5fc"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/conpty.node",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty.node",
+      "bytes": 312320,
+      "sha256": "ee8f4e6f4dad71939eecfda11de249400e34bfefe4c8b48af13f3b5476f4035b"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/conpty_console_list.node",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty_console_list.node",
+      "bytes": 134656,
+      "sha256": "879dd94cfc79f1e263a00077597ae9448a5394b7d193381aaa50d992a1f91090"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/pty.node",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\pty.node",
+      "bytes": 303104,
+      "sha256": "ae323edd0835ee7b9e18cc96a7b2bb4b8173ff768317d178af2788406feb71ff"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/winpty-agent.exe",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty-agent.exe",
+      "bytes": 307712,
+      "sha256": "0c4834a0ab2a4f8c855a2f1db9b21fa6e5fc324ae8e3c82addd53d503d999825"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/winpty.dll",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-final\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty.dll",
+      "bytes": 256000,
+      "sha256": "e1cb26d868c954ba26817bedf3e4a5744e4ca2030adf51a7156e5ff2fadb881b"
+    }
+  ],
+  "archiveEntries": 3112,
+  "included": [
+    {
+      "source": "packages/providers/dist/blockrun-free.js",
+      "entry": "node_modules/@codeforge/providers/dist/blockrun-free.js",
+      "bytes": 5680,
+      "sha256": "b551715c57d8073cb9b0e851342618707f21fa1c5b329f80754ec371c68477a9",
+      "compiledSha256": "b551715c57d8073cb9b0e851342618707f21fa1c5b329f80754ec371c68477a9",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/providers/dist/openai-compatible.js",
+      "entry": "node_modules/@codeforge/providers/dist/openai-compatible.js",
+      "bytes": 31417,
+      "sha256": "48289c1664fa8504f630fb448873c16d8e26c3496258cb2574437cc64f953160",
+      "compiledSha256": "48289c1664fa8504f630fb448873c16d8e26c3496258cb2574437cc64f953160",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/providers/dist/provider-factory.js",
+      "entry": "node_modules/@codeforge/providers/dist/provider-factory.js",
+      "bytes": 20201,
+      "sha256": "4d071c16d68825c3b88b648dc35f155f2e92b1d69f380a1e59e094a5325ee837",
+      "compiledSha256": "4d071c16d68825c3b88b648dc35f155f2e92b1d69f380a1e59e094a5325ee837",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/providers/dist/puter.js",
+      "entry": "node_modules/@codeforge/providers/dist/puter.js",
+      "bytes": 10329,
+      "sha256": "3d22858486789052596d7208a3972f467af7967ea3c91be28a69f833ad40ef2a",
+      "compiledSha256": "3d22858486789052596d7208a3972f467af7967ea3c91be28a69f833ad40ef2a",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/model-registry/dist/blockrun-policy-reverification.js",
+      "entry": "node_modules/@codeforge/model-registry/dist/blockrun-policy-reverification.js",
+      "bytes": 2597,
+      "sha256": "e43ee202f52c98079dffc2b8e13e864edf9101ea8d8e6e3d71317361b26dcc0e",
+      "compiledSha256": "e43ee202f52c98079dffc2b8e13e864edf9101ea8d8e6e3d71317361b26dcc0e",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/model-registry/dist/free-cloud-service.js",
+      "entry": "node_modules/@codeforge/model-registry/dist/free-cloud-service.js",
+      "bytes": 92772,
+      "sha256": "483bb558b0de017747314a06148a76833eabdd35c20c6a811dddb32cff1c9a36",
+      "compiledSha256": "483bb558b0de017747314a06148a76833eabdd35c20c6a811dddb32cff1c9a36",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/autonomous-orchestrator.js",
+      "entry": "node_modules/@codeforge/server/dist/autonomous-orchestrator.js",
+      "bytes": 86896,
+      "sha256": "e2a3e861baef171c2cfc30cb0f59954608fdf2cf0bbf656426a34bb713253ab3",
+      "compiledSha256": "e2a3e861baef171c2cfc30cb0f59954608fdf2cf0bbf656426a34bb713253ab3",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/agent-runtime.js",
+      "entry": "node_modules/@codeforge/server/dist/agent-runtime.js",
+      "bytes": 416898,
+      "sha256": "19f20c6d8ed9fd6e1cb71bf66963d52b1acb060f81af0013e15d0f15da3920bf",
+      "compiledSha256": "19f20c6d8ed9fd6e1cb71bf66963d52b1acb060f81af0013e15d0f15da3920bf",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/reviewer-evidence.js",
+      "entry": "node_modules/@codeforge/server/dist/reviewer-evidence.js",
+      "bytes": 3832,
+      "sha256": "e497d50011d71e1c42229b49f3f36c1ebc5c186159a1d0841a1f726596bb8c35",
+      "compiledSha256": "e497d50011d71e1c42229b49f3f36c1ebc5c186159a1d0841a1f726596bb8c35",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/model-execution-adapter.js",
+      "entry": "node_modules/@codeforge/server/dist/model-execution-adapter.js",
+      "bytes": 26353,
+      "sha256": "df056e7db5177f99b3ceb04b58e787bbd64117f2533795cf51da7364a4dbae18",
+      "compiledSha256": "df056e7db5177f99b3ceb04b58e787bbd64117f2533795cf51da7364a4dbae18",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/agent/dist/index.js",
+      "entry": "node_modules/@codeforge/agent/dist/index.js",
+      "bytes": 52675,
+      "sha256": "ebda5df77e5c81991fd3c9e87593f0d2b87a7b9511a102d56f815fb5eedb3c15",
+      "compiledSha256": "ebda5df77e5c81991fd3c9e87593f0d2b87a7b9511a102d56f815fb5eedb3c15",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/eight-bit/dist/qualification/role-suite.js",
+      "entry": "node_modules/@codeforge/eight-bit/dist/qualification/role-suite.js",
+      "bytes": 30472,
+      "sha256": "d7d73c9b44b4f1972e9db82cd3242ebc51ecaf5bf048bce5256e4937f4fa57ce",
+      "compiledSha256": "d7d73c9b44b4f1972e9db82cd3242ebc51ecaf5bf048bce5256e4937f4fa57ce",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/provider-connections.js",
+      "entry": "apps/desktop/dist/provider-connections.js",
+      "bytes": 52765,
+      "sha256": "53594ae2b2235cb89583e94610565ab1664d43d0f07a9a4f5d41a93f1e829ba9",
+      "compiledSha256": "53594ae2b2235cb89583e94610565ab1664d43d0f07a9a4f5d41a93f1e829ba9",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/openrouter-oauth-flow.js",
+      "entry": "apps/desktop/dist/openrouter-oauth-flow.js",
+      "bytes": 6428,
+      "sha256": "29f0835c00ac1968cf7c429cf214c3dacc481c305b64722796815d7b6bd607c8",
+      "compiledSha256": "29f0835c00ac1968cf7c429cf214c3dacc481c305b64722796815d7b6bd607c8",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/main.js",
+      "entry": "apps/desktop/dist/main.js",
+      "bytes": 184922,
+      "sha256": "6810439307d908fa3da823ad5946208dd88a4c2806ffa1b2e0e1c12c1277443e",
+      "compiledSha256": "6810439307d908fa3da823ad5946208dd88a4c2806ffa1b2e0e1c12c1277443e",
+      "matchesFrozenBuildOutput": true
+    }
+  ],
+  "audits": [
+    {
+      "name": "build-identity",
+      "log": "windows-build-identity.log",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "internal-dependencies",
+      "log": "windows-internal-dependencies.log",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "runtime-dependencies",
+      "log": "windows-runtime-dependencies.log",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "browser-security",
+      "log": "windows-browser-security.log",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "auth-endpoint",
+      "log": "windows-auth-endpoint.log",
+      "exitCode": 0,
+      "passed": true
+    }
+  ],
+  "signature": {
+    "Status": "",
+    "StatusMessage": null,
+    "Path": null,
+    "SignerSubject": null
+  },
+  "execution": "NOT_EXECUTED_NO_AUTHORIZED_ISOLATED_WINDOWS_ENVIRONMENT",
+  "installer": "NOT_BUILT_NOT_CERTIFIED",
+  "nativeRebuild": false
+}

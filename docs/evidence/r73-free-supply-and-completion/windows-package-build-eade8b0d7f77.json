@@ -1,0 +1,7 @@
+{
+  "sourceRevision": "eade8b0d7f775dd382cfae65b7ae80289a0aaa77",
+  "command": "electron-builder --dir --win --x64 --config.directories.output=release-r73-final --config.electronDist=<existing cached Electron ZIP>",
+  "npmRebuild": false,
+  "exitCode": 0,
+  "completedAt": "2026-10-09T10:22:57.0813646Z"
+}
