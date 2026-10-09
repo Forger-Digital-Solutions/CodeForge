@@ -201,6 +201,9 @@ export interface ReviewResult {
   summary: string;
 }
 
+export const REVIEWER_CLEAN_DIFF_INSTRUCTION = "You are an independent change reviewer. A clean diff that correctly implements the intent with no defects must pass; do not invent problems.";
+export const REVIEWER_TEMPERATURE = 0;
+
 /** Machine-authoritative compilation of a user mission into checkable acceptance criteria. */
 export interface AcceptanceCriteriaResult {
   summary: string;

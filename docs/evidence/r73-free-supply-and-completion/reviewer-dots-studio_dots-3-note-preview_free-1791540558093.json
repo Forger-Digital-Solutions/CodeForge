@@ -1,0 +1,18 @@
+{
+  "startedAt": "2026-10-09T10:09:18.093Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "dots-studio/dots-3-note-preview:free",
+  "evidenceClass": "LIVE_REVIEWER_ONLY_PUBLIC_CASES",
+  "suiteVersion": "R73_ROLE_QUALIFICATION_V6",
+  "reviewerProtocol": "REVIEWER_PROTOCOL_V3",
+  "frames": [],
+  "maxRequests": 8,
+  "policy": {
+    "status": "UNAVAILABLE",
+    "checkedAt": "2026-10-09T10:09:18.094Z",
+    "source": "terms"
+  },
+  "status": "BLOCKED",
+  "error": "POLICY_NOT_VERIFIED",
+  "finishedAt": "2026-10-09T10:09:18.138Z"
+}

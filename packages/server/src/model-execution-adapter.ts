@@ -72,6 +72,12 @@ export interface ModelExecutionResponse {
   };
 }
 
+function providerConversationMessages(messages: readonly ChatMessage[]): ChatMessage[] {
+  // Cap-starved responses remain in the durable journal, but an empty assistant without
+  // tools is not a valid conversation entry for several upstream providers.
+  return messages.filter((message) => message.role !== "assistant" || message.content.trim().length > 0 || (message.toolCalls?.length ?? 0) > 0);
+}
+
 const SAFE_TRANSPORT_CAUSE_CODE = /^(?:EAI_AGAIN|ENOTFOUND|ECONNRESET|ECONNREFUSED|ETIMEDOUT|UND_ERR_[A-Z0-9_]+|CERT_[A-Z0-9_]+)$/;
 
 /** Whitelisted transport cause *codes* are stable machine tokens — safe to persist. The cause's
@@ -318,7 +324,7 @@ export class ModelExecutionAdapter {
     const tools = convertToProviderTools(req.tools);
     const chatRequest: ChatRequest = {
       model: modelId,
-      messages: req.messages,
+      messages: providerConversationMessages(req.messages),
       system: req.system,
       tools,
       toolChoice: req.toolChoice ?? (tools && tools.length > 0 ? "auto" : undefined),
@@ -431,7 +437,7 @@ export class ModelExecutionAdapter {
     const requestKey = fingerprint({
       providerId: resolved.providerId,
       modelId: resolved.modelId,
-      messages: req.messages,
+      messages: providerConversationMessages(req.messages),
       system: req.system ?? "",
       tools: tools ?? [],
       toolChoice: req.toolChoice ?? "auto",

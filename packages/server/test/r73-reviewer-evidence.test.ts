@@ -7,6 +7,7 @@ import { InMemoryProviderCatalog, type ChatRequest, type ProviderAdapter, type S
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 import { REVIEWER_PROTOCOL, ROLE_QUALIFICATION_SUITE_VERSION, type ModelQualificationReceipt, type RoleQualificationResult } from "@codeforge/eight-bit";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
+import { REVIEWER_CLEAN_DIFF_INSTRUCTION, REVIEWER_TEMPERATURE } from "@codeforge/agent";
 import { createAgentRuntime } from "../src/agent-runtime.js";
 import { assertReviewerEvidenceCurrent, buildReviewerEvidenceSnapshot, REVIEWER_SNAPSHOT_BYTES } from "../src/reviewer-evidence.js";
 
@@ -110,6 +111,8 @@ describe("R73 workspace-bound text Reviewer", () => {
     expect(requests).toHaveLength(1);
     expect(requests[0]?.tools ?? []).toHaveLength(0);
     expect(requests[0]?.toolChoice).toBe("none");
+    expect(requests[0]?.temperature).toBe(REVIEWER_TEMPERATURE);
+    expect(requests[0]?.messages[0]?.content).toContain(REVIEWER_CLEAN_DIFF_INSTRUCTION);
     expect(requests[0]?.messages.some((message) => message.content.includes(packet.context))).toBe(true);
     expect(result.toolExecutions).toEqual([]);
   });

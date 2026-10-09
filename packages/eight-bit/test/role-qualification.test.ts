@@ -3,7 +3,7 @@ import type { ChatRequest, StreamEvent } from "@codeforge/providers";
 import { createGenericFreeRecord } from "@codeforge/forge-zero";
 import { runRoleQualification, runRoleAwareQualification, ROLE_QUALIFICATION_SUITE_VERSION } from "../src/qualification/role-suite.js";
 import { EXPLORER_REPO, PLANNER_PROTOCOL_V1, PLANNER_PROTOCOL_V2, ROLE_PROTOCOLS } from "../src/qualification/role-protocols.js";
-import { ROLE_PROMPTS } from "@codeforge/agent";
+import { ROLE_PROMPTS, REVIEWER_CLEAN_DIFF_INSTRUCTION, REVIEWER_TEMPERATURE } from "@codeforge/agent";
 
 /**
  * R27 role protocol tests. Every adapter is a deterministic script driven by the
@@ -97,6 +97,7 @@ describe("R27 — versioned role protocols", () => {
     expect(out.roleResults.PLANNER?.status).toBe("NOT_TESTED");
     expect(adapter.requests.every(req => body(req).includes("independent change reviewer"))).toBe(true);
     expect(adapter.requests.every(req => req.messages[0]?.content.includes(ROLE_PROMPTS.reviewer.systemPromptTemplate))).toBe(true);
+    expect(adapter.requests.every(req => req.messages[0]?.content.includes(REVIEWER_CLEAN_DIFF_INSTRUCTION) && req.temperature === REVIEWER_TEMPERATURE)).toBe(true);
   });
   it("keeps R24 evidence frozen while qualifying the R27 planner protocol", () => {
     expect(ROLE_PROTOCOLS.map((p) => p.role)).toEqual(["EXPLORER", "PLANNER", "REVIEWER"]);

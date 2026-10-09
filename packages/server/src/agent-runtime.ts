@@ -84,6 +84,8 @@ import {
   ERROR_CODES,
   DEFAULT_EXECUTION_BUDGETS,
   ROLE_PROMPTS,
+  REVIEWER_CLEAN_DIFF_INSTRUCTION,
+  REVIEWER_TEMPERATURE,
   type AgentPermissions,
   type AgentExecutionBudget,
   type AgentUsage,
@@ -1786,7 +1788,7 @@ export class AgentRuntime {
       if (!resumeJournal && req.role === "reviewer" && req.reviewEvidence?.complete) {
         if (!req.diff) throw new Error("REVIEWER_EVIDENCE_MISSING: complete snapshot content is required");
         messages = [
-          { role: "system", content: `${ROLE_PROMPTS.reviewer.systemPromptTemplate}\nThe runtime supplied a complete bounded snapshot of the tracked isolated workspace. Review its diff, source, and test assertions. Verification marked pending has not run. If a concrete requirement cannot be assessed from this evidence, return revision_required with a blocking finding identifying the missing evidence.` },
+          { role: "system", content: `${ROLE_PROMPTS.reviewer.systemPromptTemplate}\n${REVIEWER_CLEAN_DIFF_INSTRUCTION}\nThe runtime supplied a complete bounded snapshot of the tracked isolated workspace. Review its diff, source, and test assertions. Verification marked pending has not run. If a concrete requirement cannot be assessed from this evidence, return revision_required with a blocking finding identifying the missing evidence.` },
           { role: "user", content: `Goal:\n${req.goal}\n\n${formatUntrustedData(req.diff, "workspace review snapshot")}` },
         ];
         const contextBytes = Buffer.byteLength(messages.map((message) => message.content).join("\n"), "utf8");
@@ -1888,7 +1890,7 @@ export class AgentRuntime {
       }
 
       messages = [
-        { role: "system", content: `${assembled.systemPrompt}\n\n${describeExecutionEnvironment(process.platform, getSanitizedEnvForChild(), req.workspacePath)}` },
+        { role: "system", content: `${assembled.systemPrompt}${req.role === "reviewer" ? `\n${REVIEWER_CLEAN_DIFF_INSTRUCTION}` : ""}\n\n${describeExecutionEnvironment(process.platform, getSanitizedEnvForChild(), req.workspacePath)}` },
         { role: "user", content: assembled.contextPrompt },
       ];
       bootstrapContextMessageIndex = 1;
@@ -2494,6 +2496,7 @@ export class AgentRuntime {
               messages: dispatchMessages,
               tools: dispatchTools,
               toolChoice: reviewerTextOnly || (expectedStructuredOutput && !req.permissions.write && !req.permissions.executeCommand && turnCount >= effectiveMaxModelTurns()) ? "none" : "auto",
+              ...(req.role === "reviewer" ? { temperature: REVIEWER_TEMPERATURE } : {}),
               maxTokens: dispatchOutputBudget.maxTokens,
               signal: req.signal,
               userId: req.userId ?? this.userId,

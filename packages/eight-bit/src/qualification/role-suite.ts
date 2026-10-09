@@ -13,7 +13,7 @@
  */
 
 import type { ChatRequest, ToolDefinition } from "@codeforge/providers";
-import { type PlannerResult, type ReviewResult, ROLE_PROMPTS, validateStructuredAgentResult } from "@codeforge/agent";
+import { type PlannerResult, type ReviewResult, ROLE_PROMPTS, REVIEWER_CLEAN_DIFF_INSTRUCTION, REVIEWER_TEMPERATURE, validateStructuredAgentResult } from "@codeforge/agent";
 import type { FreeModelRecord, ModelQualificationReceipt, RoleQualificationResult, TestCaseResult } from "./types.js";
 import type { EightBitRole } from "../types.js";
 import { firstJsonObject, runCompactQualification, type CompactQualificationAdapter, type CompactQualificationOptions } from "./compact.js";
@@ -422,11 +422,11 @@ async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: st
           role: "system",
           content:
             ROLE_PROMPTS.reviewer.systemPromptTemplate + "\n" +
-            "You are an independent change reviewer. A clean diff that correctly implements the intent with no defects must pass; do not invent problems.",
+            REVIEWER_CLEAN_DIFF_INSTRUCTION,
         },
         { role: "user", content: `Intent: ${caze.intent}\n\nDiff under review:\n${caze.diff}` },
       ],
-      temperature: 0,
+      temperature: REVIEWER_TEMPERATURE,
       maxTokens: 900,
     },
     timeoutMs,
