@@ -1,0 +1,160 @@
+{
+  "startedAt": "2026-10-08T17:07:08.680Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "dots-studio/dots-3-note-preview:free",
+  "evidenceClass": "LIVE_REVIEWER_ONLY_PUBLIC_CASES",
+  "frames": [
+    {
+      "at": "2026-10-08T17:07:09.435Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Fix add() so it returns the sum of its arguments.\n\nDiff under review:\n--- a/src/calc.ts\n+++ b/src/calc.ts\n@@ export function add(a, b) @@\n-  return a - b;\n+  return a * b;"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "error",
+          "code": "PROVIDER_ERROR",
+          "message": "kilo-free-direct stream error (502) after HTTP 200: JSON error injected into SSE stream",
+          "retryable": true,
+          "status": 502
+        }
+      ],
+      "finishedAt": "2026-10-08T17:07:25.118Z"
+    }
+  ],
+  "maxRequests": 24,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T17:07:08.680Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-08T17:07:08.680Z",
+      "recheckAt": "2026-10-15T17:07:08.680Z",
+      "qualificationAt": "2026-10-08T17:07:08.680Z",
+      "termsVerifiedAt": "2026-10-08T17:07:08.680Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-15T17:07:08.680Z",
+      "privacyVerifiedAt": "2026-10-08T17:07:08.680Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-15T17:07:08.680Z",
+      "priceVerifiedAt": "2026-10-08T17:07:08.680Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-15T17:07:08.680Z",
+      "nextReverifyAt": "2026-10-08T23:07:08.680Z"
+    }
+  },
+  "catalog": {
+    "modelId": "dots-studio/dots-3-note-preview:free",
+    "displayName": "Dots Studio: Dots3-Note Preview (free)",
+    "contextWindow": 512000,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": true,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "result": {
+    "roleResults": {
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T17:07:09.435Z",
+        "completedAt": "2026-10-08T17:07:25.120Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T17:07:09.435Z",
+        "completedAt": "2026-10-08T17:07:25.120Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 15684,
+            "retries": 0,
+            "error": "kilo-free-direct stream error (502) after HTTP 200: JSON error injected into SSE stream"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T17:07:09.435Z",
+        "completedAt": "2026-10-08T17:07:25.120Z"
+      }
+    },
+    "requestCount": 1,
+    "transientCases": 1
+  },
+  "qualification": {
+    "suiteVersion": "R73_ROLE_QUALIFICATION_V5",
+    "providerId": "kilo-free-direct",
+    "modelId": "dots-studio/dots-3-note-preview:free",
+    "modelDisplayName": "Dots Studio: Dots3-Note Preview (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 15684,
+            "retries": 0,
+            "error": "kilo-free-direct stream error (502) after HTTP 200: JSON error injected into SSE stream"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T17:07:09.435Z",
+        "completedAt": "2026-10-08T17:07:25.120Z"
+      }
+    },
+    "startedAt": "2026-10-08T17:07:08.680Z",
+    "completedAt": "2026-10-08T17:07:25.120Z",
+    "totalLatencyMs": 16440,
+    "qualificationState": "NOT_QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "transient": true,
+      "requests": 1,
+      "reviewerProtocolOnly": true,
+      "publicCasesOnly": true
+    }
+  },
+  "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+  "finishedAt": "2026-10-08T17:07:25.120Z"
+}

@@ -54,7 +54,7 @@ export const AgentWorkerTelemetrySchema = z.object({
   toolCalls: z.number().int().nonnegative(),
   retryCount: z.number().int().nonnegative(),
   duplicateWorkCount: z.number().int().nonnegative(),
-  providerFailures: z.number().int().nonnegative(),
+  providerFailures: z.number().int().nonnegative().nullable(),
   allowanceUnits: z.number().nonnegative().optional(),
 });
 export type AgentWorkerTelemetry = z.infer<typeof AgentWorkerTelemetrySchema>;
@@ -91,6 +91,19 @@ export const SubagentRunWorkItemSchema = z.object({
    * worktree a crashed worker was writing to. Optional for records written before R2. */
   workspacePath: z.string().max(2_048).optional(),
   model: z.object({ providerId: z.string().min(1), modelId: z.string().min(1) }).optional(),
+  /** A resumed Reviewer must retain prior exclusions and implementer independence. */
+  routingHints: z.object({
+    preferIndependentFromPoolId: z.string().min(1).optional(),
+    excludeRoleRoute: z.object({ providerId: z.string().min(1), modelId: z.string().min(1) }).optional(),
+    excludeRoleRoutes: z.array(z.object({ providerId: z.string().min(1), modelId: z.string().min(1) })).optional(),
+    routeReplacementReason: z.enum(["QUALITY_DRIVEN_ROLE_SWITCH", "SEMANTIC_VERIFIER_FALLBACK"]).optional(),
+    reviewEvidence: z.object({
+      workspacePath: z.string().min(1).max(2_048),
+      inputStateHash: z.string().regex(/^[a-f0-9]{64}$/),
+      contextHash: z.string().regex(/^[a-f0-9]{64}$/),
+      complete: z.boolean(),
+    }).optional(),
+  }).optional(),
   rosterAllowance: z.object({
     freeRoutes: z.array(z.object({ providerId: z.string().min(1), modelId: z.string().min(1) })),
     paidModelIds: z.array(z.string().min(1)),

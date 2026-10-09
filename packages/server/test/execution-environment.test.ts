@@ -17,4 +17,10 @@ describe("model command environment", () => {
     expect(prompt).toContain("host command shell /bin/bash -c");
     expect(prompt).not.toContain("cmd.exe");
   });
+  it("names the assigned workspace and makes the default command cwd explicit", () => {
+    const prompt = describeExecutionEnvironment("win32", {}, "G:\\isolated\\coder");
+    expect(prompt).toContain(JSON.stringify("G:\\isolated\\coder"));
+    expect(prompt).toContain("Omit run_command.cwd or use '.'");
+    expect(prompt).toContain("do not invent another workspace path");
+  });
 });

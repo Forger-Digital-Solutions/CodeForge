@@ -1,0 +1,38 @@
+{
+  "startedAt": "2026-10-08T17:14:41.280Z",
+  "providerId": "blockrun-free-direct",
+  "modelId": "nvidia/llama-3.2-11b-vision",
+  "observationFile": "blockrun-live-observations-1791479681280.json",
+  "requests": 0,
+  "requestBudget": 30,
+  "publicSyntheticCodeOnly": true,
+  "noPaymentCredentials": true,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T17:14:41.281Z",
+    "receipt": {
+      "sourceDocumentation": "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl",
+      "termsEvidence": "https://blockrun.ai/terms",
+      "privacyEvidence": "https://blockrun.ai/privacy",
+      "priceEvidence": "https://blockrun.ai/docs/rate-limits",
+      "verifiedAt": "2026-10-08T17:14:41.281Z",
+      "recheckAt": "2026-10-15T17:14:41.281Z",
+      "qualificationAt": "2026-10-08T17:14:41.280Z",
+      "termsVerifiedAt": "2026-10-08T17:14:41.281Z",
+      "termsEvidenceHash": "73f2ef461e086bec3f80579ad7699ce819ab9fd78cef6763f8ff7a83bde3d649",
+      "termsExpiresAt": "2026-10-15T17:14:41.281Z",
+      "privacyVerifiedAt": "2026-10-08T17:14:41.281Z",
+      "privacyEvidenceHash": "21b97f5ca395e4b0ce3b434c8fca6f20cf63285ec57a93cbf88fe1628eb8e3b7",
+      "privacyExpiresAt": "2026-10-15T17:14:41.281Z",
+      "priceVerifiedAt": "2026-10-08T17:14:41.281Z",
+      "priceEvidenceHash": "4921f5b2f8c4b51559078915381fa0956ee12030bb4e09fe86e49ecd6ccdf27f",
+      "priceExpiresAt": "2026-10-15T17:14:41.281Z",
+      "nextReverifyAt": "2026-10-08T23:14:41.281Z"
+    }
+  },
+  "catalog": [],
+  "error": {
+    "message": "Error: Requested model is not currently available with explicit Free billing"
+  },
+  "completedAt": "2026-10-08T17:14:42.062Z"
+}

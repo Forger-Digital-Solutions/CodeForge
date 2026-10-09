@@ -1,0 +1,19 @@
+{
+  "startedAt": "2026-10-08T17:13:14.466Z",
+  "providerId": "blockrun-free-direct",
+  "modelId": "nvidia/llama-3.2-11b-vision",
+  "observationFile": "blockrun-live-observations-1791479594465.json",
+  "requests": 0,
+  "requestBudget": 30,
+  "publicSyntheticCodeOnly": true,
+  "noPaymentCredentials": true,
+  "policy": {
+    "status": "UNAVAILABLE",
+    "checkedAt": "2026-10-08T17:13:14.466Z",
+    "source": "terms"
+  },
+  "error": {
+    "message": "Error: Policy UNAVAILABLE: terms"
+  },
+  "completedAt": "2026-10-08T17:13:14.536Z"
+}

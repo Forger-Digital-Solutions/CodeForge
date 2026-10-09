@@ -20,8 +20,10 @@ import { createFailClosedGeminiFreePolicyGate, type GeminiFreePolicyGate } from 
 export interface OpenAICompatibleConfig {
   providerId: string;
   baseUrl: string;
-  /** Only the pinned Kilo anonymous Free transport may omit credentials. */
+  /** Only provider-pinned anonymous Free transports may omit credentials. */
   anonymousFree?: boolean;
+  /** Substituting another model invalidates role qualification, even when it is also free. */
+  requireExactServedModel?: boolean;
   credentialStore?: CredentialStore;
   /** Direct API key (overrides the credential store when set). */
   apiKey?: string;
@@ -75,8 +77,9 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
   private readonly geminiServiceTier: "UNPAID" | "PAID";
 
   constructor(cfg: OpenAICompatibleConfig) {
-    if (cfg.anonymousFree && (cfg.providerId !== "kilo-free-direct"
-      || cfg.baseUrl !== "https://api.kilo.ai/api/gateway"
+    const pinnedAnonymous = (cfg.providerId === "kilo-free-direct" && cfg.baseUrl === "https://api.kilo.ai/api/gateway")
+      || (cfg.providerId === "blockrun-free-direct" && cfg.baseUrl === "https://blockrun.ai/api/v1" && cfg.requireExactServedModel === true);
+    if (cfg.anonymousFree && (!pinnedAnonymous
       || cfg.apiKey !== undefined || cfg.defaultHeaders !== undefined
       || cfg.authHeader !== undefined || cfg.resolveBaseUrl !== undefined
       || cfg.modelsPath !== undefined || cfg.requestBodyExtras !== undefined)) {
@@ -124,8 +127,9 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
 
   private assertAnonymousFreeModel(model: string): void {
     if (!this.cfg.anonymousFree) return;
+    if (this.providerId === "blockrun-free-direct" && /^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*$/.test(model)) return;
     if (model !== "kilo-auto/free" && !/^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*:free$/.test(model)) {
-      throw new ProviderError("Kilo anonymous transport accepts documented Free model IDs only", "MODEL_NOT_ALLOWED");
+      throw new ProviderError("Anonymous transport accepts provider-native Free model IDs only", "MODEL_NOT_ALLOWED");
     }
   }
 
@@ -157,7 +161,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     const out: ProviderModel[] = [];
     for (const raw of list) {
       const m = mapper(raw);
-      if (m && (!this.cfg.anonymousFree || m.modelId === "kilo-auto/free" || /^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*:free$/.test(m.modelId))) out.push(m);
+      if (m && (!this.cfg.anonymousFree || this.providerId === "blockrun-free-direct" || m.modelId === "kilo-auto/free" || /^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*:free$/.test(m.modelId))) out.push(m);
     }
     return out;
   }
@@ -182,7 +186,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       const data = (await res.json()) as OaiChatResponse;
       const inBand = data.error ?? data.x_groq?.error;
       if (inBand && typeof inBand === "object") {
-        const error = this.inBandStreamError(inBand, res.status);
+        const error = this.inBandStreamError(inBand, res.status, req.model);
         this.observe(res, req.model, error.rateLimitScope, error.status);
         throw new ProviderError(error.message, error.code, error.retryable ?? true, {
           status: error.status, rateLimitScope: error.rateLimitScope,
@@ -191,6 +195,9 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       }
       this.observe(res, req.model);
       if (!Array.isArray(data.choices) || data.choices.length === 0) throw new ProviderError(`${this.providerId} returned no assistant choices`, "EMPTY_RESPONSE", true);
+      if (this.cfg.requireExactServedModel && data.model !== req.model) {
+        throw new ProviderError(`${this.providerId} served model identity does not match the qualified request`, data.model ? "MODEL_SUBSTITUTED" : "SERVED_MODEL_UNVERIFIED", true);
+      }
       const response = this.fromResponse(data);
       usage = response.usage;
       return response;
@@ -258,7 +265,10 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       // The upstream's reported served-model identity (stream-chunk `model`); receipts then
       // distinguish what was requested from what actually served. Absent stays unverified.
       let servedModel: string | undefined;
-      const finishEvent = (): StreamEvent => ({ type: "finish", finishReason: normalizeStreamFinish(terminalFinish), ...(servedModel ? { model: servedModel } : {}) });
+      const finishEvent = (): StreamEvent => {
+        if (this.cfg.requireExactServedModel && servedModel !== req.model) throw new ProviderError(`${this.providerId} stream did not verify the requested model`, "SERVED_MODEL_UNVERIFIED", true);
+        return { type: "finish", finishReason: normalizeStreamFinish(terminalFinish), ...(servedModel ? { model: servedModel } : {}) };
+      };
       const finishTerminal = function* (): Generator<StreamEvent> {
         for (const acc of toolCalls.values()) {
           if (!acc.started) yield { type: "tool_call_started", toolCallId: acc.id, toolName: acc.name };
@@ -285,13 +295,19 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         frames += 1;
         const inBand = parsed.error ?? parsed.x_groq?.error;
         if (inBand) {
-          yield this.inBandStreamError(inBand, res.status);
+          yield this.inBandStreamError(inBand, res.status, req.model);
           return "error";
         }
-        if (typeof parsed.model === "string" && parsed.model.length > 0) servedModel = parsed.model;
+        if (typeof parsed.model === "string" && parsed.model.length > 0) {
+          if (this.cfg.requireExactServedModel && parsed.model !== req.model) throw new ProviderError(`${this.providerId} substituted an unqualified stream model`, "MODEL_SUBSTITUTED", true);
+          servedModel = parsed.model;
+        }
         const choice = parsed.choices?.[0];
         if (choice) {
           const delta = choice.delta;
+          if (this.cfg.requireExactServedModel && servedModel === undefined && (delta?.content || delta?.tool_calls?.length)) {
+            throw new ProviderError(`${this.providerId} stream emitted content before verifying the model`, "SERVED_MODEL_UNVERIFIED", true);
+          }
           if (delta?.content) yield { type: "text_delta", delta: delta.content };
           if (delta?.tool_calls) {
             for (const tc of delta.tool_calls) {
@@ -527,7 +543,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
    * the structured fields (numeric `code`, `type`) over message text; the message is redacted and
    * truncated before it can reach a log or an evidence ledger.
    */
-  private inBandStreamError(error: OaiStreamError, httpStatus: number): Extract<StreamEvent, { type: "error" }> {
+  private inBandStreamError(error: OaiStreamError, httpStatus: number, modelId?: string): Extract<StreamEvent, { type: "error" }> {
     const message = typeof error.message === "string" && error.message.length > 0 ? error.message : "upstream stream error";
     const rawCode = error.code !== undefined && error.code !== null ? String(error.code) : undefined;
     const numericCode = rawCode !== undefined && /^\d{3}$/.test(rawCode) ? Number(rawCode) : undefined;
@@ -571,12 +587,12 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       message: `${this.providerId} stream error${rawCode ? ` (${rawCode})` : type ? ` (${type})` : ""} after HTTP ${httpStatus}: ${safe}`,
       retryable,
       ...(status !== undefined && status >= 100 && status <= 599 ? { status } : {}),
-      ...(status === 429 ? { rateLimitScope: gatewayRateLimitScope(this.providerId, error) } : {}),
+      ...(status === 429 ? { rateLimitScope: gatewayRateLimitScope(this.providerId, error, modelId) } : {}),
     };
   }
 
   private handleError(status: number, body: string, res?: Response, modelId?: string): ProviderError {
-    const rateLimitScope = status === 429 ? gatewayBodyRateLimitScope(this.providerId, body) : undefined;
+    const rateLimitScope = status === 429 ? gatewayBodyRateLimitScope(this.providerId, body, modelId) : undefined;
     if (res && modelId) this.observe(res, modelId, rateLimitScope);
     let code = "PROVIDER_ERROR";
     let retryable = false;

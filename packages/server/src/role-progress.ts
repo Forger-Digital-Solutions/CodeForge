@@ -4,6 +4,7 @@ export interface ProgressToolCall {
   outcome: "success" | "failed" | "denied" | "suppressed";
   requestHash?: string;
   observationHash?: string;
+  verification?: "passed" | "failed";
 }
 
 export interface ProgressTurn {
@@ -22,6 +23,28 @@ export interface RoleProgressAssessment {
 }
 
 const MUTATIONS = new Set(["edit_file", "write_file"]);
+
+export function coderContinuationGuidance(turns: readonly ProgressTurn[], taskSteps = 1): { key: string; content: string } | undefined {
+  let lastMutation = 0;
+  let verification: { turn: number; hash?: string } | undefined;
+  for (const turn of turns) {
+    for (const call of turn.calls) {
+      if (MUTATIONS.has(call.tool) && call.outcome === "success") { lastMutation = turn.turn; verification = undefined; }
+      if (call.verification === "failed") verification = undefined;
+      else if (lastMutation > 0 && call.verification === "passed" && call.outcome === "success") verification = { turn: turn.turn, hash: call.observationHash };
+    }
+  }
+  if (verification) return {
+    key: `verified:${lastMutation}:${verification.turn}:${verification.hash ?? ""}`,
+    content: "A finite verification command succeeded after the latest source mutation. Assess its coverage against the assigned requirements, inspect the final diff if needed, and return your final result when those requirements are satisfied. Do not start watch mode, repeat unchanged verification, or restart repository orientation. If work remains, identify the concrete unmet requirement and perform only its necessary next action. Independent review, ForgeVerify, and parent integration still remain required.",
+  };
+  const progress = assessCoderProgress(turns, taskSteps);
+  if (progress.quietTurns >= 2) return {
+    key: `unchanged:${lastMutation}:${turns.length - progress.quietTurns}`,
+    content: "Recent tool actions added no new evidence or source change. Reuse the existing observations. Identify the concrete unmet requirement before another tool call; if the assigned work and verification are already sufficient, return your final result instead of repeating exploration. This reminder does not certify task completion.",
+  };
+  return undefined;
+}
 
 /** Count distinct observable effects, never model turns or repeated tool activity. The
  * existing role trace is bounded by the model/tool budgets and carries hashes, not content. */

@@ -47,6 +47,7 @@ export function FreeCapacitySection(props: { connections?: ProviderConnectionVie
     finally { setBusy(false); }
   };
   const kilo = connections.find((connection) => connection.providerId === "kilo-free-direct");
+  const blockrun = connections.find((connection) => connection.providerId === "blockrun-free-direct");
   const horde = connections.find((connection) => connection.providerId === "ai-horde");
   const refresh = async () => { notifyProviderUpdated(); await live.reload(); await ctx.refreshModels(); };
   const connect = async (browser: "default" | "firefox" = "default") => {
@@ -71,6 +72,8 @@ export function FreeCapacitySection(props: { connections?: ProviderConnectionVie
     <SettingsGroup title="Available automatically">
       <SettingsRow title="Kilo Gateway" description={`Connected automatically when capacity is available · Quota scope: network / egress. Users sharing the same or unknown egress share one quota group. ${kilo?.freeCapacity?.healthyGroups ?? 0} healthy groups.`}
         control={<StatusBadge kind={(kilo?.freeCapacity?.healthyGroups ?? 0) > 0 ? "ok" : "warn"}>{freeCapacityStatus(kilo)}</StatusBadge>} />
+      <SettingsRow title="BlockRun Free" description={`Connected automatically when qualified capacity is available · Network quota shared across Free models: 30 requests/minute and 300/hour. Public code only. ${blockrun?.freeCapacity?.healthyGroups ?? 0} healthy groups.`}
+        control={<StatusBadge kind={(blockrun?.freeCapacity?.healthyGroups ?? 0) > 0 ? "ok" : "warn"}>{freeCapacityStatus(blockrun)}</StatusBadge>} />
       <SettingsRow title="AI Horde Community" description={`Connected automatically · Quota scope: one global community pool shared by all anonymous callers — never private capacity. Public code only. ${horde?.freeCapacity?.healthyGroups ?? 0} healthy groups.`}
         control={<StatusBadge kind={(horde?.freeCapacity?.healthyGroups ?? 0) > 0 ? "ok" : "warn"}>{freeCapacityStatus(horde)}</StatusBadge>} />
     </SettingsGroup>

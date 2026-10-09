@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-08",
+  "baseline": "220b365c553bff0b1ee952fb6b96498c8ddea325",
+  "kind": "deterministic-provider-and-desktop-contract-tests",
+  "liveInferenceCalls": 0,
+  "externalAccountsCreated": 0,
+  "command": "node node_modules/vitest/vitest.mjs run apps/desktop/test/provider-connections.test.ts apps/desktop/test/openrouter-oauth-browser.test.ts apps/desktop/test/puter-account-flow.test.ts apps/desktop/test/electron-security-baseline.test.ts apps/desktop/test/secure-credential-codec.test.ts packages/providers/test/puter.test.ts packages/providers/test/openrouter-entitlement.test.ts packages/providers/test/oauth-pkce.test.ts packages/model-registry/test/sambanova-production-supply.test.ts",
+  "execution": {
+    "exitCode": 0,
+    "filesPassed": 9,
+    "filesFailed": 0,
+    "testsPassed": 85,
+    "testsFailed": 0,
+    "durationSeconds": 3.46,
+    "loopbackRequired": true,
+    "sandboxOverride": "authorized-local-only-tests",
+    "providers": "injected-fixtures"
+  },
+  "earlierValidationLimits": [
+    "Restricted-sandbox loopback sockets failed with connect EACCES; local-only authorized rerun passed.",
+    "Vite temporary transform-cache ENOENT occurred before using a task-specific workspace temp directory.",
+    "After removing cross-user access, an inherited test expected no supplyClass display label instead of verifying no credential/no USER_ENTITLED_FREE/no route; corrected to those actual isolation assertions."
+  ],
+  "automaticPuterFreeAdmission": false,
+  "puterSdkRuntimePackaged": false,
+  "liveOpenRouterUnpaidEntitlement": "not-newly-proven",
+  "liveMultiUserIndependence": "not-proven",
+  "packagedPersistentAuthorization": "not-executed",
+  "remoteCredentialRevocation": "not-executed"
+}

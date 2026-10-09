@@ -1,0 +1,163 @@
+{
+  "suiteVersion": "R73_ROLE_QUALIFICATION_V6",
+  "providerId": "blockrun-free-direct",
+  "modelId": "nvidia/llama-3.2-11b-vision",
+  "modelDisplayName": "Llama 3.2 11B Vision (Free)",
+  "accessClass": "FREE_ROUTED",
+  "freeStatus": "verified_free",
+  "roleResults": {
+    "REVIEWER": {
+      "role": "REVIEWER",
+      "status": "QUALIFIED",
+      "testCases": [
+        {
+          "caseId": "reviewer.one_bug",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 4928,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "revision_required",
+            "expectedApproved": false,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [
+              "The add() function is supposed to return the sum of its arguments, but it currently returns the product of a and b."
+            ],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.clean",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 1877,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "pass",
+            "expectedApproved": true,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.clean_comment",
+          "category": "review",
+          "passed": false,
+          "hardFailure": false,
+          "latencyMs": 5243,
+          "retries": 1,
+          "details": {
+            "schemaValid": true,
+            "verdict": "revision_required",
+            "expectedApproved": true,
+            "verdictCorrect": false,
+            "findingLocalized": true,
+            "findings": [
+              "The quota window semantics are not documented. The comment should clarify that a missing window means unobserved, not unlimited."
+            ],
+            "reasoningRetried": false,
+            "firstAttempt": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": true,
+              "verdictCorrect": false,
+              "findingLocalized": true,
+              "findings": [
+                "The quota window semantics are not documented. The comment should clarify that a missing window means unobserved, not unlimited."
+              ],
+              "reasoningRetried": false
+            }
+          }
+        },
+        {
+          "caseId": "reviewer.swallowed_failure",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 3645,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "revision_required",
+            "expectedApproved": false,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [
+              "The recordFailure function does not handle the case where sendTelemetry fails, potentially leading to lost telemetry data."
+            ],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.reservation_leak",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 2836,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "revision_required",
+            "expectedApproved": false,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [
+              "The fast path function should reserve capacity before returning early, but the current implementation returns early before reserving capacity."
+            ],
+            "reasoningRetried": false
+          }
+        },
+        {
+          "caseId": "reviewer.test_cheat",
+          "category": "review",
+          "passed": true,
+          "hardFailure": false,
+          "latencyMs": 3615,
+          "retries": 0,
+          "details": {
+            "schemaValid": true,
+            "verdict": "revision_required",
+            "expectedApproved": false,
+            "verdictCorrect": true,
+            "findingLocalized": true,
+            "findings": [
+              "The router test is flaky due to an incorrect assertion. The test should verify the actual output of the `run()` function, not a hardcoded string."
+            ],
+            "reasoningRetried": false
+          }
+        }
+      ],
+      "hardFailures": [],
+      "overallScore": 0.8333333333333334,
+      "startedAt": "2026-10-08T17:16:35.464Z",
+      "completedAt": "2026-10-08T17:17:01.776Z"
+    }
+  },
+  "startedAt": "2026-10-08T17:16:35.464Z",
+  "completedAt": "2026-10-08T17:17:01.776Z",
+  "totalLatencyMs": 26312,
+  "qualificationState": "QUALIFIED",
+  "hardFailureRoles": [],
+  "metadata": {
+    "roleOnly": true,
+    "requests": 7,
+    "roleTransientCases": 0,
+    "transient": false,
+    "roleProtocolVersions": {
+      "EXPLORER": "EXPLORER_PROTOCOL_V2",
+      "PLANNER": "PLANNER_PROTOCOL_V4",
+      "REVIEWER": "REVIEWER_PROTOCOL_V3"
+    },
+    "reviewerProtocolOnly": true,
+    "publicCasesOnly": true,
+    "evidenceSource": "docs/evidence/r73-free-supply-and-completion/blockrun-reviewer-1791479821776.json",
+    "evidenceSha256": "2edb8dd856cb407f5866fcd0f688bc1bffad992a1a57a074d3c0eb03d264176e"
+  }
+}

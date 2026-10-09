@@ -1,5 +1,5 @@
 import type { CredentialStore, ProviderAdapter, ProviderModel, ProviderCatalog, ProviderResponseObserver } from "@codeforge/providers";
-import { configFieldKey, createProviderAdapterFromDefinition, InMemoryProviderCatalog, verifyOpenRouterEntitlement, isOpenRouterEntitlementCurrent, type OpenRouterEntitlementReceipt } from "@codeforge/providers";
+import { configFieldKey, createProviderAdapterFromDefinition, InMemoryProviderCatalog, verifyOpenRouterEntitlement, isOpenRouterEntitlementCurrent, PuterSdkAdapter, type PuterSdkClient, type OpenRouterEntitlementReceipt } from "@codeforge/providers";
 import { capacityIndependenceSnapshot, hashUserAccountIdentity, userConnectedPoolId, type ForgeZero } from "@codeforge/forge-zero";
 import type {
   ConnectResult,
@@ -101,6 +101,11 @@ export class ProviderConnections {
   private readonly host: ProviderConnectionsHost;
   private readonly now: () => Date;
   private readonly delegatedReceipts = new Map<string, OpenRouterEntitlementReceipt>();
+  private readonly checkedDelegatedOwners = new Set<string>();
+
+  private delegatedReceipt(): OpenRouterEntitlementReceipt | undefined {
+    return this.delegatedReceipts.get(this.accountOwnerUserId());
+  }
 
   accountOwnerUserId(): string {
     return this.host.userId ?? "";
@@ -112,6 +117,16 @@ export class ProviderConnections {
     const stored = this.host.readSettings()["codeforge:puter-account-observations"] as Record<string, PuterAccountView> | undefined;
     if (!owner || !this.host.secrets.get(`puter:user:${key}`)) return { connected: false, automaticFreeAdmission: false, reason: "PROVIDER_FREE_ONLY_GUARD_UNAVAILABLE" };
     return { ...stored?.[key], connected: true, automaticFreeAdmission: false, reason: "PROVIDER_FREE_ONLY_GUARD_UNAVAILABLE" };
+  }
+
+  puterTransport(initializeSdk: (token: string) => PuterSdkClient): PuterSdkAdapter | undefined {
+    const owner = this.accountOwnerUserId();
+    if (!owner) return undefined;
+    const key = `puter:user:${hashUserAccountIdentity(owner)}`;
+    const token = this.host.secrets.get(key);
+    if (!token) return undefined;
+    return new PuterSdkAdapter({ sdk: initializeSdk(token), ownerUserId: owner,
+      currentUserId: () => this.accountOwnerUserId() === owner && this.host.secrets.get(key) === token ? owner : "" });
   }
 
   savePuterAccount(raw: PuterAuthorization): PuterAccountView {
@@ -153,7 +168,22 @@ export class ProviderConnections {
     this.host = host;
     this.now = host.now ?? (() => new Date());
     const raw = host.readSettings()[DELEGATED_ENTITLEMENTS_KEY] as Record<string, OpenRouterEntitlementReceipt> | undefined;
-    if (raw?.openrouter?.provider === "openrouter") this.delegatedReceipts.set("openrouter", raw.openrouter);
+    for (const receipt of Object.values(raw ?? {})) {
+      if (receipt?.provider === "openrouter" && typeof receipt.ownerUserId === "string") this.delegatedReceipts.set(receipt.ownerUserId, receipt);
+    }
+    this.migrateLegacyOpenRouterOAuth();
+  }
+
+  private migrateLegacyOpenRouterOAuth(): void {
+    const sources = this.host.readSettings()[CREDENTIAL_SOURCES_KEY] as Record<string, string> | undefined;
+    const receipt = this.delegatedReceipt();
+    const key = this.host.secrets.get("openrouter");
+    if (sources?.openrouter !== "OAUTH" || !key || !receipt
+      || !isOpenRouterEntitlementCurrent(receipt, this.accountOwnerUserId(), key, new Date(receipt.verifiedAt))) return;
+    const scopedKey = `openrouter:user:${hashUserAccountIdentity(receipt.ownerUserId)}`;
+    this.host.secrets.set(scopedKey, key);
+    this.setStoredSource("openrouter", "OAUTH");
+    this.host.secrets.delete("openrouter");
   }
 
   // --- definitions -----------------------------------------------------------------------------
@@ -335,6 +365,7 @@ export class ProviderConnections {
     if (!def) return undefined;
     if (def.userConnectedFree && this.host.ollamaUserConnectedFreeEnabled !== true) return undefined;
     const storedKey = fieldId === "apiKey" ? this.credentialStorageKey(providerId) : configFieldKey(providerId, fieldId);
+    if (providerId === "openrouter" && this.storedSource(providerId) === "OAUTH" && !storedKey.includes(":user:")) return undefined;
     const stored = this.host.secrets.get(storedKey) ?? (providerId === "cloudflare-workers-ai" && fieldId === "accountId" ? this.host.secrets.get("cloudflare-account-id") : undefined);
     if (stored) return { value: stored, source: this.storedSource(providerId) };
     const envValue = this.environmentValue(def, fieldId);
@@ -353,14 +384,19 @@ export class ProviderConnections {
   private storedSource(providerId: string): CredentialSource {
     const raw = this.host.readSettings()[CREDENTIAL_SOURCES_KEY];
     if (typeof raw === "object" && raw !== null && !Array.isArray(raw)) {
-      const v = (raw as Record<string, unknown>)[providerId];
+      const sources = raw as Record<string, unknown>;
+      const scopedKey = `${providerId}:user:${hashUserAccountIdentity(this.accountOwnerUserId())}`;
+      const v = sources[scopedKey] ?? sources[providerId];
       if (v === "OAUTH" || v === "MANUAL_BYOK" || v === "USER_CONNECTED_FREE_API_KEY" || v === "SECURE_STORAGE" || v === "DEVICE_CODE") return v;
     }
     return "SECURE_STORAGE";
   }
 
-  private credentialStorageKey(providerId: string): string {
+  private credentialStorageKey(providerId: string, source?: CredentialSource): string {
     const def = this.definition(providerId);
+    const scopedKey = `${providerId}:user:${hashUserAccountIdentity(this.accountOwnerUserId())}`;
+    const sources = this.host.readSettings()[CREDENTIAL_SOURCES_KEY] as Record<string, unknown> | undefined;
+    if (providerId === "openrouter" && (source !== undefined || sources?.[scopedKey] !== undefined || this.storedSource(providerId) === "OAUTH")) return scopedKey;
     if (def?.userConnectedFree && this.host.userId) return `${providerId}:user:${hashUserAccountIdentity(this.host.userId)}`;
     return providerId;
   }
@@ -369,8 +405,10 @@ export class ProviderConnections {
     const settings = this.host.readSettings();
     const raw = settings[CREDENTIAL_SOURCES_KEY];
     const map: Record<string, string> = typeof raw === "object" && raw !== null && !Array.isArray(raw) ? { ...(raw as Record<string, string>) } : {};
-    if (source) map[providerId] = source;
-    else delete map[providerId];
+    const storageKey = providerId === "openrouter"
+      ? `${providerId}:user:${hashUserAccountIdentity(this.accountOwnerUserId())}` : providerId;
+    if (source) map[storageKey] = source;
+    else delete map[storageKey];
     settings[CREDENTIAL_SOURCES_KEY] = map;
     this.persistSettings(settings, "provider connection state");
   }
@@ -379,6 +417,7 @@ export class ProviderConnections {
     const def = this.definition(providerId);
     if (!def) return "NONE";
     if (providerId === "kilo-free-direct") return this.host.providerCatalog.get(providerId) ? "ANONYMOUS_DIRECT" : "NONE";
+    if (providerId === "blockrun-free-direct") return this.host.providerCatalog.get(providerId) ? "ANONYMOUS_DIRECT" : "NONE";
     if (providerId === "ai-horde") return this.host.providerCatalog.get(providerId) ? "ANONYMOUS_DIRECT" : "NONE";
     if (def.apiStyle === "hosted") return this.host.providerCatalog.get(providerId) ? "FDS_GATEWAY" : "NONE";
     const required = def.connection.fields.filter((f) => !f.optional);
@@ -519,14 +558,29 @@ export class ProviderConnections {
   }
 
   private storeFields(def: ProviderDefinition, values: Record<string, string>, source: CredentialSource): void {
-    for (const field of def.connection.fields) {
-      const v = values[field.id];
-      if (!v) continue;
-      if (field.id === "apiKey") this.host.secrets.set(this.credentialStorageKey(def.id), v);
-      else this.host.secrets.set(configFieldKey(def.id, field.id), v);
-      if (def.id === "cloudflare-workers-ai" && field.id === "accountId") this.host.secrets.set("cloudflare-account-id", v);
+    const prior = new Map<string, string | undefined>();
+    const settings = this.host.readSettings();
+    const priorSources = settings[CREDENTIAL_SOURCES_KEY];
+    try {
+      for (const field of def.connection.fields) {
+        const v = values[field.id];
+        if (!v) continue;
+        const key = field.id === "apiKey" ? this.credentialStorageKey(def.id, source) : configFieldKey(def.id, field.id);
+        prior.set(key, this.host.secrets.get(key));
+        this.host.secrets.set(key, v);
+        if (def.id === "cloudflare-workers-ai" && field.id === "accountId") {
+          prior.set("cloudflare-account-id", this.host.secrets.get("cloudflare-account-id"));
+          this.host.secrets.set("cloudflare-account-id", v);
+        }
+      }
+      this.setStoredSource(def.id, source);
+    } catch (error) {
+      for (const [key, value] of prior) {
+        if (value === undefined) this.host.secrets.delete(key); else this.host.secrets.set(key, value);
+      }
+      settings[CREDENTIAL_SOURCES_KEY] = priorSources;
+      throw error;
     }
-    this.setStoredSource(def.id, source);
   }
 
   /** Build a throwaway adapter over explicit values — used by Validate, never registered. */
@@ -625,6 +679,7 @@ export class ProviderConnections {
 
   /** Connect: validate, persist encrypted, register adapter, discover free routes. */
   async connect(providerId: string, fields: Record<string, unknown>, source: CredentialSource = "MANUAL_BYOK"): Promise<ConnectResult> {
+    const authorizingOwner = this.accountOwnerUserId();
     const def = this.definition(providerId);
     if (!def || !def.implemented) return { ok: false, error: "Provider is not supported" };
     if (def.userConnectedFree && this.host.ollamaUserConnectedFreeEnabled !== true) return { ok: false, error: "This user-connected provider is disabled by the current feature flag." };
@@ -644,14 +699,17 @@ export class ProviderConnections {
       }
     }
     if (providerId === "openrouter" && source === "OAUTH") {
-      const receipt = await (this.host.verifyOpenRouter ?? verifyOpenRouterEntitlement)({ key: values.apiKey!, ownerUserId: this.host.userId ?? "", now: this.now() });
+      const receipt = await (this.host.verifyOpenRouter ?? verifyOpenRouterEntitlement)({ key: values.apiKey!, ownerUserId: authorizingOwner, now: this.now() });
+      if (authorizingOwner !== this.accountOwnerUserId()) return { ok: false, error: "The CodeForge account changed during authorization. Connect again." };
       this.saveDelegatedReceipt(receipt);
       if (!isOpenRouterEntitlementCurrent(receipt, this.host.userId ?? "", values.apiKey!, this.now()) || !receipt.admissionEvidence) {
         this.publishConnection(def, this.credentialSourceOf(providerId));
         this.host.notifyChanged?.();
         return { ok: false, error: `OpenRouter Free capacity was not admitted: ${receipt.accountClass} (${receipt.reason}).` };
       }
+      this.checkedDelegatedOwners.add(authorizingOwner);
     }
+    if (authorizingOwner !== this.accountOwnerUserId()) return { ok: false, error: "The CodeForge account changed during connection. Connect again." };
     this.storeFields(def, values, def.userConnectedFree ? "USER_CONNECTED_FREE_API_KEY" : source);
     await this.reconcile(providerId);
     const verifiedFree = await this.host.discoverProviderFree(providerId).catch(() => 0);
@@ -680,7 +738,7 @@ export class ProviderConnections {
     for (const field of def.connection.fields) if (field.id !== "apiKey") this.host.secrets.delete(configFieldKey(providerId, field.id));
     if (providerId === "cloudflare-workers-ai") this.host.secrets.delete("cloudflare-account-id");
     if (providerId === "openrouter") {
-      const receipt = this.delegatedReceipts.get(providerId);
+      const receipt = this.delegatedReceipt();
       if (receipt) this.saveDelegatedReceipt({ ...receipt, accountClass: "REVOKED", reason: "LOCAL_CONNECTION_REVOKED", recheckAt: this.now().toISOString() });
     }
     this.setStoredSource(providerId, null);
@@ -693,11 +751,23 @@ export class ProviderConnections {
   async reconcile(providerId: string): Promise<void> {
     const def = this.definition(providerId);
     if (!def) return;
+    if (providerId === "openrouter") this.migrateLegacyOpenRouterOAuth();
     const source = this.credentialSourceOf(providerId);
     if (providerId === "openrouter" && source === "OAUTH") {
       const key = this.resolveField(providerId, "apiKey")?.value;
-      if (key && !isOpenRouterEntitlementCurrent(this.delegatedReceipts.get(providerId), this.host.userId ?? "", key, this.now())) {
-        this.saveDelegatedReceipt(await (this.host.verifyOpenRouter ?? verifyOpenRouterEntitlement)({ key, ownerUserId: this.host.userId ?? "", now: this.now() }));
+      if (key && (!this.checkedDelegatedOwners.has(this.accountOwnerUserId()) || this.host.providerAuthState(providerId) === "auth_required"
+        || !isOpenRouterEntitlementCurrent(this.delegatedReceipt(), this.accountOwnerUserId(), key, this.now()))) {
+        const owner = this.accountOwnerUserId();
+        const receipt = await (this.host.verifyOpenRouter ?? verifyOpenRouterEntitlement)({ key, ownerUserId: owner, now: this.now() });
+        if (owner !== this.accountOwnerUserId()) { this.removeProvider(providerId); this.publishConnection(def, this.credentialSourceOf(providerId)); return; }
+        this.saveDelegatedReceipt(receipt);
+        this.checkedDelegatedOwners.add(owner);
+      }
+      if (!key || !isOpenRouterEntitlementCurrent(this.delegatedReceipt(), this.accountOwnerUserId(), key, this.now()) || !this.delegatedReceipt()?.admissionEvidence) {
+        this.removeProvider(providerId);
+        this.publishConnection(def, source);
+        this.host.notifyChanged?.();
+        return;
       }
     }
     const catalog = this.host.providerCatalog;
@@ -754,9 +824,9 @@ export class ProviderConnections {
     const envVariable = source === "ENVIRONMENT" ? this.resolveField(def.id, "apiKey")?.variable : undefined;
     const auth = this.host.providerAuthState(def.id);
     const geminiPolicy = def.id === "google" ? this.geminiPolicyGate().evaluate() : undefined;
-    const delegated = this.delegatedReceipts.get(def.id);
+    const delegated = def.id === "openrouter" ? this.delegatedReceipt() : undefined;
     const key = def.id === "openrouter" && source === "OAUTH" ? this.resolveField(def.id, "apiKey")?.value : undefined;
-    const boundDelegated = delegated && key && isOpenRouterEntitlementCurrent(delegated, this.host.userId ?? "", key, this.now())
+    const boundDelegated = delegated && key && this.checkedDelegatedOwners.has(this.accountOwnerUserId()) && isOpenRouterEntitlementCurrent(delegated, this.host.userId ?? "", key, this.now())
       ? delegated : delegated ? { ...delegated, accountClass: "UNKNOWN" as const, reason: "CREDENTIAL_OWNER_OR_RECEIPT_STALE" } : undefined;
     const state: ProviderConnectionState = {
       providerId: def.id,
@@ -794,10 +864,11 @@ export class ProviderConnections {
   }
 
   private saveDelegatedReceipt(receipt: OpenRouterEntitlementReceipt): void {
-    this.delegatedReceipts.set("openrouter", receipt);
     const settings = this.host.readSettings();
-    settings[DELEGATED_ENTITLEMENTS_KEY] = { openrouter: receipt };
+    const prior = settings[DELEGATED_ENTITLEMENTS_KEY];
+    settings[DELEGATED_ENTITLEMENTS_KEY] = { ...(prior as Record<string, OpenRouterEntitlementReceipt> | undefined), [`openrouter:user:${hashUserAccountIdentity(receipt.ownerUserId)}`]: receipt };
     this.persistSettings(settings, "delegated Free entitlement receipt");
+    this.delegatedReceipts.set(receipt.ownerUserId, receipt);
   }
 
   /** Lowest-friction way to connect this provider right now (R1 §13, §68, §71). */
@@ -832,7 +903,7 @@ export class ProviderConnections {
       const offer = conn?.connectOffer ?? this.connectOfferFor(def);
       const sortRank = connected ? 0 : env?.complete ? 1 : offer?.authClass === "OAUTH_PKCE" ? 2 : def.recommendedForFreeDefault ? 3 : 4;
       const capacity = capacityIndependenceSnapshot(capacityRoutes.filter((route) => route.providerId === def.id), undefined, { dataClass: "SYNTHETIC" }, this.now().getTime());
-      const attempt = this.delegatedReceipts.get(def.id);
+      const attempt = def.id === "openrouter" ? this.delegatedReceipt() : undefined;
       views.push({
         ...this.definitionView(def),
         connected,

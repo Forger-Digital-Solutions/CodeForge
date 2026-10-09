@@ -11,6 +11,34 @@ import { installedFirefoxPath, runOpenRouterOAuth } from "../src/openrouter-oaut
 afterEach(() => { vi.clearAllMocks(); });
 
 describe("OpenRouter authorization browser choice", () => {
+  it("rejects forged callbacks without cancelling the user's valid authorization", async () => {
+    const exchange = vi.fn(async () => "fixture-user-owned-key");
+    const key = await runOpenRouterOAuth({ exchange, timeoutMs: 2_000, openExternal: async address => {
+      const authorization = new URL(address);
+      const callback = new URL(authorization.searchParams.get("callback_url")!);
+      callback.searchParams.set("code", "fixture-code");
+      const forged = new URL(callback);
+      forged.searchParams.set("state", "wrong-state");
+      expect((await fetch(forged)).status).toBe(400);
+      const response = await fetch(callback);
+      expect(response.status).toBe(200);
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    } });
+    expect(key).toBe("fixture-user-owned-key");
+    expect(exchange).toHaveBeenCalledOnce();
+  });
+
+  it("bounds an exchange that stalls after the one-use callback", async () => {
+    await expect(runOpenRouterOAuth({ timeoutMs: 100, exchange: () => new Promise(() => {}), openExternal: async address => {
+      const authorization = new URL(address);
+      const callback = new URL(authorization.searchParams.get("callback_url")!);
+      callback.searchParams.set("code", "fixture-code");
+      expect((await fetch(callback)).status).toBe(200);
+      expect((await fetch(callback)).status).toBe(409);
+    } })).rejects.toThrow("OpenRouter authorization timed out");
+  });
+
   it("opens Firefox directly and preserves the same one-use PKCE callback", async () => {
     launcher.exists.mockReturnValue(true);
     launcher.spawn.mockImplementation((_executable: string, args: string[], options: { shell?: boolean }) => {

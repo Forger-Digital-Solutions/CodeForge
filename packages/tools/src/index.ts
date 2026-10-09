@@ -5,7 +5,11 @@ import { type AgentPermissions, ERROR_CODES } from "@codeforge/agent";
 import { redactSecrets } from "@codeforge/secrets";
 import { execute, execInWsl } from "@codeforge/terminal";
 import { renderFileRead } from "./file-read.js";
+import { headlessCommandIssue } from "./command-mode.js";
+import { commandCwdArgumentIssue } from "./command-cwd.js";
 export { renderFileRead } from "./file-read.js";
+export { headlessCommandIssue, isVerificationCommand } from "./command-mode.js";
+export { commandCwdArgumentIssue } from "./command-cwd.js";
 
 export interface ToolDefinition {
   name: string;
@@ -667,6 +671,30 @@ export class ToolBroker {
       };
     }
 
+    const commandIssue = name === "run_command" ? headlessCommandIssue(String(args.command)) : undefined;
+    if (commandIssue) return {
+      toolExecutionId, toolName: name, arguments: args, success: false,
+      output: `Error: [${ERROR_CODES.TOOL_ARGUMENT_INVALID}] ${commandIssue}`,
+      error: ERROR_CODES.TOOL_ARGUMENT_INVALID, durationMs: Date.now() - startTime,
+      readOnly: toolDef.readOnly, truncated: false,
+    };
+    const cwdIssue = name === "run_command" ? commandCwdArgumentIssue(args.cwd) : undefined;
+    if (cwdIssue) return {
+      toolExecutionId, toolName: name, arguments: args, success: false,
+      output: `Error: [${ERROR_CODES.TOOL_ARGUMENT_INVALID}] ${cwdIssue}`,
+      error: ERROR_CODES.TOOL_ARGUMENT_INVALID, durationMs: Date.now() - startTime,
+      readOnly: toolDef.readOnly, truncated: false,
+    };
+    if (name === "run_command") {
+      const confinement = resolveWithinWorkspace(context.workspacePath, args.cwd ? String(args.cwd) : ".");
+      if (!confinement.valid || !confinement.resolvedPath) return {
+        toolExecutionId, toolName: name, arguments: args, success: false,
+        output: `Error: [${ERROR_CODES.TOOL_WORKSPACE_ESCAPE}] ${confinement.error}`,
+        error: ERROR_CODES.TOOL_PATH_ESCAPE, durationMs: Date.now() - startTime,
+        readOnly: toolDef.readOnly, truncated: false,
+      };
+    }
+
     // 4. Custom Executor Delegation (if provided, e.g. for repo-intelligence tools or mocks)
     if (context.customExecutor) {
       try {
@@ -903,6 +931,7 @@ export class ToolBroker {
               GIT_PAGER: "cat",
               PAGER: "cat",
               GIT_TERMINAL_PROMPT: "0",
+              CI: "true",
             };
             // Headless ConPTY execution keeps console-subsystem grandchildren
             // (npm shims, cmd internals) invisible on Windows; pipes on POSIX.

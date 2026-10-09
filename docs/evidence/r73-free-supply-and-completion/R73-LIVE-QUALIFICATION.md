@@ -1,0 +1,26 @@
+# R73 live role qualification
+
+All live cases used public synthetic code. Anonymous Kilo and BlockRun calls carried no account key or payment credential. Exact available catalog price and provider policy were checked before requests. Current role qualification uses the production Reviewer schema and prompt, `R73_ROLE_QUALIFICATION_V6 / REVIEWER_PROTOCOL_V3`; the existing 0.75 acceptance threshold and disqualifying failures remain unchanged.
+
+## Reviewer results
+
+| Provider/model | Evidence | Measured outcome |
+| --- | --- | --- |
+| BlockRun `nvidia/llama-3.2-11b-vision` | `blockrun-reviewer-1791479821776.json`, per-run observation file named inside it | **QUALIFIED, 5/6, seven requests.** Correct bug, clean-diff, swallowed-error, resource-lifetime and test-weakening judgments; clean-comment false positive retained. No Coder or Tool Agent promotion. |
+| Kilo Cohere North Mini Code | `reviewer-cohere_north-mini-code_free-1791479086989.json` | V5 hard failure, four of six. Production-schema malformed output and missed defect remain negative evidence. |
+| Kilo Dots | `reviewer-dots-studio_dots-3-note-preview_free-1791469967716.json`, `...1791479228680.json` | Organic in-band/SSE 502; inconclusive, not qualified. |
+| Kilo Nemotron Lightning | `reviewer-nvidia_nemotron-3.5-lightning_free-1791478615107.json` | Deadline/timeout and reasoning leakage; inconclusive. This exposed the local timeout classification defect repaired in R73. |
+| Kilo Liquid | `reviewer-liquid_lfm-2.5-2.6b_free-1791478991059.json` | Exact-model upstream 429; inconclusive. This exposed the overly broad cooldown scope repaired in R73. |
+| Kilo Nemotron Super | `reviewer-nvidia_nemotron-3-super-120b-a12b_free-1791479328096.json`, `...1791479717487.json` | V5 probation then V6 hard failure; no qualified Reviewer claim. |
+| Kilo Nemotron Ultra | `reviewer-nvidia_nemotron-3-ultra-550b-a55b_free-1791479634287.json` | Upstream failure; inconclusive. |
+| Kilo Poolside Laguna S | `reviewer-poolside_laguna-s-2.1_free-1791480508273.json` | One request, organic upstream-account 429; inconclusive, no retry or qualification. |
+
+The original individual receipts and failures are preserved. `blockrun-reviewer-qualified-v3.json` is a schema-validated projection of the measured BlockRun role output using the shared production receipt builder, with a SHA-256 link to the unchanged original evidence. It stamps the protocol actually executed; it does not run additional cases or change their outcomes. The earlier derived receipt without the explicit protocol marker remains historical evidence and is no longer sufficient for current Reviewer admission.
+
+## Existing useful roles and qualification economy
+
+The current-day R71/R72 Cohere receipt remains conclusive for Explorer, Coder, Tool Agent and Analyst. Those unchanged roles are carried without repeating the whole qualification suite. Historic positive Reviewer evidence lacking the current role protocol marker is excluded until requalified; historic hard failures remain excluded. Transient retries are archived independently and cannot erase a conclusive active receipt. Memory reads/saves are defensive copies; SQLite history survives restart.
+
+The BlockRun model emitted a genuine exact-model native `read_file` call executed against `blockrun-tool-fixture/src/retry.mjs`. However, tool-result continuation ignored the observation or repeated a raw instruction. It is **not** qualified as Tool Agent or Coder. Reviewer qualification supplied the code/diff directly and required no tools, matching that role protocol. Provider availability is intermittent: an unavailable current catalog closes dispatch even while its qualification receipt remains valid.
+
+Qualification requests are reported separately from autonomous coding task requests in the reliability report. A catalog, successful ping, native tool emission, probation verdict or transient failed attempt is never counted as a completed coding task.

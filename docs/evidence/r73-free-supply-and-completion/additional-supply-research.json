@@ -1,0 +1,68 @@
+{
+  "inferenceRequests": 0,
+  "observations": [
+    {
+      "name": "blockrun-production-authorization",
+      "url": "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl",
+      "finalUrl": "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl",
+      "checkedAt": "2026-10-08T17:19:15.642Z",
+      "status": 200,
+      "file": "blockrun-production-authorization.html",
+      "bytes": 153058
+    },
+    {
+      "name": "yolo-auto",
+      "url": "https://yolo-auto.com/",
+      "finalUrl": "https://yolo-auto.com/",
+      "checkedAt": "2026-10-08T17:19:15.817Z",
+      "status": 200,
+      "file": "yolo-auto.html",
+      "bytes": 34049
+    },
+    {
+      "name": "yolo-auto-docs",
+      "url": "https://yolo-auto.com/docs",
+      "finalUrl": "https://yolo-auto.com/docs",
+      "checkedAt": "2026-10-08T17:19:15.822Z",
+      "status": 200,
+      "file": "yolo-auto-docs.html",
+      "bytes": 67399
+    },
+    {
+      "name": "yolo-auto-terms",
+      "url": "https://yolo-auto.com/terms",
+      "finalUrl": "https://yolo-auto.com/terms",
+      "checkedAt": "2026-10-08T17:19:15.826Z",
+      "status": 200,
+      "file": "yolo-auto-terms.html",
+      "bytes": 42501
+    },
+    {
+      "name": "yolo-auto-privacy",
+      "url": "https://yolo-auto.com/privacy",
+      "finalUrl": "https://yolo-auto.com/privacy",
+      "checkedAt": "2026-10-08T17:19:15.829Z",
+      "status": 200,
+      "file": "yolo-auto-privacy.html",
+      "bytes": 28022
+    },
+    {
+      "name": "hetzner-inference",
+      "url": "https://docs.hetzner.com/general/company-and-policy/experiments/inference/",
+      "finalUrl": "https://docs.hetzner.com/general/company-and-policy/experiments/inference/",
+      "checkedAt": "2026-10-08T17:19:15.833Z",
+      "status": 200,
+      "file": "hetzner-inference.html",
+      "bytes": 364389
+    },
+    {
+      "name": "hetzner-experiments",
+      "url": "https://docs.hetzner.com/general/company-and-policy/experiments/experiments-platform/",
+      "finalUrl": "https://docs.hetzner.com/general/company-and-policy/experiments/experiments-platform/",
+      "checkedAt": "2026-10-08T17:19:15.836Z",
+      "status": 200,
+      "file": "hetzner-experiments.html",
+      "bytes": 346007
+    }
+  ]
+}

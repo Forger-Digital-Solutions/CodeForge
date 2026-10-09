@@ -1,0 +1,3104 @@
+{
+  "startedAt": "2026-10-08T17:04:46.989Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "cohere/north-mini-code:free",
+  "evidenceClass": "LIVE_REVIEWER_ONLY_PUBLIC_CASES",
+  "frames": [
+    {
+      "at": "2026-10-08T17:04:47.756Z",
+      "request": {
+        "model": "cohere/north-mini-code:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Fix add() so it returns the sum of its arguments.\n\nDiff under review:\n--- a/src/calc.ts\n+++ b/src/calc.ts\n@@ export function add(a, b) @@\n-  return a - b;\n+  return a * b;"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "revision"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_required"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "add"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_implementation"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "severity"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "blocking"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "category"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "logic"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "message"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "add"
+        },
+        {
+          "type": "text_delta",
+          "delta": "()"
+        },
+        {
+          "type": "text_delta",
+          "delta": " returns"
+        },
+        {
+          "type": "text_delta",
+          "delta": " product"
+        },
+        {
+          "type": "text_delta",
+          "delta": " instead"
+        },
+        {
+          "type": "text_delta",
+          "delta": " of"
+        },
+        {
+          "type": "text_delta",
+          "delta": " sum"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "evidence"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "return"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " *"
+        },
+        {
+          "type": "text_delta",
+          "delta": " b"
+        },
+        {
+          "type": "text_delta",
+          "delta": ";\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}]"
+        },
+        {
+          "type": "text_delta",
+          "delta": ",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " changes"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " subtraction"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " multiplication"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " which"
+        },
+        {
+          "type": "text_delta",
+          "delta": " does"
+        },
+        {
+          "type": "text_delta",
+          "delta": " not"
+        },
+        {
+          "type": "text_delta",
+          "delta": " satisfy"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " requirement"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " add"
+        },
+        {
+          "type": "text_delta",
+          "delta": "()"
+        },
+        {
+          "type": "text_delta",
+          "delta": " returns"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " sum"
+        },
+        {
+          "type": "text_delta",
+          "delta": " of"
+        },
+        {
+          "type": "text_delta",
+          "delta": " its"
+        },
+        {
+          "type": "text_delta",
+          "delta": " arguments"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 148,
+            "outputTokens": 184,
+            "totalTokens": 332,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 134
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:04:52.585Z"
+    },
+    {
+      "at": "2026-10-08T17:04:52.588Z",
+      "request": {
+        "model": "cohere/north-mini-code:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Rename the internal helper for clarity; behaviour unchanged.\n\nDiff under review:\n--- a/src/util/logger.ts\n+++ b/src/util/logger.ts\n@@\n-export const log = (m: string) => m;\n+export const writeLog = (m: string) => m;"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "pass"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[],\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " ren"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ames"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " exported"
+        },
+        {
+          "type": "text_delta",
+          "delta": " helper"
+        },
+        {
+          "type": "text_delta",
+          "delta": " from"
+        },
+        {
+          "type": "text_delta",
+          "delta": " `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "log"
+        },
+        {
+          "type": "text_delta",
+          "delta": "`"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "write"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Log"
+        },
+        {
+          "type": "text_delta",
+          "delta": "`"
+        },
+        {
+          "type": "text_delta",
+          "delta": " while"
+        },
+        {
+          "type": "text_delta",
+          "delta": " preserving"
+        },
+        {
+          "type": "text_delta",
+          "delta": " its"
+        },
+        {
+          "type": "text_delta",
+          "delta": " implementation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " and"
+        },
+        {
+          "type": "text_delta",
+          "delta": " type"
+        },
+        {
+          "type": "text_delta",
+          "delta": " signature"
+        },
+        {
+          "type": "text_delta",
+          "delta": "."
+        },
+        {
+          "type": "text_delta",
+          "delta": " This"
+        },
+        {
+          "type": "text_delta",
+          "delta": " satisfies"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " intent"
+        },
+        {
+          "type": "text_delta",
+          "delta": " of"
+        },
+        {
+          "type": "text_delta",
+          "delta": " renaming"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " internal"
+        },
+        {
+          "type": "text_delta",
+          "delta": " helper"
+        },
+        {
+          "type": "text_delta",
+          "delta": " for"
+        },
+        {
+          "type": "text_delta",
+          "delta": " clarity"
+        },
+        {
+          "type": "text_delta",
+          "delta": " without"
+        },
+        {
+          "type": "text_delta",
+          "delta": " altering"
+        },
+        {
+          "type": "text_delta",
+          "delta": " behavior"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 150,
+            "outputTokens": 118,
+            "totalTokens": 268,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 70
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:04:55.084Z"
+    },
+    {
+      "at": "2026-10-08T17:04:55.086Z",
+      "request": {
+        "model": "cohere/north-mini-code:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Document the quota window semantics; comment only, no behaviour change.\n\nDiff under review:\n--- a/src/fabric/ledger.ts\n+++ b/src/fabric/ledger.ts\n@@\n+// Windows are provider-reported; a missing window means unobserved, not unlimited.\n export function snapshotHolds() { return []; }\n export function releaseExpired(now: number) { return now; }"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "pass"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[],\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Comment"
+        },
+        {
+          "type": "text_delta",
+          "delta": " added"
+        },
+        {
+          "type": "text_delta",
+          "delta": " documenting"
+        },
+        {
+          "type": "text_delta",
+          "delta": " quota"
+        },
+        {
+          "type": "text_delta",
+          "delta": " window"
+        },
+        {
+          "type": "text_delta",
+          "delta": " semantics"
+        },
+        {
+          "type": "text_delta",
+          "delta": ";"
+        },
+        {
+          "type": "text_delta",
+          "delta": " no"
+        },
+        {
+          "type": "text_delta",
+          "delta": " behavior"
+        },
+        {
+          "type": "text_delta",
+          "delta": " changes"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 168,
+            "outputTokens": 245,
+            "totalTokens": 413,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 291
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:04:59.108Z"
+    },
+    {
+      "at": "2026-10-08T17:04:59.110Z",
+      "request": {
+        "model": "cohere/north-mini-code:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Record provider failures so the route can be demoted.\n\nDiff under review:\n--- a/src/health.ts\n+++ b/src/health.ts\n@@\n+export function recordFailure(id: string) {\n+  try { sendTelemetry(id); } catch { /* ignore */ }\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 149,
+            "outputTokens": 900,
+            "totalTokens": 1049,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1075
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:05:10.357Z"
+    },
+    {
+      "at": "2026-10-08T17:05:10.365Z",
+      "request": {
+        "model": "cohere/north-mini-code:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Record provider failures so the route can be demoted.\n\nDiff under review:\n--- a/src/health.ts\n+++ b/src/health.ts\n@@\n+export function recordFailure(id: string) {\n+  try { sendTelemetry(id); } catch { /* ignore */ }\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 1975
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "revision"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_required"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "0"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "severity"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "blocking"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "category"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Implementation"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "message"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " added"
+        },
+        {
+          "type": "text_delta",
+          "delta": " function"
+        },
+        {
+          "type": "text_delta",
+          "delta": " only"
+        },
+        {
+          "type": "text_delta",
+          "delta": " sends"
+        },
+        {
+          "type": "text_delta",
+          "delta": " telemetry"
+        },
+        {
+          "type": "text_delta",
+          "delta": " but"
+        },
+        {
+          "type": "text_delta",
+          "delta": " does"
+        },
+        {
+          "type": "text_delta",
+          "delta": " not"
+        },
+        {
+          "type": "text_delta",
+          "delta": " actually"
+        },
+        {
+          "type": "text_delta",
+          "delta": " record"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failure"
+        },
+        {
+          "type": "text_delta",
+          "delta": " ("
+        },
+        {
+          "type": "text_delta",
+          "delta": "e"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".g"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".,"
+        },
+        {
+          "type": "text_delta",
+          "delta": " increment"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failure"
+        },
+        {
+          "type": "text_delta",
+          "delta": " count"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " update"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " map"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " or"
+        },
+        {
+          "type": "text_delta",
+          "delta": " store"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failure"
+        },
+        {
+          "type": "text_delta",
+          "delta": " state"
+        },
+        {
+          "type": "text_delta",
+          "delta": ")"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " would"
+        },
+        {
+          "type": "text_delta",
+          "delta": " be"
+        },
+        {
+          "type": "text_delta",
+          "delta": " needed"
+        },
+        {
+          "type": "text_delta",
+          "delta": " for"
+        },
+        {
+          "type": "text_delta",
+          "delta": " route"
+        },
+        {
+          "type": "text_delta",
+          "delta": " dem"
+        },
+        {
+          "type": "text_delta",
+          "delta": "otion"
+        },
+        {
+          "type": "text_delta",
+          "delta": "."
+        },
+        {
+          "type": "text_delta",
+          "delta": " The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " intent"
+        },
+        {
+          "type": "text_delta",
+          "delta": " is"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " record"
+        },
+        {
+          "type": "text_delta",
+          "delta": " provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failures"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " not"
+        },
+        {
+          "type": "text_delta",
+          "delta": " just"
+        },
+        {
+          "type": "text_delta",
+          "delta": " send"
+        },
+        {
+          "type": "text_delta",
+          "delta": " telemetry"
+        },
+        {
+          "type": "text_delta",
+          "delta": "."
+        },
+        {
+          "type": "text_delta",
+          "delta": " The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " function"
+        },
+        {
+          "type": "text_delta",
+          "delta": " should"
+        },
+        {
+          "type": "text_delta",
+          "delta": " track"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failures"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " likely"
+        },
+        {
+          "type": "text_delta",
+          "delta": " by"
+        },
+        {
+          "type": "text_delta",
+          "delta": " updating"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failure"
+        },
+        {
+          "type": "text_delta",
+          "delta": " count"
+        },
+        {
+          "type": "text_delta",
+          "delta": " or"
+        },
+        {
+          "type": "text_delta",
+          "delta": " marking"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": " as"
+        },
+        {
+          "type": "text_delta",
+          "delta": " unhealthy"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " before"
+        },
+        {
+          "type": "text_delta",
+          "delta": " or"
+        },
+        {
+          "type": "text_delta",
+          "delta": " after"
+        },
+        {
+          "type": "text_delta",
+          "delta": " sending"
+        },
+        {
+          "type": "text_delta",
+          "delta": " telemetry"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "evidence"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " shows"
+        },
+        {
+          "type": "text_delta",
+          "delta": " only"
+        },
+        {
+          "type": "text_delta",
+          "delta": ":\\"
+        },
+        {
+          "type": "text_delta",
+          "delta": "n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "+export"
+        },
+        {
+          "type": "text_delta",
+          "delta": " function"
+        },
+        {
+          "type": "text_delta",
+          "delta": " record"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Failure"
+        },
+        {
+          "type": "text_delta",
+          "delta": "(id"
+        },
+        {
+          "type": "text_delta",
+          "delta": ":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " string"
+        },
+        {
+          "type": "text_delta",
+          "delta": ")"
+        },
+        {
+          "type": "text_delta",
+          "delta": " {\\"
+        },
+        {
+          "type": "text_delta",
+          "delta": "n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "+"
+        },
+        {
+          "type": "text_delta",
+          "delta": "  try"
+        },
+        {
+          "type": "text_delta",
+          "delta": " {"
+        },
+        {
+          "type": "text_delta",
+          "delta": " send"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Telemetry"
+        },
+        {
+          "type": "text_delta",
+          "delta": "(id"
+        },
+        {
+          "type": "text_delta",
+          "delta": ");"
+        },
+        {
+          "type": "text_delta",
+          "delta": " }"
+        },
+        {
+          "type": "text_delta",
+          "delta": " catch"
+        },
+        {
+          "type": "text_delta",
+          "delta": " {"
+        },
+        {
+          "type": "text_delta",
+          "delta": " /*"
+        },
+        {
+          "type": "text_delta",
+          "delta": " ignore"
+        },
+        {
+          "type": "text_delta",
+          "delta": " */"
+        },
+        {
+          "type": "text_delta",
+          "delta": " }\\"
+        },
+        {
+          "type": "text_delta",
+          "delta": "n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "+"
+        },
+        {
+          "type": "text_delta",
+          "delta": "}\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}],"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " adds"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " function"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " sends"
+        },
+        {
+          "type": "text_delta",
+          "delta": " telemetry"
+        },
+        {
+          "type": "text_delta",
+          "delta": " but"
+        },
+        {
+          "type": "text_delta",
+          "delta": " does"
+        },
+        {
+          "type": "text_delta",
+          "delta": " not"
+        },
+        {
+          "type": "text_delta",
+          "delta": " record"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failure"
+        },
+        {
+          "type": "text_delta",
+          "delta": " in"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " way"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " can"
+        },
+        {
+          "type": "text_delta",
+          "delta": " be"
+        },
+        {
+          "type": "text_delta",
+          "delta": " used"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " dem"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ote"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " route"
+        },
+        {
+          "type": "text_delta",
+          "delta": "."
+        },
+        {
+          "type": "text_delta",
+          "delta": " It"
+        },
+        {
+          "type": "text_delta",
+          "delta": " should"
+        },
+        {
+          "type": "text_delta",
+          "delta": " maintain"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failure"
+        },
+        {
+          "type": "text_delta",
+          "delta": " state"
+        },
+        {
+          "type": "text_delta",
+          "delta": " ("
+        },
+        {
+          "type": "text_delta",
+          "delta": "e"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".g"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".,"
+        },
+        {
+          "type": "text_delta",
+          "delta": " increment"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " counter"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " update"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " map"
+        },
+        {
+          "type": "text_delta",
+          "delta": ")"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " reflect"
+        },
+        {
+          "type": "text_delta",
+          "delta": " provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failures"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 149,
+            "outputTokens": 435,
+            "totalTokens": 584,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 283
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:05:15.839Z"
+    },
+    {
+      "at": "2026-10-08T17:05:15.841Z",
+      "request": {
+        "model": "cohere/north-mini-code:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Add a fast path that reserves capacity before early return.\n\nDiff under review:\n--- a/src/fabric/admission.ts\n+++ b/src/fabric/admission.ts\n@@\n+export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 162,
+            "outputTokens": 900,
+            "totalTokens": 1062,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1065
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:05:25.692Z"
+    },
+    {
+      "at": "2026-10-08T17:05:25.694Z",
+      "request": {
+        "model": "cohere/north-mini-code:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Add a fast path that reserves capacity before early return.\n\nDiff under review:\n--- a/src/fabric/admission.ts\n+++ b/src/fabric/admission.ts\n@@\n+export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 1965
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "pass"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[],\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Added"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fast"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Path"
+        },
+        {
+          "type": "text_delta",
+          "delta": " function"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " reserves"
+        },
+        {
+          "type": "text_delta",
+          "delta": " capacity"
+        },
+        {
+          "type": "text_delta",
+          "delta": " before"
+        },
+        {
+          "type": "text_delta",
+          "delta": " early"
+        },
+        {
+          "type": "text_delta",
+          "delta": " return"
+        },
+        {
+          "type": "text_delta",
+          "delta": " based"
+        },
+        {
+          "type": "text_delta",
+          "delta": " on"
+        },
+        {
+          "type": "text_delta",
+          "delta": " route"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Id"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 162,
+            "outputTokens": 1034,
+            "totalTokens": 1196,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1177
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:05:39.939Z"
+    },
+    {
+      "at": "2026-10-08T17:05:39.941Z",
+      "request": {
+        "model": "cohere/north-mini-code:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Add a fast path that reserves capacity before early return.\n\nDiff under review:\n--- a/src/fabric/admission.ts\n+++ b/src/fabric/admission.ts\n@@\n+export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 162,
+            "outputTokens": 900,
+            "totalTokens": 1062,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1072
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:05:55.258Z"
+    },
+    {
+      "at": "2026-10-08T17:05:55.260Z",
+      "request": {
+        "model": "cohere/north-mini-code:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Add a fast path that reserves capacity before early return.\n\nDiff under review:\n--- a/src/fabric/admission.ts\n+++ b/src/fabric/admission.ts\n@@\n+export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 1972
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "pass"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[],\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " adds"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fast"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Path"
+        },
+        {
+          "type": "text_delta",
+          "delta": " function"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " calls"
+        },
+        {
+          "type": "text_delta",
+          "delta": " reserve"
+        },
+        {
+          "type": "text_delta",
+          "delta": " before"
+        },
+        {
+          "type": "text_delta",
+          "delta": " an"
+        },
+        {
+          "type": "text_delta",
+          "delta": " early"
+        },
+        {
+          "type": "text_delta",
+          "delta": " return"
+        },
+        {
+          "type": "text_delta",
+          "delta": " when"
+        },
+        {
+          "type": "text_delta",
+          "delta": " route"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Id"
+        },
+        {
+          "type": "text_delta",
+          "delta": " is"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fals"
+        },
+        {
+          "type": "text_delta",
+          "delta": "y"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " matching"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " intent"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 162,
+            "outputTokens": 1081,
+            "totalTokens": 1243,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1248
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:06:19.555Z"
+    },
+    {
+      "at": "2026-10-08T17:06:19.557Z",
+      "request": {
+        "model": "cohere/north-mini-code:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Make the flaky router test pass.\n\nDiff under review:\n--- a/test/router.test.ts\n+++ b/test/router.test.ts\n@@\n-test(\"route executes\", () => { expect(run()).toBe(\"ok\"); });\n+test(\"route executes\", () => { expect(\"ok\").toBe(\"ok\"); });"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "revision"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_required"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "1"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "severity"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "blocking"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "category"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Test"
+        },
+        {
+          "type": "text_delta",
+          "delta": " Logic"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "message"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " test"
+        },
+        {
+          "type": "text_delta",
+          "delta": " no"
+        },
+        {
+          "type": "text_delta",
+          "delta": " longer"
+        },
+        {
+          "type": "text_delta",
+          "delta": " invokes"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " router"
+        },
+        {
+          "type": "text_delta",
+          "delta": " functionality"
+        },
+        {
+          "type": "text_delta",
+          "delta": ";"
+        },
+        {
+          "type": "text_delta",
+          "delta": " it"
+        },
+        {
+          "type": "text_delta",
+          "delta": " only"
+        },
+        {
+          "type": "text_delta",
+          "delta": " checks"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " literal"
+        },
+        {
+          "type": "text_delta",
+          "delta": " string"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " which"
+        },
+        {
+          "type": "text_delta",
+          "delta": " defeats"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " purpose"
+        },
+        {
+          "type": "text_delta",
+          "delta": " of"
+        },
+        {
+          "type": "text_delta",
+          "delta": " testing"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " router"
+        },
+        {
+          "type": "text_delta",
+          "delta": "."
+        },
+        {
+          "type": "text_delta",
+          "delta": " The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " original"
+        },
+        {
+          "type": "text_delta",
+          "delta": " test"
+        },
+        {
+          "type": "text_delta",
+          "delta": " expected"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " result"
+        },
+        {
+          "type": "text_delta",
+          "delta": " of"
+        },
+        {
+          "type": "text_delta",
+          "delta": " `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "run"
+        },
+        {
+          "type": "text_delta",
+          "delta": "()`"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " be"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \\\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ok"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\\\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " but"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " replaces"
+        },
+        {
+          "type": "text_delta",
+          "delta": " it"
+        },
+        {
+          "type": "text_delta",
+          "delta": " with"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " trivial"
+        },
+        {
+          "type": "text_delta",
+          "delta": " assertion"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " does"
+        },
+        {
+          "type": "text_delta",
+          "delta": " not"
+        },
+        {
+          "type": "text_delta",
+          "delta": " exercise"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " router"
+        },
+        {
+          "type": "text_delta",
+          "delta": " at"
+        },
+        {
+          "type": "text_delta",
+          "delta": " all"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "evidence"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "---"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/test"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/router"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".test"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "+++"
+        },
+        {
+          "type": "text_delta",
+          "delta": " b"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/test"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/router"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".test"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "@@"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\\"
+        },
+        {
+          "type": "text_delta",
+          "delta": "n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "-test"
+        },
+        {
+          "type": "text_delta",
+          "delta": "(\\\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "route"
+        },
+        {
+          "type": "text_delta",
+          "delta": " executes"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\\\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " ()"
+        },
+        {
+          "type": "text_delta",
+          "delta": " =>"
+        },
+        {
+          "type": "text_delta",
+          "delta": " {"
+        },
+        {
+          "type": "text_delta",
+          "delta": " expect"
+        },
+        {
+          "type": "text_delta",
+          "delta": "(run"
+        },
+        {
+          "type": "text_delta",
+          "delta": "())."
+        },
+        {
+          "type": "text_delta",
+          "delta": "to"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Be"
+        },
+        {
+          "type": "text_delta",
+          "delta": "(\\\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ok"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\\\""
+        },
+        {
+          "type": "text_delta",
+          "delta": ");"
+        },
+        {
+          "type": "text_delta",
+          "delta": " });"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\\"
+        },
+        {
+          "type": "text_delta",
+          "delta": "n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "+"
+        },
+        {
+          "type": "text_delta",
+          "delta": "test"
+        },
+        {
+          "type": "text_delta",
+          "delta": "(\\\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "route"
+        },
+        {
+          "type": "text_delta",
+          "delta": " executes"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\\\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " ()"
+        },
+        {
+          "type": "text_delta",
+          "delta": " =>"
+        },
+        {
+          "type": "text_delta",
+          "delta": " {"
+        },
+        {
+          "type": "text_delta",
+          "delta": " expect"
+        },
+        {
+          "type": "text_delta",
+          "delta": "(\\\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ok"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\\"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\")."
+        },
+        {
+          "type": "text_delta",
+          "delta": "to"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Be"
+        },
+        {
+          "type": "text_delta",
+          "delta": "(\\\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ok"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\\\""
+        },
+        {
+          "type": "text_delta",
+          "delta": ");"
+        },
+        {
+          "type": "text_delta",
+          "delta": " });"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"}],\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " removes"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " actual"
+        },
+        {
+          "type": "text_delta",
+          "delta": " router"
+        },
+        {
+          "type": "text_delta",
+          "delta": " test"
+        },
+        {
+          "type": "text_delta",
+          "delta": " logic"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " replacing"
+        },
+        {
+          "type": "text_delta",
+          "delta": " it"
+        },
+        {
+          "type": "text_delta",
+          "delta": " with"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " trivial"
+        },
+        {
+          "type": "text_delta",
+          "delta": " assertion"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " does"
+        },
+        {
+          "type": "text_delta",
+          "delta": " not"
+        },
+        {
+          "type": "text_delta",
+          "delta": " test"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " router"
+        },
+        {
+          "type": "text_delta",
+          "delta": "."
+        },
+        {
+          "type": "text_delta",
+          "delta": " This"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fails"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " address"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " flaky"
+        },
+        {
+          "type": "text_delta",
+          "delta": " behavior"
+        },
+        {
+          "type": "text_delta",
+          "delta": " and"
+        },
+        {
+          "type": "text_delta",
+          "delta": " does"
+        },
+        {
+          "type": "text_delta",
+          "delta": " not"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fulfill"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " test"
+        },
+        {
+          "type": "text_delta",
+          "delta": "'s"
+        },
+        {
+          "type": "text_delta",
+          "delta": " intent"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 158,
+            "outputTokens": 300,
+            "totalTokens": 458,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 130
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "cohere/north-mini-code:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:06:31.101Z"
+    }
+  ],
+  "maxRequests": 24,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T17:04:46.990Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-08T17:04:46.990Z",
+      "recheckAt": "2026-10-15T17:04:46.990Z",
+      "qualificationAt": "2026-10-08T17:04:46.989Z",
+      "termsVerifiedAt": "2026-10-08T17:04:46.990Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-15T17:04:46.990Z",
+      "privacyVerifiedAt": "2026-10-08T17:04:46.990Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-15T17:04:46.990Z",
+      "priceVerifiedAt": "2026-10-08T17:04:46.990Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-15T17:04:46.990Z",
+      "nextReverifyAt": "2026-10-08T23:04:46.990Z"
+    }
+  },
+  "catalog": {
+    "modelId": "cohere/north-mini-code:free",
+    "displayName": "Cohere: North Mini Code (free)",
+    "contextWindow": 256000,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "result": {
+    "roleResults": {
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T17:04:47.755Z",
+        "completedAt": "2026-10-08T17:06:31.111Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T17:04:47.755Z",
+        "completedAt": "2026-10-08T17:06:31.111Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "HARD_FAILURE",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4833,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "add() returns product instead of sum"
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 134
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2498,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 70
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4024,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 291
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 16731,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true,
+              "reasoningTokens": 283
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 39616,
+            "retries": 1,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "reasoningRetried": true,
+              "reasoningTokens": 1248,
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "pass",
+                "expectedApproved": false,
+                "verdictCorrect": false,
+                "findingLocalized": false,
+                "findings": [],
+                "reasoningRetried": true,
+                "reasoningTokens": 1177
+              }
+            }
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 11554,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The test no longer invokes the router functionality; it only checks a literal string, which defeats the purpose of testing the router. The original test expected the result of `run()` to be \"ok\", but the diff replaces it with a trivial assertion that does not exercise the router at all."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 130
+            }
+          }
+        ],
+        "hardFailures": [
+          "reviewer.swallowed_failure"
+        ],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-08T17:04:47.755Z",
+        "completedAt": "2026-10-08T17:06:31.111Z"
+      }
+    },
+    "requestCount": 10,
+    "transientCases": 0
+  },
+  "qualification": {
+    "suiteVersion": "R73_ROLE_QUALIFICATION_V5",
+    "providerId": "kilo-free-direct",
+    "modelId": "cohere/north-mini-code:free",
+    "modelDisplayName": "Cohere: North Mini Code (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "HARD_FAILURE",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4833,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "add() returns product instead of sum"
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 134
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2498,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 70
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4024,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 291
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 16731,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true,
+              "reasoningTokens": 283
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 39616,
+            "retries": 1,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "reasoningRetried": true,
+              "reasoningTokens": 1248,
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "pass",
+                "expectedApproved": false,
+                "verdictCorrect": false,
+                "findingLocalized": false,
+                "findings": [],
+                "reasoningRetried": true,
+                "reasoningTokens": 1177
+              }
+            }
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 11554,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The test no longer invokes the router functionality; it only checks a literal string, which defeats the purpose of testing the router. The original test expected the result of `run()` to be \"ok\", but the diff replaces it with a trivial assertion that does not exercise the router at all."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 130
+            }
+          }
+        ],
+        "hardFailures": [
+          "reviewer.swallowed_failure"
+        ],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-08T17:04:47.755Z",
+        "completedAt": "2026-10-08T17:06:31.111Z"
+      }
+    },
+    "startedAt": "2026-10-08T17:04:46.989Z",
+    "completedAt": "2026-10-08T17:06:31.111Z",
+    "totalLatencyMs": 104122,
+    "qualificationState": "HARD_FAILURE",
+    "hardFailureRoles": [
+      "REVIEWER"
+    ],
+    "metadata": {
+      "transient": false,
+      "requests": 10,
+      "reviewerProtocolOnly": true,
+      "publicCasesOnly": true
+    }
+  },
+  "status": "MEASURED",
+  "finishedAt": "2026-10-08T17:06:31.111Z"
+}

@@ -1,6 +1,7 @@
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
 
 export * from "./chat-types.js";
+export { PuterSdkAdapter, type PuterSdkClient, type PuterSdkAdapterOptions } from "./puter.js";
 
 export interface ProviderExecutionContext {
   sessionId?: string;
@@ -477,6 +478,7 @@ export {
 } from "./provider-factory.js";
 export * as OpenRouterOAuth from "./openrouter-oauth.js";
 export { redactSecrets } from "./redact.js";
+export { BlockRunFreeAdapter, createBlockRunFreeAdapter, mapBlockRunFreeModel, BLOCKRUN_FREE_PROVIDER_ID, type BlockRunFreeOptions } from "./blockrun-free.js";
 export { HostedProviderAdapter, type HostedProviderOptions } from "./hosted.js";
 export {
   REQUIRED_CLOUD_API_MAJOR,

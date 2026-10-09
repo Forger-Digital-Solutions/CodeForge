@@ -69,11 +69,16 @@ function receiveOpenRouterAuthorization(opts: OpenRouterOAuthOptions): Promise<s
       const pkce = await OpenRouterOAuth.generatePkcePair();
       const state = OpenRouterOAuth.generateState();
       let settled = false;
+      let callbackConsumed = false;
       let timer: ReturnType<typeof setTimeout> | null = null;
 
       const server = http.createServer((req, res) => {
+        res.setHeader("Cache-Control", "no-store");
+        res.setHeader("Referrer-Policy", "no-referrer");
+        res.setHeader("X-Content-Type-Options", "nosniff");
+        res.setHeader("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'");
         try {
-          if (settled) {
+          if (settled || callbackConsumed) {
             res.writeHead(409);
             res.end("Authorization callback already consumed.");
             return;
@@ -97,7 +102,6 @@ function receiveOpenRouterAuthorization(opts: OpenRouterOAuthOptions): Promise<s
         } catch (e) {
           res.writeHead(400, { "Content-Type": "text/plain" });
           res.end("Authorization failed. You can close this tab.");
-          finishReject(e instanceof Error ? e : new Error(String(e)));
         }
       });
 
@@ -105,19 +109,24 @@ function receiveOpenRouterAuthorization(opts: OpenRouterOAuthOptions): Promise<s
         if (timer) clearTimeout(timer);
         try {
           server.close();
+          server.closeIdleConnections();
         } catch {
           // ignore
         }
       };
       const finish = (getKey: () => Promise<string>) => {
-        if (settled) return;
-        settled = true;
+        if (settled || callbackConsumed) return;
+        callbackConsumed = true;
         getKey()
           .then((key) => {
+            if (settled) return;
+            settled = true;
             cleanup();
             resolve(key);
           })
           .catch((e) => {
+            if (settled) return;
+            settled = true;
             cleanup();
             reject(e instanceof Error ? e : new Error(String(e)));
           });

@@ -1,0 +1,216 @@
+{
+  "checkedAt": "2026-10-08T14:31:12.492Z",
+  "inferenceRequests": 0,
+  "sources": [
+    {
+      "name": "opencode-console",
+      "url": "https://opencode.ai/v2/docs/console/api/inference",
+      "finalUrl": "https://opencode.ai/v2/docs/console/api/inference",
+      "checkedAt": "2026-10-08T14:31:11.544Z",
+      "status": 200,
+      "contentType": "text/html",
+      "file": "opencode-console.html",
+      "bytes": 19625
+    },
+    {
+      "name": "opencode-terms",
+      "url": "https://opencode.ai/legal/terms-of-service",
+      "finalUrl": "https://opencode.ai/legal/terms-of-service",
+      "checkedAt": "2026-10-08T14:31:11.600Z",
+      "status": 200,
+      "contentType": "text/html",
+      "file": "opencode-terms.html",
+      "bytes": 40286
+    },
+    {
+      "name": "ovh-getting-started",
+      "url": "https://docs.ovhcloud.com/en/guides/public-cloud/ai-machine-learning/ai-endpoints-getting-started",
+      "finalUrl": "https://docs.ovhcloud.com/en/guides/public-cloud/ai-machine-learning/ai-endpoints-getting-started",
+      "checkedAt": "2026-10-08T14:31:11.601Z",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "file": "ovh-getting-started.html",
+      "bytes": 1373555
+    },
+    {
+      "name": "ovh-free-api",
+      "url": "https://www.ovhcloud.com/en-ca/public-cloud/free-ai-api/",
+      "finalUrl": "https://www.ovhcloud.com/en-ca/public-cloud/free-ai-api/",
+      "checkedAt": "2026-10-08T14:31:11.602Z",
+      "status": 200,
+      "contentType": "text/html",
+      "file": "ovh-free-api.html",
+      "bytes": 1051016
+    },
+    {
+      "name": "murakumo-free",
+      "url": "https://murakumo.cloud/free",
+      "finalUrl": "https://murakumo.cloud/free",
+      "checkedAt": "2026-10-08T14:31:11.603Z",
+      "status": 200,
+      "contentType": "text/html",
+      "file": "murakumo-free.html",
+      "bytes": 16259
+    },
+    {
+      "name": "murakumo-docs",
+      "url": "https://murakumo.cloud/docs",
+      "finalUrl": "https://murakumo.cloud/docs",
+      "checkedAt": "2026-10-08T14:31:11.604Z",
+      "status": 200,
+      "contentType": "text/html",
+      "file": "murakumo-docs.html",
+      "bytes": 20751
+    },
+    {
+      "name": "murakumo-terms",
+      "url": "https://murakumo.cloud/legal-terms",
+      "finalUrl": "https://murakumo.cloud/legal-terms",
+      "checkedAt": "2026-10-08T14:31:11.606Z",
+      "status": 200,
+      "contentType": "text/html",
+      "file": "murakumo-terms.html",
+      "bytes": 32623
+    },
+    {
+      "name": "murakumo-privacy",
+      "url": "https://murakumo.cloud/legal-privacy",
+      "finalUrl": "https://murakumo.cloud/legal-privacy",
+      "checkedAt": "2026-10-08T14:31:11.607Z",
+      "status": 200,
+      "contentType": "text/html",
+      "file": "murakumo-privacy.html",
+      "bytes": 13555
+    },
+    {
+      "name": "murakumo-models",
+      "url": "https://api.murakumo.cloud/v1/models",
+      "checkedAt": "2026-10-08T14:31:11.608Z",
+      "error": "TypeError: fetch failed",
+      "cause": {
+        "code": "ENOTFOUND",
+        "hostname": "api.murakumo.cloud"
+      }
+    },
+    {
+      "name": "murakumo-ready",
+      "url": "https://api.murakumo.cloud/ready",
+      "checkedAt": "2026-10-08T14:31:11.609Z",
+      "error": "TypeError: fetch failed",
+      "cause": {
+        "code": "ENOTFOUND",
+        "hostname": "api.murakumo.cloud"
+      }
+    },
+    {
+      "name": "blockrun-free",
+      "url": "https://blockrun.ai/free",
+      "finalUrl": "https://blockrun.ai/free",
+      "checkedAt": "2026-10-08T14:31:11.610Z",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "file": "blockrun-free.html",
+      "bytes": 98449
+    },
+    {
+      "name": "blockrun-terms",
+      "url": "https://blockrun.ai/terms",
+      "finalUrl": "https://blockrun.ai/terms",
+      "checkedAt": "2026-10-08T14:31:11.611Z",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "file": "blockrun-terms.html",
+      "bytes": 92430
+    },
+    {
+      "name": "blockrun-privacy",
+      "url": "https://blockrun.ai/privacy",
+      "finalUrl": "https://blockrun.ai/privacy",
+      "checkedAt": "2026-10-08T14:31:11.611Z",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "file": "blockrun-privacy.html",
+      "bytes": 87153
+    },
+    {
+      "name": "blockrun-rate-limits",
+      "url": "https://blockrun.ai/docs/rate-limits",
+      "finalUrl": "https://blockrun.ai/docs/rate-limits",
+      "checkedAt": "2026-10-08T14:31:11.612Z",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "file": "blockrun-rate-limits.html",
+      "bytes": 227614
+    },
+    {
+      "name": "blockrun-chat-reference",
+      "url": "https://blockrun.ai/docs/api-reference/chat-completions",
+      "finalUrl": "https://blockrun.ai/docs/api-reference/chat-completions",
+      "checkedAt": "2026-10-08T14:31:11.612Z",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "file": "blockrun-chat-reference.html",
+      "bytes": 653101
+    },
+    {
+      "name": "blockrun-models",
+      "url": "https://blockrun.ai/api/v1/models",
+      "finalUrl": "https://blockrun.ai/api/v1/models",
+      "checkedAt": "2026-10-08T14:31:11.613Z",
+      "status": 200,
+      "contentType": "application/json",
+      "file": "blockrun-models.json",
+      "bytes": 48529
+    },
+    {
+      "name": "lightning-models",
+      "url": "https://lightning.ai/models/",
+      "finalUrl": "https://lightning.ai/models/",
+      "checkedAt": "2026-10-08T14:31:11.613Z",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "file": "lightning-models.html",
+      "bytes": 17699
+    },
+    {
+      "name": "apifreellm-access",
+      "url": "https://apifreellm.com/en/api-access",
+      "finalUrl": "https://apifreellm.com/en/api-access",
+      "checkedAt": "2026-10-08T14:31:11.614Z",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "file": "apifreellm-access.html",
+      "bytes": 143566
+    },
+    {
+      "name": "apifreellm-docs",
+      "url": "https://apifreellm.com/en/docs",
+      "finalUrl": "https://apifreellm.com/en/docs",
+      "checkedAt": "2026-10-08T14:31:11.615Z",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "file": "apifreellm-docs.html",
+      "bytes": 110737
+    },
+    {
+      "name": "mlvoca-api",
+      "url": "https://mlvoca.github.io/free-llm-api/",
+      "finalUrl": "https://mlvoca.github.io/free-llm-api/",
+      "checkedAt": "2026-10-08T14:31:11.615Z",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "file": "mlvoca-api.html",
+      "bytes": 22629
+    },
+    {
+      "name": "boundless-quickstart",
+      "url": "https://inference.boundless.network/docs/quickstart",
+      "finalUrl": "https://inference.boundless.network/docs/quickstart",
+      "checkedAt": "2026-10-08T14:31:11.616Z",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "file": "boundless-quickstart.html",
+      "bytes": 189391
+    }
+  ]
+}

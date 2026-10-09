@@ -1,0 +1,80 @@
+{
+  "startedAt": "2026-10-08T17:13:44.335Z",
+  "providerId": "blockrun-free-direct",
+  "modelId": "nvidia/llama-3.2-11b-vision",
+  "observationFile": "blockrun-live-observations-1791479624335.json",
+  "requests": 1,
+  "requestBudget": 30,
+  "publicSyntheticCodeOnly": true,
+  "noPaymentCredentials": true,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T17:13:44.335Z",
+    "receipt": {
+      "sourceDocumentation": "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl",
+      "termsEvidence": "https://blockrun.ai/terms",
+      "privacyEvidence": "https://blockrun.ai/privacy",
+      "priceEvidence": "https://blockrun.ai/docs/rate-limits",
+      "verifiedAt": "2026-10-08T17:13:44.335Z",
+      "recheckAt": "2026-10-15T17:13:44.335Z",
+      "qualificationAt": "2026-10-08T17:13:44.335Z",
+      "termsVerifiedAt": "2026-10-08T17:13:44.335Z",
+      "termsEvidenceHash": "73f2ef461e086bec3f80579ad7699ce819ab9fd78cef6763f8ff7a83bde3d649",
+      "termsExpiresAt": "2026-10-15T17:13:44.335Z",
+      "privacyVerifiedAt": "2026-10-08T17:13:44.335Z",
+      "privacyEvidenceHash": "21b97f5ca395e4b0ce3b434c8fca6f20cf63285ec57a93cbf88fe1628eb8e3b7",
+      "privacyExpiresAt": "2026-10-15T17:13:44.335Z",
+      "priceVerifiedAt": "2026-10-08T17:13:44.335Z",
+      "priceEvidenceHash": "4921f5b2f8c4b51559078915381fa0956ee12030bb4e09fe86e49ecd6ccdf27f",
+      "priceExpiresAt": "2026-10-15T17:13:44.335Z",
+      "nextReverifyAt": "2026-10-08T23:13:44.335Z"
+    }
+  },
+  "catalog": [
+    {
+      "modelId": "nvidia/llama-3.2-11b-vision",
+      "displayName": "Llama 3.2 11B Vision (Free)",
+      "contextWindow": 128000,
+      "capabilities": {
+        "text": true,
+        "coding": false,
+        "toolCalling": true,
+        "vision": true,
+        "structuredOutput": false,
+        "longContext": true
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    }
+  ],
+  "toolPreflight": {
+    "id": "chatcmpl-520b8e1cd9754c4593746ebdf2889180",
+    "model": "nvidia/llama-3.2-11b-vision",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "chatcmpl-tool-519580a9ba8546c4bcfd22537b6ae11e",
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\": \"src/retry.mjs\"}"
+              }
+            }
+          ]
+        },
+        "finishReason": "tool_calls"
+      }
+    ],
+    "usage": {
+      "inputTokens": 244,
+      "outputTokens": 22,
+      "totalTokens": 266
+    }
+  },
+  "completedAt": "2026-10-08T17:13:47.402Z"
+}

@@ -1,0 +1,54 @@
+# R73 Reviewer recovery
+
+## R72 admission failure
+
+The preserved [R72 production task receipt](../r72-free-supply-and-autonomy/R72-TASK-CAMPAIGN.json) records the exact parent stop:
+
+> Independent review did not complete (REVIEWER_FAILED): no eligible free route for role reviewer; FABRIC_DENIED_NO_SUPPLY, NO_ELIGIBLE_ROUTE; one candidate role_ineligible:ROLE_NOT_QUALIFIED, cohere/north-mini-code:free.
+
+Only Cohere was registered in that production campaign. Its carried Reviewer verdict was HARD_FAILURE; its Explorer and Coder verdicts were QUALIFIED. The Reviewer made **zero model requests and zero tool calls**. Its 3.1-second failure was admission, not a review schema rejection, timeout, private-code restriction, upstream quota failure, or parent integration defect. The valid child edit and three passing tests were preserved; final ForgeVerify and parent integration did not run.
+
+Dots' separate R72 Reviewer attempt ended in an upstream failure and remained NOT_TESTED. A partial coding qualification does not supply Reviewer qualification. These facts explain why the existing admission floor correctly blocked R72 rather than manufacturing approval.
+
+R72's worker telemetry nonetheless recorded `providerFailures: 1`. That was an implementation miscount: the manager inferred a provider failure from every `failed` worker status. The historical receipt remains unchanged. For reliability comparisons its Reviewer failure is an admission failure with zero upstream requests.
+
+## Production changes
+
+1. Qualification now sends the production Reviewer system prompt and validates the response through `validateStructuredAgentResult("reviewer", ...)`. The old probe accepted `approve`/`reject` with only message/path findings, while the production contract requires `pass`/`revision_required`, typed findings, and a summary. The latest frozen protocol is **REVIEWER_PROTOCOL_V3 / R73_ROLE_QUALIFICATION_V6**. V5 records remain historical evidence; existing compatible Coder/Explorer receipt versions remain supported.
+2. Both production and qualification apply the same general review scope: functional correctness, security invariants, error handling, resource lifetimes, and changed test strength. No planted-case answers, relaxed scoring, changed acceptance threshold, or new approval synonyms were introduced. Existing deterministic fenced JSON normalization remains supported; malformed and inconsistent verdicts fail closed.
+3. A local qualification deadline now emits `qualification case timed out`, whether the adapter throws AbortError, emits an error, or ends quietly. It stops the role/compact suite as transient evidence rather than scoring model incompetence. An already-expired suite dispatches no request. R73's live Nemotron probe exposed the previous `This operation was aborted` misclassification; the failed receipt is preserved.
+4. The parent can try three bounded Reviewer invocations across all authorized provider classes. Each replacement retains the isolated implementation and diff, excludes every prior unsuccessful route, and uses the original implementer-pool independence preference. Admission and provider rotation still enforce the role, privacy, cost, capacity, and health gates. No unqualified route is promoted.
+5. Each handoff records base revision, diff hash, prior route, replacement route, attempt number, and cumulative exclusions. Worker recovery persists and restores exclusions and independence. Recovery keys include these hints, so a replacement cannot be mistaken for an earlier failed child.
+6. The parent revalidates the structured review and consumes its validated findings. A truthy malformed verdict cannot approve a patch; a valid `revision_required` cannot lose its blocking findings through an omitted duplicate result field. ForgeVerify, the completion gate, and integration remain mandatory.
+7. Worker provider-failure telemetry uses persisted per-run request-failure observations instead of final worker status. Zero-request admission has zero provider failures. Schema/tool/local/cancellation failures are excluded. Missing observations after issued inference remain `null`; experience reports unknown coverage and the Eight-Bit dataset skips unknown provider labels.
+8. Kilo's witnessed metadata message naming the exact requested model as temporarily rate-limited upstream now produces model scope for HTTP 429, HTTP-200 error envelopes, and SSE errors. Explicit IP/account limits override that narrowing; ambiguous or mismatched-model evidence remains provider scope. The Liquid 429 receipt exposed the old classification. This preserves healthy Cohere admission without inventing an independent quota pool.
+9. Quality-driven Coder handoffs use the same bounded replacement path for every admitted provider class. The obsolete managed/Kilo/AI-Horde allowlist no longer excludes newly authorized direct sources. Replacement inference still passes the existing Free, role qualification, privacy, health, and capacity gates; this change does not promote BlockRun Coder or Tool Agent capability.
+10. A live Reviewer-qualified BlockRun route spent ten turns on nine read-only tools without a verdict. Admission required Reviewer reasoning but execution advertised Tool Agent behavior that this model had never qualified for. The parent now supplies a complete bounded snapshot of the isolated tracked workspace: full diff, source, test assertions, base revision, pending verification commands, file hashes, and an authoritative workspace-state/context binding. A currently QUALIFIED Reviewer without independent TOOL_AGENT qualification receives the demonstrated text protocol with no tools. The whole packet bypasses context-assembler truncation and must fit the executing model's context budget. Missing, oversized, sensitive, binary, symlink, or unreadable evidence cannot admit this text-only path; a separately Tool Agent-qualified Reviewer can retain the existing tool path. This is a bounded small-workspace capability, not a claim that a text-only model can review arbitrary large repositories.
+11. Runtime and parent recheck the trusted workspace binding before dispatch, after the verdict, before ForgeVerify, and before completion. Durable worker recovery restores the packet binding and original context. Tool requests from a text-only review cannot execute, and a changed workspace invalidates even a syntactically passing verdict. No reviewer approval is synthesized; independent invocation, structured review, ForgeVerify, completion authority, and integration still apply.
+12. The next live retry stopped earlier when the Coder invented a Linux cwd on Windows after making the correct edit. Native Windows single-slash POSIX cwd without traversal is now rejected before execution/delegation as an unsupported argument, with explicit omit-cwd or `.` guidance. Native absolute paths, UNC paths and relative traversal retain confinement/security handling; no path is rewritten and no outside path is probed to guess its existence. The model can explicitly correct the argument within its unchanged finite run budget. The Coder prompt now names its assigned native workspace and default command cwd.
+
+## Deterministic validation
+
+All adapters used for qualification scripts in tests are marked as test providers. Tests retain approval/rejection ground truth, planted-bug disqualification, clean-diff assessment, security/test weakening checks, and the existing 0.75 Reviewer acceptance threshold.
+
+| Receipt | Result | Coverage |
+|---|---:|---|
+| reviewer-contract-tests-2.json | 52 passed | Strict production schema and adversarial structured-output parser |
+| reviewer-timeout-tests-2.json | 38 passed | Role/compact abort classification and zero-dispatch expired deadlines |
+| reviewer-recovery-tests.json | 36 passed | Three-candidate replacement, cumulative exclusions, bounded failure, Reviewer exhaustion and diff visibility |
+| reviewer-durable-constraints-tests.json | 1 passed | Reopened storage preserves failed-route exclusions and independence |
+| reviewer-parent-regression-tests.json | 50 passed | Production parent completion, integration, child/process recovery, no duplicate edit replay |
+| kilo-upstream-scope-tests.json | 21 passed | Actual transport classification, IP/account overrides, sibling health isolation |
+| reviewer-final-focused-tests.json | 84 passed | Prompt contract, timeout classification, production role routing, provider-failure mapping, dataset and durable constraints |
+| provider-failure-telemetry-tests.json | 28 passed | Observed provider failures, retained unknown experience coverage, and omitted unknown dataset labels |
+| reviewer-evidence-tests.json | 11 passed | Whole packet delivery, context capacity, stale/tampered binding, missing/sensitive/binary/symlink evidence, refused unqualified tools, qualified tool path and durable packet recovery |
+| reviewer-packet-regressions.json | 85 passed | Reviewer routing, parent orchestration, exhaustion, completion binding, durable subagents and protocol schemas |
+| native-cwd-recovery-tests.json | 23 passed | Zero-dispatch invalid Windows cwd, explicit corrected cwd with one retained actual edit and a passing real test, native/traversal confinement, unchanged security regressions and execution prompt |
+
+The initial broad run observed concurrent source/dist changes and Windows fixture pressure. Each of its eleven failing files passed standalone against the current compiled code: 212/212 tests, documented in regression-recheck-summary.json with individual rerun receipts. Historical failures remain preserved; no tests or acceptance thresholds were weakened.
+
+These commands overlap; their counts must not be summed into a unique-test claim. The first reviewer-contract-tests.json retained a sandbox TEMP infrastructure ENOENT; the identical affected tests passed with a workspace-owned TEMP directory. Affected TypeScript project builds passed. The final mission validation records subsequent changes and broader checks.
+
+## Live milestone evidence
+
+Deterministic recovery proves implementation behavior under controlled failures. It does not qualify a real model, prove an organic provider recovery, or count as a completed autonomous coding task. Final live model verdicts and parent-level completion receipts must be read alongside R73-LIVE-QUALIFICATION.md and R73-AUTONOMOUS-COMPLETION.md; this report's engineering checks alone do not close gates B, C, D, F, or H.

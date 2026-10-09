@@ -301,7 +301,7 @@ describe("evidence extractors", () => {
     expect(rows[1]!.label.routeOutcome).toBe("RATE_LIMITED");
   });
 
-  it("skips workers without a resolved model or zero requests", () => {
+  it("skips workers without a resolved model, zero requests, or unknown provider failure evidence", () => {
     const rows = rowsFromSmokeWorkers(
       [
         {
@@ -309,6 +309,13 @@ describe("evidence extractors", () => {
           status: "failed",
           model: null,
           telemetry: { wallTimeMs: 1, modelRequests: 0, inputTokens: 0, outputTokens: 0, toolCalls: 0, retryCount: 0, providerFailures: 0 },
+          startedAt: "2026-09-15T21:34:22.018Z",
+        },
+        {
+          role: "Independent Code Reviewer",
+          status: "failed",
+          model: { providerId: "scripted", modelId: "model" },
+          telemetry: { wallTimeMs: 10, modelRequests: 1, inputTokens: 10, outputTokens: 10, toolCalls: 0, retryCount: 0, providerFailures: null },
           startedAt: "2026-09-15T21:34:22.018Z",
         },
       ],

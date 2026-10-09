@@ -1,0 +1,16 @@
+{
+  "startedAt": "2026-10-08T14:32:17.409Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "dots-studio/dots-3-note-preview:free",
+  "evidenceClass": "LIVE_REVIEWER_ONLY_PUBLIC_CASES",
+  "frames": [],
+  "maxRequests": 24,
+  "policy": {
+    "status": "UNAVAILABLE",
+    "checkedAt": "2026-10-08T14:32:17.410Z",
+    "source": "terms"
+  },
+  "status": "BLOCKED",
+  "error": "POLICY_NOT_VERIFIED",
+  "finishedAt": "2026-10-08T14:32:17.558Z"
+}

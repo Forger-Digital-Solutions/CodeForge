@@ -52,6 +52,15 @@ describe("R57 experience learning boundary", () => {
     expect(receipt.generalized).toMatchObject({ workerCount: 0, modelRequests: 0 });
   });
 
+  it("retains unknown provider-failure coverage without treating a role failure as an outage", () => {
+    const receipt = buildExperienceReceipt(run(), [{
+      kind: "subagent_run", id: "worker", sessionId: "secret-owner-session", parentRunId: "run-1", role: "reviewer", status: "failed",
+      telemetry: { modelRequests: 2, providerFailures: null },
+    }]);
+    expect(receipt.generalized).toMatchObject({ providerFailures: 0, providerFailureUnknownWorkers: 1 });
+    expect(receipt.local).toMatchObject({ workers: [{ telemetry: { providerFailures: null } }] });
+  });
+
   it("lets repeated prior outcomes change bounded recovery advice without a single poisoned outlier", () => {
     const exhausted = buildExperienceReceipt(run({ error: "STRATEGY_EXHAUSTED" }), []).generalized;
     expect(adviseFromExperience([exhausted], "unknown").action).toBe("STANDARD");

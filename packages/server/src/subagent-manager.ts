@@ -33,11 +33,14 @@ import type { DurableToolExecutionState, ToolExecutionClass } from "./agent-runt
 
 import type { AgentRuntime } from "./agent-runtime.js";
 import { countUsefulProgress, type ProgressTurn } from "./role-progress.js";
+import { createForgeGreenR0TelemetryStore } from "@codeforge/forge-green";
+import { observedProviderFailureCount } from "./provider-failure-telemetry.js";
 import type { IntelligenceSourceClass, RosterCandidate, RosterRole, RosterRouteAllowance } from "./forgeauto-roster.js";
+import type { ReviewerEvidenceBinding } from "./reviewer-evidence.js";
 
 export const MAX_SUBAGENT_DEPTH = 1;
 // Complex topology uses five sequential/parallel children; one bounded Coder handoff and
-// one bounded Reviewer replacement must fit without permitting unbounded fan-out.
+// two bounded Reviewer replacements must fit without permitting unbounded fan-out.
 export const MAX_CHILDREN_PER_PARENT = 8;
 
 export interface SpawnChildOptions {
@@ -57,6 +60,7 @@ export interface SpawnChildOptions {
   taskPlan?: string;
   reviewFeedback?: string;
   structuredOutput?: StructuredOutputKind;
+  reviewEvidence?: ReviewerEvidenceBinding;
   /** Caller-supplied role budget; values never exceed the caller's explicit ceiling. */
   executionBudget?: AgentExecutionBudget;
   /** Per-child watchdog base budget. This is a phase ceiling when supplied by the orchestrator. */
@@ -73,6 +77,7 @@ export interface SpawnChildOptions {
   preferIndependentFromPoolId?: string;
   /** Exclude a preceding role owner after a witnessed quality stall; never excludes on 429. */
   excludeRoleRoute?: { providerId: string; modelId: string };
+  excludeRoleRoutes?: readonly { providerId: string; modelId: string }[];
   routeReplacementReason?: "QUALITY_DRIVEN_ROLE_SWITCH" | "SEMANTIC_VERIFIER_FALLBACK";
   rosterAllowance?: RosterRouteAllowance;
 }
@@ -156,6 +161,11 @@ export class SubagentManager {
 
   private emptyUsage(): AgentUsage {
     return { inputTokens: 0, outputTokens: 0, requestCount: 0, toolCount: 0 };
+  }
+
+  private async providerFailureCount(sessionId: string, runId: string, modelRequests: number): Promise<number | null> {
+    const observation = this.persistence ? await createForgeGreenR0TelemetryStore(this.persistence).loadByRun(sessionId, runId).catch(() => undefined) : undefined;
+    return observedProviderFailureCount(observation, modelRequests);
   }
 
   private executionBudget(agentId: string, override?: AgentExecutionBudget): AgentExecutionBudget {
@@ -267,6 +277,13 @@ export class SubagentManager {
         ...(options.workspaceBranch ? { branch: options.workspaceBranch } : {}),
       },
       workspacePath: child.workspacePath,
+      routingHints: {
+        ...(options.preferIndependentFromPoolId ? { preferIndependentFromPoolId: options.preferIndependentFromPoolId } : {}),
+        ...(options.excludeRoleRoute ? { excludeRoleRoute: { ...options.excludeRoleRoute } } : {}),
+        ...(options.excludeRoleRoutes ? { excludeRoleRoutes: options.excludeRoleRoutes.map((route) => ({ ...route })) } : {}),
+        ...(options.routeReplacementReason ? { routeReplacementReason: options.routeReplacementReason } : {}),
+        ...(options.reviewEvidence ? { reviewEvidence: { ...options.reviewEvidence } } : {}),
+      },
       ...(options.rosterAllowance ? { rosterAllowance: { freeRoutes: [...options.rosterAllowance.freeRoutes], paidModelIds: [...options.rosterAllowance.paidModelIds], userRoutes: [...options.rosterAllowance.userRoutes], ...(options.rosterAllowance.decision ? { decision: { ...options.rosterAllowance.decision, candidates: options.rosterAllowance.decision.candidates.map((candidate) => ({ ...candidate })) } } : {}) } } : {}),
       budget: {
         ...this.executionBudget(def.id, options.executionBudget),
@@ -528,6 +545,7 @@ export class SubagentManager {
           // "Verification Results" taught reviewers that an unrun gate had passed.
           verificationEvidence: undefined,
           structuredOutput: options.structuredOutput,
+          ...(options.reviewEvidence ? { reviewEvidence: { ...options.reviewEvidence } } : {}),
           customToolExecutor: options.customToolExecutor,
           roleRouting: this.r1Enabled || options.rosterAllowance !== undefined,
           ...(options.rosterAllowance ? { rosterAllowance: options.rosterAllowance } : {}),
@@ -538,6 +556,7 @@ export class SubagentManager {
           ...(options.rosterAllowance && options.rosterAllowance.freeRoutes.length === 0 && options.rosterAllowance.paidModelIds.length === 0 && options.rosterAllowance.userRoutes.length > 0 ? { modelSelection: { providerId: options.rosterAllowance.userRoutes[0]!.providerId, modelId: options.rosterAllowance.userRoutes[0]!.modelId } } : {}),
           ...(options.preferIndependentFromPoolId ? { preferIndependentFromPoolId: options.preferIndependentFromPoolId } : {}),
           ...(options.excludeRoleRoute ? { excludeRoleRoute: options.excludeRoleRoute } : {}),
+          ...(options.excludeRoleRoutes ? { excludeRoleRoutes: options.excludeRoleRoutes } : {}),
           ...(options.routeReplacementReason ? { routeReplacementReason: options.routeReplacementReason } : {}),
         });
         usage = runtimeRes.usage;
@@ -581,7 +600,7 @@ export class SubagentManager {
           toolCalls: usage.toolCount,
           retryCount: 0,
           duplicateWorkCount: 0,
-          providerFailures: result.status === "failed" ? 1 : 0,
+          providerFailures: await this.providerFailureCount(childRun.workerRecord.sessionId, childRunId, usage.requestCount),
         };
         if (usage.provider && usage.model) childRun.workerRecord.model = { providerId: usage.provider, modelId: usage.model };
         childRun.workerRecord.resultSummary = redactSecrets(result.summary);
@@ -622,7 +641,7 @@ export class SubagentManager {
         childRun.workerRecord.telemetry = {
           ...childRun.workerRecord.telemetry,
           wallTimeMs: Math.max(0, childRun.completedAt.getTime() - childRun.startedAt.getTime()),
-          providerFailures: status === "failed" ? 1 : 0,
+          providerFailures: await this.providerFailureCount(childRun.workerRecord.sessionId, childRunId, childRun.workerRecord.telemetry.modelRequests),
         };
         childRun.workerRecord.artifacts = await this.persistResultArtifact(childRun, failedResult, adapter);
         await this.transitionWorker(childRun, status, adapter, errorMsg);
@@ -858,8 +877,10 @@ export class SubagentManager {
           permissions: item.permissions,
           executionBudget: item.budget,
           initialContext: item.capsule ? JSON.stringify(item.capsule) : undefined,
+          ...(item.agentId === "reviewer" && item.routingHints?.reviewEvidence ? { diff: item.capsule?.context } : {}),
           structuredOutput: ["reviewer", "explorer", "planner"].includes(item.agentId) ? item.agentId as StructuredOutputKind : undefined,
           roleRouting: this.r1Enabled || item.rosterAllowance !== undefined,
+          ...(item.routingHints ?? {}),
           // R55: recovery re-decides from the exact persisted allowance — userRoutes must
           // round-trip verbatim so the recovered run keeps the same class boundary.
           ...(item.rosterAllowance ? { rosterAllowance: { freeRoutes: [...item.rosterAllowance.freeRoutes], paidModelIds: [...item.rosterAllowance.paidModelIds], userRoutes: (item.rosterAllowance.userRoutes ?? []).map((route) => ({ ...route })), ...(item.rosterAllowance.decision ? { decision: { ...item.rosterAllowance.decision, role: item.rosterAllowance.decision.role as RosterRole, candidates: item.rosterAllowance.decision.candidates.map((candidate) => ({ ...candidate, sourceClass: candidate.sourceClass as IntelligenceSourceClass, lifecycle: candidate.lifecycle as RosterCandidate["lifecycle"] })) } } : {}) } } : {}),
@@ -880,7 +901,7 @@ export class SubagentManager {
           inputTokens: Math.max(item.telemetry?.inputTokens ?? 0, runtimeRes.usage.inputTokens),
           outputTokens: Math.max(item.telemetry?.outputTokens ?? 0, runtimeRes.usage.outputTokens),
           toolCalls: Math.max(item.telemetry?.toolCalls ?? 0, runtimeRes.usage.toolCount),
-          providerFailures: runtimeRes.status === "failed" ? (item.telemetry?.providerFailures ?? 0) + 1 : item.telemetry?.providerFailures ?? 0,
+          providerFailures: await this.providerFailureCount(item.sessionId, item.id, runtimeRes.usage.requestCount),
         };
         if (runtimeRes.usage.provider && runtimeRes.usage.model) {
           item.model = { providerId: runtimeRes.usage.provider, modelId: runtimeRes.usage.model };

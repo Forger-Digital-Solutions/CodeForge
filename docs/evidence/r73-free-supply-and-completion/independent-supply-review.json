@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-08",
+  "reviewKind": "independent-code-review-and-deterministic-regressions",
+  "baseline": "220b365c553bff0b1ee952fb6b96498c8ddea325",
+  "reviewedAreas": [
+    "Qualification history and preservation of conclusive receipts across transient probes",
+    "BlockRun anonymous transport, exact-zero admission, current catalog and served-model identity",
+    "Provider-specific policy receipts, public-code privacy, source-IP quota ownership",
+    "Static Windows package file inclusion for Puter and BlockRun modules"
+  ],
+  "findings": [
+    {
+      "id": "qualification-history-mutable-read-alias",
+      "status": "fixed",
+      "impact": "Active in-memory receipt reads shared their object with archived history, allowing caller mutation to alter successful historical evidence.",
+      "repair": "Active read methods return structured clones; mutation-isolation regression passes. SQLite deserialization already returned independent values."
+    },
+    {
+      "id": "blockrun-late-served-model-substitution",
+      "status": "fixed",
+      "impact": "An executable tool completion could be emitted before a later usage frame rejected a substituted model identity.",
+      "repair": "BlockRun buffers executable tool completions and finish until the underlying checked stream ends successfully; errors discard buffered actions.",
+      "regressionBeforeRepair": { "testsPassed": 9, "testsFailed": 1 },
+      "regressionAfterRepair": "passed"
+    }
+  ],
+  "validation": {
+    "command": "node node_modules/vitest/vitest.mjs run packages/providers/test/blockrun-free.test.ts packages/eight-bit/test/qualification-sqlite-persistence.test.ts",
+    "exitCode": 0,
+    "filesPassed": 2,
+    "testsPassed": 15,
+    "testsFailed": 0,
+    "durationSeconds": 7.38,
+    "liveInferenceCalls": 0
+  },
+  "billingAssessment": {
+    "status": "fail-closed-for-reviewed-transport",
+    "facts": [
+      "Current model availability and explicit free billing/zero input-output prices required before dispatch.",
+      "No credential, wallet or payment headers sent; payment challenges are not satisfied and redirects are not followed.",
+      "Substituted/missing model identities cannot produce executable tool completions through the reviewed BlockRun wrapper.",
+      "A provider-specific current policy receipt and qualified role remain required by the Free supply fabric."
+    ]
+  },
+  "privacyAssessment": {
+    "status": "conservative-public-code-admission",
+    "facts": [
+      "BlockRun direct supply uses the existing public-code-only/consent boundary.",
+      "Provider promises concerning its own prompt retention do not establish every upstream's private-code guarantees.",
+      "Source-IP route counts remain finite and shared across users/models; underlying NVIDIA capacity is also shared."
+    ]
+  },
+  "windowsInclusion": {
+    "status": "static-build-layout-only",
+    "presentBuildOutputs": [
+      "packages/providers/dist/puter.js",
+      "packages/providers/dist/blockrun-free.js",
+      "packages/model-registry/dist/blockrun-policy-reverification.js"
+    ],
+    "matchingPackageFilters": ["providers/dist/**/*.js", "model-registry/dist/**/*.js"],
+    "puterOfficialSdkPackaged": false,
+    "r73ArchiveInspected": false,
+    "unsignedPackageLaunched": false,
+    "limit": "Final frozen ASAR content/hash and signing audits remain the delivery workstream's responsibility."
+  },
+  "officialEvidence": [
+    "https://blockrun.ai/terms",
+    "https://blockrun.ai/privacy",
+    "https://blockrun.ai/docs/rate-limits",
+    "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl"
+  ]
+}

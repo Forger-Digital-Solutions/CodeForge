@@ -16,10 +16,11 @@ const MODEL: FreeModelRecord = {
 
 type Script = (req: ChatRequest, call: number) => StreamEvent[] | Error;
 
-function adapter(script: Script): CompactQualificationAdapter & { calls: ChatRequest[] } {
+function adapter(script: Script): CompactQualificationAdapter & { calls: ChatRequest[]; isTestProvider: true } {
   const calls: ChatRequest[] = [];
   return {
     providerId: "openrouter",
+    isTestProvider: true,
     calls,
     async *streamChat(req) {
       calls.push(req);
@@ -71,6 +72,34 @@ describe("compact qualification suite", () => {
     const receipt = await runCompactQualification(MODEL, a, { timeoutMs: 1000 });
     expect(receipt.metadata?.transient).toBe(true);
     expect(a.calls.length).toBe(1);
+  });
+
+  it.each(["throws", "ends"] as const)("stops compact qualification after a local timeout when the stream %s", async (mode) => {
+    let calls = 0;
+    const delayed = {
+      providerId: "scripted", isTestProvider: true,
+      async *streamChat(_request: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+        calls++;
+        await new Promise<void>((resolve) => signal?.addEventListener("abort", () => resolve(), { once: true }));
+        if (mode === "throws") throw new DOMException("This operation was aborted", "AbortError");
+      },
+    };
+    const receipt = await runCompactQualification(MODEL, delayed, { timeoutMs: 5 });
+    expect(calls).toBe(1);
+    expect(receipt.metadata?.transient).toBe(true);
+    expect(receipt.hardFailureRoles).toEqual([]);
+    expect(receipt.qualificationState).not.toBe("HARD_FAILURE");
+    expect(receipt.roleResults.TOOL_AGENT?.testCases[0]?.error).toBe("qualification case timed out");
+  });
+
+  it("does not dispatch compact qualification after an expired suite deadline", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const scripted = adapter(() => text("{}"));
+    const receipt = await runCompactQualification(MODEL, scripted, { signal: controller.signal });
+    expect(scripted.calls).toHaveLength(0);
+    expect(receipt.metadata?.transient).toBe(true);
+    expect(receipt.hardFailureRoles).toEqual([]);
   });
 
   it("preserves a provider allocation wall as QUOTA_EXHAUSTED, never a capability verdict", async () => {

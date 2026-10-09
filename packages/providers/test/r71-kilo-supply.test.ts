@@ -37,11 +37,27 @@ describe("R71 Kilo model discovery and failure attribution", () => {
     expect(governor.isCoolingDown("kilo-free-direct", model)).toBe(false);
   });
 
+  it.each(["http429", "http200", "sse"])("keeps the exact model's upstream allocation wall scoped to its route (%s)", async (transport) => {
+    const error = { error: { code: 429, message: "Provider returned error", metadata: { raw: `${model} is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your own allowance.` } } };
+    const adapter = createKiloFreeDirectAdapter({ fetchFn: async () => transport === "sse" ? new Response(`data: ${JSON.stringify(error)}\n\n`) : Response.json(error, { status: transport === "http429" ? 429 : 200 }) });
+    if (transport === "sse") {
+      const events: StreamEvent[] = [];
+      for await (const event of adapter.streamChat(request)) events.push(event);
+      expect(events).toEqual([expect.objectContaining({ type: "error", status: 429, rateLimitScope: "model" })]);
+    } else {
+      await expect(adapter.chat(request)).rejects.toMatchObject({ status: 429, rateLimitScope: "model" });
+    }
+  });
+
   it.each([
     { error: { code: 429, message: "Rate limit exceeded for free models. Please try again later." } },
     { error: { ...upstream.error, message: "free-models-per-day limit exceeded for this account" } },
     { error: { ...upstream.error, message: "Model TPM rate limit reached per IP" } },
     { error: { code: 429, message: "Unknown rate limit", metadata: { provider_name: "Upstream" } } },
+    { error: { code: 429, message: "Provider returned error", metadata: { raw: "lab/another:free is temporarily rate-limited upstream." } } },
+    { error: { code: 429, message: "Provider returned error", metadata: { raw: "Unknown upstream rate limit" } } },
+    { error: { code: 429, message: "Free models per IP quota exceeded", metadata: { raw: `${model} is temporarily rate-limited upstream.` } } },
+    { error: { code: 429, message: "Provider returned error", metadata: { raw: `${model} is temporarily rate-limited upstream. Free models per IP quota exceeded.` } } },
   ])("retains whole-domain cooldown for gateway or ambiguous quota walls %#", async body => {
     const adapter = createKiloFreeDirectAdapter({ fetchFn: async () => Response.json(body, { status: 429 }) });
     await expect(adapter.chat(request)).rejects.toMatchObject({ status: 429, rateLimitScope: "provider" });

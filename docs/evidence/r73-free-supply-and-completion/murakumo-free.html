@@ -1,0 +1,262 @@
+<!doctype html><html lang="en">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#ffffff"><title>Free inference — murakumo.cloud</title><meta name="description" content="The murakumo fleet's basic inference is donated: no account, no card, no API key. How to use it, what is and is not promised, and how to sponsor more serving capacity."><link rel="stylesheet" href="/css/dds.css?v=20260829-hf-matrix"><link rel="stylesheet" href="/css/navigation.css?v=20260913"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="canonical" href="https://murakumo.cloud/free"><meta property="og:type" content="website"><meta property="og:site_name" content="murakumo.cloud"><meta property="og:title" content="Free inference — murakumo.cloud"><meta property="og:description" content="The murakumo fleet's basic inference is donated: no account, no card, no API key. How to use it, what is and is not promised, and how to sponsor more serving capacity."><meta property="og:url" content="https://murakumo.cloud/free"><meta property="og:image" content="https://murakumo.cloud/og.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Free inference — murakumo.cloud"><meta name="twitter:description" content="The murakumo fleet's basic inference is donated: no account, no card, no API key. How to use it, what is and is not promised, and how to sponsor more serving capacity."><meta name="twitter:image" content="https://murakumo.cloud/og.png"></head>
+  <body class="mk-site">
+    <a class="mk-skip" href="#main">Skip to content</a>
+    <div class="dds-ext-container">
+      <nav class="site-nav mk-navigation">
+        <div class="site-nav__inner">
+          <a class="brand" href="/">
+            <span class="logo">叢雲</span>
+            <span class="brand-name">murakumo.cloud</span>
+          </a>
+          <span class="nav-links">
+            <a href="/">新しいチャット</a>
+            <a href="/portal/#landing">サービス案内</a>
+            <a href="/portal/#join">PCを参加させる</a>
+            <a href="/portal/#store">クレジット</a>
+            <a href="/docs">APIガイド</a>
+            <a href="/advertise">広告を出す</a>
+            <a href="/portal/#about">運営について</a>
+          </span>
+          <div class="header-account">
+            <div class="header-account__actions">
+              <a class="header-account__button" href="https://auth.kotoba.cloud/sign-in?wallet=passkey&amp;return_to=https%3A%2F%2Fauth.kotoba.cloud%2Fconnect%3Ftarget%3Dmurakumo">ログイン</a>
+            </div>
+          </div>
+          <button class="dads-hamburger-menu-button nav-toggle" type="button" aria-controls="site-drawer" aria-expanded="false"><svg class="dads-hamburger-menu-button__icon" width="24" height="24" viewBox="0 0 24 24" fill="currentcolor" aria-hidden="true">
+            <path d="M3 5.5h18v2H3v-2Zm0 5.5h18v2H3v-2Zm0 5.5h18v2H3v-2Z"></path>
+          </svg>メニュー</button>
+        </div>
+      </nav><dialog class="dads-drawer mk-menu" data-placement="right" id="site-drawer" aria-label="メニュー">
+        <div class="dads-drawer__header">
+          <button class="dads-hamburger-menu-button" type="button" data-mk-drawer-close><svg class="dads-hamburger-menu-button__icon" width="24" height="24" viewBox="0 0 24 24" fill="currentcolor" aria-hidden="true">
+            <path d="m6.4 18.6-1-1 5.5-5.6-5.6-5.6 1.1-1 5.6 5.5 5.6-5.6 1 1.1L13 12l5.6 5.6-1 1L12 13l-5.6 5.6Z"></path>
+          </svg>閉じる</button>
+        </div>
+        <div class="dads-drawer__body"><div class="drawer-links">
+          <a href="/">新しいチャット</a>
+          <a href="/portal/#landing">サービス案内</a>
+          <a href="/portal/#join">PCを参加させる</a>
+          <a href="/portal/#store">クレジット</a>
+          <a href="/docs">APIガイド</a>
+          <a href="/advertise">広告を出す</a>
+          <a href="/portal/#about">運営について</a>
+          <a href="https://auth.kotoba.cloud/sign-in?wallet=passkey&amp;return_to=https%3A%2F%2Fauth.kotoba.cloud%2Fconnect%3Ftarget%3Dmurakumo">ログイン</a>
+        </div></div>
+      </dialog><main id="main">
+        <article>
+          <h1>Free inference</h1>
+          <p class="lead">The basic inference capacity of the murakumo fleet is donated. There is
+       no account to create, no card to add, no API key to obtain, and no
+       phone number or address to give. An unauthenticated request is the
+       supported way to use this service, not a trial of it.</p>
+          <section class="dds-ext-card" aria-labelledby="use-heading">
+            <h2 id="use-heading">Use it now</h2>
+            <p>This is a complete, working request. Nothing has been removed from it.</p>
+            <div class="mk-table-scroll" tabindex="0" role="region" aria-label="example request">
+              <pre><code>curl https://api.murakumo.cloud/v1/chat/completions \
+  -H 'content-type: application/json' \
+  -d '{&quot;model&quot;:&quot;murakumo/free&quot;,
+       &quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;hello&quot;}]}'</code></pre>
+            </div>
+            <p class="note">OpenAI-compatible, so most existing clients work by pointing their base
+        URL at <code>https://api.murakumo.cloud/v1</code> and sending any
+        string as the API key, or none at all. <a href="/docs">API documentation</a>.</p>
+            <h3>And an image, on the same terms</h3>
+            <p>One image model is free too: <code>awai-network/hokusai</code>,
+       the fleet's WAI checkpoint. Also complete, also nothing removed.</p>
+            <div class="mk-table-scroll" tabindex="0" role="region" aria-label="example image request">
+              <pre><code>curl https://api.murakumo.cloud/v1/images/generations \
+  -H 'content-type: application/json' \
+  -d '{&quot;model&quot;:&quot;awai-network/hokusai&quot;,
+       &quot;prompt&quot;:&quot;a lighthouse on a rocky coast at dawn&quot;,
+       &quot;size&quot;:&quot;768x768&quot;}'</code></pre>
+            </div>
+            <p class="note">Returns <code>{&quot;data&quot;:[{&quot;b64_json&quot;:&quot;…&quot;}]}</code>, one image per
+        request. Measured 2026-09-10: about ten seconds for 768×768. Both
+        models are listed by <a href="https://api.murakumo.cloud/v1/models">
+              <code>/v1/models</code>
+            </a>, so an agent can discover them before it calls them.</p>
+          </section>
+          <section class="dds-ext-card" aria-labelledby="who-heading">
+            <h2 id="who-heading">Who this is for</h2>
+            <p>People for whom the barrier to AI tooling was never the price of a
+        token. It was the card, the phone number, the billing address, the
+        bank that will not issue, the country the payment form rejects, or the
+        twenty dollars a month that is not available every month. Those are
+        the barriers this removes, and they are removed for everybody at once
+        because there is nothing to check.</p>
+            <p>It is also for agents. A bot that has no funding can run here: an
+        unauthenticated agent loop is an ordinary caller. <a href="https://api.murakumo.cloud/v1/grok-bots">The bot runtime descriptor</a> carries the same terms in machine-readable form.</p>
+          </section>
+          <section class="dds-ext-card" aria-labelledby="not-heading">
+            <h2 id="not-heading">What is not promised</h2>
+            <p><strong>Speed.</strong> This runs on a small owned fleet, and it is slow compared to a
+        commercial frontier endpoint. The current measured decode rate and the
+        real concurrent slot count are published, per model, at <a href="https://api.murakumo.cloud/v1/models">/v1/models</a> — measured, dated, and stated with the method used. They are not
+        repeated here, because a number written into a page keeps being read
+        after it stops being true.</p>
+            <p><strong>Availability.</strong> When every slot is busy the service answers 429 and asks you to come
+        back, rather than accepting the request and making you wait without
+        saying so. A refusal you can see is better than a queue you cannot.</p>
+            <p><strong>Confidentiality beyond the operator statement.</strong> Requests pass through the gateway and the selected backend. See the <a href="/legal-privacy">privacy policy</a> before sending anything that needs a specific contractual control.</p>
+            <p><strong>Community nodes see your prompts.</strong> Free-lane traffic (media generation and public-data shard work) can be
+        served on community-run nodes. These run outside the operator's own
+        machines, in plaintext memory: a third-party host operator can read
+        what you send and what comes back. / 無料レーンの一部は
+        コミュニティ提供ノードで処理されることがあります。これらのノードは
+        平文メモリで動作するため、第三者ホスト運営者がプロンプトを読める
+        可能性があります。機密情報は送らないでください。 Send anything
+        confidential only where an attested secure path is required, and never
+        treat the free lane as a private channel.</p>
+          </section>
+          <section class="dds-ext-card" aria-labelledby="donate-heading">
+            <h2 id="donate-heading">Donate</h2>
+            <p>The fleet is donated by Jun Kawasaki. Donations do not go into a
+        general fund: what money buys here is serving capacity, which is the
+        one thing that decides how many people can be served at once and how
+        fast. A donation buys slots.</p>
+            <p class="note"><strong>This is sponsorship, not charity.</strong> murakumo.cloud is operated by AWAI Network, L.L.C., a Delaware LLC.
+        It is not a tax-exempt organisation, there is no 501(c)(3)
+        determination, and nothing you send is tax deductible anywhere. If you
+        need a deductible donation, this is not one.</p>
+            <div class="mk-table-scroll" tabindex="0" role="region" aria-label="donation details">
+              <table class="dads-table">
+                <tbody>
+                  <tr>
+                    <th scope="row">Asset</th>
+                    <td>USDC</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Network</th>
+                    <td>Base (Ethereum L2)</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Send to</th>
+                    <td>
+                      <code id="treasury-address">0xA00366234D29d4F882088048c0B2fa0dB7302D4E</code>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Verify</th>
+                    <td>
+                      <a href="https://basescan.org/address/0xA00366234D29d4F882088048c0B2fa0dB7302D4E" rel="noopener">This address on BaseScan</a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p><button class="dads-button" data-type="outline" data-size="md" type="button" id="copy-address" hidden="hidden">Copy address</button> <span id="copy-status" aria-live="polite"></span></p>
+            <p class="note">This is the operator's existing treasury, the same address paid
+        inference settles to over x402. That is deliberate: one address with a
+        public ledger can be checked, while a separate donations address would
+        have to be reconciled against the first before anyone could say what a
+        donation funded.</p>
+            <p class="note">There is no fiat card path yet. If you want to sponsor capacity and
+        cannot send USDC, <a href="mailto:j@awai.network">write to the operator</a>.</p>
+          </section>
+          <section class="dds-ext-card" aria-labelledby="paid-heading">
+            <h2 id="paid-heading">If you would rather pay</h2>
+            <p>Paid access exists and is unchanged: <a href="/pay/x402/">x402 per-request payment</a> settles 0.01 USDC on Base and needs no account relationship either.
+        Paying does not buy priority over the free lane. It buys the dedicated
+        heads, their larger context windows, and models this pool does not
+        serve.</p>
+            <p class="note">There is also <a href="/go">murakumo Go</a> — free inference in the browser, funded by one visible first-party ad
+        rather than by the donation. Prompts are never shared with
+        advertisers. Use whichever suits you; neither costs money.</p>
+          </section>
+        </article>
+        <footer class="site-foot">
+          <div class="site-foot__inner">
+            <div class="site-foot__cols">
+              <div class="site-foot__col">
+                <h2>Web3</h2>
+                <ul>
+                  <li>
+                    <a href="/.well-known/x402">x402 offer</a>
+                  </li>
+                  <li>
+                    <a href="/pay/x402/">x402 paid inference</a>
+                  </li>
+                  <li>
+                    <a href="/models/">DID / CID Model Hub</a>
+                  </li>
+                  <li>
+                    <a href="/docs#web3">IPFS / IPNS</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="site-foot__col">
+                <h2>Use</h2>
+                <ul>
+                  <li>
+                    <a href="/go">Free inference</a>
+                  </li>
+                  <li>
+                    <a href="/onprem">murakumo Node</a>
+                  </li>
+                  <li>
+                    <a href="/onprem/3d">3D / CAD</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="site-foot__col">
+                <h2>Build</h2>
+                <ul>
+                  <li>
+                    <a href="/docs">API docs</a>
+                  </li>
+                  <li>
+                    <a href="/blog/">Blog</a>
+                  </li>
+                  <li>
+                    <a href="https://github.com/network-awai/cloud-murakumo">Source</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="site-foot__col">
+                <h2>Company &amp; legal</h2>
+                <ul>
+                  <li>
+                    <a href="/legal-company">Company</a>
+                  </li>
+                  <li>
+                    <a href="mailto:support@murakumo.cloud">Contact</a>
+                  </li>
+                  <li>
+                    <a href="/legal-terms">Terms</a>
+                  </li>
+                  <li>
+                    <a href="/legal-privacy">Privacy</a>
+                  </li>
+                  <li>
+                    <a href="/legal/tokushoho.md">Disclosure</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <p class="site-foot__legal"><a href="/">murakumo.cloud</a> · Operator: AWAI Network, L.L.C. · Sales: Ryo Awai · <a href="mailto:support@murakumo.cloud">support@murakumo.cloud</a> · <a href="/docs">API</a> · <a href="/pay/x402/">paid access</a> · <a href="/legal-privacy">privacy</a></p>
+          </div>
+        </footer>
+      </main>
+    </div>
+    <script src="/site-chrome.js" defer></script>
+    <script src="/insight.js" defer></script>
+  </body>
+</html>
+<script>
+(function () {
+      var button = document.getElementById("copy-address");
+      var address = document.getElementById("treasury-address");
+      var status = document.getElementById("copy-status");
+      if (!button || !address || !navigator.clipboard) { return; }
+      button.hidden = false;
+      button.addEventListener("click", function () {
+        navigator.clipboard.writeText(address.textContent.trim()).then(function () {
+          status.textContent = "Copied.";
+        }, function () {
+          status.textContent = "Could not copy — select the address instead.";
+        });
+      });
+    })();
+</script>

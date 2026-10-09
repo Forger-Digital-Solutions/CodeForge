@@ -9,6 +9,7 @@ import {
   type AgentEvidenceRef,
   type AgentModelSelection,
   type PlannerResult,
+  type ReviewResult,
   validateStructuredAgentResult,
   validatePlanningCompleteness,
 } from "@codeforge/agent";
@@ -55,12 +56,14 @@ import { classifyTaskComplexity, type TaskComplexityDecision, type TaskComplexit
 import { resolveForgeAutoRole, rosterRouteAllowance, type ForgeAutoRoster, type RosterCandidate, type RosterRole, type RosterRouteAllowance } from "./forgeauto-roster.js";
 import { adviseFromExperience, buildExperienceReceipt, type ExperienceWorker } from "./experience-learning.js";
 import { classifyRetryNovelty, strategyFingerprint, type StrategyObservation } from "./strategy-novelty.js";
+import { assertReviewerEvidenceCurrent, buildReviewerEvidenceSnapshot, type ReviewerEvidenceBinding } from "./reviewer-evidence.js";
 
 const execFile = promisify(execFileCallback);
 
 import type { AgentRuntime } from "./agent-runtime.js";
 
 export const MAX_REVIEW_REVISION_ROUNDS = 2;
+export const MAX_REVIEWER_ATTEMPTS = 3;
 
 /** Bound on the diff body handed to the independent reviewer. 24KB covers realistic
  * coordinated multi-file changes; the truncation marker points the reviewer at the worktree
@@ -304,7 +307,8 @@ export class AutonomousRunOrchestrator {
     const recoveryKey = this.parentStates.has(options.parentRunId)
       ? crypto.createHash("sha256").update(JSON.stringify({ agentId: options.agentId, task: options.task,
         workspacePath: options.workspacePath, contextSummary: options.contextSummary,
-        reviewFeedback: options.reviewFeedback, excludeRoleRoute: options.excludeRoleRoute })).digest("hex") : undefined;
+        reviewFeedback: options.reviewFeedback, excludeRoleRoute: options.excludeRoleRoute,
+        excludeRoleRoutes: options.excludeRoleRoutes, preferIndependentFromPoolId: options.preferIndependentFromPoolId })).digest("hex") : undefined;
     return this.subagentManager.spawnChildAgent({ ...options, ...(recoveryKey ? { recoveryKey } : {}) });
   }
 
@@ -872,6 +876,7 @@ export class AutonomousRunOrchestrator {
       // R49: the exact route that served the most recent implementation attempt, forwarded
       // to 8-Bit as role-scoped verification evidence (see recordRoleOutcome call sites).
       let implementerRoute: AgentModelSelection | undefined;
+      let reviewedEvidence: ReviewerEvidenceBinding | undefined;
       let qualitySwitches = 0;
 
       while (!reviewPassed) {
@@ -905,7 +910,6 @@ export class AutonomousRunOrchestrator {
           const qualityStall = codeResult.status === "blocked"
             && /\[(?:AGENT_NO_PROGRESS_DETECTED|AGENT_TOOL_LOOP_DETECTED)\]/.test(codeResult.summary)
             && codeResult.route !== undefined
-            && (/^(?:managed|owner):/.test(codeResult.routePoolId ?? "") || ["kilo-free-direct", "ai-horde"].includes(codeResult.route.providerId))
             && !controller.signal.aborted;
           if (qualityStall && qualitySwitches === 0) {
             qualitySwitches++;
@@ -1110,11 +1114,20 @@ export class AutonomousRunOrchestrator {
         await this.git(worktreeWs.rootPath, ["add", "--intent-to-add", "--all"]);
         const { stdout: diffStat } = await this.git(worktreeWs.rootPath, ["diff", "--stat", baseRevision]).catch(() => ({ stdout: "" }));
         const { stdout: diffOut } = await this.git(worktreeWs.rootPath, ["diff", baseRevision]).catch(() => ({ stdout: "" }));
+        const { stdout: trackedFiles } = await this.git(worktreeWs.rootPath, ["ls-files", "--cached", "--others", "--exclude-standard", "-z"]);
+        const snapshot = await buildReviewerEvidenceSnapshot({
+          workspacePath: worktreeWs.rootPath,
+          baseRevision,
+          diff: diffOut,
+          files: trackedFiles.split("\0").filter(Boolean),
+          verificationCommands,
+        });
 
         // Spawn independent Reviewer child agent with private context
-        const reviewerContext = diffOut
-          ? buildReviewerDiffContext(diffStat, diffOut, baseRevision)
-          : `Changes verified for task: ${goal}`;
+        const reviewerContext = snapshot.binding.complete
+          ? snapshot.context
+          : buildReviewerDiffContext(diffStat, diffOut, baseRevision);
+        const reviewEvidence = { ...snapshot.binding, contextHash: crypto.createHash("sha256").update(reviewerContext).digest("hex") };
         let reviewResult = await this.spawnRole({
           parentRunId: runId,
           sessionId,
@@ -1127,6 +1140,7 @@ export class AutonomousRunOrchestrator {
           adapter,
           signal: controller.signal,
           structuredOutput: "reviewer",
+          reviewEvidence,
           workspaceKind: "git-worktree",
           workspaceBranch: worktreeWs.branch,
           // R48: the review must not silently reuse the implementer's quota pool — prefer
@@ -1134,13 +1148,15 @@ export class AutonomousRunOrchestrator {
           ...(implementerPoolId ? { preferIndependentFromPoolId: implementerPoolId } : {}),
         });
 
-        const firstReviewerVerdict = Boolean((reviewResult.structuredData as { verdict?: string } | undefined)?.verdict)
-          || (!this.subagentsR1Enabled && (reviewResult.findings?.length ?? 0) > 0);
-        if (!firstReviewerVerdict
-          && reviewResult.route && (/^(?:managed|owner):/.test(reviewResult.routePoolId ?? "") || ["kilo-free-direct", "ai-horde"].includes(reviewResult.route.providerId))
-          && !controller.signal.aborted) {
+        const deliveredVerdict = (result: AgentResult): boolean => validateStructuredAgentResult("reviewer", result.structuredData).success
+          || (!this.subagentsR1Enabled && (result.findings?.length ?? 0) > 0);
+        const excludedReviewerRoutes: AgentModelSelection[] = [];
+        for (let attempt = 1; attempt < MAX_REVIEWER_ATTEMPTS
+          && !deliveredVerdict(reviewResult) && reviewResult.route && !controller.signal.aborted; attempt++) {
           const oldRoute = reviewResult.route;
-          const handoffId = `semantic-verifier-handoff-${runId}-${run.reviewRounds}`;
+          if (excludedReviewerRoutes.some((route) => route.providerId === oldRoute.providerId && route.modelId === oldRoute.modelId)) break;
+          excludedReviewerRoutes.push(oldRoute);
+          const handoffId = `semantic-verifier-handoff-${runId}-${run.reviewRounds}-${attempt}`;
           const handoff = {
             kind: "semantic_verifier_handoff",
             id: handoffId,
@@ -1153,6 +1169,8 @@ export class AutonomousRunOrchestrator {
             reviewedBaseRevision: baseRevision,
             diffHash: crypto.createHash("sha256").update(diffOut).digest("hex"),
             priorVerdict: "NONE",
+            attempt,
+            excludedRoutes: excludedReviewerRoutes.map((route) => ({ ...route })),
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
@@ -1165,15 +1183,17 @@ export class AutonomousRunOrchestrator {
             ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("REVIEWER") } : {}),
             task: `Review implementation for goal: ${goal}`,
             workspacePath: worktreeWs.rootPath,
-            contextSummary: `${reviewerContext}\n\nThe prior Reviewer returned no valid verdict. You are the replacement Reviewer. Inspect the same worktree and return an independent verdict.`,
+            contextSummary: reviewerContext,
             findings: reviewFindings,
             adapter,
             signal: controller.signal,
             structuredOutput: "reviewer",
+            reviewEvidence,
             workspaceKind: "git-worktree",
             workspaceBranch: worktreeWs.branch,
             ...(implementerPoolId ? { preferIndependentFromPoolId: implementerPoolId } : {}),
             excludeRoleRoute: oldRoute,
+            excludeRoleRoutes: excludedReviewerRoutes,
             routeReplacementReason: "SEMANTIC_VERIFIER_FALLBACK",
           });
           await this.persistence?.upsertWorkItem({
@@ -1184,7 +1204,12 @@ export class AutonomousRunOrchestrator {
           } as unknown as import("@codeforge/sessions").WorkItem);
         }
 
-        reviewFindings = [...deterministicFindings, ...(reviewResult.findings || [])];
+        assertReviewerEvidenceCurrent(reviewEvidence, worktreeWs.rootPath, reviewerContext);
+        reviewedEvidence = reviewEvidence;
+        const validatedReview = validateStructuredAgentResult("reviewer", reviewResult.structuredData);
+        reviewFindings = [...deterministicFindings, ...(validatedReview.success
+          ? (validatedReview.data as ReviewResult).findings
+          : reviewResult.findings || [])];
         allFindings.push(...reviewFindings);
         if (reviewResult.evidence) allEvidence.push(...reviewResult.evidence);
 
@@ -1196,8 +1221,7 @@ export class AutonomousRunOrchestrator {
         // review either; the absence of findings from an exhausted reviewer is not approval.
         // R1 requires the validated structured verdict; legacy non-R1 reviewers may still
         // provide a finding. Advisory text without a verdict cannot approve an R1 patch.
-        const reviewerDeliveredVerdict = Boolean((reviewResult.structuredData as { verdict?: string } | undefined)?.verdict)
-          || (!this.subagentsR1Enabled && (reviewResult.findings?.length ?? 0) > 0);
+        const reviewerDeliveredVerdict = deliveredVerdict(reviewResult);
         if (reviewResult.status === "cancelled" || reviewResult.status === "failed" || !reviewerDeliveredVerdict) {
           const reason = reviewResult.status === "cancelled" ? "REVIEWER_CANCELLED" : reviewResult.status === "failed" ? "REVIEWER_FAILED" : reviewResult.status === "blocked" ? "REVIEWER_BUDGET_EXHAUSTED" : "REVIEWER_NO_VERDICT";
           const summary = `Independent review did not complete (${reason}): ${reviewResult.summary}`;
@@ -1300,6 +1324,7 @@ export class AutonomousRunOrchestrator {
       // PHASE 5: DETERMINISTIC VERIFICATION GATE
       // ==========================================
       this.transitionRun(run, "verifying", adapter);
+      if (reviewedEvidence) assertReviewerEvidenceCurrent(reviewedEvidence, worktreeWs.rootPath);
       await this.saveParentState(run);
       counters.verificationAttempts++;
 
@@ -1356,6 +1381,7 @@ export class AutonomousRunOrchestrator {
         this.git(worktreeWs.rootPath, ["diff", "--name-only", baseRevision]).catch(() => ({ stdout: "" })),
       ]);
       const completionChangedFiles = changedPathsOut.split(/\r?\n/).map((entry) => entry.trim()).filter(Boolean);
+      if (reviewedEvidence) assertReviewerEvidenceCurrent(reviewedEvidence, worktreeWs.rootPath);
       const now = new Date().toISOString();
       const completionPlan: WorkflowPlan = {
         id: `completion-${runId}`,

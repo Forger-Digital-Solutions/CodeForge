@@ -1,0 +1,91 @@
+{
+  "schema": "r73-current-compiled-regression-recheck/v1",
+  "originalReceipt": "affected-tests.json",
+  "originalPassed": 2632,
+  "originalFailed": 16,
+  "originalPending": 6,
+  "rerunPassed": 212.0,
+  "rerunFailed": 0.0,
+  "checks": [
+    {
+      "receipt": "rerun-autonomous-orchestrator.test.json",
+      "passed": 22,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "receipt": "rerun-blockrun-free-supply.test.json",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "receipt": "rerun-blockrun-free.test.json",
+      "passed": 12,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "receipt": "rerun-dataset.test.json",
+      "passed": 19,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "receipt": "rerun-free-cloud-registry.test.json",
+      "passed": 76,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "receipt": "rerun-plan-gate-authority.test.json",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "receipt": "rerun-r54-quality-handoff.test.json",
+      "passed": 11,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "receipt": "rerun-r54-role-progress.test.json",
+      "passed": 11,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "receipt": "rerun-role-qualification.test.json",
+      "passed": 29,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "receipt": "rerun-role-quality.test.json",
+      "passed": 22,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "receipt": "rerun-workflow-inspection.test.json",
+      "passed": 1,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    }
+  ],
+  "classification": "Thirteen failures from tests observing concurrently changed source/dist; three git-heavy failures from parallel wall-clock or Windows cleanup pressure. All exact failing files pass standalone against current compiled code.",
+  "testOrPolicyRelaxations": false,
+  "originalEvidencePreserved": true
+}

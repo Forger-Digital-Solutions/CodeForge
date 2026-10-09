@@ -3,6 +3,7 @@ import type { ChatRequest, StreamEvent } from "@codeforge/providers";
 import { createGenericFreeRecord } from "@codeforge/forge-zero";
 import { runRoleQualification, runRoleAwareQualification, ROLE_QUALIFICATION_SUITE_VERSION } from "../src/qualification/role-suite.js";
 import { EXPLORER_REPO, PLANNER_PROTOCOL_V1, PLANNER_PROTOCOL_V2, ROLE_PROTOCOLS } from "../src/qualification/role-protocols.js";
+import { ROLE_PROMPTS } from "@codeforge/agent";
 
 /**
  * R27 role protocol tests. Every adapter is a deterministic script driven by the
@@ -30,6 +31,7 @@ function call(name: string, args: Record<string, unknown>): StreamEvent[] {
 
 class ScriptedAdapter {
   readonly providerId = "scripted";
+  readonly isTestProvider = true;
   readonly requests: ChatRequest[] = [];
   constructor(private readonly script: (req: ChatRequest) => StreamEvent[]) {}
   async *streamChat(req: ChatRequest): AsyncIterable<StreamEvent> {
@@ -63,7 +65,7 @@ function reviewerVerdictFor(req: ChatRequest, mode: "good" | "approve_all" | "re
   const t = body(req);
   const intentBuggy = t.includes("add()") || t.includes("Record provider failures") || t.includes("fast path") || t.includes("flaky router test");
   const approved = mode === "approve_all" ? true : mode === "reject_all" ? false : !intentBuggy;
-  return text(JSON.stringify({ verdict: approved ? "approve" : "reject", findings: approved ? [] : [{ message: "defect in the changed code (a * b / catch swallow / reserve without release / weakened assertion)", path: "src/calc.ts" }] }));
+  return text(JSON.stringify({ verdict: approved ? "pass" : "revision_required", summary: approved ? "The diff implements the intent." : "The diff introduces a blocking defect.", findings: approved ? [] : [{ id: "bug-1", severity: "blocking", category: "correctness", message: "defect in the changed code (a * b / catch swallow / reserve without release / weakened assertion)", path: "src/calc.ts" }] }));
 }
 
 /** A universally capable model — passes compact and all three role protocols. */
@@ -94,11 +96,12 @@ describe("R27 — versioned role protocols", () => {
     expect(out.roleResults.EXPLORER?.status).toBe("NOT_TESTED");
     expect(out.roleResults.PLANNER?.status).toBe("NOT_TESTED");
     expect(adapter.requests.every(req => body(req).includes("independent change reviewer"))).toBe(true);
+    expect(adapter.requests.every(req => req.messages[0]?.content.includes(ROLE_PROMPTS.reviewer.systemPromptTemplate))).toBe(true);
   });
   it("keeps R24 evidence frozen while qualifying the R27 planner protocol", () => {
     expect(ROLE_PROTOCOLS.map((p) => p.role)).toEqual(["EXPLORER", "PLANNER", "REVIEWER"]);
     for (const p of ROLE_PROTOCOLS) {
-      expect(p.version).toMatch(p.role === "PLANNER" ? /_V4$/ : p.role === "EXPLORER" ? /_V2$/ : /_V1$/);
+      expect(p.version).toMatch(p.role === "PLANNER" ? /_V4$/ : p.role === "REVIEWER" ? /_V3$/ : /_V2$/);
       expect(p.evidenceFormat).toBe("per_case_details_v1");
       expect(p.scoringDimensions.length).toBeGreaterThan(0);
     }
@@ -183,6 +186,35 @@ describe("R27 — versioned role protocols", () => {
     expect(reviewerCalls).toBe(2);
   });
 
+  it.each(["throws", "ends"] as const)("keeps a Reviewer case timeout inconclusive when the stream %s after abort", async (mode) => {
+    let calls = 0;
+    const adapter = {
+      providerId: "scripted", isTestProvider: true,
+      async *streamChat(_request: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+        calls++;
+        await new Promise<void>((resolve) => signal?.addEventListener("abort", () => resolve(), { once: true }));
+        if (mode === "throws") throw new DOMException("This operation was aborted", "AbortError");
+      },
+    };
+    const result = await runRoleQualification(MODEL, adapter, { roles: ["REVIEWER"], caseTimeoutMs: 5 });
+    expect(calls).toBe(1);
+    expect(result.transientCases).toBe(1);
+    expect(result.roleResults.REVIEWER?.status).toBe("NOT_TESTED");
+    expect(result.roleResults.REVIEWER?.hardFailures).toEqual([]);
+    expect(result.roleResults.REVIEWER?.testCases).toHaveLength(1);
+    expect(result.roleResults.REVIEWER?.testCases[0]?.error).toBe("qualification case timed out");
+  });
+
+  it("does not dispatch a Reviewer probe after its suite deadline already elapsed", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const adapter = new ScriptedAdapter(goodScript);
+    const result = await runRoleQualification(MODEL, adapter, { roles: ["REVIEWER"], signal: controller.signal });
+    expect(adapter.requests).toHaveLength(0);
+    expect(result.roleResults.REVIEWER?.status).toBe("NOT_TESTED");
+    expect(result.roleResults.REVIEWER?.hardFailures).toEqual([]);
+  });
+
   it("PLANNER: semantic steps qualify only after canonical graph validation", async () => {
     const semantic = new ScriptedAdapter((req) => {
       if (!body(req).includes("task planner")) return goodScript(req);
@@ -231,6 +263,29 @@ describe("R27 — versioned role protocols", () => {
     const strict = rejectAll.roleResults.REVIEWER!;
     expect(strict.status).not.toBe("QUALIFIED");
     expect(strict.testCases.find((c) => c.caseId === "reviewer.clean")!.passed).toBe(false);
+  });
+
+  it("requires the same machine-authoritative Reviewer schema used in production", async () => {
+    for (const payload of [
+      { verdict: "approve", findings: [] },
+      { verdict: "pass", findings: [] },
+      { verdict: "revision_required", findings: [], summary: "Reject" },
+      { verdict: "pass", findings: [{ id: "bug-1", severity: "blocking", category: "correctness", message: "a * b" }], summary: "Pass" },
+    ]) {
+      const result = await runRoleQualification(MODEL, new ScriptedAdapter(() => text(JSON.stringify(payload))), { roles: ["REVIEWER"] });
+      expect(result.roleResults.REVIEWER?.status).toBe("HARD_FAILURE");
+      expect(result.roleResults.REVIEWER?.testCases.every((c) => c.details?.schemaValid === false)).toBe(true);
+    }
+  });
+
+  it("uses production deterministic JSON normalization without changing the review verdict", async () => {
+    const result = await runRoleQualification(MODEL, new ScriptedAdapter((req) => {
+      const events = reviewerVerdictFor(req, "good");
+      const payload = events.find((event) => event.type === "text_delta");
+      return text(`Review follows:\n\`\`\`json\n${payload?.type === "text_delta" ? payload.delta : ""}\n\`\`\``);
+    }), { roles: ["REVIEWER"] });
+    expect(result.roleResults.REVIEWER?.status).toBe("QUALIFIED");
+    expect(result.roleResults.REVIEWER?.testCases.every((c) => (c.details?.repairedWith as string[])?.includes("fenced_block"))).toBe(true);
   });
 });
 

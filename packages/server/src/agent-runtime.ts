@@ -76,13 +76,14 @@ import {
 import type { ForgeGreenCacheStore } from "@codeforge/sessions";
 import { createEightBitRuntime, renderHandoffMessage, FAILURE_USER_MESSAGE, FABRIC_MODEL_ROLE, roleQualityAdvice, roleQualificationStatusFor, type EightBitRuntime, type EightBitRole, type HandoffContextPageRef, type DecisionReceipt, type EightBitRouteHealthAuthority, type FreeFabric, type FabricContextProvider, type FabricOutcome, type FabricRouteDecision, type ModelQualificationReceipt, type RoleQualificationStatus, type RoleQualificationTier, type RoleOutcomeKind, type RoleFailureClass, type ToolCallOutcome } from "@codeforge/eight-bit";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
-import { compressToolOutput, renderFileRead } from "@codeforge/tools";
+import { compressToolOutput, isVerificationCommand, renderFileRead } from "@codeforge/tools";
 import { createDuplicateActionSupervisor, type DuplicateActionIdentity, type DuplicateActionSupervisor } from "./duplicate-suppression.js";
 import { TERMINAL_TURN_STATUSES, type CanonicalTurnStatus } from "./turn-state-machine.js";
 import { BROWSER_READ_ONLY_TOOLS, BROWSER_STATE_CHANGING_TOOLS } from "./external-tools.js";
 import {
   ERROR_CODES,
   DEFAULT_EXECUTION_BUDGETS,
+  ROLE_PROMPTS,
   type AgentPermissions,
   type AgentExecutionBudget,
   type AgentUsage,
@@ -108,8 +109,9 @@ import { tryConsumeInferenceRequest, type InferenceLane, type WorkflowInferenceB
 import type { RosterRouteAllowance, RosterUserRoute } from "./forgeauto-roster.js";
 import { isUserApiAdapter, userApiAdapterIdentity } from "./user-intelligence.js";
 import { createShillingEntry, ManagedPaidAllowanceError, ShillingLedger, type ManagedPaidAllowanceLedger, type ManagedPaidPolicy, type ShillingSourceClass } from "@codeforge/cloud-usage";
-import { assessCoderProgress, type RoleProgressAssessment } from "./role-progress.js";
+import { assessCoderProgress, coderContinuationGuidance, type RoleProgressAssessment } from "./role-progress.js";
 import { CodingProgress } from "./coding-progress.js";
+import { assertReviewerEvidenceCurrent, type ReviewerEvidenceBinding } from "./reviewer-evidence.js";
 
 export interface AgentRuntimeRequest {
   runId: string;
@@ -136,6 +138,7 @@ export interface AgentRuntimeRequest {
   adapter?: WorkspaceEventAdapter;
   customToolExecutor?: (name: string, args: Record<string, unknown>) => Promise<string | undefined>;
   structuredOutput?: StructuredOutputKind;
+  reviewEvidence?: ReviewerEvidenceBinding;
   maxStructuredOutputRepairs?: number;
   userIntentHold?: UserIntentHoldController;
   /** FG-1C: targeted workstream scope; duplicate identities never cross workstreams. */
@@ -162,6 +165,7 @@ export interface AgentRuntimeRequest {
   /** A prior healthy route was stopped for observed role non-convergence. Fresh role
    * admission must exclude it for this handoff without marking its provider unavailable. */
   excludeRoleRoute?: AgentModelSelection;
+  excludeRoleRoutes?: readonly AgentModelSelection[];
   routeReplacementReason?: "QUALITY_DRIVEN_ROLE_SWITCH" | "SEMANTIC_VERIFIER_FALLBACK";
   /**
    * R2 durable recovery: when present, this run continues a crashed run from its recorded
@@ -233,6 +237,7 @@ export interface ToolTurnRecord {
     observationHash?: string;
     /** Hash of the raw tool arguments, never the arguments themselves. */
     requestHash?: string;
+    verification?: "passed" | "failed";
   }>;
 }
 
@@ -1565,6 +1570,7 @@ export class AgentRuntime {
     // R45: per-turn tool trace for exploration-efficiency forensics; scaffold coverage +
     // the adaptive budget decision land on the journal via contextMetrics getters.
     const toolTrace: ToolTurnRecord[] = [];
+    const coderGuidanceKeys = new Set<string>();
     let plannedTaskSteps = 1;
     try {
       const parsedPlan: unknown = JSON.parse(req.taskPlan ?? "null");
@@ -1681,6 +1687,9 @@ export class AgentRuntime {
       if (req.signal?.aborted) {
         throw new Error(`[${ERROR_CODES.AGENT_CANCELLED}] Agent run cancelled before start.`);
       }
+      if (req.role === "reviewer" && req.reviewEvidence) {
+        assertReviewerEvidenceCurrent(req.reviewEvidence, req.workspacePath, req.reviewEvidence.complete ? req.diff : undefined);
+      }
 
       // R59: everything until the first model dispatch is silent to the watchdog — indexing,
       // assembly, admission, and supply recovery emit no tool-trace. Mark the run so a worker
@@ -1774,7 +1783,22 @@ export class AgentRuntime {
           staleContextInvalidations: 0,
         });
       }
-      if (!resumeJournal) {
+      if (!resumeJournal && req.role === "reviewer" && req.reviewEvidence?.complete) {
+        if (!req.diff) throw new Error("REVIEWER_EVIDENCE_MISSING: complete snapshot content is required");
+        messages = [
+          { role: "system", content: `${ROLE_PROMPTS.reviewer.systemPromptTemplate}\nThe runtime supplied a complete bounded snapshot of the tracked isolated workspace. Review its diff, source, and test assertions. Verification marked pending has not run. If a concrete requirement cannot be assessed from this evidence, return revision_required with a blocking finding identifying the missing evidence.` },
+          { role: "user", content: `Goal:\n${req.goal}\n\n${formatUntrustedData(req.diff, "workspace review snapshot")}` },
+        ];
+        const contextBytes = Buffer.byteLength(messages.map((message) => message.content).join("\n"), "utf8");
+        contextMetrics = withGreenPolicy({
+          candidateFileCount: 0, candidateSymbolCount: 0, selectedFileCount: 0, selectedEvidenceCount: 1,
+          contextBytes, estimatedInputTokens: Math.ceil(contextBytes / 4), contextMaximum: resolvedMaxContextTokens,
+          reservedOutputTokens: budget.maxOutputTokens ?? 0, contextHash: req.reviewEvidence.contextHash,
+          reasonCodes: ["workspace_bound_review_snapshot"], contextRefreshes: 0, staleContextInvalidations: 0,
+        });
+        evidence.push({ kind: "review_snapshot", ref: req.reviewEvidence.contextHash, description: "Complete workspace-bound source and test assertions; ForgeVerify pending" });
+      }
+      if (!resumeJournal && !(req.role === "reviewer" && req.reviewEvidence?.complete)) {
       // 1. Context Assembly
       let indexStatus: ReturnType<RepositoryIntelligence["status"]> | undefined;
       try {
@@ -1864,7 +1888,7 @@ export class AgentRuntime {
       }
 
       messages = [
-        { role: "system", content: `${assembled.systemPrompt}\n\n${describeExecutionEnvironment(process.platform, getSanitizedEnvForChild())}` },
+        { role: "system", content: `${assembled.systemPrompt}\n\n${describeExecutionEnvironment(process.platform, getSanitizedEnvForChild(), req.workspacePath)}` },
         { role: "user", content: assembled.contextPrompt },
       ];
       bootstrapContextMessageIndex = 1;
@@ -1990,6 +2014,10 @@ export class AgentRuntime {
       let structuredRepairs = structuredTelemetry.repairs + structuredTelemetry.truncationRepairs;
       const expectedStructuredOutput = req.structuredOutput;
       const maxStructuredOutputRepairs = Math.max(0, req.maxStructuredOutputRepairs ?? 1);
+      const requiresTextReview = (providerId: string, modelId: string): boolean => req.role === "reviewer"
+        && this.roleQualificationStatus(providerId, modelId, "REVIEWER") === "QUALIFIED"
+        && this.roleQualificationStatus(providerId, modelId, "TOOL_AGENT") !== "QUALIFIED";
+      const reviewRouteSupportsEvidence = (providerId: string, modelId: string): boolean => !requiresTextReview(providerId, modelId) || req.reviewEvidence?.complete === true;
 
       // 2. Multi-turn Model & Tool Loop
       let responseCacheTelemetry: { classification: "measured" | "unavailable" } = { classification: "unavailable" };
@@ -2030,6 +2058,8 @@ export class AgentRuntime {
       // up to the bounded budget; an explicit exact selection is never replaced.
       let activeSelection: AgentModelSelection | undefined = req.modelSelection
         ?? (this.modelSelection ? { providerId: this.modelSelection.providerId, modelId: this.modelSelection.modelId } : undefined);
+      const excludedRoleRoutes = [...(req.excludeRoleRoutes ?? []), ...(req.excludeRoleRoute ? [req.excludeRoleRoute] : [])];
+      const roleRouteExcluded = (providerId: string, modelId: string): boolean => excludedRoleRoutes.some((route) => route.providerId === providerId && route.modelId === modelId);
       if (req.rosterAllowance && activeSelection) {
         const permitted = activeSelection.providerId === PAID_AUTO_PROVIDER_ID
           ? activeSelection.modelId === PAID_AUTO_AUTO_MODEL_ID && req.rosterAllowance.paidModelIds.length > 0
@@ -2184,8 +2214,9 @@ export class AgentRuntime {
             hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
             routeFilter: (providerId, modelId) =>
               (!qualifiedForRole || qualifiedForRole(providerId, modelId))
+              && reviewRouteSupportsEvidence(providerId, modelId)
               && (!req.rosterAllowance || req.rosterAllowance.freeRoutes.some((route) => route.providerId === providerId && route.modelId === modelId))
-              && (req.excludeRoleRoute?.providerId !== providerId || req.excludeRoleRoute.modelId !== modelId),
+              && !roleRouteExcluded(providerId, modelId),
             capacityScoreAdjustment: this.freeCloud
               ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
               : undefined,
@@ -2366,11 +2397,16 @@ export class AgentRuntime {
           adapter.emitSubagentProgress?.(req.agentId, "Paid attempt Shilling write failed; the allowance receipt remains authoritative.");
         }
       };
+      let reviewerTextOnly = false;
       const requestModelTurn = async (modelTurnId: string): Promise<ModelExecutionResponse> => {
         let rotations = 0;
         let sameRouteRetries = 0;
         const triedUserRoutes = new Set<string>();
         for (;;) {
+          if (req.role === "reviewer" && req.reviewEvidence) assertReviewerEvidenceCurrent(req.reviewEvidence, req.workspacePath);
+          reviewerTextOnly = !!activeSelection && requiresTextReview(activeSelection.providerId, activeSelection.modelId);
+          if (reviewerTextOnly && !req.reviewEvidence?.complete) throw new Error("REVIEWER_EVIDENCE_MISSING: text-qualified Reviewer requires a complete workspace snapshot");
+          const dispatchTools = reviewerTextOnly ? [] : availableTools;
           forgeGreenR0Telemetry.recordModelAttempt({
             providerId: activeSelection?.providerId,
             modelId: activeSelection?.modelId,
@@ -2400,7 +2436,7 @@ export class AgentRuntime {
             const dispatchPromptTokens = estimatePromptOnlyTokens({
               model: activeSelection?.modelId ?? "",
               messages: dispatchMessages,
-              tools: convertToProviderTools(availableTools),
+              tools: convertToProviderTools(dispatchTools),
             });
             const dispatchOutputBudget = roleOutputBudget({
               role: req.role,
@@ -2456,8 +2492,8 @@ export class AgentRuntime {
             const response = await modelAdapter.execute({
               modelSelection: activeSelection,
               messages: dispatchMessages,
-              tools: availableTools,
-              toolChoice: expectedStructuredOutput && !req.permissions.write && !req.permissions.executeCommand && turnCount >= effectiveMaxModelTurns() ? "none" : "auto",
+              tools: dispatchTools,
+              toolChoice: reviewerTextOnly || (expectedStructuredOutput && !req.permissions.write && !req.permissions.executeCommand && turnCount >= effectiveMaxModelTurns()) ? "none" : "auto",
               maxTokens: dispatchOutputBudget.maxTokens,
               signal: req.signal,
               userId: req.userId ?? this.userId,
@@ -2725,8 +2761,9 @@ export class AgentRuntime {
               hasAdapter: (providerId) => !!this.providerCatalog.get(providerId),
               routeFilter: (providerId, modelId) =>
                 (!qualifiedForFailureRole || qualifiedForFailureRole(providerId, modelId))
+                && reviewRouteSupportsEvidence(providerId, modelId)
                 && (!req.rosterAllowance || req.rosterAllowance.freeRoutes.some((route) => route.providerId === providerId && route.modelId === modelId))
-                && (req.excludeRoleRoute?.providerId !== providerId || req.excludeRoleRoute.modelId !== modelId),
+                && !roleRouteExcluded(providerId, modelId),
               capacityScoreAdjustment: this.freeCloud
                 ? (providerId, modelId) => this.freeCloud!.capacityRoutingAdvice(providerId, modelId)
                 : undefined,
@@ -2989,6 +3026,11 @@ export class AgentRuntime {
               ...(journalActiveRoute ? { route: { ...journalActiveRoute } } : {}),
             };
           }
+          const guidance = coderContinuationGuidance(toolTrace, plannedTaskSteps);
+          if (guidance && !coderGuidanceKeys.has(guidance.key)) {
+            coderGuidanceKeys.add(guidance.key);
+            messages.push({ role: "user", content: guidance.content });
+          }
         }
 
         turnCount++;
@@ -3118,6 +3160,13 @@ export class AgentRuntime {
         }
         totalUsage.provider = response.providerId;
         totalUsage.model = response.modelId;
+        if (req.role === "reviewer" && req.reviewEvidence) assertReviewerEvidenceCurrent(req.reviewEvidence, req.workspacePath);
+        if (reviewerTextOnly && response.toolCalls.length > 0) {
+          this.recordRoleOutcome({ providerId: response.providerId, modelId: response.modelId }, "reviewer", "role_failed", req.runId, "MALFORMED_STRUCTURED_OUTPUT");
+          finalSummary = "REVIEWER_TOOL_PROTOCOL_UNQUALIFIED: text-qualified Reviewer returned tool requests instead of a verdict";
+          stopReason = "error";
+          break;
+        }
 
         const providerPromptCache = response.optimization?.providerPromptCache;
         responseCacheTelemetry = { classification: providerPromptCache?.classification ?? "unavailable" };
@@ -3280,6 +3329,8 @@ export class AgentRuntime {
             outcome,
             ...(record ? { bytes: record.rawOutputBytes ?? Buffer.byteLength(record.output ?? "", "utf8") } : {}),
             ...(record ? { observationHash: sha256(record.output || record.error || "") } : {}),
+            ...(name === "run_command" && typeof parsedRecord?.command === "string" && isVerificationCommand(parsedRecord.command) && record
+              ? { verification: record.success ? "passed" as const : "failed" as const } : {}),
           });
         };
 

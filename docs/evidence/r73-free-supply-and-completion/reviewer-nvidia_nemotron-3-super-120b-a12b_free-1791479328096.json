@@ -1,0 +1,1270 @@
+{
+  "startedAt": "2026-10-08T17:08:48.096Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+  "evidenceClass": "LIVE_REVIEWER_ONLY_PUBLIC_CASES",
+  "frames": [
+    {
+      "at": "2026-10-08T17:08:49.006Z",
+      "request": {
+        "model": "nvidia/nemotron-3-super-120b-a12b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Fix add() so it returns the sum of its arguments.\n\nDiff under review:\n--- a/src/calc.ts\n+++ b/src/calc.ts\n@@ export function add(a, b) @@\n-  return a - b;\n+  return a * b;"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n  \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "verdict\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "revision_required\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "  \"findings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": [\n    {\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"id\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"f1\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"severity"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"blocking"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n      \"category"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"logic\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "      \"message\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"The function"
+        },
+        {
+          "type": "text_delta",
+          "delta": " now"
+        },
+        {
+          "type": "text_delta",
+          "delta": " returns the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " product of"
+        },
+        {
+          "type": "text_delta",
+          "delta": " arguments instead of their"
+        },
+        {
+          "type": "text_delta",
+          "delta": " sum.\",\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "evidence\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Changed return"
+        },
+        {
+          "type": "text_delta",
+          "delta": " statement"
+        },
+        {
+          "type": "text_delta",
+          "delta": " from `a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " - b` to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " `a * b"
+        },
+        {
+          "type": "text_delta",
+          "delta": "`; sum"
+        },
+        {
+          "type": "text_delta",
+          "delta": " would"
+        },
+        {
+          "type": "text_delta",
+          "delta": " be"
+        },
+        {
+          "type": "text_delta",
+          "delta": " `a + b"
+        },
+        {
+          "type": "text_delta",
+          "delta": "`.\"\n    }\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "  ],\n  \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary\": \"The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " diff does not implement"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the intended fix"
+        },
+        {
+          "type": "text_delta",
+          "delta": "; it incorrectly"
+        },
+        {
+          "type": "text_delta",
+          "delta": " changes"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " operation to multiplication"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\"\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 174,
+            "outputTokens": 208,
+            "totalTokens": 382,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 86
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:08:56.753Z"
+    },
+    {
+      "at": "2026-10-08T17:08:56.756Z",
+      "request": {
+        "model": "nvidia/nemotron-3-super-120b-a12b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Rename the internal helper for clarity; behaviour unchanged.\n\nDiff under review:\n--- a/src/util/logger.ts\n+++ b/src/util/logger.ts\n@@\n-export const log = (m: string) => m;\n+export const writeLog = (m: string) => m;"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "  \"verdict"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"pass\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "  \"find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings\": [],\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"summary\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " correctly renames the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " exported"
+        },
+        {
+          "type": "text_delta",
+          "delta": " helper from `log"
+        },
+        {
+          "type": "text_delta",
+          "delta": "` to `write"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Log` without altering"
+        },
+        {
+          "type": "text_delta",
+          "delta": " its"
+        },
+        {
+          "type": "text_delta",
+          "delta": " behavior, fulfilling"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the intent of improving"
+        },
+        {
+          "type": "text_delta",
+          "delta": " clarity.\"\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 180,
+            "outputTokens": 117,
+            "totalTokens": 297,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 64
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:08:58.580Z"
+    },
+    {
+      "at": "2026-10-08T17:08:58.581Z",
+      "request": {
+        "model": "nvidia/nemotron-3-super-120b-a12b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Document the quota window semantics; comment only, no behaviour change.\n\nDiff under review:\n--- a/src/fabric/ledger.ts\n+++ b/src/fabric/ledger.ts\n@@\n+// Windows are provider-reported; a missing window means unobserved, not unlimited.\n export function snapshotHolds() { return []; }\n export function releaseExpired(now: number) { return now; }"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "  \"verdict"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"pass\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "  \"find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings\": [],\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"summary\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Added comment documenting quota"
+        },
+        {
+          "type": "text_delta",
+          "delta": " window semantics as intended"
+        },
+        {
+          "type": "text_delta",
+          "delta": "; no behavior change"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\"\n}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 201,
+            "outputTokens": 149,
+            "totalTokens": 350,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 112
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:09:00.409Z"
+    },
+    {
+      "at": "2026-10-08T17:09:00.411Z",
+      "request": {
+        "model": "nvidia/nemotron-3-super-120b-a12b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Record provider failures so the route can be demoted.\n\nDiff under review:\n--- a/src/health.ts\n+++ b/src/health.ts\n@@\n+export function recordFailure(id: string) {\n+  try { sendTelemetry(id); } catch { /* ignore */ }\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n  \"ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict\": \"pass"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n  \"find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings\": [],\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"summary\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The diff adds a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " function to record provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failures via telemetry"
+        },
+        {
+          "type": "text_delta",
+          "delta": ", matching the intent"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\"\n}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 178,
+            "outputTokens": 192,
+            "totalTokens": 370,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 151
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:09:07.133Z"
+    },
+    {
+      "at": "2026-10-08T17:09:07.146Z",
+      "request": {
+        "model": "nvidia/nemotron-3-super-120b-a12b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Record provider failures so the route can be demoted.\n\nDiff under review:\n--- a/src/health.ts\n+++ b/src/health.ts\n@@\n+export function recordFailure(id: string) {\n+  try { sendTelemetry(id); } catch { /* ignore */ }\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n  \"ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict\": \"pass"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n  \"find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings\": [],\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"summary\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The added"
+        },
+        {
+          "type": "text_delta",
+          "delta": " record"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Failure function correctly records"
+        },
+        {
+          "type": "text_delta",
+          "delta": " provider failures via"
+        },
+        {
+          "type": "text_delta",
+          "delta": " telemetry, fulfilling"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the intent to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " enable route"
+        },
+        {
+          "type": "text_delta",
+          "delta": " demotion.\"\n}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 178,
+            "outputTokens": 152,
+            "totalTokens": 330,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 106
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:09:09.362Z"
+    },
+    {
+      "at": "2026-10-08T17:09:09.364Z",
+      "request": {
+        "model": "nvidia/nemotron-3-super-120b-a12b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Add a fast path that reserves capacity before early return.\n\nDiff under review:\n--- a/src/fabric/admission.ts\n+++ b/src/fabric/admission.ts\n@@\n+export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n  \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "verdict\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "pass\",\n  \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "findings\": [],\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "  \"summary\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"Fast path function"
+        },
+        {
+          "type": "text_delta",
+          "delta": " correctly"
+        },
+        {
+          "type": "text_delta",
+          "delta": " reserves capacity before early"
+        },
+        {
+          "type": "text_delta",
+          "delta": " return.\"\n}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 190,
+            "outputTokens": 150,
+            "totalTokens": 340,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 116
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:09:11.958Z"
+    },
+    {
+      "at": "2026-10-08T17:09:11.960Z",
+      "request": {
+        "model": "nvidia/nemotron-3-super-120b-a12b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Add a fast path that reserves capacity before early return.\n\nDiff under review:\n--- a/src/fabric/admission.ts\n+++ b/src/fabric/admission.ts\n@@\n+export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n  \"ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict\": \"pass"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n  \"find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings\": [],\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"summary\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Fast path function"
+        },
+        {
+          "type": "text_delta",
+          "delta": " correctly"
+        },
+        {
+          "type": "text_delta",
+          "delta": " reserves capacity before early"
+        },
+        {
+          "type": "text_delta",
+          "delta": " return.\"\n}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 190,
+            "outputTokens": 126,
+            "totalTokens": 316,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 92
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:09:14.110Z"
+    },
+    {
+      "at": "2026-10-08T17:09:14.112Z",
+      "request": {
+        "model": "nvidia/nemotron-3-super-120b-a12b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Make the flaky router test pass.\n\nDiff under review:\n--- a/test/router.test.ts\n+++ b/test/router.test.ts\n@@\n-test(\"route executes\", () => { expect(run()).toBe(\"ok\"); });\n+test(\"route executes\", () => { expect(\"ok\").toBe(\"ok\"); });"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n  \"ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict\": \"re"
+        },
+        {
+          "type": "text_delta",
+          "delta": "vision_required\",\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"findings\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [\n    {\n     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"id\": \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "test-not"
+        },
+        {
+          "type": "text_delta",
+          "delta": "-validating"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n      \"sever"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ity\": \"block"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ing\",\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "category\": \"test"
+        },
+        {
+          "type": "text_delta",
+          "delta": " correctness\",\n      \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "message\": \"The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " test no longer inv"
+        },
+        {
+          "type": "text_delta",
+          "delta": "okes the router's"
+        },
+        {
+          "type": "text_delta",
+          "delta": " run function"
+        },
+        {
+          "type": "text_delta",
+          "delta": " and does"
+        },
+        {
+          "type": "text_delta",
+          "delta": " not verify its"
+        },
+        {
+          "type": "text_delta",
+          "delta": " output; it always"
+        },
+        {
+          "type": "text_delta",
+          "delta": " passes regardless"
+        },
+        {
+          "type": "text_delta",
+          "delta": " of the router"
+        },
+        {
+          "type": "text_delta",
+          "delta": "'s behavior.\",\n     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"evidence\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \"Changed `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "expect(run())."
+        },
+        {
+          "type": "text_delta",
+          "delta": "toBe(\\\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ok\\\");` to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " `expect(\\\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ok\\\").to"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Be(\\\"ok"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\\\");`"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"\n    }\n "
+        },
+        {
+          "type": "text_delta",
+          "delta": " ],\n  \"summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\": \"The diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " makes the test pass"
+        },
+        {
+          "type": "text_delta",
+          "delta": " by removing the actual"
+        },
+        {
+          "type": "text_delta",
+          "delta": " assertion under"
+        },
+        {
+          "type": "text_delta",
+          "delta": " test, which"
+        },
+        {
+          "type": "text_delta",
+          "delta": " does not address"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the flakiness"
+        },
+        {
+          "type": "text_delta",
+          "delta": " and fails"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to validate the router"
+        },
+        {
+          "type": "text_delta",
+          "delta": "'s functionality.\"\n}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 185,
+            "outputTokens": 381,
+            "totalTokens": 566,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 222
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:09:19.285Z"
+    }
+  ],
+  "maxRequests": 24,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T17:08:48.096Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-08T17:08:48.096Z",
+      "recheckAt": "2026-10-15T17:08:48.096Z",
+      "qualificationAt": "2026-10-08T17:08:48.096Z",
+      "termsVerifiedAt": "2026-10-08T17:08:48.096Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-15T17:08:48.096Z",
+      "privacyVerifiedAt": "2026-10-08T17:08:48.096Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-15T17:08:48.096Z",
+      "priceVerifiedAt": "2026-10-08T17:08:48.096Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-15T17:08:48.096Z",
+      "nextReverifyAt": "2026-10-08T23:08:48.096Z"
+    }
+  },
+  "catalog": {
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "displayName": "NVIDIA: Nemotron 3 Super (free)",
+    "contextWindow": 262144,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": true,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "result": {
+    "roleResults": {
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T17:08:49.006Z",
+        "completedAt": "2026-10-08T17:09:19.288Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T17:08:49.006Z",
+        "completedAt": "2026-10-08T17:09:19.288Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 7750,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The function now returns the product of arguments instead of their sum."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 86
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1825,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 64
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1830,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 112
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 2218,
+            "retries": 1,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 106,
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "pass",
+                "expectedApproved": false,
+                "verdictCorrect": false,
+                "findingLocalized": false,
+                "findings": [],
+                "reasoningRetried": false,
+                "reasoningTokens": 151
+              }
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 2152,
+            "retries": 1,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 92,
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "pass",
+                "expectedApproved": false,
+                "verdictCorrect": false,
+                "findingLocalized": false,
+                "findings": [],
+                "reasoningRetried": false,
+                "reasoningTokens": 116
+              }
+            }
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5175,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The test no longer invokes the router's run function and does not verify its output; it always passes regardless of the router's behavior."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 222
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-08T17:08:49.006Z",
+        "completedAt": "2026-10-08T17:09:19.288Z"
+      }
+    },
+    "requestCount": 8,
+    "transientCases": 0
+  },
+  "qualification": {
+    "suiteVersion": "R73_ROLE_QUALIFICATION_V5",
+    "providerId": "kilo-free-direct",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "modelDisplayName": "NVIDIA: Nemotron 3 Super (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 7750,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The function now returns the product of arguments instead of their sum."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 86
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1825,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 64
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1830,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 112
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 2218,
+            "retries": 1,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 106,
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "pass",
+                "expectedApproved": false,
+                "verdictCorrect": false,
+                "findingLocalized": false,
+                "findings": [],
+                "reasoningRetried": false,
+                "reasoningTokens": 151
+              }
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 2152,
+            "retries": 1,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 92,
+              "firstAttempt": {
+                "schemaValid": true,
+                "verdict": "pass",
+                "expectedApproved": false,
+                "verdictCorrect": false,
+                "findingLocalized": false,
+                "findings": [],
+                "reasoningRetried": false,
+                "reasoningTokens": 116
+              }
+            }
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5175,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The test no longer invokes the router's run function and does not verify its output; it always passes regardless of the router's behavior."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 222
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-08T17:08:49.006Z",
+        "completedAt": "2026-10-08T17:09:19.288Z"
+      }
+    },
+    "startedAt": "2026-10-08T17:08:48.096Z",
+    "completedAt": "2026-10-08T17:09:19.288Z",
+    "totalLatencyMs": 31192,
+    "qualificationState": "PROBATION",
+    "hardFailureRoles": [],
+    "metadata": {
+      "transient": false,
+      "requests": 8,
+      "reviewerProtocolOnly": true,
+      "publicCasesOnly": true
+    }
+  },
+  "status": "MEASURED",
+  "finishedAt": "2026-10-08T17:09:19.288Z"
+}

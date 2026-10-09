@@ -31,6 +31,53 @@ import {
 const NOW = new Date();
 
 describe("R68 fresh packaged qualification", () => {
+  it("isolates active role evidence from caller and consumer mutations", async () => {
+    const service = new FreeCloudService({ firewall: new ForgeZero(), providerCatalog: new InMemoryProviderCatalog(), registry: new NormalizedModelRegistry() });
+    const measured = receipt("kilo-free-direct", "immutable:free");
+    await service.recordReceipt(measured);
+    measured.roleResults.CODER!.status = "HARD_FAILURE";
+    const firstRead = service.getQualificationReceipt("kilo-free-direct", "immutable:free")!;
+    expect(firstRead.roleResults.CODER!.status).toBe("QUALIFIED");
+    firstRead.roleResults.CODER!.status = "NOT_QUALIFIED";
+    expect(service.getReceipt("kilo-free-direct", "immutable:free")!.roleResults.CODER!.status).toBe("QUALIFIED");
+  });
+
+  it("projects current Reviewer protocol independently from compatible Coder evidence", async () => {
+    const fw = new ForgeZero();
+    fw.register(freeRecord("groq", "review-contract"));
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(createMockProvider({ providerId: "groq" }));
+    const service = new FreeCloudService({ firewall: fw, providerCatalog: catalog, registry: new NormalizedModelRegistry(), now: () => NOW });
+    service.setConnection(connected("groq", { planAttested: true }));
+    const historical = receipt("groq", "review-contract");
+    historical.roleResults.REVIEWER = { ...historical.roleResults.CODER!, role: "REVIEWER" };
+    await service.recordReceipt(historical);
+    const oldRoute = service.snapshot().models.flatMap((model) => model.routes).find((route) => route.providerModelId === "review-contract")!;
+    expect(oldRoute.roles).toContain("PRIMARY_CODING_AGENT");
+    expect(oldRoute.roles).not.toContain("REVIEWER");
+    expect(oldRoute.roleSuitability?.REVIEWER).toBe("NOT_TESTED");
+    await service.recordReceipt({ ...historical, metadata: { roleProtocolVersions: { REVIEWER: "REVIEWER_PROTOCOL_V3" } } });
+    const currentRoute = service.snapshot().models.flatMap((model) => model.routes).find((route) => route.providerModelId === "review-contract")!;
+    expect(currentRoute.roles).toContain("REVIEWER");
+    await service.recordReceipt({ ...historical, roleResults: { REVIEWER: historical.roleResults.REVIEWER } });
+    const reviewerOnly = service.snapshot().models.flatMap((model) => model.routes).find((route) => route.providerModelId === "review-contract")!;
+    expect(reviewerOnly.qualificationState).toBe("STALE");
+    expect(reviewerOnly.roles).toEqual([]);
+  });
+
+  it("preserves active qualified roles when recording a transient retry while retaining its evidence", async () => {
+    const store = new InMemoryQualificationPersistence();
+    const service = new FreeCloudService({ firewall: new ForgeZero(), providerCatalog: new InMemoryProviderCatalog(), registry: new NormalizedModelRegistry(), qualificationStore: store });
+    const qualified = receipt("kilo-free-direct", "reviewer:free");
+    const interrupted = { ...qualified, qualificationState: "NOT_QUALIFIED" as const, metadata: { transient: true } };
+    await service.recordReceipt(qualified);
+    await service.recordReceipt(interrupted);
+    expect(service.getQualificationReceipt("kilo-free-direct", "reviewer:free")).toEqual(qualified);
+    await service.loadQualification();
+    expect(service.getQualificationReceipt("kilo-free-direct", "reviewer:free")).toEqual(qualified);
+    expect(await store.loadHistory("kilo-free-direct", "reviewer:free")).toEqual([qualified, interrupted]);
+  });
+
   it("caps actual qualification dispatches and keeps the spend after service restart", async () => {
     const store = new InMemoryQualificationPersistence();
     let dispatched = 0;

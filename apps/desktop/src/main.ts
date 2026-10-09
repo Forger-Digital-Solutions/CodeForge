@@ -50,6 +50,7 @@ import {
   getProviderPolicy,
   createFreeCloudService,
   reverifyKiloPolicy,
+  reverifyBlockRunPolicy,
   reverifyHordePolicy,
   mergeModelsDevProviderHints,
   PROVIDER_DEFINITIONS,
@@ -236,7 +237,7 @@ const ROUTABLE_PROVIDER_IDS: readonly string[] = Object.values(PROVIDER_DEFINITI
 const ALLOWED_PROVIDER_IDS = new Set<string>([...ROUTABLE_PROVIDER_IDS, "cloudflare-account-id"]);
 function isAllowedCredentialKey(key: string): boolean {
   if (ALLOWED_PROVIDER_IDS.has(key)) return true;
-  if (/^ollama-cloud:user:[a-f0-9]{24}$/.test(key)) return true;
+  if (/^(?:ollama-cloud|openrouter|puter):user:[a-f0-9]{24}$/.test(key)) return true;
   // R55: deterministic credential refs for USER_API sources — a pointer to a sealed value,
   // never the value itself.
   if (isUserApiCredentialRef(key)) return true;
@@ -1100,7 +1101,7 @@ async function discoverProviderFreeInner(providerId: string, adapter: ProviderAd
   if (!firewall || !modelRegistry) return 0;
   try {
     const models = await adapter.listModels();
-    if (providerId === "kilo-free-direct") {
+    if (providerId === "kilo-free-direct" || providerId === "blockrun-free-direct") {
       const verifiedAt = new Date().toISOString();
       const freeIds = new Set(models.filter((m) => m.isFree && m.freeStatus === "verified_free").map((m) => m.modelId));
       for (const model of models) {
@@ -1108,10 +1109,10 @@ async function discoverProviderFreeInner(providerId: string, adapter: ProviderAd
         firewall.register({
           providerId, modelId: model.modelId, displayName: model.displayName, tier: "free",
           accessClass: "FREE_ROUTED", freeStatus: "verified_free", freeStatusVerifiedAt: verifiedAt,
-          verificationSource: "https://kilo.ai/docs/gateway/models-and-providers + live /models pricing",
+          verificationSource: providerId === "blockrun-free-direct" ? "https://blockrun.ai/docs/rate-limits + live /models free billing and pricing" : "https://kilo.ai/docs/gateway/models-and-providers + live /models pricing",
           isRemote: true, isCloudHosted: true, contextWindow: model.contextWindow,
           capabilities: model.capabilities, privacyClass: "permissive",
-          costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, freeTierVerifiedAt: verifiedAt, paidFallbackPossible: false, paidFallbackDisabled: true, source: "kilo:anonymous-free-catalog" },
+          costProfile: { inputCostPerMillion: 0, outputCostPerMillion: 0, isFree: true, freeTierVerifiedAt: verifiedAt, paidFallbackPossible: false, paidFallbackDisabled: true, source: `${providerId}:anonymous-free-catalog` },
           health: { status: "available", lastCheckedAt: verifiedAt },
         });
       }
@@ -2454,6 +2455,7 @@ async function startPrimaryInstance(): Promise<void> {
       if (credentials[id] || providerConnections.credentialSourceOf(id) !== "NONE") registerProviderAdapter(id);
     }
     providerConnections.publishAll();
+    void providerConnections.reconcile("openrouter").catch(() => {});
     const delegatedRecheckTimer = setInterval(() => {
       if (providerConnections?.credentialSourceOf("openrouter") === "OAUTH") void providerConnections.reconcile("openrouter").catch(() => {});
     }, 15 * 60_000);
@@ -2475,6 +2477,20 @@ async function startPrimaryInstance(): Promise<void> {
       const kiloPolicyTimer = setInterval(() => void refreshKiloPolicy(), 6 * 60 * 60_000);
       kiloPolicyTimer.unref();
       app.once("before-quit", () => clearInterval(kiloPolicyTimer));
+    }
+    if (registerProviderAdapter("blockrun-free-direct")) {
+      freeCloud?.setConnection({ providerId: "blockrun-free-direct", connected: true, credentialSource: "ANONYMOUS_DIRECT", supplyClass: "PACKAGED_FREE_DIRECT", authState: "ok", ownerUserId: userConnectedFreeScopeId() });
+      void discoverProviderFree("blockrun-free-direct").then(() => scheduleQualification("blockrun-free-direct")).catch(() => {});
+      const refreshBlockRunPolicy = async (): Promise<void> => {
+        const result = await reverifyBlockRunPolicy(new Date().toISOString());
+        if (result.status === "VERIFIED") freeCloud?.setDirectPolicyReceipt("blockrun-free-direct", result.receipt);
+        else if (result.status === "CHANGED") freeCloud?.setDirectPolicyReceipt("blockrun-free-direct", undefined);
+        if (result.status !== "VERIFIED") console.warn(`[CodeForge] BlockRun policy re-verification ${result.status}: ${result.source ?? "unknown"}`);
+      };
+      void refreshBlockRunPolicy();
+      const blockRunPolicyTimer = setInterval(() => void refreshBlockRunPolicy(), 6 * 60 * 60_000);
+      blockRunPolicyTimer.unref();
+      app.once("before-quit", () => clearInterval(blockRunPolicyTimer));
     }
     if (registerProviderAdapter("ai-horde")) {
       freeCloud?.setConnection({
@@ -3521,6 +3537,7 @@ ipcMain.handle("cloud:auth:start", async (event) => {
     });
     saveCloudTokens(result.accessToken, result.refreshToken, result.user);
     await providerConnections?.reconcile("ollama-cloud");
+    await providerConnections?.reconcile("openrouter");
     await registerCloudAdapter();
     return { ok: true, user: result.user };
   } catch (error) {
@@ -3631,6 +3648,7 @@ ipcMain.handle("cloud:account:delete", async (event) => {
     // the local credential is dead: clear it so the app is honestly signed out.
     clearCloudTokens();
     await providerConnections?.reconcile("ollama-cloud");
+    await providerConnections?.reconcile("openrouter");
     providerAuthState.delete("codeforge-cloud");
     throw new Error("Your CodeForge Cloud session is no longer valid. If the account was already deleted, no further action is needed; otherwise sign in again to delete it.");
   }
@@ -3641,6 +3659,7 @@ ipcMain.handle("cloud:account:delete", async (event) => {
   const receipt = await res.json();
   clearCloudTokens();
   await providerConnections?.reconcile("ollama-cloud");
+  await providerConnections?.reconcile("openrouter");
   providerAuthState.delete("codeforge-cloud");
   if (firewall) {
     for (const model of firewall.allModels()) {
@@ -3652,7 +3671,6 @@ ipcMain.handle("cloud:account:delete", async (event) => {
 
 ipcMain.handle("cloud:auth:logout", async (event) => {
   assertMainWindowSender(event);
-  if (providerConnections?.credentialSourceOf("openrouter") === "OAUTH") await providerConnections.disconnect("openrouter");
   const tokens = getStoredCloudTokens();
   if (tokens.refreshToken) {
     try {
@@ -3665,6 +3683,7 @@ ipcMain.handle("cloud:auth:logout", async (event) => {
   }
   clearCloudTokens();
   await providerConnections?.reconcile("ollama-cloud");
+  await providerConnections?.reconcile("openrouter");
   providerAuthState.delete("codeforge-cloud");
   if (firewall) {
     for (const model of firewall.allModels()) {

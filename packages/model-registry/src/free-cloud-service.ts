@@ -13,6 +13,7 @@ import {
 import type { ChatRequest, OpenRouterEntitlementReceipt, ProviderAdapter, ProviderCatalog, ProviderExecutionContext, ProviderResponseObservation, ProviderResponseObserver, StreamEvent } from "@codeforge/providers";
 import {
   runRoleAwareQualification,
+  runRoleOnlyQualification,
   rateLimitObservationFromHeaders,
   type EightBitRouteHealthAuthority,
   type EightBitRole,
@@ -309,7 +310,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private definitions: Record<string, ProviderDefinition>;
   private qualificationStore: QualificationPersistence;
   private readonly receipts = new Map<string, ModelQualificationReceipt>();
-  private kiloPolicyReceipt?: FreeAdmissionReceipt;
+  private readonly directPolicyReceipts = new Map<string, FreeAdmissionReceipt>();
   private hordePolicyReceipt?: FreeAdmissionReceipt;
   private readonly connections = new Map<string, ProviderConnectionState>();
   private readonly managedPools = new Map<string, ManagedPoolRecord>();
@@ -356,7 +357,13 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     this.qualificationStore = options.qualificationStore ?? new InMemoryQualificationPersistence();
     this.now = options.now ?? (() => new Date());
     this.maxQualificationsPerCycle = options.maxQualificationsPerCycle ?? 3;
-    this.qualificationRunner = options.qualificationRunner ?? ((model, adapter, runOpts) => runRoleAwareQualification(model, adapter, { now: this.now, signal: runOpts?.signal }));
+    this.qualificationRunner = options.qualificationRunner ?? ((model, adapter, runOpts) => {
+      const runOptions = { now: this.now, signal: runOpts?.signal };
+      // A non-coding text model can prove independent review without earning editing roles.
+      return model.capabilities.coding === false && model.capabilities.text
+        ? runRoleOnlyQualification(model, adapter, { ...runOptions, roles: ["REVIEWER"] })
+        : runRoleAwareQualification(model, adapter, runOptions);
+    });
     this.failureCooldownMs = options.failureCooldownMs ?? 30_000;
     this.qualificationDailyBudget = options.qualificationDailyBudgetPerProvider ?? 24;
     this.qualificationRequestsPerCycle =
@@ -413,7 +420,12 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   // --- connections ---------------------------------------------------------------------------
 
   setKiloPolicyReceipt(receipt: FreeAdmissionReceipt | undefined): void {
-    this.kiloPolicyReceipt = receipt;
+    this.setDirectPolicyReceipt("kilo-free-direct", receipt);
+  }
+
+  setDirectPolicyReceipt(providerId: string, receipt: FreeAdmissionReceipt | undefined): void {
+    if (receipt) this.directPolicyReceipts.set(providerId, receipt);
+    else this.directPolicyReceipts.delete(providerId);
     this.emit();
   }
 
@@ -579,7 +591,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     await this.loadQualificationSpend();
     const all = await this.qualificationStore.loadAll();
     for (const r of all) {
-      this.receipts.set(`${r.providerId}::${r.modelId}`, r);
+      this.receipts.set(`${r.providerId}::${r.modelId}`, structuredClone(r));
       this.applyReceiptToFirewall(r);
     }
     this.emit();
@@ -604,7 +616,8 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   }
 
   getReceipt(providerId: string, modelId: string): ModelQualificationReceipt | undefined {
-    return this.receipts.get(`${providerId}::${modelId}`);
+    const receipt = this.receipts.get(`${providerId}::${modelId}`);
+    return receipt === undefined ? undefined : structuredClone(receipt);
   }
 
   /** R41 routing-hook surface: the same persisted receipt, exposed for role-quality advice. */
@@ -631,8 +644,9 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
 
   /** Test/certification seam: record an externally produced receipt. */
   async recordReceipt(receipt: ModelQualificationReceipt): Promise<void> {
-    this.receipts.set(`${receipt.providerId}::${receipt.modelId}`, receipt);
     await this.qualificationStore.save(receipt);
+    if (receipt.metadata?.transient === true) return;
+    this.receipts.set(`${receipt.providerId}::${receipt.modelId}`, structuredClone(receipt));
     this.emit();
   }
 
@@ -915,13 +929,18 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
         const measured = dispatches || (typeof reported === "number" && Number.isSafeInteger(reported) && reported >= 0 ? reported : this.qualificationRequestsPerCycle);
         spend.requests = priorSpend + Math.min(dispatchLimit, measured);
         await this.persistQualificationSpend(providerId);
+        const preservedReceipt = budgetExhausted || measured > dispatchLimit
+          ? { ...receipt, metadata: { ...receipt.metadata, transient: true, qualificationBudgetExhausted: true } }
+          : receipt;
+        await this.qualificationStore.save(preservedReceipt).catch(() => undefined);
         // A partial suite cannot certify a model or poison its runtime capacity/role health.
         if (budgetExhausted || measured > dispatchLimit) { ctx.taken++; continue; }
         // A transient (429/401/timeout) probe is not evidence about the model; keep it pending.
         // It still counts against the provider's daily spend (conservative), but not against the
         // per-cycle slots, so the lane moves on to a route that can actually be scored.
         if (receipt.metadata?.transient === true) {
-          this.recordRouteFailure(route.providerId, route.providerModelId, "RATE_LIMITED");
+          this.recordRouteFailure(route.providerId, route.providerModelId,
+            receipt.metadata.providerFailureClass === "MODEL_IDENTITY" ? "MODEL_IDENTITY_UNAVAILABLE" : "RATE_LIMITED");
           const coolingUntil = this.health.get(`${route.providerId}::${route.providerModelId}`)?.cooldownUntil;
           if (coolingUntil !== undefined) {
             const prior = ctx.transientCooldowns.get(providerId);
@@ -930,8 +949,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
           continue;
         }
         ctx.taken++;
-        this.receipts.set(`${receipt.providerId}::${receipt.modelId}`, receipt);
-        await this.qualificationStore.save(receipt).catch(() => undefined);
+        this.receipts.set(`${receipt.providerId}::${receipt.modelId}`, structuredClone(receipt));
         this.applyReceiptToFirewall(receipt);
         ctx.produced.push(receipt);
         this.emit();
@@ -1129,6 +1147,9 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
       const backoff = Math.min(SHARED_MAX_COOLDOWN_MS, this.failureCooldownMs * 2 ** Math.min(5, failures - 1));
       cooldownUntil = nowMs + Math.max(retryAfterMs ?? 0, backoff);
       if (status === "QUOTA_EXHAUSTED") cooldownUntil = nowMs + Math.max(retryAfterMs ?? 0, SHARED_MAX_COOLDOWN_MS);
+    } else if (upper === "MODEL_IDENTITY_UNAVAILABLE") {
+      status = "COOLDOWN";
+      cooldownUntil = nowMs + this.failureCooldownMs;
     } else if (/AUTH/.test(upper)) {
       status = "AUTH_REQUIRED";
     } else if (/NOT_FOUND|RETIRED|ELIGIBILITY|PAID_PLAN|FREE_TIER/.test(upper)) {
@@ -1517,9 +1538,9 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
             marginalCostToCodeForge: 0,
             freePrivacyClass: "DATA_COLLECTION_ALLOWED" as const,
             trainingUse: "YES" as const,
-            ...(this.kiloPolicyReceipt && this.receipts.get(`${r.providerId}::${r.providerModelId}`) ? {
+            ...(this.directPolicyReceipts.get(r.providerId) && this.receipts.get(`${r.providerId}::${r.providerModelId}`) ? {
               admissionReceipt: {
-                ...this.kiloPolicyReceipt,
+                ...this.directPolicyReceipts.get(r.providerId)!,
                 qualificationAt: this.receipts.get(`${r.providerId}::${r.providerModelId}`)!.completedAt,
               },
             } : {}),

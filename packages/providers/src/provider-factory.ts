@@ -5,6 +5,7 @@ import { AnthropicAdapter } from "./anthropic.js";
 import { createOpenRouterAdapter } from "./openrouter.js";
 import { createOpencodeAdapter } from "./opencode.js";
 import { createAiHordeCommunityAdapter } from "./ai-horde.js";
+import { createBlockRunFreeAdapter } from "./blockrun-free.js";
 import type { ProviderAdapter } from "./index.js";
 import type { CloudflareNeuronBudgetGuard } from "./cloudflare-neuron-budget.js";
 import type { GeminiFreePolicyGate } from "@codeforge/legal-policy";
@@ -298,6 +299,12 @@ function mapNormalProductionModel(raw: unknown): ProviderModel | null {
   };
 }
 
+function mapSambaNovaProductionModel(raw: unknown): ProviderModel | null {
+  const model = mapNormalProductionModel(raw);
+  if (!model || !["MiniMax-M2.7", "DeepSeek-V3.1", "Meta-Llama-3.3-70B-Instruct", "gpt-oss-120b"].includes(model.modelId)) return null;
+  return model;
+}
+
 function mapOllamaModel(raw: unknown): ProviderModel | null {
   if (typeof raw !== "object" || raw === null) return null;
   const model = raw as Record<string, unknown>;
@@ -329,6 +336,7 @@ function mapOllamaModel(raw: unknown): ProviderModel | null {
  */
 export function createProviderAdapterFromDefinition(def: ProviderTransportDefinition, opts: ProviderFactoryOptions = {}): ProviderAdapter | undefined {
   if (def.id === "kilo-free-direct") return opts.clientDirectAuthorized ? createKiloFreeDirectAdapter(opts) : undefined;
+  if (def.id === "blockrun-free-direct") return opts.clientDirectAuthorized ? createBlockRunFreeAdapter({ timeoutMs: opts.timeoutMs, fetchFn: opts.fetchFn, onResponse: opts.onResponse }) : undefined;
   if (def.id === "ai-horde") {
     // Anonymous community egress leaves from the installed client host — same trust boundary
     // as the Kilo direct transport. The caller's observer still receives every observation.
@@ -377,6 +385,7 @@ export function createProviderAdapterFromDefinition(def: ProviderTransportDefini
       };
       if (def.id === "google") cfg.mapModel = mapGeminiModel;
       if (def.id === "mistral" || def.id === "cerebras") cfg.mapModel = mapNormalProductionModel;
+      if (def.id === "sambanova") cfg.mapModel = mapSambaNovaProductionModel;
       if (def.id === "ollama-cloud") cfg.mapModel = mapOllamaModel;
       if (def.id === "cloudflare-workers-ai") {
         cfg.mapModel = mapCloudflareModel;
@@ -405,6 +414,8 @@ export function createProviderAdapterById(providerId: string, opts: ProviderFact
   switch (providerId) {
     case "kilo-free-direct":
       return opts.clientDirectAuthorized ? createKiloFreeDirectAdapter(opts) : undefined;
+    case "blockrun-free-direct":
+      return opts.clientDirectAuthorized ? createBlockRunFreeAdapter({ timeoutMs: opts.timeoutMs, fetchFn: opts.fetchFn, onResponse: opts.onResponse }) : undefined;
     case "ai-horde":
       return opts.clientDirectAuthorized
         ? createAiHordeCommunityAdapter({

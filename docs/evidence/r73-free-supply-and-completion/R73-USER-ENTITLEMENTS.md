@@ -1,0 +1,47 @@
+# R73 user entitlement boundaries
+
+Audit date: 2026-10-08. Baseline: R72 delivery `220b365c553bff0b1ee952fb6b96498c8ddea325`. No account creation, authorization, inference, purchased-credit consumption, or raw credential publication occurred in this workstream. Tests use injected SDK/account fixtures. Historical live R71/R72 receipts remain historical evidence.
+
+## OpenRouter
+
+The R72 delegated receipt carried a local owner, but the encrypted OAuth key and credential-source marker were global. Reconciliation could verify that same external key while binding the receipt to a different currently signed-in CodeForge user. This was a concrete cross-user connection defect, independent of model pricing.
+
+R73 stores new OpenRouter connections under `openrouter:user:<local-owner-hash>`, stores delegated receipts per owner, and refuses in-flight connection results after a local account switch. Legacy OAuth secrets migrate only when the prior owner and credential fingerprint agree. Another local owner cannot resolve the legacy key or reuse it through receipt refresh. New storage writes roll credentials back when source persistence fails.
+
+Restarted connections retain encrypted credentials but cannot publish delegated Free admission until the account entitlement is freshly checked. Authentication rejection, stale receipts, paid-tier changes, missing policy evidence, and account switches withdraw the adapter and its eligible model entries. Startup performs refresh; the existing periodic check remains. Login, logout, and account-deletion transitions reconcile the OpenRouter connection. Logout preserves the encrypted owner connection while withdrawing that owner's route; explicit disconnect removes the local secret and records local revocation.
+
+The PKCE callback remains loopback-bound, validates host/path/method/state and unambiguous authorization code, and exchanges the one-use verifier through the existing official endpoint. Invalid callbacks no longer cancel the legitimate authorization. Callback HTML uses no-store, no-referrer, nosniff, and restrictive CSP. The authorization deadline now applies while token exchange is pending, and duplicate callbacks cannot start another exchange.
+
+Existing exact-zero model checks and the stricter unpaid-account admission policy remain intact. Paid-tier, promotional, missing-owner, organization-owned, and ambiguous-quota receipts do not become automatic user Free routes. Published unpaid-account limits remain 50 requests per UTC day and 20 requests/minute, subject to current authoritative metadata and provider policy. [Official OAuth](https://openrouter.ai/docs/guides/overview/auth/oauth), [limits](https://openrouter.ai/docs/api_reference/limits).
+
+Remote revocation is distinguished from local disconnect: the delegated inference key is not a management credential. No remote key-management call is invented. Provider-side revocation is detected by the authoritative entitlement probe; local disconnect removes the usable local credential immediately. No new live unpaid account, packaged desktop restart, or remote revocation certification was available.
+
+## Puter
+
+R72 browser authorization, account/catalog/allowance observation, encrypted owner storage, and automatic inference exclusion are preserved. R73 fixes the main-process credential-key allowlist to admit the existing `puter:user:<hash>` storage key; it previously admitted Ollama owner keys only.
+
+`PuterSdkAdapter` implements the documented SDK interface: catalog discovery, normalized chat, system/tool message mapping, function calls, streaming tools/text/usage, in-band errors, account observations, owner checks, cancellation, and bounded waits. Unknown or malformed output, empty completion, duplicate tool IDs, unsupported finish reasons, and a stream missing its final usage chunk do not produce successful completion. Provider messages are sanitized before error publication; no raw token or prompt-bearing SDK error is forwarded.
+
+`ProviderConnections.puterTransport()` binds an SDK initializer to the encrypted owner token inside the trusted process. The returned transport becomes unusable after account switch, disconnect, or token replacement. This seam accepts the official SDK client; no unofficial private endpoint or OpenAI paid-plan endpoint is substituted. The Node SDK runtime is not added as a packaged dependency because the production billing gate remains closed. No live Puter model has been qualified.
+
+Automatic Free admission remains disabled at account observation, adapter `canRoute()`, registry registration, and model cost classification. The transport is infrastructure, not newly admitted supply. Status: `INTEGRATED_BUT_FREE_ADMISSION_BLOCKED`, with live transport and packaged SDK binding unproven.
+
+The current official quota policy says purchased credits are used after the monthly allowance. No documented provider-enforced hard zero-spend scope, free-only account token, or monthly included-allowance stop was found in the reviewed SDK options. Client balance estimates do not provide that guarantee. [Quota policy](https://docs.puter.com/rate-limits-and-quotas/).
+
+The current catalog documentation also describes `:free` model variants. That is a potentially narrower route deserving separate cost/served-model/fallback verification; it does not establish that an arbitrary monthly-allowance call cannot spend a wallet. No variant was promoted by its suffix. [Catalog](https://docs.puter.com/AI/listModels/), [SDK chat](https://docs.puter.com/AI/chat/), [stream format](https://docs.puter.com/Objects/chatresponsechunk/), [official Node initialization](https://docs.puter.com/getting-started/).
+
+## SambaNova and Z.ai
+
+Both already have supported account-key transports and desktop connection definitions. Rebuilding those transports would not supply the absent external account entitlement.
+
+SambaNova's current documentation defines its Free tier by absence of a payment method. The named production Free models are `DeepSeek-V3.1`, `Meta-Llama-3.3-70B-Instruct`, and `gpt-oss-120b`, each listed at 20 RPM, 20 RPD, and 200,000 TPD. Preview models are evaluation-only. R73 narrows the inherited all-chat Free allowance to those three production IDs and filters the actual transport catalog against the documented production roster. Unknown new or unlabelled evaluation models are excluded pending policy updates. No current authorized no-card account was supplied, so quota ownership, billing protection, and live qualification are unproven. [Official production/preview limits](https://docs.sambanova.ai/docs/en/models/rate-limits).
+
+Z.ai still lists exact `GLM-4.7-Flash` and `GLM-4.5-Flash` at zero token prices; the separately priced web-search tool is excluded from that cost claim. The inherited compatible transport and optional user connection remain. No new credential, owner/quota receipt, privacy qualification, or live inference was available; no new automatic entitlement was asserted. [Official pricing](https://docs.z.ai/guides/overview/pricing), [HTTP API](https://docs.z.ai/guides/develop/http/introduction).
+
+## Deterministic validation and limits
+
+Final affected validation: 85/85 tests passed across 9 files, including 24 provider-connection tests, 4 OpenRouter callback tests, 2 Puter browser tests, 8 Puter SDK tests, OpenRouter entitlement/PKCE, Electron security/credential encryption, and 2 SambaNova production-supply tests. The root workspace TypeScript build passed before this run. See `user-entitlements-validation.json` for the exact command and summary. Initial passing subsets overlap and are not added to this count.
+
+Loopback callback tests initially failed under restricted sandbox networking with `connect EACCES 127.0.0.1`; the authorized local-only rerun passed. A prior run also hit a temporary Vite transform-cache ENOENT, addressed with a worktree-local temporary directory. Neither failure is a successful live authorization. The task-specific transform cache was removed after the final successful run. Broader final suite/package/build results are recorded in `R73-VALIDATION.md` by the delivery workstream.
+
+No two-user live entitlement, signed Windows account restart, external revocation, or new independent account allowance is claimed by these fixtures. The hard Free admission and privacy gates remain required for every production request.

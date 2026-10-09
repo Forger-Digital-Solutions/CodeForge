@@ -40,7 +40,7 @@ export interface SmokeWorkerRecord {
     outputTokens: number;
     toolCalls: number;
     retryCount: number;
-    providerFailures: number;
+    providerFailures: number | null;
   };
   startedAt: string;
   completedAt?: string;
@@ -219,6 +219,7 @@ export function rowsFromSmokeWorkers(
   for (const [index, worker] of workers.entries()) {
     if (!worker.model) continue;
     if (worker.telemetry.modelRequests === 0) continue;
+    if (worker.telemetry.providerFailures === null) continue;
     const routeServed = worker.telemetry.providerFailures === 0;
     const outcome: RouteOutcomeLabel = routeServed ? "SUCCESS" : "RATE_LIMITED";
     const { canonicalModelId, modelFamily } = familyOf(worker.model.providerId, worker.model.modelId);

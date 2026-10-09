@@ -1,0 +1,406 @@
+{
+  "at": "2026-10-08T14:29:46.452Z",
+  "source": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion",
+  "startingHead": "220b365c553bff0b1ee952fb6b96498c8ddea325",
+  "currentHead": "220b365c553bff0b1ee952fb6b96498c8ddea325",
+  "branch": "codex/r73-free-supply-and-completion",
+  "r72Head": "220b365c553bff0b1ee952fb6b96498c8ddea325",
+  "r72Clean": true,
+  "originalHead": "6f8ad979fb9de0a17f69571d03358d7db5a35459",
+  "originalBranch": "codex/r29-release-closure",
+  "originalStatus": "M apps/desktop/scripts/packaged-endurance.mjs\n M benchmarks/r57/extract-packaged-repeat.mjs\n M docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json\n M docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md\n M docs/evidence/r60-usable-free-inference/postgres-parity.json\n M packages/server/test/fixtures/run-recovery-worker.mjs\n?? .playwright-mcp/page-2026-09-30T14-12-25-645Z.yml\n?? .playwright-mcp/page-2026-09-30T14-12-42-896Z.png\n?? .playwright-mcp/page-2026-09-30T14-15-00-716Z.png\n?? .playwright-mcp/page-2026-09-30T14-15-34-155Z.png\n?? .playwright-mcp/page-2026-09-30T14-15-58-443Z.png\n?? .playwright-mcp/page-2026-09-30T14-16-43-820Z.yml\n?? .playwright-mcp/page-2026-09-30T14-16-56-910Z.png\n?? .playwright-mcp/page-2026-09-30T14-17-19-365Z.png\n?? .playwright-mcp/page-2026-09-30T14-17-39-765Z.png\n?? .playwright-mcp/page-2026-09-30T14-34-08-934Z.yml\n?? .playwright-mcp/page-2026-09-30T14-34-21-922Z.png\n?? .playwright-mcp/page-2026-09-30T20-28-46-481Z.yml\n?? atom-v41-default.png\n?? benchmarks/r57/accounting-fault-campaign.mjs\n?? benchmarks/r57/audit-evidence.mjs\n?? benchmarks/r57/kill-resume-campaign.mjs\n?? benchmarks/r57/live-task-campaign.mjs\n?? benchmarks/r57/packaged-selfdogfood.mjs\n?? benchmarks/r57/selfdogfood-acceptance.mjs\n?? benchmarks/r57/selfdogfood-goal.json\n?? benchmarks/r57/summarize-continuation.mjs\n?? benchmarks/r58/tmp/\n?? benchmarks/r59/tmp/asarcheck.mjs\n?? benchmarks/r59/tmp/asarcheck2.mjs\n?? benchmarks/r59/tmp/asarcheck3.mjs\n?? benchmarks/r59/tmp/chk-asar.cjs\n?? benchmarks/r59/tmp/dbg.mjs\n?? benchmarks/r59/tmp/dogfood-profile-v10/\n?? benchmarks/r59/tmp/dogfood-run.err\n?? benchmarks/r59/tmp/dogfood-run10.err\n?? benchmarks/r59/tmp/dogfood-run11.err\n?? benchmarks/r59/tmp/dogfood-run12.err\n?? benchmarks/r59/tmp/dogfood-run13.err\n?? benchmarks/r59/tmp/dogfood-run2.err\n?? benchmarks/r59/tmp/dogfood-run4.err\n?? benchmarks/r59/tmp/dogfood-run5.err\n?? benchmarks/r59/tmp/dogfood-run6.err\n?? benchmarks/r59/tmp/dogfood-run7.err\n?? benchmarks/r59/tmp/dogfood-run8.err\n?? benchmarks/r59/tmp/dogfood-run9.err\n?? benchmarks/r59/tmp/dogfood.pid\n?? benchmarks/r59/tmp/measure-context.mjs\n?? benchmarks/r59/tmp/measure-context2.mjs\n?? benchmarks/r59/tmp/measure-demand.mjs\n?? benchmarks/r59/tmp/measure-ratio.mjs\n?? benchmarks/r59/tmp/monitor.mjs\n?? benchmarks/r59/tmp/repro-demand.mjs\n?? benchmarks/r59/tmp/repro-demand2.mjs\n?? benchmarks/r59/tmp/runcheck.mjs\n?? benchmarks/r59/tmp/workspace/\n?? benchmarks/r60/\n?? benchmarks/r62/\n?? benchmarks/r63/\n?? benchmarks/r64/\n?? benchmarks/r65/tmp/\n?? benchmarks/r67/add-routing-tests.mjs\n?? benchmarks/r67/edit-recovery.mjs\n?? benchmarks/r67/pagination-audit.mjs\n?? benchmarks/r67/preserve-recovery-telemetry.mjs\n?? benchmarks/r67/wire-parent-recovery.mjs\n?? benchmarks/r68/\n?? benchmarks/r69/\n?? benchmarks/r70/\n?? benchmarks/r71/\n?? deploy/inference/qwen-coder-free/Dockerfile.modal\n?? deploy/inference/qwen-coder-free/__pycache__/\n?? deploy/inference/qwen-coder-free/modal_app.py\n?? docs/evidence/r57-autonomous-endurance-learning/R57-FINAL-REPORT.md\n?? docs/evidence/r57-autonomous-endurance-learning/accounting-fault-campaign.json\n?? docs/evidence/r57-autonomous-endurance-learning/adaptive-learning-runtime-proof.json\n?? docs/evidence/r57-autonomous-endurance-learning/anti-loop-runtime-proof.json\n?? docs/evidence/r57-autonomous-endurance-learning/endurance-campaign.json\n?? docs/evidence/r57-autonomous-endurance-learning/fairness-report.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-dependency-audit.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-doc-links.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-evidence-privacy-scan.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-public-claims.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-sbom.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-secret-scan.json\n?? docs/evidence/r57-autonomous-endurance-learning/kill-resume-campaign.json\n?? docs/evidence/r57-autonomous-endurance-learning/live-concurrent-bugfix.json\n?? docs/evidence/r57-autonomous-endurance-learning/live-feature.json\n?? docs/evidence/r57-autonomous-endurance-learning/live-regression.json\n?? docs/evidence/r57-autonomous-endurance-learning/live-task-matrix.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-live-alt-qwen-diagnostic.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-diagnostic.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-longpath-failure.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-checkpoint-restored-verification-blocked.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-cohere-watchdog-ceiling.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-groq-catalog-empty.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-groq-model-not-found.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-lfm25-killed.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-lightning-stalled.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-ling-watchdog-ceiling.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-nanoomni-502.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-openrouter-auto-ceiling.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-openrouter-gptoss-not-registered.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-poolside-429.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-qwen-429.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-stub-coder-path-blocked.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-watchdog-ceiling-openrouter-120b.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-soak-10min.json\n?? docs/evidence/r57-autonomous-endurance-learning/real-concurrency.json\n?? docs/evidence/r57-autonomous-endurance-learning/self-dogfood-live-groq.json\n?? docs/evidence/r57-autonomous-endurance-learning/self-dogfood-live-retry.json\n?? docs/evidence/r57-autonomous-endurance-learning/self-dogfood-live.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory-roles.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory-v10-profile.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory-v10.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory.pre-dedupe-fix.json\n?? docs/evidence/r59-supply-recovery/packaged-self-dogfood-v12.json\n?? docs/evidence/r59-supply-recovery/packaged-self-dogfood-v8-capacity-denied-evidence.json\n?? docs/evidence/r59-supply-recovery/packaged-self-dogfood.json\n?? docs/evidence/r60-usable-free-inference/gpu-infrastructure.json\n?? docs/evidence/r69-everyday-completion-closure/\n?? docs/evidence/r70-free-supply-independence/\n?? shots/\n?? verify-homepage-default.png\n?? worktrees/",
+  "preservedFiles": [
+    {
+      "file": "apps/desktop/scripts/packaged-endurance.mjs",
+      "sha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c"
+    },
+    {
+      "file": "benchmarks/r57/extract-packaged-repeat.mjs",
+      "sha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7"
+    },
+    {
+      "file": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+      "sha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b"
+    },
+    {
+      "file": "docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md",
+      "sha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497"
+    },
+    {
+      "file": "docs/evidence/r60-usable-free-inference/postgres-parity.json",
+      "sha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243"
+    },
+    {
+      "file": "packages/server/test/fixtures/run-recovery-worker.mjs",
+      "sha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd"
+    }
+  ],
+  "priorEvidence": [
+    {
+      "file": "affected-tests.json",
+      "bytes": 1159192,
+      "sha256": "717f591c4563c5b21238568475dd2cb4a7b2537bf58c5767b4968ae5e87fc11d"
+    },
+    {
+      "file": "child-coding-proof.json",
+      "bytes": 1378,
+      "sha256": "da0ff4b30b55d31d3cf7aa03dadff5b0d206c4b04c169fb791b3eddf8423e5e6"
+    },
+    {
+      "file": "delivery-publication.json",
+      "bytes": 925,
+      "sha256": "758ebf257f8bf04e2b867fea412420b10c7c34939ebf645b807f4439f23044e3"
+    },
+    {
+      "file": "evidence-manifest.json",
+      "bytes": 16876,
+      "sha256": "5363dbdfd195a7af5526a61652fe889595860161086385033941bcf2dbccc355"
+    },
+    {
+      "file": "final-audit.json",
+      "bytes": 4544,
+      "sha256": "c1a00cb3c1611bc62495365b6614c391420f15420073007933f86fa49c253896"
+    },
+    {
+      "file": "final-boundary-tests.json",
+      "bytes": 10706,
+      "sha256": "bee3cfa3e4cf75025dca8b0a3d8758ca2d3d6815786bbeb3e3ab5df5881bf658"
+    },
+    {
+      "file": "final-focus-tests.json",
+      "bytes": 14263,
+      "sha256": "536fb46a672c7026ed93c345436f7e4548a4a6da41e96c9cb584f049e641b23e"
+    },
+    {
+      "file": "final-verification-suite.json",
+      "bytes": 108103,
+      "sha256": "cdb88a7ee2f39c736d3c498389a2ae55200317f36f11613c4f37eda2f6161d92"
+    },
+    {
+      "file": "final-workspace-build.log",
+      "bytes": 4812,
+      "sha256": "289676cb4eef64886f816bee9e9ab1ded103e63ade6d471dd83ae7396b7bfc14"
+    },
+    {
+      "file": "focused-tests.json",
+      "bytes": 46846,
+      "sha256": "a044b827ed23def242362ba7efca8abeec48ce8056c789874cbd02d3a5be01db"
+    },
+    {
+      "file": "frozen-desktop-build.log",
+      "bytes": 1768,
+      "sha256": "373bd56983788a3a1e8555d665066427b5e956f539d4c1a546f7dd3adc4ec628"
+    },
+    {
+      "file": "isolated-autonomous-orchestrator.json",
+      "bytes": 12227,
+      "sha256": "d2c9cc05f73421dee5dc2e412cd1bef05de4bcfef3bd20343a3f0d3f670e27c0"
+    },
+    {
+      "file": "isolated-diff-review.json",
+      "bytes": 2794,
+      "sha256": "1a6202efd534b72e979be58095b3b693f020a573822d98b0bb29f980b00bf490"
+    },
+    {
+      "file": "isolated-fg12f-production-reuse.json",
+      "bytes": 7260,
+      "sha256": "45b72ac57f977e2204fe0ee1651a672e9378e90b61145f02fe47fd4b55b7bbf0"
+    },
+    {
+      "file": "isolated-forge-verify-evidence.json",
+      "bytes": 2815,
+      "sha256": "30e9fc81af8dbe7b4a4017de27f40962e86aa4126124132b9ef3b893f9a835d9"
+    },
+    {
+      "file": "isolated-forge-verify.json",
+      "bytes": 3588,
+      "sha256": "2364bd3af3b31465ddb987efcbb405737cebe8886a8fcfe28fc7fea59ea55134"
+    },
+    {
+      "file": "isolated-forge-workspaces.json",
+      "bytes": 5723,
+      "sha256": "159bfab96a823369fd51f692bda62a1a23e1f435efc5280e2367eff3a7793487"
+    },
+    {
+      "file": "isolated-rechecks.json",
+      "bytes": 2811,
+      "sha256": "da3769b4e7781d7687d3ade817214cb81f0079df06abb8429761cae266713fe4"
+    },
+    {
+      "file": "isolated-remote-publication.json",
+      "bytes": 3160,
+      "sha256": "a8c98c18ed5a0814a49d72818a1f6744016b028fef761c335e101e6eacf71d6e"
+    },
+    {
+      "file": "isolated-workflow-goal-review.json",
+      "bytes": 8064,
+      "sha256": "f82aeeffb2728b70ba91d632837621ab4da6535e1b3c18db48f848166c181a89"
+    },
+    {
+      "file": "native-diff-review.json",
+      "bytes": 2506,
+      "sha256": "5720d32c8031580342834a07960ce1c5fa292991e55cbde4e55784abb432c8d7"
+    },
+    {
+      "file": "native-fg12f-production-reuse.json",
+      "bytes": 6681,
+      "sha256": "a289d29785ff2949ef1e5713d0332e637cf4ef94be9652ec7a7cd2ff4b29f207"
+    },
+    {
+      "file": "native-forge-verify-evidence.json",
+      "bytes": 2965,
+      "sha256": "66e67505248ca0a2b0b6c8381824ba0b811efc2815ac707edf15792746fce434"
+    },
+    {
+      "file": "native-rechecks.json",
+      "bytes": 1522,
+      "sha256": "3af3cb12090a381cee164740f2e641ea3be0176ab2a1dde06ba8337f8f9561c9"
+    },
+    {
+      "file": "native-workflow-goal-review.json",
+      "bytes": 7374,
+      "sha256": "30390c0df1b5c412a49028dc904033ac12018c3b4d001fa000d85d00c8763d3b"
+    },
+    {
+      "file": "nested-workspace-hardening-tests.json",
+      "bytes": 17226,
+      "sha256": "97083fc46bc845f2ac81cde83a172a4e1b47ba229e0187f7a9981e4a9f9c762e"
+    },
+    {
+      "file": "opencode-inference.html",
+      "bytes": 19625,
+      "sha256": "779d2986667b7b4f425f36a6ed9f5f2ca89d8e0a59fbc0e5754fe2ca338fd163"
+    },
+    {
+      "file": "opencode-terms.html",
+      "bytes": 40286,
+      "sha256": "2467ad66c3dae92744344845db45ad725493e61bee302c16014c462363e5aba1"
+    },
+    {
+      "file": "ovh-free-api.html",
+      "bytes": 1051016,
+      "sha256": "dfe031763d1b3b14f609a51b283778a6d8e577b73429cc13d72bbfb1b18c351d"
+    },
+    {
+      "file": "ovh-getting-started.html",
+      "bytes": 1373555,
+      "sha256": "ec34e316dd3560918929512812f35fffbcd83ec607a925b7a83c660cb5a339b3"
+    },
+    {
+      "file": "provenance.json",
+      "bytes": 20132,
+      "sha256": "67b7600a82135484da1cb182ff6f68b27a17477b144393ecd3206b468688e76d"
+    },
+    {
+      "file": "puter-quotas.html",
+      "bytes": 95493,
+      "sha256": "d5362cf7690d07b2c7d7d93669ffe90bb6380214e5b449a1257fa5340b507ad0"
+    },
+    {
+      "file": "puter-signin.html",
+      "bytes": 51833,
+      "sha256": "9356b09958755091ef681e268a50fc1ce111792577e492a7be900f5d71710692"
+    },
+    {
+      "file": "qualification-dots-studio_dots-3-note-preview_free-1791464849592.json",
+      "bytes": 42491,
+      "sha256": "eb9c8de807f0750c1a538b7de8ecffa1845f0c9941e82cb019877a936160336d"
+    },
+    {
+      "file": "qualification-liquid_lfm-2.5-2.6b_free-1791466230688.json",
+      "bytes": 16925,
+      "sha256": "84444860d23703ac1455126f7083f27d93d9177a0de1be783115650e07250214"
+    },
+    {
+      "file": "qualification-nvidia_nemotron-3.5-lightning_free-1791465864045.json",
+      "bytes": 55804,
+      "sha256": "59a8fcb3f5c44a07a75c54765158076c6a7552ec7ea58e685411e4893d2827a2"
+    },
+    {
+      "file": "qualification-poolside_laguna-s-2.1_free-1791464804626.json",
+      "bytes": 8651,
+      "sha256": "01f90d88899a7c10cb93aa7355aad71c3ef9be9fddd5858447c9600190f62798"
+    },
+    {
+      "file": "qualification-summary.json",
+      "bytes": 2304,
+      "sha256": "ff9cfde1f11a8da74b5d3bf421fd95fe00712fe56f26156b709cac18c14b1145"
+    },
+    {
+      "file": "qualification-thinkingmachines_inkling-small_free-1791466536425.json",
+      "bytes": 6039,
+      "sha256": "3bd3a80fc25c8b7aa3804d29271241e0482f638b38aa7d1f59661fcb3c166929"
+    },
+    {
+      "file": "r71-diagnosis.json",
+      "bytes": 64861,
+      "sha256": "7ca48d735ef46f7888125bad3cddbed09dbcd6f6e5c3e45a05bff012c8854b68"
+    },
+    {
+      "file": "R72-AUTONOMOUS-RELIABILITY.md",
+      "bytes": 2546,
+      "sha256": "468120af3167760f7240b48377e51061cb8e0d786ade160c5bf49c44ce3239e8"
+    },
+    {
+      "file": "R72-ECONOMICS.md",
+      "bytes": 922,
+      "sha256": "67258afba3f32986a96587a68b6d9db60fb65799de965c11a582a7aae76486c0"
+    },
+    {
+      "file": "R72-FAILOVER.md",
+      "bytes": 1002,
+      "sha256": "97a729e119722695078382e78586d251ed8c15bac7f96e154228365225a307d9"
+    },
+    {
+      "file": "R72-FINAL-REPORT.md",
+      "bytes": 8453,
+      "sha256": "244f16a18d1a883147fb07d5bc19ad1a9bf7c8fb31142473dbe347657ea8c9a1"
+    },
+    {
+      "file": "R72-LIVE-QUALIFICATION.md",
+      "bytes": 2794,
+      "sha256": "c483d1a7e09722bcfb906cf03fb0818003fe8fe78b9242cf44758a30ba85570b"
+    },
+    {
+      "file": "R72-PACKAGED-ANONYMOUS.md",
+      "bytes": 766,
+      "sha256": "ac1caff6105d56ca518ece4e51cbcce8da6441eb3797f50dc89ff34d5e2e2811"
+    },
+    {
+      "file": "R72-QUOTA-OWNERSHIP.md",
+      "bytes": 1705,
+      "sha256": "f61eb324b6eef506c8b16aec54be02a564c86d97bd1e32d0082dc2b6dbcec270"
+    },
+    {
+      "file": "R72-SUPPLY-MATRIX.md",
+      "bytes": 24111,
+      "sha256": "2087c55116badb79184fee1bdde4343772ddbc0f58ec149380e3e23a1ea9e592"
+    },
+    {
+      "file": "R72-TASK-CAMPAIGN.json",
+      "bytes": 101157,
+      "sha256": "98ff7087a44528ab568a020ddec00e12d08bf076fac51a007130a32a2b5cd6ce"
+    },
+    {
+      "file": "R72-USER-ENTITLEMENTS.md",
+      "bytes": 2030,
+      "sha256": "d0b6e5c1ed08d2065a8e63523971abfbb147dd1cd11f113b7ba45f0812b57836"
+    },
+    {
+      "file": "R72-VALIDATION.md",
+      "bytes": 2388,
+      "sha256": "1573730d61f801727f0e4c46313af1e0ae135b15930b1eb9db9f75cd0bb50446"
+    },
+    {
+      "file": "R72-WINDOWS-PACKAGE.md",
+      "bytes": 1479,
+      "sha256": "e80c3df7a612d6ca44ec0f3b7fd7c13cbf1a64c699a17ca04802f6bc84870044"
+    },
+    {
+      "file": "reviewer-dots-studio_dots-3-note-preview_free-1791465616770.json",
+      "bytes": 28154,
+      "sha256": "308e2ece1488ac53aae582676e180d533ab2c335caf2e0c554928e94307ba6bf"
+    },
+    {
+      "file": "supply-preflight.json",
+      "bytes": 910254,
+      "sha256": "7043eecfa7279c9487dad856d73887e2d6a56ab0af7cdf4a0a616b8afeb527c7"
+    },
+    {
+      "file": "verification-hardening-tests.json",
+      "bytes": 108221,
+      "sha256": "e5be882c07840a0e005c00338a26b228d1500e8f6a2b8bd0913b951c18af7976"
+    },
+    {
+      "file": "windows-artifact-manifest.json",
+      "bytes": 2304,
+      "sha256": "bd0d898539be354f12729af5bce2b787360160e44be9cb1bf55831a058af00b5"
+    },
+    {
+      "file": "windows-auth-endpoint.log",
+      "bytes": 208,
+      "sha256": "880c3e396778948a52c3f2db5810720ac97f67a8a0c5b06b2c480b9200377b60"
+    },
+    {
+      "file": "windows-browser-security.log",
+      "bytes": 290,
+      "sha256": "fe5ececa25f558e6c6f560bc2aaad767b1ff9756fe3286b8dbb371cf86c7e4fc"
+    },
+    {
+      "file": "windows-build-identity.log",
+      "bytes": 251,
+      "sha256": "6fc6c620b4f5c3b5818a01343a9ec5a022b3dd972dca63a7c890b652ef9a4286"
+    },
+    {
+      "file": "windows-internal-dependencies.log",
+      "bytes": 368,
+      "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+    },
+    {
+      "file": "windows-package-build.log",
+      "bytes": 6676,
+      "sha256": "3e1974929ca72a6f64680af2c00f160d6d8a81e531926380c78ad0bbe6f92bdf"
+    },
+    {
+      "file": "windows-runtime-dependencies.log",
+      "bytes": 102,
+      "sha256": "7f934a6e984e2a67ce9e479e58404f71e1b2528c1d005badbb3702560298e895"
+    },
+    {
+      "file": "windows-signature.json",
+      "bytes": 530,
+      "sha256": "d9fa529a35246f962188aa4db3948cd8bbeb68bc8ac8df7fa963ac7f4f885ab5"
+    },
+    {
+      "file": "workspace-build.log",
+      "bytes": 4446,
+      "sha256": "ee23f8071feefb5c1efdc6d7d53681dcc695dbf8c67763f5efb4e97d64e64446"
+    },
+    {
+      "file": "candidate-b119/frozen-desktop-build.log",
+      "bytes": 1768,
+      "sha256": "373bd56983788a3a1e8555d665066427b5e956f539d4c1a546f7dd3adc4ec628"
+    },
+    {
+      "file": "candidate-b119/windows-artifact-manifest.json",
+      "bytes": 2264,
+      "sha256": "3f5ecb31d1db5de2efec69db52fca4fb8e409f183319991a7783fc632c306f1c"
+    },
+    {
+      "file": "candidate-b119/windows-auth-endpoint.log",
+      "bytes": 198,
+      "sha256": "767f919ac3d2ee437190faa7db7a3eea6de40c33d56285001a33f612ec78f50d"
+    },
+    {
+      "file": "candidate-b119/windows-browser-security.log",
+      "bytes": 280,
+      "sha256": "7a17feac1cea8a5398d00dd192f3c0d20b33034eda3586f2b8c24a023b2cd516"
+    },
+    {
+      "file": "candidate-b119/windows-build-identity.log",
+      "bytes": 241,
+      "sha256": "61f3639b85c02fd84a27f33933041601fc54cb3e46c1fc9ef4aa2889238d1e86"
+    },
+    {
+      "file": "candidate-b119/windows-internal-dependencies.log",
+      "bytes": 368,
+      "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+    },
+    {
+      "file": "candidate-b119/windows-package-build.log",
+      "bytes": 6606,
+      "sha256": "8dc764801910e2b071348fb1856c8e9ee4a48772a7eac38e62d7983c10b828a0"
+    },
+    {
+      "file": "candidate-b119/windows-runtime-dependencies.log",
+      "bytes": 102,
+      "sha256": "6de73aa9c193e0bf5f6ae1faa62896d8dfd9eb4f7f1d459046c8014ee0430cf4"
+    },
+    {
+      "file": "candidate-b119/windows-signature.json",
+      "bytes": 510,
+      "sha256": "5401ceb7ac51e1c6931355301df6cdb05a2af98558f8bbf9f848b52043b055c1"
+    }
+  ],
+  "lockfileSha256": "8cc332bdd8b2a53126592aa45960497d1892223ce2b37162f47496690dc31d45"
+}

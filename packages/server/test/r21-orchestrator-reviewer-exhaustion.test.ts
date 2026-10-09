@@ -88,7 +88,7 @@ describe("R21 orchestrator — an exhausted reviewer is not approval", () => {
       subagentManager: managerWithReviewer(async () => {
         rounds += 1;
         return rounds === 1
-          ? { status: "blocked", summary: "revision required", findings: [{ id: "r1", severity: "blocking", category: "correctness", message: "needs a fix" }], evidence: [], files: [], risks: [], recommendations: [], structuredData: { verdict: "revision_required", summary: "revision required", findings: [{ id: "r1", severity: "blocking", category: "correctness", message: "needs a fix" }] } }
+          ? { status: "blocked", summary: "revision required", findings: [], evidence: [], files: [], risks: [], recommendations: [], structuredData: { verdict: "revision_required", summary: "revision required", findings: [{ id: "r1", severity: "blocking", category: "correctness", message: "needs a fix" }] } }
           : { status: "completed", summary: "pass", findings: [], evidence: [], files: [], risks: [], recommendations: [], structuredData: { verdict: "pass", summary: "pass", findings: [] } };
       }),
     });

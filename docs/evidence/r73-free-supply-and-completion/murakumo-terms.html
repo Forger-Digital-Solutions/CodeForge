@@ -1,0 +1,585 @@
+<!doctype html><html lang="en">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#ffffff"><title>Terms — murakumo.cloud</title><meta name="description" content="Terms of use for murakumo.cloud."><link rel="stylesheet" href="/css/dds.css?v=20260829-hf-matrix"><link rel="stylesheet" href="/css/navigation.css?v=20260913"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="canonical" href="https://murakumo.cloud/legal-terms"><meta property="og:type" content="website"><meta property="og:site_name" content="murakumo.cloud"><meta property="og:title" content="Terms — murakumo.cloud"><meta property="og:description" content="Terms of use for murakumo.cloud."><meta property="og:url" content="https://murakumo.cloud/legal-terms"><meta property="og:image" content="https://murakumo.cloud/og.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Terms — murakumo.cloud"><meta name="twitter:description" content="Terms of use for murakumo.cloud."><meta name="twitter:image" content="https://murakumo.cloud/og.png"></head>
+  <body class="mk-site">
+    <a class="mk-skip" href="#main">Skip to content</a>
+    <div class="dds-ext-container">
+      <nav class="site-nav mk-navigation">
+        <div class="site-nav__inner">
+          <a class="brand" href="/">
+            <span class="logo">叢雲</span>
+            <span class="brand-name">murakumo.cloud</span>
+          </a>
+          <span class="nav-links">
+            <a href="/">新しいチャット</a>
+            <a href="/portal/#landing">サービス案内</a>
+            <a href="/portal/#join">PCを参加させる</a>
+            <a href="/portal/#store">クレジット</a>
+            <a href="/docs">APIガイド</a>
+            <a href="/advertise">広告を出す</a>
+            <a href="/portal/#about">運営について</a>
+          </span>
+          <div class="header-account">
+            <div class="header-account__actions">
+              <a class="header-account__button" href="https://auth.kotoba.cloud/sign-in?wallet=passkey&amp;return_to=https%3A%2F%2Fauth.kotoba.cloud%2Fconnect%3Ftarget%3Dmurakumo">ログイン</a>
+            </div>
+          </div>
+          <button class="dads-hamburger-menu-button nav-toggle" type="button" aria-controls="site-drawer" aria-expanded="false"><svg class="dads-hamburger-menu-button__icon" width="24" height="24" viewBox="0 0 24 24" fill="currentcolor" aria-hidden="true">
+            <path d="M3 5.5h18v2H3v-2Zm0 5.5h18v2H3v-2Zm0 5.5h18v2H3v-2Z"></path>
+          </svg>メニュー</button>
+        </div>
+      </nav><dialog class="dads-drawer mk-menu" data-placement="right" id="site-drawer" aria-label="メニュー">
+        <div class="dads-drawer__header">
+          <button class="dads-hamburger-menu-button" type="button" data-mk-drawer-close><svg class="dads-hamburger-menu-button__icon" width="24" height="24" viewBox="0 0 24 24" fill="currentcolor" aria-hidden="true">
+            <path d="m6.4 18.6-1-1 5.5-5.6-5.6-5.6 1.1-1 5.6 5.5 5.6-5.6 1 1.1L13 12l5.6 5.6-1 1L12 13l-5.6 5.6Z"></path>
+          </svg>閉じる</button>
+        </div>
+        <div class="dads-drawer__body"><div class="drawer-links">
+          <a href="/">新しいチャット</a>
+          <a href="/portal/#landing">サービス案内</a>
+          <a href="/portal/#join">PCを参加させる</a>
+          <a href="/portal/#store">クレジット</a>
+          <a href="/docs">APIガイド</a>
+          <a href="/advertise">広告を出す</a>
+          <a href="/portal/#about">運営について</a>
+          <a href="https://auth.kotoba.cloud/sign-in?wallet=passkey&amp;return_to=https%3A%2F%2Fauth.kotoba.cloud%2Fconnect%3Ftarget%3Dmurakumo">ログイン</a>
+        </div></div>
+      </dialog><main id="main">
+        <article>
+          <p class="note">Source: <a href="/legal/terms.md">/legal/terms.md</a>. This page is the same text in site chrome.</p>
+          <pre class="mk-legal"># cloud-murakumo — Terms of Service
+
+&gt; **DRAFT — This is not legal advice. Review by qualified counsel is required before publication.**
+
+Last updated: 2026-09-08
+
+Governing law: Delaware law, subject to mandatory consumer-law rights.
+
+Site / service operator: **AWAI Network, L.L.C.** (the &quot;Operator&quot;, &quot;we&quot;, &quot;us&quot;).
+Sales contact: **Ryo Awai**. Contact: support@murakumo.cloud.
+No other entity is the public operator of murakumo.cloud. Verified corporate and contact information is published at /legal-company. Names of the
+form `ai-gftd-*` below are product/repository identifiers, not the public
+operator.
+Service: **cloud-murakumo** — a distributed GPU cloud and LLM/generative
+inference infrastructure service (the &quot;Service&quot;), including the public site at
+murakumo.cloud.
+
+---
+
+## 1. Acceptance
+
+By accessing the Service, invoking its inference or generation functions
+(directly or through an integrating product such as `ai-gftd-router` /
+`ai-gftd-apex`), or using the murakumo.cloud site, you agree to these Terms of
+Service (these &quot;Terms&quot;) and the [Privacy Policy](./privacy.md). If you use the
+Service on behalf of an organization, you represent that you are authorized to
+bind it. If you do not agree, do not use the Service.
+
+## 2. Service description
+
+cloud-murakumo is a serverless GPU execution and inference platform that hosts
+model weights and runs distributed inference and generative jobs. It provides,
+subject to configuration:
+
+- LLM serving (e.g. OpenAI-style endpoints served via vLLM);
+- generative jobs producing artifacts — image, video, 3D, music, sound effects,
+  and voice — through engine runtimes (e.g. ComfyUI, kami-render, TRELLIS, audio,
+  TTS);
+- model-weight hosting and caching (e.g. via a Hugging Face cache backed by
+  content-addressed / object-storage volumes);
+- autoscaling, scale-to-zero, scheduled functions, and auction-based placement
+  across a GPU fleet; and
+- a run ledger recording each inference/generation run.
+
+The Service also permits explicitly consenting smartphone users to contribute
+foreground WebGPU/Wasm computation. Participation can consume battery, network
+data and device resources, may stop when the operating system suspends the page,
+and may be stopped by the user at any time.
+
+MCC is a transferable utility token whose protocol use is purchasing Murakumo
+inference. MCC provides no equity, revenue share, ownership, governance,
+treasury claim, guaranteed market value, fiat redemption or operator buyback.
+
+The Service is primarily **backend infrastructure** consumed by other products.
+Where you reach it through an integrating product, that product's own terms also
+govern your use. The Service is offered on an evolving basis; models, engines,
+regions, and interfaces may change. The public murakumo.cloud site is a
+static/pure-compute surface and does not itself provision GPUs.
+
+## 3. Accounts and identity
+
+- Inference and generation jobs carry an **actor / account identity** supplied
+  by the caller; jobs and their run-ledger records are attributed to that
+  identity. [CONFIRM: how actor identity is authenticated at the Service boundary
+  — e.g. delegated from the calling product, API key, or a kotoba/DID-scoped
+  credential — as the repository does not fix an end-user auth scheme in this
+  component.]
+- When jobs are dispatched through the distributed queue backed by a kotoba
+  graph (e.g. `kotobase.net`), the authentication and tenancy model of that
+  graph service also applies.
+- You are responsible for safeguarding any credentials used to submit jobs and
+  for all activity under your identity.
+
+## 4. Acceptable use
+
+### 4.1 The Service is compute; you are responsible for what you run on it
+
+murakumo sells **GPU compute and inference capacity**. It is not a publisher, a
+content library, or a distribution platform. We do not select, curate, or
+promote what customers generate.
+
+As between you and us, **you are solely responsible for your Inputs and Outputs**
+— their legality, the rights you hold in them, the consent of any person
+depicted, and your own compliance obligations (including age verification,
+record-keeping, labelling, and tax or licensing rules that apply to your
+business). You will not rely on us to make those determinations for you.
+
+### 4.2 Absolutely prohibited — no exceptions, immediate termination
+
+The following are prohibited regardless of jurisdiction, purpose, artistic
+claim, or whether the depiction is real or synthetic. There is no permitted use,
+no research exemption, and no appeal:
+
+- **Child sexual abuse material (CSAM)**, and any content that sexualizes a
+  minor, including synthetic or AI-generated depictions and content produced by
+  age-regressing an adult subject. We report discovered violations to the
+  **National Center for Missing &amp; Exploited Children (NCMEC)** and to competent
+  authorities, and we preserve the associated records.
+- **Non-consensual intimate imagery (NCII)**, including sexual depictions of an
+  identifiable real person created or distributed without that person's consent.
+
+Accounts are terminated on the first substantiated violation of this section
+without notice and without refund.
+
+### 4.3 Prohibited
+
+You must not use the Service to generate, process, store, or distribute content
+that is **unlawful, infringing, harassing, abusive, defamatory, discriminatory,
+or obscene** (as &quot;obscene&quot; is defined by the law applicable to you), or that
+incites violence against any person or group. You must not use the Service to:
+
+- generate content you lack the rights to, or that violates a model or engine
+  license (including upstream Hugging Face / model licenses);
+- impersonate a real person or entity, or create synthetic depictions of an
+  identifiable person, without that person's consent — including for fraud,
+  political deception, or reputational harm;
+- attempt to exfiltrate model weights, bypass quotas or placement controls, or
+  disrupt the GPU fleet, scheduler, or run ledger;
+- exceed configured GPU-seconds quotas in a manner designed to evade the
+  fail-closed accounting and financial-approval gates;
+- submit secrets or sensitive personal data into prompts, references, or job
+  metadata contrary to the documented data-handling boundary; or
+- send unsolicited bulk messages, conduct denial-of-service activity, or
+  otherwise attack any system, whether ours or a third party's.
+
+### 4.4 What is not prohibited
+
+We do not prohibit **lawful sexual content depicting consenting adults**. This
+section does not weaken §4.2, which is absolute, and it does not relieve you of
+§4.1 — the legality of what you generate, the consent of anyone depicted, your
+age-verification and record-keeping obligations, and the licence terms of the
+models you select all remain yours.
+
+Stating this explicitly is deliberate. A compute provider that leaves the
+question unanswered leaves customers guessing where the line is, and leaves
+itself deciding case by case after the fact. The line is §4.2, and it does not
+move.
+
+### 4.5 Age
+
+You must be at least 18 years old (or the age of majority where you live, if
+higher) to use the Service. If your own product exposes generation capability to
+end users, **age verification of those end users is your obligation, not ours**.
+
+### 4.6 Monitoring and enforcement
+
+**We have no obligation to monitor Inputs or Outputs**, and we do not pre-screen
+jobs. We may inspect content where necessary to comply with law, respond to a
+governmental or judicial request, investigate a report, or protect the Service
+and its users.
+
+Where feasible we will notify you of a violation and allow you to correct it. We
+may act **immediately and without notice** to throttle, suspend, or terminate
+where conduct: (a) exposes us to sanctions, prosecution, or liability; (b) harms
+or interferes with the fleet, scheduler, or ledger; (c) interferes with another
+customer's use; (d) violates §4.2; or (e) presents an imminent risk of harm.
+
+Suspension for cause stops the plan's rate limits; it does not forfeit purchased
+API credits (see §6).
+
+### 4.7 Reporting
+
+Report suspected violations of this section, including CSAM and NCII, to
+**abuse@murakumo.cloud**. Include the artifact identifier (CID) or job
+identifier where possible. Reports concerning §4.2 are actioned ahead of all
+other work.
+
+&gt; [CONFIRM: counsel to review §4 as a whole, and specifically: (a) whether
+&gt; §4.4 is consistent with the Operator's payment-processor agreements, given
+&gt; that the Service sells compute rather than content; (b) 18 U.S.C. § 2257
+&gt; applicability to synthetic outputs and whether a record-keeping obligation
+&gt; should be passed through to customers; (c) age-verification duties under the
+&gt; UK Online Safety Act, US state AV statutes, and the EU DSA, and whether any
+&gt; attach to an infrastructure provider; (d) Japanese Penal Code art. 175 where
+&gt; jobs execute on fleet nodes located in Japan; (e) the abuse@ intake and
+&gt; NCMEC reporting workflow, including record preservation.]
+
+## 5. Customer data, inputs, and IP ownership
+
+- **Your inputs.** As between you and us, you retain rights in the prompts,
+  reference inputs (including referenced content CIDs), and parameters you submit
+  (&quot;Inputs&quot;).
+- **Outputs.** As between you and us, rights in generated artifacts are allocated
+  to you or the integrating product's end user, subject to applicable law and to
+  the licenses of the models and engines used. [CONFIRM: output ownership and
+  any model-license restrictions passed through to you.] Artifacts are stored as
+  content-addressed objects; identical content yields identical CIDs.
+- **License to operate.** You grant us a limited license to process Inputs,
+  execute jobs, produce and store artifacts, and record run-ledger entries solely
+  to provide and operate the Service.
+- **We do not publish your Outputs.** Artifacts are retained for the account
+  that produced them. We do not list, index, feature, or otherwise make them
+  publicly discoverable, and we do not use them to market the Service. Retrieval
+  requires the account's own credential; a CID alone is not an access grant.
+  This is what makes the Service storage-for-you rather than distribution-by-us,
+  and it is a design commitment, not merely a current default — see §4.1.
+- **Our IP.** We and our licensors retain all rights in the Service, the
+  scheduler, executor, run ledger, and related software. Hosted models and
+  engines remain subject to their own upstream licenses; nothing here grants you
+  rights in them beyond those licenses.
+
+## 6. Fees and billing
+
+- **Metering.** Usage is metered primarily in **GPU-seconds** per run, recorded
+  in the run ledger (`:murakumo.run`) together with the model, actor, artifacts,
+  and computed cost. The Service also measures throughput (tokens/second) for
+  internal cost analysis. [CONFIRM: the actual customer-facing billing unit
+  (GPU-seconds and/or tokens) and published prices — do not treat repository
+  coefficients, which are marked placeholders, as pricing.]
+- **Quotas.** Per-account GPU-seconds limits are enforced fail-closed to prevent
+  runaway generation cost.
+- **Credits.** Prepaid usage credits are a limited, revocable contractual right
+  to consume eligible Service capacity. Credits are not money, stored value,
+  property, a bank deposit, or a transferable instrument; have no cash value;
+  and may not be redeemed, sold, or exchanged for fiat currency.
+- **Payment processor.** Card payments for credits are processed by Stripe.
+  Stripe's terms and privacy policy also apply to its processing of payment
+  information. We do not receive or store complete card numbers.
+- **Credit purchases are final.** To the maximum extent permitted by applicable
+  law, all credit purchases are final, non-cancellable, and non-refundable,
+  including when credits are unused, partially used, expire, or an account is
+  suspended or terminated. Buying credits does not guarantee availability of a
+  particular model, engine, region, price, throughput, or Service feature.
+- **Required and exceptional refunds.** The preceding no-refund rule does not
+  exclude a refund that applicable mandatory law requires. The Operator may
+  also, in its sole discretion and without creating a continuing obligation,
+  correct a duplicate or unauthorized charge or approve an exceptional refund
+  for a verified billing error or material failure by the Operator to provide
+  the purchased Service.
+- **Effect of a refund, reversal, or chargeback.** If any payment is refunded,
+  reversed, disputed, or charged back, we may cancel the corresponding unused
+  credits and make an append-only reversal in the credit ledger. If those
+  credits have already been consumed or transferred, the account may have a
+  negative credit balance. We may suspend paid usage until that balance is
+  restored, offset later grants or earnings against it, and recover amounts
+  lawfully due. We will not reverse more credits than are attributable to the
+  refunded portion of the original purchase.
+- **Financial-approval gates.** GPU acquisition and scale-up are treated as
+  approval-gated financial side-effects; scale-down is automatic and deletion is
+  destructive and approval-gated.
+- **Taxes.** Fees are exclusive of taxes unless stated; you are responsible for
+  applicable taxes. [CONFIRM the Operator's sales-tax and other collection obligations.]
+
+## 6A. Hardware node purchases (ownership shares)
+
+The store offers two SKUs — *Apple Silicon GPU Node — Ownership Share* and
+*NVIDIA GPU Node — Ownership Share* — which are **not** purchases of Service
+usage. This section states what they factually are. Until the CONFIRM items
+below are resolved by counsel, treat this section as the full extent of what
+the Operator asserts about them.
+
+- **What is sold.** Payment is for a physical compute node (Apple Silicon
+  Mac mini/Studio class, or a discrete GPU node of l4/h100 class) that the
+  Operator procures and deploys into the cloud-murakumo fleet.
+- **What the buyer receives.** The node is leased back and operated by the
+  Operator, and the buyer receives a share of compute revenue attributable to
+  that node under the fleet auction. **Revenue is not guaranteed, not a fixed
+  return, and not principal-protected.** Fleet revenue depends on demand,
+  auction clearing prices, hardware availability, and the Operator's continued
+  operation of the fleet.
+- **Fulfillment is manual and not instantaneous.** Unlike credits and plans,
+  these SKUs have no automated fulfillment path. Procurement, deployment, and
+  the start of any revenue share happen out of band after payment.
+  [CONFIRM: delivery/commencement timeline, what happens if the Operator cannot
+  procure the hardware, and the refund position in that case.]
+- **No equity or governance.** Purchase conveys no equity in the Operator, no
+  governance rights, and no claim on the Operator's treasury. This mirrors the
+  MCC position stated in §2, and is stated separately here because §2 addresses
+  the token and not these SKUs.
+
+&gt; [CONFIRM — counsel review required before these SKUs continue to be sold:
+&gt; (a) whether a paid interest in hardware operated by the Operator for a share
+&gt; of revenue is an investment contract or other regulated instrument in any
+&gt; jurisdiction where the store accepts payment, and if so what registration,
+&gt; exemption, disclosure or purchaser-eligibility conditions apply;
+&gt; (b) whether selling it through the Operator's payment processor is consistent
+&gt; with that processor's restricted-business rules — the store currently accepts
+&gt; card payment for these SKUs alongside ordinary usage products;
+&gt; (c) what the revenue-share obligation is contractually (term, calculation,
+&gt; reporting, termination, transfer, what happens on node failure or fleet
+&gt; shutdown); and
+&gt; (d) whether §7-§8 disclaimers and the §10 governing-law/dispute provisions are
+&gt; appropriate for a purchase of this size and character, or whether separate
+&gt; terms are required.
+&gt; The Operator has not obtained this review as of the &quot;last updated&quot; date.]
+
+## 6B. Built-to-order node shipments
+
+The store also offers built-to-order machines that are **shipped to the buyer**,
+which are different in kind from the §6A ownership shares and are governed by
+this section instead. §6A does not apply to them. As of the &quot;last updated&quot; date
+these are:
+
+- **murakumo Node 24 — Intel Arc Pro B60 24GB** (¥349,800, Japan only)
+- **murakumo Node Edge 8 — Jetson Orin Nano Super 8GB** (¥99,800, Japan only)
+
+Both are sold on the same terms below **except for the warranty term, which
+differs per model** (see *Warranty*). Neither carries a performance guarantee
+(see *Performance is not warranted*).
+
+*murakumo Node 32 — Intel Arc Pro B70 32GB* was withdrawn on 2026-08-18 and is
+no longer offered. Machines already delivered under it remain covered by the
+terms in force at the time of their sale.
+
+- **Who sells them.** The statutory Japanese seller disclosure is published
+  separately at `/legal/tokushoho`. The public operator of murakumo.cloud is
+  AWAI Network, L.L.C. Sales contact: Ryo Awai. 法人情報, address, phone and 代表者
+  for the hardware seller are disclosed on request. Where this section and
+  that disclosure differ, the disclosure governs the sale.
+- **What is sold.** A complete, assembled computer that is **shipped to the
+  buyer's address** and becomes the buyer's property outright. It is not an
+  ownership share, not a lease, and carries no revenue entitlement.
+- **Built to order.** The Operator does not hold stock. Payment is taken in full
+  at order time; components are then purchased, the machine is assembled and
+  tested, and it is shipped. The published lead time is a good-faith estimate,
+  not a guarantee. Component prices and availability in 2026 are volatile, and
+  the Operator will notify the buyer if the estimate slips.
+- **Cancellation and returns.** Cancellation is accepted between payment and the
+  point at which components are ordered for that specific machine. After that,
+  and after shipment, buyer-initiated cancellation and return are not accepted,
+  because the goods are made to order. Defects arising from manufacture or
+  transport and reported within 14 days of delivery are repaired or replaced at
+  the Operator's cost. Where mandatory consumer law grants a right that this
+  paragraph would exclude, that law prevails.
+- **Warranty.** From delivery, tracking the component manufacturers' warranties:
+  **one year for murakumo Node** (the JPY 99,900 unit currently sold),
+  **24 months for murakumo Node 24**, and **12 months for murakumo Node Edge 8**.
+  The shorter term on Node Edge 8 is deliberate: its principal component ships as
+  a developer kit whose manufacturer warranty the Operator has not confirmed to
+  run for 24 months, and the Operator does not state a term it cannot stand
+  behind. Modification, disassembly, and external causes (surge, water,
+  lightning) are excluded from both.
+- **Performance is not warranted.** The published specification (VRAM capacity,
+  components) is a description of what is shipped. Inference throughput —
+  tokens/second, images/minute, or any comparison between the two models above —
+  is **not** part of the specification and is not warranted. The Operator has not
+  published measured benchmarks for either machine.
+- **Fleet participation is a feature, not a payment.** The machine ships
+  configured to serve murakumo fleet inference requests while otherwise idle.
+  **This does not entitle the buyer to revenue, credits, or any other
+  consideration**, and the Operator does not undertake to send it work.
+  Participation is optional, may be disabled by the buyer at any time without
+  affecting warranty or support, and electricity is the buyer's cost. If the
+  Operator later offers consideration for participation, it will be under a
+  separate agreement, not this section.
+- **Territory.** Sold and shipped in Japan only. The store rejects checkout for
+  this SKU from any other country.
+- **Japanese statutory disclosure.** Sale of this SKU is subject to the Act on
+  Specified Commercial Transactions. The required disclosure is published at
+  `/legal/tokushoho`. **While that disclosure is incomplete the store refuses to
+  sell this SKU**, enforced in the storefront code rather than by operational
+  undertaking.
+
+&gt; [CONFIRM — counsel review required before this SKU is sold:
+&gt; (a) which entity is the importer of record and who bears Japanese customs duty
+&gt; and consumption tax, given that the Operator is a Delaware company with no
+&gt; recorded Japanese establishment — this determines whether the advertised
+&gt; tax-and-shipping-inclusive price is accurate;
+&gt; (b) whether selling and shipping goods into Japan creates a Japanese permanent
+&gt; establishment, registration, or consumption-tax collection obligation;
+&gt; (c) whether the return exclusion above is validly displayed for the purposes of
+&gt; Act on Specified Commercial Transactions art. 15-3, and whether the 14-day
+&gt; defect window is sufficient under the Civil Code's conformity rules;
+&gt; (d) product-safety and electrical requirements applicable to an assembled
+&gt; computer supplied in Japan (including PSE treatment of the supplied power
+&gt; supply and any labelling obligation on the assembler); and
+&gt; (e) whether describing fleet participation as a feature without consideration
+&gt; is consistent with how it is marketed elsewhere on the site.
+&gt; The Operator has not obtained this review as of the &quot;last updated&quot; date.]
+
+## 6C. Finished mini-PC resale
+
+As of 2026-08-21 the store also offers a finished mini PC resale, which is
+different in kind from the §6B built-to-order machines and from the §6A
+ownership shares:
+
+- **murakumo Node** (¥99,900, Japan only)
+
+This is a resale of a finished unit. It is not a murakumo-branded built-to-order
+node, not an ownership share, and not a fleet-revenue product. The statutory
+Japanese seller disclosure is at `/legal/tokushoho`. Shipping address is
+collected at Stripe Checkout. A did:key account is not required for this
+purchase. Inventory counts and ship dates are not published here.
+
+- **Who sells it.** See `/legal/tokushoho`. The public operator of
+  murakumo.cloud is AWAI Network, L.L.C. 法人情報, address, phone and 代表者
+  for the hardware seller are disclosed on request.
+- **What is sold.** One finished mini PC in the 32GB RAM + 512GB SSD
+  configuration only. Other memory/storage configurations are not offered.
+- **Territory.** Sold and shipped in Japan only.
+- **Japanese statutory disclosure.** Sale is subject to the Act on Specified
+  Commercial Transactions. The required disclosure is published at
+  `/legal/tokushoho`.
+
+## 7. Service levels, warranties, and disclaimers
+
+- The Service is provided **&quot;as is&quot; and &quot;as available&quot;** without warranties of
+  any kind, express or implied, including merchantability, fitness for a
+  particular purpose, non-infringement, and any warranty as to model output
+  accuracy, safety, or suitability, to the maximum extent permitted by law.
+- Generative models can produce inaccurate, offensive, or infringing output; you
+  are responsible for reviewing and for your use of outputs.
+- We do not warrant uninterrupted or error-free operation, committed uptime,
+  RTO, or RPO, unless separately agreed in an enterprise contract.
+
+## 8. Limitation of liability
+
+To the maximum extent permitted by applicable law:
+
+- neither party is liable for indirect, incidental, special, consequential, or
+  punitive damages, or for lost profits, revenue, data, or goodwill; and
+- the Operator's aggregate liability arising out of or relating to the Service
+  will not exceed the greater of USD 100 or the fees you paid to the Operator
+  for the Service in the 12 months preceding the event giving rise to the
+  claim.
+
+Nothing limits liability that cannot be limited under applicable mandatory law.
+
+## 9. Term and termination
+
+- These Terms apply while you use the Service.
+- You may stop submitting jobs at any time.
+- We may suspend or terminate access for material breach, non-payment, legal
+  requirement, cost-control risk, or risk to the fleet, with notice where
+  practicable.
+- On termination we may delete account and run-ledger data subject to legal
+  retention obligations and to the content-addressing limits described in the
+  Privacy Policy.
+- Ownership, disclaimers, limitation of liability, and governing-law provisions
+  survive termination.
+
+## 10. Governing law and dispute resolution
+
+- These Terms are governed by Delaware law, without regard to its
+  conflict-of-laws rules.
+- Except where mandatory consumer law permits proceedings elsewhere, the state
+  courts located in New Castle County, Delaware and the United States District
+  Court for the District of Delaware have exclusive jurisdiction. Each party
+  consents to personal jurisdiction and venue there.
+- These Terms do not require arbitration and do not waive a right to a jury
+  trial.
+- Nothing in this section deprives a consumer of non-waivable protections or a
+  forum available under mandatory law in the consumer's habitual residence.
+
+## 11. Changes
+
+We may update these Terms; material changes are indicated by updating the &quot;Last
+updated&quot; date and, where appropriate, by additional notice. [CONFIRM notice
+mechanism.] Continued use after changes take effect constitutes acceptance.
+
+## 12. Contact
+
+Customer and legal notice email: support@murakumo.cloud, designated by the Operator
+as its current electronic notice channel.
+
+- Site / service operator: AWAI Network, L.L.C.
+- Sales contact: Ryo Awai
+- Corporate details, address, phone and representative: [Company information](/legal-company).
+</pre>
+        </article>
+      </main><footer class="site-foot">
+        <div class="site-foot__inner">
+          <div class="site-foot__cols">
+            <div class="site-foot__col">
+              <h2>Web3</h2>
+              <ul>
+                <li>
+                  <a href="/.well-known/x402">x402 offer</a>
+                </li>
+                <li>
+                  <a href="/pay/x402/">x402 paid inference</a>
+                </li>
+                <li>
+                  <a href="/models/">DID / CID Model Hub</a>
+                </li>
+                <li>
+                  <a href="/docs#web3">IPFS / IPNS</a>
+                </li>
+              </ul>
+            </div>
+            <div class="site-foot__col">
+              <h2>Use</h2>
+              <ul>
+                <li>
+                  <a href="/go">Free inference</a>
+                </li>
+                <li>
+                  <a href="/onprem">murakumo Node</a>
+                </li>
+                <li>
+                  <a href="/onprem/3d">3D / CAD</a>
+                </li>
+              </ul>
+            </div>
+            <div class="site-foot__col">
+              <h2>Build</h2>
+              <ul>
+                <li>
+                  <a href="/docs">API docs</a>
+                </li>
+                <li>
+                  <a href="/blog/">Blog</a>
+                </li>
+                <li>
+                  <a href="https://github.com/network-awai/cloud-murakumo">Source</a>
+                </li>
+              </ul>
+            </div>
+            <div class="site-foot__col">
+              <h2>Company &amp; legal</h2>
+              <ul>
+                <li>
+                  <a href="/legal-company">Company</a>
+                </li>
+                <li>
+                  <a href="mailto:support@murakumo.cloud">Contact</a>
+                </li>
+                <li>
+                  <a href="/legal-terms">Terms</a>
+                </li>
+                <li>
+                  <a href="/legal-privacy">Privacy</a>
+                </li>
+                <li>
+                  <a href="/legal/tokushoho.md">Disclosure</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <p class="site-foot__legal"><a href="/">murakumo.cloud</a> · Operator: AWAI Network, L.L.C. · Sales: Ryo Awai · <a href="mailto:support@murakumo.cloud">support@murakumo.cloud</a></p>
+        </div>
+      </footer>
+    </div>
+    <script src="/site-chrome.js" defer></script>
+    <script src="/insight.js" defer></script>
+  </body>
+</html>

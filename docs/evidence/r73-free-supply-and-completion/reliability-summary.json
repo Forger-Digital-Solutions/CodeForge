@@ -1,0 +1,239 @@
+{
+  "generatedAt": "2026-10-09T09:50:08.397Z",
+  "campaigns": [
+    "R73-FIRST-COMPLETION.json",
+    "R73-COMPLETION-RECOVERY-1791538224699.json",
+    "R73-BOUND-REVIEW-PROOF-1791539210052.json"
+  ],
+  "attempts": 3,
+  "completed": 0,
+  "failed": 0,
+  "blocked": 3,
+  "parked": 0,
+  "cancelled": 0,
+  "running": 0,
+  "completionPercentage": 0,
+  "longestSuccessfulStreak": 0,
+  "modelRequests": 61,
+  "observedInferenceCallsIncludingCapacityProbes": 66,
+  "toolCalls": 63,
+  "duplicateWorkReportedByRuntime": 0,
+  "observedProviderFailures": 0,
+  "providerFailureUnknownWorkers": 0,
+  "providerRequests": {
+    "kilo-free-direct": 54,
+    "blockrun-free-direct": 12
+  },
+  "providerErrorFrames": 0,
+  "providerRateLimits": 0,
+  "reviewerFailedWorkers": 2,
+  "forgeVerifyFailures": 0,
+  "falseCompletions": 0,
+  "averageObservedInferenceCallsPerCompletedTask": null,
+  "taskOutcomes": [
+    {
+      "id": "01-bug-fix",
+      "taskClass": "bug fix",
+      "campaign": "R73-FIRST-COMPLETION.json",
+      "status": "blocked",
+      "reason": "Writer did not complete: [AGENT_MODEL_TURN_LIMIT] The coder agent used all 25 model turns without finishing; the work is unfinished, not complete.",
+      "workers": [
+        {
+          "agentId": "explorer",
+          "status": "completed",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 44028,
+            "modelRequests": 2,
+            "inputTokens": 5413,
+            "outputTokens": 1430,
+            "toolCalls": 3,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "coder",
+          "status": "blocked",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 191970,
+            "modelRequests": 25,
+            "inputTokens": 106881,
+            "outputTokens": 1424,
+            "toolCalls": 25,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        }
+      ],
+      "review": {
+        "passed": false,
+        "findings": []
+      },
+      "verification": [],
+      "integration": {
+        "status": "blocked",
+        "branch": "codeforge/worktree/run-65cf0c21-13dd-4acc-930c-b23916fb5500-3a2ff0dd",
+        "worktreeId": "wt-3a2ff0dd",
+        "reason": "SUBAGENT_WRITER_BLOCKED"
+      },
+      "testsAfterExitCode": 1
+    },
+    {
+      "id": "01-bug-fix",
+      "taskClass": "bug fix",
+      "campaign": "R73-COMPLETION-RECOVERY-1791538224699.json",
+      "status": "blocked",
+      "reason": "Independent review did not complete (REVIEWER_FAILED): Agent reviewer failed: [PROVIDER_UNAVAILABLE] No eligible free route for role reviewer: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ROLE_QUALIFIED_ROUTE, NO_ELIGIBLE_ROUTE, candidates: 1 role_ineligible:ROLE_NOT_QUALIFIED [cohere/north-mini-code:free]; 1 role_ineligible:ROLE_VERDICT_EXCLUDED [nvidia/llama-3.2-11b-vision]). No paid or unknown-cost route was used.",
+      "workers": [
+        {
+          "agentId": "explorer",
+          "status": "completed",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 33305,
+            "modelRequests": 5,
+            "inputTokens": 14500,
+            "outputTokens": 2871,
+            "toolCalls": 6,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "coder",
+          "status": "completed",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 31471,
+            "modelRequests": 10,
+            "inputTokens": 37404,
+            "outputTokens": 1768,
+            "toolCalls": 9,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "reviewer",
+          "status": "blocked",
+          "model": {
+            "providerId": "blockrun-free-direct",
+            "modelId": "nvidia/llama-3.2-11b-vision"
+          },
+          "telemetry": {
+            "wallTimeMs": 25084,
+            "modelRequests": 10,
+            "inputTokens": 52630,
+            "outputTokens": 266,
+            "toolCalls": 9,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "reviewer",
+          "status": "failed",
+          "telemetry": {
+            "wallTimeMs": 522,
+            "modelRequests": 0,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "toolCalls": 0,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        }
+      ],
+      "review": {
+        "passed": false,
+        "findings": []
+      },
+      "verification": [],
+      "integration": {
+        "status": "blocked",
+        "branch": "codeforge/worktree/run-1ca0571d-7ee1-4f67-babc-af835aef7b38-ab804345",
+        "worktreeId": "wt-ab804345",
+        "reason": "REVIEWER_FAILED"
+      },
+      "testsAfterExitCode": 1
+    },
+    {
+      "id": "01-bug-fix",
+      "taskClass": "bug fix",
+      "campaign": "R73-BOUND-REVIEW-PROOF-1791539210052.json",
+      "status": "blocked",
+      "reason": "Writer did not complete: Error: [TOOL_WORKSPACE_ESCAPE] Path traversal denied (escapes workspace root): /workspace/coder-forge",
+      "workers": [
+        {
+          "agentId": "explorer",
+          "status": "completed",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 17605,
+            "modelRequests": 4,
+            "inputTokens": 11991,
+            "outputTokens": 1672,
+            "toolCalls": 6,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "coder",
+          "status": "blocked",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 13681,
+            "modelRequests": 5,
+            "inputTokens": 17616,
+            "outputTokens": 911,
+            "toolCalls": 5,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        }
+      ],
+      "review": {
+        "passed": false,
+        "findings": []
+      },
+      "verification": [],
+      "integration": {
+        "status": "blocked",
+        "branch": "codeforge/worktree/run-0ed2f638-5c2d-426a-818a-d1e0b2169436-3c217a88",
+        "worktreeId": "wt-3c217a88",
+        "reason": "SUBAGENT_WRITER_BLOCKED"
+      },
+      "testsAfterExitCode": 1
+    }
+  ],
+  "interpretation": "Qualification calls are separate from coding attempts. Runtime duplicate-work classification is not a count of every repeated read. An unavailable roster is not a provider inference failure. Requests per completion include failed attempts and capacity probes."
+}

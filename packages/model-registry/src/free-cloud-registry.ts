@@ -3,7 +3,7 @@ import type { ModelIdentity, ProviderIdentity } from "@codeforge/core";
 import { verifyModelEligibility, FREE_ACCESS_CLASSES } from "@codeforge/forge-zero";
 import type { ModelQualificationReceipt } from "@codeforge/eight-bit";
 import type { OpenRouterEntitlementReceipt } from "@codeforge/providers";
-import { receiptSuiteSupported } from "@codeforge/eight-bit";
+import { receiptSuiteSupported, roleQualificationStatusFor } from "@codeforge/eight-bit";
 import { canonicalIdentityFor, type CanonicalIdentity } from "./canonical.js";
 import {
   PROVIDER_DEFINITIONS,
@@ -335,16 +335,18 @@ function qualificationFor(receipt: ModelQualificationReceipt | undefined, now: D
   if (!receiptSuiteSupported(receipt) || !(ageMs < 30 * 24 * 60 * 60 * 1000)) {
     return { state: "STALE", roles: [], fallbackRoles: [], version: receipt.suiteVersion };
   }
-  const qualified = new Set(Object.entries(receipt.roleResults).filter(([, r]) => r.status === "QUALIFIED").map(([role]) => role));
+  const currentRoles = Object.entries(receipt.roleResults).map(([role, result]) => ({ role, result, status: roleQualificationStatusFor(receipt, result.role, now.getTime()) ?? "NOT_TESTED" }));
+  const qualified = new Set(currentRoles.filter(({ status }) => status === "QUALIFIED").map(({ role }) => role));
   // R37 Mission G/H: PROBATION verdicts are measured "close enough" evidence — the route may
   // serve the role as a degraded fallback when no fully qualified candidate can admit, but
   // it must never outrank a qualified peer. NOT_QUALIFIED/HARD_FAILURE/NOT_TESTED stay out.
-  const probation = new Set(Object.entries(receipt.roleResults).filter(([, r]) => r.status === "PROBATION").map(([role]) => role));
+  const probation = new Set(currentRoles.filter(({ status }) => status === "PROBATION").map(({ role }) => role));
   const roleSuitability = Object.fromEntries(
-    Object.entries(receipt.roleResults).map(([role, result]) => [role, result.status as QualificationState]),
+    currentRoles.map(({ role, status }) => [role, status as QualificationState]),
   );
   const state: QualificationState =
-    receipt.qualificationState === "QUALIFIED" ? "QUALIFIED"
+    currentRoles.some(({ result, status }) => (result.status === "QUALIFIED" || result.status === "PROBATION") && status === "NOT_TESTED") && qualified.size === 0 && probation.size === 0 ? "STALE"
+      : receipt.qualificationState === "QUALIFIED" ? "QUALIFIED"
       : receipt.qualificationState === "PROBATION" ? "PROBATION"
         : receipt.qualificationState === "HARD_FAILURE" ? "HARD_FAILURE"
           : "NOT_QUALIFIED";
@@ -642,7 +644,7 @@ export function supplyClassFor(
   def: ProviderDefinition | undefined,
   conn: Pick<ProviderConnectionState, "credentialSource" | "connected"> & Partial<Pick<ProviderConnectionState, "delegatedEntitlement">> | undefined,
 ): SupplyClass | undefined {
-  if (def?.id === "kilo-free-direct" && conn?.credentialSource === "ANONYMOUS_DIRECT" && conn.connected) return "PACKAGED_FREE_DIRECT";
+  if ((def?.id === "kilo-free-direct" || def?.id === "blockrun-free-direct") && conn?.credentialSource === "ANONYMOUS_DIRECT" && conn.connected) return "PACKAGED_FREE_DIRECT";
   if (def?.id === "ai-horde" && conn?.credentialSource === "ANONYMOUS_DIRECT" && conn.connected) return "COMMUNITY_ANONYMOUS_FREE";
   if (def?.userConnectedFree) return def.userConnectedFree.supplyClass;
   if (conn?.credentialSource === "FDS_GATEWAY" || def?.apiStyle === "hosted" || def?.kind === "fds-gateway") {

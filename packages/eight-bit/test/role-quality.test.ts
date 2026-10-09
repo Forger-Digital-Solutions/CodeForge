@@ -10,7 +10,8 @@ import { EightBitHealthTracker } from "../src/health.js";
 import { EightBitReliabilityTracker } from "../src/reliability.js";
 import { EightBitRouter, type BindingScope, type SelectRouteOptions } from "../src/router.js";
 import { createFreeFabric } from "../src/free-fabric.js";
-import { roleQualityAdvice } from "../src/role-quality.js";
+import { roleAdmissionAllowed, roleQualificationStatusFor, roleQualityAdvice } from "../src/role-quality.js";
+import { REVIEWER_PROTOCOL } from "../src/qualification/role-protocols.js";
 import type { ModelQualificationReceipt, RoleQualificationResult, TestCaseResult } from "../src/qualification/types.js";
 import type { EightBitRole } from "../src/types.js";
 import { makeModel } from "./fixtures.js";
@@ -66,6 +67,7 @@ function receipt(
     totalLatencyMs: 1_000,
     qualificationState: "QUALIFIED",
     hardFailureRoles: [],
+    metadata: { roleProtocolVersions: { REVIEWER: REVIEWER_PROTOCOL.version } },
   };
 }
 
@@ -77,6 +79,31 @@ function qualityHook(receipts: Map<string, ModelQualificationReceipt>, role: Eig
 }
 
 describe("roleQualityAdvice — bounded advisory evidence", () => {
+  it("requires the current Reviewer protocol without expiring compatible coding evidence", () => {
+    const old = receipt("p", "m", {
+      REVIEWER: roleResult("REVIEWER", "QUALIFIED", [tcase(true)]),
+      CODER: roleResult("CODER", "QUALIFIED", [tcase(true)]),
+      EXPLORER: roleResult("EXPLORER", "QUALIFIED", [tcase(true)]),
+    });
+    old.suiteVersion = "R66_ROLE_QUALIFICATION_V4";
+    old.metadata = { roleProtocolVersions: { REVIEWER: "REVIEWER_PROTOCOL_V1" } };
+    expect(roleQualificationStatusFor(old, "REVIEWER", NOW_MS)).toBe("NOT_TESTED");
+    expect(roleAdmissionAllowed(old, "REVIEWER", NOW_MS)).toBe(false);
+    expect(roleQualityAdvice(old, "REVIEWER", NOW_MS)).toMatchObject({ scoreAdjustment: 0, needsRequalification: true, reasonCodes: ["ROLE_PROTOCOL_STALE"] });
+    expect(roleQualificationStatusFor(old, "CODER", NOW_MS)).toBe("QUALIFIED");
+    expect(roleQualificationStatusFor(old, "EXPLORER", NOW_MS)).toBe("QUALIFIED");
+    delete old.metadata;
+    expect(roleQualificationStatusFor(old, "REVIEWER", NOW_MS)).toBe("NOT_TESTED");
+  });
+
+  it.each(["NOT_QUALIFIED", "HARD_FAILURE"] as const)("retains historical Reviewer %s exclusion while requesting current evidence", (status) => {
+    const old = receipt("p", "m", { REVIEWER: roleResult("REVIEWER", status, [tcase(false, { hardFailure: status === "HARD_FAILURE" })]) });
+    delete old.metadata;
+    expect(roleQualificationStatusFor(old, "REVIEWER", NOW_MS)).toBe(status);
+    expect(roleAdmissionAllowed(old, "REVIEWER", NOW_MS)).toBe(false);
+    expect(roleQualityAdvice(old, "REVIEWER", NOW_MS)).toMatchObject({ needsRequalification: true });
+    expect(roleQualityAdvice(old, "REVIEWER", NOW_MS).reasonCodes).toContain("ROLE_PROTOCOL_STALE");
+  });
   it("a fresh fully-qualified multi-case receipt earns a bounded positive adjustment", () => {
     const advice = roleQualityAdvice(receipt("p", "m", {
       REVIEWER: roleResult("REVIEWER", "QUALIFIED", [tcase(true), tcase(true), tcase(true), tcase(true)], new Date(NOW_MS).toISOString()),

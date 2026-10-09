@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assessCoderProgress, type ProgressTurn } from "../src/role-progress.js";
+import { assessCoderProgress, coderContinuationGuidance, type ProgressTurn } from "../src/role-progress.js";
 
 const turn = (number: number, tool: string, hash: string, outcome: "success" | "failed" = "success"): ProgressTurn => ({
   turn: number,
@@ -7,6 +7,26 @@ const turn = (number: number, tool: string, hash: string, outcome: "success" | "
 });
 
 describe("R54 role progress", () => {
+  it("guides finite verification toward a final result without declaring completion", () => {
+    const turns: ProgressTurn[] = [
+      { turn: 1, calls: [{ tool: "edit_file", outcome: "success", observationHash: "edit" }] },
+      { turn: 2, calls: [{ tool: "run_command", outcome: "success", observationHash: "tests", verification: "passed" }] },
+    ];
+    const guidance = coderContinuationGuidance(turns)!;
+    expect(guidance.key).toBe("verified:1:2:tests");
+    expect(guidance.content).toContain("coverage against the assigned requirements");
+    expect(guidance.content).toContain("Independent review, ForgeVerify, and parent integration still remain required");
+    expect(coderContinuationGuidance([...turns, { turn: 3, calls: [{ tool: "edit_file", outcome: "success" }] }])).toBeUndefined();
+    expect(coderContinuationGuidance([...turns, { turn: 3, calls: [{ tool: "run_command", outcome: "failed", verification: "failed" }] }])).toBeUndefined();
+    expect(coderContinuationGuidance([turns[1]!])).toBeUndefined();
+  });
+
+  it("nudges repeated unchanged evidence before the existing stall floor", () => {
+    const turns = [turn(1, "run_command", "same"), turn(2, "run_command", "same"), turn(3, "run_command", "same")];
+    expect(assessCoderProgress(turns).stalled).toBe(false);
+    expect(coderContinuationGuidance(turns)?.content).toContain("added no new evidence or source change");
+    expect(coderContinuationGuidance([...turns, turn(4, "read_file", "new")])).toBeUndefined();
+  });
   it("stalls after repeated identical command evidence without a state change", () => {
     const turns = [turn(1, "run_command", "failure-a", "failed"), ...Array.from({ length: 5 }, (_, i) => turn(i + 2, "run_command", "failure-a", "failed"))];
     expect(assessCoderProgress(turns)).toMatchObject({ stalled: true, reason: "REPEATED_EVIDENCE", quietTurns: 5 });

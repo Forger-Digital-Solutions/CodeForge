@@ -1,0 +1,42 @@
+{
+  "interpretedAt": "2026-10-09T09:42:23.468Z",
+  "sourceFile": "blockrun-compact-1791538496172.json",
+  "sourceSha256": "6a819c99dc07196b0d449347d853359ca75eccc2af23d2e3174503e73c9a25ab",
+  "observationFile": "blockrun-compact-observations-1791538496172.json",
+  "observationSha256": "cf6ce422bc1ea74c85ebd70d11244f5b6bdb5170eda83ce8684eaa64172eef08",
+  "compactBuildSha256": "f4541f001e594aa5015c88b6c894b7bea6fa7410c2c61aa2b841bcd6d21a5c65",
+  "compatibilityBuildSha256": "fab29ddffd5918b476ccdbebeb58a5380584da5317f0b3b216ac6cbb7b0afc6c",
+  "interpretation": "INCONCLUSIVE_PROVIDER_COMPATIBILITY",
+  "historicalReceiptPreserved": true,
+  "originalInferenceRequests": 4,
+  "additionalInferenceRequests": 0,
+  "replayInvocations": 2,
+  "replayUsesRecordedFramesOnly": true,
+  "noNewModelQualification": true,
+  "qualifiedRoles": [],
+  "productionAdmissionEnabled": false,
+  "originalOutcome": {
+    "qualificationState": "NOT_QUALIFIED",
+    "transient": false
+  },
+  "correctedReplayOutcome": {
+    "qualificationState": "NOT_QUALIFIED",
+    "metadata": {
+      "compact": true,
+      "requests": 2,
+      "transient": true,
+      "quotaExhausted": false,
+      "providerFailureClass": "MODEL_IDENTITY",
+      "providerErrorCodes": [
+        "MODEL_SUBSTITUTED"
+      ]
+    },
+    "roleStatuses": {
+      "CODER": "NOT_TESTED",
+      "TOOL_AGENT": "NOT_TESTED",
+      "ANALYST": "NOT_TESTED"
+    },
+    "hardFailureRoles": []
+  },
+  "reason": "The first exact-model stream was empty; subsequent responses explicitly served NVIDIA Llama instead of the requested Laguna XS. Structured identity rejection is provider compatibility evidence, not a coding competence verdict. Current classification stops further compact probes after that rejection."
+}

@@ -1,4 +1,5 @@
 import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
+import { createHash } from "node:crypto";
 import type { ModelQualificationReceipt } from "./types.js";
 
 export interface QualificationSpend {
@@ -23,12 +24,14 @@ export interface QualificationPersistence {
   delete(providerId: string, modelId: string): Promise<boolean>;
   loadSpend?(): Promise<QualificationSpend[]>;
   saveSpend?(spend: QualificationSpend): Promise<void>;
+  loadHistory?(providerId: string, modelId: string): Promise<ModelQualificationReceipt[]>;
 }
 
 /** In-memory qualification persistence (for testing) */
 export class InMemoryQualificationPersistence implements QualificationPersistence {
   private readonly receipts = new Map<string, ModelQualificationReceipt>();
   private readonly spend = new Map<string, QualificationSpend>();
+  private readonly history = new Map<string, ModelQualificationReceipt>();
 
   async loadSpend(): Promise<QualificationSpend[]> {
     return [...this.spend.values()].map(entry => ({ ...entry }));
@@ -43,11 +46,18 @@ export class InMemoryQualificationPersistence implements QualificationPersistenc
   }
 
   async save(receipt: ModelQualificationReceipt): Promise<void> {
-    this.receipts.set(this.key(receipt.providerId, receipt.modelId), receipt);
+    const preserved = structuredClone(receipt);
+    const digest = createHash("sha256").update(JSON.stringify(preserved)).digest("hex");
+    this.history.set(digest, preserved);
+    if (receipt.metadata?.transient !== true) this.receipts.set(this.key(receipt.providerId, receipt.modelId), preserved);
+  }
+
+  async loadHistory(providerId: string, modelId: string): Promise<ModelQualificationReceipt[]> {
+    return structuredClone([...this.history.values()].filter(receipt => receipt.providerId === providerId && receipt.modelId === modelId));
   }
 
   async load(providerId: string, modelId: string): Promise<ModelQualificationReceipt | null> {
-    return this.receipts.get(this.key(providerId, modelId)) ?? null;
+    return structuredClone(this.receipts.get(this.key(providerId, modelId)) ?? null);
   }
 
   async loadByProvider(providerId: string): Promise<ModelQualificationReceipt[]> {
@@ -57,11 +67,11 @@ export class InMemoryQualificationPersistence implements QualificationPersistenc
         results.push(receipt);
       }
     }
-    return results;
+    return structuredClone(results);
   }
 
   async loadAll(): Promise<ModelQualificationReceipt[]> {
-    return [...this.receipts.values()];
+    return structuredClone([...this.receipts.values()]);
   }
 
   async delete(providerId: string, modelId: string): Promise<boolean> {
@@ -127,7 +137,18 @@ export class SqliteQualificationPersistence implements QualificationPersistence 
   }
 
   async save(receipt: ModelQualificationReceipt): Promise<void> {
-    await this.persistence.upsertWorkItem(this.toWorkItem(receipt));
+    const digest = createHash("sha256").update(JSON.stringify(receipt)).digest("hex");
+    const id = `qualification-history::${receipt.providerId}::${receipt.modelId}::${digest}`;
+    if (!await this.persistence.getWorkItem(id)) {
+      await this.persistence.upsertWorkItem({ ...this.toWorkItem(receipt), id } as WorkItem);
+    }
+    if (receipt.metadata?.transient !== true) await this.persistence.upsertWorkItem(this.toWorkItem(receipt));
+  }
+
+  async loadHistory(providerId: string, modelId: string): Promise<ModelQualificationReceipt[]> {
+    const items = await this.persistence.getWorkItemsByKind("activity");
+    return items.filter(item => item.id.startsWith(`qualification-history::${providerId}::${modelId}::`))
+      .map(item => this.fromWorkItem(item)).filter((receipt): receipt is ModelQualificationReceipt => receipt !== null);
   }
 
   async load(providerId: string, modelId: string): Promise<ModelQualificationReceipt | null> {

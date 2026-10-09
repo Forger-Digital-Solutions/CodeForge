@@ -1,0 +1,1322 @@
+{
+  "startedAt": "2026-10-08T16:56:55.107Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "nvidia/nemotron-3.5-lightning:free",
+  "evidenceClass": "LIVE_REVIEWER_ONLY_PUBLIC_CASES",
+  "frames": [
+    {
+      "at": "2026-10-08T16:56:58.422Z",
+      "request": {
+        "model": "nvidia/nemotron-3.5-lightning:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Fix add() so it returns the sum of its arguments.\n\nDiff under review:\n--- a/src/calc.ts\n+++ b/src/calc.ts\n@@ export function add(a, b) @@\n-  return a - b;\n+  return a * b;"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [],
+      "finishedAt": "2026-10-08T16:57:43.427Z"
+    },
+    {
+      "at": "2026-10-08T16:57:43.431Z",
+      "request": {
+        "model": "nvidia/nemotron-3.5-lightning:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Fix add() so it returns the sum of its arguments.\n\nDiff under review:\n--- a/src/calc.ts\n+++ b/src/calc.ts\n@@ export function add(a, b) @@\n-  return a - b;\n+  return a * b;"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 1924
+      },
+      "events": [],
+      "finishedAt": "2026-10-08T16:58:28.434Z"
+    },
+    {
+      "at": "2026-10-08T16:58:28.437Z",
+      "request": {
+        "model": "nvidia/nemotron-3.5-lightning:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Rename the internal helper for clarity; behaviour unchanged.\n\nDiff under review:\n--- a/src/util/logger.ts\n+++ b/src/util/logger.ts\n@@\n-export const log = (m: string) => m;\n+export const writeLog = (m: string) => m;"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "pass"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": "[],"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Ren"
+        },
+        {
+          "type": "text_delta",
+          "delta": "amed"
+        },
+        {
+          "type": "text_delta",
+          "delta": " internal"
+        },
+        {
+          "type": "text_delta",
+          "delta": " helper"
+        },
+        {
+          "type": "text_delta",
+          "delta": " from"
+        },
+        {
+          "type": "text_delta",
+          "delta": " `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "log"
+        },
+        {
+          "type": "text_delta",
+          "delta": "`"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "write"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Log"
+        },
+        {
+          "type": "text_delta",
+          "delta": "`"
+        },
+        {
+          "type": "text_delta",
+          "delta": " with"
+        },
+        {
+          "type": "text_delta",
+          "delta": " identical"
+        },
+        {
+          "type": "text_delta",
+          "delta": " signature"
+        },
+        {
+          "type": "text_delta",
+          "delta": " and"
+        },
+        {
+          "type": "text_delta",
+          "delta": " behaviour"
+        },
+        {
+          "type": "text_delta",
+          "delta": "."
+        },
+        {
+          "type": "text_delta",
+          "delta": " No"
+        },
+        {
+          "type": "text_delta",
+          "delta": " defects"
+        },
+        {
+          "type": "text_delta",
+          "delta": " introduced"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 180,
+            "outputTokens": 745,
+            "totalTokens": 925,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 713
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T16:58:50.892Z"
+    },
+    {
+      "at": "2026-10-08T16:58:50.895Z",
+      "request": {
+        "model": "nvidia/nemotron-3.5-lightning:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Document the quota window semantics; comment only, no behaviour change.\n\nDiff under review:\n--- a/src/fabric/ledger.ts\n+++ b/src/fabric/ledger.ts\n@@\n+// Windows are provider-reported; a missing window means unobserved, not unlimited.\n export function snapshotHolds() { return []; }\n export function releaseExpired(now: number) { return now; }"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "Here's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Intent:** \"Document the quota window semantics; comment only, no behaviour change.\"\n   - **Diff under review:** A git diff showing changes to `src/fabric/ledger.ts`:\n     - Adding a comment: `// Windows are provider-reported; a missing window means unobserved, not unlimited.`\n     - Adding two function bodies: `export function snapshotHolds() { return []; }` and `export function releaseExpired(now: number) { return now; }`\n   - **Task:** Review the diff, reply with JSON only: `{\"verdict\":\"pass\"|\"revision_required\",\"findings\":[...],\"summary\":string}`.\n   - **Conditions:** \n     - Reply \"pass\" only when the diff correctly implements the intent with no defects.\n     - A clean diff must pass — don't invent problems.\n     - A revision_required verdict must include a blocking finding with concise evidence.\n\n2.  **Analyze the Diff vs Intent:**\n   - Intent: \"Document the quota window semantics; comment only, no behaviour change.\"\n   - Diff: \n     - Adds a comment about windows being provider-reported, missing window = unobserved, not unlimited.\n     - Adds two function implementations: `snapshotHolds()` and `releaseExpired()`.\n   - The intent says \"comment only, no behaviour change.\" But the diff adds actual function bodies. Wait, let me check the original file context. The diff shows `+` lines, meaning additions. It might be that these functions already exist, or the diff is adding them for the first time. But the intent is specifically \"comment only, no behaviour change.\" The diff includes code changes, not just comments.\n   - However, the diff might be incomplete/contextual. Let me look at the diff format:\n     ```\n     --- a/src/fabric/ledger.ts\n     +++ b/src/fabric/ledger.ts\n     @@\n     +// Windows are provider-reported; a missing window means unobserved, not unlimited.\n     export function snapshotHolds() { return []; }\n     export function releaseExpired(now: number) { return now; }\n     ```\n     This looks like it's adding a comment and two function definitions. If the intent is \"comment only, no behaviour change,\" then adding function implementations violates the intent if those functions didn't exist before, or if they're being changed. But without seeing the original file, I need to judge the diff as presented.\n   - The intent is \"Document the quota window semantics; comment only, no behaviour change.\" The diff adds a comment that seems relevant to quota window semantics. But it also adds two function bodies. If the original file didn't have these functions, adding them is a behavior change. If they already existed with different bodies, it's also a change. If the diff is just showing additions to a file that already has these, but the intent says \"comment only,\" then the code additions might be extraneous or maybe they were already there and the diff is only showing the new comment? But the diff format shows all three lines as additions (`+` prefix).\n   - Given the strict instruction: \"Reply pass only when the diff correctly implements the intent with no defects.\" The intent is \"comment only, no behaviour change.\" The diff includes behavior changes (function additions/definitions). This is a defect relative to the intent.\n   - However, maybe the functions `snapshotHolds` and `releaseExpired` are already in the file, and the diff is just showing the comment addition plus maybe the functions are unchanged but shown in the diff context? But the diff explicitly shows them as new additions. In git diff, if a function already exists, it wouldn't show as `+` for the whole body unless it's being added or replaced. Given the format, it's likely adding these functions.\n   - The intent says \"comment only.\" The diff has code. This mismatch means the diff does not correctly implement the intent. It introduces behavior changes (or at least new code) beyond just a comment.\n   - But wait: maybe the intent is to document quota window semantics via a comment, and the functions are unrelated or already existed, and the diff is just showing the comment plus the functions' current state? The user says \"Diff under review:\" and"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 201,
+            "outputTokens": 900,
+            "totalTokens": 1101,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1047
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T16:59:22.707Z"
+    },
+    {
+      "at": "2026-10-08T16:59:22.709Z",
+      "request": {
+        "model": "nvidia/nemotron-3.5-lightning:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Document the quota window semantics; comment only, no behaviour change.\n\nDiff under review:\n--- a/src/fabric/ledger.ts\n+++ b/src/fabric/ledger.ts\n@@\n+// Windows are provider-reported; a missing window means unobserved, not unlimited.\n export function snapshotHolds() { return []; }\n export function releaseExpired(now: number) { return now; }"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 1947
+      },
+      "events": [],
+      "finishedAt": "2026-10-08T17:00:07.714Z"
+    },
+    {
+      "at": "2026-10-08T17:00:07.719Z",
+      "request": {
+        "model": "nvidia/nemotron-3.5-lightning:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Record provider failures so the route can be demoted.\n\nDiff under review:\n--- a/src/health.ts\n+++ b/src/health.ts\n@@\n+export function recordFailure(id: string) {\n+  try { sendTelemetry(id); } catch { /* ignore */ }\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ver"
+        },
+        {
+          "type": "text_delta",
+          "delta": "dict"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "re"
+        },
+        {
+          "type": "text_delta",
+          "delta": "vision"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_required"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "find"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ings"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":["
+        },
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "health"
+        },
+        {
+          "type": "text_delta",
+          "delta": "-rec"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ording"
+        },
+        {
+          "type": "text_delta",
+          "delta": "-f"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ailure"
+        },
+        {
+          "type": "text_delta",
+          "delta": "-def"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ect"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\"sever"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ity"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "block"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ing"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "category"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "function"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ality"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "message"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "record"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Failure"
+        },
+        {
+          "type": "text_delta",
+          "delta": " does"
+        },
+        {
+          "type": "text_delta",
+          "delta": " not"
+        },
+        {
+          "type": "text_delta",
+          "delta": " record"
+        },
+        {
+          "type": "text_delta",
+          "delta": " provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failures"
+        },
+        {
+          "type": "text_delta",
+          "delta": " or"
+        },
+        {
+          "type": "text_delta",
+          "delta": " enable"
+        },
+        {
+          "type": "text_delta",
+          "delta": " route"
+        },
+        {
+          "type": "text_delta",
+          "delta": " dem"
+        },
+        {
+          "type": "text_delta",
+          "delta": "otion"
+        },
+        {
+          "type": "text_delta",
+          "delta": ";"
+        },
+        {
+          "type": "text_delta",
+          "delta": " it"
+        },
+        {
+          "type": "text_delta",
+          "delta": " silently"
+        },
+        {
+          "type": "text_delta",
+          "delta": " ignores"
+        },
+        {
+          "type": "text_delta",
+          "delta": " tele"
+        },
+        {
+          "type": "text_delta",
+          "delta": "metry"
+        },
+        {
+          "type": "text_delta",
+          "delta": " errors"
+        },
+        {
+          "type": "text_delta",
+          "delta": " and"
+        },
+        {
+          "type": "text_delta",
+          "delta": " performs"
+        },
+        {
+          "type": "text_delta",
+          "delta": " no"
+        },
+        {
+          "type": "text_delta",
+          "delta": " persistent"
+        },
+        {
+          "type": "text_delta",
+          "delta": " storage"
+        },
+        {
+          "type": "text_delta",
+          "delta": " or"
+        },
+        {
+          "type": "text_delta",
+          "delta": " state"
+        },
+        {
+          "type": "text_delta",
+          "delta": " change"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "ev"
+        },
+        {
+          "type": "text_delta",
+          "delta": "idence"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " adds"
+        },
+        {
+          "type": "text_delta",
+          "delta": " `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "record"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Failure"
+        },
+        {
+          "type": "text_delta",
+          "delta": "(id"
+        },
+        {
+          "type": "text_delta",
+          "delta": ":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " string"
+        },
+        {
+          "type": "text_delta",
+          "delta": ")`"
+        },
+        {
+          "type": "text_delta",
+          "delta": " with"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " try"
+        },
+        {
+          "type": "text_delta",
+          "delta": "-c"
+        },
+        {
+          "type": "text_delta",
+          "delta": "atch"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " calls"
+        },
+        {
+          "type": "text_delta",
+          "delta": " `"
+        },
+        {
+          "type": "text_delta",
+          "delta": "send"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Tele"
+        },
+        {
+          "type": "text_delta",
+          "delta": "metry"
+        },
+        {
+          "type": "text_delta",
+          "delta": "(id"
+        },
+        {
+          "type": "text_delta",
+          "delta": ")`"
+        },
+        {
+          "type": "text_delta",
+          "delta": " but"
+        },
+        {
+          "type": "text_delta",
+          "delta": " ignores"
+        },
+        {
+          "type": "text_delta",
+          "delta": " all"
+        },
+        {
+          "type": "text_delta",
+          "delta": " errors"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " leaving"
+        },
+        {
+          "type": "text_delta",
+          "delta": " no"
+        },
+        {
+          "type": "text_delta",
+          "delta": " mechanism"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " track"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failures"
+        },
+        {
+          "type": "text_delta",
+          "delta": " or"
+        },
+        {
+          "type": "text_delta",
+          "delta": " trigger"
+        },
+        {
+          "type": "text_delta",
+          "delta": " route"
+        },
+        {
+          "type": "text_delta",
+          "delta": " dem"
+        },
+        {
+          "type": "text_delta",
+          "delta": "otion"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "text_delta",
+          "delta": "],"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "The"
+        },
+        {
+          "type": "text_delta",
+          "delta": " diff"
+        },
+        {
+          "type": "text_delta",
+          "delta": " introduces"
+        },
+        {
+          "type": "text_delta",
+          "delta": " a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " stub"
+        },
+        {
+          "type": "text_delta",
+          "delta": " function"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fails"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " implement"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " intent"
+        },
+        {
+          "type": "text_delta",
+          "delta": " of"
+        },
+        {
+          "type": "text_delta",
+          "delta": " recording"
+        },
+        {
+          "type": "text_delta",
+          "delta": " provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": " failures"
+        },
+        {
+          "type": "text_delta",
+          "delta": " for"
+        },
+        {
+          "type": "text_delta",
+          "delta": " route"
+        },
+        {
+          "type": "text_delta",
+          "delta": " dem"
+        },
+        {
+          "type": "text_delta",
+          "delta": "otion"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " as"
+        },
+        {
+          "type": "text_delta",
+          "delta": " it"
+        },
+        {
+          "type": "text_delta",
+          "delta": " performs"
+        },
+        {
+          "type": "text_delta",
+          "delta": " no"
+        },
+        {
+          "type": "text_delta",
+          "delta": " recording"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " storage"
+        },
+        {
+          "type": "text_delta",
+          "delta": ","
+        },
+        {
+          "type": "text_delta",
+          "delta": " or"
+        },
+        {
+          "type": "text_delta",
+          "delta": " dem"
+        },
+        {
+          "type": "text_delta",
+          "delta": "otion"
+        },
+        {
+          "type": "text_delta",
+          "delta": " logic"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 178,
+            "outputTokens": 762,
+            "totalTokens": 940,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 699
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:00:33.412Z"
+    },
+    {
+      "at": "2026-10-08T17:00:33.418Z",
+      "request": {
+        "model": "nvidia/nemotron-3.5-lightning:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Add a fast path that reserves capacity before early return.\n\nDiff under review:\n--- a/src/fabric/admission.ts\n+++ b/src/fabric/admission.ts\n@@\n+export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "Here's a thinking process:\n\n1.  **Analyze the User's Request:**\n   - **Intent:** \"Add a fast path that reserves capacity before early return.\"\n   - **Diff under review:** A code diff showing a function `fastPath` that calls `reserve(requestId, routeId)` and then has an early return `if (!routeId) return;`.\n   - **My Role:** Independent change reviewer.\n   - **Output Format:** JSON only: `{\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}`.\n   - **Rules:** \n     - Reply \"pass\" only when the diff correctly implements the intent with no defects.\n     - A clean diff must pass — do not invent problems.\n     - A revision_required verdict must include a blocking finding with concise evidence.\n\n2.  **Analyze the Diff:**\n   ```diff\n   +export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n   }\n   ```\n   Wait, the diff is a bit truncated/malformed in the prompt, but I can see:\n   - It adds a function `fastPath` with parameters `requestId` and `routeId`.\n   - Inside, it calls `reserve(requestId, routeId)`.\n   - Then it has `if (!routeId) return;`.\n\n   Let's think about the intent: \"Add a fast path that reserves capacity before early return.\"\n   The code does: reserve first, then early return if routeId is falsy.\n\n   Potential issues:\n   - The function takes `routeId: string` as a parameter, so it's expected to be a string. But the check `if (!routeId)` suggests it could be falsy (maybe empty string, undefined, etc.). TypeScript might allow passing `undefined` or `\"\"` even if typed as `string`, depending on strictness.\n   - The order: `reserve(requestId, routeId)` is called *before* the check `if (!routeId) return;`. This means it reserves capacity even when routeId is falsy, which might be unnecessary or a bug if the intent is to reserve only when there's a valid routeId.\n   - Wait, the intent says: \"Add a fast path that reserves capacity before early return.\" This implies the reserve should happen before the early return. The diff does exactly that: it reserves, then returns early if routeId is missing.\n   - But is there a defect? If `routeId` is falsy, `reserve` is still called with a falsy `routeId`. That might be the intended behavior (reserve capacity anyway, then return), or it might be a bug (should not reserve if routeId is invalid).\n   - Let's re-read carefully: \"Add a fast path that reserves capacity before early return.\" The diff has `reserve(requestId, routeId);` then `if (!routeId) return;`. This matches the literal intent: reserve capacity, then do early return.\n   - However, is there a logical defect? If the purpose is a \"fast path\" that reserves capacity *only when there's a valid routeId*, then calling reserve before checking and returning early might be wasteful or incorrect. But the intent explicitly says \"reserves capacity before early return\", which suggests the reserve is supposed to happen even before the early return check.\n   - Let's consider the type: `routeId: string`. If it's typed as `string`, passing `undefined` or `\"\"` might not be typical, but the check `!routeId` handles it.\n   - Is there any obvious defect that would make this \"revision_required\"? \n     - The function calls `reserve` with `routeId`, then immediately checks `if (!routeId) return;`. This means if `routeId` is falsy, it reserves capacity and then returns. That seems slightly odd but matches the stated intent.\n     - Maybe the intent is that the fast path should reserve capacity *only if* routeId is valid, and then return early? But the diff does reserve first"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 190,
+            "outputTokens": 900,
+            "totalTokens": 1090,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 934
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "nvidia/nemotron-3.5-lightning:free"
+        }
+      ],
+      "finishedAt": "2026-10-08T17:01:05.237Z"
+    },
+    {
+      "at": "2026-10-08T17:01:05.241Z",
+      "request": {
+        "model": "nvidia/nemotron-3.5-lightning:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Add a fast path that reserves capacity before early return.\n\nDiff under review:\n--- a/src/fabric/admission.ts\n+++ b/src/fabric/admission.ts\n@@\n+export function fastPath(requestId: string, routeId: string) {\n+  reserve(requestId, routeId);\n+  if (!routeId) return;\n+}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 1924
+      },
+      "events": [],
+      "finishedAt": "2026-10-08T17:01:50.242Z"
+    },
+    {
+      "at": "2026-10-08T17:01:50.247Z",
+      "request": {
+        "model": "nvidia/nemotron-3.5-lightning:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Make the flaky router test pass.\n\nDiff under review:\n--- a/test/router.test.ts\n+++ b/test/router.test.ts\n@@\n-test(\"route executes\", () => { expect(run()).toBe(\"ok\"); });\n+test(\"route executes\", () => { expect(\"ok\").toBe(\"ok\"); });"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 900
+      },
+      "events": [],
+      "finishedAt": "2026-10-08T17:02:35.260Z"
+    },
+    {
+      "at": "2026-10-08T17:02:35.266Z",
+      "request": {
+        "model": "nvidia/nemotron-3.5-lightning:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an independent change reviewer. Reply with JSON only: {\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}. Return pass only when the diff correctly implements the intent with no defects. A clean diff must pass — do not invent problems. A revision_required verdict must include a blocking finding with concise evidence."
+          },
+          {
+            "role": "user",
+            "content": "Intent: Make the flaky router test pass.\n\nDiff under review:\n--- a/test/router.test.ts\n+++ b/test/router.test.ts\n@@\n-test(\"route executes\", () => { expect(run()).toBe(\"ok\"); });\n+test(\"route executes\", () => { expect(\"ok\").toBe(\"ok\"); });"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 1924
+      },
+      "events": [],
+      "finishedAt": "2026-10-08T17:02:58.422Z"
+    }
+  ],
+  "maxRequests": 24,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T16:56:55.107Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-08T16:56:55.107Z",
+      "recheckAt": "2026-10-15T16:56:55.107Z",
+      "qualificationAt": "2026-10-08T16:56:55.107Z",
+      "termsVerifiedAt": "2026-10-08T16:56:55.107Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-15T16:56:55.107Z",
+      "privacyVerifiedAt": "2026-10-08T16:56:55.107Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-15T16:56:55.107Z",
+      "priceVerifiedAt": "2026-10-08T16:56:55.107Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-15T16:56:55.107Z",
+      "nextReverifyAt": "2026-10-08T22:56:55.107Z"
+    }
+  },
+  "catalog": {
+    "modelId": "nvidia/nemotron-3.5-lightning:free",
+    "displayName": "NVIDIA: Nemotron 3.5 Lightning (free)",
+    "contextWindow": 1000000,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "result": {
+    "roleResults": {
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T16:56:58.421Z",
+        "completedAt": "2026-10-08T17:02:58.427Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-08T16:56:58.421Z",
+        "completedAt": "2026-10-08T17:02:58.427Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 90015,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 22459,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 713
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 76823,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": true,
+              "verdictCorrect": false,
+              "findingLocalized": true,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 25700,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "recordFailure does not record provider failures or enable route demotion; it silently ignores telemetry errors and performs no persistent storage or state change."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 699
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 76829,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true
+            }
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 68180,
+            "retries": 0,
+            "error": "suite deadline elapsed (timed out)"
+          }
+        ],
+        "hardFailures": [
+          "reviewer.one_bug",
+          "reviewer.clean_comment",
+          "reviewer.reservation_leak"
+        ],
+        "overallScore": 0.4,
+        "startedAt": "2026-10-08T16:56:58.421Z",
+        "completedAt": "2026-10-08T17:02:58.427Z"
+      }
+    },
+    "requestCount": 10,
+    "transientCases": 1
+  },
+  "qualification": {
+    "suiteVersion": "R73_ROLE_QUALIFICATION_V5",
+    "providerId": "kilo-free-direct",
+    "modelId": "nvidia/nemotron-3.5-lightning:free",
+    "modelDisplayName": "NVIDIA: Nemotron 3.5 Lightning (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 90015,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 22459,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 713
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 76823,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": true,
+              "verdictCorrect": false,
+              "findingLocalized": true,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 25700,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "recordFailure does not record provider failures or enable route demotion; it silently ignores telemetry errors and performs no persistent storage or state change."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 699
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 76829,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true
+            }
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 68180,
+            "retries": 0,
+            "error": "suite deadline elapsed (timed out)"
+          }
+        ],
+        "hardFailures": [
+          "reviewer.one_bug",
+          "reviewer.clean_comment",
+          "reviewer.reservation_leak"
+        ],
+        "overallScore": 0.4,
+        "startedAt": "2026-10-08T16:56:58.421Z",
+        "completedAt": "2026-10-08T17:02:58.427Z"
+      }
+    },
+    "startedAt": "2026-10-08T16:56:55.107Z",
+    "completedAt": "2026-10-08T17:02:58.427Z",
+    "totalLatencyMs": 363320,
+    "qualificationState": "NOT_QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "transient": true,
+      "requests": 10,
+      "reviewerProtocolOnly": true,
+      "publicCasesOnly": true
+    }
+  },
+  "status": "INCONCLUSIVE_PROVIDER_FAILURE",
+  "finishedAt": "2026-10-08T17:02:58.427Z"
+}

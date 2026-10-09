@@ -11,11 +11,11 @@ export interface ExperienceWorker {
   role: string;
   status: string;
   model?: { providerId: string; modelId: string };
-  telemetry?: { wallTimeMs?: number; modelRequests?: number; inputTokens?: number; outputTokens?: number; toolCalls?: number; retryCount?: number; providerFailures?: number };
+  telemetry?: { wallTimeMs?: number; modelRequests?: number; inputTokens?: number; outputTokens?: number; toolCalls?: number; retryCount?: number; providerFailures?: number | null };
 }
 
 const digest = (value: string): string => createHash("sha256").update(value).digest("hex");
-const count = (value: number | undefined): number => Number.isSafeInteger(value) && value! >= 0 ? value! : 0;
+const count = (value: number | null | undefined): number => Number.isSafeInteger(value) && value! >= 0 ? value! : 0;
 const bucket = (value: number): string => value === 0 ? "0" : value <= 10 ? "1-10" : value <= 100 ? "11-100" : value <= 1_000 ? "101-1000" : "1000+";
 const roleClass = (role: string): string => {
   const value = role.toLowerCase();
@@ -52,7 +52,8 @@ export function buildExperienceReceipt(run: AutonomousRun, workers: readonly Exp
     inputTokens: sum.inputTokens + count(worker.telemetry?.inputTokens),
     outputTokens: sum.outputTokens + count(worker.telemetry?.outputTokens),
     providerFailures: sum.providerFailures + count(worker.telemetry?.providerFailures),
-  }), { modelRequests: 0, toolCalls: 0, retries: 0, inputTokens: 0, outputTokens: 0, providerFailures: 0 });
+    providerFailureUnknownWorkers: sum.providerFailureUnknownWorkers + Number(worker.telemetry?.providerFailures == null && (worker.telemetry?.modelRequests ?? 0) > 0),
+  }), { modelRequests: 0, toolCalls: 0, retries: 0, inputTokens: 0, outputTokens: 0, providerFailures: 0, providerFailureUnknownWorkers: 0 });
   const label = experienceLabel(run);
   const generalized = {
     schemaVersion: "r57-experience-signal/v1",
@@ -91,7 +92,7 @@ export function buildExperienceReceipt(run: AutonomousRun, workers: readonly Exp
           outputTokens: count(worker.telemetry?.outputTokens),
           toolCalls: count(worker.telemetry?.toolCalls),
           retries: count(worker.telemetry?.retryCount),
-          providerFailures: count(worker.telemetry?.providerFailures),
+          providerFailures: worker.telemetry?.providerFailures == null ? null : count(worker.telemetry.providerFailures),
         },
       })),
       signal: generalized,

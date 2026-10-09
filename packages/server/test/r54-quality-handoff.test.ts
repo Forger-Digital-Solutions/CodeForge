@@ -39,7 +39,11 @@ describe("R54 quality-driven Coder handoff", () => {
     await rm(worktrees, { recursive: true, force: true });
   });
 
-  it("keeps the first edit, excludes its healthy but stalled route, and completes through verification", async () => {
+  it.each([
+    ["groq", "managed:groq:a"],
+    ["blockrun-free-direct", "blockrun-direct:egress"],
+    ["public-anonymous", "public-ip:egress"],
+  ])("keeps the first edit from %s, excludes its stalled route, and completes through verification", async (providerId, routePoolId) => {
     const coderRoutes: Array<SpawnChildOptions["excludeRoleRoute"]> = [];
     const coderContexts: Array<SpawnChildOptions["contextSummary"]> = [];
     let secondSawPartial = false;
@@ -52,7 +56,7 @@ describe("R54 quality-driven Coder handoff", () => {
         const file = join(options.workspacePath, "src", "math.mjs");
         if (coderRoutes.length === 1) {
           await writeFile(file, "export const base = 1;\nexport function partial() { return 2; }\n");
-          return { status: "blocked", summary: "[AGENT_NO_PROGRESS_DETECTED] repeated unchanged evidence", findings: [], evidence: [], files: ["src/math.mjs"], risks: [], recommendations: [], route: { providerId: "groq", modelId: "coder-a" }, routePoolId: "managed:groq:a" };
+          return { status: "blocked", summary: "[AGENT_NO_PROGRESS_DETECTED] repeated unchanged evidence", findings: [], evidence: [], files: ["src/math.mjs"], risks: [], recommendations: [], route: { providerId, modelId: "coder-a" }, routePoolId };
         }
         secondSawPartial = (await readFile(file, "utf8")).includes("function partial()");
         await writeFile(file, `${await readFile(file, "utf8")}export function finish() { return 3; }\n`);
@@ -70,7 +74,7 @@ describe("R54 quality-driven Coder handoff", () => {
     expect(result.status).toBe("completed");
     expect(result.completion?.outcome).toBe("completed");
     expect(secondSawPartial).toBe(true);
-    expect(coderRoutes).toEqual([undefined, { providerId: "groq", modelId: "coder-a" }]);
+    expect(coderRoutes).toEqual([undefined, { providerId, modelId: "coder-a" }]);
     expect(coderContexts).toHaveLength(2);
     for (const context of coderContexts) {
       expect(context).toContain("network:false");
@@ -80,7 +84,7 @@ describe("R54 quality-driven Coder handoff", () => {
     expect((await readFile(join(repo, "src", "math.mjs"), "utf8"))).toContain("function partial()");
     const handoffs = await persistence.getWorkItemsByKind("role_quality_handoff");
     expect(handoffs).toHaveLength(1);
-    expect(handoffs[0]).toMatchObject({ reason: "QUALITY_DRIVEN_ROLE_SWITCH", oldOwner: { providerId: "groq", modelId: "coder-a" }, newOwner: { providerId: "openrouter", modelId: "coder-b" }, changedFiles: ["src/math.mjs"] });
+    expect(handoffs[0]).toMatchObject({ reason: "QUALITY_DRIVEN_ROLE_SWITCH", oldOwner: { providerId, modelId: "coder-a" }, newOwner: { providerId: "openrouter", modelId: "coder-b" }, changedFiles: ["src/math.mjs"] });
   });
 
   it("does not switch on a provider-capacity failure", async () => {
@@ -107,6 +111,7 @@ describe("R54 quality-driven Coder handoff", () => {
     ["openrouter", "managed:openrouter:a"],
     ["ai-horde", "shared:ai-horde"],
     ["kilo-free-direct", "kilo-direct:egress"],
+    ["public-anonymous", "public-ip:egress"],
   ])("requires a replacement semantic verdict when %s has none", async (providerId, routePoolId) => {
     const reviewerRoutes: Array<SpawnChildOptions["excludeRoleRoute"]> = [];
     const manager = {
@@ -149,5 +154,67 @@ describe("R54 quality-driven Coder handoff", () => {
     expect(result.status).toBe("blocked");
     expect(result.completion?.outcome).not.toBe("completed");
     expect(reviewerCalls).toBe(2);
+  });
+
+  it("preserves one coding edit while rotating three Reviewer candidates with cumulative exclusions", async () => {
+    let coderCalls = 0;
+    const exclusions: SpawnChildOptions["excludeRoleRoutes"][] = [];
+    const manager = {
+      spawnChildAgent: async (options: SpawnChildOptions) => {
+        const base = { summary: "done", findings: [], evidence: [], files: [], risks: [], recommendations: [] };
+        if (options.agentId === "explorer") return { ...base, status: "completed" };
+        if (options.agentId === "coder") {
+          coderCalls++;
+          await writeFile(join(options.workspacePath, "src", "math.mjs"), "export function partial() { return 2; }\nexport function finish() { return 3; }\n");
+          return { ...base, status: "completed", files: ["src/math.mjs"], route: { providerId: "coder", modelId: "coder" }, routePoolId: "coder:ip" };
+        }
+        exclusions.push(options.excludeRoleRoutes?.map((route) => ({ ...route })));
+        expect(options.preferIndependentFromPoolId).toBe("coder:ip");
+        expect(await readFile(join(options.workspacePath, "src", "math.mjs"), "utf8")).toContain("function finish()");
+        const route = { providerId: "public-anonymous", modelId: `reviewer-${exclusions.length}` };
+        if (exclusions.length < 3) return { ...base, status: "blocked", summary: "[AGENT_INVALID_STRUCTURED_OUTPUT] no verdict", route, routePoolId: "public-ip:egress" };
+        return { ...base, status: "completed", structuredData: { verdict: "pass", summary: "Reviewed", findings: [] }, route, routePoolId: "public-ip:egress" };
+      },
+      cancelParent: () => undefined,
+    } as unknown as SubagentManager;
+    const orchestrator = createAutonomousRunOrchestrator({ workspaceService: createWorkspaceService({ persistence, worktreeParentDir: worktrees }), persistence, subagentManager: manager, subagentsR1Enabled: true });
+    const result = await orchestrator.startRun({ sessionId: "r73-reviewer-roster", workspacePath: repo, goal: "Implement partial and finish in the math module with tests", verificationCommands: ["node --test test/integration.test.mjs"] });
+    expect(result.status).toBe("completed");
+    expect(result.completion?.outcome).toBe("completed");
+    expect(result.review.passed).toBe(true);
+    expect(result.verification.every((item) => item.passed)).toBe(true);
+    expect(result.integration.status).toBe("integrated");
+    expect(coderCalls).toBe(1);
+    expect(exclusions).toEqual([undefined, [{ providerId: "public-anonymous", modelId: "reviewer-1" }], [{ providerId: "public-anonymous", modelId: "reviewer-1" }, { providerId: "public-anonymous", modelId: "reviewer-2" }]]);
+    const handoffs = await persistence.getWorkItemsByKind("semantic_verifier_handoff");
+    expect(handoffs).toHaveLength(2);
+    expect(handoffs.map((handoff) => (handoff as unknown as { diffHash: string }).diffHash)[0]).toBe((handoffs[1] as unknown as { diffHash: string }).diffHash);
+  });
+
+  it("bounds the Reviewer roster and never interprets a malformed verdict as approval", async () => {
+    let coderCalls = 0;
+    let reviewerCalls = 0;
+    const manager = {
+      spawnChildAgent: async (options: SpawnChildOptions) => {
+        const base = { summary: "done", findings: [], evidence: [], files: [], risks: [], recommendations: [] };
+        if (options.agentId === "explorer") return { ...base, status: "completed" };
+        if (options.agentId === "coder") {
+          coderCalls++;
+          await writeFile(join(options.workspacePath, "src", "math.mjs"), "export function partial() { return 2; }\nexport function finish() { return 3; }\n");
+          return { ...base, status: "completed", files: ["src/math.mjs"] };
+        }
+        reviewerCalls++;
+        return { ...base, status: "completed", structuredData: { verdict: "approve", findings: [] }, route: { providerId: "public-anonymous", modelId: `reviewer-${reviewerCalls}` } };
+      },
+      cancelParent: () => undefined,
+    } as unknown as SubagentManager;
+    const orchestrator = createAutonomousRunOrchestrator({ workspaceService: createWorkspaceService({ persistence, worktreeParentDir: worktrees }), persistence, subagentManager: manager, subagentsR1Enabled: true });
+    const result = await orchestrator.startRun({ sessionId: "r73-reviewer-bound", workspacePath: repo, goal: "Implement partial and finish in the math module with tests", verificationCommands: ["node --test test/integration.test.mjs"] });
+    expect(result.status).toBe("blocked");
+    expect(result.integration.status).not.toBe("integrated");
+    expect(result.review.passed).toBe(false);
+    expect(reviewerCalls).toBe(3);
+    expect(coderCalls).toBe(1);
+    expect(await readFile(join(repo, "src", "math.mjs"), "utf8")).not.toContain("function finish()");
   });
 });

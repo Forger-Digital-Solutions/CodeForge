@@ -13,10 +13,11 @@
  */
 
 import type { ChatRequest, ToolDefinition } from "@codeforge/providers";
-import { type PlannerResult, validateStructuredAgentResult } from "@codeforge/agent";
+import { type PlannerResult, type ReviewResult, ROLE_PROMPTS, validateStructuredAgentResult } from "@codeforge/agent";
 import type { FreeModelRecord, ModelQualificationReceipt, RoleQualificationResult, TestCaseResult } from "./types.js";
 import type { EightBitRole } from "../types.js";
 import { firstJsonObject, runCompactQualification, type CompactQualificationAdapter, type CompactQualificationOptions } from "./compact.js";
+import { isProviderCompatibilityFailure, providerCompatibilityFailure, providerCompatibilityMetadata, type ProviderCompatibilityFailure } from "./provider-compatibility.js";
 import {
   EXPLORER_CASES,
   EXPLORER_PROTOCOL,
@@ -84,6 +85,7 @@ interface ObserveResult {
   reasoningRetried?: boolean;
   starvedAttempt?: { maxTokens?: number; reasoningTokens?: number; finishReason?: string };
   error?: string;
+  providerFailure?: ProviderCompatibilityFailure;
 }
 
 async function observeOnce(adapter: CompactQualificationAdapter, req: ChatRequest, timeoutMs: number, counter?: QualificationRequestCounter, suiteSignal?: AbortSignal): Promise<ObserveResult> {
@@ -94,6 +96,7 @@ async function observeOnce(adapter: CompactQualificationAdapter, req: ChatReques
   // A suite-deadline abort is capacity evidence, not capability: the message carries "timed out"
   // so the suite's existing transient classification keeps the route pending for a later cycle.
   const deadlineError = "suite deadline elapsed (timed out)";
+  const abortError = (): string | undefined => suiteSignal?.aborted ? deadlineError : controller.signal.aborted ? "qualification case timed out" : undefined;
   const calls: ObserveResult["toolCalls"] = [];
   let text = "";
   let finishReason: string | undefined;
@@ -101,10 +104,11 @@ async function observeOnce(adapter: CompactQualificationAdapter, req: ChatReques
   let outputTokens: number | undefined;
   let reasoningTokens: number | undefined;
   try {
+    if (suiteSignal?.aborted) return { text, toolCalls: calls, error: deadlineError };
     if (!adapter.streamChat) return { text, toolCalls: calls, error: "provider exposes no streamChat" };
     if (counter) counter.count++;
     for await (const ev of adapter.streamChat(req, controller.signal)) {
-      if (suiteSignal?.aborted) return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: deadlineError };
+      if (abortError()) return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: abortError() };
       if (ev.type === "text_delta") text += ev.delta;
       if (ev.type === "finish") finishReason = ev.finishReason;
       if (ev.type === "usage") {
@@ -122,13 +126,11 @@ async function observeOnce(adapter: CompactQualificationAdapter, req: ChatReques
         }
         calls.push({ name: ev.toolName ?? "", args, malformed });
       }
-      if (ev.type === "error") return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: ev.message };
+      if (ev.type === "error") return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: abortError() ?? ev.message, providerFailure: providerCompatibilityFailure(ev) };
     }
-    return suiteSignal?.aborted
-      ? { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: deadlineError }
-      : { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens };
+    return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, ...(abortError() ? { error: abortError() } : {}) };
   } catch (e) {
-    return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: suiteSignal?.aborted ? deadlineError : e instanceof Error ? e.message : String(e) };
+    return { text, toolCalls: calls, finishReason, inputTokens, outputTokens, reasoningTokens, error: abortError() ?? (e instanceof Error ? e.message : String(e)), providerFailure: providerCompatibilityFailure(e) };
   } finally {
     clearTimeout(timer);
     suiteSignal?.removeEventListener("abort", onSuiteAbort);
@@ -256,7 +258,7 @@ async function runExplorerCase(adapter: CompactQualificationAdapter, modelId: st
     if (finalCall) messages.push({ role: "user", content: 'This is your final call. Report only the files supported by your inspection as JSON: {"files": [...]}. Do not request more tools.' });
     lastObs = await observe(adapter, { model: modelId, messages, tools: EXPLORER_TOOLS, toolChoice: finalCall ? "none" : "auto", temperature: 0, maxTokens: 800 }, timeoutMs, counter, suiteSignal);
     if (lastObs.reasoningRetried) reasoningRetries++;
-    if (lastObs.error) return caseResult(caze.caseId, "explore", false, started, { error: lastObs.error.slice(0, 200) });
+    if (lastObs.error) return caseResult(caze.caseId, "explore", false, started, { error: lastObs.error.slice(0, 200), details: lastObs.providerFailure ? { ...lastObs.providerFailure } : undefined });
     totalToolCalls += lastObs.toolCalls.length;
     const toolCalls = lastObs.toolCalls.map((call, index) => ({ id: `q_${modelCalls}_${index + 1}`, type: "function" as const, function: { name: call.name, arguments: JSON.stringify(call.args) } }));
     if (toolCalls.length > 0) messages.push({ role: "assistant", content: lastObs.text, toolCalls });
@@ -354,7 +356,7 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
     counter,
     suiteSignal,
   );
-  if (obs.error) return caseResult(caze.caseId, "plan", false, started, { error: obs.error.slice(0, 200) });
+  if (obs.error) return caseResult(caze.caseId, "plan", false, started, { error: obs.error.slice(0, 200), details: obs.providerFailure ? { ...obs.providerFailure } : undefined });
 
   const validation = validateStructuredAgentResult("planner", obs.text);
   const plan = validation.success ? validation.data as PlannerResult : undefined;
@@ -419,10 +421,8 @@ async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: st
         {
           role: "system",
           content:
-            "You are an independent change reviewer. Reply with JSON only: " +
-            '{"verdict": "approve" | "reject", "findings": [{"message": string, "path"?: string}]}. ' +
-            "Approve only when the diff correctly implements the intent with no defects. " +
-            "A clean diff must be approved — do not invent problems.",
+            ROLE_PROMPTS.reviewer.systemPromptTemplate + "\n" +
+            "You are an independent change reviewer. A clean diff that correctly implements the intent with no defects must pass; do not invent problems.",
         },
         { role: "user", content: `Intent: ${caze.intent}\n\nDiff under review:\n${caze.diff}` },
       ],
@@ -433,12 +433,13 @@ async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: st
     counter,
     suiteSignal,
   );
-  if (obs.error) return caseResult(caze.caseId, "review", false, started, { error: obs.error.slice(0, 200) });
+  if (obs.error) return caseResult(caze.caseId, "review", false, started, { error: obs.error.slice(0, 200), details: obs.providerFailure ? { ...obs.providerFailure } : undefined });
 
-  const parsed = firstJsonObject(obs.text) as { verdict?: unknown; findings?: Array<{ message?: unknown; path?: unknown }> } | null;
-  const schemaValid = !!parsed && (parsed.verdict === "approve" || parsed.verdict === "reject") && Array.isArray(parsed.findings);
-  const approved = parsed?.verdict === "approve";
-  const findingsText = (parsed?.findings ?? []).map((f) => `${f.message ?? ""} ${f.path ?? ""}`).join("\n").toLowerCase();
+  const validation = validateStructuredAgentResult("reviewer", obs.text);
+  const parsed = validation.success ? validation.data as ReviewResult : undefined;
+  const schemaValid = validation.success;
+  const approved = parsed?.verdict === "pass";
+  const findingsText = (parsed?.findings ?? []).map((f) => `${f.message} ${f.path ?? ""} ${f.evidence ?? ""}`).join("\n").toLowerCase();
   const verdictCorrect = schemaValid && approved === caze.expectApproved;
   const findingLocalized = caze.expectApproved || (verdictCorrect && caze.defectMarkers.some((m) => findingsText.includes(m.toLowerCase())));
   const details = {
@@ -448,6 +449,7 @@ async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: st
     verdictCorrect,
     findingLocalized,
     findings: (parsed?.findings ?? []).map((f) => f.message).slice(0, 5),
+    ...(validation.success ? { repairedWith: validation.repairedWith } : { schemaError: validation.error }),
     reasoningRetried: obs.reasoningRetried === true,
     reasoningTokens: obs.reasoningTokens,
   };
@@ -461,9 +463,13 @@ async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: st
 // Suite
 // ---------------------------------------------------------------------------
 
+function isTransientCase(result: TestCaseResult): boolean {
+  return isProviderCompatibilityFailure(result) || (!!result.error && TRANSIENT_RE.test(result.error));
+}
+
 function assemble(role: EightBitRole, cases: TestCaseResult[], protocol: RoleProtocol, startedAt: string): RoleQualificationResult {
-  const scored = cases.filter((c) => !c.error || !TRANSIENT_RE.test(c.error));
-  const interrupted = cases.some((c) => !!c.error && TRANSIENT_RE.test(c.error));
+  const scored = cases.filter((c) => !isTransientCase(c));
+  const interrupted = cases.some(isTransientCase);
   const hardFailures = [...new Set(scored.filter((c) => c.hardFailure || protocol.disqualifyingFailures.includes(c.caseId) && !c.passed).map((c) => c.caseId))];
   const passedCount = scored.filter((c) => c.passed).length;
   const score = scored.length === 0 ? 0 : passedCount / scored.length;
@@ -496,23 +502,23 @@ export async function runRoleQualification(
   for (const caze of options.roles && !options.roles.includes("EXPLORER") ? [] : EXPLORER_CASES) {
     const result = await withRetry(() => runExplorerCase(adapter, model.modelId, caze, timeoutMs, counter, suiteSignal));
     explorerCases.push(result);
-    if (result.error && TRANSIENT_RE.test(result.error)) { interrupted = true; break; }
+    if (isTransientCase(result)) { interrupted = true; break; }
   }
   const plannerCases: TestCaseResult[] = [];
   if (!interrupted) for (const caze of options.roles && !options.roles.includes("PLANNER") ? [] : PLANNER_CASES) {
     const result = await withRetry(() => runPlannerCase(adapter, model.modelId, caze, timeoutMs, counter, suiteSignal));
     plannerCases.push(result);
-    if (result.error && TRANSIENT_RE.test(result.error)) { interrupted = true; break; }
+    if (isTransientCase(result)) { interrupted = true; break; }
   }
   const reviewerCases: TestCaseResult[] = [];
   if (!interrupted) for (const caze of options.roles && !options.roles.includes("REVIEWER") ? [] : REVIEWER_CASES) {
     const result = await withRetry(() => runReviewerCase(adapter, model.modelId, caze, timeoutMs, counter, suiteSignal));
     reviewerCases.push(result);
-    if (result.error && TRANSIENT_RE.test(result.error)) break;
+    if (isTransientCase(result)) break;
   }
 
   const all = [...explorerCases, ...plannerCases, ...reviewerCases];
-  const transientCases = all.filter((c) => !!c.error && TRANSIENT_RE.test(c.error)).length;
+  const transientCases = all.filter(isTransientCase).length;
   return {
     roleResults: {
       EXPLORER: assemble("EXPLORER", explorerCases, EXPLORER_PROTOCOL, startedAt),
@@ -522,6 +528,36 @@ export async function runRoleQualification(
     requestCount: counter.count,
     transientCases,
   };
+}
+
+export function createRoleQualificationReceipt(model: FreeModelRecord, output: RoleQualificationOutput): ModelQualificationReceipt {
+  const results = Object.values(output.roleResults).filter((result): result is RoleQualificationResult => result !== undefined && result.testCases.length > 0);
+  const roleResults = Object.fromEntries(results.map((result) => [result.role, result]));
+  const startedAt = results.map((result) => result.startedAt).sort()[0] ?? new Date().toISOString();
+  const completedAt = results.map((result) => result.completedAt).sort().at(-1) ?? startedAt;
+  const qualificationState: ModelQualificationReceipt["qualificationState"] = output.transientCases > 0 ? "NOT_QUALIFIED"
+    : results.some((result) => result.status === "QUALIFIED") ? "QUALIFIED"
+    : results.some((result) => result.status === "PROBATION") ? "PROBATION"
+    : results.length > 0 && results.every((result) => result.status === "HARD_FAILURE") ? "HARD_FAILURE" : "NOT_QUALIFIED";
+  return {
+    suiteVersion: ROLE_QUALIFICATION_SUITE_VERSION, providerId: model.providerId, modelId: model.modelId,
+    modelDisplayName: model.displayName, accessClass: model.accessClass ?? "UNKNOWN", freeStatus: model.freeStatus,
+    roleResults, startedAt, completedAt, totalLatencyMs: Math.max(0, Date.parse(completedAt) - Date.parse(startedAt)),
+    qualificationState, hardFailureRoles: results.filter((result) => result.status === "HARD_FAILURE").map((result) => result.role),
+    metadata: {
+      roleOnly: true, requests: output.requestCount, roleTransientCases: output.transientCases, transient: output.transientCases > 0,
+      roleProtocolVersions: { EXPLORER: EXPLORER_PROTOCOL.version, PLANNER: PLANNER_PROTOCOL.version, REVIEWER: REVIEWER_PROTOCOL.version },
+      ...providerCompatibilityMetadata(results.flatMap(result => result.testCases)),
+    },
+  };
+}
+
+export async function runRoleOnlyQualification(
+  model: FreeModelRecord,
+  adapter: CompactQualificationAdapter,
+  options: RoleQualificationOptions & { roles: NonNullable<RoleQualificationOptions["roles"]> },
+): Promise<ModelQualificationReceipt> {
+  return createRoleQualificationReceipt(model, await runRoleQualification(model, adapter, options));
 }
 
 /**
@@ -570,9 +606,11 @@ export async function runRoleAwareQualification(
       ...receipt.metadata,
       compactSuiteVersion: receipt.suiteVersion,
       roleSuiteVersion: ROLE_QUALIFICATION_SUITE_VERSION,
+      roleProtocolVersions: { EXPLORER: EXPLORER_PROTOCOL.version, PLANNER: PLANNER_PROTOCOL.version, REVIEWER: REVIEWER_PROTOCOL.version },
       requests: (typeof receipt.metadata?.requests === "number" ? receipt.metadata.requests : 0) + role.requestCount,
       roleTransientCases: role.transientCases,
       transient: role.transientCases > 0,
+      ...providerCompatibilityMetadata(results.flatMap(result => result.testCases)),
     },
   };
 }

@@ -1,0 +1,209 @@
+{
+  "startedAt": "2026-10-09T09:34:56.173Z",
+  "providerId": "blockrun-free-direct",
+  "modelId": "poolside/laguna-xs-2.1",
+  "requestBudget": 12,
+  "suiteDeadlineMs": 180000,
+  "publicSyntheticCodeOnly": true,
+  "noPaymentCredentials": true,
+  "inferenceRequests": 4,
+  "compactSuiteBuildSha256": "5f47eaa1e6cdde51e9afb6b0dd76ab06e336e8093a9b5e7dd0b18dde7445e714",
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-09T09:34:56.176Z",
+    "receipt": {
+      "sourceDocumentation": "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl",
+      "termsEvidence": "https://blockrun.ai/terms",
+      "privacyEvidence": "https://blockrun.ai/privacy",
+      "priceEvidence": "https://blockrun.ai/docs/rate-limits",
+      "verifiedAt": "2026-10-09T09:34:56.176Z",
+      "recheckAt": "2026-10-16T09:34:56.176Z",
+      "qualificationAt": "2026-10-09T09:34:56.173Z",
+      "termsVerifiedAt": "2026-10-09T09:34:56.176Z",
+      "termsEvidenceHash": "73f2ef461e086bec3f80579ad7699ce819ab9fd78cef6763f8ff7a83bde3d649",
+      "termsExpiresAt": "2026-10-16T09:34:56.176Z",
+      "privacyVerifiedAt": "2026-10-09T09:34:56.176Z",
+      "privacyEvidenceHash": "21b97f5ca395e4b0ce3b434c8fca6f20cf63285ec57a93cbf88fe1628eb8e3b7",
+      "privacyExpiresAt": "2026-10-16T09:34:56.176Z",
+      "priceVerifiedAt": "2026-10-09T09:34:56.176Z",
+      "priceEvidenceHash": "4921f5b2f8c4b51559078915381fa0956ee12030bb4e09fe86e49ecd6ccdf27f",
+      "priceExpiresAt": "2026-10-16T09:34:56.176Z",
+      "nextReverifyAt": "2026-10-09T15:34:56.176Z"
+    }
+  },
+  "catalog": [
+    {
+      "modelId": "nvidia/llama-3.2-11b-vision",
+      "displayName": "Llama 3.2 11B Vision (Free)",
+      "contextWindow": 128000,
+      "capabilities": {
+        "text": true,
+        "coding": false,
+        "toolCalling": true,
+        "vision": true,
+        "structuredOutput": false,
+        "longContext": true
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "poolside/laguna-xs-2.1",
+      "displayName": "Poolside Laguna XS 2.1 (Free)",
+      "contextWindow": 131072,
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": false,
+        "longContext": true
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    }
+  ],
+  "receipt": {
+    "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+    "providerId": "blockrun-free-direct",
+    "modelId": "poolside/laguna-xs-2.1",
+    "modelDisplayName": "Poolside Laguna XS 2.1 (Free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 1011,
+            "retries": 1,
+            "details": {
+              "firstAttempt": {
+                "toolCalls": [],
+                "path": ""
+              }
+            },
+            "error": "blockrun-free-direct substituted an unqualified stream model"
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 4501,
+            "retries": 0,
+            "details": {
+              "calls": 1,
+              "turns": [
+                {
+                  "toolCalls": [],
+                  "textLength": 0
+                }
+              ]
+            },
+            "error": "blockrun-free-direct substituted an unqualified stream model"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-09T09:34:56.687Z",
+        "completedAt": "2026-10-09T09:35:03.538Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 1011,
+            "retries": 1,
+            "details": {
+              "firstAttempt": {
+                "toolCalls": [],
+                "path": ""
+              }
+            },
+            "error": "blockrun-free-direct substituted an unqualified stream model"
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 4501,
+            "retries": 0,
+            "details": {
+              "calls": 1,
+              "turns": [
+                {
+                  "toolCalls": [],
+                  "textLength": 0
+                }
+              ]
+            },
+            "error": "blockrun-free-direct substituted an unqualified stream model"
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 1198,
+            "retries": 0,
+            "error": "blockrun-free-direct substituted an unqualified stream model"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-09T09:34:56.687Z",
+        "completedAt": "2026-10-09T09:35:03.538Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 1198,
+            "retries": 0,
+            "error": "blockrun-free-direct substituted an unqualified stream model"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-09T09:34:56.687Z",
+        "completedAt": "2026-10-09T09:35:03.538Z"
+      }
+    },
+    "startedAt": "2026-10-09T09:34:56.687Z",
+    "completedAt": "2026-10-09T09:35:03.539Z",
+    "totalLatencyMs": 6852,
+    "qualificationState": "NOT_QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 4,
+      "transient": false,
+      "quotaExhausted": false,
+      "measuredProviderRequests": 4,
+      "compactOnly": true,
+      "publicSyntheticCodeOnly": true,
+      "noPaymentCredentials": true,
+      "observationFile": "blockrun-compact-observations-1791538496172.json",
+      "compactSuiteBuildSha256": "5f47eaa1e6cdde51e9afb6b0dd76ab06e336e8093a9b5e7dd0b18dde7445e714"
+    }
+  },
+  "observationFile": "blockrun-compact-observations-1791538496172.json",
+  "completedAt": "2026-10-09T09:35:03.539Z"
+}

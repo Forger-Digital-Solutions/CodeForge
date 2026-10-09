@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ForgeZero, hashUserAccountIdentity } from "@codeforge/forge-zero";
 import { classifyOpenRouterEntitlement, InMemoryProviderCatalog, type ProviderModel } from "@codeforge/providers";
 import { NormalizedModelRegistry, createFreeCloudService } from "@codeforge/model-registry";
-import { ENV_CREDENTIALS_KEY, ProviderConnections, type ProviderConnectionsHost } from "../src/provider-connections.js";
+import { CREDENTIAL_SOURCES_KEY, DELEGATED_ENTITLEMENTS_KEY, ENV_CREDENTIALS_KEY, ProviderConnections, type ProviderConnectionsHost } from "../src/provider-connections.js";
 
 const GROQ_SECRET = "gsk_live_secret_value_0123456789abcdef";
 const OPENAI_SECRET = "sk-paid-secret-0123456789abcdefghijklmnop";
@@ -77,11 +77,12 @@ describe("ProviderConnections — delegated entitlement authority", () => {
   it("admits a bound receipt, stores the key through the trusted secret store, and revokes locally", async () => {
     const h = harness({}, undefined, true, { verifyOpenRouter: delegatedVerifier });
     expect(await h.connections.connect("openrouter", { apiKey: OR_SECRET }, "OAUTH")).toMatchObject({ ok: true });
-    expect(h.secrets.get("openrouter")).toBe(OR_SECRET);
+    expect(h.secrets.get(`openrouter:user:${hashUserAccountIdentity("user-a")}`)).toBe(OR_SECRET);
+    expect(h.secrets.get("openrouter")).toBeUndefined();
     expect(h.connections.listConnections().find((view) => view.providerId === "openrouter")).toMatchObject({ supplyClass: "USER_ENTITLED_FREE", delegatedFree: { accountClass: "FREE_VERIFIED" } });
     expect(JSON.stringify([h.settings, h.connections.listConnections()])).not.toContain(OR_SECRET);
     await h.connections.disconnect("openrouter");
-    expect(h.secrets.has("openrouter")).toBe(false);
+    expect(h.secrets.size).toBe(0);
     expect(h.connections.credentialSourceOf("openrouter")).toBe("NONE");
   });
 
@@ -112,7 +113,73 @@ describe("ProviderConnections — delegated entitlement authority", () => {
     h.host.verifyOpenRouter = async (binding) => classifyOpenRouterEntitlement({ data: { is_free_tier: false } }, binding);
     clock = new Date("2026-10-03T00:00:00Z");
     await h.connections.reconcile("openrouter");
-    expect(h.connections.listConnections().find((view) => view.providerId === "openrouter")?.supplyClass).toBeUndefined();
+    expect(h.connections.listConnections().find((view) => view.providerId === "openrouter")?.supplyClass).not.toBe("USER_ENTITLED_FREE");
+    expect(h.connections.credentialStore().get("openrouter")).toBeUndefined();
+    expect(h.host.freeCloud.routesForUser("user-b").filter(route => route.providerId === "openrouter")).toEqual([]);
+  });
+
+  it("preserves separate account connections across restart and refreshes a revoked credential before admission", async () => {
+    let verificationCalls = 0;
+    let revoked = false;
+    const h = harness({}, undefined, true, { verifyOpenRouter: async (binding) => {
+      verificationCalls++;
+      return revoked ? classifyOpenRouterEntitlement(undefined, { ...binding, status: 401 }) : delegatedVerifier(binding);
+    } });
+    await h.connections.connect("openrouter", { apiKey: OR_SECRET }, "OAUTH");
+    h.host.userId = "user-b";
+    await h.connections.reconcile("openrouter");
+    expect(h.connections.credentialStore().get("openrouter")).toBeUndefined();
+    expect(verificationCalls).toBe(1);
+    const secondKey = "sk-or-v1-fixture-second-account-key";
+    await h.connections.connect("openrouter", { apiKey: secondKey }, "OAUTH");
+    await h.connections.disconnect("openrouter");
+    h.host.userId = "user-a";
+    const restarted = new ProviderConnections(h.host);
+    restarted.publishAll();
+    expect(restarted.listConnections().find(view => view.providerId === "openrouter")?.supplyClass).toBeUndefined();
+    expect(restarted.credentialStore().get("openrouter")).toBe(OR_SECRET);
+    revoked = true;
+    await restarted.reconcile("openrouter");
+    expect(verificationCalls).toBe(3);
+    expect(h.catalog.get("openrouter")).toBeUndefined();
+    expect(restarted.listConnections().find(view => view.providerId === "openrouter")?.freeConnectionAttempt?.accountClass).toBe("REVOKED");
+  });
+
+  it("rejects an account switch while entitlement verification is in flight", async () => {
+    const h = harness({}, undefined, true, { verifyOpenRouter: async binding => {
+      h.host.userId = "user-b";
+      return delegatedVerifier(binding);
+    } });
+    expect(await h.connections.connect("openrouter", { apiKey: OR_SECRET }, "OAUTH")).toMatchObject({ ok: false });
+    expect(h.secrets.size).toBe(0);
+  });
+
+  it("migrates a legacy delegated key only for its bound owner and refreshes it before use", async () => {
+    const h = harness({}, undefined, true, { verifyOpenRouter: delegatedVerifier });
+    const receipt = await delegatedVerifier({ key: OR_SECRET, ownerUserId: "user-a" });
+    h.settings[CREDENTIAL_SOURCES_KEY] = { openrouter: "OAUTH" };
+    h.settings[DELEGATED_ENTITLEMENTS_KEY] = { openrouter: receipt };
+    h.secrets.set("openrouter", OR_SECRET);
+    h.host.userId = "user-b";
+    const otherOwner = new ProviderConnections(h.host);
+    expect(otherOwner.credentialStore().get("openrouter")).toBeUndefined();
+    expect(h.secrets.get("openrouter")).toBe(OR_SECRET);
+    h.host.userId = "user-a";
+    await otherOwner.reconcile("openrouter");
+    expect(otherOwner.credentialStore().get("openrouter")).toBe(OR_SECRET);
+    expect(h.secrets.get("openrouter")).toBeUndefined();
+    expect(h.secrets.get(`openrouter:user:${hashUserAccountIdentity("user-a")}`)).toBe(OR_SECRET);
+    expect(otherOwner.listConnections().find(view => view.providerId === "openrouter")?.delegatedFree?.accountClass).toBe("FREE_VERIFIED");
+  });
+
+  it("rolls a newly stored delegated credential back when source persistence fails", async () => {
+    const h = harness({}, undefined, true, { verifyOpenRouter: delegatedVerifier });
+    let writes = 0;
+    h.host.writeSettings = () => ++writes !== 2;
+    await expect(h.connections.connect("openrouter", { apiKey: OR_SECRET }, "OAUTH")).rejects.toThrow("Could not save provider connection state");
+    expect(h.secrets.size).toBe(0);
+    expect(h.catalog.get("openrouter")).toBeUndefined();
+    expect(h.connections.credentialSourceOf("openrouter")).toBe("NONE");
   });
 });
 
@@ -147,6 +214,20 @@ describe("ProviderConnections — Puter observation isolation", () => {
     expect(() => h.connections.savePuterAccount(observation)).toThrow();
     expect(h.secrets.size).toBe(0);
     expect(h.connections.puterAccount().connected).toBe(false);
+  });
+
+  it("binds SDK transport to the encrypted owner connection and invalidates it on disconnect", async () => {
+    const h = harness({});
+    h.connections.savePuterAccount({ token: "fixture-puter-secret", accountId: "account", catalogModels: 1 });
+    const transport = h.connections.puterTransport(token => {
+      expect(token).toBe("fixture-puter-secret");
+      return { ai: { listModels: async () => [], chat: async () => { throw new Error("must not dispatch"); } },
+        auth: { getUser: async () => ({}), getMonthlyUsage: async () => ({}) } };
+    })!;
+    expect(transport.canRoute()).toBe(false);
+    h.connections.disconnectPuterAccount();
+    expect(await transport.healthCheck()).toMatchObject({ status: "unknown", error: "PUTER_OWNER_CHANGED" });
+    expect(h.connections.puterTransport(() => { throw new Error("must not initialize"); })).toBeUndefined();
   });
 });
 

@@ -18,6 +18,12 @@ import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { createAgentRuntime, eightBitRoleForAgentRole } from "../src/agent-runtime.js";
 import { createSubagentManager } from "../src/subagent-manager.js";
 import { createWorkspaceEventAdapter } from "../src/workspace-event-adapter.js";
+import { buildReviewerEvidenceSnapshot } from "../src/reviewer-evidence.js";
+
+async function reviewSnapshotRequest(workspacePath: string) {
+  const snapshot = await buildReviewerEvidenceSnapshot({ workspacePath, baseRevision: "fixture", diff: "", files: [], verificationCommands: [] });
+  return { diff: snapshot.context, reviewEvidence: snapshot.binding };
+}
 
 class ScriptedFleetProvider implements ProviderAdapter {
   readonly providerId: string;
@@ -112,6 +118,31 @@ describe("R1 role-aware SubAgent routing", () => {
     expect(eightBitRoleForAgentRole("anything-else")).toBe("CODER");
   });
 
+  it("keeps cumulative Reviewer exclusions through admission, provider failover and durable worker state", async () => {
+    const catalog = new InMemoryProviderCatalog();
+    const providers = ["fleet-a", "fleet-b", "fleet-c", "fleet-d"].map((providerId, index) => {
+      firewall.register(fleetRecord(providerId, `model-${index}`));
+      const provider = new ScriptedFleetProvider(providerId);
+      catalog.register(provider);
+      return provider;
+    });
+    providers[2]!.failWithRateLimit = true;
+    const runtime = createAgentRuntime({ sessionId: "sess-role-routing", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: ws });
+    const manager = createSubagentManager({ persistence, agentRuntime: runtime, r1Enabled: true });
+    const exclusions = [{ providerId: "fleet-a", modelId: "model-0" }, { providerId: "fleet-b", modelId: "model-1" }];
+    const result = await manager.spawnChildAgent({
+      parentRunId: "run-r73-reviewer-exclusions", sessionId: "sess-role-routing", agentId: "reviewer", task: "Review this fixture",
+      workspacePath: ws, structuredOutput: "reviewer", excludeRoleRoute: exclusions[1], excludeRoleRoutes: exclusions,
+      preferIndependentFromPoolId: "implementer:pool", routeReplacementReason: "SEMANTIC_VERIFIER_FALLBACK",
+    });
+    expect(result.status).toBe("completed");
+    expect(providers.map((provider) => provider.requests)).toEqual([0, 0, 1, 1]);
+    const worker = (await persistence.getWorkItemsByKind("subagent_run")).find((item) => item.kind === "subagent_run");
+    expect(worker?.routingHints).toEqual({ excludeRoleRoute: exclusions[1], excludeRoleRoutes: exclusions,
+      preferIndependentFromPoolId: "implementer:pool", routeReplacementReason: "SEMANTIC_VERIFIER_FALLBACK" });
+    expect(worker?.telemetry.providerFailures).toBe(1);
+  });
+
   it("resolves an R1 worker's route through the fleet and records the served model on the worker record", async () => {
     firewall.register(fleetRecord("fleet-a", "model-a", { codingScore: 80 }));
     const catalog = new InMemoryProviderCatalog();
@@ -174,6 +205,28 @@ describe("R1 role-aware SubAgent routing", () => {
 
     expect(result.status).toBe("failed");
     expect(result.summary).toContain("No eligible free route for role");
+    const worker = (await persistence.getWorkItemsByKind("subagent_run")).find((item) => item.kind === "subagent_run");
+    expect(worker?.telemetry.modelRequests).toBe(0);
+    expect(worker?.telemetry.providerFailures).toBe(0);
+  });
+
+  it("does not label a malformed Reviewer verdict as a provider outage", async () => {
+    firewall.register(fleetRecord("fleet-a", "model-a"));
+    const provider = new ScriptedFleetProvider("fleet-a");
+    provider.streamChat = async function* (): AsyncIterable<StreamEvent> {
+      this.requests++;
+      yield { type: "text_delta", delta: "The patch looks good." };
+      yield { type: "finish", finishReason: "stop" };
+    };
+    const catalog = new InMemoryProviderCatalog();
+    catalog.register(provider);
+    const runtime = createAgentRuntime({ sessionId: "sess-role-routing", eventStore, persistence, firewall, providerCatalog: catalog, workspacePath: ws });
+    const manager = createSubagentManager({ persistence, agentRuntime: runtime, r1Enabled: true });
+    const result = await manager.spawnChildAgent({ parentRunId: "r73-schema-only", sessionId: "sess-role-routing", agentId: "reviewer", task: "Review the fixture", workspacePath: ws, structuredOutput: "reviewer" });
+    expect(result.status).not.toBe("completed");
+    const worker = (await persistence.getWorkItemsByKind("subagent_run")).find((item) => item.kind === "subagent_run");
+    expect(worker?.telemetry.modelRequests).toBeGreaterThan(0);
+    expect(worker?.telemetry.providerFailures).toBe(0);
   });
 
   it("rotates a role-routed worker to another free provider after a rate limit and completes", async () => {
@@ -367,6 +420,7 @@ function receipt(providerId: string, modelId: string, roleResults: Partial<Recor
   const at = new Date().toISOString();
   return {
     suiteVersion: "R10_FREE_QUALIFICATION_V1",
+    metadata: { roleProtocolVersions: { REVIEWER: "REVIEWER_PROTOCOL_V3" } },
     providerId,
     modelId,
     modelDisplayName: modelId,
@@ -461,6 +515,7 @@ describe("R41 role-quality routing wiring", () => {
 
     const result = await runtime.executeAgentRun({
       runId: "run-roleq-1",
+      ...(await reviewSnapshotRequest(ws)),
       agentId: "reviewer-roleq",
       role: "reviewer",
       goal: "Review the diff",
@@ -521,6 +576,7 @@ describe("R41 role-quality routing wiring", () => {
 
     const result = await runtime.executeAgentRun({
       runId: "run-roleq-fo",
+      ...(await reviewSnapshotRequest(ws)),
       agentId: "reviewer-fo",
       role: "reviewer",
       goal: "Review the diff",
@@ -573,6 +629,7 @@ describe("R41 role-quality routing wiring", () => {
 
     const result = await runtime.executeAgentRun({
       runId: "run-roleq-gate",
+      ...(await reviewSnapshotRequest(ws)),
       agentId: "reviewer-gate",
       role: "reviewer",
       goal: "Review the diff",
@@ -670,6 +727,7 @@ describe("R41 role-quality routing wiring", () => {
 
     const result = await runtime.executeAgentRun({
       runId: "run-roleq-cap",
+      ...(await reviewSnapshotRequest(ws)),
       agentId: "reviewer-cap",
       role: "reviewer",
       goal: "Review the diff",
@@ -719,6 +777,7 @@ describe("R41 role-quality routing wiring", () => {
 
     const result = await runtime.executeAgentRun({
       runId: "run-roleq-fo-cap",
+      ...(await reviewSnapshotRequest(ws)),
       agentId: "reviewer-fo-cap",
       role: "reviewer",
       goal: "Review the diff",

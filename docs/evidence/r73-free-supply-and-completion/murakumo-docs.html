@@ -1,0 +1,299 @@
+<!doctype html><html lang="en">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#ffffff"><title>Connect — murakumo.cloud | API guide</title><meta name="description" content="Connect to Murakumo inference and its Web3 rails: x402 USDC payments on Base, DID-published models, CIDv1 content, and IPFS/IPNS reads."><link rel="stylesheet" href="/css/dds.css?v=20260829-hf-matrix"><link rel="stylesheet" href="/css/navigation.css?v=20260913"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="canonical" href="https://murakumo.cloud/docs"><meta property="og:type" content="website"><meta property="og:site_name" content="murakumo.cloud"><meta property="og:title" content="Connect — murakumo.cloud | API guide"><meta property="og:description" content="Connect to Murakumo inference and its Web3 rails: x402 USDC payments on Base, DID-published models, CIDv1 content, and IPFS/IPNS reads."><meta property="og:url" content="https://murakumo.cloud/docs"><meta property="og:image" content="https://murakumo.cloud/og.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Connect — murakumo.cloud | API guide"><meta name="twitter:description" content="Connect to Murakumo inference and its Web3 rails: x402 USDC payments on Base, DID-published models, CIDv1 content, and IPFS/IPNS reads."><meta name="twitter:image" content="https://murakumo.cloud/og.png"><link rel="alternate" type="text/plain" href="/llms.txt"><link rel="alternate" hreflang="ja" href="https://murakumo.cloud/docs/ja"><link rel="alternate" hreflang="en" href="https://murakumo.cloud/docs"><link rel="alternate" hreflang="x-default" href="https://murakumo.cloud/docs"></head>
+  <body class="mk-site">
+    <a class="mk-skip" href="#main">Skip to content</a>
+    <div class="dds-ext-container">
+      <nav class="site-nav mk-navigation">
+        <div class="site-nav__inner">
+          <a class="brand" href="/">
+            <span class="logo">叢雲</span>
+            <span class="brand-name">murakumo.cloud</span>
+          </a>
+          <span class="nav-links">
+            <a href="/">新しいチャット</a>
+            <a href="/portal/#landing">サービス案内</a>
+            <a href="/portal/#join">PCを参加させる</a>
+            <a href="/portal/#store">クレジット</a>
+            <a href="/docs" aria-current="page">APIガイド</a>
+            <a href="/advertise">広告を出す</a>
+            <a href="/portal/#about">運営について</a>
+          </span>
+          <div class="header-account">
+            <div class="header-account__actions">
+              <a class="header-account__button" href="https://auth.kotoba.cloud/sign-in?wallet=passkey&amp;return_to=https%3A%2F%2Fauth.kotoba.cloud%2Fconnect%3Ftarget%3Dmurakumo">ログイン</a>
+            </div>
+          </div>
+          <button class="dads-hamburger-menu-button nav-toggle" type="button" aria-controls="site-drawer" aria-expanded="false"><svg class="dads-hamburger-menu-button__icon" width="24" height="24" viewBox="0 0 24 24" fill="currentcolor" aria-hidden="true">
+            <path d="M3 5.5h18v2H3v-2Zm0 5.5h18v2H3v-2Zm0 5.5h18v2H3v-2Z"></path>
+          </svg>メニュー</button>
+        </div>
+      </nav><dialog class="dads-drawer mk-menu" data-placement="right" id="site-drawer" aria-label="メニュー">
+        <div class="dads-drawer__header">
+          <button class="dads-hamburger-menu-button" type="button" data-mk-drawer-close><svg class="dads-hamburger-menu-button__icon" width="24" height="24" viewBox="0 0 24 24" fill="currentcolor" aria-hidden="true">
+            <path d="m6.4 18.6-1-1 5.5-5.6-5.6-5.6 1.1-1 5.6 5.5 5.6-5.6 1 1.1L13 12l5.6 5.6-1 1L12 13l-5.6 5.6Z"></path>
+          </svg>閉じる</button>
+        </div>
+        <div class="dads-drawer__body">
+          <div class="drawer-links">
+            <a href="/">新しいチャット</a>
+            <a href="/portal/#landing">サービス案内</a>
+            <a href="/portal/#join">PCを参加させる</a>
+            <a href="/portal/#store">クレジット</a>
+            <a href="/docs" aria-current="page">APIガイド</a>
+            <a href="/advertise">広告を出す</a>
+            <a href="/portal/#about">運営について</a>
+            <a href="https://auth.kotoba.cloud/sign-in?wallet=passkey&amp;return_to=https%3A%2F%2Fauth.kotoba.cloud%2Fconnect%3Ftarget%3Dmurakumo">ログイン</a>
+          </div>
+          <details class="lang-menu">
+            <summary aria-label="Language">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="1.8" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"></path>
+              </svg>
+              <span>English</span>
+              <span class="lang-menu__caret" aria-hidden="true">▾</span>
+            </summary>
+            <div class="lang-menu__list">
+              <a href="/docs/ja" hreflang="ja" lang="ja">日本語</a>
+              <span aria-current="true" lang="en">English</span>
+            </div>
+          </details>
+        </div>
+      </dialog><main id="main">
+        <article>
+          <h1>Connecting to Murakumo</h1>
+          <p class="lead">Use <code>https://api.murakumo.cloud</code>  for every inference and agent call. <code>murakumo.cloud</code>  is the website and storefront; <code>infer.murakumo.cloud</code>  is an authenticated private origin and is not a client endpoint. The machine-readable guide is <a href="/llms.txt">/llms.txt</a>.</p>
+          <div class="dads-notification-banner" data-style="standard" data-type="warning"><h2 class="dads-notification-banner__heading">
+            <svg class="dads-notification-banner__icon" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="警告">
+              <path d="M1 21 12 2l11 19H1Z" fill="currentcolor"></path>
+              <path d="M13 15h-2v-5h2v5Z" fill="Canvas"></path>
+              <circle cx="12" cy="17" r="1" fill="Canvas"></circle>
+            </svg>
+            <span class="dads-notification-banner__heading-text">Discover, then verify</span>
+          </h2><div class="dads-notification-banner__body"><p>Call <code>GET /v1/models</code> and <code>GET /ready</code> first, then run a small real request and assert the returned model. Registration is not proof that a backend completed inference.</p></div></div>
+          <h2>Public API</h2>
+          <table>
+            <tr>
+              <th>Method</th>
+              <th>URL</th>
+              <th>Purpose</th>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td>
+                <code>https://api.murakumo.cloud/ready</code>
+              </td>
+              <td>Gateway, fleet, and request-capacity readiness</td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td>
+                <code>https://api.murakumo.cloud/v1/models</code>
+              </td>
+              <td>Current inference selectors and context windows</td>
+            </tr>
+            <tr>
+              <td>POST</td>
+              <td>
+                <code>https://api.murakumo.cloud/v1/chat/completions</code>
+              </td>
+              <td>OpenAI-compatible Chat Completions</td>
+            </tr>
+            <tr>
+              <td>POST</td>
+              <td>
+                <code>https://api.murakumo.cloud/v1/messages</code>
+              </td>
+              <td>Authenticated Anthropic-compatible Messages</td>
+            </tr>
+            <tr>
+              <td>POST</td>
+              <td>
+                <code>https://api.murakumo.cloud/v1/embeddings</code>
+              </td>
+              <td>Authenticated OpenAI-compatible embeddings</td>
+            </tr>
+            <tr>
+              <td>POST</td>
+              <td>
+                <code>https://api.murakumo.cloud/v1/responses</code>
+              </td>
+              <td>Non-streaming portable Responses subset</td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td>
+                <code>https://api.murakumo.cloud/v1/grok-bots</code>
+              </td>
+              <td>Agent capability descriptor</td>
+            </tr>
+          </table>
+          <h2 id="web3">Web3 rails</h2>
+          <p>Murakumo exposes the payment, identity, and content-addressing rails directly. Read the live offer before paying; a missing or empty offer is not permission to guess a recipient or asset.</p>
+          <table>
+            <tr>
+              <th>Method</th>
+              <th>URL</th>
+              <th>Purpose</th>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td>
+                <code>https://murakumo.cloud/.well-known/x402</code>
+              </td>
+              <td>Machine-readable x402 resources, USDC amount, Base network, and pay-to address</td>
+            </tr>
+            <tr>
+              <td>POST</td>
+              <td>
+                <code>https://murakumo.cloud/x402/v1/chat/completions</code>
+              </td>
+              <td>OpenAI-shaped inference; an unpaid request returns the HTTP 402 payment challenge</td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td>
+                <code>https://murakumo.cloud/api/v1/model-hosting</code>
+              </td>
+              <td>DID-published, CIDv1/DAG-CBOR model-hosting capability and limits</td>
+            </tr>
+            <tr>
+              <td>GET / HEAD</td>
+              <td>
+                <code>https://murakumo.cloud/ipfs/{cid}</code>
+              </td>
+              <td>Read immutable content by CID</td>
+            </tr>
+            <tr>
+              <td>GET / HEAD</td>
+              <td>
+                <code>https://murakumo.cloud/ipns/{name}</code>
+              </td>
+              <td>Resolve an IPNS name, then read its current CID</td>
+            </tr>
+          </table>
+          <pre>curl -i -X POST https://murakumo.cloud/x402/v1/chat/completions \
+  -H 'content-type: application/json' \
+  -d '{&quot;model&quot;:&quot;murakumo-main&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Reply exactly: ok&quot;}],&quot;max_tokens&quot;:16}'</pre>
+          <p>Without <code>X-PAYMENT</code>, this request should stop at 402 and return the exact payment requirements. An x402 client settles the listed USDC requirement on Base and repeats the request with its payment proof. Do not treat a listed offer or a successful 402 challenge as proof that a paid inference completed; verify the final model response.</p>
+          <p>Model-hosting writes require a Murakumo token bound to <code>did:key</code> or <code>did:web</code> and scoped to <code>model-hosting</code>. Public repository and block reads require no token. The browser publisher and protocol are at <a href="/models/">/models/</a>.</p>
+          <h2>Chat Completions</h2>
+          <p>Discover current model IDs with GET /v1/models first. The retired id <code>murakumo-main</code> answers 410 (model_retired, retired 2026-09-20); the free default measured 200 on 2026-09-25 is <code>murakumo/free</code>. The public first-value Chat Completions route caps <code>max_tokens</code> at 2048.</p>
+          <pre>curl https://api.murakumo.cloud/v1/chat/completions \
+  -H 'content-type: application/json' \
+  -d '{&quot;model&quot;:&quot;murakumo/free&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Reply exactly: ok&quot;}],&quot;max_tokens&quot;:64,&quot;temperature&quot;:0}'</pre>
+          <h2>RTX 5090</h2>
+          <p>The model catalogue observed on 2026-08-25 listed <code>qwen3.8-27b-throughput-5090</code> with a 32768-token context window. It is live-verified through this public API: a scale-to-zero request returned HTTP 200 after 237.45 seconds with the exact requested model id, and a warm request completed in 3.35 seconds. The gateway allows up to 360 seconds for this cold-start path, so clients should use at least a 420-second end-to-end timeout and fall back explicitly to <code>mishima</code>.</p>
+          <pre>curl --max-time 420 https://api.murakumo.cloud/v1/chat/completions \
+  -H 'content-type: application/json' \
+  -d '{&quot;model&quot;:&quot;qwen3.8-27b-throughput-5090&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Reply exactly: 5090-ok&quot;}],&quot;max_tokens&quot;:64,&quot;temperature&quot;:0}'</pre>
+          <h2>Tool calls</h2>
+          <p>Use Chat Completions for OpenAI-style <code>tool_calls</code> or authenticated Messages for Anthropic <code>tool_use</code> / <code>tool_result</code>. Murakumo returns the tool decision; your agent executes the tool and sends the result in a follow-up request. Tool support depends on the selected model and is not implied by model registration.</p>
+          <pre>curl --max-time 420 https://api.murakumo.cloud/v1/chat/completions \
+  -H 'content-type: application/json' \
+  -d '{&quot;model&quot;:&quot;qwen3.8-27b-throughput-5090&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Use get_weather for Tokyo.&quot;}],&quot;tools&quot;:[{&quot;type&quot;:&quot;function&quot;,&quot;function&quot;:{&quot;name&quot;:&quot;get_weather&quot;,&quot;parameters&quot;:{&quot;type&quot;:&quot;object&quot;,&quot;properties&quot;:{&quot;location&quot;:{&quot;type&quot;:&quot;string&quot;}}},&quot;required&quot;:[&quot;location&quot;]}}],&quot;tool_choice&quot;:{&quot;type&quot;:&quot;function&quot;,&quot;function&quot;:{&quot;name&quot;:&quot;get_weather&quot;}},&quot;max_tokens&quot;:128}'</pre>
+          <h2>Anthropic-compatible clients</h2>
+          <p>The Messages surface requires an authorized Murakumo bearer or <code>x-api-key</code>. It translates streaming, thinking, and tool-use blocks to and from the fleet's OpenAI-compatible origins.</p>
+          <pre>export ANTHROPIC_BASE_URL=https://api.murakumo.cloud
+export ANTHROPIC_AUTH_TOKEN=$MURAKUMO_API_KEY
+claude</pre>
+          <h2>Responses and resident agents</h2>
+          <p><code>POST /v1/responses</code> and <code>POST /v1/grok-bots/responses</code> provide a non-streaming portable Responses subset. The canonical stateful runtime is <code>https://itonami.cloud/api/v1/grok-bots</code>; the api.murakumo.cloud routes are compatibility aliases and Murakumo supplies inference. The live descriptor observed on 2026-08-25 advertised </p>
+          <p><code>murakumo/free</code> for resident agents, not the 5090 selector. (The public id murakumo-main has since been retired, 2026-09-20; /v1/responses accepted murakumo/free and mishima, measured 2026-09-25.) Do not claim a 5090 durable agent run until the descriptor lists it and an end-to-end agent tick succeeds. Resident-bot management requires a service bearer.</p>
+          <h2>Authentication and safety</h2>
+          <p>Chat Completions is an intentionally limited public first-value route. Messages, embeddings, slow jobs, and resident-agent management are authenticated. Depending on the route, send <code>Authorization: Bearer ***</code> or <code>x-api-key: $MURAK...EY</code>. Use short-lived, narrowly scoped capabilities and never commit tokens or origin credentials.</p>
+          <h2>Image generation</h2>
+          <p>One image model is public and free on the same API boundary, with no account and no key: <code>awai-network/hokusai</code>, the fleet's WAI checkpoint. It answers the OpenAI images shape and IS listed by <code>api.murakumo.cloud/v1/models</code> with the route it serves.</p>
+          <pre><code>curl https://api.murakumo.cloud/v1/images/generations \
+  -H 'content-type: application/json' \
+  -d '{&quot;model&quot;:&quot;awai-network/hokusai&quot;,
+       &quot;prompt&quot;:&quot;a lighthouse on a rocky coast at dawn&quot;,
+       &quot;size&quot;:&quot;768x768&quot;}'</code></pre>
+          <p>Returns <code>{&quot;data&quot;:[{&quot;b64_json&quot;:&quot;...&quot;}]}</code>. One image per request; sizes are an allowlist, not a range. Measured 2026-09-10, a 768x768 render takes about ten seconds. It is refused on <code>/v1/chat/completions</code> with a 400 naming this route: an image model is not a chat model, and falling through would hand it to a relay.</p>
+          <h2>Other generation, and the storefront</h2>
+          <p>Video, 3D, voice, and music generation remain a separate website surface. See <a href="/models">/models</a>  and the  <a href="/#store">storefront</a>. Those models are not listed by <code>api.murakumo.cloud/v1/models</code>.</p>
+          <p><code>GET /api/v1/generation/catalog</code> is a menu. Observed 2026-08-27:  <code>GET /api/v1</code>  reports  <code>generation-configured: false</code>  and  <code>speech-configured: false</code> . Opening the catalog does not open execute.</p>
+          <h2>Speech</h2>
+          <p>The OpenAI-shaped speech contract is <code>POST https://murakumo.cloud/api/v1/audio/speech</code>. It is documented so clients can probe a stable path. It is <strong>not</strong>  a live TTS backend. Until <code>GET /api/v1</code>  reports  <code>speech-configured: true</code>, the route returns HTTP 501 with  <code>configured: false</code>. Do not invent model ids. Voice ids in the catalog  (<code>cosyvoice2</code>, <code>kokoro</code>)  are unverified menu entries. There is no  <code>/voice</code>  page, no clone UI, and no avatar or lip-sync factory.</p>
+          <pre>curl -i -X POST https://murakumo.cloud/api/v1/audio/speech \
+  -H 'content-type: application/json' \
+  -d '{&quot;input&quot;:&quot;hello&quot;}'</pre>
+          <p>A 501 body with <code>configured: false</code> is the honest answer. A 401 from this path would have meant the generic inference gate swallowed an unknown route — that is the failure this contract exists to stop.  <code>/go</code> hides Read aloud unless speech is configured.</p>
+        </article>
+      </main><footer class="site-foot">
+        <div class="site-foot__inner">
+          <div class="site-foot__cols">
+            <div class="site-foot__col">
+              <h2>Web3</h2>
+              <ul>
+                <li>
+                  <a href="/.well-known/x402">x402 offer</a>
+                </li>
+                <li>
+                  <a href="/pay/x402/">x402 paid inference</a>
+                </li>
+                <li>
+                  <a href="/models/">DID / CID Model Hub</a>
+                </li>
+                <li>
+                  <a href="/docs#web3">IPFS / IPNS</a>
+                </li>
+              </ul>
+            </div>
+            <div class="site-foot__col">
+              <h2>Use</h2>
+              <ul>
+                <li>
+                  <a href="/go">Free inference</a>
+                </li>
+                <li>
+                  <a href="/onprem">murakumo Node</a>
+                </li>
+                <li>
+                  <a href="/onprem/3d">3D / CAD</a>
+                </li>
+              </ul>
+            </div>
+            <div class="site-foot__col">
+              <h2>Build</h2>
+              <ul>
+                <li>
+                  <a href="/docs">API docs</a>
+                </li>
+                <li>
+                  <a href="/blog/">Blog</a>
+                </li>
+                <li>
+                  <a href="https://github.com/network-awai/cloud-murakumo">Source</a>
+                </li>
+              </ul>
+            </div>
+            <div class="site-foot__col">
+              <h2>Company &amp; legal</h2>
+              <ul>
+                <li>
+                  <a href="/legal-company">Company</a>
+                </li>
+                <li>
+                  <a href="mailto:support@murakumo.cloud">Contact</a>
+                </li>
+                <li>
+                  <a href="/legal-terms">Terms</a>
+                </li>
+                <li>
+                  <a href="/legal-privacy">Privacy</a>
+                </li>
+                <li>
+                  <a href="/legal/tokushoho.md">Disclosure</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <p class="site-foot__legal"><a href="/">murakumo.cloud</a> · Operator: AWAI Network, L.L.C. · Sales: Ryo Awai · <a href="mailto:support@murakumo.cloud">support@murakumo.cloud</a> · Machine-readable version: <a href="/llms.txt">/llms.txt</a> · <a href="/">murakumo.cloud</a></p>
+        </div>
+      </footer>
+    </div>
+    <script src="/site-chrome.js" defer></script>
+    <script src="/insight.js" defer></script>
+  </body>
+</html>

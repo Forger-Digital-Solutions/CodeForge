@@ -1,6 +1,7 @@
 import type { ChatRequest, ChatResponse, StreamEvent, ToolDefinition } from "@codeforge/providers";
 import type { FreeModelRecord, ModelQualificationReceipt, RoleQualificationResult, TestCaseResult } from "./types.js";
 import type { EightBitRole } from "../types.js";
+import { isProviderCompatibilityFailure, providerCompatibilityFailure, providerCompatibilityMetadata, type ProviderCompatibilityFailure } from "./provider-compatibility.js";
 
 /**
  * Compact CodeForge qualification suite (R1 §10, §195).
@@ -69,6 +70,7 @@ interface ToolCallObservation {
   finishReason?: string;
   outputTokens?: number;
   error?: string;
+  providerFailure?: ProviderCompatibilityFailure;
   errorClass?: "bad_request" | "auth" | "rate_limited" | "other";
 }
 
@@ -80,13 +82,15 @@ async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, t
   // A suite-deadline abort is capacity evidence, not capability: the message carries "timed out"
   // so the suite's existing transient classification keeps the route pending for a later cycle.
   const deadlineError = "suite deadline elapsed (timed out)";
+  const abortError = (): string | undefined => suiteSignal?.aborted ? deadlineError : controller.signal.aborted ? "qualification case timed out" : undefined;
   const calls: ToolCallObservation["toolCalls"] = [];
   let text = "";
   let finishReason: string | undefined;
   let outputTokens: number | undefined;
   try {
+    if (suiteSignal?.aborted) return { toolCalls: calls, text, error: deadlineError, errorClass: "other" };
     for await (const ev of adapter.streamChat(req, controller.signal)) {
-      if (suiteSignal?.aborted) return { toolCalls: calls, text, finishReason, outputTokens, error: deadlineError, errorClass: "other" };
+      if (abortError()) return { toolCalls: calls, text, finishReason, outputTokens, error: abortError(), errorClass: "other" };
       if (ev.type === "text_delta") text += ev.delta;
       if (ev.type === "finish") finishReason = ev.finishReason;
       if (ev.type === "usage") outputTokens = ev.usage.outputTokens;
@@ -99,14 +103,17 @@ async function observe(adapter: CompactQualificationAdapter, req: ChatRequest, t
         }
         calls.push({ name: ev.toolName, args });
       }
-      if (ev.type === "error") return { toolCalls: calls, text, finishReason, outputTokens, error: ev.message, errorClass: classify(ev.message) };
+      if (ev.type === "error") {
+        const message = abortError() ?? ev.message;
+        const providerFailure = providerCompatibilityFailure(ev);
+        return { toolCalls: calls, text, finishReason, outputTokens, error: message, errorClass: providerFailure ? "other" : classify(message), providerFailure };
+      }
     }
-    return suiteSignal?.aborted
-      ? { toolCalls: calls, text, finishReason, outputTokens, error: deadlineError, errorClass: "other" }
-      : { toolCalls: calls, text, finishReason, outputTokens };
+    return { toolCalls: calls, text, finishReason, outputTokens, ...(abortError() ? { error: abortError(), errorClass: "other" as const } : {}) };
   } catch (e) {
-    const message = suiteSignal?.aborted ? deadlineError : e instanceof Error ? e.message : String(e);
-    return { toolCalls: calls, text, finishReason, outputTokens, error: message, errorClass: classify(message) };
+    const message = abortError() ?? (e instanceof Error ? e.message : String(e));
+    const providerFailure = providerCompatibilityFailure(e);
+    return { toolCalls: calls, text, finishReason, outputTokens, error: message, errorClass: providerFailure ? "other" : classify(message), providerFailure };
   } finally {
     clearTimeout(timer);
     suiteSignal?.removeEventListener("abort", onSuiteAbort);
@@ -154,7 +161,7 @@ async function probeToolCall(adapter: CompactQualificationAdapter, modelId: stri
     suiteSignal,
   );
   if (obs.error) {
-    return caseResult("compact.tool_call", "tool_call", false, started, { hardFailure: obs.errorClass === "bad_request", error: obs.error.slice(0, 200) });
+    return caseResult("compact.tool_call", "tool_call", false, started, { hardFailure: obs.errorClass === "bad_request", error: obs.error.slice(0, 200), details: obs.providerFailure ? { ...obs.providerFailure } : undefined });
   }
   const call = obs.toolCalls.find((c) => c.name === "read_file");
   const path = typeof call?.args.path === "string" ? call.args.path : "";
@@ -183,7 +190,7 @@ async function probeEdit(adapter: CompactQualificationAdapter, modelId: string, 
     const obs = await observe(adapter, { model: modelId, messages, tools: [READ_FILE_TOOL, EDIT_FILE_TOOL], toolChoice: "auto", temperature: 0, maxTokens }, timeoutMs, suiteSignal);
     turns.push({ toolCalls: obs.toolCalls.map((c) => c.name), finishReason: obs.finishReason, textLength: obs.text.length, outputTokens: obs.outputTokens });
     if (obs.error) {
-      return caseResult("compact.edit", "edit", false, started, { hardFailure: obs.errorClass === "bad_request", error: obs.error.slice(0, 200), details: { calls, turns } });
+      return caseResult("compact.edit", "edit", false, started, { hardFailure: obs.errorClass === "bad_request", error: obs.error.slice(0, 200), details: { calls, turns, ...obs.providerFailure } });
     }
     lastToolNames = obs.toolCalls.map((c) => c.name);
     const edit = obs.toolCalls.find((c) => c.name === "edit_file");
@@ -230,7 +237,7 @@ async function probeStructured(adapter: CompactQualificationAdapter, modelId: st
     timeoutMs,
     suiteSignal,
   );
-  if (obs.error) return caseResult("compact.structured", "structured_output", false, started, { error: obs.error.slice(0, 200) });
+  if (obs.error) return caseResult("compact.structured", "structured_output", false, started, { error: obs.error.slice(0, 200), details: obs.providerFailure ? { ...obs.providerFailure } : undefined });
   // Reasoning models may wrap the answer in prose; the first balanced JSON object is the answer.
   const parsed = firstJsonObject(obs.text) as { files?: unknown; verified?: unknown } | null;
   const passed = !!parsed && Array.isArray(parsed.files) && parsed.files.length === 2 && parsed.files[0] === "src/calc.ts" && parsed.verified === true;
@@ -283,7 +290,7 @@ function roleResult(role: EightBitRole, cases: TestCaseResult[], startedAt: stri
 const TRANSIENT_RE = /\b429\b|rate.?limit|quota|\b401\b|\b403\b|\b5\d\d\b|timed? ?out|econnreset|fetch failed/i;
 
 function isTransient(c: TestCaseResult): boolean {
-  return !!c.error && TRANSIENT_RE.test(c.error);
+  return isProviderCompatibilityFailure(c) || (!!c.error && TRANSIENT_RE.test(c.error));
 }
 
 /**
@@ -338,6 +345,10 @@ export async function runCompactQualification(
   const toolAgent = roleResult("TOOL_AGENT", [toolCase, editCase, structuredCase], startedAt);
   const analyst = roleResult("ANALYST", [structuredCase], startedAt);
   const roleResults: Record<string, RoleQualificationResult> = { CODER: coder, TOOL_AGENT: toolAgent, ANALYST: analyst };
+  // A substituted or unidentified response cannot measure the requested model's competence.
+  if ([toolCase, editCase, structuredCase].some(isProviderCompatibilityFailure)) {
+    for (const result of Object.values(roleResults)) result.status = "NOT_TESTED";
+  }
   const hardFailureRoles = (Object.entries(roleResults) as Array<[EightBitRole, RoleQualificationResult]>).filter(([, r]) => r.status === "HARD_FAILURE").map(([role]) => role);
 
   const qualificationState: ModelQualificationReceipt["qualificationState"] = transient
@@ -365,6 +376,7 @@ export async function runCompactQualification(
     totalLatencyMs: Date.now() - t0,
     qualificationState,
     hardFailureRoles,
-    metadata: { compact: true, requests: [toolCase, editCase, structuredCase].reduce((n, c) => n + (c.error?.startsWith("skipped") ? 0 : 1 + (c.retries ?? 0)), 0), transient, quotaExhausted },
+    metadata: { compact: true, requests: [toolCase, editCase, structuredCase].reduce((n, c) => n + (c.error?.startsWith("skipped") ? 0 : 1 + (c.retries ?? 0)), 0), transient, quotaExhausted,
+      ...providerCompatibilityMetadata([toolCase, editCase, structuredCase]) },
   };
 }

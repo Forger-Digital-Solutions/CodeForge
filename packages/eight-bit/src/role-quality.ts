@@ -1,5 +1,6 @@
 import type { ModelQualificationReceipt } from "./qualification/types.js";
 import type { EightBitRole } from "./types.js";
+import { REVIEWER_PROTOCOL } from "./qualification/role-protocols.js";
 
 /** R41 role evidence is advisory ranking input, never an eligibility override. */
 export interface RoleQualityAdvice {
@@ -46,10 +47,18 @@ export const SUPPORTED_RECEIPT_SUITE_VERSIONS: ReadonlySet<string> = new Set([
   "R1_FREE_CLOUD_COMPACT_V1",
   "R41_ROLE_QUALIFICATION_V3",
   "R66_ROLE_QUALIFICATION_V4",
+  "R73_ROLE_QUALIFICATION_V5",
+  "R73_ROLE_QUALIFICATION_V6",
 ]);
 
 export function receiptSuiteSupported(receipt: ModelQualificationReceipt | undefined): boolean {
   return receipt !== undefined && SUPPORTED_RECEIPT_SUITE_VERSIONS.has(receipt.suiteVersion);
+}
+
+function currentReviewerProtocol(receipt: ModelQualificationReceipt): boolean {
+  const versions = receipt.metadata?.roleProtocolVersions;
+  return typeof versions === "object" && versions !== null
+    && "REVIEWER" in versions && versions.REVIEWER === REVIEWER_PROTOCOL.version;
 }
 
 /**
@@ -69,6 +78,7 @@ export function roleQualificationStatusFor(
   const verdict = receipt.roleResults[role] ?? (role === "EXPLORER" ? receipt.roleResults.TOOL_AGENT : undefined);
   const at = Date.parse(verdict?.completedAt ?? receipt.completedAt);
   if (!Number.isFinite(at) || nowMs - at >= MAX_EVIDENCE_AGE_MS) return undefined;
+  if (role === "REVIEWER" && (verdict?.status === "QUALIFIED" || verdict?.status === "PROBATION") && !currentReviewerProtocol(receipt)) return "NOT_TESTED";
   return verdict?.status ?? "NOT_TESTED";
 }
 
@@ -102,6 +112,8 @@ export function roleQualityAdvice(
   if (!Number.isFinite(at)) return empty("ROLE_EVIDENCE_INVALID_DATE", true);
   const age = Math.max(0, nowMs - at);
   if (age >= MAX_EVIDENCE_AGE_MS) return empty("ROLE_EVIDENCE_STALE", true);
+  const protocolStale = role === "REVIEWER" && !currentReviewerProtocol(receipt);
+  if (protocolStale && (verdict.status === "QUALIFIED" || verdict.status === "PROBATION")) return empty("ROLE_PROTOCOL_STALE", true);
   const cases = verdict.testCases.filter((c) => !c.error || !TRANSIENT.test(c.error));
   if (verdict.status === "NOT_TESTED" || cases.length === 0) return empty("ROLE_INCONCLUSIVE", true);
   const passes = cases.filter((c) => c.passed).length;
@@ -120,7 +132,7 @@ export function roleQualityAdvice(
     confidence,
     sampleCount: cases.length,
     observedAt: verdict.completedAt,
-    needsRequalification: false,
-    reasonCodes: [qualified ? "ROLE_QUALIFIED_EVIDENCE" : criticalFailure ? "ROLE_CRITICAL_FAILURE" : verdict.status === "PROBATION" ? "ROLE_PROBATION_EVIDENCE" : "ROLE_NEGATIVE_EVIDENCE"],
+    needsRequalification: protocolStale,
+    reasonCodes: [qualified ? "ROLE_QUALIFIED_EVIDENCE" : criticalFailure ? "ROLE_CRITICAL_FAILURE" : verdict.status === "PROBATION" ? "ROLE_PROBATION_EVIDENCE" : "ROLE_NEGATIVE_EVIDENCE", ...(protocolStale ? ["ROLE_PROTOCOL_STALE"] : [])],
   };
 }

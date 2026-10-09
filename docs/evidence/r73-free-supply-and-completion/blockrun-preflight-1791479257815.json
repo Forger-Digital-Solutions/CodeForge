@@ -1,0 +1,58 @@
+{
+  "startedAt": "2026-10-08T17:07:21.875Z",
+  "providerId": "blockrun-free-direct",
+  "modelId": "nvidia/llama-3.2-11b-vision",
+  "observationFile": "blockrun-live-observations-1791479241875.json",
+  "requests": 1,
+  "requestBudget": 30,
+  "publicSyntheticCodeOnly": true,
+  "noPaymentCredentials": true,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-08T17:07:21.876Z",
+    "receipt": {
+      "sourceDocumentation": "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl",
+      "termsEvidence": "https://blockrun.ai/terms",
+      "privacyEvidence": "https://blockrun.ai/privacy",
+      "priceEvidence": "https://blockrun.ai/docs/rate-limits",
+      "verifiedAt": "2026-10-08T17:07:21.876Z",
+      "recheckAt": "2026-10-15T17:07:21.876Z",
+      "qualificationAt": "2026-10-08T17:07:21.875Z",
+      "termsVerifiedAt": "2026-10-08T17:07:21.876Z",
+      "termsEvidenceHash": "73f2ef461e086bec3f80579ad7699ce819ab9fd78cef6763f8ff7a83bde3d649",
+      "termsExpiresAt": "2026-10-15T17:07:21.876Z",
+      "privacyVerifiedAt": "2026-10-08T17:07:21.876Z",
+      "privacyEvidenceHash": "21b97f5ca395e4b0ce3b434c8fca6f20cf63285ec57a93cbf88fe1628eb8e3b7",
+      "privacyExpiresAt": "2026-10-15T17:07:21.876Z",
+      "priceVerifiedAt": "2026-10-08T17:07:21.876Z",
+      "priceEvidenceHash": "4921f5b2f8c4b51559078915381fa0956ee12030bb4e09fe86e49ecd6ccdf27f",
+      "priceExpiresAt": "2026-10-15T17:07:21.876Z",
+      "nextReverifyAt": "2026-10-08T23:07:21.876Z"
+    }
+  },
+  "catalog": [
+    {
+      "modelId": "nvidia/llama-3.2-11b-vision",
+      "displayName": "Llama 3.2 11B Vision (Free)",
+      "contextWindow": 128000,
+      "capabilities": {
+        "text": true,
+        "coding": false,
+        "toolCalling": true,
+        "vision": true,
+        "structuredOutput": false,
+        "longContext": true
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    }
+  ],
+  "error": {
+    "message": "ProviderError: blockrun-free-direct error (429): {\"error\":{\"message\":\"Free model capacity exhausted — retry shortly, or use a paid model (from $0.002/request). Message @bc1max on Telegram for help.\",\"type\":\"rate_limit_error\",\"code\":\"FREE_MODEL_FAILE",
+    "code": "RATE_LIMITED",
+    "retryable": true,
+    "status": 429,
+    "rateLimitScope": "provider"
+  },
+  "completedAt": "2026-10-08T17:07:37.815Z"
+}
