@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-10T12:05:51.739Z",
+  "repository": "https://github.com/Forger-Digital-Solutions/CodeForge.git",
+  "branch": "codex/r74-autonomous-completion-and-free-reliability",
+  "startingR73": "6d4f98a7986d8bc43442a0254dea628da108e22e",
+  "frozenImplementation": "0f03e53da239680fb300cd10eee8c963c16df648",
+  "sourceReportCommit": "74b03ea884c454115d1f2902ff6715dc530944d9",
+  "remoteAtPublication": "74b03ea884c454115d1f2902ff6715dc530944d9",
+  "pushVerified": true,
+  "packagedImplementationUnchanged": true,
+  "sourceDiffPaths": [],
+  "subsequentReceiptOnlyCommit": "Contains this publication receipt and preservation/report metadata; exact final remote SHA is recorded after pushing in benchmarks/r74/tmp/final-push-receipt.json and the delivery response",
+  "verdict": "CODEFORGE_R74_PARTIAL"
+}
