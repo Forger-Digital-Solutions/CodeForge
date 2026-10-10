@@ -1,0 +1,60 @@
+{
+  "schema": "codeforge-r75-windows-packaging/v1",
+  "recordedAt": "2026-10-10T13:33:09Z",
+  "branch": "codex/r75-reliable-free-autonomous-coding",
+  "commit": "8899a028681e5bbf5a57af78c138cfe58dbc4f71",
+  "buildIdentity": {
+    "status": "passed",
+    "builtAt": "2026-10-10T13:26:44.911Z",
+    "dirty": false
+  },
+  "builder": {
+    "command": "node G:\\CodeForge\\node_modules\\electron-builder\\cli.js --win",
+    "workingDirectory": "G:\\CodeForge\\worktrees\\r75-reliable-free-autonomous-coding\\apps\\desktop",
+    "status": "passed",
+    "exitCode": 0,
+    "electronBuilderVersion": "26.15.3"
+  },
+  "audits": [
+    {
+      "name": "packaged internal dependency graph",
+      "status": "passed",
+      "receipt": "PACKAGED_INTERNAL_DEPENDENCY_GRAPH_PASS"
+    },
+    {
+      "name": "packaged runtime dependency graph",
+      "status": "passed",
+      "receipt": "PACKAGED_RUNTIME_DEPENDENCY_GRAPH_PASS",
+      "scannedRuntimeModules": 416,
+      "externalPackages": 26
+    },
+    {
+      "name": "packaged build identity",
+      "status": "passed",
+      "receipt": "PACKAGED_BUILD_IDENTITY_VALID=PASS",
+      "archive": "apps/desktop/release/win-unpacked/resources/app.asar"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "apps/desktop/release/CodeForge-Setup-0.4.0.exe",
+      "lengthBytes": 120964943,
+      "sha256": "A424FB81D48B798D3C57241ABEC34497E2218D846500A5BB8D5A40713E024698",
+      "authenticode": "NotSigned"
+    },
+    {
+      "path": "apps/desktop/release/CodeForge-Portable.exe",
+      "lengthBytes": 120629530,
+      "sha256": "64CFB86E01273020BA17427805E9B8BD82E559CBC1F45BB5A8992ECDDC38F664",
+      "authenticode": "NotSigned"
+    }
+  ],
+  "installerExecuted": false,
+  "installedLifecycleCertified": false,
+  "primaryCheckoutArtifactIncident": {
+    "occurred": true,
+    "trackedSourceChanged": false,
+    "ignoredReleaseOutputsRefreshed": true,
+    "previousIgnoredExecutablesBackedUp": false
+  }
+}

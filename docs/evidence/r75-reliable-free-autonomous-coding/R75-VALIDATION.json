@@ -6,7 +6,8 @@
     "branch": "codex/r75-reliable-free-autonomous-coding",
     "baselineHead": "230510131f40532ad8a402bdef131c3b8c637436",
     "baselineMatchesR74Remote": true,
-    "mainCheckoutPreserved": true
+    "mainCheckoutTrackedSourcesPreserved": true,
+    "mainCheckoutIgnoredReleaseArtifactsRefreshed": true
   },
   "engineeringChecks": [
     {
@@ -36,6 +37,13 @@
       "status": "passed",
       "exitCode": 0,
       "scope": "secret scan, dependency audit, public-claims scan, and documentation links"
+    },
+    {
+      "name": "desktop rebuild at pushed R75 commit",
+      "command": "npm run build",
+      "status": "passed",
+      "exitCode": 0,
+      "scope": "desktop packages, main process, build identity, and renderer at commit 8899a028681e5bbf5a57af78c138cfe58dbc4f71"
     }
   ],
   "focusedTests": [
@@ -96,48 +104,67 @@
     "roleQualificationPromotion": false
   },
   "liveEvaluation": {
-    "freeInferenceRequests": 0,
+    "freeInferenceRequests": 2,
     "moneySpentUsd": 0,
     "purchasedCreditsConsumed": 0,
     "blockrunCatalogProbe": {
       "method": "GET",
       "url": "https://blockrun.ai/api/v1/models",
-      "status": "blocked_by_dns",
-      "error": "No such host is known",
-      "inferenceAttempted": false
+      "status": "reachable_http_200",
+      "policyReverification": "passed",
+      "candidateAtQualification": {
+        "modelId": "poolside/laguna-xs-2.1",
+        "billingMode": "free",
+        "available": true,
+        "codingCategory": true,
+        "inputPrice": 0,
+        "outputPrice": 0
+      },
+      "availabilityVariedAcrossChecks": true,
+      "latestSnapshot": "R75-LIVE-CATALOG-CHECK.json",
+      "latestSnapshotAt": "2026-10-10T13:34:39.589Z",
+      "latestAvailableFreeCodingModels": []
     },
-    "additionalCoder": "not qualified",
-    "threeCompletionStreak": "not attempted because the current external Free routes could not be revalidated",
+    "qualification": {
+      "receipt": "blockrun-compact-1791638168218.json",
+      "observationReceipt": "blockrun-compact-observations-1791638168218.json",
+      "requestedModel": "poolside/laguna-xs-2.1",
+      "readToolProbe": "passed_with_requested_model_identity",
+      "editProbe": "transient_MODEL_SUBSTITUTED",
+      "servedModelOnEditProbe": "nvidia/nemotron-3-super-120b",
+      "servedModelFoundInFollowUpCatalog": false,
+      "catalogSnapshot": "R75-LIVE-CATALOG-CHECK.json",
+      "rolePromotion": false,
+      "candidateDisposition": "NOT_TESTED"
+    },
+    "additionalCoder": "not qualified: exact model identity changed during the edit probe",
+    "productionCodingTask": "not dispatched because no additional Coder passed exact-model qualification",
+    "threeCompletionStreak": "not attempted; no additional exact-model-qualified Coder",
     "organicCrossProviderFailover": "not demonstrated"
   },
   "windowsPackaging": {
-    "desktopBuild": "passed",
-    "packageBuilderScript": {
-      "status": "failed_before_audits",
-      "exitCode": 3221225794,
-      "reason": "npm lifecycle process launched through Git Bash terminated in this host"
-    },
-    "directElectronBuilder": {
-      "commands": [
-        "electron-builder --win",
-        "electron-builder --win --dir"
-      ],
-      "status": "blocked_by_dns",
-      "error": "getaddrinfo ENOTFOUND github.com",
-      "requiredPackagingHelperCached": false,
-      "artifactProduced": false
-    },
+    "evidence": "R75-WINDOWS-PACKAGING.json",
+    "desktopBuildAtCurrentCommit": "passed",
+    "directElectronBuilder": "passed",
+    "internalDependencyAudit": "passed",
+    "runtimeDependencyAudit": "passed",
+    "buildIdentityAudit": "passed",
+    "setupAuthenticode": "NotSigned",
+    "portableAuthenticode": "NotSigned",
     "installerExecuted": false,
     "installedLifecycleCertified": false
   },
   "delivery": {
-    "commitCreated": false,
-    "pushAttempted": false,
-    "remoteDnsPreviouslyFailed": true
+    "implementationCommit": "8899a028681e5bbf5a57af78c138cfe58dbc4f71",
+    "implementationCommitPushed": true,
+    "evidenceAndQualificationScriptUpdatePushed": true,
+    "remoteDnsPreviouslyFailedButPushSucceeded": true
   },
   "sources": [
     "../r74-autonomous-completion-and-free-reliability/R74-LIVE-STATISTICS.json",
     "../r74-autonomous-completion-and-free-reliability/R74-FINAL-REPORT.md",
+    "R75-LIVE-CATALOG-CHECK.json",
+    "R75-WINDOWS-PACKAGING.json",
     "https://blockrun.ai/docs/api-reference/models",
     "https://blockrun.ai/docs/rate-limits"
   ]

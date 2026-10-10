@@ -1,0 +1,9 @@
+{
+  "checkedAt": "2026-10-10T13:34:39.589Z",
+  "source": "https://blockrun.ai/api/v1/models",
+  "httpStatus": 200,
+  "requestedSubstituteModelId": "nvidia/nemotron-3-super-120b",
+  "substituteModelFound": false,
+  "substituteModel": null,
+  "availableFreeCodingModels": []
+}
