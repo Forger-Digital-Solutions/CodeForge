@@ -6,7 +6,7 @@ Updated 2026-10-10. Implementation, fixture validation and live evidence are dis
 
 Starting R72 delivery: `220b365c553bff0b1ee952fb6b96498c8ddea325`. Branch: `codex/r73-free-supply-and-completion`. Durable worktree: `G:\CodeForge\worktrees\r73-free-supply-and-completion`. The frozen source is committed at `0e364facb2b89ebc0624557d5c4a7f7ffa23219f`, following the account architecture checkpoint `1276a2de0b0104711faecce66bfb7239c860d22d`. Later evidence-only delivery commits document that unchanged implementation; exact branch HEAD/publication are recorded in delivery receipts and the final mission response.
 
-R72 ancestry, its clean delivery and all 73 historical evidence files remain preserved. The original checkout stays at `6f8ad979fb9de0a17f69571d03358d7db5a35459` on `codex/r29-release-closure`, with six unrelated tracked modifications hash-preserved. The only authorized lockfile delta adds the existing `@codeforge/secrets` workspace to desktop dependencies. No reset, original-branch integration, GEMS/FDS modification or deployment occurred. Existing approved GitHub authentication supports branch publication; final push status is recorded separately.
+R72 ancestry, its clean delivery and all 73 historical evidence files remain preserved. The original checkout stays at `6f8ad979fb9de0a17f69571d03358d7db5a35459` on `codex/r29-release-closure`, with six unrelated tracked modifications hash-preserved. The only authorized lockfile delta adds the existing `@codeforge/secrets` workspace to desktop dependencies. No reset, original-branch integration, GEMS/FDS modification or deployment occurred. Source and package-evidence revision `2f4e932c` was successfully pushed using the existing authorized GitHub helper. `delivery-publication-2f4e932c.json` records the complete published SHA; the later receipt-only HEAD is reported in the final mission response.
 
 ## 2. Reviewer Recovery
 
@@ -74,7 +74,7 @@ Earlier 393/393 account/transport regression and broad/standalone results remain
 
 | Gate | Evidence-backed status |
 | --- | --- |
-| A Repository | R72/original preservation passed; final source/evidence commit and publication receipts recorded during delivery |
+| A Repository | PASS: R72/original preservation, durable source/evidence commits and authorized source/package-evidence push recorded |
 | B Reviewer | UNMET: no V4 qualified Reviewer accurately reviewed the actual correct change |
 | C Completion | UNMET: 0/6; live review, ForgeVerify and integration never all passed |
 | D Reliability | UNMET: longest streak 0; no three-task completion streak |
@@ -85,7 +85,7 @@ Earlier 393/393 account/transport regression and broad/standalone results remain
 | I Cost/privacy | Zero unauthorized paid/private/bypass evidence; explicit personal paid controls tested, real paid test blocked |
 | J Windows | Frozen directory candidate, 5/5 audits, 36 byte matches pass; NotSigned, authorized isolation/runtime/installer certification unavailable |
 | K Validation | Current focused suites, full build, forced typecheck and frozen package checks pass; no critical regression identified |
-| L Evidence | Raw historical failures/successes retained; final commit/package/push identities recorded during delivery |
+| L Evidence | PASS for claimed outcomes: raw failures/successes, current tests, frozen package, hashes and actual push receipt retained |
 
 Immediate runtime blocker: a currently eligible Reviewer that genuinely qualifies and accurately reviews the actual patch. External live prerequisites: authorized unpaid and second distinct accounts, explicit real paid-spending budget, enforceable Puter zero-spend scope, supported anonymous-provider permission where unresolved, signing and isolated Windows lifecycle. No external prerequisite is fabricated.
 
