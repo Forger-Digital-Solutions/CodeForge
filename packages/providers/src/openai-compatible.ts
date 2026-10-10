@@ -125,6 +125,11 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     return { "Content-Type": "application/json", ...this.cfg.defaultHeaders, ...auth };
   }
 
+  private requiresExactServedModel(model: string): boolean {
+    return this.cfg.requireExactServedModel === true
+      || (this.cfg.anonymousFree === true && this.providerId === "kilo-free-direct" && model !== "kilo-auto/free");
+  }
+
   private assertAnonymousFreeModel(model: string): void {
     if (!this.cfg.anonymousFree) return;
     if (this.providerId === "blockrun-free-direct" && /^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*$/.test(model)) return;
@@ -196,7 +201,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       this.observe(res, req.model);
       usage = data.usage ? normalizedOaiUsage(data.usage) : undefined;
       if (!Array.isArray(data.choices) || data.choices.length === 0) throw new ProviderError(`${this.providerId} returned no assistant choices`, "EMPTY_RESPONSE", true, { observedUsage: usage });
-      if (this.cfg.requireExactServedModel && data.model !== req.model) {
+      if (this.requiresExactServedModel(req.model) && data.model !== req.model) {
         throw new ProviderError(`${this.providerId} served model identity does not match the qualified request`, data.model ? "MODEL_SUBSTITUTED" : "SERVED_MODEL_UNVERIFIED", true, { observedUsage: usage });
       }
       const response = this.fromResponse(data);
@@ -267,16 +272,17 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       // distinguish what was requested from what actually served. Absent stays unverified.
       let servedModel: string | undefined;
       const finishEvent = (): StreamEvent => {
-        if (this.cfg.requireExactServedModel && servedModel !== req.model) throw new ProviderError(`${this.providerId} stream did not verify the requested model`, "SERVED_MODEL_UNVERIFIED", true);
+        if (this.requiresExactServedModel(req.model) && servedModel !== req.model) throw new ProviderError(`${this.providerId} stream did not verify the requested model`, "SERVED_MODEL_UNVERIFIED", true);
         return { type: "finish", finishReason: normalizeStreamFinish(terminalFinish), ...(servedModel ? { model: servedModel } : {}) };
       };
       const finishTerminal = function* (): Generator<StreamEvent> {
+        const finish = finishEvent();
         for (const acc of toolCalls.values()) {
           if (!acc.started) yield { type: "tool_call_started", toolCallId: acc.id, toolName: acc.name };
           yield { type: "tool_call_completed", toolCallId: acc.id, toolName: acc.name, arguments: acc.arguments };
         }
         toolCalls.clear();
-        yield finishEvent();
+        yield finish;
       };
       const handleLine = function* (this: OpenAICompatibleAdapter, line: string): Generator<StreamEvent, "continue" | "done" | "error"> {
         const trimmed = line.trim();
@@ -300,7 +306,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
           return "error";
         }
         if (typeof parsed.model === "string" && parsed.model.length > 0) {
-          if (this.cfg.requireExactServedModel && parsed.model !== req.model) {
+          if (this.requiresExactServedModel(req.model) && parsed.model !== req.model) {
             if (parsed.usage) { usage = normalizedOaiUsage(parsed.usage); yield { type: "usage", usage }; }
             throw new ProviderError(`${this.providerId} substituted an unqualified stream model`, "MODEL_SUBSTITUTED", true);
           }
@@ -309,7 +315,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         const choice = parsed.choices?.[0];
         if (choice) {
           const delta = choice.delta;
-          if (this.cfg.requireExactServedModel && servedModel === undefined && (delta?.content || delta?.tool_calls?.length)) {
+          if (this.requiresExactServedModel(req.model) && servedModel === undefined && (delta?.content || delta?.tool_calls?.length)) {
             throw new ProviderError(`${this.providerId} stream emitted content before verifying the model`, "SERVED_MODEL_UNVERIFIED", true);
           }
           if (delta?.content) yield { type: "text_delta", delta: delta.content };
@@ -346,7 +352,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
             };
             return "error";
           }
-          if (choice.finish_reason === "tool_calls" && toolCalls.size > 0) {
+          if (choice.finish_reason === "tool_calls" && toolCalls.size > 0 && !this.requiresExactServedModel(req.model)) {
             for (const acc of toolCalls.values()) {
               if (!acc.started) yield { type: "tool_call_started", toolCallId: acc.id, toolName: acc.name };
               yield { type: "tool_call_completed", toolCallId: acc.id, toolName: acc.name, arguments: acc.arguments };

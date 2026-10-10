@@ -9,7 +9,7 @@
  * their protocol so old evidence can never be silently reinterpreted under new rules.
  */
 
-export const ROLE_QUALIFICATION_SUITE_VERSION = "R73_ROLE_QUALIFICATION_V7";
+export const ROLE_QUALIFICATION_SUITE_VERSION = "R74_ROLE_QUALIFICATION_V8";
 
 export type RoleProtocolId = "EXPLORER" | "PLANNER" | "REVIEWER";
 

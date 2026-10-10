@@ -57,6 +57,11 @@ export interface ReasoningRouteProfile {
  *   was all reasoning); every role passed at 1500.
  */
 export const DEFAULT_REASONING_ROUTE_PROFILES: Readonly<Record<string, ReasoningRouteProfile>> = {
+  "kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free": {
+    reasoningReserveTokens: 1_536,
+    expiresAtMs: Date.parse("2026-11-09T00:00:00.000Z"),
+    evidence: "R74 exact-model live Planner probe: 1424/1433 reasoning tokens truncated a 1200-token request; 2633 tokens delivered the complete schema",
+  },
   "kilo-free-direct/cohere/north-mini-code:free": {
     reasoningReserveTokens: 2_560,
     expiresAtMs: Date.parse("2026-11-08T00:00:00.000Z"),

@@ -1,0 +1,225 @@
+{
+  "at": "2026-10-10T10:31:57.410Z",
+  "rows": [
+    {
+      "provider": "kilo-free-direct",
+      "models": [
+        {
+          "modelId": "kilo-auto/free",
+          "displayName": "Auto Free",
+          "contextWindow": 256000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "displayName": "NVIDIA: Nemotron 3 Ultra (free)",
+          "contextWindow": 1000000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "dots-studio/dots-3-note-preview:free",
+          "displayName": "Dots Studio: Dots3-Note Preview (free)",
+          "contextWindow": 512000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": true,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "poolside/laguna-s-2.1:free",
+          "displayName": "Poolside: Laguna S 2.1 (free)",
+          "contextWindow": 262144,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "liquid/lfm-2.5-2.6b:free",
+          "displayName": "LiquidAI: LFM2.5-2.6B (free)",
+          "contextWindow": 65536,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": true,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "nvidia/nemotron-3.5-lightning:free",
+          "displayName": "NVIDIA: Nemotron 3.5 Lightning (free)",
+          "contextWindow": 1000000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "thinkingmachines/inkling-small:free",
+          "displayName": "Thinking Machines: Inkling Small (free)",
+          "contextWindow": 1048576,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "poolside/laguna-xs-2.1:free",
+          "displayName": "Poolside: Laguna XS 2.1 (free)",
+          "contextWindow": 262144,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "cohere/north-mini-code:free",
+          "displayName": "Cohere: North Mini Code (free)",
+          "contextWindow": 256000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "nvidia/nemotron-3.5-content-safety:free",
+          "displayName": "NVIDIA: Nemotron 3.5 Content Safety (free)",
+          "contextWindow": 128000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": false,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "displayName": "NVIDIA: Nemotron 3 Nano Omni (free)",
+          "contextWindow": 256000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "displayName": "NVIDIA: Nemotron 3 Super (free)",
+          "contextWindow": 262144,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": true,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        }
+      ]
+    },
+    {
+      "provider": "blockrun-free-direct",
+      "models": [
+        {
+          "modelId": "nvidia/llama-3.2-11b-vision",
+          "displayName": "Llama 3.2 11B Vision (Free)",
+          "contextWindow": 128000,
+          "capabilities": {
+            "text": true,
+            "coding": false,
+            "toolCalling": true,
+            "vision": true,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "poolside/laguna-xs-2.1",
+          "displayName": "Poolside Laguna XS 2.1 (Free)",
+          "contextWindow": 131072,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        }
+      ]
+    }
+  ]
+}

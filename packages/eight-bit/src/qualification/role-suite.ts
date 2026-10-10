@@ -224,6 +224,8 @@ function caseResult(caseId: string, category: string, passed: boolean, startedAt
 async function withRetry(run: () => Promise<TestCaseResult>): Promise<TestCaseResult> {
   const first = await run();
   if (first.passed || first.error || first.hardFailure) return first;
+  // Repeating an unchanged, complete review cannot explain or repair a semantic mistake.
+  if (first.category === "review" && first.details?.schemaValid === true) return first;
   const second = await run();
   return { ...second, retries: (second.retries ?? 0) + 1, details: { ...second.details, firstAttempt: first.details } };
 }
@@ -476,8 +478,8 @@ function assemble(role: EightBitRole, cases: TestCaseResult[], protocol: RolePro
   const passedCount = scored.filter((c) => c.passed).length;
   const score = scored.length === 0 ? 0 : passedCount / scored.length;
   const status: RoleQualificationResult["status"] =
-    cases.length === 0 || interrupted ? "NOT_TESTED"
-    : hardFailures.length > 0 ? "HARD_FAILURE"
+    hardFailures.length > 0 ? "HARD_FAILURE"
+    : cases.length === 0 || interrupted ? "NOT_TESTED"
     : score >= protocol.acceptance ? "QUALIFIED"
     : score >= 0.5 ? "PROBATION"
     : "NOT_QUALIFIED";
@@ -537,7 +539,8 @@ export function createRoleQualificationReceipt(model: FreeModelRecord, output: R
   const roleResults = Object.fromEntries(results.map((result) => [result.role, result]));
   const startedAt = results.map((result) => result.startedAt).sort()[0] ?? new Date().toISOString();
   const completedAt = results.map((result) => result.completedAt).sort().at(-1) ?? startedAt;
-  const qualificationState: ModelQualificationReceipt["qualificationState"] = output.transientCases > 0 ? "NOT_QUALIFIED"
+  const qualificationState: ModelQualificationReceipt["qualificationState"] = results.length > 0 && results.every((result) => result.status === "HARD_FAILURE") ? "HARD_FAILURE"
+    : output.transientCases > 0 ? "NOT_QUALIFIED"
     : results.some((result) => result.status === "QUALIFIED") ? "QUALIFIED"
     : results.some((result) => result.status === "PROBATION") ? "PROBATION"
     : results.length > 0 && results.every((result) => result.status === "HARD_FAILURE") ? "HARD_FAILURE" : "NOT_QUALIFIED";

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-10T10:31:31.098Z",
+  "rows": [
+    {
+      "provider": "kilo-free-direct",
+      "error": "kilo-free-direct listModels failed: fetch failed"
+    },
+    {
+      "provider": "blockrun-free-direct",
+      "error": "blockrun-free-direct listModels failed: fetch failed"
+    }
+  ]
+}

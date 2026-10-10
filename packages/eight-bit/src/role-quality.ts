@@ -50,6 +50,7 @@ export const SUPPORTED_RECEIPT_SUITE_VERSIONS: ReadonlySet<string> = new Set([
   "R73_ROLE_QUALIFICATION_V5",
   "R73_ROLE_QUALIFICATION_V6",
   "R73_ROLE_QUALIFICATION_V7",
+  "R74_ROLE_QUALIFICATION_V8",
 ]);
 
 export function receiptSuiteSupported(receipt: ModelQualificationReceipt | undefined): boolean {

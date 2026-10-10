@@ -936,7 +936,8 @@ RULES:
 5. Return only JSON: {"verdict":"pass"|"revision_required","findings":[{"id":string,"severity":"blocking"|"advisory","category":string,"message":string,"evidence"?:string}],"summary":string}. A revision_required verdict requires at least one blocking finding.
 6. Start with the supplied diff and task. Inspect additional files only when a concrete uncertainty prevents a verdict. When the available evidence is sufficient, return the verdict promptly; do not keep searching for hypothetical defects. A passing review may have an empty findings array.
 7. Keep the summary to three sentences, cite concise evidence, and include every blocking finding. Do not repeat the entire implementation or test suite. Use JSON double-quoted strings, never backticks as JSON delimiters.
-8. Assess functional correctness, security invariants, error handling, resource lifetimes, and the strength of changed tests. Report concrete regressions against the stated requirements.`,
+8. Assess functional correctness, security invariants, error handling, resource lifetimes, and the strength of changed tests. Report concrete regressions against the stated requirements.
+9. Evaluate the added/current code, not removed lines. Trace boundary inputs and each exit path against the contract, including ownership of acquired resources and whether caught failures still reach the required observer. Task intent describes the requested change; it does not authorize broken invariants. Quote current code that establishes each blocking defect and explain the failing behavior. Treat missing test execution as pending verification, never as evidence that tests passed or a defect in otherwise correct code.`,
   },
   "mission-planner": {
     role: "mission-planner",

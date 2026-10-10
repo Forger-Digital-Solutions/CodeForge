@@ -1,0 +1,766 @@
+{
+  "startedAt": "2026-10-10T10:39:48.267Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "evidenceClass": "LIVE_ROLE_ONLY_PUBLIC_CASES",
+  "intendedRole": "PLANNER",
+  "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+  "reviewerProtocol": "REVIEWER_PROTOCOL_V4",
+  "frames": [
+    {
+      "at": "2026-10-10T10:39:49.225Z",
+      "request": {
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites."
+          },
+          {
+            "role": "user",
+            "content": "Task: Reservation holds must also be released when a run is cancelled. Plan the smallest change that adds a release call on the cancellation path of src/server.ts, using src/fabric/admission.ts's release().\n\nExplorer findings (the only repository files that exist for you):\n--- src/server.ts ---\nimport { createRouter } from \"./router.js\";\nimport { createFabric } from \"./fabric/admission.js\";\nexport function serve() {\n  const fabric = createFabric();\n  const router = createRouter(fabric);\n  return router.listen();\n}\n--- src/fabric/admission.ts ---\nconst holds = new Map<string, { routeId: string }>();\nexport function reserve(requestId: string, routeId: string) {\n  holds.set(requestId, { routeId });\n}\nexport function release(requestId: string) {\n  holds.delete(requestId);\n}\nexport function settleRun(requestId: string, ok: boolean) {\n  try { /* settle */ } finally { release(requestId); }\n}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 1200
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "The user wants me to plan a change to add a release call when a run is cancelled in src/server.ts, using the release() function from src/fabric/admission.ts.\n\nLet me analyze the code:\n1. src/server.ts creates a fabric and router, but I don't see the router implementation or where cancellation happens\n2. src/fabric/admission.ts has reserve(), release(), and settleRun() functions\n\nThe task says \"when a run is cancelled\" - I need to find where cancellation happens in the codebase. However, the explorer findings only show these two files. The router is imported from \"./router.js\" but that file isn't shown.\n\nGiven the constraints, I need to plan based on what I can see. The task mentions \"cancellation path of src/server.ts\" - but server.ts only shows serve() function. The cancellation logic must be in the router.\n\nSince I can only see these two files, and the task says to use src/fabric/admission.ts's release(), I need to plan a change that:\n1. Imports release from fabric/admission.ts in server.ts (or wherever cancellation is handled)\n2. Calls release() when a run is cancelled\n\nBut wait - the explorer findings are \"the only repository files that exist for you\". So I only have these two files. The router.js is imported but not shown.\n\nGiven the task says \"Plan the smallest change that adds a release call on the cancellation path of src/server.ts\", and server.ts only has the serve() function, perhaps the cancellation path is in the router which is created in server.ts.\n\nSince I can't see router.js, but the task says to plan based on the explorer findings, I think the plan should be:\n1. Modify src/server.ts to handle cancellation and call release()\n2. Or perhaps the fabric is passed to router and router handles cancellation\n\nActually, looking more carefully: the fabric is created in server.ts and passed to createRouter. The fabric has reserve/release/settleRun. The router likely uses the fabric.\n\nThe task says \"using src/fabric/admission.ts's release()\". So I need to ensure release() is called on cancellation.\n\nSince I can only see these two files, and the task asks for the smallest change to src/server.ts, perhaps the change is to export the fabric's release function or ensure it's called.\n\nBut server.ts doesn't show any cancellation handling. The cancellation must be in router.js which I can't see.\n\nGiven the constraints, I think the plan should be to modify the fabric/admission.ts to expose release, and then ensure it's called from the cancellation path. But the task specifically says \"on the cancellation path of src/server.ts\".\n\nWait - maybe the serve() function returns something that has a cancellation handler? Or maybe the router.listen() returns a server that has a close/cancel event?\n\nLet me re-read: \"Reservation holds must also be released when a run is cancelled. Plan the smallest change that adds a release call on the cancellation path of src/server.ts, using src/fabric/admission.ts's release().\"\n\nSince I can only see server.ts and admission.ts, and server.ts creates fabric and router, perhaps the change is to pass a cancellation handler to the fabric or router.\n\nActually, looking at admission.ts, it has settleRun which calls release in finally. So settleRun handles release on completion. But cancellation is different from settling.\n\nThe smallest change would be to add a cancelRun function in admission.ts that calls release, and then call it from the cancellation path in server.ts (or router).\n\nBut the task says \"on the cancellation path of src/server.ts\" - so maybe server.ts needs to handle process signals or something?\n\nGiven the limited context, I'll plan:\n1. Add a cancelRun function to admission.ts that calls release\n2. Modify server.ts to handle cancellation (e.g., process signals) and call cancelRun\n\nBut the task says \"smallest change\" and \"using src/fabric/admission.ts's release()\" - so maybe just call release directly.\n\nLet me create a task graph with two tasks: one to modify admission.ts to export a cancel function (or just use release), and one to modify server.ts to call it on cancellation.\n\nActually, release is already exported. So maybe just need to call it from server.ts cancellation path.\n\nBut server.ts doesn't show any cancellation path. The only thing it does is create fabric, router, and listen.\n\nPerhaps the router.listen() returns a server that emits events? Or maybe there's a shutdown handler?\n\nGiven the explorer findings are the only files, I must plan based on them. The task says \"cancellation path of src/server.ts\" - so I'll assume there's a cancellation path there that needs the release call.\n\nI'll plan:\n- C: Modify src/fabric/admission.ts to add a cancelRun function (or ensure release is callable for cancellation)\n- R: Modify src/server.ts to call release on cancellation\n\nBut release is already exported. So maybe just:\n- C: Modify src/server.ts to import release and call it on cancellation\n- R: Review\n\nWait, the task says \"Plan the smallest change that adds a release call on the cancellation path of src/server.ts\". So the change is in server.ts primarily.\n\nBut server.ts doesn't show cancellation handling. Perhaps the router has a cancellation callback?\n\nSince I can't see router.js, but the fabric is passed to router, maybe the router calls fabric functions.\n\nThe smallest change might be to add a cancel function to the fabric that the router can call.\n\nLet me think differently: The task says \"using src/fabric/admission.ts's release()\". So release() already exists. The change is to call it when a run is cancelled.\n\nIn server.ts, the fabric is created. The router is created with fabric"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 376,
+            "outputTokens": 1200,
+            "totalTokens": 1576,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1424,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free"
+        }
+      ],
+      "finishedAt": "2026-10-10T10:40:09.028Z"
+    },
+    {
+      "at": "2026-10-10T10:40:09.030Z",
+      "request": {
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites."
+          },
+          {
+            "role": "user",
+            "content": "Task: Reservation holds must also be released when a run is cancelled. Plan the smallest change that adds a release call on the cancellation path of src/server.ts, using src/fabric/admission.ts's release().\n\nExplorer findings (the only repository files that exist for you):\n--- src/server.ts ---\nimport { createRouter } from \"./router.js\";\nimport { createFabric } from \"./fabric/admission.js\";\nexport function serve() {\n  const fabric = createFabric();\n  const router = createRouter(fabric);\n  return router.listen();\n}\n--- src/fabric/admission.ts ---\nconst holds = new Map<string, { routeId: string }>();\nexport function reserve(requestId: string, routeId: string) {\n  holds.set(requestId, { routeId });\n}\nexport function release(requestId: string) {\n  holds.delete(requestId);\n}\nexport function settleRun(requestId: string, ok: boolean) {\n  try { /* settle */ } finally { release(requestId); }\n}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 2624
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "protocol\":\"task_graph"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_v1\",\"summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\"Add reservation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " hold"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release on run"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancellation path\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "tasks\":[{\"id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\"C\",\"title"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\"Add release call"
+        },
+        {
+          "type": "text_delta",
+          "delta": " in router"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancellation handler\",\"object"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ive\":\"Modify src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/router.js to call"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fabric.release(requestId"
+        },
+        {
+          "type": "text_delta",
+          "delta": ") when a run"
+        },
+        {
+          "type": "text_delta",
+          "delta": " is cancelled, ensuring"
+        },
+        {
+          "type": "text_delta",
+          "delta": " reservation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " holds are released similarly"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to settleRun's"
+        },
+        {
+          "type": "text_delta",
+          "delta": " finally block."
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\"dependencies\":[],"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"assignedRole\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "coder\"},{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id\":\"R\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title\":\"Review cancellation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release implementation\",\"object"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ive\":\"Verify that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fabric.release()"
+        },
+        {
+          "type": "text_delta",
+          "delta": " is called on all"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancellation paths and"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that request"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Id is correctly"
+        },
+        {
+          "type": "text_delta",
+          "delta": " passed from"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the cancellation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " context.\",\"dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[\"C\"],"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"assignedRole\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "reviewer\"}]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 376,
+            "outputTokens": 1410,
+            "totalTokens": 1786,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1490,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free"
+        }
+      ],
+      "finishedAt": "2026-10-10T10:40:31.941Z"
+    },
+    {
+      "at": "2026-10-10T10:40:31.944Z",
+      "request": {
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites."
+          },
+          {
+            "role": "user",
+            "content": "Task: Reservation holds must also be released when a run is cancelled. Plan the smallest change that adds a release call on the cancellation path of src/server.ts, using src/fabric/admission.ts's release().\n\nExplorer findings (the only repository files that exist for you):\n--- src/server.ts ---\nimport { createRouter } from \"./router.js\";\nimport { createFabric } from \"./fabric/admission.js\";\nexport function serve() {\n  const fabric = createFabric();\n  const router = createRouter(fabric);\n  return router.listen();\n}\n--- src/fabric/admission.ts ---\nconst holds = new Map<string, { routeId: string }>();\nexport function reserve(requestId: string, routeId: string) {\n  holds.set(requestId, { routeId });\n}\nexport function release(requestId: string) {\n  holds.delete(requestId);\n}\nexport function settleRun(requestId: string, ok: boolean) {\n  try { /* settle */ } finally { release(requestId); }\n}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 1200
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "The user wants me to plan a change to add a release call when a run is cancelled in src/server.ts, using the release() function from src/fabric/admission.ts.\n\nLet me analyze the code:\n1. src/server.ts creates a fabric and router, but I don't see the cancellation logic yet\n2. src/fabric/admission.ts has reserve(), release(), and settleRun() functions\n\nThe task says \"when a run is cancelled\" - I need to find where cancellation happens in server.ts. But the provided server.ts is very minimal - it just creates a router and listens. The cancellation logic must be in the router or elsewhere.\n\nWait, the explorer findings only show these two files. The user says \"these are the only repository files that exist for you\". So I need to plan based on what's shown.\n\nLooking at server.ts, it imports createRouter and createFabric. The router likely handles HTTP requests including cancellation. But I don't see the router implementation.\n\nThe task says \"Plan the smallest change that adds a release call on the cancellation path of src/server.ts\". Since I only see server.ts and admission.ts, and server.ts doesn't show cancellation handling, perhaps the cancellation path is in the router which is created by createRouter(fabric).\n\nBut wait - the fabric is created and passed to createRouter. The fabric has the release function. So the router would have access to fabric.release.\n\nHowever, the task specifically says \"using src/fabric/admission.ts's release()\" and \"on the cancellation path of src/server.ts\".\n\nGiven the minimal server.ts, perhaps the change needs to be in how the fabric is used or passed. But server.ts just creates and passes it.\n\nLet me re-read: \"Reservation holds must also be released when a run is cancelled. Plan the smallest change that adds a release call on the cancellation path of src/server.ts, using src/fabric/admission.ts's release().\"\n\nSince I only have these two files, and server.ts doesn't show cancellation logic, perhaps the plan is to:\n1. Export the release function from admission.ts (already exported)\n2. Ensure the router has access to it via fabric\n3. The actual cancellation handling would be in the router, but that's not shown\n\nWait, maybe the task expects me to understand that the router handles cancellation and needs to call fabric.release(). But since I can't see router.js, I can only plan based on what's visible.\n\nActually, looking more carefully at the task: \"Plan the smallest change that adds a release call on the cancellation path of src/server.ts\". The cancellation path might be in server.ts but not shown in the explorer findings? No, the explorer findings say \"the only repository files that exist for you\" and show the full content of server.ts.\n\nThis is confusing. Let me think differently - perhaps the \"cancellation path\" refers to a code path that would be added or exists in the router, but the change needs to be in server.ts to make release available? But release is already exported and part of fabric.\n\nWait, createFabric() returns what? The admission.ts exports functions, not an object. Let me check:\n- admission.ts exports reserve, release, settleRun as named exports\n- server.ts imports createFabric from \"./fabric/admission.js\"\n\nBut admission.ts doesn't export a createFabric function! It exports reserve, release, settleRun directly.\n\nThis is a discrepancy. server.ts imports `createFabric` but admission.ts doesn't export it. Unless... admission.ts has a default export or createFabric that's not shown? But the explorer says \"the only repository files that exist for you\" and shows the full content.\n\nHmm, maybe the explorer findings are incomplete or there's a mistake. But I must work with what's given.\n\nGiven the constraints, I think the plan should be:\n1. The fabric object needs to expose release() \n2. The router (created in server.ts) needs to call release() on cancellation\n3. Since I can't see router.js, the smallest change in server.ts might be to ensure fabric is properly structured\n\nBut the task says \"using src/fabric/admission.ts's release()\" - which already exists and is exported.\n\nPerhaps the plan is simply to document that the router should call fabric.release(requestId) when a run is cancelled, and the change in server.ts is minimal (maybe just passing fabric correctly).\n\nWait, I need to output a task graph with coder and reviewer tasks. The coder would implement the change, reviewer would review.\n\nGiven the information, the smallest change in server.ts might be... actually, server.ts doesn't have cancellation logic. The cancellation logic would be in the router. But the task says \"on the cancellation path of src/server.ts\".\n\nLet me re-read the server.ts:\n```typescript\nexport function serve() {\n  const fabric = createFabric();\n  const router = createRouter(fabric);\n  return router.listen();\n}\n```\n\nIf createFabric() returns an object with { reserve, release, settleRun }, then the router has access to release. The cancellation handling would be inside the router's code (not shown).\n\nBut the task says to plan a change to src/server.ts. The only change I can imagine in server.ts is if createFabric needs to be modified to include release, but it's already exported from admission.ts.\n\nUnless... the admission.ts is missing a createFabric export that bundles these functions? Let me check: admission.ts exports three named functions. server.ts imports createFabric as a default or named import.\n\nIf admission.ts doesn't have createFabric, then the code as shown wouldn't work. But the task says these are the existing files.\n\nI think there might be an error in the explorer findings, or createFabric is defined elsewhere. But the user says"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 376,
+            "outputTokens": 1200,
+            "totalTokens": 1576,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1433,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free"
+        }
+      ],
+      "finishedAt": "2026-10-10T10:40:54.096Z"
+    },
+    {
+      "at": "2026-10-10T10:40:54.097Z",
+      "request": {
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites."
+          },
+          {
+            "role": "user",
+            "content": "Task: Reservation holds must also be released when a run is cancelled. Plan the smallest change that adds a release call on the cancellation path of src/server.ts, using src/fabric/admission.ts's release().\n\nExplorer findings (the only repository files that exist for you):\n--- src/server.ts ---\nimport { createRouter } from \"./router.js\";\nimport { createFabric } from \"./fabric/admission.js\";\nexport function serve() {\n  const fabric = createFabric();\n  const router = createRouter(fabric);\n  return router.listen();\n}\n--- src/fabric/admission.ts ---\nconst holds = new Map<string, { routeId: string }>();\nexport function reserve(requestId: string, routeId: string) {\n  holds.set(requestId, { routeId });\n}\nexport function release(requestId: string) {\n  holds.delete(requestId);\n}\nexport function settleRun(requestId: string, ok: boolean) {\n  try { /* settle */ } finally { release(requestId); }\n}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 2633
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "protocol\":\"task_graph"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_v1\",\"summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\"Add reservation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " hold"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release on run"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancellation path"
+        },
+        {
+          "type": "text_delta",
+          "delta": " in server.ts using"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fabric.release"
+        },
+        {
+          "type": "text_delta",
+          "delta": "()\",\"tasks\":["
+        },
+        {
+          "type": "text_delta",
+          "delta": "{\"id\":\"C"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\"title\":\"Add"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " call on cancellation path"
+        },
+        {
+          "type": "text_delta",
+          "delta": " in server.ts\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective\":\"Modify"
+        },
+        {
+          "type": "text_delta",
+          "delta": " src/server.ts to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " call"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fabric.release(request"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Id) when a"
+        },
+        {
+          "type": "text_delta",
+          "delta": " run is cancelled,"
+        },
+        {
+          "type": "text_delta",
+          "delta": " ensuring reservation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " holds are released."
+        },
+        {
+          "type": "text_delta",
+          "delta": " The fabric instance"
+        },
+        {
+          "type": "text_delta",
+          "delta": " created"
+        },
+        {
+          "type": "text_delta",
+          "delta": " in serve"
+        },
+        {
+          "type": "text_delta",
+          "delta": "() has"
+        },
+        {
+          "type": "text_delta",
+          "delta": " access to release()"
+        },
+        {
+          "type": "text_delta",
+          "delta": " from admission.ts."
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\"dependencies\":[],"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"assignedRole\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "coder\"},{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id\":\"R\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title\":\"Review cancellation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release implementation\",\"object"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ive\":\"Verify that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release call is correctly"
+        },
+        {
+          "type": "text_delta",
+          "delta": " placed on the cancellation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " path,"
+        },
+        {
+          "type": "text_delta",
+          "delta": " uses the fabric"
+        },
+        {
+          "type": "text_delta",
+          "delta": "'s"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release function, and"
+        },
+        {
+          "type": "text_delta",
+          "delta": " properly"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cle"
+        },
+        {
+          "type": "text_delta",
+          "delta": "ans up holds"
+        },
+        {
+          "type": "text_delta",
+          "delta": " for cancelled"
+        },
+        {
+          "type": "text_delta",
+          "delta": " runs"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".\",\"dependencies\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": "[\"C\"],\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "assignedRole\":\"review"
+        },
+        {
+          "type": "text_delta",
+          "delta": "er\"}]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 376,
+            "outputTokens": 938,
+            "totalTokens": 1314,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 932,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free"
+        }
+      ],
+      "finishedAt": "2026-10-10T10:41:07.691Z"
+    }
+  ],
+  "maxRequests": 4,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-10T10:39:48.267Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-10T10:39:48.267Z",
+      "recheckAt": "2026-10-17T10:39:48.267Z",
+      "qualificationAt": "2026-10-10T10:39:48.267Z",
+      "termsVerifiedAt": "2026-10-10T10:39:48.267Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-17T10:39:48.267Z",
+      "privacyVerifiedAt": "2026-10-10T10:39:48.267Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-17T10:39:48.267Z",
+      "priceVerifiedAt": "2026-10-10T10:39:48.267Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-17T10:39:48.267Z",
+      "nextReverifyAt": "2026-10-10T16:39:48.267Z"
+    }
+  },
+  "catalog": {
+    "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "displayName": "NVIDIA: Nemotron 3 Ultra (free)",
+    "contextWindow": 1000000,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "result": {
+    "roleResults": {
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-10T10:39:49.223Z",
+        "completedAt": "2026-10-10T10:41:07.694Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "planner.release_callsite",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 35749,
+            "retries": 1,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 2,
+              "roles": [
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": true,
+              "reasoningTokens": 932,
+              "starvedAttempt": {
+                "maxTokens": 1200,
+                "reasoningTokens": 1433,
+                "finishReason": "length"
+              },
+              "firstAttempt": {
+                "protocol": "task_graph_v1",
+                "tasks": 2,
+                "roles": [
+                  "coder",
+                  "reviewer"
+                ],
+                "requiredRolesPresent": true,
+                "dependencyOrderValid": true,
+                "inventedPaths": [
+                  "src/router.js"
+                ],
+                "verificationStepPresent": true,
+                "scopeWithinBudget": true,
+                "schemaValid": true,
+                "reasoningRetried": true,
+                "reasoningTokens": 1490,
+                "starvedAttempt": {
+                  "maxTokens": 1200,
+                  "reasoningTokens": 1424,
+                  "finishReason": "length"
+                }
+              }
+            }
+          },
+          {
+            "caseId": "planner.schema",
+            "category": "plan",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 1,
+            "retries": 0,
+            "error": "R41_BOUND: Reviewer request budget exhausted"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-10T10:39:49.223Z",
+        "completedAt": "2026-10-10T10:41:07.694Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-10T10:39:49.223Z",
+        "completedAt": "2026-10-10T10:41:07.694Z"
+      }
+    },
+    "requestCount": 5,
+    "transientCases": 1
+  },
+  "qualification": {
+    "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+    "providerId": "kilo-free-direct",
+    "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "modelDisplayName": "NVIDIA: Nemotron 3 Ultra (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "planner.release_callsite",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 35749,
+            "retries": 1,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 2,
+              "roles": [
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": true,
+              "reasoningTokens": 932,
+              "starvedAttempt": {
+                "maxTokens": 1200,
+                "reasoningTokens": 1433,
+                "finishReason": "length"
+              },
+              "firstAttempt": {
+                "protocol": "task_graph_v1",
+                "tasks": 2,
+                "roles": [
+                  "coder",
+                  "reviewer"
+                ],
+                "requiredRolesPresent": true,
+                "dependencyOrderValid": true,
+                "inventedPaths": [
+                  "src/router.js"
+                ],
+                "verificationStepPresent": true,
+                "scopeWithinBudget": true,
+                "schemaValid": true,
+                "reasoningRetried": true,
+                "reasoningTokens": 1490,
+                "starvedAttempt": {
+                  "maxTokens": 1200,
+                  "reasoningTokens": 1424,
+                  "finishReason": "length"
+                }
+              }
+            }
+          },
+          {
+            "caseId": "planner.schema",
+            "category": "plan",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 1,
+            "retries": 0,
+            "error": "R41_BOUND: Reviewer request budget exhausted"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-10T10:39:49.223Z",
+        "completedAt": "2026-10-10T10:41:07.694Z"
+      }
+    },
+    "startedAt": "2026-10-10T10:39:49.223Z",
+    "completedAt": "2026-10-10T10:41:07.694Z",
+    "totalLatencyMs": 78471,
+    "qualificationState": "NOT_QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "roleOnly": true,
+      "requests": 5,
+      "roleTransientCases": 1,
+      "transient": true,
+      "roleProtocolVersions": {
+        "EXPLORER": "EXPLORER_PROTOCOL_V2",
+        "PLANNER": "PLANNER_PROTOCOL_V4",
+        "REVIEWER": "REVIEWER_PROTOCOL_V4"
+      },
+      "reviewerProtocolOnly": false,
+      "publicCasesOnly": true
+    }
+  },
+  "status": "INCONCLUSIVE_LOCAL_REQUEST_BOUND",
+  "finishedAt": "2026-10-10T10:41:07.694Z"
+}
