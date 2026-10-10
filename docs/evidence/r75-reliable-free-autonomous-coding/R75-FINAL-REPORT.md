@@ -2,15 +2,14 @@
 
 **Status: `CODEFORGE_R75_PARTIAL`**
 
-R75 delivered the Planner contract repair and shared hourly capacity controls, then fixed a Windows workspace-path bug that made complete Reviewer snapshots appear incomplete. The Windows packages rebuilt and passed all three packaging audits at the current implementation commit. A bounded production task then reached the Coder but stopped on Cohere’s model-scoped 429 before editing or review. Current alternate-route probes did not produce an admissible second Coder. No task completion, completion streak, or organic Coder failover is claimed.
+R75 delivered the Planner contract repair and shared hourly capacity controls, then fixed a Windows workspace-path bug that made complete Reviewer snapshots appear incomplete. After the post-fix production run hit Cohere’s model-scoped 429 at an advertised 15 RPM, the default Kilo governor cap was reduced from 14 to 10 RPM to reserve five requests of headroom for shared source-IP traffic outside the process. The focused capacity suite passes with the new limit. Current alternate-route probes did not produce an admissible second Coder. No task completion, completion streak, or organic Coder failover is claimed.
 
 ## Repository
 
 - Branch: `codex/r75-reliable-free-autonomous-coding`
 - Worktree: `G:\CodeForge\worktrees\r75-reliable-free-autonomous-coding`
 - R74 baseline: `230510131f40532ad8a402bdef131c3b8c637436`, aligned with the R74 remote branch at start.
-- Final implementation commit: `8217d70e8a344efb826b15c37723171f92c6f294`. The package receipts and report update are included in the final evidence push; remote branch alignment is checked at delivery.
-- Final evidence payload SHA: `5181272fdbeee9ab27e4b5ac42f4461d6254323a` (packaging hashes, validation receipt, and final report content).
+- Follow-up implementation commit: `d3c472a487c829b0746cc422f0c5e88e4e6d5dcb`, which lowers the Kilo RPM fallback and updates its governor tests. The preceding evidence payload was delivered at `5181272fdbeee9ab27e4b5ac42f4461d6254323a`; this follow-up records the new capacity policy and qualification results.
 - R74 historical evidence remains intact. The ten-attempt classification is in [R75-R74-ROOT-CAUSE-CLASSIFICATION.json](R75-R74-ROOT-CAUSE-CLASSIFICATION.json).
 
 ## Changes delivered
@@ -19,6 +18,7 @@ R75 delivered the Planner contract repair and shared hourly capacity controls, t
 - Wired repairs into [autonomous-orchestrator.ts](../../../packages/server/src/autonomous-orchestrator.ts) and records each repair as run evidence. A recoverable missing Reviewer now completes the production lifecycle with one Planner call instead of paying for a correction call.
 - Corrected BlockRun catalog admission in [blockrun-free.ts](../../../packages/providers/src/blockrun-free.ts): catalog membership is availability evidence, an explicit `available: false` still rejects the model, and explicit zero-cost checks remain required. The official catalog lists currently available models. [BlockRun model catalog](https://blockrun.ai/docs/api-reference/models)
 - Extended [capacity-governor.ts](../../../packages/providers/src/capacity-governor.ts) with shared per-provider hourly request accounting, parsing of request limit/remaining/reset headers, model-scoped 429 cooldowns, and a conservative one-minute cooldown when reset information is absent. Kilo is capped at 190/hour and BlockRun at 28/minute and 285/hour, below the published gateway allowances. [R74 capacity evidence](../r74-autonomous-completion-and-free-reliability/R74-FINAL-REPORT.md), [BlockRun rate limits](https://blockrun.ai/docs/rate-limits)
+- Reduced Kilo’s fallback RPM cap from 14 to 10 after the production trace reached a Cohere route advertising 15 RPM and received a 429. Five requests of headroom account conservatively for shared source-IP traffic outside this process; the trace does not identify how many outside requests occurred.
 
 Quota history remains in memory and resets on a full server-process restart. The shared governor remains active across child-worker interruptions within one server process; this change does not add cross-process quota-state persistence.
 
@@ -35,6 +35,7 @@ The R75 unit regression mirrors the R74 feature plan and shows the original exac
 - `npm run security:gate` passed after the new evidence and qualification scripts were added.
 - Focused tests passed: Reviewer evidence 14/14, Planner repair 5/5, capacity governor 26/26, BlockRun adapter 12/12, and end-to-end deterministic Planner repair 1/1. Machine-readable Vitest results are in this directory.
 - The R75 campaign and new Kilo qualification scripts passed `node --check`; current machine-readable evidence JSON parsed successfully.
+- The updated capacity-governor suite passed 26/26, and the direct providers TypeScript build passed. The machine-readable result is [capacity-governor-headroom-tests.json](capacity-governor-headroom-tests.json).
 - The Windows Setup and Portable packages rebuilt from the current clean implementation commit. Internal dependency, runtime dependency, and packaged build identity audits passed; the runtime audit scanned 417 modules and 26 external packages. Both executables are unsigned, and neither was installed or executed. Artifact hashes and sizes are recorded in [R75-WINDOWS-PACKAGING.json](R75-WINDOWS-PACKAGING.json).
 - The full autonomous-orchestrator file produced 24 passes and one 30-second timeout with a Windows temporary Git cleanup lock. The timed case passed alone with a 60-second limit. The first run is not counted as 25/25 in one invocation.
 - The desktop main and renderer rebuilt successfully with the matching current implementation identity. The Windows package and all three post-package audits passed; details and artifact hashes are in [R75-WINDOWS-PACKAGING.json](R75-WINDOWS-PACKAGING.json).
@@ -72,6 +73,9 @@ The R75 unit regression mirrors the R74 feature plan and shows the original exac
 - A bounded, exact-model compact run checked Kilo’s already-Reviewer-qualified `nvidia/nemotron-3-ultra-550b-a55b:free` model. The tool-call and edit probes passed, but its structured-output request returned an NVIDIA upstream HTTP 503 (“temporarily overloaded”). The receipt is globally transient (`qualificationState: NOT_QUALIFIED`), so its partial Coder result is not admitted. Four anonymous requests were sent; no credentials or private workspace data were used: [receipt](kilo-ultra-compact-1791642584336.json) and [observations](kilo-ultra-compact-observations-1791642584336.json).
 - BlockRun’s current public catalog briefly listed `poolside/laguna-xs-2.1` as explicitly Free and coding-capable. The bounded qualification check immediately afterward found the exact model absent and sent zero inference requests. Its earlier exact-model test had returned a different served model on the edit probe. No Poolside role is promoted: [current check](blockrun-compact-1791642692191.json). The live catalog’s availability varied across these checks.
 - The 15-request-per-minute Cohere limit and NVIDIA’s transient overload are different upstream observations, but Kilo’s gateway and source-IP allowances remain shared. No quota multiplication or credential rotation is assumed. Kilo’s official [free-model guidance](https://kilo.ai/docs/getting-started/using-kilo-for-free) states that free models may have upstream rate limits; its [usage and billing page](https://kilo.ai/docs/gateway/usage-and-billing) identifies the shared per-IP free-model limit.
+- A follow-up Kilo Ultra retry on 2026-10-10 at 14:49 UTC used three requests. The tool-call probe passed, then the edit probe received another NVIDIA HTTP 503; Coder remained `PROBATION`, and Tool Agent and Analyst remained `NOT_QUALIFIED`. The route is not admitted: [receipt](kilo-ultra-compact-1791643754347.json) and [observations](kilo-ultra-compact-observations-1791643754347.json).
+- A read-only BlockRun catalog recheck at 14:49:58 UTC found `poolside/laguna-xs-2.1` absent and no currently available Free coding model, so it sent no inference request. The candidate remains unavailable.
+- The post-fix Cohere rate-limit trace showed 14 local requests in the preceding sliding minute before a 429. Kilo’s default local cap is now 10 RPM, reserving five requests against the advertised 15 RPM model limit for source-IP traffic outside this process. The trace does not establish the exact external request count.
 
 ## Windows packaging
 

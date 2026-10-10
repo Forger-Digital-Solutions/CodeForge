@@ -80,6 +80,13 @@
       "status": "passed",
       "exitCode": 0,
       "scope": "R75 campaign tooling and supplemental live receipts"
+    },
+    {
+      "name": "providers TypeScript build after Kilo headroom change",
+      "command": "node node_modules/typescript/bin/tsc -b packages/providers/tsconfig.json --force",
+      "status": "passed",
+      "exitCode": 0,
+      "scope": "providers package and TypeScript project references"
     }
   ],
   "focusedTests": [
@@ -95,7 +102,7 @@
       "status": "passed",
       "passed": 26,
       "failed": 0,
-      "receipt": "capacity-governor-tests.json"
+      "receipt": "capacity-governor-headroom-tests.json"
     },
     {
       "file": "packages/providers/test/blockrun-free.test.ts",
@@ -150,7 +157,10 @@
     "countsAreNotSummed": true
   },
   "capacityAndRouteChanges": {
+    "kiloRequestsPerMinuteFallback": 10,
     "kiloRequestsPerHourFallback": 190,
+    "kiloReservedRequestsPerMinuteHeadroom": 5,
+    "kiloHeadroomBasis": "The production trace reached a Cohere model route advertising 15 RPM and returned 429 after 14 local requests in the preceding sliding minute; outside-process request count is unknown.",
     "blockrunRequestsPerMinuteFallback": 28,
     "blockrunRequestsPerHourFallback": 285,
     "modelScoped429DoesNotCoolHealthySibling": "tested",
@@ -161,8 +171,8 @@
     "campaignCounterLimitation": "Original campaign: 31 agent_model_turn rows without physical frames, so its physical request total remains unrecoverable. Follow-up: 16 raw provider frames reconciled in R75-CAPACITY-RECONCILIATION-1791642500000.json. The old report omitted quota-domain child governors because it looked for quotaDomainId in route-health rows; the harness now reads persisted turn quotaDomainId values and reports physical frames. The old in-memory governor state cannot be reconstructed."
   },
   "liveEvaluation": {
-    "freeInferenceRequests": 28,
-    "freeInferenceRequestScope": "28 exact instrumented attempts across the known AI Horde, BlockRun, Kilo, and post-fix campaign runs; excludes the earlier production campaign with 31 model-turn rows but no physical frames, so the overall total is incomplete",
+    "freeInferenceRequests": 31,
+    "freeInferenceRequestScope": "31 exact instrumented attempts across the known AI Horde, BlockRun, Kilo, and post-fix campaign runs; includes three later Kilo Ultra qualification requests and excludes the earlier production campaign with 31 model-turn rows but no physical frames, so the overall total is incomplete",
     "moneySpentUsd": 0,
     "purchasedCreditsConsumed": 0,
     "blockrunCatalogProbe": {
@@ -191,6 +201,12 @@
         "catalogAtCheck": [
           "nvidia/llama-3.2-11b-vision"
         ]
+      },
+      "latestReadOnlyCheck": {
+        "checkedAt": "2026-10-10T14:49:58Z",
+        "exactPoolsideModelPresent": false,
+        "availableFreeCodingModels": [],
+        "inferenceRequests": 0
       }
     },
     "qualification": {
@@ -238,7 +254,7 @@
       },
       "candidateDisposition": "ANALYST_ONLY; Coder and Tool Agent not qualified in the later five-request bounded run"
     },
-    "additionalCoder": "not achieved: AI Horde qualified only Analyst, Kilo Ultra receipt remained transient after upstream 503, and BlockRun Poolside was absent at the exact-model check",
+    "additionalCoder": "not achieved: AI Horde qualified only Analyst, Kilo Ultra remained on Coder probation after repeat NVIDIA upstream 503, and BlockRun Poolside was absent at the latest exact-model check",
     "productionCodingTask": "Three public synthetic production tasks total: two initially blocked at Reviewer admission due incomplete evidence snapshots; after the path fix, one follow-up blocked at Cohere model-scoped HTTP 429 before editing. Completed 0/3; no reviews, ForgeVerify, or integration completed.",
     "threeCompletionStreak": "0 in R75; 0/3 current production attempts completed",
     "organicCrossProviderFailover": "not demonstrated",
@@ -274,8 +290,8 @@
       "threeCompletionStreak": false,
       "organicCrossProviderFailover": false
     },
-    "measuredFreeInferenceRequestAttempts": 28,
-    "measuredRequestScope": "Known instrumented attempts: one AI Horde facade HTTP 500, two earlier BlockRun compact requests, 16 post-fix production-campaign frames, five native AI Horde compact requests, and four Kilo Ultra compact requests. This excludes the earlier 31-turn campaign whose physical frames were not recorded.",
+    "measuredFreeInferenceRequestAttempts": 31,
+    "measuredRequestScope": "Known instrumented attempts: one AI Horde facade HTTP 500, two earlier BlockRun compact requests, 16 post-fix production-campaign frames, five native AI Horde compact requests, four initial Kilo Ultra compact requests, and three Kilo Ultra retry requests. This excludes the earlier 31-turn campaign whose physical frames were not recorded.",
     "overallRequestTotalStatus": "incomplete because earlier production campaign physical frames are missing",
     "kiloUltraCoderProbe": {
       "receipt": "kilo-ultra-compact-1791642584336.json",
@@ -287,6 +303,18 @@
       "structuredProbe": "transient NVIDIA upstream HTTP 503",
       "qualificationState": "NOT_QUALIFIED",
       "transient": true,
+      "admission": "not promoted"
+    },
+    "kiloUltraCoderRetest": {
+      "receipt": "kilo-ultra-compact-1791643754347.json",
+      "observationReceipt": "kilo-ultra-compact-observations-1791643754347.json",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "inferenceRequests": 3,
+      "coderToolCallProbe": "passed",
+      "coderEditProbe": "NVIDIA upstream HTTP 503 after a read tool call; edit not demonstrated",
+      "coderStatus": "PROBATION",
+      "toolAgent": "NOT_QUALIFIED",
+      "analyst": "NOT_QUALIFIED",
       "admission": "not promoted"
     },
     "postReviewerFixTask": {
