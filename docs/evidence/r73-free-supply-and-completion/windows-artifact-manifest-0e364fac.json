@@ -1,0 +1,465 @@
+{
+  "observedAt": "2026-10-10T05:08:19.149Z",
+  "sourceRevision": "0e364facb2b89ebc0624557d5c4a7f7ffa23219f",
+  "artifact": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked",
+  "receiptPrefix": "0e364fac",
+  "signatureReceiptFile": "windows-signature-0e364fac.json",
+  "sourceIdentity": {
+    "version": "0.4.0",
+    "commit": "0e364facb2b89ebc0624557d5c4a7f7ffa23219f",
+    "shortCommit": "0e364facb2b8",
+    "branch": "codex/r73-free-supply-and-completion",
+    "dirty": false,
+    "builtAt": "2026-10-10T05:05:34.702Z"
+  },
+  "sourceTrackedStatusAtAudit": "",
+  "node": "v24.19.0",
+  "dependencyVersions": {
+    "electron": "44.4.1",
+    "electron-builder": "26.15.3",
+    "@electron/asar": "3.4.1",
+    "better-sqlite3": "12.11.1",
+    "node-pty": "1.1.0",
+    "electron-updater": "6.8.9",
+    "typescript": "5.9.3",
+    "vite": "8.3.0"
+  },
+  "packageLockSha256": "45a47cff4b0dbb7346c5eba07fb3a34063a962175e4d1b74881199b13bd3cf68",
+  "files": [
+    {
+      "file": "CodeForge.exe",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked\\CodeForge.exe",
+      "bytes": 246415872,
+      "sha256": "3aba56e5502aeda95bc862498742f17ee81ff5555fc89823d353e56a8ee6ef20"
+    },
+    {
+      "file": "resources/app.asar",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked\\resources\\app.asar",
+      "bytes": 46320860,
+      "sha256": "125d609e5a9ea2023ceb41b2b8cf538329b9e9b172f08fd96f21cc429edabafd"
+    }
+  ],
+  "nativeFiles": [
+    {
+      "file": "resources/app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\better-sqlite3\\build\\Release\\better_sqlite3.node",
+      "bytes": 1936896,
+      "sha256": "79577e09de966d9bf937d1f490841ea37b8726844350a629796652f53800fe78"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/build/Release/conpty/conpty.dll",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\build\\Release\\conpty\\conpty.dll",
+      "bytes": 109600,
+      "sha256": "7c7430632052ff703540b68371ec43821820aa1335d8e11dfbcd9ff00e9daaed"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/build/Release/conpty/OpenConsole.exe",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\build\\Release\\conpty\\OpenConsole.exe",
+      "bytes": 1148448,
+      "sha256": "d1fe7faa62f9e955e2ac2371f95d7e5513df4d496255097158f979c94782c5fc"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/conpty/conpty.dll",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty\\conpty.dll",
+      "bytes": 109600,
+      "sha256": "7c7430632052ff703540b68371ec43821820aa1335d8e11dfbcd9ff00e9daaed"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/conpty/OpenConsole.exe",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty\\OpenConsole.exe",
+      "bytes": 1148448,
+      "sha256": "d1fe7faa62f9e955e2ac2371f95d7e5513df4d496255097158f979c94782c5fc"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/conpty.node",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty.node",
+      "bytes": 312320,
+      "sha256": "ee8f4e6f4dad71939eecfda11de249400e34bfefe4c8b48af13f3b5476f4035b"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/conpty_console_list.node",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\conpty_console_list.node",
+      "bytes": 134656,
+      "sha256": "879dd94cfc79f1e263a00077597ae9448a5394b7d193381aaa50d992a1f91090"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/pty.node",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\pty.node",
+      "bytes": 303104,
+      "sha256": "ae323edd0835ee7b9e18cc96a7b2bb4b8173ff768317d178af2788406feb71ff"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/winpty-agent.exe",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty-agent.exe",
+      "bytes": 307712,
+      "sha256": "0c4834a0ab2a4f8c855a2f1db9b21fa6e5fc324ae8e3c82addd53d503d999825"
+    },
+    {
+      "file": "resources/app.asar.unpacked/node_modules/node-pty/prebuilds/win32-x64/winpty.dll",
+      "path": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked\\resources\\app.asar.unpacked\\node_modules\\node-pty\\prebuilds\\win32-x64\\winpty.dll",
+      "bytes": 256000,
+      "sha256": "e1cb26d868c954ba26817bedf3e4a5744e4ca2030adf51a7156e5ff2fadb881b"
+    }
+  ],
+  "archiveEntries": 3124,
+  "included": [
+    {
+      "source": "packages/providers/dist/blockrun-free.js",
+      "entry": "node_modules/@codeforge/providers/dist/blockrun-free.js",
+      "bytes": 5680,
+      "sha256": "b551715c57d8073cb9b0e851342618707f21fa1c5b329f80754ec371c68477a9",
+      "compiledSha256": "b551715c57d8073cb9b0e851342618707f21fa1c5b329f80754ec371c68477a9",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/providers/dist/openai-compatible.js",
+      "entry": "node_modules/@codeforge/providers/dist/openai-compatible.js",
+      "bytes": 32237,
+      "sha256": "17b53006d7ed46cdee1a9bf377b9e8951f9ff46816443dac6031d9307a044250",
+      "compiledSha256": "17b53006d7ed46cdee1a9bf377b9e8951f9ff46816443dac6031d9307a044250",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/providers/dist/provider-factory.js",
+      "entry": "node_modules/@codeforge/providers/dist/provider-factory.js",
+      "bytes": 20201,
+      "sha256": "4d071c16d68825c3b88b648dc35f155f2e92b1d69f380a1e59e094a5325ee837",
+      "compiledSha256": "4d071c16d68825c3b88b648dc35f155f2e92b1d69f380a1e59e094a5325ee837",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/providers/dist/puter.js",
+      "entry": "node_modules/@codeforge/providers/dist/puter.js",
+      "bytes": 10329,
+      "sha256": "3d22858486789052596d7208a3972f467af7967ea3c91be28a69f833ad40ef2a",
+      "compiledSha256": "3d22858486789052596d7208a3972f467af7967ea3c91be28a69f833ad40ef2a",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/providers/dist/openrouter.js",
+      "entry": "node_modules/@codeforge/providers/dist/openrouter.js",
+      "bytes": 27208,
+      "sha256": "b4227d9fc3ecbc852b3dd06309c840de91e353824569ee20a534d6b18d93781d",
+      "compiledSha256": "b4227d9fc3ecbc852b3dd06309c840de91e353824569ee20a534d6b18d93781d",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/providers/dist/openrouter-entitlement.js",
+      "entry": "node_modules/@codeforge/providers/dist/openrouter-entitlement.js",
+      "bytes": 7468,
+      "sha256": "9c34c14cac4d43a68129961b23733f80876a70c58bcb298b8902ad90e65bd8f7",
+      "compiledSha256": "9c34c14cac4d43a68129961b23733f80876a70c58bcb298b8902ad90e65bd8f7",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/providers/dist/openrouter-oauth.js",
+      "entry": "node_modules/@codeforge/providers/dist/openrouter-oauth.js",
+      "bytes": 5589,
+      "sha256": "3766f4f27edfc62e9385c80f14ff1b792d92f1f90c855eaa9d461a53fb697f3d",
+      "compiledSha256": "3766f4f27edfc62e9385c80f14ff1b792d92f1f90c855eaa9d461a53fb697f3d",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/model-registry/dist/blockrun-policy-reverification.js",
+      "entry": "node_modules/@codeforge/model-registry/dist/blockrun-policy-reverification.js",
+      "bytes": 2597,
+      "sha256": "e43ee202f52c98079dffc2b8e13e864edf9101ea8d8e6e3d71317361b26dcc0e",
+      "compiledSha256": "e43ee202f52c98079dffc2b8e13e864edf9101ea8d8e6e3d71317361b26dcc0e",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/model-registry/dist/free-cloud-service.js",
+      "entry": "node_modules/@codeforge/model-registry/dist/free-cloud-service.js",
+      "bytes": 92772,
+      "sha256": "483bb558b0de017747314a06148a76833eabdd35c20c6a811dddb32cff1c9a36",
+      "compiledSha256": "483bb558b0de017747314a06148a76833eabdd35c20c6a811dddb32cff1c9a36",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/autonomous-orchestrator.js",
+      "entry": "node_modules/@codeforge/server/dist/autonomous-orchestrator.js",
+      "bytes": 96398,
+      "sha256": "dd2a7cdee84311fe5fa246a1aee87ee77b6f82be307a8fb824636fdd78252432",
+      "compiledSha256": "dd2a7cdee84311fe5fa246a1aee87ee77b6f82be307a8fb824636fdd78252432",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/subagent-manager.js",
+      "entry": "node_modules/@codeforge/server/dist/subagent-manager.js",
+      "bytes": 53019,
+      "sha256": "acf8ebbe927870435d9e12e39cf93f9b7f0e620ee17d2d9f107d280cc6e73eee",
+      "compiledSha256": "acf8ebbe927870435d9e12e39cf93f9b7f0e620ee17d2d9f107d280cc6e73eee",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/protocol/dist/subagent-runtime.js",
+      "entry": "node_modules/@codeforge/protocol/dist/subagent-runtime.js",
+      "bytes": 11632,
+      "sha256": "eb07b05c00e56e14e43e4323934cff93cd1d7a102a6bfad2ebef03299d84da06",
+      "compiledSha256": "eb07b05c00e56e14e43e4323934cff93cd1d7a102a6bfad2ebef03299d84da06",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/agent-runtime.js",
+      "entry": "node_modules/@codeforge/server/dist/agent-runtime.js",
+      "bytes": 427139,
+      "sha256": "6f3def3833b052e53b946cb93c2bce36a60d72194245509d12794cc377c57d4e",
+      "compiledSha256": "6f3def3833b052e53b946cb93c2bce36a60d72194245509d12794cc377c57d4e",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/reviewer-evidence.js",
+      "entry": "node_modules/@codeforge/server/dist/reviewer-evidence.js",
+      "bytes": 5028,
+      "sha256": "8f46b322efd886eddaa31ce43bb1bacdd052a611e809572826de96205641bd63",
+      "compiledSha256": "8f46b322efd886eddaa31ce43bb1bacdd052a611e809572826de96205641bd63",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/model-execution-adapter.js",
+      "entry": "node_modules/@codeforge/server/dist/model-execution-adapter.js",
+      "bytes": 28247,
+      "sha256": "0b55aae1caf26ec3c570baea7fabc663917cd0f5e1f809dedda4faabbbac18b3",
+      "compiledSha256": "0b55aae1caf26ec3c570baea7fabc663917cd0f5e1f809dedda4faabbbac18b3",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/index.js",
+      "entry": "node_modules/@codeforge/server/dist/index.js",
+      "bytes": 190175,
+      "sha256": "fd99f1275091227af08df70f4e778f7d1ac3b214a29341502777ac26353e438d",
+      "compiledSha256": "fd99f1275091227af08df70f4e778f7d1ac3b214a29341502777ac26353e438d",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/user-intelligence.js",
+      "entry": "node_modules/@codeforge/server/dist/user-intelligence.js",
+      "bytes": 30299,
+      "sha256": "a847393deee6b1314dc58dec7920500e1ac884591030425460f234f19b3ad5ab",
+      "compiledSha256": "a847393deee6b1314dc58dec7920500e1ac884591030425460f234f19b3ad5ab",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/forgeauto-roster.js",
+      "entry": "node_modules/@codeforge/server/dist/forgeauto-roster.js",
+      "bytes": 15237,
+      "sha256": "c32aec254383b8d853303a7e938f24de95ee8430aaa719f461cc9c4ed7b99892",
+      "compiledSha256": "c32aec254383b8d853303a7e938f24de95ee8430aaa719f461cc9c4ed7b99892",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/personal-account-policy.js",
+      "entry": "node_modules/@codeforge/server/dist/personal-account-policy.js",
+      "bytes": 26001,
+      "sha256": "e6b546eb3e8e65be62deb0555493f3acd03ed6dff1af1ea486583e359d1aa21c",
+      "compiledSha256": "e6b546eb3e8e65be62deb0555493f3acd03ed6dff1af1ea486583e359d1aa21c",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/server/dist/personal-free-capacity.js",
+      "entry": "node_modules/@codeforge/server/dist/personal-free-capacity.js",
+      "bytes": 5267,
+      "sha256": "5eace08f0fada375d3a21de0bb87f940a4e3d647298eafb4312be9b3cfa4f3a9",
+      "compiledSha256": "5eace08f0fada375d3a21de0bb87f940a4e3d647298eafb4312be9b3cfa4f3a9",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/forge-zero/dist/capacity-independence.js",
+      "entry": "node_modules/@codeforge/forge-zero/dist/capacity-independence.js",
+      "bytes": 3997,
+      "sha256": "cc10a0d356b00f2628350eb8d9d5bbee73daa302544ec7f17d21654e2a69cec9",
+      "compiledSha256": "cc10a0d356b00f2628350eb8d9d5bbee73daa302544ec7f17d21654e2a69cec9",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/forge-zero/dist/capacity-forecast.js",
+      "entry": "node_modules/@codeforge/forge-zero/dist/capacity-forecast.js",
+      "bytes": 11224,
+      "sha256": "acac797fdb10d86c12320a149355952805e0b62d183b623b5b868127024d4ce1",
+      "compiledSha256": "acac797fdb10d86c12320a149355952805e0b62d183b623b5b868127024d4ce1",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/forge-zero/dist/capacity-reservations.js",
+      "entry": "node_modules/@codeforge/forge-zero/dist/capacity-reservations.js",
+      "bytes": 22722,
+      "sha256": "a042c60f3027b9b6f5a90abbc2c20ac7bccb7ac75db215f0fb9409bce14174a7",
+      "compiledSha256": "a042c60f3027b9b6f5a90abbc2c20ac7bccb7ac75db215f0fb9409bce14174a7",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/secrets/dist/index.js",
+      "entry": "node_modules/@codeforge/secrets/dist/index.js",
+      "bytes": 435,
+      "sha256": "bbbaaf6e22f20d9a5bce56001c267cb19ddef308a6601c89675c0b80c444f193",
+      "compiledSha256": "bbbaaf6e22f20d9a5bce56001c267cb19ddef308a6601c89675c0b80c444f193",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/agent/dist/index.js",
+      "entry": "node_modules/@codeforge/agent/dist/index.js",
+      "bytes": 52675,
+      "sha256": "ebda5df77e5c81991fd3c9e87593f0d2b87a7b9511a102d56f815fb5eedb3c15",
+      "compiledSha256": "ebda5df77e5c81991fd3c9e87593f0d2b87a7b9511a102d56f815fb5eedb3c15",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "packages/eight-bit/dist/qualification/role-suite.js",
+      "entry": "node_modules/@codeforge/eight-bit/dist/qualification/role-suite.js",
+      "bytes": 30663,
+      "sha256": "eaef296ec9010c7884f90e42acb859ff5aa69dc421c4930e239ce5f5a88971a1",
+      "compiledSha256": "eaef296ec9010c7884f90e42acb859ff5aa69dc421c4930e239ce5f5a88971a1",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/provider-connections.js",
+      "entry": "apps/desktop/dist/provider-connections.js",
+      "bytes": 57549,
+      "sha256": "130d2b6220a8d9450dd4fe511ddda5ed8ba0e0537b16c5bb3b0dae58494556ec",
+      "compiledSha256": "130d2b6220a8d9450dd4fe511ddda5ed8ba0e0537b16c5bb3b0dae58494556ec",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/openrouter-oauth-flow.js",
+      "entry": "apps/desktop/dist/openrouter-oauth-flow.js",
+      "bytes": 7129,
+      "sha256": "c554023d4542eb34feb7b5a264aba5fdb4508e3fa8b50b61b926222b2628448e",
+      "compiledSha256": "c554023d4542eb34feb7b5a264aba5fdb4508e3fa8b50b61b926222b2628448e",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/main.js",
+      "entry": "apps/desktop/dist/main.js",
+      "bytes": 217016,
+      "sha256": "829bb30d43b88cd24471884c39ada683839b8f4c5abe94a199ca700f1d5d6260",
+      "compiledSha256": "829bb30d43b88cd24471884c39ada683839b8f4c5abe94a199ca700f1d5d6260",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/connected-accounts.js",
+      "entry": "apps/desktop/dist/connected-accounts.js",
+      "bytes": 19152,
+      "sha256": "ffb8c79d72d3ca67f8a81e72b90a15f3dfa8fd06862431a5e2ddc0160bdc7480",
+      "compiledSha256": "ffb8c79d72d3ca67f8a81e72b90a15f3dfa8fd06862431a5e2ddc0160bdc7480",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/paid-request-estimates.js",
+      "entry": "apps/desktop/dist/paid-request-estimates.js",
+      "bytes": 2448,
+      "sha256": "36254cd825e5961c4678951332b526075322ad194f46b7f800d15380e3df93eb",
+      "compiledSha256": "36254cd825e5961c4678951332b526075322ad194f46b7f800d15380e3df93eb",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/provider-account-qualification.js",
+      "entry": "apps/desktop/dist/provider-account-qualification.js",
+      "bytes": 9209,
+      "sha256": "c88a52a37d4aa2763339b2908f9aaa4fa8621fb216bd446ddf3e64aeb9380fc7",
+      "compiledSha256": "c88a52a37d4aa2763339b2908f9aaa4fa8621fb216bd446ddf3e64aeb9380fc7",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/connected-account-types.js",
+      "entry": "apps/desktop/dist/connected-account-types.js",
+      "bytes": 62,
+      "sha256": "664861a163e89849d4c036a014f28c8c025e0c685c33c61a6d15b5efcec20874",
+      "compiledSha256": "664861a163e89849d4c036a014f28c8c025e0c685c33c61a6d15b5efcec20874",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/provider-account-routing.js",
+      "entry": "apps/desktop/dist/provider-account-routing.js",
+      "bytes": 4618,
+      "sha256": "4f02ca8e0c9010e95816938bc36e95b80d17fc5a238a766bfc6d0fd0f5cbf0fb",
+      "compiledSha256": "4f02ca8e0c9010e95816938bc36e95b80d17fc5a238a766bfc6d0fd0f5cbf0fb",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/preload.cjs",
+      "entry": "apps/desktop/dist/preload.cjs",
+      "bytes": 10009,
+      "sha256": "22a4b8d92b6ea5e18d881d2efd60f7ecb435f9bcf9dc979c75f0371c4dbe3848",
+      "compiledSha256": "22a4b8d92b6ea5e18d881d2efd60f7ecb435f9bcf9dc979c75f0371c4dbe3848",
+      "matchesFrozenBuildOutput": true
+    },
+    {
+      "source": "apps/desktop/dist/renderer/assets/index-CersHZ-5.js",
+      "entry": "apps/desktop/dist/renderer/assets/index-CersHZ-5.js",
+      "bytes": 525688,
+      "sha256": "c4a3cb8eb9b8143dea2ad3a7da7cb0af9449ac3b248629b23e5b9d2d5e9150be",
+      "compiledSha256": "c4a3cb8eb9b8143dea2ad3a7da7cb0af9449ac3b248629b23e5b9d2d5e9150be",
+      "matchesFrozenBuildOutput": true
+    }
+  ],
+  "rendererAccountControls": [
+    {
+      "entry": "apps/desktop/dist/renderer/assets/index-CersHZ-5.js",
+      "controls": [
+        {
+          "label": "Your connected accounts",
+          "present": true
+        },
+        {
+          "label": "Save account preferences",
+          "present": true
+        },
+        {
+          "label": "Permit paid account routing",
+          "present": true
+        },
+        {
+          "label": "Paid request estimate",
+          "present": true
+        },
+        {
+          "label": "Qualify selected personal model",
+          "present": true
+        }
+      ]
+    }
+  ],
+  "audits": [
+    {
+      "name": "build-identity",
+      "log": "windows-build-identity-0e364fac.log",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "internal-dependencies",
+      "log": "windows-internal-dependencies-0e364fac.log",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "runtime-dependencies",
+      "log": "windows-runtime-dependencies-0e364fac.log",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "browser-security",
+      "log": "windows-browser-security-0e364fac.log",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "name": "auth-endpoint",
+      "log": "windows-auth-endpoint-0e364fac.log",
+      "exitCode": 0,
+      "passed": true
+    }
+  ],
+  "signature": {
+    "Status": "UNAVAILABLE",
+    "method": "Subprocess powershell.exe Get-AuthenticodeSignature",
+    "exitCode": 0,
+    "stdout": "{\r\n    \"Status\":  \"\",\r\n    \"StatusMessage\":  null,\r\n    \"Path\":  null,\r\n    \"SignerSubject\":  null\r\n}\r\n",
+    "stderr": "Get-AuthenticodeSignature : The 'Get-AuthenticodeSignature' command was found in the module \r\n'Microsoft.PowerShell.Security', but the module could not be loaded. For more information, run 'Import-Module \r\nMicrosoft.PowerShell.Security'.\r\nAt line:1 char:17\r\n+ $r73Signature = Get-AuthenticodeSignature -LiteralPath 'G:\\CodeForge\\ ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : ObjectNotFound: (Get-AuthenticodeSignature:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CouldNotAutoloadMatchingModule\r\n \r\n",
+    "error": "Signature subprocess returned no authoritative file status."
+  },
+  "execution": "NOT_EXECUTED_NO_AUTHORIZED_ISOLATED_WINDOWS_ENVIRONMENT",
+  "installer": "NOT_BUILT_NOT_CERTIFIED",
+  "nativeRebuild": false
+}

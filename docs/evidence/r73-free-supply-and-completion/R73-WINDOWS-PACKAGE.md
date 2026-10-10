@@ -1,8 +1,26 @@
 # R73 Windows candidate
 
-R73 is based on R72 delivery `220b365c553bff0b1ee952fb6b96498c8ddea325`. A directory candidate was already built from clean source `eade8b0d7f775dd382cfae65b7ae80289a0aaa77`; all five static audits passed. Its artifact/identity/signature evidence is preserved separately from the later readable-review source `97dafd4cab4cf4e4c14bb9c2104191323659fb6d` and current account-addendum changes. The prior package does not contain or certify the uncommitted addendum. No R73 candidate was installed or executed.
+R73 is based on R72 delivery `220b365c553bff0b1ee952fb6b96498c8ddea325`. The latest directory candidate was built from clean committed source `0e364facb2b89ebc0624557d5c4a7f7ffa23219f`. All five static audits pass. The earlier `eade8b0d7f775dd382cfae65b7ae80289a0aaa77` candidate and failure evidence remain preserved in their distinct output directory. No R73 candidate was installed or executed.
 
-Preparation rechecked on 2026-10-09. The receipt harness [windows-candidate-receipt.mjs](../../../benchmarks/r73/windows-candidate-receipt.mjs) now checks 33 fixed compiled modules plus the archived renderer bundle. It covers account storage/DTO/routing, both existing and new provider/server policy paths, physical quota ownership, secrets, main/preload and the original Reviewer/BlockRun/Puter modules. It captures all five audits, main identity, dependency/lockfile state, executable/archive/native hashes and signature status. Packaged renderer controls must exist and match the frozen compiled bytes. This harness does not execute the candidate or rebuild native dependencies.
+Preparation completed on 2026-10-10. The receipt harness [windows-candidate-receipt.mjs](../../../benchmarks/r73/windows-candidate-receipt.mjs) checks 35 fixed compiled modules plus the archived renderer bundle. All 36 match the frozen compiled bytes. It covers account storage/DTO/routing, paid qualification/estimates, provider/server policy paths, physical quota ownership, secrets, main/preload and Reviewer/BlockRun/Puter modules. It captures all five audits, matching main/renderer identity, dependency/lockfile state and executable/archive/native hashes. All five expected Connected Accounts/paid estimate/qualification controls are present. This harness does not execute the candidate or rebuild native dependencies.
+
+## Current frozen account candidate
+
+| Item | Current evidence |
+| --- | --- |
+| Source revision | `0e364facb2b89ebc0624557d5c4a7f7ffa23219f`, dirty=false |
+| Main/renderer identity | `0.4.0`, same source and build time `2026-10-10T05:05:34.702Z` |
+| Artifact | `G:\CodeForge\worktrees\r73-free-supply-and-completion\apps\desktop\release-r73-0e364fac\win-unpacked` |
+| EXE SHA-256 | `3aba56e5502aeda95bc862498742f17ee81ff5555fc89823d353e56a8ee6ef20` |
+| ASAR SHA-256 | `125d609e5a9ea2023ceb41b2b8cf538329b9e9b172f08fd96f21cc429edabafd` |
+| Full workspace build / directory packaging | Both exit 0; cached Electron 44.4.1, Builder 26.15.3, existing npmRebuild=false |
+| Static audits | Clean build identity, internal/external dependency closure, Electron browser security and development auth endpoint: 5/5 PASS |
+| Module/renderer inclusion | 36/36 byte matches; all five account/paid UI controls present |
+| Native files | 10 hashes recorded; ABI/runtime loading not executed or certified |
+| Signature | Direct host observation: NotSigned. Retained subprocess probe: UNAVAILABLE due security-module loading |
+| Execution and installer | Not executed; no installer build/lifecycle certification or production deployment |
+
+`windows-artifact-manifest-0e364fac.json`, `windows-workspace-build-0e364fac.json`, `windows-package-build-0e364fac.json` and `windows-signature-direct-0e364fac.json` bind the candidate. The source was tracked-clean during build and archive audit. The Node-spawned signature probe did not establish a status; the separate direct check did. Generic Builder signing messages are not proof of signing. No unchanged failed VM configuration was replayed, and no signing requirement was weakened.
 
 ## Preserved frozen candidate
 
@@ -82,15 +100,15 @@ BlockRun boots only as an installed-client direct route, with provider-specific 
 
 `build:main` writes the source stamp; the renderer consumes that exact stamp. The existing dist stamp belongs to its earlier frozen build until the account-addendum source is committed and rebuilt. A package stamped from dirty source or with mismatched renderer identity must fail `--require-clean` rather than be described as a release. Do not audit old output against current mutated dist as though that comparison certifies the old frozen package.
 
-## Pending results and external gates
+## Current results and external gates
 
 | Item | Current evidence |
 | --- | --- |
-| Frozen account-addendum source revision | Pending clean source commit; earlier R73 freezes preserved |
-| Full workspace build/typecheck | Current addendum full build and forced typecheck exited0 (`accounts-final-workspace-build.log`, `accounts-final-frozen-typecheck.log`); clean committed candidate stamp/build pending |
-| Addendum directory candidate | Pending; earlier eade candidate built and retained |
-| Addendum hashes and five archive audits | Pending; earlier eade 5/5 PASS is separate evidence |
-| Authenticode | Earlier R73 candidate NotSigned; new candidate must be measured independently |
+| Frozen account-addendum source revision | Committed `0e364facb2b89ebc0624557d5c4a7f7ffa23219f`; earlier freezes preserved |
+| Full workspace build/typecheck | Full current-source build and forced typecheck exit 0; clean source workspace rebuild also exit 0 |
+| Addendum directory candidate | Built at `release-r73-0e364fac/win-unpacked` |
+| Addendum hashes and five archive audits | Recorded above; five audits and 36 byte matches PASS |
+| Authenticode | New candidate directly measured NotSigned; earlier candidate separately NotSigned |
 | Packaged execution/native loading/account restart | Not executed; authorized isolation unavailable |
 | Signed installer/install/upgrade/uninstall | Not built or certified; signing and isolated lifecycle gates remain |
 | Deployment | Not performed or authorized by this candidate preparation |

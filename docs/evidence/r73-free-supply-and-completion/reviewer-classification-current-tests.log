@@ -1,0 +1,10 @@
+✔ separates upstream errors from local request-bound exhaustion (1.0928ms)
+✔ keeps a completed incorrect review measurable rather than labeling it provider failure (0.1614ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 104.1356

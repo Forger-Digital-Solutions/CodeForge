@@ -1,0 +1,18 @@
+{
+  "observedAt": "2026-10-10T05:07:09.3498310Z",
+  "sourceRevision": "0e364facb2b89ebc0624557d5c4a7f7ffa23219f",
+  "sourceTrackedStatusBeforeBuild": "",
+  "exitCode": 0,
+  "command": "npm --script-shell C:\\Windows\\System32\\cmd.exe run build",
+  "log": "windows-workspace-build-0e364fac.log",
+  "logSha256": "0062748cbfe451c4ecc6cd01ecba9cbe5d777eb734ff8d59a5c50dcf1ead7a67",
+  "mainIdentity": {
+    "version": "0.4.0",
+    "commit": "0e364facb2b89ebc0624557d5c4a7f7ffa23219f",
+    "shortCommit": "0e364facb2b8",
+    "branch": "codex/r73-free-supply-and-completion",
+    "dirty": false,
+    "builtAt": "2026-10-10T05:05:34.702Z"
+  },
+  "interpretation": "Build succeeds from the frozen clean source. Renderer stamp identity must separately pass archive audit. No executable was launched."
+}

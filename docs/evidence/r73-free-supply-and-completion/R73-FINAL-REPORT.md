@@ -4,7 +4,7 @@ Updated 2026-10-10. Implementation, fixture validation and live evidence are dis
 
 ## 1. Repository
 
-Starting R72 delivery: `220b365c553bff0b1ee952fb6b96498c8ddea325`. Branch: `codex/r73-free-supply-and-completion`. Durable worktree: `G:\CodeForge\worktrees\r73-free-supply-and-completion`. The current pre-freeze checkpoint is `1276a2de0b0104711faecce66bfb7239c860d22d`; final source and evidence commits are recorded after they exist.
+Starting R72 delivery: `220b365c553bff0b1ee952fb6b96498c8ddea325`. Branch: `codex/r73-free-supply-and-completion`. Durable worktree: `G:\CodeForge\worktrees\r73-free-supply-and-completion`. The frozen source is committed at `0e364facb2b89ebc0624557d5c4a7f7ffa23219f`, following the account architecture checkpoint `1276a2de0b0104711faecce66bfb7239c860d22d`. Later evidence-only delivery commits document that unchanged implementation; exact branch HEAD/publication are recorded in delivery receipts and the final mission response.
 
 R72 ancestry, its clean delivery and all 73 historical evidence files remain preserved. The original checkout stays at `6f8ad979fb9de0a17f69571d03358d7db5a35459` on `codex/r29-release-closure`, with six unrelated tracked modifications hash-preserved. The only authorized lockfile delta adds the existing `@codeforge/secrets` workspace to desktop dependencies. No reset, original-branch integration, GEMS/FDS modification or deployment occurred. Existing approved GitHub authentication supports branch publication; final push status is recorded separately.
 
@@ -54,7 +54,7 @@ Fixture tests cover durable exclusions, scoped 429 cooldown, model/provider/acco
 
 ## 9. Windows
 
-The earlier clean `eade8b0d7f775dd382cfae65b7ae80289a0aaa77` package and hashes remain preserved. A new addendum source freeze, clean build, directory candidate and five static audits are being collected in `R73-WINDOWS-PACKAGE.md`. The current full workspace build after the OAuth correction passed. Earlier artifacts do not certify the latest source.
+The new addendum candidate binds clean source `0e364facb2b89ebc0624557d5c4a7f7ffa23219f`. Clean workspace build and directory packaging pass; all five static audits pass, all 36 checked modules/renderer bytes match, and account/estimate/qualification controls are present. EXE SHA-256 is `3aba56e5502aeda95bc862498742f17ee81ff5555fc89823d353e56a8ee6ef20`; ASAR SHA-256 is `125d609e5a9ea2023ceb41b2b8cf538329b9e9b172f08fd96f21cc429edabafd`. The direct signature check is NotSigned. Earlier candidates and the unsuccessful subprocess signature observation remain separately preserved in `R73-WINDOWS-PACKAGE.md`.
 
 No unsigned candidate was launched or installed on an unauthorized host. Signing, authorized isolation, native runtime loading and installer install/upgrade/uninstall remain external gates. Directory packaging/static success cannot certify them. No production deployment occurred.
 
@@ -68,7 +68,7 @@ The user-requested personal paid architecture defaults all spending/fallback/top
 
 Current separate runs: 50/50 billing/estimate/paid-qualification/revocation/crash assertions; 231/231 Reviewer/account/routing; 19/19 official OAuth/loopback; 13/13 real-process personal parent recovery; 59/59 V4 boundary qualification; 2/2 benchmark outcome classification. Their overlapping counts are not added into a unique-test total. All fixture runs made zero external/paid calls.
 
-Earlier 393/393 account/transport regression and broad/standalone results remain retained with original failure/skipped counts. Full workspace build passed after final OAuth changes; forced typecheck and clean freeze validation are recorded separately. Source secret scan passes: 2,117 files, 672 findings (650 synthetic, 22 allowlisted), zero requiring owner review. Source diff checks and original/R72 preservation pass. No failing test, critical qualification case, completion gate or security threshold was removed to obtain green. See `R73-VALIDATION.md` and current validation receipts.
+Earlier 393/393 account/transport regression and broad/standalone results remain retained with original failure/skipped counts. Full workspace build and forced typecheck passed after final OAuth changes; the clean frozen workspace rebuild, directory package and all five archive audits also pass. Source secret scan passes: 2,117 files, 672 findings (650 synthetic, 22 allowlisted), zero requiring owner review. Forty changed/new evidence documents have zero known full-credential-shape findings. Source diff checks and original/R72 preservation pass. No failing test, critical qualification case, completion gate or security threshold was removed to obtain green. See `R73-VALIDATION.md` and current validation receipts.
 
 ## 12. Remaining Blockers
 
@@ -83,8 +83,8 @@ Earlier 393/393 account/transport regression and broad/standalone results remain
 | G Per-user pool | Implemented/fixture-tested; two real independently eligible account allowances unavailable |
 | H Organic recovery | UNMET: organic failure captured, no completed cross-provider continuation |
 | I Cost/privacy | Zero unauthorized paid/private/bypass evidence; explicit personal paid controls tested, real paid test blocked |
-| J Windows | Final static candidate work proceeds; signing/isolation/runtime/installer certification unavailable |
-| K Validation | Current focused suites and workspace build pass; frozen-source/typecheck/package evidence recorded separately |
+| J Windows | Frozen directory candidate, 5/5 audits, 36 byte matches pass; NotSigned, authorized isolation/runtime/installer certification unavailable |
+| K Validation | Current focused suites, full build, forced typecheck and frozen package checks pass; no critical regression identified |
 | L Evidence | Raw historical failures/successes retained; final commit/package/push identities recorded during delivery |
 
 Immediate runtime blocker: a currently eligible Reviewer that genuinely qualifies and accurately reviews the actual patch. External live prerequisites: authorized unpaid and second distinct accounts, explicit real paid-spending budget, enforceable Puter zero-spend scope, supported anonymous-provider permission where unresolved, signing and isolated Windows lifecycle. No external prerequisite is fabricated.

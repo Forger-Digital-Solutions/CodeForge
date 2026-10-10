@@ -1,26 +1,29 @@
 # R73 durable delivery
 
-Starting delivery commit: `220b365c553bff0b1ee952fb6b96498c8ddea325` from the clean R72 worktree. Both R71 ancestry and the R72 final delivery were verified before editing. The older R72 package freeze `5ebe3fbca2250f01e9bf1188ab14ff24429c4727` was not used as the R73 branch base.
+Starting delivery commit: `220b365c553bff0b1ee952fb6b96498c8ddea325` from the clean R72 worktree. R71 ancestry/R72 final delivery were verified before editing. The older R72 frozen package source was not used as the R73 base.
 
-R73 branch: `codex/r73-free-supply-and-completion`.
+Branch: `codex/r73-free-supply-and-completion`.
 
 Durable worktree: `G:\CodeForge\worktrees\r73-free-supply-and-completion`.
 
-The original repository remains on `codex/r29-release-closure` at `6f8ad979fb9de0a17f69571d03358d7db5a35459`, with its six unrelated tracked modifications hash-preserved. All 73 R72 evidence files remain unchanged. No reset, original-branch integration, unrelated project modification or production deployment is performed.
+Frozen final implementation source: `0e364facb2b89ebc0624557d5c4a7f7ffa23219f`.
 
-Publication diagnosis found the existing approved GitHub account usable when accessed on the host rather than the sandbox's isolated credential view. Repository origin remains `https://github.com/Forger-Digital-Solutions/CodeForge.git`. No credentials were generated or exposed. Existing R73 commits and publication state at the account-addendum checkpoint:
+The original checkout remains on `codex/r29-release-closure` at `6f8ad979fb9de0a17f69571d03358d7db5a35459`. Its six unrelated tracked modifications and all 73 R72 evidence files remain hash-preserved at the actual frozen source revision. The only allowed lockfile delta adds the existing `@codeforge/secrets` workspace to desktop dependencies. No reset, original-branch integration, GEMS/FDS work or production deployment occurred.
 
-| Commit | Durable work | Publication |
-|---|---|---|
-| `e66a9d52f49bd559eaa30c856ac881c7f128f8f7` | Reviewer/runtime recovery, BlockRun anonymous Free integration and original evidence | Pushed to the R73 branch |
-| `eade8b0d7f775dd382cfae65b7ae80289a0aaa77` | Measured Reviewer dispatch alignment and empty bounded response history repair | Pushed; preserved Windows candidate binds this clean source |
-| `97dafd4cab4cf4e4c14bb9c2104191323659fb6d` | Complete readable bound review evidence and frozen Windows audit receipts | Committed; subsequent sixth live task binds this source |
-| Account addendum/current evidence | Multi-account storage/PKCE/admission, UI, quota/spending/routing integration and new read-only receipt | Working changes under validation; new clean freeze/final push not yet claimed |
+| Commit | Durable work |
+| --- | --- |
+| `e66a9d52f49bd559eaa30c856ac881c7f128f8f7` | Reviewer/runtime recovery, anonymous BlockRun adapter and original evidence |
+| `eade8b0d7f775dd382cfae65b7ae80289a0aaa77` | Measured Reviewer dispatch alignment, bounded empty-history repair and prior frozen candidate |
+| `97dafd4cab4cf4e4c14bb9c2104191323659fb6d` | Complete readable bound review evidence and prior Windows audit receipts |
+| `1276a2de0b0104711faecce66bfb7239c860d22d` | Isolated multi-account storage/admission/UI, explicit Free/personal paid routing and accounting |
+| `0e364facb2b89ebc0624557d5c4a7f7ffa23219f` | Authoritative post-inference checks, paid estimates/qualification, parent recovery, official OAuth state, V4 Reviewer qualification and current tests/evidence |
 
-Native/package artifacts remain local; their hashes/static audits are committed evidence. New packaging must use its own frozen commit and distinct output directory, never overwrite the earlier R73 candidate. Exact final branch HEAD and authorized noninteractive push receipts will be updated after validation. A successful local commit is not a production deployment authorization.
+The final implementation commit has been built from a tracked-clean tree. Full workspace build and forced typecheck pass. Separate current test receipts pass 50/50, 231/231, 19/19, 13/13, 59/59 and 2/2; overlapping counts are not combined. Source secret scan has zero owner-review findings, and modified/new evidence has zero known full-credential-shape findings. Historical failures and all six unsuccessful live parents remain retained.
 
-The final pre-freeze current-source workspace build and forced typecheck exited0 (`accounts-final-workspace-build.log`, `accounts-final-frozen-typecheck.log`). Final account/transport regression passed 393/393; broader and isolated checkpoints retain their own failure/skipped counts in `accounts-final-validation.json`. The final secret scan has zero owner-review findings. All six original tracked-file hashes and 73 R72 evidence files remain preserved, with only the authorized desktop `@codeforge/secrets` lock entry changed. These results authorize a durable source commit, not a deployment or paid execution; its actual SHA, package stamp and final push remain pending here.
+The directory candidate is `apps/desktop/release-r73-0e364fac/win-unpacked`. Workspace rebuild and packaging exited 0; five static audits and 36 module/renderer byte matches passed. EXE SHA-256: `3aba56e5502aeda95bc862498742f17ee81ff5555fc89823d353e56a8ee6ef20`. ASAR SHA-256: `125d609e5a9ea2023ceb41b2b8cf538329b9e9b172f08fd96f21cc429edabafd`. Direct signature is NotSigned. Cached Electron and existing native prebuilds were reused; no dependency install/native rebuild or candidate launch occurred. Artifact binaries stay local; their hashes and audits are committed evidence. See `R73-WINDOWS-PACKAGE.md`.
 
-The final source revision and documentation-delivery HEAD are separate: package identity binds the frozen source commit, while later evidence-only commits document that unchanged implementation. The exact final branch HEAD is available with `git rev-parse codex/r73-free-supply-and-completion` and is reported in the final mission response; a commit cannot embed its own content-derived SHA.
+Origin remains `https://github.com/Forger-Digital-Solutions/CodeForge.git`. Existing approved GitHub authentication was usable previously on the host; no credential was generated or exposed. The locally recorded remote branch is at the previously pushed eade source before final publication. The final source/evidence branch push will be attempted noninteractively after the evidence commit; its exact receipt and resulting remote revision follow here. Failure will retain the durable local branch and precise prerequisites without repeating an unchanged push.
 
-Release approval, production deployment, signing credentials and authorized isolated Windows execution remain external decisions. A successful branch push does not authorize any of them.
+The source revision and evidence-delivery HEAD are separate. Package identity binds the frozen source above. Later evidence-only commits preserve that implementation and record package/publication outcomes. Exact final branch HEAD is reported in the final mission response and obtained with `git rev-parse codex/r73-free-supply-and-completion`; a commit cannot embed its own content-derived SHA.
+
+Release approval, signing credentials, authorized isolated Windows execution and installer lifecycle remain external gates. A successful branch push grants no production deployment or paid inference permission.

@@ -1,6 +1,6 @@
 # R73 connected provider accounts addendum
 
-Current implementation/validation snapshot: 2026-10-10. This continues the existing R73 branch/worktree and preserves prior campaigns, provider adapters, OpenRouter PKCE, Free certification, quota governors, R55 owner registry and completion authority. No provider account, secret, paid request or production deployment was created. Addendum source is being validated before its own freeze; prior clean source/delivery commits remain durable.
+Current implementation/validation snapshot: 2026-10-10, frozen source `0e364facb2b89ebc0624557d5c4a7f7ffa23219f`. This continues the existing R73 branch/worktree and preserves prior campaigns, provider adapters, OpenRouter PKCE, Free certification, quota governors, R55 owner registry and completion authority. No provider account, secret, paid request or production deployment was created. The new directory candidate passes five static audits and 36 compiled/renderer byte matches; signing, packaged execution and installer lifecycle remain unproved.
 
 ## Architecture and storage
 
@@ -36,7 +36,7 @@ Current separate receipts: backend/provider 90/90 (`connected-account-backend-cu
 
 Later lifecycle affected 109/109 and connected 57/57 checks passed, with 32/32 owner-lifecycle and 48/48 pricing/lifecycle subsets retained. Production account projection/execution/role runtime 26/26 and core guard/roster/legacy registry 47/47 passed. Child authorization/protocol 34/34 and deterministic parent-worktree selected assertion passed (22 intentionally skipped). The parent fixture includes real source/git/verification but scripted role output and zero external requests; it is not a live autonomous completion.
 
-The prior 393/393 billing/auth/transport receipt remains preserved. New billing/revocation/crash-reconciliation tests passed 50/50; current Reviewer/account/routing suites passed 231/231; official-state OAuth provider/native callback passed 19/19. The full workspace build after the final OAuth correction passed (`accounts-r73-final-workspace-build.log`). Automatic authentication recovery selects only another authorized qualified personal paid connection; explicitly pinned account selection is never substituted. The broad 821/823 checkpoint and unchanged heavy-test standalone success (one selected, 22 skipped) remain visible. Clean source freeze/new package evidence are recorded separately. Counts overlap and are not summed. All fixture checks made zero external calls.
+The prior 393/393 billing/auth/transport receipt remains preserved. New billing/revocation/crash-reconciliation tests passed 50/50; current Reviewer/account/routing suites passed 231/231; official-state OAuth provider/native callback passed 19/19; current parent process recovery passed 13/13. The full workspace build after the final OAuth correction and forced typecheck passed, followed by a clean frozen source rebuild/package/static audit. Automatic authentication recovery selects only another authorized qualified personal paid connection; explicitly pinned account selection is never substituted. The broad 821/823 checkpoint and unchanged heavy-test standalone success (one selected, 22 skipped) remain visible. Source freeze/package evidence are recorded separately. Counts overlap and are not summed. All fixture checks made zero external calls.
 
 ## Required acceptance distinction
 

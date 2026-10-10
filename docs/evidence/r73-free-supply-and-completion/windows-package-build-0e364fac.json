@@ -1,0 +1,19 @@
+{
+  "observedAt": "2026-10-10T05:09:02.2328596Z",
+  "sourceRevision": "0e364facb2b89ebc0624557d5c4a7f7ffa23219f",
+  "exitCode": 0,
+  "artifact": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion\\apps\\desktop\\release-r73-0e364fac\\win-unpacked",
+  "log": "windows-package-build-0e364fac.log",
+  "logSha256": "2b3e0ff7fea6015927cf5246df11f86fd1538565f4b183efc0b366265bd87f4e",
+  "electron": "44.4.1",
+  "builder": "26.15.3",
+  "nativeRebuild": false,
+  "cachedElectron": true,
+  "staticAuditsPassed": 5,
+  "moduleByteMatches": 36,
+  "nativeFilesRecorded": 10,
+  "signatureReceipt": "windows-signature-direct-0e364fac.json",
+  "execution": "NOT_EXECUTED_NO_AUTHORIZED_ISOLATION",
+  "installer": "NOT_BUILT_NOT_CERTIFIED",
+  "deployment": "NOT_PERFORMED"
+}
