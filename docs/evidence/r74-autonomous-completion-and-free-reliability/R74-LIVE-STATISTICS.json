@@ -1,0 +1,310 @@
+{
+  "generatedAt": "2026-10-10T11:54:52.051Z",
+  "evidenceClass": "AGGREGATE_OF_DISTINCT_CURRENT_LIVE_PARENTS_ONLY",
+  "sources": [
+    {
+      "file": "R74-FIRST-COMPLETION.json",
+      "sha256": "6b59a94c88c1a03c503d9ae184d1d89644bacba5b788f42dfe5c8b918a69ee5d"
+    },
+    {
+      "file": "R74-STREAK-CONTINUATION.json",
+      "sha256": "3c261b6451536240b78fbd75f9d6cfb98bc83aa1088cb6bf176ce57a1aebfa7a"
+    },
+    {
+      "file": "R74-FEATURE-REPAIR.json",
+      "sha256": "60a80f3b0d65e8c816111790f9299ec32ea8ac858e6fcb9fde9ec90f0106a6b1"
+    },
+    {
+      "file": "R74-CORRECTED-CATEGORY-CAMPAIGN.json",
+      "sha256": "673a5d4cb3e8ea6fe988084a46feb5ca004d08b0e87d0fe1d065298adf5fdd11"
+    },
+    {
+      "file": "R74-CONFIGURATION-COMPLETION.json",
+      "sha256": "ee05eb5282b5bc9cb3eb6a2f1d669dcff0b2314356f2859494611b792d3bb091"
+    }
+  ],
+  "attempts": 10,
+  "completed": 3,
+  "failed": 1,
+  "blocked": 6,
+  "cancelled": 0,
+  "completionPercentage": 30,
+  "longestCompletionStreak": 1,
+  "falseCompletions": 0,
+  "logicalWorkerModelRequests": 156,
+  "workerExecutedTools": 125,
+  "workerRetries": 0,
+  "workerReportedProviderFailures": 5,
+  "externalPhysicalParentRequests": 169,
+  "capacityPingsIncludedInExternalCount": 14,
+  "externalTaskRequestsExcludingCapacityPings": 155,
+  "excludedPreDispatchInterruptionFrames": 1,
+  "reviewerPasses": 3,
+  "reviewerFailures": 0,
+  "forgeVerifyExecutions": 3,
+  "integrations": 3,
+  "plannerCorrections": 2,
+  "reviewRepairRounds": 0,
+  "successfulReviewRepairParents": 0,
+  "externalProviderFailures": 5,
+  "rateLimits": 5,
+  "failures": [
+    {
+      "at": "2026-10-10T10:54:53.744Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "cohere/north-mini-code:free",
+      "error": {
+        "message": "kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m",
+        "code": "RATE_LIMITED",
+        "status": 429,
+        "rateLimitScope": "model"
+      }
+    },
+    {
+      "at": "2026-10-10T11:12:57.614Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "cohere/north-mini-code:free",
+      "error": {
+        "message": "kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m",
+        "code": "RATE_LIMITED",
+        "status": 429,
+        "rateLimitScope": "model"
+      }
+    },
+    {
+      "at": "2026-10-10T11:16:36.902Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "cohere/north-mini-code:free",
+      "error": {
+        "message": "kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m",
+        "code": "RATE_LIMITED",
+        "status": 429,
+        "rateLimitScope": "model"
+      }
+    },
+    {
+      "at": "2026-10-10T11:19:10.986Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "cohere/north-mini-code:free",
+      "error": {
+        "message": "kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m",
+        "code": "RATE_LIMITED",
+        "status": 429,
+        "rateLimitScope": "model"
+      }
+    },
+    {
+      "at": "2026-10-10T11:31:16.022Z",
+      "providerId": "kilo-free-direct",
+      "modelId": "cohere/north-mini-code:free",
+      "error": {
+        "message": "kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m",
+        "code": "RATE_LIMITED",
+        "status": 429,
+        "rateLimitScope": "model"
+      }
+    }
+  ],
+  "externalRequestsPerSuccessfulCompletionIncludingFailedParentsAndPings": 56.333333333333336,
+  "separateQualificationRequests": 21,
+  "qualificationRequests": [
+    {
+      "file": "planner-nvidia_llama-3.2-11b-vision-1791629583054.json",
+      "requests": 2,
+      "status": "MEASURED"
+    },
+    {
+      "file": "planner-nvidia_nemotron-3-super-120b-a12b_free-1791629043713.json",
+      "requests": 3,
+      "status": "MEASURED"
+    },
+    {
+      "file": "planner-nvidia_nemotron-3-ultra-550b-a55b_free-1791628788267.json",
+      "requests": 4,
+      "status": "INCONCLUSIVE_LOCAL_REQUEST_BOUND"
+    },
+    {
+      "file": "planner-nvidia_nemotron-3-ultra-550b-a55b_free-1791628907912.json",
+      "requests": 2,
+      "status": "INCONCLUSIVE_TRANSIENT"
+    },
+    {
+      "file": "reviewer-nvidia_nemotron-3-ultra-550b-a55b_free-1791628393855.json",
+      "requests": 9,
+      "status": "MEASURED"
+    },
+    {
+      "file": "reviewer-thinkingmachines_inkling-small_free-1791628373184.json",
+      "requests": 1,
+      "status": "INCONCLUSIVE_PROVIDER_FAILURE"
+    }
+  ],
+  "separateHeldoutReviewerRequests": 4,
+  "sourceGateways": [
+    "kilo-free-direct",
+    "blockrun-free-direct"
+  ],
+  "quotaOwnership": "Finite source-IP gateway pools; no per-registered-user or per-role quota multiplication; shared underlying NVIDIA independence unproved",
+  "moneySpentUsd": 0,
+  "purchasedCreditRequests": 0,
+  "estimatedMarginalCostUsd": 0,
+  "economicsEvidence": "Only freshly authorized exact-zero anonymous catalogs and endpoints; Kilo cost telemetry when returned; no payment credentials or paid fallback",
+  "recovery": {
+    "actualProcessInterruption": true,
+    "recordedMutationReplays": 0,
+    "coderReplayedOnResume": false
+  },
+  "tasks": [
+    {
+      "id": "01-bug-fix",
+      "taskClass": "bug fix",
+      "startedAt": "2026-10-10T10:45:32.558Z",
+      "status": "completed",
+      "receipt": "R74-FIRST-COMPLETION.json",
+      "summary": "Successfully implemented, reviewed, verified, and integrated \"Inspect the retry queue and repair its attempt-boundary bug. Preserve the tests and public API. Verify the retry sequence, exhaustion and zero-budget cases. This is a public synthetic fixture with no user source, credentials, or confidential data.\"",
+      "changedFiles": [
+        "src/retry.mjs"
+      ],
+      "completionGate": "completed",
+      "reviewPassed": true,
+      "forgeVerify": 1,
+      "integration": "integrated",
+      "workerRequests": 28,
+      "executedTools": 24
+    },
+    {
+      "id": "02-feature",
+      "taskClass": "small feature",
+      "startedAt": "2026-10-10T10:53:58.609Z",
+      "status": "failed",
+      "receipt": "R74-STREAK-CONTINUATION.json",
+      "summary": "Autonomous run failed: TASK_AUTHORIZATION_FAILED: Planner graph must contain at least one coder and one reviewer",
+      "changedFiles": [],
+      "reviewPassed": false,
+      "forgeVerify": 0,
+      "integration": "not_attempted",
+      "workerRequests": 11,
+      "executedTools": 10
+    },
+    {
+      "id": "03-refactor",
+      "taskClass": "refactor",
+      "startedAt": "2026-10-10T10:54:28.329Z",
+      "status": "blocked",
+      "receipt": "R74-STREAK-CONTINUATION.json",
+      "summary": "Planner did not produce an authorized task graph: Agent planner cancelled: [AGENT_CANCELLED] Model execution was cancelled",
+      "changedFiles": [],
+      "reviewPassed": false,
+      "forgeVerify": 0,
+      "integration": "not_attempted",
+      "workerRequests": 10,
+      "executedTools": 7
+    },
+    {
+      "id": "02-feature",
+      "taskClass": "small feature",
+      "startedAt": "2026-10-10T11:06:36.855Z",
+      "status": "blocked",
+      "receipt": "R74-FEATURE-REPAIR.json",
+      "summary": "Planner did not produce an authorized task graph: Agent planner cancelled: [AGENT_CANCELLED] Model execution was cancelled",
+      "changedFiles": [],
+      "reviewPassed": false,
+      "forgeVerify": 0,
+      "integration": "not_attempted",
+      "workerRequests": 11,
+      "executedTools": 7
+    },
+    {
+      "id": "02-feature",
+      "taskClass": "small feature",
+      "startedAt": "2026-10-10T11:12:51.037Z",
+      "status": "blocked",
+      "receipt": "R74-CORRECTED-CATEGORY-CAMPAIGN.json",
+      "summary": "Planner did not produce an authorized task graph: Based on the provided goal, run context, and explorer evidence, I will create a revised minimal task graph that satisfies the autonomous planning contract.\n\n**Protocol:** task_graph_v1\n\n**Summary:** Add normalizeTags(values) to src/tags.mjs and re-export it from src/index.mjs.\n\n**Tasks:**\n\n1. **task_1: Update src/tags.mjs**\n   - **Title:** Update src/tags.mjs to use normalizeTags(values)\n   - **Objective:** Update src/tags.mjs to use the existing normalization helper to trim, lowercase strings, remove empty entries and duplicates, and sort alphabetically.\n   - **Dependencies:** None\n   - **Assigned Role:** coder\n   - **Verification Commands:**\n     - run_command(\"node src/tags.mjs --verify\")\n   - **Verification Obligations:**\n     - Ensure that src/tags.mjs uses the correct normalization helper and does not mutate input or modify tests.\n   - **Completion Evidence:**\n     - Review of src/tags.mjs code\n\n2. **task_2: Update src/index.mjs**\n   - **Title:** Update src/index.mjs to re-export normalizeTags(values)\n   - **Objective:** Update src/index.mjs to re-export the normalizeTags(values) function.\n   - **Dependencies:** task_1\n   - **Assigned Role:** coder\n   - **Verification Commands:**\n     - run_command(\"node src/index.mjs --verify\")\n   - **Verification Obligations:**\n     - Ensure that src/index.mjs correctly re-exports the normalizeTags(values) function.\n   - **Completion Evidence:**\n     - Review of src/index.mjs code\n\n3. **task_3: Review src/tags.mjs**\n   - **Title:** Review src/tags.mjs for correctness\n   - **Objective:** Review src/tags.mjs to ensure it uses the correct normalization helper and does not mutate input or modify tests.\n   - **Dependencies:** task_1\n   - **Assigned Role:** reviewer\n   - **Verification Commands:**\n     - run_command(\"node src/tags.mjs --review\")\n   - **Verification Obligations:**\n     - Verify that src/tags.mjs is correct and does not mutate input or modify tests.\n   - **Completion Evidence:**\n     - Review report of src/tags.mjs code\n\n4. **task_4: Review src/index.mjs**\n   - **Title:** Review src/index.mjs for correctness\n   - **Objective:** Review src/index.mjs to ensure it correctly re-exports the normalizeTags(values) function.\n   - **Dependencies:** task_2\n   - **Assigned Role:** reviewer\n   - **Verification Commands:**\n     - run_command(\"node src/index.mjs --review\")\n   - **Verification Obligations:**\n     - Verify that src/index.mjs is correct and correctly re-exports the normalizeTags(values) function.\n   - **Completion Evidence:**\n     - Review report of src/index.mjs code\n\n5. **task_5: Runtime Verification**\n   - **Title:** Verify the correctness of normalizeTags(values) function\n   - **Objective:** Verify the correctness of the normalizeTags(values) function.\n   - **Dependencies:** task_3, task_4\n   - **Assigned Role:** reviewer\n   - **Verification Commands:**\n     - run_command(\"node src/index.mjs --verify-normalizeTags\")\n   - **Verification Obligations:**\n     - Verify the correctness of the normalizeTags(values) function.\n   - **Completion Evidence:**\n     - Review report of normalizeTags(values) function\n\n**Minimal Task Graph:**\n```json\n{\n  \"protocol\": \"task_graph_v1\",\n  \"summary\": \"Add normalizeTags(values) to src/tags.mjs and re-export it from src/index.mjs.\",\n  \"tasks\": [\n    {\n      \"id\": \"task_1\",\n      \"title\": \"Update src/tags.mjs\",\n      \"objective\": \"Update src/tags.mjs to use normalizeTags(values)\",\n      \"dependencies\": [],\n      \"assignedRole\": \"coder\",\n      \"verificationCommands\": [\"run_command(\\\"node src/tags.mjs --verify\\\")\"],\n      \"verificationObligations\": [\"Ensure that src/tags.mjs uses the correct normalization helper and does not mutate input or modify tests.\"],\n      \"completionEvidence\": [\"Review of src/tags.mjs code\"]\n    },\n    {\n      \"id\": \"task_2\",\n      \"title\": \"Update src/index.mjs\",\n      \"objective\": \"Update src/index.mjs to re-export normalizeTags(values)\",\n      \"dependencies\": [\"task_1\"],\n      \"assignedRole\": \"coder\",\n      \"verificationCommands\": [\"run_command(\\\"node src/index.mjs --verify\\\")\"],\n      \"verificationObligations\": [\"Ensure that src/index.mjs correctly re-exports the normalizeTags(values) function.\"],\n      \"completionEvidence\": [\"Review of src/index.mjs code\"]\n    },\n    {\n      \"id\": \"task_3\",\n      \"title\": \"Review src/tags.mjs\",\n      \"objective\": \"Review src/tags.mjs for correctness\",\n      \"dependencies\": [\"task_1\"],\n      \"assignedRole\": \"reviewer\",\n      \"verificationCommands\": [\"run_command(\\\"node src/tags.mjs --review\\\")\"],\n      \"verificationObligations\": [\"Verify that src/tags.mjs is correct and does not mutate input or modify tests.\"],\n      \"completionEvidence\": [\"Review report of src/tags.mjs code\"]\n    },\n    {\n      \"id\": \"task_4\",\n      \"title\": \"Review src/index.mjs\",\n      \"objective\": \"Review src/index.mjs for correctness\",\n      \"dependencies\": [\"task_2\"],\n      \"assignedRole\": \"reviewer\",\n      \"verificationCommands\": [\"run_command(\\\"node src/index.mjs --review\\\")\"],\n      \"verificationObligations\": [\"Verify that src/index.mjs is correct and correctly re-exports the normalizeTags(values) function.\"],\n      \"completionEvidence\": [\"Review report of src/index.mjs code\"]\n    },\n    {\n      \"id\": \"task_5\",\n      \"title\": \"Runtime Verification\",\n      \"objective\": \"Verify the correctness of normalizeTags(values) function\",\n      \"dependencies\": [\"task_3\", \"task_4\"],\n      \"assignedRole\": \"reviewer\",\n      \"verificationCommands\": [\"run_command(\\\"node src/index.mjs --verify-normalizeTags\\\")\"],\n      \"verificationObligations\": [\"Verify the correctness of the normalizeTags(values) function.\"],\n      \"completionEvidence\": [\"Review report of normalizeTags(values) function\"]\n    }\n  ],\n  \"planningIntent\": {\n    \"targetSelection\": [],\n    \"constraints\": [],\n    \"uncertainties\": [],\n    \"verification\": [],\n    \"completionEvidence\": []\n  }\n}\n```\nThis revised task graph includes all the necessary tasks, verification commands, and verification obligations to ensure the correctness of the normalizeTags(values) function. It also includes a runtime verification task to verify the correctness of the function.",
+      "changedFiles": [],
+      "reviewPassed": false,
+      "forgeVerify": 0,
+      "integration": "not_attempted",
+      "workerRequests": 7,
+      "executedTools": 4
+    },
+    {
+      "id": "03-refactor",
+      "taskClass": "refactor",
+      "startedAt": "2026-10-10T11:14:01.305Z",
+      "status": "completed",
+      "receipt": "R74-CORRECTED-CATEGORY-CAMPAIGN.json",
+      "summary": "Successfully implemented, reviewed, verified, and integrated \"Extract the duplicated nonempty-string validation from src/user.mjs and src/project.mjs into src/validate.mjs. Both modules should import and use that shared helper. Preserve the exported API, error messages and behavior. Preserve tests. This is a public synthetic fixture with no user source, credentials, or confidential data.\"",
+      "changedFiles": [
+        "src/project.mjs",
+        "src/user.mjs",
+        "src/validate.mjs"
+      ],
+      "completionGate": "completed",
+      "reviewPassed": true,
+      "forgeVerify": 1,
+      "integration": "integrated",
+      "workerRequests": 24,
+      "executedTools": 21
+    },
+    {
+      "id": "04-test-creation",
+      "taskClass": "test creation",
+      "startedAt": "2026-10-10T11:16:01.205Z",
+      "status": "blocked",
+      "receipt": "R74-CORRECTED-CATEGORY-CAMPAIGN.json",
+      "summary": "Writer did not complete: Agent coder failed: [PROVIDER_UNAVAILABLE] No eligible free route for role coder: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_QUEUED_FOR_CAPACITY, ALL_ELIGIBLE_ROUTES_UNHEALTHY, NO_ELIGIBLE_ROUTE, next_available=2026-10-10T11:17:37.221Z, candidates: 3 role_ineligible:ROLE_NOT_QUALIFIED [nvidia/llama-3.2-11b-vision, nvidia/nemotron-3-super-120b-a12b:free, nvidia/nemotron-3-ultra-550b-a55b:free]; 1 health_excluded:HEALTH_HARD_EXCLUDED:RATE_LIMITED:HTTP_429 [cohere/north-mini-code:free]). No paid or unknown-cost route was used.",
+      "changedFiles": [],
+      "reviewPassed": false,
+      "forgeVerify": 0,
+      "integration": "blocked",
+      "workerRequests": 10,
+      "executedTools": 8
+    },
+    {
+      "id": "05-debugging",
+      "taskClass": "debugging",
+      "startedAt": "2026-10-10T11:17:37.637Z",
+      "status": "blocked",
+      "receipt": "R74-CORRECTED-CATEGORY-CAMPAIGN.json",
+      "summary": "Writer did not complete: Agent coder failed: [PROVIDER_RATE_LIMITED] kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m",
+      "changedFiles": [],
+      "reviewPassed": false,
+      "forgeVerify": 0,
+      "integration": "blocked",
+      "workerRequests": 15,
+      "executedTools": 10
+    },
+    {
+      "id": "R74-live-process-recovery",
+      "taskClass": "bug fix with process recovery",
+      "startedAt": "2026-10-10T11:22:18.594Z",
+      "status": "completed",
+      "receipt": "R74-PARENT-RECOVERY-LIVE.json",
+      "summary": "Successfully implemented, reviewed, verified, and integrated \"Inspect the retry queue and repair its attempt-boundary bug. Preserve the tests and public API. Verify the retry sequence, exhaustion and zero-budget cases. This is public synthetic code with no credentials or private user code.\"",
+      "changedFiles": [
+        "src/retry.mjs"
+      ],
+      "completionGate": "completed",
+      "reviewPassed": true,
+      "forgeVerify": 1,
+      "integration": "integrated",
+      "workerRequests": 23,
+      "executedTools": 19
+    },
+    {
+      "id": "06-configuration",
+      "taskClass": "configuration/build issue",
+      "startedAt": "2026-10-10T11:30:11.699Z",
+      "status": "blocked",
+      "receipt": "R74-CONFIGURATION-COMPLETION.json",
+      "summary": "Writer did not complete: Agent coder failed: [PROVIDER_RATE_LIMITED] kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m",
+      "changedFiles": [],
+      "reviewPassed": false,
+      "forgeVerify": 0,
+      "integration": "blocked",
+      "workerRequests": 17,
+      "executedTools": 15
+    }
+  ]
+}

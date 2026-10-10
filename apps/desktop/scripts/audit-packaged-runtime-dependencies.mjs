@@ -77,6 +77,33 @@ for (const entry of runtimeModules) {
   }
 }
 
+// Only the SDK client closure is required; optional server adapters use other dependencies.
+const sdkVisited = new Set();
+function checkSdkModule(modulePath) {
+  if (sdkVisited.has(modulePath)) return;
+  sdkVisited.add(modulePath);
+  if (!archiveFiles.has(modulePath)) {
+    missingAssets.push({ name: modulePath, locations: ["MCP client dependency closure"] });
+    return;
+  }
+  const entry = entries.find(candidate => normalizedPath(candidate) === modulePath);
+  const source = extractFile(asarPath, archivePath(entry)).toString("utf8");
+  for (const match of source.matchAll(/(?:from|import\s*\(|require\s*\()\s*["']([^"']+)["']/g)) {
+    const specifier = match[1];
+    if (!specifier || /[\s,;]/.test(specifier)) continue;
+    if (specifier.startsWith(".")) {
+      checkSdkModule(posix.normalize(posix.join(posix.dirname(modulePath), specifier)));
+    } else if (!specifier.startsWith("node:")) {
+      const name = externalPackageName(specifier);
+      if (!ignored.has(name)) imports.set(name, [...(imports.get(name) ?? []), modulePath]);
+    }
+  }
+}
+if (imports.has("@modelcontextprotocol/sdk")) {
+  for (const module of ["client/index.js", "client/stdio.js", "client/streamableHttp.js", "client/sse.js"])
+    checkSdkModule(`node_modules/@modelcontextprotocol/sdk/dist/esm/${module}`);
+}
+
 const missing = [...imports.entries()]
   .filter(([name]) => !shipped.has(`node_modules/${name}`))
   .map(([name, locations]) => ({ name, locations: [...new Set(locations)].sort() }))

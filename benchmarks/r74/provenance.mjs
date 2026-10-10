@@ -32,8 +32,14 @@ const receipt = { at: new Date().toISOString(), source: process.cwd(), startingH
 if (preservedFiles.length !== 6) throw new Error('ORIGINAL_MODIFICATION_COUNT_CHANGED');
 if (final) {
   const baseline = JSON.parse(await readFile(`${directory}/baseline-provenance.json`, 'utf8'));
-  receipt.unchanged = ['originalHead', 'originalBranch', 'preservedFiles', 'historicalEvidence', 'lockfileSha256'].every(key => JSON.stringify(receipt[key]) === JSON.stringify(baseline[key]));
+  receipt.unchanged = ['originalHead', 'originalBranch', 'preservedFiles', 'historicalEvidence'].every(key => JSON.stringify(receipt[key]) === JSON.stringify(baseline[key]));
   if (!receipt.unchanged) throw new Error('PRESERVATION_MISMATCH');
+  receipt.lockfileUnchanged = receipt.lockfileSha256 === baseline.lockfileSha256;
+  if (!receipt.lockfileUnchanged) {
+    const refresh = JSON.parse(await readFile(`${directory}/dependency-refresh.json`, 'utf8'));
+    if (refresh.previousLockfileSha256 !== baseline.lockfileSha256 || refresh.currentLockfileSha256 !== receipt.lockfileSha256 || refresh.protectedR73DependencyTargetsModified !== false) throw new Error('UNDOCUMENTED_LOCKFILE_CHANGE');
+    receipt.intentionalLockfileChange = 'R74 dependency security refresh; see dependency-refresh.json';
+  }
 }
 const file = final ? 'final-preservation.json' : 'baseline-provenance.json';
 await writeFile(`${directory}/${file}`, `${JSON.stringify(receipt, null, 2)}\n`);

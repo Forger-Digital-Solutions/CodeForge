@@ -1,0 +1,192 @@
+{
+  "at": "2026-10-10T11:44:36.629Z",
+  "reason": "R74 required security gate found eight blocking high advisories; isolated candidate removes them without a waiver",
+  "previousLockfileSha256": "45a47cff4b0dbb7346c5eba07fb3a34063a962175e4d1b74881199b13bd3cf68",
+  "currentLockfileSha256": "5e0890a2b03c856f02f7c90af32924e7c448435c6808decf7a88a4326b709a05",
+  "changed": [
+    {
+      "name": "node_modules/@electron/asar/node_modules/brace-expansion",
+      "before": "1.1.18",
+      "after": "1.1.21"
+    },
+    {
+      "name": "node_modules/@electron/rebuild",
+      "before": "4.2.0",
+      "after": "4.2.1"
+    },
+    {
+      "name": "node_modules/@electron/rebuild/node_modules/node-abi",
+      "before": "4.35.0",
+      "after": "4.37.0"
+    },
+    {
+      "name": "node_modules/@electron/universal/node_modules/fs-extra",
+      "before": "11.4.0",
+      "after": "11.4.1"
+    },
+    {
+      "name": "node_modules/@electron/windows-sign/node_modules/fs-extra",
+      "before": "11.4.0",
+      "after": "11.4.1"
+    },
+    {
+      "name": "node_modules/@modelcontextprotocol/sdk",
+      "before": "1.30.0",
+      "after": "1.32.1"
+    },
+    {
+      "name": "node_modules/@noble/hashes",
+      "before": "2.4.0",
+      "after": "1.8.0"
+    },
+    {
+      "name": "node_modules/@peculiar/asn1-schema",
+      "before": "2.9.4",
+      "after": "2.10.0"
+    },
+    {
+      "name": "node_modules/abbrev",
+      "after": "4.0.0"
+    },
+    {
+      "name": "node_modules/app-builder-lib",
+      "before": "26.15.3",
+      "after": "26.17.0"
+    },
+    {
+      "name": "node_modules/brace-expansion",
+      "before": "5.0.9",
+      "after": "5.0.12"
+    },
+    {
+      "name": "node_modules/builder-util",
+      "before": "26.15.3",
+      "after": "26.16.0"
+    },
+    {
+      "name": "node_modules/dmg-builder",
+      "before": "26.15.3",
+      "after": "26.17.0"
+    },
+    {
+      "name": "node_modules/electron-builder",
+      "before": "26.15.3",
+      "after": "26.17.0"
+    },
+    {
+      "name": "node_modules/electron-builder-squirrel-windows",
+      "before": "26.15.3",
+      "after": "26.17.0"
+    },
+    {
+      "name": "node_modules/electron-publish",
+      "before": "26.15.3",
+      "after": "26.16.0"
+    },
+    {
+      "name": "node_modules/glob/node_modules/brace-expansion",
+      "before": "1.1.18",
+      "after": "1.1.21"
+    },
+    {
+      "name": "node_modules/http-cache-semantics",
+      "before": "4.2.0",
+      "after": "4.3.0"
+    },
+    {
+      "name": "node_modules/node-gyp",
+      "after": "12.4.0"
+    },
+    {
+      "name": "node_modules/node-gyp/node_modules/isexe",
+      "after": "4.0.0"
+    },
+    {
+      "name": "node_modules/node-gyp/node_modules/which",
+      "after": "6.0.1"
+    },
+    {
+      "name": "node_modules/nopt",
+      "after": "9.0.0"
+    },
+    {
+      "name": "node_modules/pkijs",
+      "before": "3.4.0",
+      "after": "3.4.1"
+    },
+    {
+      "name": "node_modules/serialize-javascript",
+      "before": "7.1.1",
+      "after": "7.1.2"
+    },
+    {
+      "name": "node_modules/source-map-js",
+      "before": "1.2.1",
+      "after": "1.2.2"
+    },
+    {
+      "name": "node_modules/tar/node_modules/yallist",
+      "after": "5.0.0"
+    },
+    {
+      "name": "node_modules/undici",
+      "before": "6.28.1",
+      "after": "6.29.0"
+    },
+    {
+      "name": "node_modules/yallist",
+      "before": "5.0.0",
+      "after": "4.0.0"
+    }
+  ],
+  "removed": [
+    "node_modules/@electron/rebuild/node_modules/abbrev",
+    "node_modules/@electron/rebuild/node_modules/isexe",
+    "node_modules/@electron/rebuild/node_modules/node-gyp",
+    "node_modules/@electron/rebuild/node_modules/nopt",
+    "node_modules/@electron/rebuild/node_modules/which",
+    "node_modules/@yarnpkg/lockfile",
+    "node_modules/braces",
+    "node_modules/call-bind",
+    "node_modules/ci-info",
+    "node_modules/fill-range",
+    "node_modules/find-yarn-workspace-root",
+    "node_modules/is-docker",
+    "node_modules/is-number",
+    "node_modules/is-wsl",
+    "node_modules/json-stable-stringify",
+    "node_modules/json-stable-stringify/node_modules/isarray",
+    "node_modules/jsonify",
+    "node_modules/klaw-sync",
+    "node_modules/lru-cache/node_modules/yallist",
+    "node_modules/micromatch",
+    "node_modules/open",
+    "node_modules/patch-package",
+    "node_modules/picomatch",
+    "node_modules/pkijs/node_modules/@noble/hashes",
+    "node_modules/set-function-length",
+    "node_modules/slash",
+    "node_modules/to-regex-range",
+    "node_modules/yaml"
+  ],
+  "nativeVersionsPreserved": [
+    {
+      "name": "better-sqlite3",
+      "version": "12.11.1"
+    },
+    {
+      "name": "node-pty",
+      "version": "1.1.0"
+    },
+    {
+      "name": "electron",
+      "version": "44.4.1"
+    }
+  ],
+  "nativeCompilation": false,
+  "installScriptsExecuted": false,
+  "protectedR73DependencyTargetsModified": false,
+  "candidatePath": "G:\\CodeForge\\worktrees\\r74-autonomous-completion-and-free-reliability\\benchmarks\\r74\\tmp\\dependency-refresh",
+  "preservedDependencyDirectory": "G:\\CodeForge\\worktrees\\r74-autonomous-completion-and-free-reliability\\benchmarks\\r74\\tmp\\original-node-modules-before-security-refresh",
+  "activation": "PRIVATE_ROOT_RENAME_NO_SHARED_JUNCTION_REMOVAL"
+}
