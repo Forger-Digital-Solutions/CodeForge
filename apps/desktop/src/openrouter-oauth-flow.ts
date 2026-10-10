@@ -95,7 +95,18 @@ function receiveOpenRouterAuthorization(opts: OpenRouterOAuthOptions): Promise<s
             return;
           }
           // Validates state (throws on mismatch) and extracts the code.
-          const code = OpenRouterOAuth.parseCallback(`http://127.0.0.1${req.url}`, state);
+          let code: string;
+          try {
+            code = OpenRouterOAuth.parseCallback(`http://127.0.0.1${req.url}`, state);
+          } catch (error) {
+            if (error instanceof OpenRouterOAuth.OAuthAuthorizationDeniedError) {
+              res.writeHead(200, { "Content-Type": "text/html" });
+              res.end("<!doctype html><html><head><meta charset=\"utf-8\"><title>CodeForge</title></head><body><p>Authorization was not granted. Return to CodeForge.</p></body></html>");
+              finishReject(new Error("OpenRouter authorization was denied"));
+              return;
+            }
+            throw error;
+          }
           res.writeHead(200, { "Content-Type": "text/html" });
           res.end(SUCCESS_HTML);
           finish(async () => exchange({ code, codeVerifier: pkce.codeVerifier }));

@@ -9,7 +9,7 @@
  * their protocol so old evidence can never be silently reinterpreted under new rules.
  */
 
-export const ROLE_QUALIFICATION_SUITE_VERSION = "R73_ROLE_QUALIFICATION_V6";
+export const ROLE_QUALIFICATION_SUITE_VERSION = "R73_ROLE_QUALIFICATION_V7";
 
 export type RoleProtocolId = "EXPLORER" | "PLANNER" | "REVIEWER";
 
@@ -99,7 +99,7 @@ export const PLANNER_PROTOCOL: RoleProtocol = {
 
 export const REVIEWER_PROTOCOL: RoleProtocol = {
   protocolId: "role.reviewer",
-  version: "REVIEWER_PROTOCOL_V3",
+  version: "REVIEWER_PROTOCOL_V4",
   role: "REVIEWER",
   caseTimeoutMs: 45_000,
   toolPolicy: { offered: [], mustUseTools: false },
@@ -107,7 +107,7 @@ export const REVIEWER_PROTOCOL: RoleProtocol = {
   // Approving the planted-critical-bug diff is disqualifying: a reviewer that waves through a
   // real defect is worse than no reviewer. Failing the clean diff is scored, not disqualifying —
   // over-rejection is a false-positive cost, not a safety breach.
-  disqualifyingFailures: ["reviewer.one_bug"],
+  disqualifyingFailures: ["reviewer.one_bug", "reviewer.boundary_regression"],
   acceptance: 0.75,
   scoringDimensions: [
     "schema_valid",
@@ -267,6 +267,8 @@ export interface ReviewerCase {
   caseId: string;
   intent: string;
   diff: string;
+  /** Frozen production-shaped evidence, not a second runtime snapshot encoder. */
+  workspaceSnapshot?: string;
   /** Expected verdict: buggy diffs must be rejected, the clean diff must be approved. */
   expectApproved: boolean;
   /** Substrings a correct finding should reference (path or symbol). Empty for clean diffs. */
@@ -355,5 +357,139 @@ export const REVIEWER_CASES: readonly ReviewerCase[] = [
     ].join("\n"),
     expectApproved: false,
     defectMarkers: ["test", "router.test.ts", "assertion", "expect"],
+  },
+  {
+    caseId: "reviewer.boundary_fix",
+    intent: "Repair retryDelays so maxAttempts delays begin at baseMs and double each time. Zero attempts must return an empty array. Preserve the public exports and test assertions.",
+    diff: [
+      "diff --git a/src/retry.mjs b/src/retry.mjs",
+      "--- a/src/retry.mjs",
+      "+++ b/src/retry.mjs",
+      "@@ -1 +1 @@",
+      "-export function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt <= maxAttempts; attempt++) delays.push(baseMs * 2 ** attempt); return delays; }",
+      "+export function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt < maxAttempts; attempt++) delays.push(baseMs * 2 ** attempt); return delays; }",
+    ].join("\n"),
+    workspaceSnapshot: `Workspace review snapshot: workspace-review-snapshot/v2
+
+Base revision: "0000000000000000000000000000000000000001"
+
+Diff under review:
+diff --git a/src/retry.mjs b/src/retry.mjs
+--- a/src/retry.mjs
++++ b/src/retry.mjs
+@@ -1 +1 @@
+-export function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt <= maxAttempts; attempt++) delays.push(baseMs * 2 ** attempt); return delays; }
++export function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt < maxAttempts; attempt++) delays.push(baseMs * 2 ** attempt); return delays; }
+
+Full current files (4):
+
+File: "package.json"
+SHA-256: 8a5cceea8641f8fd98fe49f3498d7bea35168e6e6a95c44e54148488a4a884f7
+UTF-8 bytes: 99
+Current content:
+{"name":"review-boundary-fixture","type":"module","private":true,"scripts":{"test":"node --test"}}
+
+
+File: "src/index.mjs"
+SHA-256: cf99c7629f129e970ba4a4f9d08501f92d458affb0cc5d4c0ac93d72daff3400
+UTF-8 bytes: 43
+Current content:
+export { retryDelays } from './retry.mjs';
+
+
+File: "src/retry.mjs"
+SHA-256: 70b9b5b6bbf82713e933d08918a188290438a40b9664aa4420c2f1eb73fcddc4
+UTF-8 bytes: 179
+Current content:
+export function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt < maxAttempts; attempt++) delays.push(baseMs * 2 ** attempt); return delays; }
+
+
+File: "test/retry.test.mjs"
+SHA-256: bcc4cf79192246b730cddaa70c18a987abebeed88d54a210e85298d30b4b98ad
+UTF-8 bytes: 344
+Current content:
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { retryDelays } from '../src/index.mjs';
+test('bounded backoff', () => assert.deepEqual(retryDelays(3, 100), [100, 200, 400]));
+test('zero retries', () => assert.deepEqual(retryDelays(0, 100), []));
+test('one retry', () => assert.deepEqual(retryDelays(1, 7), [7]));
+
+
+Verification status: pending
+
+Verification commands:
+"node --test"
+
+ForgeVerify has not run. Test source is evidence of assertions, not test success.`,
+    expectApproved: true,
+    defectMarkers: [],
+  },
+  {
+    caseId: "reviewer.boundary_regression",
+    intent: "Keep retryDelays returning exactly maxAttempts delays beginning at baseMs and doubling each time. Zero attempts must return an empty array. Preserve the public exports and test assertions.",
+    diff: [
+      "diff --git a/src/retry.mjs b/src/retry.mjs",
+      "--- a/src/retry.mjs",
+      "+++ b/src/retry.mjs",
+      "@@ -1 +1 @@",
+      "-export function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt < maxAttempts; attempt++) delays.push(baseMs * 2 ** attempt); return delays; }",
+      "+export function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt <= maxAttempts; attempt++) delays.push(baseMs * 2 ** attempt); return delays; }",
+    ].join("\n"),
+    workspaceSnapshot: `Workspace review snapshot: workspace-review-snapshot/v2
+
+Base revision: "0000000000000000000000000000000000000002"
+
+Diff under review:
+diff --git a/src/retry.mjs b/src/retry.mjs
+--- a/src/retry.mjs
++++ b/src/retry.mjs
+@@ -1 +1 @@
+-export function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt < maxAttempts; attempt++) delays.push(baseMs * 2 ** attempt); return delays; }
++export function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt <= maxAttempts; attempt++) delays.push(baseMs * 2 ** attempt); return delays; }
+
+Full current files (4):
+
+File: "package.json"
+SHA-256: 8a5cceea8641f8fd98fe49f3498d7bea35168e6e6a95c44e54148488a4a884f7
+UTF-8 bytes: 99
+Current content:
+{"name":"review-boundary-fixture","type":"module","private":true,"scripts":{"test":"node --test"}}
+
+
+File: "src/index.mjs"
+SHA-256: cf99c7629f129e970ba4a4f9d08501f92d458affb0cc5d4c0ac93d72daff3400
+UTF-8 bytes: 43
+Current content:
+export { retryDelays } from './retry.mjs';
+
+
+File: "src/retry.mjs"
+SHA-256: fce751d27ef843bc1decc8929b6cc177c06daddfca2b268ef0c8fb9a1e57a660
+UTF-8 bytes: 180
+Current content:
+export function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt <= maxAttempts; attempt++) delays.push(baseMs * 2 ** attempt); return delays; }
+
+
+File: "test/retry.test.mjs"
+SHA-256: bcc4cf79192246b730cddaa70c18a987abebeed88d54a210e85298d30b4b98ad
+UTF-8 bytes: 344
+Current content:
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { retryDelays } from '../src/index.mjs';
+test('bounded backoff', () => assert.deepEqual(retryDelays(3, 100), [100, 200, 400]));
+test('zero retries', () => assert.deepEqual(retryDelays(0, 100), []));
+test('one retry', () => assert.deepEqual(retryDelays(1, 7), [7]));
+
+
+Verification status: pending
+
+Verification commands:
+"node --test"
+
+ForgeVerify has not run. Test source is evidence of assertions, not test success.`,
+    expectApproved: false,
+    defectMarkers: ["retry.mjs", "maxAttempts", "<=", "off-by-one", "extra delay"],
   },
 ];

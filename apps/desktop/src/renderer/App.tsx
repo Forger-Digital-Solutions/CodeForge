@@ -6,6 +6,7 @@ import WorkspaceShell from "./WorkspaceShell.js";
 import { migrateLegacyAppSettings, type AppSettings, type SettingsSnapshot } from "../app-settings.js";
 import type { CloudAccount } from "../cloud-account.js";
 import { markRendererLifecycle } from "./lifecycle.js";
+import PaidRequestEstimateNotice from "./PaidRequestEstimateNotice.js";
 
 export interface Project {
   id: string;
@@ -38,7 +39,11 @@ function BootstrapScreen(): React.ReactElement {
   );
 }
 
-export default function App() {
+export default function App(): React.ReactElement {
+  return <><AppContent /><PaidRequestEstimateNotice /></>;
+}
+
+function AppContent() {
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [recentProjects, setRecentProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);

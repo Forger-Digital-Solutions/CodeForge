@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-09T23:35:22.575Z",
+  "generatedAt": "2026-10-10T05:03:35.645Z",
   "campaigns": [
     "R73-FIRST-COMPLETION.json",
     "R73-COMPLETION-RECOVERY-1791538224699.json",
@@ -1166,10 +1166,10 @@
     }
   ],
   "qualificationAndSupplyProbeRequests": {
-    "actualRequests": 70,
+    "actualRequests": 88,
     "byProvider": {
-      "blockrun-free-direct": 18,
-      "kilo-free-direct": 52
+      "blockrun-free-direct": 26,
+      "kilo-free-direct": 62
     },
     "sourceFiles": [
       {
@@ -1276,6 +1276,13 @@
         "evidenceSha256": "ca8c25b13fad1568d28ea895ea47a73a76c64a835995737f7c7a77b3c429c617"
       },
       {
+        "file": "reviewer-nvidia_llama-3.2-11b-vision-1791605434027.json",
+        "providerId": "blockrun-free-direct",
+        "actualRequests": 8,
+        "localReportedRequestCounter": 9,
+        "evidenceSha256": "129abf40018ba6450b515a34fa5661bd30a5b187c866b3ef34efb829d100c59d"
+      },
+      {
         "file": "reviewer-nvidia_nemotron-3-super-120b-a12b_free-1791479328096.json",
         "providerId": "kilo-free-direct",
         "actualRequests": 8,
@@ -1288,6 +1295,13 @@
         "actualRequests": 9,
         "localReportedRequestCounter": 9,
         "evidenceSha256": "a5d0ba914741c627d4480cc37141748a66140764785d3b256d25584454929156"
+      },
+      {
+        "file": "reviewer-nvidia_nemotron-3-super-120b-a12b_free-1791605572020.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 10,
+        "localReportedRequestCounter": 11,
+        "evidenceSha256": "89ab556d98cd51e662f45bc6697ec804a1fa5f03ef01976ae5d3c261f2f6186e"
       },
       {
         "file": "reviewer-nvidia_nemotron-3-ultra-550b-a55b_free-1791479634287.json",
@@ -1312,7 +1326,7 @@
       }
     ],
     "excludedDuplicateFiles": [],
-    "interpretation": "Kilo counts owned LIVE_REVIEWER_ONLY_PUBLIC_CASES frames; BlockRun counts POSTs in unique owned live/compact observation files, including public transport/tool probes. Derived qualification receipts and copied receipt projections are excluded. A locally refused invocation is not an actual POST or an organic outage."
+    "interpretation": "Both providers count owned LIVE_REVIEWER_ONLY_PUBLIC_CASES frames. BlockRun also counts POSTs in unique owned live/compact observation files, including public transport/tool probes. Derived qualification receipts and copied receipt projections are excluded. A locally refused invocation is not an actual POST or an organic outage."
   },
   "forgeVerifyFailures": 0,
   "forgeVerifyExecutions": 0,

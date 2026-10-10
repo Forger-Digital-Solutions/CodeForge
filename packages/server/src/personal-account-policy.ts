@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import type { ChatRequest, Usage } from "@codeforge/providers";
 import { ProviderError } from "@codeforge/providers";
@@ -65,7 +65,24 @@ export interface PersonalAccountBinding {
 export interface PersonalAccountPolicyOptions {
   personalAccountAuthority?: (ownerUserId: string, connectionId: string) => PersonalAccountAuthority | undefined;
   personalRoutingPolicy?: (ownerUserId: string) => PersonalRoutingPolicy | undefined;
+  onEstimate?: (estimate: PersonalAccountEstimate) => Promise<void>;
   now?: () => number;
+}
+
+export interface PersonalAccountEstimate {
+  ownerUserId: string;
+  connectionId: string;
+  providerId: string;
+  modelId: string;
+  requestId: string;
+  estimatedCostUsd: number;
+  remainingBudgetUsd: number;
+  currency: "USD";
+  pricingSource: string;
+  workspacePath?: string;
+  sessionId?: string;
+  runId?: string;
+  purpose: "INFERENCE" | "QUALIFICATION";
 }
 
 export class PersonalAccountPolicyError extends ProviderError {
@@ -94,6 +111,7 @@ interface Admission {
 
 interface StoredAttempt {
   ownerUserId: string;
+  guardInstanceId: string;
   connectionId: string;
   requestId: string;
   requestDigest: string;
@@ -104,22 +122,27 @@ interface StoredAttempt {
   actualMicros?: number;
   reportedCostUsd?: number;
   accountingUncertain?: boolean;
-  status: "RESERVED" | "DISPATCHED" | "SETTLED" | "RELEASED";
+  estimatePresentedAt?: string;
+  status: "RESERVED" | "DISPATCHED" | "SETTLED" | "RELEASED" | "RECONCILED_UNCERTAIN";
   price: PersonalAccountModelPrice;
 }
 
 interface StoredBudget { consumedMicros: number; reservedMicros: number; unexpectedCharge?: boolean; }
-interface StoredDomain { inFlight?: string; cooldownUntil?: number; }
+interface StoredDomain { inFlight?: string; cooldownUntil?: number; accountingUncertain?: boolean; }
 
 export interface PersonalAccountReservation {
   dispatch(): Promise<void>;
   settle(usage?: Usage): Promise<void>;
-  fail(error?: unknown): Promise<void>;
+  fail(error?: unknown, usage?: Usage): Promise<void>;
 }
 
 /** Host certificates authorize spend; user-source metadata cannot certify itself. */
 export class PersonalAccountBudgetGuard {
   private readonly now: () => number;
+  private readonly guardInstanceId = randomUUID();
+  private readonly activeOwners = new Set<string>();
+  private leaseHeartbeat?: ReturnType<typeof setInterval>;
+  private readonly leaseMs = 30_000;
   private readonly budgets = new Map<string, StoredBudget>();
   private readonly domains = new Map<string, StoredDomain>();
   constructor(private readonly persistence: ISessionPersistence, private readonly options: PersonalAccountPolicyOptions) {
@@ -138,6 +161,7 @@ export class PersonalAccountBudgetGuard {
     try {
       const admission = this.admission(binding);
       const domain = this.domains.get(`personal-account-domain-${sha(personalAccountDomain(admission.authority))}`);
+      if (domain?.accountingUncertain) return undefined;
       if ((domain?.cooldownUntil ?? 0) > this.now()) return undefined;
       const budget = this.budgets.get(this.budgetId(binding));
       if (budget?.unexpectedCharge) return undefined;
@@ -146,7 +170,14 @@ export class PersonalAccountBudgetGuard {
     } catch { return undefined; }
   }
 
+  assertCurrent(binding: PersonalAccountBinding, request: ChatRequest, credential: string): void {
+    const admission = this.admission(binding, request, credential);
+    const domain = this.domains.get(`personal-account-domain-${sha(personalAccountDomain(admission.authority))}`);
+    if (domain?.accountingUncertain) fail("PERSONAL_ACCOUNT_DOMAIN_ACCOUNTING_UNCERTAIN");
+  }
+
   async hydrateOwner(ownerUserId: string): Promise<void> {
+    await this.touchGuardLease(ownerUserId);
     for (const item of await this.persistence.getWorkItemsByKind("personal_account_domain")) {
       const stored = item as unknown as { domain?: StoredDomain };
       if (stored.domain) this.domains.set(item.id, { ...stored.domain });
@@ -154,6 +185,69 @@ export class PersonalAccountBudgetGuard {
     for (const item of await this.persistence.getWorkItemsByKind("personal_account_budget")) {
       const stored = item as unknown as { ownerUserId?: string; budget?: StoredBudget };
       if (stored.ownerUserId === ownerUserId && stored.budget) this.budgets.set(item.id, { ...stored.budget });
+    }
+    await this.reconcileOrphanedAttempts(ownerUserId);
+  }
+
+  private async touchGuardLease(ownerUserId: string): Promise<void> {
+    this.activeOwners.add(ownerUserId);
+    const leaseId = `personal-account-guard-${sha(`${ownerUserId}\0${this.guardInstanceId}`)}`;
+    await this.persistence.withTransaction(async tx => {
+      await tx.insertIfAbsent({ id: leaseId, kind: "personal_account_guard_lease", ownerUserId, guardInstanceId: this.guardInstanceId } as unknown as WorkItem);
+      await tx.lockWorkItem(leaseId);
+      await tx.upsertWorkItem({ id: leaseId, kind: "personal_account_guard_lease", ownerUserId, guardInstanceId: this.guardInstanceId,
+        expiresAt: new Date(this.now() + this.leaseMs).toISOString() } as unknown as WorkItem);
+    });
+    this.leaseHeartbeat ??= setInterval(() => {
+      for (const activeOwner of this.activeOwners) void this.touchGuardLease(activeOwner).catch(() => {});
+    }, this.leaseMs / 3);
+    this.leaseHeartbeat.unref?.();
+  }
+
+  private async reconcileOrphanedAttempts(ownerUserId: string): Promise<void> {
+    const leases = await this.persistence.getWorkItemsByKind("personal_account_guard_lease");
+    const liveInstances = new Set(leases.flatMap(item => {
+      const lease = item as unknown as { ownerUserId?: string; guardInstanceId?: string; expiresAt?: string };
+      return lease.ownerUserId === ownerUserId && lease.guardInstanceId && Number.isFinite(Date.parse(lease.expiresAt ?? "")) && Date.parse(lease.expiresAt!) > this.now()
+        ? [lease.guardInstanceId] : [];
+    }));
+    const attempts = await this.persistence.getWorkItemsByKind("personal_account_attempt");
+    for (const item of attempts) {
+      const outer = item as unknown as { attempt?: StoredAttempt };
+      const attempt = outer.attempt;
+      if (!attempt || attempt.ownerUserId !== ownerUserId || (attempt.status !== "RESERVED" && attempt.status !== "DISPATCHED") || liveInstances.has(attempt.guardInstanceId)) continue;
+      const uncertainDispatch = attempt.status === "DISPATCHED";
+      const charge = uncertainDispatch ? Math.max(attempt.estimatedMicros, attempt.actualMicros ?? 0, attempt.chargedMicros ?? 0) : 0;
+      await this.persistence.withTransaction(async tx => {
+        await tx.lockWorkItem(item.id);
+        await tx.lockWorkItem(attempt.domainId);
+        await tx.lockWorkItem(attempt.budgetId);
+        if (attempt.guardInstanceId) await tx.lockWorkItem(`personal-account-guard-${sha(`${ownerUserId}\0${attempt.guardInstanceId}`)}`);
+        const stored = await tx.getWorkItem(item.id) as unknown as { attempt?: StoredAttempt } | undefined;
+        const current = stored?.attempt;
+        if (!current || (current.status !== "RESERVED" && current.status !== "DISPATCHED") || liveInstances.has(current.guardInstanceId)) return;
+        const instanceLease = current.guardInstanceId
+          ? await tx.getWorkItem(`personal-account-guard-${sha(`${ownerUserId}\0${current.guardInstanceId}`)}`) as unknown as { expiresAt?: string } | undefined
+          : undefined;
+        if (instanceLease && Number.isFinite(Date.parse(instanceLease.expiresAt ?? "")) && Date.parse(instanceLease.expiresAt!) > this.now()) return;
+        const domain = (await tx.getWorkItem(current.domainId) as unknown as { domain?: StoredDomain } | undefined)?.domain ?? {};
+        const budgetWork = await tx.getWorkItem(current.budgetId) as unknown as { ownerUserId?: string; budget?: StoredBudget } | undefined;
+        const budget = budgetWork?.budget ?? { consumedMicros: 0, reservedMicros: 0 };
+        if (domain.inFlight === item.id) {
+          const { inFlight: _inFlight, ...rest } = domain;
+          await tx.upsertWorkItem({ id: current.domainId, kind: "personal_account_domain", domain: { ...rest, ...(uncertainDispatch ? { accountingUncertain: true } : {}) } } as unknown as WorkItem);
+        }
+        const nextBudget = { ...budget, reservedMicros: Math.max(0, budget.reservedMicros - current.estimatedMicros),
+          ...(uncertainDispatch ? { consumedMicros: Math.min(Number.MAX_SAFE_INTEGER, budget.consumedMicros + charge), unexpectedCharge: true } : {}) };
+        await tx.upsertWorkItem({ id: current.budgetId, kind: "personal_account_budget", ownerUserId, connectionId: current.connectionId, budget: nextBudget } as unknown as WorkItem);
+        await tx.upsertWorkItem({ id: item.id, kind: "personal_account_attempt", attempt: { ...current,
+          status: uncertainDispatch ? "RECONCILED_UNCERTAIN" : "RELEASED", chargedMicros: uncertainDispatch ? charge : 0,
+          ...(uncertainDispatch ? { accountingUncertain: true } : {}), orphanedAt: new Date(this.now()).toISOString() } } as unknown as WorkItem);
+      });
+      const persistedBudget = await this.persistence.getWorkItem(attempt.budgetId) as unknown as { budget?: StoredBudget } | undefined;
+      const persistedDomain = await this.persistence.getWorkItem(attempt.domainId) as unknown as { domain?: StoredDomain } | undefined;
+      if (persistedBudget?.budget) this.budgets.set(attempt.budgetId, { ...persistedBudget.budget });
+      if (persistedDomain?.domain) this.domains.set(attempt.domainId, { ...persistedDomain.domain });
     }
   }
 
@@ -204,6 +298,8 @@ export class PersonalAccountBudgetGuard {
   }
 
   async reserve(binding: PersonalAccountBinding, request: ChatRequest, credential: string): Promise<PersonalAccountReservation> {
+    await this.touchGuardLease(binding.ownerUserId);
+    await this.reconcileOrphanedAttempts(binding.ownerUserId);
     if (request.metadata?.personalAccountOwnerUserId !== binding.ownerUserId || (request.metadata.personalAccountConnectionId !== undefined && request.metadata.personalAccountConnectionId !== binding.connectionId)) fail("PERSONAL_ACCOUNT_REQUEST_OWNER_MISMATCH");
     const requestId = request.metadata.personalAccountRequestId;
     if (!bounded(requestId)) fail("PERSONAL_ACCOUNT_REQUEST_ID_REQUIRED");
@@ -212,7 +308,7 @@ export class PersonalAccountBudgetGuard {
     const domainId = `personal-account-domain-${sha(personalAccountDomain(admission.authority))}`;
     const attemptId = `personal-account-attempt-${sha(`${binding.ownerUserId}\0${binding.connectionId}\0${requestId}`)}`;
     const requestDigest = sha(JSON.stringify({ model: request.model, system: request.system, messages: request.messages, tools: request.tools, maxTokens: request.maxTokens }));
-    const record: StoredAttempt = { ownerUserId: binding.ownerUserId, connectionId: binding.connectionId, requestId, requestDigest, domainId, budgetId, estimatedMicros: admission.estimatedMicros, status: "RESERVED", price: admission.price };
+    const record: StoredAttempt = { ownerUserId: binding.ownerUserId, guardInstanceId: this.guardInstanceId, connectionId: binding.connectionId, requestId, requestDigest, domainId, budgetId, estimatedMicros: admission.estimatedMicros, status: "RESERVED", price: admission.price };
     await this.persistence.withTransaction(async tx => {
       await tx.insertIfAbsent({ id: domainId, kind: "personal_account_domain", domain: {} } as unknown as WorkItem);
       await tx.lockWorkItem(domainId);
@@ -221,6 +317,7 @@ export class PersonalAccountBudgetGuard {
       if (await tx.getWorkItem(attemptId)) fail("PERSONAL_ACCOUNT_REQUEST_ALREADY_RESERVED");
       const domain = (await tx.getWorkItem(domainId) as unknown as { domain: StoredDomain }).domain;
       if (domain.inFlight) fail("PERSONAL_ACCOUNT_DOMAIN_BUSY");
+      if (domain.accountingUncertain) fail("PERSONAL_ACCOUNT_DOMAIN_ACCOUNTING_UNCERTAIN");
       if ((domain.cooldownUntil ?? 0) > this.now()) fail("PERSONAL_ACCOUNT_DOMAIN_COOLDOWN");
       const budget = (await tx.getWorkItem(budgetId) as unknown as { budget: StoredBudget }).budget;
       if (budget.unexpectedCharge) fail("PERSONAL_ACCOUNT_UNEXPECTED_CHARGE_BLOCKED");
@@ -234,13 +331,15 @@ export class PersonalAccountBudgetGuard {
     this.budgets.set(budgetId, { ...persistedBudget.budget });
     this.domains.set(domainId, { ...(await this.persistence.getWorkItem(domainId) as unknown as { domain: StoredDomain }).domain });
     let dispatched = false;
+    let dispatchStarted = false;
     let settled = false;
-    const finish = async (usage?: Usage, error?: unknown): Promise<void> => {
+    const finish = async (usage?: Usage, error?: unknown, uncertain = false): Promise<void> => {
       if (settled) return;
       let actualMicros: number | undefined;
       const reportedCostUsd = dispatched ? usage?.costUsd : undefined;
       const reportedMicros = reportedCostUsd === undefined ? undefined : Math.ceil(reportedCostUsd * 1_000_000);
-      let accountingUncertain = reportedMicros !== undefined && (!Number.isSafeInteger(reportedMicros) || reportedMicros < 0);
+      let accountingUncertain = dispatched && (error as { code?: unknown } | undefined)?.code === "MALFORMED_USAGE_COST"
+        || reportedMicros !== undefined && (!Number.isSafeInteger(reportedMicros) || reportedMicros < 0);
       if (!accountingUncertain) actualMicros = reportedMicros;
       const measuredTokens = usage !== undefined && Number.isSafeInteger(usage.inputTokens) && usage.inputTokens >= 0 && Number.isSafeInteger(usage.outputTokens) && usage.outputTokens >= 0;
       if (dispatched && measuredTokens) {
@@ -249,7 +348,7 @@ export class PersonalAccountBudgetGuard {
         else if (!accountingUncertain) actualMicros = Math.max(actualMicros ?? 0, pricedTokens);
       }
       // An unrepresentable amount blocks the budget; its reported USD value remains separate.
-      const chargedMicros = accountingUncertain ? Number.MAX_SAFE_INTEGER : dispatched ? measuredTokens ? (actualMicros ?? record.estimatedMicros) : Math.max(actualMicros ?? 0, record.estimatedMicros) : 0;
+      const chargedMicros = accountingUncertain ? Number.MAX_SAFE_INTEGER : dispatched ? measuredTokens && !uncertain ? (actualMicros ?? record.estimatedMicros) : Math.max(actualMicros ?? 0, record.estimatedMicros) : 0;
       await this.persistence.withTransaction(async tx => {
         await tx.lockWorkItem(domainId);
         await tx.lockWorkItem(budgetId);
@@ -276,9 +375,33 @@ export class PersonalAccountBudgetGuard {
     };
     return {
       dispatch: async () => {
-        if (dispatched || settled) fail("PERSONAL_ACCOUNT_REQUEST_ALREADY_DISPATCHED");
+        if (dispatchStarted || dispatched || settled) fail("PERSONAL_ACCOUNT_REQUEST_ALREADY_DISPATCHED");
+        dispatchStarted = true;
         const refreshed = this.admission(binding, request, credential);
         if (personalAccountDomain(refreshed.authority) !== personalAccountDomain(admission.authority) || refreshed.estimatedMicros !== record.estimatedMicros) fail("PERSONAL_ACCOUNT_AUTHORITY_CHANGED");
+        if (!refreshed.free && this.options.onEstimate) {
+          const budget = (await this.persistence.getWorkItem(budgetId) as unknown as { budget: StoredBudget }).budget;
+          const metadata = request.metadata;
+          try {
+            await this.options.onEstimate({ ownerUserId: binding.ownerUserId, connectionId: binding.connectionId,
+              providerId: binding.canonicalProviderId, modelId: binding.modelId, requestId,
+              estimatedCostUsd: record.estimatedMicros / 1_000_000,
+              remainingBudgetUsd: Math.max(0, refreshed.budgetMicros - budget.consumedMicros - budget.reservedMicros) / 1_000_000,
+              currency: "USD", pricingSource: refreshed.price.source,
+              ...(bounded(metadata?.personalAccountSessionId) ? { sessionId: metadata.personalAccountSessionId } : {}),
+              ...(bounded(metadata?.personalAccountRunId) ? { runId: metadata.personalAccountRunId } : {}),
+              ...(typeof metadata?.personalAccountWorkspacePath === "string" ? { workspacePath: metadata.personalAccountWorkspacePath } : {}),
+              purpose: metadata?.personalAccountPurpose === "QUALIFICATION" ? "QUALIFICATION" : "INFERENCE" });
+          } catch (error) {
+            if (error instanceof PersonalAccountPolicyError) throw error;
+            fail("PERSONAL_ACCOUNT_ESTIMATE_UNAVAILABLE");
+          }
+          record.estimatePresentedAt = new Date(this.now()).toISOString();
+          // Presentation can yield to account switching or a pricing refresh.
+          const afterPresentation = this.admission(binding, request, credential);
+          if (personalAccountDomain(afterPresentation.authority) !== personalAccountDomain(admission.authority)
+            || afterPresentation.estimatedMicros !== record.estimatedMicros) fail("PERSONAL_ACCOUNT_AUTHORITY_CHANGED");
+        }
         await this.persistence.withTransaction(async tx => {
           await tx.lockWorkItem(domainId);
           await tx.lockWorkItem(budgetId);
@@ -292,7 +415,7 @@ export class PersonalAccountBudgetGuard {
         dispatched = true;
       },
       settle: usage => finish(usage),
-      fail: error => finish(undefined, error),
+      fail: (error, usage) => finish(usage, error, true),
     };
   }
 }

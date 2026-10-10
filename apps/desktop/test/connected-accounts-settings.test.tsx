@@ -67,6 +67,14 @@ describe("Connected Accounts settings", () => {
     expect(render([account({ classification: "FREE_UNVERIFIED" })])).not.toContain("Qualify Free models");
     expect(render([account({ classification: "BLOCKED" })])).not.toContain("Qualify Free models");
   });
+  it("keeps paid qualification disabled until current spending authority is verified", () => {
+    const disabledQualification = render([account({ classification: "PAID", paidQualificationEligible: false, qualificationModels: [{ modelId: "fixture-model", displayName: "Fixture model", isFree: false }] })]);
+    expect(disabledQualification).toContain("Qualify selected personal model");
+    expect(disabledQualification).toContain("Qualification requires current account authorization");
+    expect(disabledQualification).toContain("Each request shows its estimate before dispatch");
+    expect(disabledQualification).toContain("Qualification does not certify a zero-cost route");
+    expect(disabledQualification.match(/<button\b[^>]*>Qualify selected personal model/)?.[0]).toContain("disabled");
+  });
   it("keeps the global paid toggle explicit for Auto best and requires consent and limitations controls", () => {
     const policy: ProviderRoutingPolicy = { ...defaultProviderRoutingPolicy(), mode: "AUTO_BEST" };
     const html = render([], policy);

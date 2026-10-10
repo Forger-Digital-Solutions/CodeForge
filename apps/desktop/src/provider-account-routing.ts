@@ -16,6 +16,19 @@ export function defaultPersonalProviderRoutingPolicy(): PersonalProviderRoutingP
   return { mode: "FREE_ONLY", paidEnabled: false, explicitConsent: false, limitationsAcknowledged: false, automaticTopUp: false };
 }
 
+export function personalPaidQualificationAdmission(policy: PersonalProviderRoutingPolicy, account: {
+  connectionId: string; enabled: boolean; authState: string; accountClass: string; paidSpendingEnabled: boolean;
+  monthlyBudgetCents?: number; preference?: string;
+}): { eligible: boolean; reason?: string } {
+  if (policy.mode === "FREE_ONLY" || !policy.paidEnabled || !policy.explicitConsent || !policy.limitationsAcknowledged) return { eligible: false, reason: "PERSONAL_PAID_GLOBAL_PERMISSION_OFF" };
+  if (!account.enabled || account.authState !== "ok" || account.accountClass !== "PAID") return { eligible: false, reason: "PAID_ACCOUNT_RECHECK_REQUIRED" };
+  if (!account.paidSpendingEnabled) return { eligible: false, reason: "ACCOUNT_PAID_SPENDING_DISABLED" };
+  if (!Number.isSafeInteger(account.monthlyBudgetCents) || (account.monthlyBudgetCents ?? 0) <= 0 || !Number.isSafeInteger(account.monthlyBudgetCents! * 10_000)) return { eligible: false, reason: "ACCOUNT_PAID_BUDGET_REQUIRED" };
+  if (policy.mode === "SPECIFIC_ACCOUNT" && policy.specificAccountConnectionId !== account.connectionId) return { eligible: false, reason: "PERSONAL_ACCOUNT_NOT_SELECTED" };
+  if (account.preference === "MANUAL" && (policy.mode !== "SPECIFIC_ACCOUNT" || policy.specificAccountConnectionId !== account.connectionId)) return { eligible: false, reason: "PERSONAL_ACCOUNT_MANUAL_SELECTION_REQUIRED" };
+  return { eligible: true };
+}
+
 export function parsePersonalProviderRoutingPolicy(value: unknown): PersonalProviderRoutingPolicy {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("PERSONAL_ROUTING_POLICY_INVALID");
   const raw = value as Record<string, unknown>;

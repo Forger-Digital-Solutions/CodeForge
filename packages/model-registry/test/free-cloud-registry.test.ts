@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ForgeZero, CapacityReservationLedger, freeRouteExclusionReason, type FreeModelRecord } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createMockProvider, classifyOpenRouterEntitlement, type ProviderExecutionContext, type StreamEvent } from "@codeforge/providers";
-import { createFreeFabric, EightBitRouteHealthAuthority, InMemoryQualificationPersistence, type ModelQualificationReceipt } from "@codeforge/eight-bit";
+import { createFreeFabric, EightBitRouteHealthAuthority, InMemoryQualificationPersistence, REVIEWER_PROTOCOL, type ModelQualificationReceipt } from "@codeforge/eight-bit";
 import {
   PROVIDER_DEFINITIONS,
   PROVIDER_POLICIES,
@@ -56,7 +56,7 @@ describe("R68 fresh packaged qualification", () => {
     expect(oldRoute.roles).toContain("PRIMARY_CODING_AGENT");
     expect(oldRoute.roles).not.toContain("REVIEWER");
     expect(oldRoute.roleSuitability?.REVIEWER).toBe("NOT_TESTED");
-    await service.recordReceipt({ ...historical, metadata: { roleProtocolVersions: { REVIEWER: "REVIEWER_PROTOCOL_V3" } } });
+    await service.recordReceipt({ ...historical, metadata: { roleProtocolVersions: { REVIEWER: REVIEWER_PROTOCOL.version } } });
     const currentRoute = service.snapshot().models.flatMap((model) => model.routes).find((route) => route.providerModelId === "review-contract")!;
     expect(currentRoute.roles).toContain("REVIEWER");
     await service.recordReceipt({ ...historical, roleResults: { REVIEWER: historical.roleResults.REVIEWER } });

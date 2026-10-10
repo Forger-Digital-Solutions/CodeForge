@@ -33,6 +33,7 @@ describe("reported OpenRouter cost reaches the personal account ledger", () => {
   let posts: Record<string, unknown>[];
   let cost: unknown;
   let streaming: boolean;
+  let responseModel: string;
   let catalog: InMemoryProviderCatalog;
   const makeRegistry = () => new UserIntelligenceRuntimeRegistry(persistence, catalog, { get: owner => owner === "alice" ? KEY : undefined }, {
     now: () => NOW, personalAccountAuthority: owner => owner === "alice" ? authority : undefined,
@@ -40,15 +41,15 @@ describe("reported OpenRouter cost reaches the personal account ledger", () => {
     fetchFn: async (_url, init) => {
       posts.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
       const usage = { prompt_tokens: 4, completion_tokens: 2, cost };
-      if (!streaming) return new Response(JSON.stringify({ model: MODEL, choices: [{ message: { content: "fixture result" }, finish_reason: "stop" }], usage }));
+      if (!streaming) return new Response(JSON.stringify({ model: responseModel, choices: [{ message: { content: "fixture result" }, finish_reason: "stop" }], usage }));
       return new Response([
-        `data: ${JSON.stringify({ model: MODEL, choices: [{ delta: { tool_calls: [{ id: "fixture-tool", index: 0, function: { name: "read_file", arguments: "{}" } }] } }] })}`,
-        `data: ${JSON.stringify({ model: MODEL, choices: [{ delta: {}, finish_reason: "tool_calls" }] })}`,
-        `data: ${JSON.stringify({ model: MODEL, choices: [], usage })}`, "data: [DONE]", "",
+        `data: ${JSON.stringify({ model: responseModel, choices: [{ delta: { tool_calls: [{ id: "fixture-tool", index: 0, function: { name: "read_file", arguments: "{}" } }] } }], ...(responseModel !== MODEL ? { usage } : {}) })}`,
+        `data: ${JSON.stringify({ model: responseModel, choices: [{ delta: {}, finish_reason: "tool_calls" }] })}`,
+        `data: ${JSON.stringify({ model: responseModel, choices: [], usage })}`, "data: [DONE]", "",
       ].join("\n\n"), { headers: { "content-type": "text/event-stream" } });
     },
   });
-  beforeEach(async () => { persistence = createSessionPersistence({ dbPath: ":memory:" }); await persistence.init(); posts = []; cost = 0.025; streaming = false; catalog = new InMemoryProviderCatalog(); });
+  beforeEach(async () => { persistence = createSessionPersistence({ dbPath: ":memory:" }); await persistence.init(); posts = []; cost = 0.025; streaming = false; responseModel = MODEL; catalog = new InMemoryProviderCatalog(); });
   afterEach(async () => { await persistence.close(); });
 
   it.each([false, true])("blocks an unexpected charge and persists the actual amount across restart (stream=%s)", async stream => {
@@ -71,10 +72,24 @@ describe("reported OpenRouter cost reaches the personal account ledger", () => {
   it.each([false, true])("does not mistake malformed reported billing for a passing result (stream=%s)", async stream => {
     streaming = stream; cost = "sensitive-invalid-value"; const registry = makeRegistry(); const stored = await registry.put("alice", source()); const adapter = catalog.get(stored.providerId)!;
     const run = async () => { if (!stream) return adapter.chat(request("malformed-cost")); for await (const _event of adapter.streamChat(request("malformed-cost"))) {} };
-    await expect(run()).rejects.toMatchObject({ code: "MALFORMED_USAGE_COST", message: "Provider returned invalid usage cost" });
+    await expect(run()).rejects.toMatchObject({ code: "PERSONAL_ACCOUNT_ACCOUNTING_UNCERTAIN" });
     const attempts = await persistence.getWorkItemsByKind("personal_account_attempt") as unknown as { attempt: { status: string; chargedMicros: number } }[];
-    expect(attempts[0]!.attempt).toMatchObject({ status: "SETTLED", chargedMicros: 0 });
+    expect(attempts[0]!.attempt).toMatchObject({ status: "SETTLED", chargedMicros: Number.MAX_SAFE_INTEGER, accountingUncertain: true });
+    const budgets = await persistence.getWorkItemsByKind("personal_account_budget") as unknown as { budget: { unexpectedCharge?: boolean } }[];
+    expect(budgets[0]!.budget.unexpectedCharge).toBe(true);
     expect(JSON.stringify(attempts)).not.toContain(String(cost)); expect(posts).toHaveLength(1);
+  });
+
+  it.each([false, true])("retains reported billing even when served-model identity is rejected (stream=%s)", async stream => {
+    streaming = stream; responseModel = "unrequested-fixture-model";
+    const registry = makeRegistry(); const stored = await registry.put("alice", source()); const adapter = catalog.get(stored.providerId)!;
+    const seen: StreamEvent[] = [];
+    const run = async () => { if (!stream) return adapter.chat(request("wrong-model-billing")); for await (const event of adapter.streamChat(request("wrong-model-billing"))) seen.push(event); };
+    await expect(run()).rejects.toMatchObject({ code: "PERSONAL_ACCOUNT_COST_EXCEEDED_RESERVATION" });
+    const attempts = await persistence.getWorkItemsByKind("personal_account_attempt") as unknown as { attempt: { chargedMicros: number; reportedCostUsd: number } }[];
+    expect(attempts[0]!.attempt).toMatchObject({ chargedMicros: 25_000, reportedCostUsd: 0.025 });
+    expect(seen.filter(event => event.type.startsWith("tool_call_") || event.type === "finish")).toEqual([]);
+    expect(posts).toHaveLength(1);
   });
 
   it.each([false, true])("blocks unrepresentable reported charges durably instead of replacing them with a zero estimate (stream=%s)", async stream => {

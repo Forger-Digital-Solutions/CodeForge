@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { CloudAccount, CloudUsage } from "./cloud-account.js";
 import type { PuterAccountView } from "./puter-account-types.js";
 import type { ConnectedAccountView, ConnectedAccountResult, ConnectedAccountPolicyPatch, ProviderAccountOAuthOptions, ProviderRoutingPolicy } from "./connected-account-types.js";
+import type { PersonalPaidEstimateView } from "./paid-request-estimate-types.js";
 
 // Startup-chain marks at verbose console level (see renderer/lifecycle.ts). Observation only:
 // nothing is exposed to the page and nothing is read from the main process.
@@ -14,6 +15,12 @@ lifecycleMark("preload-entry");
 // attaches it to the primary window's own requests (see control-plane-trust.ts), so the
 // renderer never holds a secret it could leak.
 const api = {
+  onPersonalPaidEstimate: (callback: (estimate: PersonalPaidEstimateView) => void): (() => void) => {
+    const listener = (_event: unknown, estimate: PersonalPaidEstimateView) => callback(estimate);
+    ipcRenderer.on("providerAccounts:paidEstimate", listener);
+    return () => ipcRenderer.removeListener("providerAccounts:paidEstimate", listener);
+  },
+  acknowledgePersonalPaidEstimate: (presentationId: string): Promise<boolean> => ipcRenderer.invoke("providerAccounts:estimatePresented", presentationId),
   getRuntimeEndpoint: (): Promise<string | null> => {
     return ipcRenderer.invoke("app:runtime-endpoint");
   },

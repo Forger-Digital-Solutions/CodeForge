@@ -872,7 +872,7 @@ export class SubagentManager {
         const runtimeRes = await runtime.executeAgentRun({
           runId: item.id,
           agentId: item.agentId,
-          role: item.role,
+          role: getAgent(item.agentId)?.id ?? item.role,
           goal: item.task,
           workspaceId: item.workspace?.id ?? item.id,
           workspacePath,

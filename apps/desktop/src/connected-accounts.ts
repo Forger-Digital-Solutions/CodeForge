@@ -52,6 +52,7 @@ export interface ConnectedAccountsHost {
   probe(providerId: string, fields: Record<string, unknown>): Promise<{ values: Record<string, string>; models: ProviderModel[] }>;
   verifyOpenRouter?: typeof verifyOpenRouterEntitlement;
   paidAccountAdmission?: (account: ConnectedAccountAuthority) => { eligible: boolean; reason?: string };
+  paidQualificationAdmission?: (account: ConnectedAccountAuthority) => { eligible: boolean; reason?: string };
   now?: () => Date;
   notifyChanged?: () => void;
 }
@@ -151,6 +152,7 @@ export class ConnectedAccounts {
       : !record.paidSpendingEnabled ? { eligible: false, reason: "ACCOUNT_PAID_SPENDING_DISABLED" }
       : !Number.isSafeInteger(record.monthlyBudgetCents) || (record.monthlyBudgetCents ?? 0) <= 0 ? { eligible: false, reason: "ACCOUNT_PAID_BUDGET_REQUIRED" }
       : this.host.paidAccountAdmission?.(authority) ?? { eligible: false, reason: "PAID_RUNTIME_AUTHORITY_REQUIRED" };
+    const paidQualification = this.host.paidQualificationAdmission?.(authority) ?? { eligible: false, reason: "PAID_QUALIFICATION_AUTHORITY_REQUIRED" };
     return { connectionId: record.connectionId, providerId: record.providerId, providerName: this.host.providerName(record.providerId)!, label: record.label,
       maskedIdentity: authority.accountIdentityHash ? `Account ••••${authority.accountIdentityHash.slice(-8)}` : "Account identity unverified", authMethod: record.authMethod,
       connected: !!this.liveKey(record), enabled: record.enabled, authState: authority.authState,
@@ -159,7 +161,11 @@ export class ConnectedAccounts {
       preference: record.preference, freeRouteCount: 0, qualifiedModels: [],
       quotaSummary: authority.freeRequests ? `${authority.freeRequests.remaining}/${authority.freeRequests.limit} provider-reported daily Free requests remaining` : undefined,
       health: authority.authState === "ok" ? "connected" : authority.authState, reason: record.reason ?? record.entitlement?.reason,
-      paidDispatchEligible: paid.eligible, paidBlockReason: paid.eligible ? undefined : paid.reason };
+      paidDispatchEligible: paid.eligible, paidBlockReason: paid.eligible ? undefined : paid.reason,
+      paidQualificationEligible: paidQualification.eligible, paidQualificationBlockReason: paidQualification.eligible ? undefined : paidQualification.reason,
+      qualificationModels: record.models.filter(model => model.capabilities.toolCalling && model.pricing?.tokenOnly === true
+        && Date.parse(model.pricing.verifiedAt) <= this.now().getTime() && Date.parse(model.pricing.recheckAt) > this.now().getTime())
+        .map(model => ({ modelId: model.modelId, displayName: model.displayName, isFree: model.isFree })) };
   }
 
   list(): ConnectedAccountView[] { return this.records().filter((record) => record.ownerUserId === this.host.ownerUserId()).map((record) => this.view(record)); }
@@ -170,11 +176,14 @@ export class ConnectedAccounts {
     return { connectionId, credentialRef: record.credentialRef, credentialFingerprint: record.credentialFingerprint, checkedAt: record.checkedAt, models: structuredClone(record.models) };
   }
 
-  credentials(connectionId: string, mode: "FREE_ONLY" | "PERSONAL_PAID"): CredentialStore | undefined {
+  credentials(connectionId: string, mode: "FREE_ONLY" | "PERSONAL_PAID" | "PAID_QUALIFICATION"): CredentialStore | undefined {
     const record = this.owned(connectionId);
     const allowed = (): boolean => {
       const authority = this.authority(connectionId);
-      return !!authority?.enabled && authority.authState === "ok" && (mode === "FREE_ONLY" ? authority.freeAdmissionVerified : this.view(this.owned(connectionId)!).paidDispatchEligible);
+      return !!authority?.enabled && authority.authState === "ok" && (mode === "FREE_ONLY" ? authority.freeAdmissionVerified
+        : mode === "PAID_QUALIFICATION" ? authority.accountClass === "PAID" && authority.paidSpendingEnabled
+          && Number.isSafeInteger(authority.monthlyBudgetCents) && (authority.monthlyBudgetCents ?? 0) > 0 && this.host.paidQualificationAdmission?.(authority).eligible === true
+          : this.view(this.owned(connectionId)!).paidDispatchEligible);
     };
     if (!record || !allowed()) return undefined;
     const get = (key: string): string | undefined => {

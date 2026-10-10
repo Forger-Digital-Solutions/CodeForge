@@ -4,6 +4,8 @@ import ts from "typescript";
 import { describe, expect, it, vi } from "vitest";
 import { ProviderError, type ProviderAdapter, type StreamEvent } from "@codeforge/providers";
 import type { ConnectedAccountView } from "../src/connected-account-types.js";
+import type { PaidQualificationOptions } from "../src/provider-account-qualification.js";
+import { personalPaidQualificationAdmission } from "../src/provider-account-routing.js";
 
 type Handler = (...args: unknown[]) => unknown;
 
@@ -59,7 +61,7 @@ function handlerHost() {
   return { account, connections, host, owner: (value: string) => { owner = value; } };
 }
 
-const channels = ["providerAccounts:list", "providerAccounts:add", "providerAccounts:update", "providerAccounts:disconnect", "providerAccounts:replaceCredential", "providerAccounts:oauth", "providerAccounts:qualify", "providerRouting:getPolicy", "providerRouting:setPolicy"];
+const channels = ["providerAccounts:list", "providerAccounts:add", "providerAccounts:update", "providerAccounts:disconnect", "providerAccounts:replaceCredential", "providerAccounts:oauth", "providerAccounts:qualify", "providerAccounts:estimatePresented", "providerRouting:getPolicy", "providerRouting:setPolicy"];
 
 describe("production connected-account IPC authority", () => {
   it("synchronizes the latest owner when a login change races an earlier account synchronization", async () => {
@@ -71,7 +73,7 @@ describe("production connected-account IPC authority", () => {
     const runtime = { setLocalUserId: async (value: string) => { runtimeOwner = value; owners.push(value); if (value === "owner-a") await firstPaused; },
       listUserIntelligenceSources: async () => [], putUserIntelligenceSource: async () => {} };
     const connections = { accountOwnerUserId: () => owner, listProviderAccounts: () => [] };
-    const synchronize = productionAccountSync({ server: runtime, providerConnections: connections, userConnectedFreeScopeId: () => owner });
+    const synchronize = productionAccountSync({ server: runtime, providerConnections: connections, userConnectedFreeScopeId: () => owner, currentWorkspacePath: undefined });
     const first = synchronize();
     owner = "owner-b";
     const second = synchronize();
@@ -203,6 +205,32 @@ describe("production account qualification", () => {
     h.authority.freeAdmissionVerified = false;
     expect(await productionHandler("providerAccounts:qualify", h.host)({}, h.account.connectionId)).toMatchObject({ ok: false });
     expect(h.host.runRoleAwareQualification).not.toHaveBeenCalled();
+  });
+
+  it("binds explicitly authorized paid qualification to one exact model, current workspace and existing durable reservation bridge", async () => {
+    const h = qualificationHost([]);
+    const authority = { ...h.authority, connectionId: h.account.connectionId, freeAdmissionVerified: false, enabled: true, authState: "ok", accountClass: "PAID", paidSpendingEnabled: true, monthlyBudgetCents: 100 };
+    const paidModel = { ...h.model, modelId: "vendor/exact-paid", isFree: false, freeStatus: "paid", pricing: { ...h.model.pricing, inputCostPerMillion: 1, outputCostPerMillion: 2 } };
+    const policy = { mode: "FREE_PREFERRED", paidEnabled: true, explicitConsent: true, limitationsAcknowledged: true, automaticTopUp: false };
+    const reserve = vi.fn(async () => ({ dispatch: async () => {}, settle: async () => {}, fail: async () => {} }));
+    const transportConfig = vi.fn();
+    const qualify = vi.fn(async (options: PaidQualificationOptions) => { options.assertCurrent(); await options.reserve({} as never, {} as never); });
+    const connections = { ...h.connections, providerAccountAuthority: () => authority, providerAccountModels: () => ({ models: [paidModel] }) };
+    const host = { ...h.host, requireConnections: () => connections, server: { reservePersonalAccountQualification: reserve }, currentWorkspacePath: "G:\\public-fixture",
+      readSettings: () => ({}), readPersonalProviderRoutingPolicy: () => policy, personalPaidQualificationAdmission,
+      connectedAccountRuntimeAuthority: () => authority, qualifyPersonalPaidModel: qualify,
+      OpenAICompatibleAdapter: class { constructor(config: unknown) { transportConfig(config); } } };
+    const handler = productionHandler("providerAccounts:qualify", host);
+    expect(await handler({}, h.account.connectionId)).toMatchObject({ ok: false });
+    expect(await handler({}, h.account.connectionId, "vendor/other-model")).toMatchObject({ ok: false });
+    expect(qualify).not.toHaveBeenCalled();
+    expect(await handler({}, h.account.connectionId, paidModel.modelId)).toMatchObject({ ok: true });
+    expect(qualify.mock.calls[0]?.[0]).toMatchObject({ authority, model: paidModel, workspacePath: "G:\\public-fixture" });
+    expect(transportConfig).toHaveBeenCalledWith(expect.objectContaining({ providerId: "openrouter", baseUrl: "https://openrouter.ai/api/v1", includeUsageInStream: true, requestBodyExtras: { usage: { include: true } } }));
+    expect(reserve).toHaveBeenCalledOnce(); expect(h.host.runRoleAwareQualification).not.toHaveBeenCalled();
+    policy.paidEnabled = false;
+    expect(await handler({}, h.account.connectionId, paidModel.modelId)).toMatchObject({ ok: false });
+    expect(qualify).toHaveBeenCalledOnce();
   });
 
   it("preserves provider quota failures as transient qualification evidence", async () => {

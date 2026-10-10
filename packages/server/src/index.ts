@@ -43,7 +43,7 @@ import { buildProviderTopologyCapacity } from "./provider-topology-capacity.js";
 import { buildCapacityConfidence, type CapacityConfidenceReport } from "./capacity-confidence.js";
 import { createWorkflowService, type WorkflowService } from "./workflow-service.js";
 import { WorkspaceService, createWorkspaceService } from "./workspace-service.js";
-import { AutonomousRunOrchestrator, createAutonomousRunOrchestrator } from "./autonomous-orchestrator.js";
+import { AutonomousRunOrchestrator, createAutonomousRunOrchestrator, type OrchestratorRosterContext } from "./autonomous-orchestrator.js";
 import { ParallelAutonomousRunOrchestrator, createParallelAutonomousRunOrchestrator } from "./parallel-orchestrator.js";
 import { MissionSupervisor, createMissionSupervisor } from "./mission-supervisor.js";
 import type { MissionSteering } from "./mission-state.js";
@@ -61,7 +61,7 @@ export * from "./user-intelligence.js";
 import { ForgeAutoRosterStore, resolveForgeAutoRole, rosterRouteAllowance, type ForgeAutoRoster, type RosterCandidate, type RosterEntitlement, type RosterRole, type RosterRouteAllowance } from "./forgeauto-roster.js";
 import { UserIntelligenceRuntimeRegistry, type OwnerCredentialResolver, type UserIntelligenceSource } from "./user-intelligence.js";
 import { projectPersonalFreeCapacity } from "./personal-free-capacity.js";
-import type { PersonalAccountPolicyOptions } from "./personal-account-policy.js";
+import type { PersonalAccountPolicyOptions, PersonalAccountBinding, PersonalAccountReservation } from "./personal-account-policy.js";
 import { RemoteDirectProviderAdapter } from "./remote-direct-provider.js";
 import type { RemoteDirectTransport, RemoteDirectBinding } from "./remote-direct-transport.js";
 
@@ -362,14 +362,24 @@ export class CodeForgeServer {
     this.routeHealthLedger = new EightBitRouteHealthLedger(this.persistence);
     this.routeHealthLedger.attach(this.routeHealth);
     this.localUserId = options.localUserId;
-    this.personalAccountPolicy = options.personalAccountPolicy;
+    this.personalAccountPolicy = options.personalAccountPolicy ? { ...options.personalAccountPolicy, onEstimate: async estimate => {
+      this.assertLocalOwner(estimate.ownerUserId);
+      if (estimate.workspacePath) this.assertWorkspaceInferenceContext(estimate.workspacePath);
+      await options.personalAccountPolicy?.onEstimate?.(estimate);
+      this.assertLocalOwner(estimate.ownerUserId);
+      if (estimate.workspacePath) this.assertWorkspaceInferenceContext(estimate.workspacePath);
+      if (estimate.sessionId) {
+        const { ownerUserId: _owner, workspacePath: _workspace, sessionId, ...payload } = estimate;
+        await this.appendExecutionEvent(sessionId, "personal_account.cost_estimate", payload);
+      }
+    } } : undefined;
     this.rosterEntitlement = options.rosterEntitlement ?? "FREE";
     this.rosterStore = new ForgeAutoRosterStore(this.persistence);
     this.userIntelligence = new UserIntelligenceRuntimeRegistry(
       this.persistence,
       this.providerCatalog,
       options.userCredentialResolver ?? { get: () => undefined },
-      options.personalAccountPolicy,
+      this.personalAccountPolicy,
     );
     // R55 wave 2: a managed-paid policy is trusted server configuration — it must name
     // this owner or the server refuses to start rather than silently binding one owner's
@@ -478,6 +488,14 @@ export class CodeForgeServer {
       persistence: this.persistence,
       ...(this.subagentsR1Enabled ? { getAgentRuntime: (sessionId: string) => this.getOrCreateRuntime(sessionId) } : {}),
       subagentsR1Enabled: this.subagentsR1Enabled,
+      resolveRecoveryRosterContext: async request => {
+        this.assertLocalOwner(request.ownerUserId);
+        this.assertWorkspaceInferenceContext(request.workspacePath);
+        const rosterContext = await this.currentOrchestratorRosterContext(request.ownerUserId, request.workspacePath);
+        this.assertLocalOwner(request.ownerUserId);
+        this.assertWorkspaceInferenceContext(request.workspacePath);
+        return rosterContext ? { authorizationWorkspacePath: request.workspacePath, rosterContext } : undefined;
+      },
       providerTopologyCapacity: () => this.providerTopologyCapacity(),
       capacityConfidence: () => this.capacityConfidenceReport(),
       // R45: the orientation probe shares the index's persistent cache — a second open of the
@@ -1405,7 +1423,7 @@ export class CodeForgeServer {
 
   private async appendExecutionEvent(
     sessionId: string,
-    type: "execution.requested" | "execution.start_failed" | "permission.decision",
+    type: "execution.requested" | "execution.start_failed" | "permission.decision" | "personal_account.cost_estimate",
     payload: Record<string, unknown>,
   ): Promise<void> {
     const event = {
@@ -1868,6 +1886,7 @@ export class CodeForgeServer {
     this.workflowService.setWorkspacePath(workspacePath);
     this.runtimes.clear();
     this.startRepositoryIndex(workspacePath);
+    void this.resumeAuthorizedPersonalParents().catch(() => {});
   }
 
   private startRepositoryIndex(workspacePath: string, options: { force?: boolean } = {}): void {
@@ -2163,19 +2182,7 @@ export class CodeForgeServer {
           eventStore: this.eventStore,
           persistence: this.persistence,
         });
-        const personalPolicy = this.localUserId ? this.personalAccountPolicy?.personalRoutingPolicy?.(this.localUserId) : undefined;
-        const catalog = this.rosterCatalog();
-        const selectedRoster = this.localUserId ? await this.rosterStore.get(this.localUserId) : undefined;
-        const automaticAccounts = personalPolicy && personalPolicy.mode !== "FREE_ONLY" && catalog.some(candidate => candidate.personalConnectionId && candidate.available && candidate.approved);
-        const accountRoster: ForgeAutoRoster | undefined = automaticAccounts && this.localUserId ? {
-          ownerUserId: this.localUserId, entitlement: this.rosterEntitlement,
-          slots: [...(personalPolicy.mode === "SPECIFIC_ACCOUNT" ? [] : [{ kind: "AUTO" as const, sourceClass: "MANAGED_FREE" as const, enabled: true }]), { kind: "AUTO", sourceClass: "USER_API", enabled: true }],
-          lead: { mode: "NONE" }, updatedAt: new Date().toISOString(),
-        } : undefined;
-        const dataContext = this.freeDataContext?.() ?? { dataClass: "PRIVATE_CODE" as const };
-        if (personalPolicy?.mode === "SPECIFIC_ACCOUNT" && !accountRoster) throw new Error("PERSONAL_SELECTED_ACCOUNT_UNAVAILABLE");
-        const roster = personalPolicy?.mode === "SPECIFIC_ACCOUNT" ? accountRoster : selectedRoster ?? accountRoster;
-        const rosterContext = roster ? { roster, catalog, dataContext: { privateCode: dataContext.dataClass !== "PUBLIC_CODE", userConsented: dataContext.userConsented === true }, personalRoutingMode: personalPolicy?.mode } : undefined;
+        const rosterContext = await this.currentOrchestratorRosterContext(this.localUserId, workspacePath);
         const runId = `run-${crypto.randomUUID()}`;
         void this.orchestrator.startRun({
           runId,
@@ -2193,6 +2200,27 @@ export class CodeForgeServer {
         res.end(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }));
       }
     });
+  }
+
+  private async currentOrchestratorRosterContext(ownerUserId: string | undefined, workspacePath: string): Promise<OrchestratorRosterContext | undefined> {
+    this.assertWorkspaceInferenceContext(workspacePath);
+    if (!ownerUserId) return undefined;
+    this.assertLocalOwner(ownerUserId);
+    const selectedRoster = await this.rosterStore.get(ownerUserId);
+    this.assertLocalOwner(ownerUserId);
+    this.assertWorkspaceInferenceContext(workspacePath);
+    const personalPolicy = this.personalAccountPolicy?.personalRoutingPolicy?.(ownerUserId);
+    const catalog = this.rosterCatalog();
+    const automaticAccounts = personalPolicy && personalPolicy.mode !== "FREE_ONLY" && catalog.some(candidate => candidate.personalConnectionId && candidate.available && candidate.approved);
+    const accountRoster: ForgeAutoRoster | undefined = automaticAccounts ? {
+      ownerUserId, entitlement: this.rosterEntitlement,
+      slots: [...(personalPolicy.mode === "SPECIFIC_ACCOUNT" ? [] : [{ kind: "AUTO" as const, sourceClass: "MANAGED_FREE" as const, enabled: true }]), { kind: "AUTO", sourceClass: "USER_API", enabled: true }],
+      lead: { mode: "NONE" }, updatedAt: new Date().toISOString(),
+    } : undefined;
+    const dataContext = this.freeDataContext?.() ?? { dataClass: "PRIVATE_CODE" as const };
+    if (personalPolicy?.mode === "SPECIFIC_ACCOUNT" && !accountRoster) throw new Error("PERSONAL_SELECTED_ACCOUNT_UNAVAILABLE");
+    const roster = personalPolicy?.mode === "SPECIFIC_ACCOUNT" ? accountRoster : selectedRoster ?? accountRoster;
+    return roster ? { roster, catalog, dataContext: { privateCode: dataContext.dataClass !== "PUBLIC_CODE", userConsented: dataContext.userConsented === true }, personalRoutingMode: personalPolicy?.mode } : undefined;
   }
 
   private rosterCatalog(): RosterCandidate[] {
@@ -2293,6 +2321,17 @@ export class CodeForgeServer {
   personalAccountCandidates(ownerUserId: string): RosterCandidate[] {
     this.assertLocalOwner(ownerUserId);
     return this.userIntelligence.rosterCandidates(ownerUserId).filter(candidate => !!candidate.personalConnectionId);
+  }
+
+  async reservePersonalAccountQualification(binding: PersonalAccountBinding, request: ChatRequest): Promise<PersonalAccountReservation> {
+    this.assertLocalOwner(binding.ownerUserId);
+    this.assertWorkspaceInferenceContext(typeof request.metadata?.personalAccountWorkspacePath === "string" ? request.metadata.personalAccountWorkspacePath : undefined);
+    return this.userIntelligence.reservePersonalAccountQualification(binding, request);
+  }
+
+  async resumeAuthorizedPersonalParents(): Promise<{ resumed: number; parked: number; blocked: number }> {
+    if (!this.localUserId || !this.activeWorkspacePath) return { resumed: 0, parked: 0, blocked: 0 };
+    return this.orchestrator.resumeParkedParents();
   }
 
   async getUserIntelligenceSource(ownerUserId: string, sourceId: string): Promise<UserIntelligenceSource | undefined> {

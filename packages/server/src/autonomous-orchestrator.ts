@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import path from "node:path";
 import { getSanitizedEnvForChild } from "./env-filter.js";
 import fs from "node:fs/promises";
 import { execFile as execFileCallback } from "node:child_process";
@@ -110,6 +111,7 @@ export const TERMINAL_STATUSES = new Set<AutonomousRunStatus>([
   "cancelled",
   "failed",
 ]);
+const TERMINAL_WORKER_STATUSES = new Set<string>(["completed", "blocked", "cancelled", "failed"]);
 
 export interface AgentTask {
   id: string;
@@ -225,7 +227,61 @@ export interface OrchestratorRunOptions {
   /** R21: visual assets present — routes through the vision topology. */
   hasImages?: boolean;
   /** Trusted user policy snapshot; admission is rechecked against runtime capacity on every role. */
-  rosterContext?: { roster: ForgeAutoRoster; catalog: readonly RosterCandidate[]; dataContext?: { privateCode: boolean; userConsented: boolean }; personalRoutingMode?: RosterRouteAllowance["personalRoutingMode"] };
+  rosterContext?: OrchestratorRosterContext;
+}
+
+export interface OrchestratorRosterContext {
+  roster: ForgeAutoRoster;
+  catalog: readonly RosterCandidate[];
+  dataContext?: { privateCode: boolean; userConsented: boolean };
+  personalRoutingMode?: RosterRouteAllowance["personalRoutingMode"];
+}
+
+export interface ParentRosterRecoveryRequest {
+  runId: string;
+  sessionId: string;
+  workspacePath: string;
+  ownerUserId: string;
+  rosterFingerprint: string;
+  personalRoutingMode?: RosterRouteAllowance["personalRoutingMode"];
+}
+
+interface ParentRosterRecoveryIdentity {
+  ownerUserId: string;
+  rosterFingerprint: string;
+  personalRoutingMode?: RosterRouteAllowance["personalRoutingMode"];
+}
+
+function rosterRecoveryIdentity(context: OrchestratorRosterContext): ParentRosterRecoveryIdentity {
+  return {
+    ownerUserId: context.roster.ownerUserId,
+    rosterFingerprint: crypto.createHash("sha256").update(JSON.stringify({
+      ownerUserId: context.roster.ownerUserId, entitlement: context.roster.entitlement,
+      slots: context.roster.slots.map(slot => ({ kind: slot.kind, enabled: slot.enabled,
+        ...(slot.kind === "PINNED_VERSION" ? { modelId: slot.modelId } : { sourceClass: slot.sourceClass }),
+        ...(slot.kind === "AUTO_CURRENT" ? { familyId: slot.familyId } : {}),
+        ...(slot.allowedRoles ? { allowedRoles: slot.allowedRoles } : {}),
+      })), lead: { mode: context.roster.lead.mode, ...(context.roster.lead.slotIndex !== undefined ? { slotIndex: context.roster.lead.slotIndex } : {}) },
+    })).digest("hex"),
+    ...(context.personalRoutingMode ? { personalRoutingMode: context.personalRoutingMode } : {}),
+  };
+}
+
+function resolveRosterAllowance(context: OrchestratorRosterContext, role: RosterRole): RosterRouteAllowance {
+  const roster = role === "LEAD" && context.roster.lead.mode === "MANUAL"
+    ? { ...context.roster, slots: context.roster.slots.map((slot, index) => ({ ...slot, enabled: slot.enabled && index === context.roster.lead.slotIndex })) }
+    : context.roster;
+  const resolved = resolveForgeAutoRole(roster, context.catalog, role, context.dataContext ?? { privateCode: true, userConsented: false });
+  if (resolved.status !== "READY") throw new Error(`ROSTER_${resolved.status}:${role}`);
+  const allowance = rosterRouteAllowance(resolved, { ownerUserId: roster.ownerUserId, rosterUpdatedAt: roster.updatedAt, role });
+  allowance.personalRoutingMode = context.personalRoutingMode;
+  if (allowance.freeRoutes.length === 0 && allowance.paidModelIds.length === 0 && allowance.userRoutes.length === 0) throw new Error(`ROSTER_NO_EXECUTABLE_SOURCE:${role}`);
+  return allowance;
+}
+
+function normalizedWorkspacePath(workspacePath: string): string {
+  const resolved = path.resolve(workspacePath);
+  return process.platform === "win32" ? resolved.toLowerCase() : resolved;
 }
 
 export interface OrchestratorOptions {
@@ -254,6 +310,12 @@ export interface OrchestratorOptions {
   /** R46 §13: live capacity-confidence projection for mission admission. Absent = UNOBSERVED,
    *  which admits honestly — the gate only refuses on provable insufficiency. */
   capacityConfidence?: () => CapacityConfidenceReport | undefined;
+  /** Recovery obtains current owner authorization and a fresh catalog from the host. Durable
+   * roster identity describes intent only; it never grants permission to dispatch. */
+  resolveRecoveryRosterContext?: (request: ParentRosterRecoveryRequest) => Promise<{
+    authorizationWorkspacePath: string;
+    rosterContext: OrchestratorRosterContext;
+  } | undefined>;
 }
 
 interface AutonomousParentState {
@@ -274,6 +336,7 @@ interface AutonomousParentState {
   createdAt: string;
   updatedAt: string;
   recoveryAttempts?: number;
+  rosterRecovery?: ParentRosterRecoveryIdentity;
 }
 
 export class AutonomousRunOrchestrator {
@@ -288,10 +351,12 @@ export class AutonomousRunOrchestrator {
   private readonly orientationProbe?: (goal: string, workspacePath: string) => Promise<{ covered: boolean; candidateFiles: number } | undefined>;
   private readonly capacityConfidence?: () => CapacityConfidenceReport | undefined;
   private readonly subagentsR1Enabled: boolean;
+  private readonly resolveRecoveryRosterContext?: OrchestratorOptions["resolveRecoveryRosterContext"];
   private readonly runs: Map<string, AutonomousRun> = new Map();
   private readonly abortControllers: Map<string, AbortController> = new Map();
   private readonly parentStates = new Map<string, AutonomousParentState>();
   private readonly authorizationWorkspaces = new Map<string, string>();
+  private parkedRecoveryPromise?: Promise<{ resumed: number; parked: number; blocked: number }>;
 
   private async saveParentState(run: AutonomousRun): Promise<void> {
     const state = this.parentStates.get(run.id);
@@ -323,6 +388,7 @@ export class AutonomousRunOrchestrator {
     this.orientationProbe = options.orientationProbe;
     this.capacityConfidence = options.capacityConfidence;
     this.subagentsR1Enabled = options.subagentsR1Enabled ?? false;
+    this.resolveRecoveryRosterContext = options.resolveRecoveryRosterContext;
     this.subagentManager = options.subagentManager ?? createSubagentManager({
       persistence: options.persistence,
       workspaceService: options.workspaceService,
@@ -534,15 +600,7 @@ export class AutonomousRunOrchestrator {
     const { sessionId, workspacePath, goal, verificationCommands = [], verificationTimeoutMs, adapter, signal, coderExecutor } = options;
     const rosterAllowanceFor = (role: RosterRole): RosterRouteAllowance | undefined => {
       if (!options.rosterContext) return undefined;
-      const roster = role === "LEAD" && options.rosterContext.roster.lead.mode === "MANUAL"
-        ? { ...options.rosterContext.roster, slots: options.rosterContext.roster.slots.map((slot, index) => ({ ...slot, enabled: slot.enabled && index === options.rosterContext!.roster.lead.slotIndex })) }
-        : options.rosterContext.roster;
-      const resolved = resolveForgeAutoRole(roster, options.rosterContext.catalog, role, options.rosterContext.dataContext ?? { privateCode: true, userConsented: false });
-      if (resolved.status !== "READY") throw new Error(`ROSTER_${resolved.status}:${role}`);
-      const allowance = rosterRouteAllowance(resolved, { ownerUserId: roster.ownerUserId, rosterUpdatedAt: roster.updatedAt, role });
-      allowance.personalRoutingMode = options.rosterContext.personalRoutingMode;
-      if (allowance.freeRoutes.length === 0 && allowance.paidModelIds.length === 0 && allowance.userRoutes.length === 0) throw new Error(`ROSTER_NO_EXECUTABLE_SOURCE:${role}`);
-      return allowance;
+      return resolveRosterAllowance(options.rosterContext, role);
     };
     const r1ExplorerTimeoutMs = options.r1PhaseTimeoutMs?.explorer ?? R1_EXPLORER_TIMEOUT_MS;
     const r1PlannerTimeoutMs = options.r1PhaseTimeoutMs?.planner ?? R1_PLANNER_TIMEOUT_MS;
@@ -661,13 +719,15 @@ export class AutonomousRunOrchestrator {
     this.runs.set(runId, run);
     this.authorizationWorkspaces.set(runId, targetWs.rootPath);
     this.persistRun(run);
-    if (this.persistence && this.subagentsR1Enabled && !coderExecutor && !options.rosterContext) {
+    if (this.persistence && this.subagentsR1Enabled && !coderExecutor) {
       const now = new Date().toISOString();
-      this.parentStates.set(runId, recovery ? { ...recovery } : {
+      this.parentStates.set(runId, {
         kind: "autonomous_parent_state", id: `parent-state-${runId}`, runId, sessionId,
         workspacePath: targetWs.rootPath, goal: redactSecrets(goal), baseRevision,
         topology: topologyPlan.topology, verificationCommands, verificationTimeoutMs,
-        phase: run.status, reviewRounds: run.reviewRounds, createdAt: now, updatedAt: now,
+        phase: run.status, reviewRounds: run.reviewRounds, createdAt: recovery?.createdAt ?? now, updatedAt: now,
+        ...(recovery?.recoveryAttempts !== undefined ? { recoveryAttempts: recovery.recoveryAttempts } : {}),
+        ...(options.rosterContext ? { rosterRecovery: rosterRecoveryIdentity(options.rosterContext) } : {}),
       });
       if (!recovery) await this.saveParentState(run);
     }
@@ -1602,6 +1662,48 @@ export class AutonomousRunOrchestrator {
     return Array.from(this.runs.values());
   }
 
+  async resumeParkedParents(): Promise<{ resumed: number; parked: number; blocked: number }> {
+    if (this.parkedRecoveryPromise) return this.parkedRecoveryPromise;
+    const pending = this.resumeParkedParentsInternal();
+    this.parkedRecoveryPromise = pending;
+    try { return await pending; }
+    finally { if (this.parkedRecoveryPromise === pending) this.parkedRecoveryPromise = undefined; }
+  }
+
+  private async resumeParkedParentsInternal(): Promise<{ resumed: number; parked: number; blocked: number }> {
+    if (!this.persistence || !this.subagentsR1Enabled) return { resumed: 0, parked: 0, blocked: 0 };
+    let resumed = 0; let parked = 0; let blocked = 0;
+    await this.workspaceService.init();
+    const receipts = await this.persistence.getWorkItemsByKind("autonomous_parent_recovery");
+    for (const item of receipts) {
+      const receipt = item as unknown as { outcome?: string; runId?: string };
+      if (receipt.outcome !== "parked" || !receipt.runId || this.abortControllers.has(receipt.runId)) continue;
+      const currentRun = this.runs.get(receipt.runId);
+      if (currentRun && !TERMINAL_STATUSES.has(currentRun.status)) continue;
+      const state = await this.persistence.getWorkItem(`parent-state-${receipt.runId}`) as unknown as AutonomousParentState | undefined;
+      const persisted = await this.persistence.getWorkItem(receipt.runId) as unknown as AutonomousRun | undefined;
+      if (state?.kind !== "autonomous_parent_state" || state.runId !== receipt.runId || !state.rosterRecovery
+        || persisted?.status !== "blocked" || state.sessionId !== persisted.sessionId
+        || state.baseRevision !== persisted.baseRevision || !this.runtimeForSession(state.sessionId)) continue;
+      if (!currentRun) {
+        this.runs.set(state.runId, { id: state.runId, sessionId: state.sessionId, workspaceId: persisted.workspaceId,
+          workspacePath: state.workspacePath, goal: state.goal, status: "blocked", baseRevision: state.baseRevision,
+          isolatedWorktreeId: state.isolatedWorktreeId, checkpointId: state.checkpointId, reviewRounds: state.reviewRounds,
+          taskGraph: { tasks: [] }, counters: { childrenSpawned: 0, reviewRounds: state.reviewRounds, taskAttempts: 0, verificationAttempts: 0 },
+          error: persisted.error,
+        });
+      }
+      const result = await this.recoverParent(state);
+      if (result?.status === "completed") resumed++;
+      else {
+        const latest = await this.persistence.getWorkItem(`parent-recovery-${state.runId}`) as unknown as { outcome?: string } | undefined;
+        if (latest?.outcome === "parked") parked++;
+        else blocked++;
+      }
+    }
+    return { resumed, parked, blocked };
+  }
+
   /**
    * Restart Recovery: Rehydrate runs from persistence and validate Git & workspace refs.
    */
@@ -1651,7 +1753,10 @@ export class AutonomousRunOrchestrator {
 
           // If the run was left in an active state across a crash/restart:
           // Mark it as requires_revalidation / blocked (do NOT blindly resume partial commands)
-          if (!TERMINAL_STATUSES.has(raw.status)) {
+          const priorRecovery = raw.status === "blocked"
+            ? await this.persistence.getWorkItem(`parent-recovery-${raw.id}`) as unknown as { outcome?: string } | undefined
+            : undefined;
+          if (!TERMINAL_STATUSES.has(raw.status) || priorRecovery?.outcome === "parked") {
             effectiveStatus = "blocked";
             requiresRevalidation++;
             const parent = await this.persistence.getWorkItem(`parent-state-${raw.id}`) as unknown as AutonomousParentState | undefined;
@@ -1697,6 +1802,15 @@ export class AutonomousRunOrchestrator {
       for (const item of items) {
         if (!TERMINAL_STATUSES.has((item as unknown as { status: AutonomousRunStatus }).status)
           && !resumable.some(state => state.runId === item.id)) {
+          const rosterWorker = (await this.persistence.getWorkItemsByKind("subagent_run")).some(worker => worker.kind === "subagent_run" && worker.parentRunId === item.id && worker.rosterAllowance && !TERMINAL_WORKER_STATUSES.has(worker.status));
+          if (rosterWorker) {
+            const run = this.runs.get(item.id);
+            if (run) {
+              run.error = "PARENT_RECOVERY_ROSTER_IDENTITY_MISSING";
+              this.persistRun(run);
+            }
+            continue;
+          }
           await this.subagentManager.recoverInterruptedWorkers({ parentRunId: item.id }).catch(() => undefined);
         }
       }
@@ -1724,11 +1838,42 @@ export class AutonomousRunOrchestrator {
     const controller = new AbortController();
     const previousRun = this.runs.get(state.runId);
     const heartbeat = setInterval(() => { void claim(true).then(ok => { if (!ok) controller.abort(); }).catch(() => controller.abort()); }, 15_000);
+    let authorizingRoster = false;
     try {
+      if (["integrating", "completed"].includes(state.phase)) throw new Error("AMBIGUOUS_INTEGRATION_REQUIRES_REVALIDATION");
+      let rosterContext: OrchestratorRosterContext | undefined;
+      const parentWorkers = (await persistence.getWorkItemsByKind("subagent_run")).filter(item => item.kind === "subagent_run" && item.parentRunId === state.runId);
+      if (!state.rosterRecovery && parentWorkers.some(item => item.kind === "subagent_run" && item.rosterAllowance)) throw new Error("PARENT_RECOVERY_ROSTER_IDENTITY_MISSING");
+      if (state.rosterRecovery) {
+        const identity = state.rosterRecovery;
+        if (!identity.ownerUserId?.trim() || !/^[0-9a-f]{64}$/.test(identity.rosterFingerprint)) throw new Error("PARENT_RECOVERY_ROSTER_IDENTITY_INVALID");
+        authorizingRoster = true;
+        if (!this.resolveRecoveryRosterContext) throw new Error("PARENT_RECOVERY_ROSTER_AUTHORITY_UNAVAILABLE");
+        const current = await this.resolveRecoveryRosterContext({ runId: state.runId, sessionId: state.sessionId,
+          workspacePath: state.workspacePath, ownerUserId: identity.ownerUserId, rosterFingerprint: identity.rosterFingerprint,
+          ...(identity.personalRoutingMode ? { personalRoutingMode: identity.personalRoutingMode } : {}) });
+        if (!current) throw new Error("PARENT_RECOVERY_ROSTER_AUTHORIZATION_DENIED");
+        if (normalizedWorkspacePath(current.authorizationWorkspacePath) !== normalizedWorkspacePath(state.workspacePath)) throw new Error("PARENT_RECOVERY_WORKSPACE_MISMATCH");
+        const currentIdentity = rosterRecoveryIdentity(current.rosterContext);
+        if (currentIdentity.ownerUserId !== identity.ownerUserId) throw new Error("PARENT_RECOVERY_OWNER_CHANGED");
+        if (currentIdentity.rosterFingerprint !== identity.rosterFingerprint || currentIdentity.personalRoutingMode !== identity.personalRoutingMode) throw new Error("PARENT_RECOVERY_ROUTING_POLICY_CHANGED");
+        rosterContext = current.rosterContext;
+        const activeWorkers = parentWorkers.filter(item => item.kind === "subagent_run" && !TERMINAL_WORKER_STATUSES.has(item.status));
+        const refreshed = activeWorkers.map(item => {
+          if (item.kind !== "subagent_run" || !["explorer", "planner", "coder", "reviewer", "lead"].includes(item.agentId)) throw new Error("PARENT_RECOVERY_WORKER_ROLE_INVALID");
+          const allowance = resolveRosterAllowance(current.rosterContext, item.agentId.toUpperCase() as RosterRole);
+          return { ...item, rosterAllowance: { ...allowance, freeRoutes: allowance.freeRoutes.map(route => ({ ...route })), paidModelIds: [...allowance.paidModelIds], userRoutes: allowance.userRoutes.map(route => ({ ...route })) }, updatedAt: new Date().toISOString() };
+        });
+        // Refresh every interrupted allowance atomically before any journal can dispatch. The
+        // journal, completed tools and artifacts remain untouched for continuation.
+        await persistence.withTransaction(async tx => { for (const worker of refreshed) await tx.upsertWorkItem(worker); });
+      }
+      authorizingRoster = false;
+      const head = await this.git(state.workspacePath, ["rev-parse", "HEAD"]);
+      if (head.stdout.trim() !== state.baseRevision) throw new Error("PARENT_RECOVERY_BASE_CHANGED");
       if ((state.recoveryAttempts ?? 0) >= 3) throw new Error("PARENT_RECOVERY_ATTEMPT_LIMIT");
       state.recoveryAttempts = (state.recoveryAttempts ?? 0) + 1;
       await persistence.upsertWorkItem(state as unknown as import("@codeforge/sessions").WorkItem);
-      if (["integrating", "completed"].includes(state.phase)) throw new Error("AMBIGUOUS_INTEGRATION_REQUIRES_REVALIDATION");
       this.authorizationWorkspaces.set(state.runId, state.workspacePath);
       const workers = await this.subagentManager.recoverInterruptedWorkers({ parentRunId: state.runId, authorizationWorkspacePath: state.workspacePath, recoveryOwnerId: ownerId, signal: controller.signal });
       if (workers.failed || workers.replanned) throw new Error("PARENT_WORKER_RECOVERY_REQUIRES_REVALIDATION");
@@ -1738,6 +1883,7 @@ export class AutonomousRunOrchestrator {
         workspacePath: state.workspacePath, goal: state.goal, topology: state.topology,
         verificationCommands: state.verificationCommands, verificationTimeoutMs: state.verificationTimeoutMs,
         signal: controller.signal,
+        ...(rosterContext ? { rosterContext } : {}),
       }, state);
       await persistence.upsertWorkItem({ kind: "autonomous_parent_recovery", id: `parent-recovery-${state.runId}`,
         sessionId: state.sessionId, runId: state.runId, outcome: result.status,
@@ -1754,7 +1900,7 @@ export class AutonomousRunOrchestrator {
         this.persistRun(run);
       }
       await persistence.upsertWorkItem({ kind: "autonomous_parent_recovery", id: `parent-recovery-${state.runId}`,
-        sessionId: state.sessionId, runId: state.runId, outcome: "blocked", reason: redactSecrets(String(error)),
+        sessionId: state.sessionId, runId: state.runId, outcome: authorizingRoster ? "parked" : "blocked", reason: redactSecrets(String(error)),
         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       } as unknown as import("@codeforge/sessions").WorkItem);
       return undefined;

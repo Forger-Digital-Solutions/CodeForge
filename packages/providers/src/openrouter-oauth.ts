@@ -46,29 +46,25 @@ export function generateState(): string {
 export interface BuildAuthUrlOptions {
   callbackUrl: string;
   codeChallenge: string;
-  state?: string;
+  state: string;
   baseUrl?: string;
 }
 
 /**
- * Build the OpenRouter authorization URL. State is carried on our own callback URL so we can
- * validate it on return even though it is not a first-class OpenRouter parameter.
+ * Build the OpenRouter authorization URL using its documented state parameter.
  */
 export function buildAuthUrl(opts: BuildAuthUrlOptions): string {
-  const callback = opts.state
-    ? appendQuery(opts.callbackUrl, { state: opts.state })
-    : opts.callbackUrl;
+  if (!opts.state || !/^[A-Za-z0-9_-]{22,128}$/.test(opts.state)) throw new Error("OAuth state is invalid");
+  const callback = new URL(opts.callbackUrl);
+  const localHttp = callback.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(callback.hostname.toLowerCase());
+  if ((callback.protocol !== "https:" && !localHttp) || callback.username || callback.password || callback.hash) throw new Error("OAuth callback URL is invalid");
   const url = new URL(opts.baseUrl ?? AUTH_BASE);
-  url.searchParams.set("callback_url", callback);
+  if (url.origin !== "https://openrouter.ai" || url.pathname !== "/auth") throw new Error("OpenRouter authorization URL is invalid");
+  url.searchParams.set("callback_url", callback.toString());
   url.searchParams.set("code_challenge", opts.codeChallenge);
   url.searchParams.set("code_challenge_method", "S256");
+  url.searchParams.set("state", opts.state);
   return url.toString();
-}
-
-function appendQuery(base: string, params: Record<string, string>): string {
-  const u = new URL(base);
-  for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
-  return u.toString();
 }
 
 export class OAuthStateMismatchError extends Error {
@@ -78,12 +74,20 @@ export class OAuthStateMismatchError extends Error {
   }
 }
 
+export class OAuthAuthorizationDeniedError extends Error {
+  constructor() {
+    super("OpenRouter authorization was denied");
+    this.name = "OAuthAuthorizationDeniedError";
+  }
+}
+
 /**
  * Parse an incoming callback URL, validating state against the expected value.
  * Returns the authorization code. Throws {@link OAuthStateMismatchError} on state mismatch.
  */
 export function parseCallback(callbackUrl: string, expectedState: string): string {
   const u = new URL(callbackUrl);
+  if (u.searchParams.getAll("error").length > 0) throw new OAuthAuthorizationDeniedError();
   const gotState = u.searchParams.get("state");
   // If we issued a state, it MUST come back and match.
   if (!expectedState || gotState !== expectedState || u.searchParams.getAll("state").length !== 1) {

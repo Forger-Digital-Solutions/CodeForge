@@ -94,6 +94,36 @@ describe("personal account runtime admission and durable accounting", () => {
     await expect(guard.reserve(binding(), request("request-b"), KEY)).rejects.toMatchObject({ code: "PERSONAL_ACCOUNT_DOMAIN_BUSY" });
   });
 
+  it("keeps another live process hold intact and locks paid spend when a dispatched process dies", async () => {
+    const dispatched = await guard.reserve(binding(), request("crash-in-flight"), KEY);
+    await dispatched.dispatch();
+    const restarted = makeGuard(); await restarted.hydrateOwner("alice");
+    await expect(restarted.reserve(binding(), request("before-expiry"), KEY)).rejects.toMatchObject({ code: "PERSONAL_ACCOUNT_DOMAIN_BUSY" });
+    const leases = await persistence.getWorkItemsByKind("personal_account_guard_lease") as unknown as { id: string; guardInstanceId: string; expiresAt: string }[];
+    const attempt = (await persistence.getWorkItemsByKind("personal_account_attempt") as unknown as { attempt: { guardInstanceId: string } }[])[0]!;
+    const originalLease = leases.find(lease => lease.guardInstanceId === attempt.attempt.guardInstanceId)!;
+    await persistence.upsertWorkItem({ ...originalLease, expiresAt: new Date(clock - 1).toISOString() } as never);
+    await restarted.hydrateOwner("alice");
+    const attempts = await persistence.getWorkItemsByKind("personal_account_attempt") as unknown as { attempt: { status: string; accountingUncertain?: boolean } }[];
+    expect(attempts[0]!.attempt).toMatchObject({ status: "RECONCILED_UNCERTAIN", accountingUncertain: true });
+    expect(await restarted.classification(binding())).toBeUndefined();
+    await expect(restarted.reserve(binding(), request("after-uncertain-crash"), KEY)).rejects.toMatchObject({ code: "PERSONAL_ACCOUNT_DOMAIN_ACCOUNTING_UNCERTAIN" });
+    expect(JSON.stringify(await persistence.getWorkItemsByKind("personal_account_budget"))).toContain('"unexpectedCharge":true');
+  });
+
+  it("releases a process crash hold when it never crossed the dispatch boundary", async () => {
+    await guard.reserve(binding(), request("crash-before-wire"), KEY);
+    const restarted = makeGuard(); await restarted.hydrateOwner("alice");
+    const attempt = (await persistence.getWorkItemsByKind("personal_account_attempt") as unknown as { attempt: { guardInstanceId: string } }[])[0]!;
+    const leases = await persistence.getWorkItemsByKind("personal_account_guard_lease") as unknown as { id: string; guardInstanceId: string; expiresAt: string }[];
+    const originalLease = leases.find(lease => lease.guardInstanceId === attempt.attempt.guardInstanceId)!;
+    await persistence.upsertWorkItem({ ...originalLease, expiresAt: new Date(clock - 1).toISOString() } as never);
+    await restarted.hydrateOwner("alice");
+    expect(JSON.stringify(await persistence.getWorkItemsByKind("personal_account_attempt"))).toContain('"status":"RELEASED"');
+    const next = await restarted.reserve(binding(), request("after-safe-prewire-crash"), KEY);
+    await next.fail();
+  });
+
   it("shares physical-account concurrency and 429 cooldown across keys but isolates independent accounts", async () => {
     accounts.set("conn-b", authority("conn-b")); accounts.set("conn-c", { ...authority("conn-c"), quotaDomainId: "user:other-account" });
     const hold = await guard.reserve(binding(), request(), KEY);
@@ -116,9 +146,11 @@ describe("personal account runtime admission and durable accounting", () => {
   });
 
   const makeSource = (): UserIntelligenceSource => ({ sourceId: "source-a", ownerUserId: "alice", providerId: "ignored", protocol: "OPENAI_COMPATIBLE", endpointUrl: "https://openrouter.ai/api/v1", modelId: "model-a", familyId: "fixture", version: "1", credentialRef: "conn-a", connectionId: "conn-a", canonicalProviderId: "openrouter", qualification: "QUALIFIED", qualifiedRoles: ["CODER", "REVIEWER"], qualificationEvidence: qualification(), dataPolicy: { privateCode: false }, pricing: binding().pricing as UserIntelligenceSource["pricing"], createdAt: AT, updatedAt: AT });
-  const registryFixture = (servedModel = "model-a", finishReason = "tool_calls") => {
+  const registryFixture = (servedModel = "model-a", finishReason = "tool_calls", onFetch?: () => void) => {
     let calls = 0; const catalog = new InMemoryProviderCatalog();
-    const fetchFn: typeof fetch = async () => { calls++; return new Response([
+    const fetchFn: typeof fetch = async (_input, init) => { calls++; onFetch?.();
+      if (JSON.parse(String(init?.body)).stream !== true) return new Response(JSON.stringify({ model: servedModel, choices: [{ message: { role: "assistant", content: "private result" }, finish_reason: "stop" }], usage: { prompt_tokens: 10, completion_tokens: 3 } }), { headers: { "content-type": "application/json" } });
+      return new Response([
       `data: ${JSON.stringify({ model: servedModel, choices: [{ delta: { tool_calls: [{ index: 0, id: "tool-a", function: { name: "write_file", arguments: '{"path":"a"}' } }] } }] })}`,
       `data: ${JSON.stringify({ model: servedModel, choices: [{ delta: {}, finish_reason: finishReason }], usage: { prompt_tokens: 10, completion_tokens: 3 } })}`,
       "data: [DONE]", "",
@@ -134,6 +166,24 @@ describe("personal account runtime admission and durable accounting", () => {
     expect(events.filter(event => event.type === "tool_call_completed")).toHaveLength(1); expect(f.calls()).toBe(1);
     accounts.get("conn-a")!.accountClass = "REVOKED"; expect(f.registry.rosterCandidates("alice")[0]!.available).toBe(false);
     await expect(adapter.chat(request("request-b"))).rejects.toMatchObject({ code: "PERSONAL_ACCOUNT_NOT_ADMITTED" }); expect(f.calls()).toBe(1);
+  });
+
+  it("settles cost but withholds a chat result when its account is revoked in flight", async () => {
+    const f = registryFixture("model-a", "tool_calls", () => { accounts.get("conn-a")!.enabled = false; });
+    const source = await f.registry.put("alice", makeSource()); const adapter = f.catalog.get(source.providerId)!;
+    await expect(adapter.chat(request())).rejects.toMatchObject({ code: "PERSONAL_ACCOUNT_AUTHORITY_STALE" });
+    expect(f.calls()).toBe(1);
+    const attempt = (await persistence.getWorkItemsByKind("personal_account_attempt"))[0] as unknown as { attempt: { status: string; chargedMicros: number } };
+    expect(attempt.attempt.status).toBe("SETTLED"); expect(attempt.attempt.chargedMicros).toBeGreaterThan(0);
+  });
+
+  it("settles cost but withholds tool calls when its account is revoked in flight", async () => {
+    const f = registryFixture("model-a", "tool_calls", () => { accounts.get("conn-a")!.enabled = false; });
+    const source = await f.registry.put("alice", makeSource()); const adapter = f.catalog.get(source.providerId)!; const events = [];
+    await expect((async () => { for await (const event of adapter.streamChat(request())) events.push(event); })()).rejects.toMatchObject({ code: "PERSONAL_ACCOUNT_AUTHORITY_STALE" });
+    expect(events.filter(event => event.type.startsWith("tool_call_")).length).toBe(0); expect(events.some(event => event.type === "finish")).toBe(false); expect(f.calls()).toBe(1);
+    const attempt = (await persistence.getWorkItemsByKind("personal_account_attempt"))[0] as unknown as { attempt: { status: string; chargedMicros: number } };
+    expect(attempt.attempt.status).toBe("SETTLED"); expect(attempt.attempt.chargedMicros).toBeGreaterThan(0);
   });
 
   it("withholds tool calls on model substitution and local duplicate attempt", async () => {

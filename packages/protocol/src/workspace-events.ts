@@ -230,6 +230,17 @@ export const ExecutionStartFailedSchema = EventBase(
   }),
 );
 
+export const PersonalAccountCostEstimateSchema = EventBase(
+  "personal_account.cost_estimate",
+  z.object({
+    connectionId: z.string().min(1).max(256), providerId: z.string().min(1).max(256),
+    modelId: z.string().min(1).max(256), requestId: z.string().min(1).max(256),
+    estimatedCostUsd: z.number().finite().nonnegative(), remainingBudgetUsd: z.number().finite().nonnegative(),
+    currency: z.literal("USD"), pricingSource: z.string().min(1).max(256),
+    purpose: z.enum(["INFERENCE", "QUALIFICATION"]), runId: z.string().max(256).optional(),
+  }),
+);
+
 const WorkflowVerifierResultSchema = z.object({
   id: z.string(),
   kind: z.enum(["test", "typecheck", "build", "lint", "custom"]),
@@ -939,6 +950,7 @@ export const WorkspaceEventSchema = z.discriminatedUnion("type", [
   UserIntentReconciliationCompletedSchema,
   ExecutionRequestedSchema,
   ExecutionStartFailedSchema,
+  PersonalAccountCostEstimateSchema,
   WorkflowVerificationStartedSchema,
   WorkflowVerificationCompletedSchema,
   ForgeVerifyPlanCreatedSchema,

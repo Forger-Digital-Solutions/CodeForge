@@ -76,6 +76,8 @@ for (const [source, entry] of [
   ["apps/desktop/dist/openrouter-oauth-flow.js", "apps/desktop/dist/openrouter-oauth-flow.js"],
   ["apps/desktop/dist/main.js", "apps/desktop/dist/main.js"],
   ["apps/desktop/dist/connected-accounts.js", "apps/desktop/dist/connected-accounts.js"],
+  ["apps/desktop/dist/paid-request-estimates.js", "apps/desktop/dist/paid-request-estimates.js"],
+  ["apps/desktop/dist/provider-account-qualification.js", "apps/desktop/dist/provider-account-qualification.js"],
   ["apps/desktop/dist/connected-account-types.js", "apps/desktop/dist/connected-account-types.js"],
   ["apps/desktop/dist/provider-account-routing.js", "apps/desktop/dist/provider-account-routing.js"],
   ["apps/desktop/dist/preload.cjs", "apps/desktop/dist/preload.cjs"],
@@ -92,7 +94,7 @@ for (const rawEntry of listPackage(archive)) {
   const packaged = readEntry(entry);
   included.push({ source: entry, entry, bytes: packaged.length, sha256: hash(packaged), compiledSha256: hash(compiled), matchesFrozenBuildOutput: packaged.equals(compiled) });
   const source = packaged.toString("utf8");
-  rendererAccountControls.push({ entry, controls: ["Your connected accounts", "Save account preferences", "Permit paid account routing"].map((label) => ({ label, present: source.includes(label) })) });
+  rendererAccountControls.push({ entry, controls: ["Your connected accounts", "Save account preferences", "Permit paid account routing", "Paid request estimate", "Qualify selected personal model"].map((label) => ({ label, present: source.includes(label) })) });
 }
 const nativeRoot = join(artifact, "resources/app.asar.unpacked/node_modules");
 const nativeFiles = [];

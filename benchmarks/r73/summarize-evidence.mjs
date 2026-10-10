@@ -73,7 +73,7 @@ for (const { file, receipt } of documents.sort((a, b) => a.file.localeCompare(b.
   let observations;
   let actualRequests;
   let counter;
-  if (receipt.evidenceClass === 'LIVE_REVIEWER_ONLY_PUBLIC_CASES' && receipt.providerId === 'kilo-free-direct' && /^reviewer-.*\.json$/.test(file)) {
+  if (receipt.evidenceClass === 'LIVE_REVIEWER_ONLY_PUBLIC_CASES' && ['kilo-free-direct', 'blockrun-free-direct'].includes(receipt.providerId) && /^reviewer-.*\.json$/.test(file)) {
     providerId = receipt.providerId;
     observations = receipt.frames ?? [];
     actualRequests = observations.length;
@@ -113,7 +113,7 @@ const summary = {
   blockedWorkersByRole: workerClassifications(workers.filter(worker => worker.status === 'blocked')),
   reviewerNonPassingOutputs: metricsByTask.flatMap(task => task.reviewerNonPassingWorkers.map(worker => ({ campaign: task.campaign, taskId: task.id, ...worker }))),
   taskMetrics: metricsByTask,
-  qualificationAndSupplyProbeRequests: { actualRequests: qualificationCounts.reduce((sum, receipt) => sum + receipt.actualRequests, 0), byProvider: qualificationRequestsByProvider, sourceFiles: qualificationCounts, excludedDuplicateFiles: duplicateQualificationFiles, interpretation: 'Kilo counts owned LIVE_REVIEWER_ONLY_PUBLIC_CASES frames; BlockRun counts POSTs in unique owned live/compact observation files, including public transport/tool probes. Derived qualification receipts and copied receipt projections are excluded. A locally refused invocation is not an actual POST or an organic outage.' },
+  qualificationAndSupplyProbeRequests: { actualRequests: qualificationCounts.reduce((sum, receipt) => sum + receipt.actualRequests, 0), byProvider: qualificationRequestsByProvider, sourceFiles: qualificationCounts, excludedDuplicateFiles: duplicateQualificationFiles, interpretation: 'Both providers count owned LIVE_REVIEWER_ONLY_PUBLIC_CASES frames. BlockRun also counts POSTs in unique owned live/compact observation files, including public transport/tool probes. Derived qualification receipts and copied receipt projections are excluded. A locally refused invocation is not an actual POST or an organic outage.' },
   forgeVerifyFailures: tasks.flatMap(task => task.result?.verification ?? []).filter(result => !result.passed).length,
   forgeVerifyExecutions: tasks.flatMap(task => task.result?.verification ?? []).length,
   independentReviewsPassed: tasks.filter(task => task.result?.review?.passed === true).length,

@@ -32,13 +32,19 @@ describe("OpenRouter OAuth PKCE core", () => {
   });
 
   it("builds an auth URL with callback, S256 challenge, and carried state", () => {
-    const url = buildAuthUrl({ callbackUrl: "http://127.0.0.1:8765/cb", codeChallenge: "CHAL", state: "STATE123" });
+    const url = buildAuthUrl({ callbackUrl: "http://127.0.0.1:8765/cb", codeChallenge: "CHAL", state: "STATE1234567890123456789012" });
     const u = new URL(url);
     expect(u.origin + u.pathname).toBe("https://openrouter.ai/auth");
     expect(u.searchParams.get("code_challenge")).toBe("CHAL");
     expect(u.searchParams.get("code_challenge_method")).toBe("S256");
     const callback = new URL(u.searchParams.get("callback_url")!);
-    expect(callback.searchParams.get("state")).toBe("STATE123");
+    expect(callback.searchParams.has("state")).toBe(false);
+    expect(u.searchParams.get("state")).toBe("STATE1234567890123456789012");
+  });
+
+  it("rejects unsafe callback URLs and missing state", () => {
+    expect(() => buildAuthUrl({ callbackUrl: "http://example.com/callback", codeChallenge: "CHAL", state: "STATE1234567890123456789012" })).toThrow("OAuth callback URL is invalid");
+    expect(() => buildAuthUrl({ callbackUrl: "http://127.0.0.1/callback", codeChallenge: "CHAL", state: "" })).toThrow("OAuth state is invalid");
   });
 
   it("parseCallback returns the code when state matches", () => {
@@ -48,6 +54,10 @@ describe("OpenRouter OAuth PKCE core", () => {
 
   it("parseCallback rejects a mismatched state (CSRF protection)", () => {
     expect(() => parseCallback("http://127.0.0.1:8765/cb?state=EVIL&code=abc", "S1")).toThrow(OAuthStateMismatchError);
+  });
+
+  it("classifies provider consent denial without accepting or exchanging a code", () => {
+    expect(() => parseCallback("http://127.0.0.1/callback?error=access_denied", "S1")).toThrow("OpenRouter authorization was denied");
   });
 
   it("parseCallback throws when the code is missing", () => {

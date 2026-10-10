@@ -39,6 +39,7 @@ export interface ModelExecutionRequest {
   role?: string;
   workspacePath?: string;
   runId?: string;
+  sessionId?: string;
   workspaceId?: string;
   authorityState?: string;
   dedupeScope?: string;
@@ -343,6 +344,8 @@ export class ModelExecutionAdapter {
         personalAccountOwnerUserId: req.userId,
         personalAccountConnectionId: personalIdentity.connectionId,
         personalAccountWorkspacePath: req.workspacePath,
+        personalAccountSessionId: req.sessionId,
+        personalAccountRunId: req.runId,
         personalAccountRequestId: `personal-dispatch-${randomUUID()}`,
       } } : {}),
     };

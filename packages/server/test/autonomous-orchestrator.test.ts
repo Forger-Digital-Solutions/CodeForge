@@ -481,7 +481,9 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     for (const request of isolated) expect(request.workspacePath).not.toBe(targetRepo);
     const workers = await persistence.getWorkItemsByKind("subagent_run");
     expect(workers.filter(item => item.kind === "subagent_run").every(item => item.routingHints?.authorizationWorkspacePath === targetRepo)).toBe(true);
-    expect(await persistence.getWorkItem(`parent-state-${result.runId}`)).toBeUndefined();
+    expect(await persistence.getWorkItem(`parent-state-${result.runId}`)).toMatchObject({
+      kind: "autonomous_parent_state", rosterRecovery: { ownerUserId: "alice", rosterFingerprint: expect.stringMatching(/^[0-9a-f]{64}$/) },
+    });
   });
 
   it("Scenario 7 (Target Divergence Protection): detects when target HEAD moved (A -> U) and fails closed", async () => {
@@ -515,6 +517,42 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     // User commit U is intact in target repo!
     const userFile = await readFile(join(targetRepo, "user_commit.txt"), "utf-8");
     expect(userFile).toBe("user advanced master\n");
+  });
+
+  it("parked-parent retry leaves an active in-process personal run executing", async () => {
+    let releaseCoder!: () => void;
+    let coderStarted!: () => void;
+    const coderGate = new Promise<void>(resolve => { releaseCoder = resolve; });
+    const entered = new Promise<void>(resolve => { coderStarted = resolve; });
+    const requests: AgentRuntimeRequest[] = [];
+    const resolveRecoveryRosterContext = vi.fn();
+    const runtime = { recordRoleOutcome: vi.fn(), executeAgentRun: async (request: AgentRuntimeRequest): Promise<AgentRuntimeResult> => {
+      requests.push(request);
+      const common = { findings: [], evidence: [], toolExecutions: [], usage: { inputTokens: 0, outputTokens: 0, requestCount: 0, toolCount: 0 }, stopReason: "completed" as const };
+      if (request.role === "coder") {
+        const file = join(request.workspacePath, "src", "math.ts");
+        await writeFile(file, `${await readFile(file, "utf8")}\nexport const stillRunning = true;\n`);
+        coderStarted(); await coderGate;
+        return { ...common, status: "completed", summary: "Implemented", filesChanged: ["src/math.ts"] };
+      }
+      return { ...common, status: "completed", summary: "Inspected", filesChanged: [], ...(request.role === "reviewer" ? { structuredData: { verdict: "pass", findings: [], summary: "Reviewed" } } : {}) };
+    } } as unknown as AgentRuntime;
+    const roster = { ownerUserId: "alice", entitlement: "FREE" as const, slots: [{ kind: "AUTO" as const, sourceClass: "MANAGED_FREE" as const, enabled: true }], lead: { mode: "NONE" as const }, updatedAt: new Date().toISOString() };
+    const catalog = [{ modelId: "fixture-free", providerId: "test", providerModelId: "fixture-free", familyId: "fixture", version: "1", sourceClass: "MANAGED_FREE" as const, lifecycle: "ACTIVE" as const, available: true, approved: true, qualifiedRoles: ["EXPLORER" as const, "CODER" as const, "REVIEWER" as const], dataPolicy: { privateCode: true } }];
+    const orchestrator = createAutonomousRunOrchestrator({ workspaceService: createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir }), persistence, agentRuntime: runtime, subagentsR1Enabled: true, resolveRecoveryRosterContext });
+    const runId = "run-00000000-0000-4000-8000-000000000058";
+    const pending = orchestrator.startRun({ runId, sessionId: "sess-active-personal-retry", workspacePath: targetRepo, goal: "Preserve active parent", topology: "normal", verificationCommands: ["node -e \"process.exit(0)\""], rosterContext: { roster, catalog, personalRoutingMode: "FREE_ONLY" } });
+    try {
+      await entered;
+      const activeStatus = orchestrator.getRun(runId)?.status;
+      expect(activeStatus).toBe("executing");
+      await persistence.upsertWorkItem({ kind: "autonomous_parent_recovery", id: `parent-recovery-${runId}`, sessionId: "sess-active-personal-retry", runId, outcome: "parked", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as never);
+      expect(await orchestrator.resumeParkedParents()).toEqual({ resumed: 0, parked: 0, blocked: 0 });
+      expect(orchestrator.getRun(runId)?.status).toBe(activeStatus);
+      expect(requests.filter(request => request.role === "coder")).toHaveLength(1);
+      expect(resolveRecoveryRosterContext).not.toHaveBeenCalled();
+    } finally { releaseCoder(); }
+    expect((await pending).status).toBe("completed");
   });
 
   it("Scenario 8 (Lease Exclusivity): concurrent write requests to same workspace conflict", () => {

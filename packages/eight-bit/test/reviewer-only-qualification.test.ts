@@ -14,23 +14,24 @@ function adapter(mode: "correct" | "approve-everything" | "outage") {
       requests.push(request);
       if (mode === "outage") { yield { type: "error", code: "PROVIDER_ERROR", message: "provider HTTP 503 outage", retryable: true }; return; }
       const input = request.messages.map((message) => message.content).join("\n");
-      const buggy = /add\(\)|Record provider failures|fast path|flaky router test/.test(input);
+      const buggy = /add\(\)|Record provider failures|fast path|flaky router test/.test(input)
+        || input.includes("Current content:\nexport function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt <= maxAttempts;");
       const pass = mode === "approve-everything" || !buggy;
-      yield { type: "text_delta", delta: JSON.stringify({ verdict: pass ? "pass" : "revision_required", summary: "Independent change review", findings: pass ? [] : [{ id: "defect", severity: "blocking", category: "correctness", message: "calc.ts multiply; catch swallow; reserve without release; weakened test assertion", evidence: "The changed operation does not implement the intent." }] }) };
+      yield { type: "text_delta", delta: JSON.stringify({ verdict: pass ? "pass" : "revision_required", summary: "Independent change review", findings: pass ? [] : [{ id: "defect", severity: "blocking", category: "correctness", message: "calc.ts multiply; catch swallow; reserve without release; weakened test assertion; retry.mjs inclusive maxAttempts boundary", evidence: "The changed operation does not implement the intent." }] }) };
       yield { type: "finish", finishReason: "stop" };
     },
   };
 }
 
 describe("independently qualified Reviewer-only receipts", () => {
-  it("measures unchanged Reviewer protocol without granting editing or tool roles", async () => {
+  it("measures the current Reviewer protocol without granting editing or tool roles", async () => {
     const provider = adapter("correct");
     const receipt = await runRoleOnlyQualification(model, provider, { roles: ["REVIEWER"] });
     expect(ModelQualificationReceiptSchema.safeParse(receipt).success).toBe(true);
     expect(receipt.qualificationState).toBe("QUALIFIED");
     expect(Object.keys(receipt.roleResults)).toEqual(["REVIEWER"]);
-    expect(receipt.roleResults.REVIEWER?.testCases).toHaveLength(6);
-    expect(receipt.metadata).toMatchObject({ roleOnly: true, requests: 6, transient: false });
+    expect(receipt.roleResults.REVIEWER?.testCases).toHaveLength(8);
+    expect(receipt.metadata).toMatchObject({ roleOnly: true, requests: 8, transient: false });
     expect(provider.requests.every((request) => request.tools === undefined)).toBe(true);
   });
 

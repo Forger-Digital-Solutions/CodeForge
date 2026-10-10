@@ -11,6 +11,12 @@ lifecycleMark("preload-entry");
 // attaches it to the primary window's own requests (see control-plane-trust.ts), so the
 // renderer never holds a secret it could leak.
 const api = {
+  onPersonalPaidEstimate: (callback) => {
+    const listener = (_event, estimate) => callback(estimate);
+    ipcRenderer.on("providerAccounts:paidEstimate", listener);
+    return () => ipcRenderer.removeListener("providerAccounts:paidEstimate", listener);
+  },
+  acknowledgePersonalPaidEstimate: (presentationId) => ipcRenderer.invoke("providerAccounts:estimatePresented", presentationId),
   getRuntimeEndpoint: () => {
     return ipcRenderer.invoke("app:runtime-endpoint");
   },

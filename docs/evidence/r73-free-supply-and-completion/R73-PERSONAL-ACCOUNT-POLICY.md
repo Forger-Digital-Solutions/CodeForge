@@ -1,6 +1,6 @@
 # R73 personal account routing addendum
 
-Assessment date: 2026-10-09. This addendum describes the explicitly requested personal account infrastructure. It does not add a live paid inference proof or turn a paid account into packaged Free supply. No account was created, no credential was extracted, and no paid request was executed in this workstream.
+Assessment date: 2026-10-10. This addendum describes the explicitly requested personal account infrastructure. It does not add a live paid inference proof or turn a paid account into packaged Free supply. No account was created, no credential was extracted, and no paid request was executed in this workstream.
 
 ## Provider capability and ownership
 
@@ -36,13 +36,13 @@ Tool events are held until the exact served model, complete stream and accountin
 
 Local account-policy errors are terminal admission failures in model execution and role runtime. They preserve their typed identity, do not rotate into an unauthorized route, and do not record an upstream provider failure or poison unrelated model/provider health. A budget/owner/price/credential/authorization rejection before the wire is zero provider requests, not a provider outage. Genuine provider authentication rejection is separately classified: automatic personal paid routing can choose another currently authorized qualified personal paid connection, while explicit Specific Account selection stays pinned and blocks without substitution. This does not bypass a shared quota wall or authorize paid fallback in FreeOnly. Other genuine provider errors remain normalized and scoped by the existing health/quota path.
 
-## Current implementation limitations
+## Current implementation and live limits
 
-**Paid-model role qualification workflow is not implemented.** The desktop qualification action uses eligible unpaid Free capacity only. Personal paid execution can use an already trusted current exact provider/model role receipt, but a newly connected paid model without that receipt cannot bootstrap itself through a budget-authorized paid qualification action. This is an implementation limitation, distinct from absent live paid-spending authorization.
+**Paid-model role qualification is implemented and fixture-tested, but not live-verified.** The desktop exposes exact-model qualification for eligible paid accounts. It runs bounded Explorer/Reviewer qualification, classifies the receipt as paid, preserves existing Free qualification history, and uses the same guard for explicit permission, estimates, reservation and settlement. A real paid qualification was not run because no spending authorization/budget was provided for this task.
 
-**Full parent-level personal-roster crash resume is not implemented.** Existing durable worker hints preserve connection/mode/authorization context, and matching parent recovery can restore its trusted authorization. The existing parent-state condition excludes roster runs; the complete personal roster and parent authorization are therefore not yet reconstructed for a whole-parent restart. Durable spending holds, legacy non-roster parent recovery and worker-level persistence do not substitute for this missing full-parent path. No unsafe policy is invented on restart.
+**Parent personal-roster recovery is implemented and deterministic process-fixture tested.** It persists non-secret owner and roster-policy identity, re-resolves current authority/workspace/privacy, preserves edits and validation state, parks absent authority without requests, and recovers only after current authorization is restored. The retained 13/13 real-process scripted-provider receipt is not a live provider or paid execution proof.
 
-**Visible per-request paid-cost preview is not implemented.** The runtime computes a conservative reservation and the UI exposes permissions/budgets, but no user-visible execution quote is presented before each paid request. The budget limitations disclosure is implemented; it is not a provider-enforced invoice cap or a per-request estimate.
+**Visible per-request paid-cost preview is implemented and fixture-tested.** Before paid wire dispatch, a visible trusted desktop surface receives a masked account/model and current estimate, waits for renderer paint acknowledgment, and rechecks authority. Hidden, expired or stale presentation fails closed. Local estimates, even when acknowledged, are conservative application controls rather than provider-enforced invoice caps.
 
 ## Validation and limits
 
@@ -52,7 +52,7 @@ Later current-source production-path checks passed 26/26 across personal Free pr
 
 The initial combined run hit a Windows sandbox Vite transform-cache ENOENT; standalone runs with a worktree-local temporary directory passed. A separate pre-existing USER_API rejection test observed a changed roster rejection code during concurrent root routing edits; its final regression result belongs in the root validation report. Tests use injected transport responses and synthetic credentials. They do not demonstrate live paid execution, a new unpaid account, two independently owned external entitlements, provider invoice enforcement, packaged restart or installer certification.
 
-Final current-source validation passed 393/393 across 39 files in `accounts-final-billing-auth-transport-tests.json`, including both automatic/pinned credential-rejection cases and end-to-end chat/SSE reported-cost settlement, malformed cost, overcharge/restart and unrepresentable-cost uncertainty. Four wrong-workspace HTTP entry checks and four existing workspace-binding assertions passed separately; workflow mismatch now returns HTTP409 without dispatch or destruction of the existing session. Full workspace build and forced full-workspace typecheck exited0 in `accounts-final-workspace-build.log` and `accounts-final-frozen-typecheck.log`. The new clean package freeze/audits are pending. Overlapping receipts are never summed, and no external inference was used in these final tests.
+Prior current-source validation passed 393/393 across 39 files in `accounts-final-billing-auth-transport-tests.json`. New account guard, estimate, paid qualification and desktop estimate suites passed 50/50; Reviewer/account/routing passed 231/231; official-state OAuth provider/native callback passed 19/19. The earlier full workspace build passed before the last OAuth change and is being rerun. Four wrong-workspace HTTP entry checks and four existing workspace-binding assertions passed separately; workflow mismatch returns HTTP409 without dispatch or destruction of the existing session. The clean package freeze/audits are pending. Overlapping receipts are never summed, and no external inference was used in these tests.
 
 ## Live read-only account authentication
 

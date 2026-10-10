@@ -1,100 +1,96 @@
-# R73 mission report — current delivery snapshot
+# R73 mission report
 
-Updated 2026-10-09 after the sixth live task and personal multi-account addendum. This distinguishes durable existing delivery from account integration/freeze work still in progress. No missing acceptance gate is waived and no partial child is counted completed.
+Updated 2026-10-10. Implementation, fixture validation and live evidence are distinguished throughout. Final source freeze, package and publication receipts are maintained in `R73-DELIVERY.md`; no missing completion gate is waived.
 
 ## 1. Repository
 
-Starting R72 delivery:`220b365c553bff0b1ee952fb6b96498c8ddea325`. Branch:`codex/r73-free-supply-and-completion`. Worktree:`G:\CodeForge\worktrees\r73-free-supply-and-completion`. R71 ancestry/R72 HEAD and 73 historical evidence files were verified. Original repository HEAD/branch and six unrelated tracked changes remain hash-preserved; no reset or GEMS/FDS change.
+Starting R72 delivery: `220b365c553bff0b1ee952fb6b96498c8ddea325`. Branch: `codex/r73-free-supply-and-completion`. Durable worktree: `G:\CodeForge\worktrees\r73-free-supply-and-completion`. The current pre-freeze checkpoint is `1276a2de0b0104711faecce66bfb7239c860d22d`; final source and evidence commits are recorded after they exist.
 
-Current committed source HEAD:`97dafd4cab4cf4e4c14bb9c2104191323659fb6d`. Earlier R73 commits `e66a9d52f49bd559eaa30c856ac881c7f128f8f7` and `eade8b0d7f775dd382cfae65b7ae80289a0aaa77` were pushed with existing approved GitHub authentication. Addendum implementation/evidence is under validation before its new commit/freeze/final push. Final delivery SHA must be resolved afterward. Deployment: not performed. See `R73-DELIVERY.md`.
+R72 ancestry, its clean delivery and all 73 historical evidence files remain preserved. The original checkout stays at `6f8ad979fb9de0a17f69571d03358d7db5a35459` on `codex/r29-release-closure`, with six unrelated tracked modifications hash-preserved. The only authorized lockfile delta adds the existing `@codeforge/secrets` workspace to desktop dependencies. No reset, original-branch integration, GEMS/FDS modification or deployment occurred. Existing approved GitHub authentication supports branch publication; final push status is recorded separately.
 
 ## 2. Reviewer Recovery
 
-R72 failed admission with only Cohere's HARD_FAILURE Reviewer role: zero Reviewer requests/tools, correct Coder edit/three tests, no ForgeVerify/integration. R73 repairs production-schema qualification, bounded durable replacement, parent revalidation, failure telemetry, timeout/model cooldown scope, unqualified tools, complete bound readable evidence, empty-history projection and measured prompt/temperature alignment.
+R72 stopped because its only registered Reviewer candidate, Cohere, had HARD_FAILURE role evidence. Reviewer requests/tools were zero; this was admission failure, not an upstream outage. R73 repairs production-schema qualification, bounded ordered replacements, scope-correct health/cooldown telemetry, complete workspace-bound readable review packets, tool-menu eligibility, prompt/temperature alignment and empty-history projection. Completion requirements remain unchanged.
 
-BlockRun Llama genuinely qualified 5/6 under the unchanged current protocol. Actual independent production invocations ran but falsely rejected the correct patch or emitted malformed output. Latest readable evidence still received a valid false rejection. No passing actual review or second eligible Reviewer is claimed. See `R73-REVIEWER-RECOVERY.md`.
+V4 adds the actual correct retry-boundary patch and a seeded regression to the measured protocol, retaining the 0.75 threshold and critical-bug disqualification. Historic V3 BlockRun Llama qualification no longer admits V4 review. The current BlockRun Llama run made eight exact-model requests and falsely rejected the clean patch. Kilo Nemotron Super made ten requests, approved the correct patch, but also approved a seeded reservation leak. Neither qualifies. Both exhausted a local request bound with zero upstream errors; a corrected runner classification and separate adjudication preserve the original receipts. No passing review of an actual correct coding change is claimed. See `R73-REVIEWER-RECOVERY.md`.
 
 ## 3. Autonomous Completion
 
-Six genuine production-runtime anonymous Free attempts, zero completed, six blocked. Explorers completed all six. Coders repeatedly inspected/edited `src/retry.mjs`, changing `attempt <= maxAttempts` to `attempt < maxAttempts`, and ran real Node tests in isolated children. Several initial Coders completed with three tests passed. Independent outcomes persisted; none passed. ForgeVerify and integrations: zero. Unchanged parent tests-after fail accurately. No false completion. Feature/refactor streak did not begin because the elementary bug fix never completed. See `R73-AUTONOMOUS-COMPLETION.md`.
+Six genuine production-runtime anonymous Free attempts: zero completed, six blocked. Explorers completed all six. Coders repeatedly inspected and edited `src/retry.mjs` from `attempt <= maxAttempts` to `attempt < maxAttempts`, then ran real Node tests in isolated children. Several initial Coders completed with three tests passed. Actual independent Reviewer results were persisted; none passed. Live ForgeVerify and integration counts are zero, and unchanged parent tests-after fail accurately. Feature/refactor streak and expanded endurance remain unstarted because the elementary completion path never passed review. No seventh live task was launched without a currently qualified Reviewer.
+
+Personal-roster parent crash recovery is now implemented and tested using real process termination, source edits, tests, ForgeVerify and integration with scripted roles. Current owner, workspace, privacy, account authority and roster-policy identity are re-resolved; absent authority parks progress, and successful edits are not replayed. This is deterministic runtime proof, not a live completed task. See `R73-AUTONOMOUS-COMPLETION.md`.
 
 ## 4. Reliability
 
-Completion 0%, longest streak 0. Exact raw-receipt totals: 105 worker model requests, 96 executed tools, 116 external campaign frames including probes (97 Kilo/19 BlockRun), two observed provider failures, one rate-limit frame, six non-passing Reviewer workers. ForgeVerify failures 0 because it never ran; false completions 0. Runtime duplicate-work counter 0; 27 identical repeated tool emissions are separate from proven side effects. Requests/completion: null. Qualification/supply probes: 70 actual requests (52 Kilo/18 BlockRun).
+Completion: 0%; longest streak: 0. Six blocked parents, no failed/parked/cancelled live parents. Raw receipts report 105 worker model requests, 96 executed tools and 116 external campaign frames including probes (97 Kilo, 19 BlockRun). Distinct counters are not summed. There are two observed provider failures, one organic rate-limit frame, six non-passing Reviewer workers, zero passing reviews, zero ForgeVerify executions, zero integrations and zero false completions. Requests per completion is null.
 
-R72 was 0/1; R73 is 0/6. R73 improved diagnosis/dispatch/state/supply but did **not** improve measured parent completion percentage. `reliability-summary.json` gives precise counter definitions.
+Separate qualification/supply calls total 88 (62 Kilo, 26 BlockRun), including eighteen new V4 requests. Repeated tool emissions total 27; they are not evidence of duplicated side effects. R72 was 0/1 and R73 is 0/6: engineering and diagnosis improved, measured completion percentage did not. `reliability-summary.json` retains definitions and raw links.
 
 ## 5. Free Supply
 
-Kilo anonymous Free, official unpaid OpenRouter integration and finite shared managed Groq remain. New **BlockRun anonymous Free** is integrated in the existing installed/local fabric, live Reviewer-qualified and selected for actual production review. A genuine native fixture read succeeded; Tool Agent/Coder continuation did not qualify. Its separate source-IP gateway is additional supply, not extra quota per model.
+Existing Kilo anonymous Free, strict official unpaid OpenRouter integration and finite organization-shared Groq remain. BlockRun anonymous Free is a new implemented, authorized source-IP adapter in the existing installed/local fabric. Exact-zero inference, historical V3 Reviewer qualification, genuine native tool emission and production Reviewer selection were witnessed. Its current V4 Reviewer is unqualified, and Coder/Tool Agent continuation has not qualified. Consequently its adapter/live transport progress does not close the strict current-role/coding requirement of expanded-supply Gate F.
 
-R73 preserved 38 services/36 organizations and targeted eight additional organizations: 46 historical services/44 organizations. OpenCode Console/OVH anonymous authorization, Murakumo DNS/draft terms and other candidates retain exact blockers. BlockRun LagunaXS wrong-model fallback was rejected. Catalog-only discovery is not added capacity. Hosted client-direct execution remains Kilo-specific; local BlockRun is not hosted certification. See `R73-SUPPLY-MATRIX.md`.
+The preserved research covers 46 historical service entries across 44 organizations, extending R72's 38/36 with targeted actionable investigation. OpenCode Console and OVH anonymous third-party authorization remain unresolved; Murakumo and other routes retain exact availability/permission blockers. Wrong-model BlockRun fallback is rejected. Discovery/catalogs alone are not production capacity. Hosted client-direct execution remains Kilo-specific. See `R73-SUPPLY-MATRIX.md` and `R73-LIVE-QUALIFICATION.md`.
 
 ## 6. User Entitlements
 
-OpenRouter PKCE/owner-encrypted persistence is preserved/hardened. Addendum admits valid paid accounts separately from Free qualification, with stable connection IDs/isolated credentials/lifecycle/default spend off. One actual paid account authenticated through two official GETs; 469 catalog rows, zero qualified models, no inference. Both FreeOnly and personal-paid credential dispatch remained denied.
+Implemented and unit/integration-tested: multiple stable connection IDs per provider, owner-encrypted credentials, masked DTOs, independent enable/disable/disconnect/reauthorize, shared upstream-domain recognition, optional Connected Accounts UI, API-key entry where supported, and unified personal routing. Valid paid account admission is separate from Free route certification. Packaged Free remains independently available without external account setup.
 
-Backend/UI/bridge checks pass. Final affected provider transport, account guard/registry/execution and mixed role-runtime validation passed 393/393 across 39 files, using deterministic fixtures and zero external calls. A separate current-source check passed all four workspace-consent HTTP cases, four existing workspace-binding cases and 13 UI cases. New live unpaid OAuth, two real accounts, paid inference, packaged encrypted restart and remote revocation remain blocked. Groq uses secure API-key entry without invented OAuth. Puter:`INTEGRATED_BUT_FREE_ADMISSION_BLOCKED`; purchased-credit continuation lacks enforceable prevention. SambaNova/Z.ai lack new authorized entitlements. See `R73-USER-ENTITLEMENTS.md`, `R73-CONNECTED-ACCOUNTS.md` and policy report.
+OpenRouter uses official PKCE/S256 with documented top-level state, one-use callback/deadline/CSRF checks, secure redirect handling and explicit denied-consent handling. Native/provider fixtures pass 19/19. No refresh token or unsupported remote key-revocation capability is inferred. One existing paid account was live-authenticated using two official GETs: 469 catalog models, zero qualified models, zero inference. PAID classification was accepted while spending and Free dispatch remained denied.
 
-Three implementation limitations are separate from missing external accounts/permission: paid-model role qualification has no budget-authorized workflow yet (existing trusted current receipts only), full parent-level personal-roster crash resume is not implemented, and the UI does not show a per-request paid-cost preview before execution. Worker authorization hints and budget crash holds remain durable; they do not reconstruct the full parent policy after restart. The runtime's conservative cost reservation is not a visible user estimate or a guaranteed provider invoice cap.
+Explicit per-account/global paid permission, finite budgets, cost settlement, visible per-request estimate acknowledgement and bounded exact-model paid Explorer/Reviewer qualification are implemented and fixture-tested. They have no live paid proof or authorized spending budget. Groq uses supported API keys without an OAuth claim. Puter remains `INTEGRATED_BUT_FREE_ADMISSION_BLOCKED`; authoritative purchased-credit prevention is unavailable. SambaNova/Z.ai have no new authorized live entitlement. Unpaid OAuth, two distinct external accounts, live paid inference and OS-encrypted packaged restart remain blocked. See the account, entitlement and policy reports.
 
 ## 7. Free Capacity
 
-Kilo documented 200/hour/public IP across models/NAT. BlockRun 30/minute, 300/hour/source IP across Free models. Ordinary unpaid OpenRouter 50/day, 20/minute subject to current authoritative observations. Groq managed capacity remains finite organization-shared, with no invented available amount. Actual upstream walls can reduce practical supply below gateway windows.
+Documented limits: Kilo 200 requests/hour/public IP; BlockRun 30/minute and 300/hour/source IP across Free models; ordinary unpaid OpenRouter 50/day and 20/minute subject to authoritative account observations. Groq capacity is finite shared organization supply; no available amount is invented. Gateway and common upstream restrictions can lower practical availability.
 
-Users, keys, connections and aliases do not multiply physical allowance. Verified account/organization/IP domains share appropriately; unknown domains are conservative. Tasks use multiple requests and qualification/recovery consume quota. No unlimited capacity or arbitrary registration ceiling. Two live unpaid entitlements/same-NAT counters remain unproved.
+Connection IDs, keys, models, accounts and registered users do not automatically multiply physical allowance. Canonical evidenced account/organization/IP identity owns quota; unknown ownership is conservatively shared. Local account ledgers and physical shared concurrency/cooldown remain separate. There is no registration ceiling or unlimited-inference claim. Two live unpaid entitlements and live same-NAT independence remain unproved.
 
 ## 8. Failover
 
-Organic Kilo 502/model 429/upstream-account 429 and BlockRun availability changes are preserved. Sixth task captured genuine exact-Cohere high-demand 15/minute upstream 429 during repair after false review. Edits/tests/review persisted but no qualified alternate Coder completed recovery; parent blocked.
+Organic Kilo 502, exact-model/upstream-account 429 and BlockRun availability changes are preserved. The sixth task retained the correct edit, tests and false review when a repair Coder encountered genuine Kilo 429; no qualified alternate Coder completed recovery. Safe completed automatic cross-provider continuation remains unproved.
 
-Deterministic replacement/durable exclusions/state preservation/failure scopes and shared account cooldown fixtures pass. Actual credential rejection can select another currently authorized qualified account in automatic Paid Preferred, while an explicitly selected connection remains pinned and blocks without substitution. These are two tested fixture recovery cases, not account rotation to evade quota. Injected failures do not count organic. Successful completed cross-provider continuation remains unproved. See `R73-FAILOVER.md`.
+Fixture tests cover durable exclusions, scoped 429 cooldown, model/provider/account health isolation, paid account authentication rejection and current-authority recovery. Explicit account selection stays pinned; automatic mode selects only another authorized qualified route, without rotating credentials to evade quota. Injected failures are not organic evidence. See `R73-FAILOVER.md`.
 
 ## 9. Windows
 
-Preserved candidate frozen`eade8b0d7f775dd382cfae65b7ae80289a0aaa77`: workspace build/forced typecheck passed, clean main/renderer stamp, five static audits passed, 15 module archive matches. EXE SHA256:`f916673dc368b195beb1193dd11752f0f8fb8f723911eff164e4675bc3cd67c4`; ASAR:`59a7b58378f484fddcc929154b663c9923e3012fb3daf68cc41868e9e6fd9aff`.
+The earlier clean `eade8b0d7f775dd382cfae65b7ae80289a0aaa77` package and hashes remain preserved. A new addendum source freeze, clean build, directory candidate and five static audits are being collected in `R73-WINDOWS-PACKAGE.md`. The current full workspace build after the OAuth correction passed. Earlier artifacts do not certify the latest source.
 
-Direct host signature: NotSigned. No launch/install/upgrade/uninstall/native-loading/signed-installer certification. Authorized isolation/signing remain unavailable. Addendum candidate freeze/build pending; new harness checks 33 fixed modules plus renderer controls/bytes. Earlier package cannot certify current addendum. See `R73-WINDOWS-PACKAGE.md`.
+No unsigned candidate was launched or installed on an unauthorized host. Signing, authorized isolation, native runtime loading and installer install/upgrade/uninstall remain external gates. Directory packaging/static success cannot certify them. No production deployment occurred.
 
 ## 10. Economics and Privacy
 
-Live inference used legitimate anonymous Free without payment credentials/paid fallback and only public synthetic code. FreeOnly keeps ForgeZero/current policy/catalog/role/privacy/quota guards. Wrong served-model fallback and paid/unknown/unavailable routes remain excluded. Paid connection grants neither a Free certificate nor spending consent.
+All actual inference used authorized anonymous Free with public synthetic code and no payment credentials. FreeOnly retains ForgeZero, current catalog/policy/role/privacy/quota admission and cannot silently enable paid capacity. Paid connection validity grants neither spending consent nor Free certification. Unknown cost, expired evidence, substituted served models and malformed billing fail closed.
 
-Optional personal paid architecture is explicitly requested, with global/per-connection permission and finite budget OFF by default. Exact pricing/current owner/account evidence, durable conservative reservation/settlement and credential isolation are required. App budgets cannot guarantee provider invoices; limitations are disclosed. No paid request/top-up was made or granted. No account creation, quota-evasion or impersonation. Managed Paid remains future/unfunded. See `R73-ECONOMICS.md`.
+The user-requested personal paid architecture defaults all spending/fallback/top-up permissions OFF. Current exact pricing, trusted owner/account/credential, finite budget and visible estimate acknowledgement are required. Observed cost is settled even on revoked/rejected output; chat/tools are withheld when current authority fails. Uncertain dispatched crash reservations remain conservative. Local budgets are disclosed as application controls, not universal provider invoice caps. No actual paid request, top-up, account creation, private-code egress, local model or provider circumvention occurred. Managed Paid remains future and unfunded. See `R73-ECONOMICS.md`.
 
 ## 11. Validation
 
-Earlier broad affected 2632 PASS/16 FAIL/6 pending during source/dist changes; all 11 failed files subsequently 212/212 standalone PASS. Agent/tools/protocol 98/98 and receipt immutability 81/81 passed. Readable Reviewer/qualification 66/66, parent 31/31 passed. Clean eade build/typecheck and Windows 5/5 audits passed.
+Current separate runs: 50/50 billing/estimate/paid-qualification/revocation/crash assertions; 231/231 Reviewer/account/routing; 19/19 official OAuth/loopback; 13/13 real-process personal parent recovery; 59/59 V4 boundary qualification; 2/2 benchmark outcome classification. Their overlapping counts are not added into a unique-test total. All fixture runs made zero external/paid calls.
 
-Addendum separate checkpoints: backend/provider 90/90, native callback 4/4, UI/preload/security 62/62 across 8 files, personal guard 16/16 plus R55 multi-user 4/4. Final broad affected run passed 821/823; its workflow error-reporting regression was repaired to return `WORKSPACE_MISMATCH` HTTP409 before inference without disturbing the existing session, and the unchanged heavy orchestration timeout/EBUSY case passed standalone (one selected, 22 skipped). A subsequent 34-case workspace/UI/routing run passed 33 and retained one incorrect new test-property assertion; correcting that assertion to `contextMetrics` preceded the final 393/393 transport/account/runtime run. Those receipts overlap and are never summed.
-
-Final full workspace build passed (exit0, `accounts-final-workspace-build.log`), as did forced workspace typechecks (`accounts-final-typecheck-2.log` and the last-source `accounts-final-frozen-typecheck.log`). Clean source freeze, final commit-bound preservation and new package evidence remain pending. Reported billing cost is tested end-to-end in chat/SSE: overcharges are retained, output/tools suppressed and restart admission blocked. An unrepresentable charge retains the reported USD, marks durable accounting uncertainty and conservatively blocks at the numeric ledger floor; it is not claimed to be an exactly represented invoice total. Tests never substitute for live proof. See `R73-VALIDATION.md`.
-
-Final validation summary is `accounts-final-validation.json`. Secret scan passed: 2,104 files, 671 findings (649 synthetic, 22 allowlisted), zero owner-review findings. Historical scan evidence was restored exactly. Cached source diff checks and original/R72 preservation passed; only the documented desktop `@codeforge/secrets` dependency changes the R73 lockfile. Final commit-bound preservation and package checks remain pending.
+Earlier 393/393 account/transport regression and broad/standalone results remain retained with original failure/skipped counts. Full workspace build passed after final OAuth changes; forced typecheck and clean freeze validation are recorded separately. Source secret scan passes: 2,117 files, 672 findings (650 synthetic, 22 allowlisted), zero requiring owner review. Source diff checks and original/R72 preservation pass. No failing test, critical qualification case, completion gate or security threshold was removed to obtain green. See `R73-VALIDATION.md` and current validation receipts.
 
 ## 12. Remaining Blockers
 
-| Gate | Current evidence-backed status |
-|---|---|
-| A Repository | Historical work preserved; addendum commit/final preservation pending |
-| B Reviewer | Qualified/invoked; accurate successful review of actual correct patch unmet |
-| C Completion | Unmet: 0/6, no required review/ForgeVerify/integration |
-| D Reliability | Unmet: longest 0, no 3 task streak |
-| E Existing supply | Preserved, actual Kilo; OpenRouter strict Free; Groq accurately shared |
-| F Expanded supply | New installed-local BlockRun live Reviewer-qualified/integrated; no Coder/ToolAgent or hosted scope claim |
-| G Per-user pool | Typed account pool/routing/isolation fixtures pass; no second live unpaid entitlement |
-| H Organic recovery | Unmet: genuine failure, no completed cross-provider continuation |
-| I Economics/privacy | No unauthorized paid/private/bypass; current 393-case account/transport run passes; paid preview and external invoice guarantee absent |
-| J Windows | Earlier 5/5 static PASS; final addendum candidate pending; signing/isolation/lifecycle external |
-| K Validation | Current account/transport fixtures, full build and forced typecheck pass; clean frozen package checks pending |
-| L Evidence | Raw successes/failures preserved; final source/package/push receipts pending |
+| Gate | Evidence-backed status |
+| --- | --- |
+| A Repository | R72/original preservation passed; final source/evidence commit and publication receipts recorded during delivery |
+| B Reviewer | UNMET: no V4 qualified Reviewer accurately reviewed the actual correct change |
+| C Completion | UNMET: 0/6; live review, ForgeVerify and integration never all passed |
+| D Reliability | UNMET: longest streak 0; no three-task completion streak |
+| E Existing supply | Preserved; live Kilo, strict unpaid OpenRouter and accurately shared Groq |
+| F Expanded supply | PARTIAL: BlockRun adapter/exact-zero transport/tool emission/history proved; current coding-role qualification and complete integration standard unmet |
+| G Per-user pool | Implemented/fixture-tested; two real independently eligible account allowances unavailable |
+| H Organic recovery | UNMET: organic failure captured, no completed cross-provider continuation |
+| I Cost/privacy | Zero unauthorized paid/private/bypass evidence; explicit personal paid controls tested, real paid test blocked |
+| J Windows | Final static candidate work proceeds; signing/isolation/runtime/installer certification unavailable |
+| K Validation | Current focused suites and workspace build pass; frozen-source/typecheck/package evidence recorded separately |
+| L Evidence | Raw historical failures/successes retained; final commit/package/push identities recorded during delivery |
 
-External prerequisites: eligible unpaid and second legitimate distinct account, explicit paid-spending authorization for a real paid test, enforceable Puter no-spend scope, authorized isolated signed Windows lifecycle and any hosted protocol/deployment approval. No prerequisite is fabricated. Immediate runtime blocker remains an available qualified Reviewer accurately approving the actual correct change, followed by required verification/integration.
-
-Remaining engineering limitations include the missing paid-model qualification action, full-parent personal-roster crash resume and visible per-request paid-cost preview. Deterministic local parent-worktree review/ForgeVerify/integration and legacy real-process parent recovery pass their fixtures, with zero live calls; they do not change six genuine attempts/zero completed or substitute for those missing personal recovery/qualification paths.
+Immediate runtime blocker: a currently eligible Reviewer that genuinely qualifies and accurately reviews the actual patch. External live prerequisites: authorized unpaid and second distinct accounts, explicit real paid-spending budget, enforceable Puter zero-spend scope, supported anonymous-provider permission where unresolved, signing and isolated Windows lifecycle. No external prerequisite is fabricated.
 
 ## 13. Final Verdict
 
-Supply/security/runtime engineering and limited paid-account admission are delivered or being validated; mandatory autonomous completion/reliability/organic recovery remain unmet. Continue executable work and retain honest blocked receipts.
+The account addendum and runtime recovery work have implemented, tested behavior. Live provider observations remain explicitly limited. Mandatory accurate review, verified autonomous completion, three-task reliability, fully qualified additional supply and successful organic cross-provider completion remain unmet.
 
 CODEFORGE_R73_PARTIAL

@@ -13,7 +13,7 @@ import {
 } from "@codeforge/providers";
 import { EventStore, createSessionPersistence } from "@codeforge/sessions";
 import { PAID_AUTO_PROVIDER_ID } from "@codeforge/paid-auto";
-import { createEightBitRuntime, type ModelQualificationReceipt, type RoleQualificationResult } from "@codeforge/eight-bit";
+import { createEightBitRuntime, REVIEWER_PROTOCOL, type ModelQualificationReceipt, type RoleQualificationResult } from "@codeforge/eight-bit";
 import type { FreeCloudRoutingHooks } from "@codeforge/model-registry";
 import { createAgentRuntime, eightBitRoleForAgentRole } from "../src/agent-runtime.js";
 import { createSubagentManager } from "../src/subagent-manager.js";
@@ -420,7 +420,7 @@ function receipt(providerId: string, modelId: string, roleResults: Partial<Recor
   const at = new Date().toISOString();
   return {
     suiteVersion: "R10_FREE_QUALIFICATION_V1",
-    metadata: { roleProtocolVersions: { REVIEWER: "REVIEWER_PROTOCOL_V3" } },
+    metadata: { roleProtocolVersions: { REVIEWER: REVIEWER_PROTOCOL.version } },
     providerId,
     modelId,
     modelDisplayName: modelId,

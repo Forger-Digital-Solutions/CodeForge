@@ -63,9 +63,10 @@ function plannerJsonFor(req: ChatRequest): string {
 
 function reviewerVerdictFor(req: ChatRequest, mode: "good" | "approve_all" | "reject_all"): StreamEvent[] {
   const t = body(req);
-  const intentBuggy = t.includes("add()") || t.includes("Record provider failures") || t.includes("fast path") || t.includes("flaky router test");
+  const intentBuggy = t.includes("add()") || t.includes("Record provider failures") || t.includes("fast path") || t.includes("flaky router test")
+    || t.includes("Current content:\nexport function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt <= maxAttempts;");
   const approved = mode === "approve_all" ? true : mode === "reject_all" ? false : !intentBuggy;
-  return text(JSON.stringify({ verdict: approved ? "pass" : "revision_required", summary: approved ? "The diff implements the intent." : "The diff introduces a blocking defect.", findings: approved ? [] : [{ id: "bug-1", severity: "blocking", category: "correctness", message: "defect in the changed code (a * b / catch swallow / reserve without release / weakened assertion)", path: "src/calc.ts" }] }));
+  return text(JSON.stringify({ verdict: approved ? "pass" : "revision_required", summary: approved ? "The diff implements the intent." : "The diff introduces a blocking defect.", findings: approved ? [] : [{ id: "bug-1", severity: "blocking", category: "correctness", message: "defect in the changed code (a * b / catch swallow / reserve without release / weakened assertion / retry.mjs inclusive maxAttempts boundary)", path: "src/calc.ts" }] }));
 }
 
 /** A universally capable model — passes compact and all three role protocols. */
@@ -102,7 +103,7 @@ describe("R27 — versioned role protocols", () => {
   it("keeps R24 evidence frozen while qualifying the R27 planner protocol", () => {
     expect(ROLE_PROTOCOLS.map((p) => p.role)).toEqual(["EXPLORER", "PLANNER", "REVIEWER"]);
     for (const p of ROLE_PROTOCOLS) {
-      expect(p.version).toMatch(p.role === "PLANNER" ? /_V4$/ : p.role === "REVIEWER" ? /_V3$/ : /_V2$/);
+      expect(p.version).toMatch(p.role === "PLANNER" || p.role === "REVIEWER" ? /_V4$/ : /_V2$/);
       expect(p.evidenceFormat).toBe("per_case_details_v1");
       expect(p.scoringDimensions.length).toBeGreaterThan(0);
     }
@@ -253,7 +254,7 @@ describe("R27 — versioned role protocols", () => {
     const reviewer = good.roleResults.REVIEWER!;
     expect(reviewer.status).toBe("QUALIFIED");
     expect(reviewer.testCases.find((c) => c.caseId === "reviewer.clean")!.passed).toBe(true);
-    expect(reviewer.testCases.filter((c) => c.passed).length).toBe(6);
+    expect(reviewer.testCases.filter((c) => c.passed).length).toBe(8);
 
     const approveAll = await runRoleQualification(MODEL, new ScriptedAdapter((req) => body(req).includes("independent change reviewer") ? reviewerVerdictFor(req, "approve_all") : goodScript(req)));
     const lax = approveAll.roleResults.REVIEWER!;

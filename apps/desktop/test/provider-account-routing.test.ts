@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultPersonalProviderRoutingPolicy, parsePersonalProviderRoutingPolicy, readPersonalProviderRoutingPolicy, writePersonalProviderRoutingPolicy } from "../src/provider-account-routing.js";
+import { defaultPersonalProviderRoutingPolicy, parsePersonalProviderRoutingPolicy, personalPaidQualificationAdmission, readPersonalProviderRoutingPolicy, writePersonalProviderRoutingPolicy } from "../src/provider-account-routing.js";
 
 describe("personal routing policy", () => {
   it("defaults to Free Only with all spending permissions off", () => {
@@ -24,5 +24,16 @@ describe("personal routing policy", () => {
     expect(() => parsePersonalProviderRoutingPolicy({ mode: "SPECIFIC_ACCOUNT" })).toThrow("PERSONAL_ROUTING_ACCOUNT_REQUIRED");
     expect(() => parsePersonalProviderRoutingPolicy({ mode: "AUTO_BEST", automaticTopUp: true })).toThrow("PERSONAL_AUTOMATIC_TOP_UP_UNSUPPORTED");
     expect(parsePersonalProviderRoutingPolicy({ mode: "SPECIFIC_ACCOUNT", specificAccountConnectionId: "connection-1" }).specificAccountConnectionId).toBe("connection-1");
+  });
+
+  it("permits unqualified evaluation only with current global and exact account consent", () => {
+    const policy = parsePersonalProviderRoutingPolicy({ mode: "FREE_PREFERRED", paidEnabled: true, explicitConsent: true, limitationsAcknowledged: true });
+    const account = { connectionId: "account-a", enabled: true, authState: "ok", accountClass: "PAID", paidSpendingEnabled: true, monthlyBudgetCents: 100, preference: "AUTO" };
+    expect(personalPaidQualificationAdmission(policy, account)).toEqual({ eligible: true });
+    for (const patch of [{ mode: "FREE_ONLY" as const }, { paidEnabled: false }, { explicitConsent: false }, { limitationsAcknowledged: false }]) expect(personalPaidQualificationAdmission({ ...policy, ...patch }, account).eligible).toBe(false);
+    for (const patch of [{ enabled: false }, { authState: "unknown" }, { accountClass: "UNKNOWN" }, { paidSpendingEnabled: false }, { monthlyBudgetCents: 0 }, { monthlyBudgetCents: NaN }, { monthlyBudgetCents: Number.MAX_SAFE_INTEGER }, { preference: "MANUAL" }]) expect(personalPaidQualificationAdmission(policy, { ...account, ...patch }).eligible).toBe(false);
+    const selected = { ...policy, mode: "SPECIFIC_ACCOUNT" as const, specificAccountConnectionId: "account-a" };
+    expect(personalPaidQualificationAdmission(selected, { ...account, preference: "MANUAL" }).eligible).toBe(true);
+    expect(personalPaidQualificationAdmission({ ...selected, specificAccountConnectionId: "account-b" }, account).eligible).toBe(false);
   });
 });

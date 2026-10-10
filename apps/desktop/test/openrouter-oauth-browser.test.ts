@@ -17,6 +17,7 @@ describe("OpenRouter authorization browser choice", () => {
       const authorization = new URL(address);
       const callback = new URL(authorization.searchParams.get("callback_url")!);
       callback.searchParams.set("code", "fixture-code");
+      callback.searchParams.set("state", authorization.searchParams.get("state")!);
       const forged = new URL(callback);
       forged.searchParams.set("state", "wrong-state");
       expect((await fetch(forged)).status).toBe(400);
@@ -34,6 +35,7 @@ describe("OpenRouter authorization browser choice", () => {
       const authorization = new URL(address);
       const callback = new URL(authorization.searchParams.get("callback_url")!);
       callback.searchParams.set("code", "fixture-code");
+      callback.searchParams.set("state", authorization.searchParams.get("state")!);
       expect((await fetch(callback)).status).toBe(200);
       expect((await fetch(callback)).status).toBe(409);
     } })).rejects.toThrow("OpenRouter authorization timed out");
@@ -48,8 +50,7 @@ describe("OpenRouter authorization browser choice", () => {
       expect(authorization.searchParams.has("code_verifier")).toBe(false);
       const callback = new URL(authorization.searchParams.get("callback_url")!);
       callback.searchParams.set("code", "fixture-authorization-code");
-      const state = new URL(authorization.searchParams.get("callback_url")!).searchParams.get("state") ?? authorization.searchParams.get("state");
-      if (state) callback.searchParams.set("state", state);
+      callback.searchParams.set("state", authorization.searchParams.get("state")!);
       const child = Object.assign(new EventEmitter(), { unref: vi.fn() });
       queueMicrotask(() => { child.emit("spawn"); void fetch(callback); });
       return child;
@@ -62,6 +63,17 @@ describe("OpenRouter authorization browser choice", () => {
     expect(await runOpenRouterOAuth({ browser: "firefox", exchange, timeoutMs: 2_000 })).toBe("fixture-user-owned-key");
     expect(launcher.spawn).toHaveBeenCalledOnce();
     expect(launcher.openExternal).not.toHaveBeenCalled();
+  });
+
+  it("handles explicit provider consent denial without exchanging a credential", async () => {
+    const exchange = vi.fn(async () => "must-not-be-created");
+    await expect(runOpenRouterOAuth({ exchange, timeoutMs: 2_000, openExternal: async address => {
+      const authorization = new URL(address);
+      const callback = new URL(authorization.searchParams.get("callback_url")!);
+      callback.searchParams.set("error", "access_denied");
+      expect((await fetch(callback)).status).toBe(200);
+    } })).rejects.toThrow("OpenRouter authorization was denied");
+    expect(exchange).not.toHaveBeenCalled();
   });
 
   it("does not silently switch account sessions through the default browser when Firefox is absent", async () => {

@@ -1,4 +1,4 @@
-import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
+import type { ChatRequest, ChatResponse, StreamEvent, Usage } from "./chat-types.js";
 
 export * from "./chat-types.js";
 export { PuterSdkAdapter, type PuterSdkClient, type PuterSdkAdapterOptions } from "./puter.js";
@@ -413,8 +413,9 @@ export class ProviderError extends Error {
   /** Epoch millis after which the provider may be retried (from Retry-After / rate-limit headers). */
   readonly retryAfter?: number;
   readonly rateLimitScope?: "model" | "provider";
+  readonly observedUsage?: Usage;
 
-  constructor(message: string, code?: string, retryable?: boolean, extra?: { status?: number; retryAfter?: number; rateLimitScope?: "model" | "provider" }) {
+  constructor(message: string, code?: string, retryable?: boolean, extra?: { status?: number; retryAfter?: number; rateLimitScope?: "model" | "provider"; observedUsage?: Usage }) {
     super(message);
     this.name = "ProviderError";
     this.code = code;
@@ -422,6 +423,7 @@ export class ProviderError extends Error {
     this.status = extra?.status;
     this.retryAfter = extra?.retryAfter;
     this.rateLimitScope = extra?.rateLimitScope;
+    this.observedUsage = extra?.observedUsage;
   }
 }
 

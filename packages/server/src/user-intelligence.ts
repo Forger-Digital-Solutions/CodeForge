@@ -4,7 +4,7 @@ import type { ChatRequest, ChatResponse, CredentialStore, ProviderAdapter, Provi
 import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import { ModelQualificationReceiptSchema, roleQualificationStatusFor, type EightBitRole, type ModelQualificationReceipt } from "@codeforge/eight-bit";
 import type { RosterCandidate, RosterRole } from "./forgeauto-roster.js";
-import { PersonalAccountBudgetGuard, PersonalAccountPolicyError, type PersonalAccountBinding, type PersonalAccountPolicyOptions } from "./personal-account-policy.js";
+import { PersonalAccountBudgetGuard, PersonalAccountPolicyError, type PersonalAccountBinding, type PersonalAccountPolicyOptions, type PersonalAccountReservation } from "./personal-account-policy.js";
 export * from "./personal-account-policy.js";
 
 /**
@@ -307,7 +307,7 @@ class UserApiSourceAdapter implements ProviderAdapter {
     this.providerId = inner.providerId;
   }
 
-  private assertExecutable(modelId?: string): UserIntelligenceSource {
+  private assertExecutable(modelId?: string, checkPersonalAdmission = true): UserIntelligenceSource {
     const source = this.liveSource();
     if (!source || source.qualification !== "QUALIFIED") {
       throw new ProviderError("USER_API source is not currently qualified", "USER_SOURCE_NOT_EXECUTABLE", false);
@@ -318,7 +318,7 @@ class UserApiSourceAdapter implements ProviderAdapter {
     if (this.resolveCredential() === undefined) {
       throw new ProviderError("USER_API credential reference does not resolve", "USER_CREDENTIAL_UNAVAILABLE", false);
     }
-    if (source.connectionId !== undefined && !this.personalGuard.eligible(this.personalBinding(source))) {
+    if (checkPersonalAdmission && source.connectionId !== undefined && !this.personalGuard.eligible(this.personalBinding(source))) {
       throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_NOT_ADMITTED");
     }
     if (source.connectionId !== undefined && currentSourceRoles(source, this.now()).length === 0) throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_QUALIFICATION_STALE");
@@ -329,6 +329,14 @@ class UserApiSourceAdapter implements ProviderAdapter {
     return { ownerUserId: source.ownerUserId, connectionId: source.connectionId!, canonicalProviderId: source.canonicalProviderId!, credentialRef: source.credentialRef, modelId: source.modelId, pricing: source.pricing };
   }
 
+  private assertPersonalResultAuthority(initial: UserIntelligenceSource, req: ChatRequest, credential: string): void {
+    const current = this.assertExecutable(req.model, false);
+    if (current.ownerUserId !== initial.ownerUserId || current.sourceId !== initial.sourceId || current.connectionId !== initial.connectionId
+      || current.credentialRef !== initial.credentialRef || current.canonicalProviderId !== initial.canonicalProviderId || current.endpointUrl !== initial.endpointUrl
+      || current.modelId !== initial.modelId) throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_AUTHORITY_CHANGED");
+    this.personalGuard.assertCurrent(this.personalBinding(current), req, credential);
+  }
+
   async listModels(): Promise<ProviderModel[]> {
     this.assertExecutable();
     return this.inner.listModels();
@@ -337,22 +345,29 @@ class UserApiSourceAdapter implements ProviderAdapter {
   async chat(req: ChatRequest): Promise<ChatResponse> {
     const source = this.assertExecutable(req.model);
     if (source.connectionId === undefined) return this.inner.chat(req);
-    const reservation = await this.personalGuard.reserve(this.personalBinding(source), req, this.resolveCredential()!);
+    const credential = this.resolveCredential();
+    if (!credential) throw new ProviderError("USER_API credential reference does not resolve", "USER_CREDENTIAL_UNAVAILABLE", false);
+    const reservation = await this.personalGuard.reserve(this.personalBinding(source), req, credential);
+    let usage: Usage | undefined;
     try {
       this.assertExecutable(req.model);
       await reservation.dispatch();
       const response = await this.inner.chat(req);
+      usage = response.usage;
       if (response.model !== req.model) throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_MODEL_IDENTITY_MISMATCH");
       if (!response.choices.length) throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_EMPTY_COMPLETION");
       await reservation.settle(response.usage);
+      this.assertPersonalResultAuthority(source, req, credential);
       return response;
-    } catch (error) { await reservation.fail(error); throw error; }
+    } catch (error) { await reservation.fail(error, usage ?? (error instanceof ProviderError ? error.observedUsage : undefined)); throw error; }
   }
 
   async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
     const source = this.assertExecutable(req.model);
     if (source.connectionId === undefined) { yield* this.inner.streamChat(req, signal); return; }
-    const reservation = await this.personalGuard.reserve(this.personalBinding(source), req, this.resolveCredential()!);
+    const credential = this.resolveCredential();
+    if (!credential) throw new ProviderError("USER_API credential reference does not resolve", "USER_CREDENTIAL_UNAVAILABLE", false);
+    const reservation = await this.personalGuard.reserve(this.personalBinding(source), req, credential);
     let completed = false;
     let usage: Usage | undefined;
     let finish: Extract<StreamEvent, { type: "finish" }> | undefined;
@@ -371,11 +386,12 @@ class UserApiSourceAdapter implements ProviderAdapter {
       if (finish.model !== req.model) throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_MODEL_IDENTITY_MISMATCH");
       if (finish.finishReason === "error" || finish.finishReason === "content_filter" || (pendingTools.length > 0 && finish.finishReason !== "tool_calls")) throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_INCOMPLETE_STREAM");
       await reservation.settle(usage);
+      this.assertPersonalResultAuthority(source, req, credential);
       completed = true;
       for (const event of pendingTools) yield event;
       yield finish;
-    } catch (error) { await reservation.fail(error); throw error; }
-    finally { if (!completed) await reservation.fail(); }
+    } catch (error) { await reservation.fail(error, usage); throw error; }
+    finally { if (!completed) await reservation.fail(undefined, usage); }
   }
 
   async healthCheck(): Promise<ProviderHealthResponse> {
@@ -425,6 +441,13 @@ export class UserIntelligenceRuntimeRegistry {
 
   async get(ownerUserId: string, sourceId: string): Promise<UserIntelligenceSource | undefined> {
     return this.store.get(ownerUserId, sourceId);
+  }
+
+  async reservePersonalAccountQualification(binding: PersonalAccountBinding, request: ChatRequest): Promise<PersonalAccountReservation> {
+    if (request.metadata?.personalAccountPurpose !== "QUALIFICATION") throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_QUALIFICATION_PURPOSE_REQUIRED");
+    const credential = this.credentialResolver.get(binding.ownerUserId, binding.credentialRef);
+    if (!credential) throw new PersonalAccountPolicyError("USER_CREDENTIAL_UNAVAILABLE");
+    return this.personalGuard.reserve(binding, request, credential);
   }
 
   async list(ownerUserId: string): Promise<UserIntelligenceSource[]> {

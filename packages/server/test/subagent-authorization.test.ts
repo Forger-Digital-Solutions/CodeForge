@@ -58,10 +58,10 @@ describe("trusted parent workspace and personal routing survive child execution"
     expect(requests[0]?.modelSelection).toEqual({ providerId: "user-api-personal", modelId: "model-1" });
   });
 
-  async function interruptedWorker(authorizationWorkspacePath?: string) {
+  async function interruptedWorker(authorizationWorkspacePath?: string, agentId: "coder" | "reviewer" = "coder") {
     const now = new Date().toISOString();
     const worker = SubagentRunWorkItemSchema.parse({
-      kind: "subagent_run", id: "interrupted-child", sessionId, parentRunId: "parent", agentId: "coder", role: "coder", task: "Implement", depth: 1, status: "running",
+      kind: "subagent_run", id: "interrupted-child", sessionId, parentRunId: "parent", agentId, role: agentId === "reviewer" ? "Independent Code Reviewer" : "coder", task: "Implement", depth: 1, status: "running",
       capsule: { schemaVersion: 1, assignment: "Coder", goal: "Implement", relevantFiles: [], knownEvidence: [], constraints: [], requiredOutput: [] },
       permissions: { read: true, search: true, write: true, executeCommand: true, network: false }, allowedTools: [], workspace: { id: "isolated", kind: "git-worktree" }, workspacePath: childWorkspace,
       routingHints: authorizationWorkspacePath ? { authorizationWorkspacePath } : {}, rosterAllowance: allowance,
@@ -69,7 +69,7 @@ describe("trusted parent workspace and personal routing survive child execution"
       telemetry: { wallTimeMs: 0, modelRequests: 0, inputTokens: 0, outputTokens: 0, toolCalls: 0, retryCount: 0, duplicateWorkCount: 0, providerFailures: 0 }, artifacts: [], createdAt: now, updatedAt: now,
     });
     await persistence.upsertWorkItem(worker);
-    await persistence.upsertWorkItem({ kind: "agent_run_journal", id: "agent-run-journal-interrupted-child", sessionId, runId: worker.id, agentId: "coder", role: "coder", state: "active", recoveryOutcome: "none", messages: [{ role: "system", content: "Coder" }, { role: "user", content: "Implement" }], turnCount: 1, toolCallCount: 0, writeCallCount: 0, commandCallCount: 0, createdAt: now, updatedAt: now } as never);
+    await persistence.upsertWorkItem({ kind: "agent_run_journal", id: "agent-run-journal-interrupted-child", sessionId, runId: worker.id, agentId, role: worker.role, state: "active", recoveryOutcome: "none", messages: [{ role: "system", content: agentId }, { role: "user", content: "Implement" }], turnCount: 1, toolCallCount: 0, writeCallCount: 0, commandCallCount: 0, createdAt: now, updatedAt: now } as never);
     await persistence.close();
     persistence = createSessionPersistence({ dbPath: join(directory, "session.db") }); await persistence.init();
   }
@@ -95,5 +95,12 @@ describe("trusted parent workspace and personal routing survive child execution"
     const manager = createSubagentManager({ persistence, agentRuntime: runtime, r1Enabled: true });
     expect((await manager.recoverInterruptedWorkers({ authorizationWorkspacePath: parentWorkspace })).resumed).toBe(1);
     expect(requests[0]?.authorizationWorkspacePath).toBeUndefined();
+  });
+
+  it("recovers the Reviewer machine role rather than routing its display label as Coder", async () => {
+    await interruptedWorker(parentWorkspace, "reviewer");
+    const manager = createSubagentManager({ persistence, agentRuntime: runtime, r1Enabled: true });
+    expect((await manager.recoverInterruptedWorkers({ parentRunId: "parent", authorizationWorkspacePath: parentWorkspace })).resumed).toBe(1);
+    expect(requests[0]).toMatchObject({ role: "reviewer", structuredOutput: "reviewer", authorizationWorkspacePath: parentWorkspace });
   });
 });

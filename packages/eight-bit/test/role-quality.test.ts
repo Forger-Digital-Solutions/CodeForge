@@ -79,6 +79,24 @@ function qualityHook(receipts: Map<string, ModelQualificationReceipt>, role: Eig
 }
 
 describe("roleQualityAdvice — bounded advisory evidence", () => {
+  it("invalidates V3 positive Reviewer evidence while retaining every other role and receipt", () => {
+    const roles = ["CODER", "TOOL_AGENT", "ANALYST", "EXPLORER", "PLANNER"] as const;
+    const old = receipt("p", "m", {
+      REVIEWER: roleResult("REVIEWER", "QUALIFIED", [tcase(true)]),
+      ...Object.fromEntries(roles.map((role) => [role, roleResult(role, "QUALIFIED", [tcase(true)])])),
+    });
+    old.suiteVersion = "R73_ROLE_QUALIFICATION_V6";
+    old.metadata = { roleProtocolVersions: { REVIEWER: "REVIEWER_PROTOCOL_V3" } };
+    const preserved = JSON.stringify(old);
+    expect(roleQualificationStatusFor(old, "REVIEWER", NOW_MS)).toBe("NOT_TESTED");
+    expect(roleQualityAdvice(old, "REVIEWER", NOW_MS)).toMatchObject({ needsRequalification: true, reasonCodes: ["ROLE_PROTOCOL_STALE"] });
+    for (const role of roles) {
+      expect(roleQualificationStatusFor(old, role, NOW_MS)).toBe("QUALIFIED");
+      expect(roleQualityAdvice(old, role, NOW_MS).needsRequalification).toBe(false);
+    }
+    expect(JSON.stringify(old)).toBe(preserved);
+  });
+
   it("requires the current Reviewer protocol without expiring compatible coding evidence", () => {
     const old = receipt("p", "m", {
       REVIEWER: roleResult("REVIEWER", "QUALIFIED", [tcase(true)]),

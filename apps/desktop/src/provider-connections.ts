@@ -96,6 +96,7 @@ export interface ProviderConnectionsHost {
   ollamaUserConnectedFreeEnabled?: boolean;
   verifyOpenRouter?: typeof verifyOpenRouterEntitlement;
   paidAccountAdmission?: (account: ConnectedAccountAuthority) => { eligible: boolean; reason?: string };
+  paidQualificationAdmission?: (account: ConnectedAccountAuthority) => { eligible: boolean; reason?: string };
 }
 
 const CONNECTABLE_FIELD_RE = /^[a-zA-Z][a-zA-Z0-9_-]{0,40}$/;
@@ -184,6 +185,7 @@ export class ProviderConnections {
       },
       verifyOpenRouter: (options) => (host.verifyOpenRouter ?? verifyOpenRouterEntitlement)(options),
       paidAccountAdmission: (authority) => host.paidAccountAdmission?.(authority) ?? { eligible: false, reason: "PAID_RUNTIME_AUTHORITY_REQUIRED" },
+      paidQualificationAdmission: (authority) => host.paidQualificationAdmission?.(authority) ?? { eligible: false, reason: "PAID_QUALIFICATION_AUTHORITY_REQUIRED" },
       notifyChanged: host.notifyChanged });
     const raw = host.readSettings()[DELEGATED_ENTITLEMENTS_KEY] as Record<string, OpenRouterEntitlementReceipt> | undefined;
     for (const receipt of Object.values(raw ?? {})) {
@@ -207,7 +209,7 @@ export class ProviderConnections {
   recheckProviderAccount(connectionId: string) { return this.accounts.recheck(connectionId); }
   providerAccountAuthority(connectionId: string) { return this.accounts.authority(connectionId); }
   providerAccountModels(connectionId: string) { return this.accounts.models(connectionId); }
-  providerAccountCredentialStore(connectionId: string, mode: "FREE_ONLY" | "PERSONAL_PAID") { return this.accounts.credentials(connectionId, mode); }
+  providerAccountCredentialStore(connectionId: string, mode: "FREE_ONLY" | "PERSONAL_PAID" | "PAID_QUALIFICATION") { return this.accounts.credentials(connectionId, mode); }
 
   private migrateLegacyOpenRouterOAuth(): void {
     const sources = this.host.readSettings()[CREDENTIAL_SOURCES_KEY] as Record<string, string> | undefined;

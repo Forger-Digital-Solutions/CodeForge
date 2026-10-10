@@ -24,6 +24,9 @@ export interface ConnectedAccountView {
   reason?: string;
   paidDispatchEligible: boolean;
   paidBlockReason?: string;
+  paidQualificationEligible?: boolean;
+  paidQualificationBlockReason?: string;
+  qualificationModels?: { modelId: string; displayName: string; isFree: boolean }[];
 }
 
 export interface ConnectedAccountPolicyPatch {

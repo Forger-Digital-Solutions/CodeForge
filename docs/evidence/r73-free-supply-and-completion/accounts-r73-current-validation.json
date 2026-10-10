@@ -1,0 +1,78 @@
+{
+  "observedAt": "2026-10-10T05:03:36.1917200Z",
+  "phase": "CURRENT_SOURCE_VALIDATED_BEFORE_FREEZE",
+  "sourceCheckpoint": "1276a2de0b0104711faecce66bfb7239c860d22d",
+  "workspaceBuild": {
+    "log": "accounts-r73-final-workspace-build.log",
+    "exitCode": 0
+  },
+  "forcedWorkspaceTypecheck": {
+    "log": "accounts-r73-final-typecheck.log",
+    "exitCode": 0
+  },
+  "tests": [
+    {
+      "file": "accounts-r73-billing-authority-final-tests.json",
+      "sha256": "c755c0d1cec4213243907cd14da67df50cddf0c0d1a4a65bc6f06f5acfea4be0",
+      "passed": 50,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "file": "accounts-r73-reviewer-lifecycle-routing-final-tests.json",
+      "sha256": "5de5dbdd30081196d2d89b734d5834705dc46889b7b1e804c5b7cf3b09d5ffc9",
+      "passed": 231,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "file": "accounts-r73-openrouter-oauth-official-state-local-tests.json",
+      "sha256": "79f3f1462e0bc681e40ca80ac3222c331ee150128b5dd321f029463f69a0b591",
+      "passed": 19,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "file": "accounts-r73-parent-recovery-final-tests.json",
+      "sha256": "370ef4ef15622cc3b6d076cefc8e35070605bbc9e4e50caf404677a8a39c4bf2",
+      "passed": 13,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    {
+      "file": "reviewer-boundary-v4-tests.json",
+      "sha256": "cc8f7ca9273007e6b025ed10a5e16e901eb8ed8209b4ae92d7c87c22b06d9b68",
+      "passed": 59,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    }
+  ],
+  "reviewerOutcomeClassification": {
+    "passed": 2,
+    "failed": 0,
+    "exitCode": 0,
+    "log": "reviewer-classification-current-tests.log"
+  },
+  "secretScan": {
+    "status": "PASS",
+    "filesScanned": 2117,
+    "totalFindings": 672,
+    "synthetic": 650,
+    "allowlisted": 22,
+    "ownerReviewRequired": 0
+  },
+  "externalInferenceRequestsInTests": 0,
+  "paidInferenceRequests": 0,
+  "liveV4ReviewerCalls": {
+    "kilo": 10,
+    "blockrun": 8,
+    "qualified": 0,
+    "upstreamErrors": 0
+  },
+  "interpretation": "Counts from overlapping test runs are not summed. Live V4 qualifications remain separate from the six retained parent attempts and scripted process recovery. Current source freeze/package/publication receipts follow separately."
+}

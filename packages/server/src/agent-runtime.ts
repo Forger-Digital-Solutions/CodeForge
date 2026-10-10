@@ -2573,6 +2573,7 @@ export class AgentRuntime {
               runId: req.runId,
               workspaceId: req.workspaceId,
               dedupeScope: req.runId,
+              sessionId: this.sessionId,
             });
             if (paidReservation) {
               // Observed provider usage settles the measured cost; anything else settles the

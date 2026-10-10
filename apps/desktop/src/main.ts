@@ -21,7 +21,9 @@ import {
   type SettingsSnapshot,
 } from "./app-settings.js";
 import { ProviderConnections, type ProviderConnectionsHost } from "./provider-connections.js";
-import { readPersonalProviderRoutingPolicy, writePersonalProviderRoutingPolicy } from "./provider-account-routing.js";
+import { personalPaidQualificationAdmission, readPersonalProviderRoutingPolicy, writePersonalProviderRoutingPolicy } from "./provider-account-routing.js";
+import { qualifyPersonalPaidModel } from "./provider-account-qualification.js";
+import { PaidEstimatePresenter } from "./paid-request-estimates.js";
 import { refreshWindowsEnvironment } from "./environment-refresh.js";
 import { offlineCloudAccount } from "./cloud-account.js";
 import {
@@ -38,11 +40,11 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
   } catch {}
 }
 
-import { CodeForgeServer, type CodeForgeRuntimeStatus, type PersonalAccountAuthority, type UserIntelligenceSource, type RosterRole } from "@codeforge/server";
+import { CodeForgeServer, type CodeForgeRuntimeStatus, type PersonalAccountAuthority, type PersonalAccountEstimate, type UserIntelligenceSource, type RosterRole } from "@codeforge/server";
 import { roleQualificationStatusFor, runRoleAwareQualification } from "@codeforge/eight-bit";
 import { ExtensionManager, MarketplaceClient, MarketplaceError, type ExtensionRecord, type ExtensionStateStore, type MarketplaceCatalogEntry, type MarketplaceSource, type SecretStore } from "@codeforge/plugins";
 import { ForgeZero, createGenericFreeRecord, hashUserAccountIdentity, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog, createMockProvider, createProviderAdapterFromDefinition, HostedProviderAdapter, ProviderError, CloudflareNeuronBudgetGuard, FileCloudflareNeuronBudgetStore, GraphqlCloudflareUsageSource, configFieldKey, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent, type ProviderResponseObservation } from "@codeforge/providers";
+import { InMemoryProviderCatalog, createMockProvider, createProviderAdapterFromDefinition, OpenAICompatibleAdapter, HostedProviderAdapter, ProviderError, CloudflareNeuronBudgetGuard, FileCloudflareNeuronBudgetStore, GraphqlCloudflareUsageSource, configFieldKey, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent, type ProviderResponseObservation } from "@codeforge/providers";
 import { createPaidAutoService } from "@codeforge/paid-auto";
 import {
   NormalizedModelRegistry,
@@ -1324,6 +1326,11 @@ function createProviderConnectionsHost(): ProviderConnectionsHost {
       try { candidate = server?.personalAccountCandidates(account.ownerUserId).find(item => item.personalConnectionId === account.connectionId && item.personalAdmission === "PAID_AUTHORIZED" && item.available); } catch {}
       return candidate ? { eligible: true } : { eligible: false, reason: "QUALIFIED_CURRENT_PERSONAL_ROUTE_REQUIRED" };
     },
+    paidQualificationAdmission: (account) => {
+      const policy = readPersonalProviderRoutingPolicy(readSettings(), account.ownerUserId);
+      if (!connectedAccountRuntimeAuthority(account.ownerUserId, account.connectionId)) return { eligible: false, reason: "WORKSPACE_INFERENCE_CONSENT_REQUIRED" };
+      return personalPaidQualificationAdmission(policy, account);
+    },
   };
 }
 
@@ -1340,6 +1347,23 @@ function connectedAccountRuntimeAuthority(owner: string, connectionId: string): 
     capacityWindows: account.freeAdmissionVerified && account.freeRequests && account.verifiedAt ? [{ unit: "requests", limit: account.freeRequests.limit, remaining: account.freeRequests.remaining,
       resetAt, scope: "USER_ACCOUNT", observedAt: account.verifiedAt, authoritative: true, period: "DAILY_RESET" }] : [],
   };
+}
+
+let paidEstimatePresenter: PaidEstimatePresenter | undefined;
+async function presentPersonalPaidEstimate(estimate: PersonalAccountEstimate): Promise<void> {
+  paidEstimatePresenter ??= new PaidEstimatePresenter({
+    surface: () => {
+      const window = mainWindow;
+      if (!window || window.isDestroyed()) return undefined;
+      return { senderId: window.webContents.id, visible: window.isVisible() && !window.isMinimized(),
+        send: view => window.webContents.send("providerAccounts:paidEstimate", view) };
+    },
+    isCurrent: item => item.ownerUserId === userConnectedFreeScopeId() && !!currentWorkspacePath
+      && item.workspacePath !== undefined && path.resolve(item.workspacePath).toLowerCase() === path.resolve(currentWorkspacePath).toLowerCase()
+      && connectedAccountRuntimeAuthority(item.ownerUserId, item.connectionId)?.enabled === true,
+    maskedIdentity: connection => providerConnections?.listProviderAccounts().find(account => account.connectionId === connection)?.maskedIdentity,
+  });
+  await paidEstimatePresenter.present(estimate);
 }
 
 let accountRuntimeSync: Promise<void> | undefined;
@@ -1381,6 +1405,9 @@ async function synchronizeProviderAccounts(): Promise<void> {
           await runtime.putUserIntelligenceSource(owner, source);
           if (owner !== connections.accountOwnerUserId() || runtime !== server) { accountRuntimeSyncRequested = true; continue syncPass; }
         }
+      }
+      if (owner === connections.accountOwnerUserId() && runtime === server && currentWorkspacePath) {
+        void runtime.resumeAuthorizedPersonalParents().catch(() => {});
       }
     }
   })().finally(() => { accountRuntimeSync = undefined; });
@@ -1427,6 +1454,7 @@ async function initializeServer(dbPath: string): Promise<void> {
         (credentialRef) => desktopCredentialStore?.get(credentialRef),
       ),
       personalAccountPolicy: {
+        onEstimate: presentPersonalPaidEstimate,
         personalAccountAuthority: connectedAccountRuntimeAuthority,
         personalRoutingPolicy: (owner) => {
           const policy = readPersonalProviderRoutingPolicy(readSettings(), owner);
@@ -2827,6 +2855,11 @@ function assertMainWindowSender(event: Electron.IpcMainInvokeEvent): void {
   if (event.sender !== mainWindow?.webContents) throw new Error("Invalid IPC sender");
 }
 
+ipcMain.handle("providerAccounts:estimatePresented", (event, presentationId: unknown) => {
+  assertMainWindowSender(event);
+  return paidEstimatePresenter?.acknowledge(presentationId, event.sender.id) ?? false;
+});
+
 ipcMain.handle("app:runtime-endpoint", (event) => {
   // The endpoint is routing metadata, not an authentication secret. Returning it only to the
   // primary window keeps secondary or forged renderers from learning another instance's port.
@@ -3483,8 +3516,39 @@ ipcMain.handle("providerAccounts:qualify", async (event, connectionId: unknown, 
     if (!recheck.ok || owner !== connections.accountOwnerUserId()) return { ok: false, error: "Reconnect this account before qualification" };
     const authority = connections.providerAccountAuthority(connectionId);
     const catalog = connections.providerAccountModels(connectionId);
+    if (authority?.providerId === "openrouter" && !authority.freeAdmissionVerified) {
+      const runtime = server;
+      const workspacePath = currentWorkspacePath;
+      const policy = readPersonalProviderRoutingPolicy(readSettings(), owner);
+      const admission = personalPaidQualificationAdmission(policy, authority);
+      const credentialStore = connections.providerAccountCredentialStore(connectionId, "PAID_QUALIFICATION");
+      const model = catalog?.models.find(candidate => candidate.modelId === modelId && candidate.capabilities.toolCalling && candidate.pricing?.tokenOnly === true);
+      if (!runtime || !workspacePath || !connectedAccountRuntimeAuthority(owner, connectionId) || !admission.eligible || !credentialStore || !model) {
+        return { ok: false, error: "Paid qualification requires one exact model, workspace consent, explicit account spending permission and a remaining budget." };
+      }
+      const transport = new OpenAICompatibleAdapter({ providerId: "openrouter", baseUrl: "https://openrouter.ai/api/v1", credentialStore,
+        requireExactServedModel: true,
+        requestBodyExtras: { usage: { include: true } }, includeUsageInStream: true });
+      const assertCurrent = (): void => {
+        const current = connections.providerAccountAuthority(connectionId);
+        if (owner !== connections.accountOwnerUserId() || runtime !== server || currentWorkspacePath !== workspacePath
+          || !connectedAccountRuntimeAuthority(owner, connectionId) || !current
+          || current.credentialRef !== authority.credentialRef || current.credentialFingerprint !== authority.credentialFingerprint
+          || !connections.providerAccountCredentialStore(connectionId, "PAID_QUALIFICATION")
+          || !personalPaidQualificationAdmission(readPersonalProviderRoutingPolicy(readSettings(), owner), current).eligible) throw new Error("ACCOUNT_AUTHORITY_CHANGED");
+      };
+      await qualifyPersonalPaidModel({ authority, model, workspacePath, transport, assertCurrent,
+        reserve: (binding, request) => runtime.reservePersonalAccountQualification(binding, request),
+        cachedReceipt: freeCloud.getReceipt(authority.providerId, model.modelId), recordReceipt: receipt => freeCloud!.recordReceipt(receipt),
+        signal: AbortSignal.timeout(360_000) });
+      assertCurrent();
+      await synchronizeProviderAccounts();
+      assertCurrent();
+      notifyProviderChanged();
+      return { ok: true, connection: connections.listProviderAccounts().find(account => account.connectionId === connectionId) };
+    }
     const credentialStore = connections.providerAccountCredentialStore(connectionId, "FREE_ONLY");
-    if (!authority?.freeAdmissionVerified || !authority.freeRequests || !catalog || !credentialStore || authority.providerId !== "openrouter") return { ok: false, error: "A current zero-cost account certificate is required. Paid qualification is disabled." };
+    if (!authority?.freeAdmissionVerified || !authority.freeRequests || !catalog || !credentialStore || authority.providerId !== "openrouter") return { ok: false, error: "A current zero-cost account certificate is required." };
     const model = catalog.models.find(candidate => (modelId === undefined || candidate.modelId === modelId) && candidate.isFree && candidate.freeStatus === "verified_free"
       && candidate.capabilities.toolCalling && candidate.pricing?.tokenOnly === true && candidate.pricing.inputCostPerMillion === 0 && candidate.pricing.outputCostPerMillion === 0);
     if (!model) return { ok: false, error: "No exact-zero tool-capable model is eligible" };

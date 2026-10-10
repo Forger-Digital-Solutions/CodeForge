@@ -194,9 +194,10 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         });
       }
       this.observe(res, req.model);
-      if (!Array.isArray(data.choices) || data.choices.length === 0) throw new ProviderError(`${this.providerId} returned no assistant choices`, "EMPTY_RESPONSE", true);
+      usage = data.usage ? normalizedOaiUsage(data.usage) : undefined;
+      if (!Array.isArray(data.choices) || data.choices.length === 0) throw new ProviderError(`${this.providerId} returned no assistant choices`, "EMPTY_RESPONSE", true, { observedUsage: usage });
       if (this.cfg.requireExactServedModel && data.model !== req.model) {
-        throw new ProviderError(`${this.providerId} served model identity does not match the qualified request`, data.model ? "MODEL_SUBSTITUTED" : "SERVED_MODEL_UNVERIFIED", true);
+        throw new ProviderError(`${this.providerId} served model identity does not match the qualified request`, data.model ? "MODEL_SUBSTITUTED" : "SERVED_MODEL_UNVERIFIED", true, { observedUsage: usage });
       }
       const response = this.fromResponse(data);
       usage = response.usage;
@@ -299,7 +300,10 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
           return "error";
         }
         if (typeof parsed.model === "string" && parsed.model.length > 0) {
-          if (this.cfg.requireExactServedModel && parsed.model !== req.model) throw new ProviderError(`${this.providerId} substituted an unqualified stream model`, "MODEL_SUBSTITUTED", true);
+          if (this.cfg.requireExactServedModel && parsed.model !== req.model) {
+            if (parsed.usage) { usage = normalizedOaiUsage(parsed.usage); yield { type: "usage", usage }; }
+            throw new ProviderError(`${this.providerId} substituted an unqualified stream model`, "MODEL_SUBSTITUTED", true);
+          }
           servedModel = parsed.model;
         }
         const choice = parsed.choices?.[0];
@@ -505,14 +509,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         },
         finishReason: (c.finish_reason as ChatResponse["choices"][number]["finishReason"]) ?? "stop",
       })),
-      usage: res.usage
-        ? {
-            inputTokens: res.usage.prompt_tokens ?? 0,
-            outputTokens: res.usage.completion_tokens ?? 0,
-            totalTokens: res.usage.total_tokens,
-            ...cachedFieldsFromOaiUsage(res.usage),
-          }
-        : undefined,
+      usage: res.usage ? normalizedOaiUsage(res.usage) : undefined,
     };
   }
 
@@ -657,6 +654,11 @@ interface OaiUsage {
   completion_tokens_details?: { reasoning_tokens?: number };
   cost?: unknown;
   costUsd?: unknown;
+}
+
+function normalizedOaiUsage(usage: OaiUsage): NonNullable<ChatResponse["usage"]> {
+  return { inputTokens: usage.prompt_tokens ?? 0, outputTokens: usage.completion_tokens ?? 0,
+    totalTokens: usage.total_tokens, ...cachedFieldsFromOaiUsage(usage) };
 }
 
 function cachedFieldsFromOaiUsage(usage: OaiUsage): { cachedInputTokens?: number; reasoningTokens?: number; costUsd?: number } {

@@ -56,3 +56,23 @@ The final candidate is built from a committed clean source stamp. Package presen
 The addendum preservation rerun at HEAD `97dafd4cab4cf4e4c14bb9c2104191323659fb6d` passed: original and R72 locks remain SHA-256 `8cc332bdd8b2a53126592aa45960497d1892223ce2b37162f47496690dc31d45`; R73 is `45a47cff4b0dbb7346c5eba07fb3a34063a962175e4d1b74881199b13bd3cf68`. Deep parsed comparison permits exactly `packages.apps/desktop.dependencies.@codeforge/secrets = "*"` and rejects every other dependency/package/version change. The receipt records this explicit authorized difference rather than falsely claiming R73's lock is byte-identical. Original HEAD/branch, six tracked-file hashes and all 73 R72 evidence files remain unchanged. Rerun after the final source/evidence commits to bind their actual HEAD.
 
 `accounts-final-validation.json` records the final build/typecheck exit0 and separate retained test checkpoints, with zero external/paid calls in those tests. The final secret scan passed: **2,104 files, 671 findings, 649 synthetic, 22 allowlisted, zero requiring owner review** (`accounts-final-secret-scan-report.json`). Its historical `security-r1` report was restored byte-for-byte; the new report is preserved only in R73 evidence. Cached source diff checks passed with raw log whitespace excluded, and preservation checks retained all six original tracked-file hashes and 73 R72 evidence files. Only the documented desktop `@codeforge/secrets` dependency is permitted as the lockfile delta. Clean source/final delivery SHAs and package evidence remain pending until the actual commits/build occur.
+
+## October 10 source-finalization checks
+
+| Receipt | Result | Scope |
+| --- | --- | --- |
+| `accounts-r73-billing-authority-final-tests.json` | 50/50 PASS | Paid qualification, estimate presentation, authoritative billed cost, post-inference revocation and process-lease crash reconciliation |
+| `accounts-r73-reviewer-lifecycle-routing-final-tests.json` | 231/231 PASS | V4 Reviewer contract, role freshness, account lifecycle/settings/IPC, mixed routing and source isolation |
+| `accounts-r73-openrouter-oauth-official-state-local-tests.json` | 19/19 PASS | Current documented top-level state, PKCE exchange, redirect/CSRF/replay handling and denied consent; authorized loopback fixtures |
+| `accounts-r73-openrouter-oauth-official-state-tests.json` | 15 PASS/4 FAIL | Earlier restricted loopback collection retained; host-authorized rerun above passed all assertions |
+| `accounts-r73-parent-recovery-final-tests.json` | 13/13 PASS | Real process crashes, current owner/workspace/privacy/roster reauthorization, parked recovery, one preserved edit, real ForgeVerify/integration with scripted role output |
+| `reviewer-boundary-v4-tests.json` | 59/59 PASS | Current full-snapshot clean retry patch and seeded regression, unchanged schema/threshold and critical-defect exclusion |
+| `reviewer-outcome.test.mjs` | 2/2 PASS | Local request bound is distinguished from upstream failure; incorrect completed review remains negative evidence |
+| `accounts-r73-final-workspace-build.log` | exit 0 | Full workspace TypeScript and app builds after the OAuth correction |
+| `accounts-r73-final-typecheck.log` | exit 0 | Forced full-workspace `tsc -b --force` |
+| `accounts-r73-current-secret-scan.json` | PASS | 2,117 source files, 672 findings: 650 synthetic, 22 allowlisted, zero owner-review findings; prior scan unchanged |
+| `accounts-r73-evidence-credential-scan.json` | PASS | 40 modified/new R73 evidence documents checked for known full credential shapes, zero findings; values never emitted |
+
+The current parent-recovery process run takes several minutes on Windows and completed all thirteen assertions. The earlier interrupted rerun is not counted as a failure or success. These tests use synthetic fixtures with zero external or paid requests. The two new live V4 qualifications made eighteen anonymous requests and qualified neither model; their raw and adjudicated receipts are separate from fixture tests. The evidence summarizer now includes both providers' exact live Reviewer frames and reports 88 qualification/supply calls. The six-parent live outcome remains 0/6. `accounts-r73-current-validation.json` hashes the current fixture receipts and records actual build/typecheck exit codes separately from live results.
+
+Original checkout and R72 preservation reran successfully at `1276a2de0b0104711faecce66bfb7239c860d22d`: six original tracked modifications and all 73 R72 evidence files unchanged. The source-final build/typecheck, frozen candidate, package audits and final preservation/publication are also recorded in `R73-WINDOWS-PACKAGE.md` and `R73-DELIVERY.md` as they complete.

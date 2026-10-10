@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { ForgeZero, freeRouteExclusionReason, type FreeModelRecord } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog, createBlockRunFreeAdapter, createMockProvider, type ChatRequest, type ProviderAdapter, type StreamEvent } from "@codeforge/providers";
-import { createEightBitRouteHealthAuthority, InMemoryQualificationPersistence, type ModelQualificationReceipt } from "@codeforge/eight-bit";
+import { createEightBitRouteHealthAuthority, InMemoryQualificationPersistence, REVIEWER_PROTOCOL, type ModelQualificationReceipt } from "@codeforge/eight-bit";
 import { FreeCloudService } from "../src/free-cloud-service.js";
 import { NormalizedModelRegistry } from "../src/registry.js";
 import { supplyClassFor } from "../src/free-cloud-registry.js";
@@ -80,8 +80,9 @@ describe("BlockRun existing Free supply fabric", () => {
       async *streamChat(request: ChatRequest): AsyncIterable<StreamEvent> {
         requests.push(request);
         const input = request.messages.map((message) => message.content).join("\n");
-        const buggy = /add\(\)|Record provider failures|fast path|flaky router test/.test(input);
-        yield { type: "text_delta", delta: JSON.stringify({ verdict: buggy ? "revision_required" : "pass", summary: "Independent review", findings: buggy ? [{ id: "defect", severity: "blocking", category: "correctness", message: "calc.ts multiply; catch swallow; reserve without release; weakened test assertion" }] : [] }) };
+        const buggy = /add\(\)|Record provider failures|fast path|flaky router test/.test(input)
+          || input.includes("Current content:\nexport function retryDelays(maxAttempts, baseMs) { const delays = []; for (let attempt = 0; attempt <= maxAttempts;");
+        yield { type: "text_delta", delta: JSON.stringify({ verdict: buggy ? "revision_required" : "pass", summary: "Independent review", findings: buggy ? [{ id: "defect", severity: "blocking", category: "correctness", message: "calc.ts multiply; catch swallow; reserve without release; weakened test assertion; retry.mjs inclusive maxAttempts boundary" }] : [] }) };
         yield { type: "finish", finishReason: "stop" };
       },
     };
@@ -94,7 +95,7 @@ describe("BlockRun existing Free supply fabric", () => {
     expect(receipts).toHaveLength(1);
     expect(receipts[0]?.qualificationState).toBe("QUALIFIED");
     expect(Object.keys(receipts[0]!.roleResults)).toEqual(["REVIEWER"]);
-    expect(receipts[0]?.metadata).toMatchObject({ requests: 6, roleProtocolVersions: { REVIEWER: "REVIEWER_PROTOCOL_V3" } });
+    expect(receipts[0]?.metadata).toMatchObject({ requests: 8, roleProtocolVersions: { REVIEWER: REVIEWER_PROTOCOL.version } });
     expect(requests.every((request) => request.tools === undefined)).toBe(true);
     expect(service.productionCapacityRoutes().find((route) => route.providerId === provider.providerId)?.roles).toEqual(["REVIEWER", "VERIFIER_ASSIST"]);
   });

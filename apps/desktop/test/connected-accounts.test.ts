@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { classifyOpenRouterEntitlement, type ProviderModel } from "@codeforge/providers";
 import { ConnectedAccounts, CONNECTED_ACCOUNTS_KEY, type ConnectedAccountsHost } from "../src/connected-accounts.js";
+import { personalPaidQualificationAdmission } from "../src/provider-account-routing.js";
 
 function harness() {
   let owner = "local-owner-a";
@@ -127,6 +128,30 @@ describe("trusted multi-account provider connections", () => {
     await h.accounts.disconnect(id);
     expect(store.get("openrouter")).toBeUndefined();
     expect(h.accounts.list()[0]).toMatchObject({ connectionId: id, connected: false, enabled: false, paidSpendingEnabled: false, classification: "BLOCKED" });
+  });
+
+  it("isolates unqualified paid evaluation from qualified production credentials and withdraws it on consent or owner changes", async () => {
+    const h = harness();
+    const policy = { mode: "FREE_PREFERRED" as const, paidEnabled: true, explicitConsent: true, limitationsAcknowledged: true, automaticTopUp: false as const };
+    h.host.paidQualificationAdmission = account => personalPaidQualificationAdmission(policy, account);
+    h.model.pricing = { inputCostPerMillion: 1, outputCostPerMillion: 2, currency: "USD", confidence: "AUTHORITATIVE", source: "fixture:pricing", verifiedAt: "2026-10-09T11:59:00Z", recheckAt: "2026-10-09T13:00:00Z", tokenOnly: true };
+    const id = (await h.accounts.connect("openrouter", { apiKey: "paid-key-a" })).connection!.connectionId;
+    expect(h.accounts.credentials(id, "PAID_QUALIFICATION")).toBeUndefined();
+    h.accounts.update(id, { paidSpendingEnabled: true, monthlyBudgetCents: 100 });
+    const evaluation = h.accounts.credentials(id, "PAID_QUALIFICATION")!;
+    expect(evaluation.get("openrouter")).toBe("paid-key-a");
+    expect(h.accounts.credentials(id, "PERSONAL_PAID")).toBeUndefined();
+    expect(h.accounts.credentials(id, "FREE_ONLY")).toBeUndefined();
+    expect(h.accounts.list()[0]).toMatchObject({ paidDispatchEligible: false, paidQualificationEligible: true, qualifiedModels: [], qualificationModels: [{ modelId: "fixture-model", displayName: "Fixture", isFree: false }] });
+    expect(JSON.stringify(h.accounts.list())).not.toMatch(/credentialRef|credentialFingerprint|ownerUserId|paid-key-a/);
+    policy.explicitConsent = false;
+    expect(evaluation.get("openrouter")).toBeUndefined();
+    policy.explicitConsent = true; h.owner("other-owner");
+    expect(evaluation.get("openrouter")).toBeUndefined();
+    h.owner("local-owner-a"); h.accounts.update(id, { paidSpendingEnabled: false });
+    expect(evaluation.get("openrouter")).toBeUndefined();
+    h.accounts.update(id, { paidSpendingEnabled: true }); await h.accounts.disconnect(id);
+    expect(evaluation.get("openrouter")).toBeUndefined();
   });
 
   it("refuses cross-owner operations and account changes during awaited authorization", async () => {

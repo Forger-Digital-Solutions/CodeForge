@@ -13,7 +13,7 @@
  */
 
 import type { ChatRequest, ToolDefinition } from "@codeforge/providers";
-import { type PlannerResult, type ReviewResult, ROLE_PROMPTS, REVIEWER_CLEAN_DIFF_INSTRUCTION, REVIEWER_TEMPERATURE, validateStructuredAgentResult } from "@codeforge/agent";
+import { type PlannerResult, type ReviewResult, ROLE_PROMPTS, REVIEWER_CLEAN_DIFF_INSTRUCTION, REVIEWER_TEMPERATURE, formatUntrustedData, validateStructuredAgentResult } from "@codeforge/agent";
 import type { FreeModelRecord, ModelQualificationReceipt, RoleQualificationResult, TestCaseResult } from "./types.js";
 import type { EightBitRole } from "../types.js";
 import { firstJsonObject, runCompactQualification, type CompactQualificationAdapter, type CompactQualificationOptions } from "./compact.js";
@@ -47,7 +47,7 @@ export interface RoleQualificationOptions {
 export interface RoleQualificationOutput {
   roleResults: Partial<Record<EightBitRole, RoleQualificationResult>>;
   requestCount: number;
-  /** Provider-side failures during probes — inconclusive cases are NOT_TESTED, never scored. */
+  /** Provider failures, timeouts, or local request-budget bounds — inconclusive cases are NOT_TESTED, never scored. */
   transientCases: number;
 }
 
@@ -424,7 +424,9 @@ async function runReviewerCase(adapter: CompactQualificationAdapter, modelId: st
             ROLE_PROMPTS.reviewer.systemPromptTemplate + "\n" +
             REVIEWER_CLEAN_DIFF_INSTRUCTION,
         },
-        { role: "user", content: `Intent: ${caze.intent}\n\nDiff under review:\n${caze.diff}` },
+        { role: "user", content: caze.workspaceSnapshot
+          ? `Goal:\n${caze.intent}\n\n${formatUntrustedData(caze.workspaceSnapshot, "workspace review snapshot")}`
+          : `Intent: ${caze.intent}\n\nDiff under review:\n${caze.diff}` },
       ],
       temperature: REVIEWER_TEMPERATURE,
       maxTokens: 900,

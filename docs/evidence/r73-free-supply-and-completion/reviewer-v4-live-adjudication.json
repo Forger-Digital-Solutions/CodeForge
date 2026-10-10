@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-10-10T04:14:54.051Z",
+  "ruleSource": "benchmarks/r73/reviewer-outcome.mjs",
+  "records": [
+    {
+      "file": "docs/evidence/r73-free-supply-and-completion/reviewer-nvidia_llama-3.2-11b-vision-1791605434027.json",
+      "providerId": "blockrun-free-direct",
+      "modelId": "nvidia/llama-3.2-11b-vision",
+      "protocol": "REVIEWER_PROTOCOL_V4",
+      "requests": 8,
+      "statusAsRecorded": "INCONCLUSIVE_PROVIDER_FAILURE",
+      "adjudicatedStatus": "INCONCLUSIVE_LOCAL_REQUEST_BOUND",
+      "upstreamErrorFrames": 0,
+      "localRequestBoundCases": [
+        "reviewer.boundary_fix"
+      ],
+      "reviewerStatus": "NOT_TESTED",
+      "qualificationState": "NOT_QUALIFIED",
+      "hardFailureCases": [],
+      "transientCases": 1
+    },
+    {
+      "file": "docs/evidence/r73-free-supply-and-completion/reviewer-nvidia_nemotron-3-super-120b-a12b_free-1791605572020.json",
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "protocol": "REVIEWER_PROTOCOL_V4",
+      "requests": 10,
+      "statusAsRecorded": "INCONCLUSIVE_PROVIDER_FAILURE",
+      "adjudicatedStatus": "INCONCLUSIVE_LOCAL_REQUEST_BOUND",
+      "upstreamErrorFrames": 0,
+      "localRequestBoundCases": [
+        "reviewer.boundary_regression"
+      ],
+      "reviewerStatus": "NOT_TESTED",
+      "qualificationState": "NOT_QUALIFIED",
+      "hardFailureCases": [
+        "reviewer.reservation_leak"
+      ],
+      "transientCases": 1
+    }
+  ]
+}

@@ -93,6 +93,18 @@ function RoutingPreferences({ accounts, policy, busy, save }: { accounts: Connec
   </details>;
 }
 
+function PaidModelQualification({ account, busy, qualify }: { account: ConnectedAccountView; busy: boolean; qualify: (modelId: string) => void }): React.ReactElement {
+  const [modelId, setModelId] = useState("");
+  const choices = (account.qualificationModels ?? []).map(model => ({ value: model.modelId, label: model.displayName }));
+  useEffect(() => { setModelId(""); }, [account.connectionId]);
+  if (account.classification !== "PAID") return <></>;
+  return <div className="provider-availability" style={{ marginTop: 10 }}>
+    <SettingsRow title="Qualify a personal model" description="This bounded evaluation can consume your authorized account budget. Select one model. Each request shows its estimate before dispatch. Qualification does not certify a zero-cost route." control={<CfSelect label={`Qualification model for ${account.maskedIdentity}`} value={modelId} options={[{ value: "", label: "Choose a model" }, ...choices]} disabled={busy || !account.paidQualificationEligible} onChange={setModelId} />} />
+    <SettingsButton disabled={busy || !account.paidQualificationEligible || !choices.some(model => model.value === modelId)} onClick={() => qualify(modelId)}>Qualify selected personal model</SettingsButton>
+    {!account.paidQualificationEligible ? <p className="settings-note">Qualification requires current account authorization, verified pricing, explicit global and account spending permission, and a remaining budget.</p> : null}
+  </div>;
+}
+
 export function ConnectedAccountsPanel(props: ConnectedAccountsPanelProps): React.ReactElement {
   const live = useProviderAccounts();
   const accounts = props.accounts ?? live.accounts;
@@ -134,6 +146,7 @@ export function ConnectedAccountsPanel(props: ConnectedAccountsPanelProps): Reac
         {account.classification === "FREE_VERIFIED" ? <SettingsButton disabled={busy !== null || !account.connected || !account.enabled || account.authState !== "ok"} onClick={() => void run(`qualify:${account.connectionId}`, () => qualifyProviderAccount(account.connectionId), "Free model qualification finished; check eligible models above")}>Qualify Free models</SettingsButton> : null}
         <SettingsButton disabled={busy !== null || !account.connected} onClick={() => void run(account.connectionId, () => disconnectProviderAccount(account.connectionId), "Account disconnected; saved credential deleted and spending permission reset")}>Disconnect</SettingsButton>
       </div>
+      <PaidModelQualification account={account} busy={busy !== null} qualify={modelId => void run(`qualify:${account.connectionId}`, () => qualifyProviderAccount(account.connectionId, modelId), "Personal model qualification finished; check qualified models above")} />
       <AccountPreferences account={account} busy={busy !== null} save={(patch) => run(account.connectionId, () => updateProviderAccount(account.connectionId, patch), "Account preferences saved")} />
     </div>)}
     {accounts.length === 0 ? <p className="settings-note" style={{ padding: "0 14px" }}>No personal accounts connected. Packaged Free routes remain available when qualified capacity is healthy.</p> : null}
