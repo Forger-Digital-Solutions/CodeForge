@@ -51,7 +51,7 @@ describe("ProviderCapacityGovernor — evidence-driven capacity control", () => 
   it("paces packaged Kilo roles against one conservative shared request window", async () => {
     const clock = createMockClock();
     const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep });
-    for (let index = 0; index < 14; index++) {
+    for (let index = 0; index < 10; index++) {
       const reservation = await governor.acquire("kilo-free-direct", 100, undefined, { modelId: index % 2 ? "coder" : "reviewer" });
       reservation.release(100);
     }
@@ -59,7 +59,7 @@ describe("ProviderCapacityGovernor — evidence-driven capacity control", () => 
     const next = governor.acquire("kilo-free-direct", 100, undefined, { modelId: "planner" }).then(reservation => { admitted = true; reservation.release(100); });
     await new Promise(resolve => setImmediate(resolve));
     expect(admitted).toBe(false);
-    expect(governor.getCapacityReport("kilo-free-direct").rpmUsed).toBe(14);
+    expect(governor.getCapacityReport("kilo-free-direct").rpmUsed).toBe(10);
     await clock.advanceTime(60_000);
     await next;
     expect(admitted).toBe(true);
@@ -68,25 +68,25 @@ describe("ProviderCapacityGovernor — evidence-driven capacity control", () => 
   it("shares the published hourly source-IP allowance across Kilo models", async () => {
     const clock = createMockClock();
     const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep });
-    for (let minute = 0; minute < 14; minute++) {
-      const requests = minute < 13 ? 14 : 8;
+    for (let minute = 0; minute < 19; minute++) {
+      const requests = 10;
       for (let request = 0; request < requests; request++) {
         const reservation = await governor.acquire("kilo-free-direct", 100, undefined, {
           modelId: request % 2 === 0 ? "cohere/north-mini-code:free" : "nvidia/nemotron-3-super-120b-a12b:free",
         });
         reservation.release(100);
       }
-      if (minute < 13) await clock.advanceTime(60_001);
+      if (minute < 18) await clock.advanceTime(60_001);
     }
 
-    expect(governor.getCapacityReport("kilo-free-direct")).toMatchObject({ rphUsed: 190, rphLimit: 190, rpmUsed: 8 });
+    expect(governor.getCapacityReport("kilo-free-direct")).toMatchObject({ rphUsed: 190, rphLimit: 190, rpmUsed: 10 });
     await expect(governor.acquire("kilo-free-direct", 100, undefined, { modelId: "cohere/north-mini-code:free" }))
       .rejects.toThrow("[PROVIDER_RATE_LIMITED]");
 
     await clock.advanceTime(2_820_000);
     const resumed = await governor.acquire("kilo-free-direct", 100, undefined, { modelId: "cohere/north-mini-code:free" });
     resumed.release(100);
-    expect(governor.getCapacityReport("kilo-free-direct").rphUsed).toBe(177);
+    expect(governor.getCapacityReport("kilo-free-direct").rphUsed).toBe(131);
   });
 
   it("uses a conservative OpenRouter fallback below the observed 15 RPM free-route limit", () => {

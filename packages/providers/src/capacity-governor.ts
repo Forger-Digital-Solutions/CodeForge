@@ -42,9 +42,9 @@ const UNKNOWN_RATE_LIMIT_COOLDOWN_MS = REQUEST_MINUTE_MS;
 export const DEFAULT_FALLBACK_LIMITS: Readonly<Record<string, ProviderCapacityLimit>> = {
   "kilo-free-direct": {
     maxTokensPerMinute: 60000,
-    // R74 observed a 15 RPM upstream wall on the packaged Coder; anonymous users share
-    // source-IP capacity, so conservative provider pacing must not multiply it per role.
-    maxRequestsPerMinute: 14,
+    // The observed Cohere route allows 15 RPM; reserve five for shared source-IP traffic
+    // outside this process because the gateway does not expose that traffic to the governor.
+    maxRequestsPerMinute: 10,
     // The public gateway allowance is shared per source IP across all models.
     maxRequestsPerHour: 190,
     maxConcurrent: 2,
