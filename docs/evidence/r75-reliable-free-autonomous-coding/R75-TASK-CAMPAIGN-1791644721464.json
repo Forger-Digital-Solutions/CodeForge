@@ -1,0 +1,95 @@
+{
+  "startedAt": "2026-10-10T15:05:21.566Z",
+  "evidenceClass": "LIVE_ANONYMOUS_FREE_PUBLIC_FIXTURES",
+  "sourceRevision": "382041fb9b2616cdb4738e21e650c60ac430b06d",
+  "sourceDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "sourceDirty": false,
+  "status": "BLOCKED",
+  "tasks": [],
+  "supply": [
+    {
+      "providerId": "kilo-free-direct",
+      "status": "POLICY_DENIED",
+      "policyStatus": "UNAVAILABLE",
+      "policySource": "terms"
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "status": "POLICY_DENIED",
+      "policyStatus": "UNAVAILABLE",
+      "policySource": "terms"
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "status": "POLICY_DENIED",
+      "policyStatus": "UNAVAILABLE",
+      "policySource": "terms"
+    },
+    {
+      "providerId": "blockrun-free-direct",
+      "status": "POLICY_DENIED",
+      "policyStatus": "UNAVAILABLE",
+      "policySource": "terms"
+    }
+  ],
+  "inferenceFrames": [],
+  "costState": "UNKNOWN",
+  "sourceFilesSha256": "849f14625442670c09a86fca2bd00433d0adb6dccc15df467fff048f0dfdf872",
+  "sourceManifest": "R75-TASK-CAMPAIGN-1791644721464-source.json",
+  "qualificationMode": "INSTALLED_BUNDLED_LIVE_ROLE_EVIDENCE",
+  "policyReverification": [
+    {
+      "providerId": "kilo-free-direct",
+      "status": "UNAVAILABLE",
+      "checkedAt": "2026-10-10T15:05:22.727Z",
+      "source": "terms"
+    },
+    {
+      "providerId": "blockrun-free-direct",
+      "status": "UNAVAILABLE",
+      "checkedAt": "2026-10-10T15:05:22.753Z",
+      "source": "terms"
+    }
+  ],
+  "error": "Error: CURRENT_QUALIFIED_EXPLORER_ROSTER_UNAVAILABLE",
+  "finishedAt": "2026-10-10T15:05:22.757Z",
+  "inferenceRequestSummary": {
+    "physicalProviderRequests": 0,
+    "failedRequests": 0,
+    "byProviderModel": [],
+    "byAgentModelTurns": []
+  },
+  "capacityGovernorFinal": {
+    "kilo": {
+      "providerId": "kilo-free-direct",
+      "tpmUsed": 0,
+      "tpmLimit": 60000,
+      "rpmUsed": 0,
+      "rpmLimit": 10,
+      "rphUsed": 0,
+      "rphLimit": 190,
+      "activeConcurrent": 0,
+      "maxConcurrent": 2,
+      "inFlightTokens": 0,
+      "queueDepth": 0,
+      "isCoolingDown": false,
+      "cooldownRemainingMs": 0
+    },
+    "blockrun": {
+      "providerId": "blockrun-free-direct",
+      "tpmUsed": 0,
+      "tpmLimit": 60000,
+      "rpmUsed": 0,
+      "rpmLimit": 28,
+      "rphUsed": 0,
+      "rphLimit": 285,
+      "activeConcurrent": 0,
+      "maxConcurrent": 2,
+      "inFlightTokens": 0,
+      "queueDepth": 0,
+      "isCoolingDown": false,
+      "cooldownRemainingMs": 0
+    },
+    "quotaDomains": []
+  }
+}

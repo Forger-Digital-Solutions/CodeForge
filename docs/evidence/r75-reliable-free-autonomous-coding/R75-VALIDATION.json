@@ -287,7 +287,7 @@
       "candidateDisposition": "ANALYST_ONLY; Coder and Tool Agent not qualified in the later five-request bounded run"
     },
     "additionalCoder": "not achieved: AI Horde qualified only Analyst, Kilo Ultra remained on Coder probation after repeat NVIDIA upstream 503, and BlockRun Poolside was absent at the latest exact-model check",
-    "productionCodingTask": "Three public synthetic production tasks total: two initially blocked at Reviewer admission due incomplete evidence snapshots; after the path fix, one follow-up blocked at Cohere model-scoped HTTP 429 before editing. Completed 0/3; no reviews, ForgeVerify, or integration completed.",
+    "productionCodingTask": "Three public synthetic production tasks total: two initially blocked at Reviewer admission due incomplete evidence snapshots; after the path fix, one follow-up blocked at Cohere model-scoped HTTP 429 before editing. Completed 0/3; no reviews, ForgeVerify, or integration completed. A post-cap follow-up preflight then stopped before tasks because live terms checks were unavailable; it sent no inference.",
     "threeCompletionStreak": "0 in R75; 0/3 current production attempts completed",
     "organicCrossProviderFailover": "not demonstrated",
     "productionTaskCampaign": {
@@ -364,6 +364,22 @@
       "independentReview": false,
       "forgeVerify": false,
       "integration": false
+    },
+    "postHeadroomCampaignPreflight": {
+      "receipt": "R75-TASK-CAMPAIGN-1791644721464.json",
+      "sourceManifest": "R75-TASK-CAMPAIGN-1791644721464-source.json",
+      "sourceRevision": "382041fb9b2616cdb4738e21e650c60ac430b06d",
+      "sourceDirty": false,
+      "qualificationMode": "INSTALLED_BUNDLED_LIVE_ROLE_EVIDENCE",
+      "status": "BLOCKED_BEFORE_TASKS",
+      "taskCount": 0,
+      "inferenceRequests": 0,
+      "policyReverification": {
+        "kilo-free-direct": "UNAVAILABLE at terms",
+        "blockrun-free-direct": "UNAVAILABLE at terms"
+      },
+      "failClosedRoleRoster": "CURRENT_QUALIFIED_EXPLORER_ROSTER_UNAVAILABLE",
+      "spend": "none; no inference request was sent"
     },
     "capacitySummaryFix": "Campaign harness now collects child governor reports through persisted quotaDomainId values and writes a raw-frame request summary."
   },
