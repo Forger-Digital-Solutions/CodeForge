@@ -148,4 +148,22 @@ describe("BlockRun existing Free supply fabric", () => {
     const fetcher = (async (target: string) => { const response = new Response("<main>changed terms</main>"); Object.defineProperty(response, "url", { value: target }); return response; }) as typeof fetch;
     expect(await reverifyBlockRunPolicy(NOW.toISOString(), { fetcher })).toMatchObject({ status: "CHANGED", source: "terms" });
   });
+
+  it("records the safe network error code when BlockRun policy cannot be fetched", async () => {
+    const fetcher = (async () => { throw Object.assign(new Error("offline"), { code: "ENOTFOUND" }); }) as typeof fetch;
+    expect(await reverifyBlockRunPolicy(NOW.toISOString(), { fetcher })).toMatchObject({
+      status: "UNAVAILABLE", source: "terms", unavailableReason: "FETCH_FAILED", failureCode: "ENOTFOUND",
+    });
+  });
+
+  it("rejects oversized BlockRun policy responses before reading the body", async () => {
+    const fetcher = (async (target: string) => {
+      const response = new Response("<main>terms</main>", { headers: { "content-length": "1000001" } });
+      Object.defineProperty(response, "url", { value: target });
+      return response;
+    }) as typeof fetch;
+    expect(await reverifyBlockRunPolicy(NOW.toISOString(), { fetcher })).toMatchObject({
+      status: "UNAVAILABLE", source: "terms", unavailableReason: "BODY_TOO_LARGE",
+    });
+  });
 });

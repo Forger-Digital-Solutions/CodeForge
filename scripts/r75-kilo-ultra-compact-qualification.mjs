@@ -5,9 +5,12 @@ import { reverifyKiloPolicy } from '../packages/model-registry/dist/index.js';
 import { runCompactQualification } from '../packages/eight-bit/dist/index.js';
 
 const providerId = 'kilo-free-direct';
-const modelId = 'nvidia/nemotron-3-ultra-550b-a55b:free';
+const defaultModelId = 'nvidia/nemotron-3-ultra-550b-a55b:free';
+const modelId = process.argv[2] ?? defaultModelId;
+const modelSlug = modelId.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 64);
 const evidenceDirectory = resolve('docs/evidence/r75-reliable-free-autonomous-coding');
 const evidenceId = Date.now();
+const evidencePrefix = modelId === defaultModelId ? 'kilo-ultra-compact' : `kilo-${modelSlug}-compact`;
 const requestBudget = 6;
 const suiteSignal = AbortSignal.timeout(180_000);
 const startedAt = new Date().toISOString();
@@ -15,8 +18,8 @@ const observations = [];
 const frames = [];
 let inferenceRequests = 0;
 const result = { startedAt, providerId, modelId, requestBudget, publicSyntheticCodeOnly: true, noCredentials: true, inferenceRequests: 0 };
-const evidenceFile = `kilo-ultra-compact-${evidenceId}.json`;
-const observationFile = `kilo-ultra-compact-observations-${evidenceId}.json`;
+const evidenceFile = `${evidencePrefix}-${evidenceId}.json`;
+const observationFile = `${evidencePrefix}-observations-${evidenceId}.json`;
 const persist = async () => writeFile(resolve(evidenceDirectory, observationFile), `${JSON.stringify({ providerId, modelId, requestBudget, inferenceRequests, publicSyntheticCodeOnly: true, observations, frames }, null, 2)}\n`);
 
 await mkdir(evidenceDirectory, { recursive: true });
@@ -39,7 +42,7 @@ try {
   const catalog = await adapter.listModels();
   const model = catalog.find(candidate => candidate.modelId === modelId && candidate.isFree && candidate.freeStatus === 'verified_free' && candidate.capabilities.toolCalling);
   result.catalogModel = model;
-  if (!model) throw new Error('Exact Kilo Ultra model is not currently available as verified Free tool-capable supply');
+  if (!model) throw new Error('Exact Kilo model is not currently available as verified Free tool-capable supply');
   const checkedAt = new Date().toISOString();
   const freeModel = {
     providerId,

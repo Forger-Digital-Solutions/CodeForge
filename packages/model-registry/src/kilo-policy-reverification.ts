@@ -20,13 +20,28 @@ const SOURCES = [
 ] as const;
 
 export type KiloPolicyStatus = "VERIFIED" | "CHANGED" | "UNAVAILABLE";
+export type KiloPolicyUnavailableReason = "FETCH_FAILED" | "HTTP_STATUS" | "REDIRECTED" | "BODY_TOO_LARGE" | "BODY_EMPTY" | "BODY_INVALID";
 
 export interface KiloPolicyVerification {
   status: KiloPolicyStatus;
   checkedAt: string;
   source?: (typeof SOURCES)[number]["kind"];
+  unavailableReason?: KiloPolicyUnavailableReason;
+  httpStatus?: number;
+  failureCode?: string;
   observedHash?: string;
   receipt?: FreeAdmissionReceipt;
+}
+
+function safeFailureCode(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  const candidate = error as { code?: unknown; cause?: unknown };
+  const code = typeof candidate.code === "string"
+    ? candidate.code
+    : candidate.cause && typeof candidate.cause === "object" && "code" in candidate.cause
+      ? (candidate.cause as { code?: unknown }).code
+      : undefined;
+  return typeof code === "string" && /^[A-Z0-9_]{1,64}$/.test(code) ? code : undefined;
 }
 
 /** A changed authoritative page needs operator review; a network failure keeps only a still-valid prior receipt. */
@@ -40,18 +55,20 @@ export async function reverifyKiloPolicy(
     let response: Response;
     try {
       response = await fetcher(source.url, { redirect: "error", signal: AbortSignal.timeout(15_000) });
-      if (!response.ok || response.url !== source.url) return { status: "UNAVAILABLE", checkedAt, source: source.kind };
+      if (response.url !== source.url) return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "REDIRECTED" };
+      if (!response.ok) return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "HTTP_STATUS", httpStatus: response.status };
       const length = Number(response.headers.get("content-length"));
-      if (Number.isFinite(length) && length > 1_000_000) return { status: "UNAVAILABLE", checkedAt, source: source.kind };
+      if (Number.isFinite(length) && length > 1_000_000) return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "BODY_TOO_LARGE" };
       const body = await response.text();
-      if (body.length === 0 || body.length > 1_000_000) return { status: "UNAVAILABLE", checkedAt, source: source.kind };
+      if (body.length === 0) return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "BODY_EMPTY" };
+      if (body.length > 1_000_000) return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "BODY_TOO_LARGE" };
       const mainStart = body.indexOf("<main");
       const mainEnd = body.indexOf("</main>", mainStart);
-      if (mainStart < 0 || mainEnd < 0) return { status: "UNAVAILABLE", checkedAt, source: source.kind };
+      if (mainStart < 0 || mainEnd < 0) return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "BODY_INVALID" };
       const observedHash = createHash("sha256").update(body.slice(mainStart, mainEnd + 7)).digest("hex");
       if (observedHash !== source.sha256) return { status: "CHANGED", checkedAt, source: source.kind, observedHash };
-    } catch {
-      return { status: "UNAVAILABLE", checkedAt, source: source.kind };
+    } catch (error) {
+      return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "FETCH_FAILED", failureCode: safeFailureCode(error) };
     }
   }
 

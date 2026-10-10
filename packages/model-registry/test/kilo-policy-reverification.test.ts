@@ -14,9 +14,20 @@ describe("Kilo policy re-verification", () => {
   });
 
   it("does not renew evidence when the authoritative source disappears", async () => {
-    const fetcher = async (): Promise<Response> => { throw new Error("offline"); };
+    const fetcher = async (): Promise<Response> => { throw Object.assign(new Error("offline"), { code: "ENOTFOUND" }); };
     expect(await reverifyKiloPolicy("2026-10-01T00:00:00Z", { fetcher: fetcher as typeof fetch })).toMatchObject({
-      status: "UNAVAILABLE", source: "terms",
+      status: "UNAVAILABLE", source: "terms", unavailableReason: "FETCH_FAILED", failureCode: "ENOTFOUND",
+    });
+  });
+
+  it("records an HTTP status without renewing evidence", async () => {
+    const fetcher = async (url: string | URL | Request): Promise<Response> => {
+      const response = new Response("unavailable", { status: 503 });
+      Object.defineProperty(response, "url", { value: String(url) });
+      return response;
+    };
+    expect(await reverifyKiloPolicy("2026-10-01T00:00:00Z", { fetcher: fetcher as typeof fetch })).toMatchObject({
+      status: "UNAVAILABLE", source: "terms", unavailableReason: "HTTP_STATUS", httpStatus: 503,
     });
   });
 });

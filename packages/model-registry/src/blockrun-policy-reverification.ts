@@ -11,8 +11,22 @@ export interface BlockRunPolicyVerification {
   status: "VERIFIED" | "CHANGED" | "UNAVAILABLE";
   checkedAt: string;
   source?: (typeof SOURCES)[number]["kind"];
+  unavailableReason?: "FETCH_FAILED" | "HTTP_STATUS" | "REDIRECTED" | "BODY_TOO_LARGE" | "BODY_EMPTY" | "BODY_INVALID";
+  httpStatus?: number;
+  failureCode?: string;
   observedHash?: string;
   receipt?: FreeAdmissionReceipt;
+}
+
+function safeFailureCode(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  const candidate = error as { code?: unknown; cause?: unknown };
+  const code = typeof candidate.code === "string"
+    ? candidate.code
+    : candidate.cause && typeof candidate.cause === "object" && "code" in candidate.cause
+      ? (candidate.cause as { code?: unknown }).code
+      : undefined;
+  return typeof code === "string" && /^[A-Z0-9_]{1,64}$/.test(code) ? code : undefined;
 }
 
 export async function reverifyBlockRunPolicy(qualificationAt: string, options: { fetcher?: typeof fetch; now?: () => Date } = {}): Promise<BlockRunPolicyVerification> {
@@ -21,15 +35,20 @@ export async function reverifyBlockRunPolicy(qualificationAt: string, options: {
   for (const source of SOURCES) {
     try {
       const response = await fetcher(source.url, { redirect: "error", signal: AbortSignal.timeout(15_000) });
-      if (!response.ok || response.url !== source.url) return { status: "UNAVAILABLE", checkedAt, source: source.kind };
+      if (response.url !== source.url) return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "REDIRECTED" };
+      if (!response.ok) return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "HTTP_STATUS", httpStatus: response.status };
+      const length = Number(response.headers.get("content-length"));
+      if (Number.isFinite(length) && length > 1_000_000) return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "BODY_TOO_LARGE" };
       const body = await response.text();
       const start = body.indexOf("<main");
       const end = body.indexOf("</main>", start);
-      if (!body || body.length > 1_000_000 || start < 0 || end < 0) return { status: "UNAVAILABLE", checkedAt, source: source.kind };
+      if (body.length > 1_000_000) return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "BODY_TOO_LARGE" };
+      if (!body) return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "BODY_EMPTY" };
+      if (start < 0 || end < 0) return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "BODY_INVALID" };
       const observedHash = createHash("sha256").update(body.slice(start, end + 7)).digest("hex");
       if (observedHash !== source.sha256) return { status: "CHANGED", checkedAt, source: source.kind, observedHash };
-    } catch {
-      return { status: "UNAVAILABLE", checkedAt, source: source.kind };
+    } catch (error) {
+      return { status: "UNAVAILABLE", checkedAt, source: source.kind, unavailableReason: "FETCH_FAILED", failureCode: safeFailureCode(error) };
     }
   }
   const expiresAt = new Date(Date.parse(checkedAt) + 7 * 24 * 60 * 60_000).toISOString();

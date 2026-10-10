@@ -381,6 +381,24 @@
       "failClosedRoleRoster": "CURRENT_QUALIFIED_EXPLORER_ROSTER_UNAVAILABLE",
       "spend": "none; no inference request was sent"
     },
+    "policyFailureDiagnostics": {
+      "implementation": "Kilo and BlockRun policy rechecks expose categorical unavailable reasons, HTTP status, and sanitized network error codes; eligibility remains fail-closed",
+      "focusedTests": "passed 11/11",
+      "modelRegistryBuild": "passed",
+      "candidate": {
+        "modelId": "liquid/lfm-2.5-2.6b:free",
+        "firstReceipt": "kilo-liquid-lfm-2-5-2-6b-free-compact-1791645074030.json",
+        "firstObservationReceipt": "kilo-liquid-lfm-2-5-2-6b-free-compact-observations-1791645074030.json",
+        "diagnosticReceipt": "kilo-liquid-lfm-2-5-2-6b-free-compact-1791645223751.json",
+        "diagnosticObservationReceipt": "kilo-liquid-lfm-2-5-2-6b-free-compact-observations-1791645223751.json",
+        "status": "UNAVAILABLE",
+        "source": "terms",
+        "unavailableReason": "FETCH_FAILED",
+        "failureCode": "ENOTFOUND",
+        "inferenceRequests": 0,
+        "qualification": "not run; policy gate stopped before catalog and inference"
+      }
+    },
     "capacitySummaryFix": "Campaign harness now collects child governor reports through persisted quotaDomainId values and writes a raw-frame request summary."
   },
   "windowsPackaging": {

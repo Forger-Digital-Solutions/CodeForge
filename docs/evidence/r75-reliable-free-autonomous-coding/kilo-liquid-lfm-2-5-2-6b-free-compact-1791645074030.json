@@ -1,0 +1,19 @@
+{
+  "startedAt": "2026-10-10T15:11:14.030Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "liquid/lfm-2.5-2.6b:free",
+  "requestBudget": 6,
+  "publicSyntheticCodeOnly": true,
+  "noCredentials": true,
+  "inferenceRequests": 0,
+  "policy": {
+    "status": "UNAVAILABLE",
+    "checkedAt": "2026-10-10T15:11:14.032Z",
+    "source": "terms"
+  },
+  "error": {
+    "message": "Error: Policy UNAVAILABLE: terms"
+  },
+  "observationFile": "kilo-liquid-lfm-2-5-2-6b-free-compact-observations-1791645074030.json",
+  "completedAt": "2026-10-10T15:11:14.082Z"
+}
