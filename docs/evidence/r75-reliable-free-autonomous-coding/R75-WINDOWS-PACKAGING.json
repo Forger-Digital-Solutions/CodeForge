@@ -1,15 +1,15 @@
 {
   "schema": "codeforge-r75-windows-packaging/v1",
-  "recordedAt": "2026-10-10T13:33:09Z",
+  "recordedAt": "2026-10-10T14:44:14Z",
   "branch": "codex/r75-reliable-free-autonomous-coding",
-  "commit": "8899a028681e5bbf5a57af78c138cfe58dbc4f71",
+  "commit": "8217d70e8a344efb826b15c37723171f92c6f294",
   "buildIdentity": {
     "status": "passed",
-    "builtAt": "2026-10-10T13:26:44.911Z",
+    "builtAt": "2026-10-10T14:40:34.306Z",
     "dirty": false
   },
   "builder": {
-    "command": "node G:\\CodeForge\\node_modules\\electron-builder\\cli.js --win",
+    "command": "npm run package:builder --workspace=codeforge-desktop",
     "workingDirectory": "G:\\CodeForge\\worktrees\\r75-reliable-free-autonomous-coding\\apps\\desktop",
     "status": "passed",
     "exitCode": 0,
@@ -25,7 +25,7 @@
       "name": "packaged runtime dependency graph",
       "status": "passed",
       "receipt": "PACKAGED_RUNTIME_DEPENDENCY_GRAPH_PASS",
-      "scannedRuntimeModules": 416,
+      "scannedRuntimeModules": 417,
       "externalPackages": 26
     },
     {
@@ -38,14 +38,14 @@
   "artifacts": [
     {
       "path": "apps/desktop/release/CodeForge-Setup-0.4.0.exe",
-      "lengthBytes": 120964943,
-      "sha256": "A424FB81D48B798D3C57241ABEC34497E2218D846500A5BB8D5A40713E024698",
+      "lengthBytes": 120963462,
+      "sha256": "A6976396C723100EBCFFE71D4F20A36E4110D1BFF514AF1091137105C9DE867D",
       "authenticode": "NotSigned"
     },
     {
       "path": "apps/desktop/release/CodeForge-Portable.exe",
-      "lengthBytes": 120629530,
-      "sha256": "64CFB86E01273020BA17427805E9B8BD82E559CBC1F45BB5A8992ECDDC38F664",
+      "lengthBytes": 120628063,
+      "sha256": "D3891AF3BFC792CE03BD7D4E14EBD1CC62854626F1CB56507822387A75059E37",
       "authenticode": "NotSigned"
     }
   ],

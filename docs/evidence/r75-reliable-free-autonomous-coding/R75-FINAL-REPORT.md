@@ -2,14 +2,14 @@
 
 **Status: `CODEFORGE_R75_PARTIAL`**
 
-R75 delivered the Planner contract repair and shared hourly capacity controls, and the Windows packages passed all three packaging audits at the earlier implementation commit. This continuation fixed a Windows workspace-path bug that made complete Reviewer snapshots appear incomplete. A bounded production task then reached the Coder but stopped on Cohere’s model-scoped 429 before editing or review. Current alternate-route probes did not produce an admissible second Coder. No task completion, completion streak, or organic Coder failover is claimed.
+R75 delivered the Planner contract repair and shared hourly capacity controls, then fixed a Windows workspace-path bug that made complete Reviewer snapshots appear incomplete. The Windows packages rebuilt and passed all three packaging audits at the current implementation commit. A bounded production task then reached the Coder but stopped on Cohere’s model-scoped 429 before editing or review. Current alternate-route probes did not produce an admissible second Coder. No task completion, completion streak, or organic Coder failover is claimed.
 
 ## Repository
 
 - Branch: `codex/r75-reliable-free-autonomous-coding`
 - Worktree: `G:\CodeForge\worktrees\r75-reliable-free-autonomous-coding`
 - R74 baseline: `230510131f40532ad8a402bdef131c3b8c637436`, aligned with the R74 remote branch at start.
-- Implementation commit `8899a028681e5bbf5a57af78c138cfe58dbc4f71` is pushed to the R75 branch; this report and the live evidence are included in the follow-up branch update.
+- Final implementation commit: `8217d70e8a344efb826b15c37723171f92c6f294`. The package receipts and report update are included in the final evidence push; remote branch alignment is checked at delivery.
 - R74 historical evidence remains intact. The ten-attempt classification is in [R75-R74-ROOT-CAUSE-CLASSIFICATION.json](R75-R74-ROOT-CAUSE-CLASSIFICATION.json).
 
 ## Changes delivered
@@ -34,8 +34,9 @@ The R75 unit regression mirrors the R74 feature plan and shows the original exac
 - `npm run security:gate` passed after the new evidence and qualification scripts were added.
 - Focused tests passed: Reviewer evidence 14/14, Planner repair 5/5, capacity governor 26/26, BlockRun adapter 12/12, and end-to-end deterministic Planner repair 1/1. Machine-readable Vitest results are in this directory.
 - The R75 campaign and new Kilo qualification scripts passed `node --check`; current machine-readable evidence JSON parsed successfully.
+- The Windows Setup and Portable packages rebuilt from the current clean implementation commit. Internal dependency, runtime dependency, and packaged build identity audits passed; the runtime audit scanned 417 modules and 26 external packages. Both executables are unsigned, and neither was installed or executed. Artifact hashes and sizes are recorded in [R75-WINDOWS-PACKAGING.json](R75-WINDOWS-PACKAGING.json).
 - The full autonomous-orchestrator file produced 24 passes and one 30-second timeout with a Windows temporary Git cleanup lock. The timed case passed alone with a 60-second limit. The first run is not counted as 25/25 in one invocation.
-- After the pushed R75 commit, the desktop main and renderer rebuilt successfully with the matching commit identity. The Windows package and all three post-package audits passed; details and artifact hashes are in [R75-WINDOWS-PACKAGING.json](R75-WINDOWS-PACKAGING.json).
+- The desktop main and renderer rebuilt successfully with the matching current implementation identity. The Windows package and all three post-package audits passed; details and artifact hashes are in [R75-WINDOWS-PACKAGING.json](R75-WINDOWS-PACKAGING.json).
 
 ## Free supply and live reliability
 
@@ -73,10 +74,39 @@ The R75 unit regression mirrors the R74 feature plan and shows the original exac
 
 ## Windows packaging
 
-- The R75 desktop main and renderer rebuilt at commit `8899a028681e5bbf5a57af78c138cfe58dbc4f71`.
-- `electron-builder --win` completed from the R75 worktree and produced the Setup and Portable artifacts under `apps/desktop/release`.
-- Internal dependency, runtime dependency, and build identity audits passed. The archive identity matched the R75 commit, and the runtime audit scanned 416 modules and 26 external packages.
+- The R75 desktop main and renderer rebuilt at commit `8217d70e8a344efb826b15c37723171f92c6f294`; its build identity recorded `dirty: false`.
+- `npm run package:builder --workspace=codeforge-desktop` completed from the R75 worktree and produced the Setup and Portable artifacts under `apps/desktop/release`.
+- Internal dependency, runtime dependency, and build identity audits passed. The archive identity matched the R75 commit, and the runtime audit scanned 417 modules and 26 external packages.
 - Both generated executables are unsigned (`Authenticode: NotSigned`). Neither was executed or installed. The artifacts are for review only; installed lifecycle certification remains incomplete.
+
+## Acceptance gate summary
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Repository and delivery | Implementation and evidence commits pushed; remote alignment checked at delivery | Branch `codex/r75-reliable-free-autonomous-coding`; implementation SHA `8217d70e8a344efb826b15c37723171f92c6f294` |
+| Planning | Partial | Deterministic Planner repair and integration regression passed; no live small-feature task completed |
+| Autonomous completion and three-task streak | Not met | 0 of 3 R75 production attempts completed; streak 0 |
+| Existing Free supply and economics | Preserved; no unauthorized spend observed | `$0` spent, 0 purchased credits consumed; no private code used in public probes |
+| Alternate Free Coder | Not met | AI Horde Analyst only; Kilo Ultra transient; BlockRun model absent at exact check |
+| Capacity efficiency | Partial | Model-scoped rate-limit accounting and capacity reporting fixed; requests per completion remain undefined because no R75 task completed |
+| Organic cross-provider failover | Not met | No qualified alternate Coder was available for a completed recovery |
+| Reviewer | Regression passed; no live review completed | Reviewer evidence tests 14/14; no post-fix task reached review |
+| Accounts and spending controls | No regression indicated; no new live account exercise | Existing R73/R74 architecture and relevant repository gates retained; R75 probes used anonymous Free access |
+| Windows package | Static package audits passed; release certification incomplete | Current-commit identity verified; both packages unsigned, uninstalled, and unexecuted |
+| Validation and evidence | Current focused checks and build/security gates passed | See validation receipts; original campaign physical request total remains incomplete |
+
+R75 remains `CODEFORGE_R75_PARTIAL`. The missed live completion, alternate Coder, three-task streak, efficiency target, and organic failover gates are not waived by the delivered engineering fixes or package audits.
+
+## Remaining blockers
+
+- **Engineering and completion:** no post-fix task reached review, verification, and integration; the only post-fix production run stopped at the model-scoped Cohere rate limit before editing.
+- **Free supply and model qualification:** no alternate Coder passed the full qualification gate. AI Horde qualified only as Analyst, Kilo Ultra was transient after an upstream 503, and BlockRun Poolside was absent during its exact-model check.
+- **Capacity measurement:** requests per successful R75 task and the comparable efficiency improvement cannot be calculated because R75 completed no production task. The earlier campaign's physical request frames were not recorded, so the total request count remains incomplete.
+- **Windows release prerequisites:** both artifacts remain unsigned, and authorized installer execution and installed lifecycle certification were not available.
+
+## Final verdict
+
+`CODEFORGE_R75_PARTIAL`. The Planner contract repair, capacity reporting changes, Reviewer path fix, validation, and clean-commit Windows package audits are delivered. The three-consecutive-completion, alternate Coder, efficiency, and organic failover acceptance gates remain unmet. No false completion or unauthorized spending is reported.
 
 ## Primary-checkout artifact incident
 

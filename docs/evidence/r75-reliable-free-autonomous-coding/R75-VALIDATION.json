@@ -39,11 +39,11 @@
       "scope": "secret scan, dependency audit, public-claims scan, and documentation links"
     },
     {
-      "name": "desktop rebuild at pushed R75 commit",
-      "command": "npm run build",
+      "name": "desktop rebuild at current R75 implementation commit",
+      "command": "npm run build --workspace=codeforge-desktop",
       "status": "passed",
       "exitCode": 0,
-      "scope": "desktop packages, main process, build identity, and renderer at commit 8899a028681e5bbf5a57af78c138cfe58dbc4f71"
+      "scope": "desktop packages, main process, build identity, and renderer at commit 8217d70e8a344efb826b15c37723171f92c6f294"
     },
     {
       "name": "AI Horde native adapter TypeScript build",
@@ -309,22 +309,27 @@
   },
   "windowsPackaging": {
     "evidence": "R75-WINDOWS-PACKAGING.json",
+    "commit": "8217d70e8a344efb826b15c37723171f92c6f294",
+    "builtAt": "2026-10-10T14:40:34.306Z",
     "desktopBuildAtCurrentCommit": "passed",
     "directElectronBuilder": "passed",
     "internalDependencyAudit": "passed",
     "runtimeDependencyAudit": "passed",
+    "runtimeModulesScanned": 417,
     "buildIdentityAudit": "passed",
+    "setupSha256": "A6976396C723100EBCFFE71D4F20A36E4110D1BFF514AF1091137105C9DE867D",
+    "portableSha256": "D3891AF3BFC792CE03BD7D4E14EBD1CC62854626F1CB56507822387A75059E37",
     "setupAuthenticode": "NotSigned",
     "portableAuthenticode": "NotSigned",
     "installerExecuted": false,
     "installedLifecycleCertified": false
   },
   "delivery": {
-    "implementationCommit": "8899a028681e5bbf5a57af78c138cfe58dbc4f71",
+    "implementationCommit": "8217d70e8a344efb826b15c37723171f92c6f294",
     "implementationCommitPushed": true,
     "evidenceAndQualificationScriptUpdatePushed": true,
     "remoteDnsPreviouslyFailedButPushSucceeded": true,
-    "pendingCurrentCommit": true
+    "pendingCurrentCommit": false
   },
   "sources": [
     "../r74-autonomous-completion-and-free-reliability/R74-LIVE-STATISTICS.json",
