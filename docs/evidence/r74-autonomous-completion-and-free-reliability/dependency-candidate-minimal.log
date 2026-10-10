@@ -1,0 +1,29 @@
+npm warn allow-scripts .npmrc allow-scripts setting is being ignored because package.json declares its own allowScripts field
+{
+  "add": [],
+  "added": 0,
+  "audited": 610,
+  "change": [],
+  "changed": 0,
+  "funding": 127,
+  "remove": [],
+  "removed": 0,
+  "audit": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 8,
+      "high": 1,
+      "critical": 0,
+      "total": 9
+    },
+    "dependencies": {
+      "prod": 269,
+      "dev": 338,
+      "optional": 29,
+      "peer": 13,
+      "peerOptional": 0,
+      "total": 609
+    }
+  }
+}

@@ -1,0 +1,560 @@
+{
+  "at": "2026-10-10T12:03:24.458Z",
+  "frozenImplementation": "0f03e53da239680fb300cd10eee8c963c16df648",
+  "headAtValidation": "0f03e53da239680fb300cd10eee8c963c16df648",
+  "evidenceClass": "CURRENT_LOCAL_REGRESSIONS_AND_STATIC_ARCHIVE_CHECKS_NOT_LIVE_INFERENCE",
+  "currentSuites": [
+    {
+      "file": "final-accounts-sdk-security-tests.json",
+      "sha256": "3389649e596e03ad528da1a2682e327260fd29daca3232cd55c6e1da99d35049",
+      "passed": 160,
+      "failed": 0,
+      "skipped": 0,
+      "files": [
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/tests/r74-builder-util-patch.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/apps/desktop/test/connected-accounts.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/apps/desktop/test/main-account-ipc.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/apps/desktop/test/provider-account-routing.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/eight-bit/test/qualification-sqlite-persistence.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/model-registry/test/r74-bundled-role-evidence.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/mcp/test/client.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/mcp/test/registry.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/forgeauto-roster.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/personal-account-cost-transport.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/personal-account-estimate.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/personal-account-execution.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/personal-account-policy.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/r73-empty-assistant-history.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/r73-native-cwd-recovery.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/r74-planner-tool-qualification.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/role-output-budget.test.ts"
+      ]
+    },
+    {
+      "file": "final-parent-orchestrator-standalone-tests.json",
+      "sha256": "9a5da9624454acc460bab9a33ca371f159ec007f3795543c793db5a0a4e09ec1",
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0,
+      "files": [
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/autonomous-orchestrator.test.ts"
+      ]
+    },
+    {
+      "file": "final-remaining-regression-tests.json",
+      "sha256": "a68a21360a080124befcc101d3435e884443cdea86d8c9e157be407faa1cb20c",
+      "passed": 405,
+      "failed": 0,
+      "skipped": 0,
+      "files": [
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/tests/security/attack-acceptance.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/tests/security/dependency-audit-gate.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/apps/desktop/test/electron-security-baseline.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/apps/desktop/test/packaged-build-identity.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/apps/desktop/test/release-package-command.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/apps/desktop/test/secure-credential-codec.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/cloud-auth/test/auth.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/cloud-auth/test/github-app.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/cloud-auth/test/github-webhook.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/cloud-billing/test/billing.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/crypto/test/envelope.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/eight-bit/test/qualification-provider-identity.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/eight-bit/test/r74-reviewer-diagnostic-budget.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/eight-bit/test/reviewer-boundary-qualification.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/eight-bit/test/reviewer-only-qualification.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/eight-bit/test/role-qualification.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/eight-bit/test/role-quality.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/model-registry/test/free-cloud-registry.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/providers/test/blockrun-free.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/providers/test/capacity-governor-token-bucket.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/providers/test/capacity-governor.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/providers/test/kilo-free-direct.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/providers/test/r74-kilo-model-identity.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/secrets/test/redaction.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/secrets/test/security-primitives.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/autonomous-parent-recovery.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/network-exposure.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/personal-parent-recovery.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/plan-gate-authority.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/r21-orchestrator-reviewer-exhaustion.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/r73-reviewer-evidence.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/server/test/r73-reviewer-recovery.test.ts",
+        "G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/packages/workflow/test/completion-gate.test.ts"
+      ]
+    }
+  ],
+  "distinctPassingAssertions": 591,
+  "failures": 0,
+  "skipped": 0,
+  "fullRepositoryTestSuiteExecuted": false,
+  "forcedTypecheck": {
+    "command": "node node_modules/typescript/bin/tsc -b --force",
+    "exitCode": 0,
+    "log": "security-refresh-forced-typecheck.log",
+    "exitAuthority": "Completed exec_command result retained in task transcript"
+  },
+  "workspaceBuild": {
+    "command": "npm run build",
+    "exitCode": 0,
+    "log": "security-refresh-workspace-build.log",
+    "exitAuthority": "Completed exec_command result retained in task transcript"
+  },
+  "finalArchive": {
+    "manifest": "windows-artifact-manifest-0f03e53d-final.json",
+    "staticAudits": 5,
+    "byteMatches": 44,
+    "nativeFiles": 10,
+    "hostSignature": "NotSigned",
+    "signatureReceipt": "windows-host-signature-0f03e53d-final.json",
+    "executed": false,
+    "installerCertified": false
+  },
+  "security": {
+    "dependencyAudit": "final-dependency-audit.json",
+    "blocking": 0,
+    "summary": {
+      "info": 0,
+      "low": 0,
+      "moderate": 8,
+      "high": 0,
+      "critical": 0,
+      "total": 8
+    },
+    "scans": [
+      "final-security-refresh-secret-scan",
+      "final-security-refresh-public-claims",
+      "final-security-refresh-doc-links"
+    ]
+  },
+  "historicalDiagnosticSuites": [
+    {
+      "file": "accounts-routing-regressions.json",
+      "passed": 132,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "631e97f6df6d60fad496bb168eacf46137e10fa109230836db73b188e75ed423"
+    },
+    {
+      "file": "capacity-pacing-tests.json",
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "255029148f04d0d7f66e2e44da6ef982511ee7d1eff3d6d55ff7fbd7f8ed0f59"
+    },
+    {
+      "file": "critical-sqlite-restart-tests.json",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "aa1dd844d5db28b220947282e7c9468ffb00ab57ee1c413d9b56326d5292c777"
+    },
+    {
+      "file": "dependency-candidate-tests.json",
+      "passed": 163,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "9a59f0aa01c87290c1f3fe66db9f2f0c09808b42b6a7a5cd28bfcd7eeb4e542d"
+    },
+    {
+      "file": "expanded-roster-tests.json",
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "1d597eb9578be807bba99628590ae049bf6794c586dc46dbd8148a9b5161d874"
+    },
+    {
+      "file": "negative-evidence-tests.json",
+      "passed": 86,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "23614801827700db4ec9ce9ee3437a0f5b6b8f4558cc8127953db5ddfd87ad19"
+    },
+    {
+      "file": "parent-completion-recovery-tests.json",
+      "passed": 68,
+      "failed": 1,
+      "skipped": 0,
+      "sha256": "84bd50457e9bba5b2314485e5b10e675d5086fe58211cd192b8d6c2f5279bc9f"
+    },
+    {
+      "file": "planner-bootstrap-tests.json",
+      "passed": 149,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "5ec64cbd825899407f113ff9ca7f4a49297448e31942326e9401a10af91e4610"
+    },
+    {
+      "file": "planner-contract-tests-corrected.json",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 24,
+      "sha256": "78634bbbce2ec77b310962df42005f9b1318cf54bbebd7c795688ced74c4626b"
+    },
+    {
+      "file": "planner-contract-tests.json",
+      "passed": 0,
+      "failed": 2,
+      "skipped": 24,
+      "sha256": "cbc5e38ac03d9e12731a5bfd738741223e021079e78e63c8633f027d199abef6"
+    },
+    {
+      "file": "planner-graph-repair-tests.json",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 23,
+      "sha256": "5333615abb89107e9d269a27653cec3dbd27c1b6ef9e2837052ef214b6e7cf3d"
+    },
+    {
+      "file": "protocol-package-alignment-tests.json",
+      "passed": 44,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "5ff715f597e22cc0d41afa95d93bc7b348d37a7876dda6563a44967df944441d"
+    },
+    {
+      "file": "reviewer-packet-host-tests.json",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "fce2b273db689ab0023314d77c7e78fc9d425fa1f5330e8ecc34e0cfdef3bbc8"
+    },
+    {
+      "file": "reviewer-runtime-regressions.json",
+      "passed": 61,
+      "failed": 5,
+      "skipped": 0,
+      "sha256": "b0d88481926fa3864588228ad4c4d4a030681a4a36c70e3ca4bafa4c8f163b8a"
+    },
+    {
+      "file": "root-cause-tests-localtemp.json",
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "7136a1fb6a47bf9d6de21a72a021c4b81df85a8844104961ba03a0987e24b8d4"
+    },
+    {
+      "file": "root-cause-tests.json",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "e2086b659a9821002eb5f01df449d992f4d39f4321a20cb5bb113259242d9c6f"
+    },
+    {
+      "file": "security-tests.json",
+      "passed": 136,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "5d5715555e9f980ce3ee93d1e85105dba30d05868b28c89eaf7966561efed1ca"
+    }
+  ],
+  "logs": [
+    {
+      "file": "accounts-routing-regressions.log",
+      "sha256": "1ca1c59c4abc103cb52657b9f496dd63d2db81c704e348b6f79b341a6232b4f1"
+    },
+    {
+      "file": "baseline-build.log",
+      "sha256": "55590a87b9cef4bebb61c4738a98e83255282578ea675224edef392879b37c61"
+    },
+    {
+      "file": "capacity-pacing-tests.log",
+      "sha256": "1617460ffe490054d49cabb3ab143089a44f1e31d07ed0bd40d22ea657dd3d23"
+    },
+    {
+      "file": "contract-negative-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "critical-sqlite-restart-tests.log",
+      "sha256": "d46faf8a6addee61ca1f18e1c1b7d30ca112ef2d2cd04755b555139652174cff"
+    },
+    {
+      "file": "current-forced-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "current-workspace-build.log",
+      "sha256": "f6b1638de01de976938b9e1a2197a08a8a0bb08dbb0b8306c3dbf8248f8b4dbb"
+    },
+    {
+      "file": "dependency-audit.log",
+      "sha256": "0cd3f461707c46cad234fd211431934968809ae749130a8d0d9b3815831d8202"
+    },
+    {
+      "file": "dependency-candidate-brace-update.log",
+      "sha256": "5c679edd5e796b1479ce513236751c30a41462656c2c107489d8052933dd7234"
+    },
+    {
+      "file": "dependency-candidate-fix.log",
+      "sha256": "d299185524675539f25542020cf40b1c0635c60e2996cb53268d563442fd3b50"
+    },
+    {
+      "file": "dependency-candidate-forced-typecheck-complete-copy.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dependency-candidate-forced-typecheck.log",
+      "sha256": "83f2a9e09b6444923506d5a5777fa6e13e1346f4b3abd84248fc341cefb782a0"
+    },
+    {
+      "file": "dependency-candidate-install.log",
+      "sha256": "fe3f1836db1dc21c9b52e9b0c5c004832fb54184dd752edb98b2df72997f3c61"
+    },
+    {
+      "file": "dependency-candidate-minimal.log",
+      "sha256": "d3b9c00b47a94347d9e8e1c1c1fa5d85e36c207ff96631e77551e39d6fddf2a5"
+    },
+    {
+      "file": "dependency-candidate-overrides.log",
+      "sha256": "abb7be5f31a5b849918a90a486994a2990bb16935698b066b7b9069766b4305b"
+    },
+    {
+      "file": "dependency-candidate-tests.log",
+      "sha256": "8ac7bd4a093110664ecba81581ac083c0dbe960597be6610d5c2c0623c30a873"
+    },
+    {
+      "file": "expanded-roster-tests.log",
+      "sha256": "e722e8bc4fcb77b950f11ce78cdfdc2fdb5dd5b77922d0f0d80bc914406374f6"
+    },
+    {
+      "file": "final-accounts-sdk-security-tests.log",
+      "sha256": "e9aa0fd6e0d9b8a6cf5b594638d2a6adf1159f7544d593f704918101d2c14918"
+    },
+    {
+      "file": "final-dependency-audit.log",
+      "sha256": "15835b9b2d856dd0aaa4ea6fd205822b59afb5ec36d65f120b88a9a61805b2b7"
+    },
+    {
+      "file": "final-forced-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "final-parent-orchestrator-standalone-tests.log",
+      "sha256": "ab047eaa3d418e14fa87313298a2f92f4bf7639db5d3660e5ada23c3b690a1fc"
+    },
+    {
+      "file": "final-remaining-regression-tests.log",
+      "sha256": "49a5ef7c11498d0269ab37af625815918a2d351a2444e5cff5d2ab717fef2251"
+    },
+    {
+      "file": "final-secret-scan.log",
+      "sha256": "ad0d4a32c730f79a9ef158abee4b6e3bd9c1c8c08a0ce37708054bec6dc72a99"
+    },
+    {
+      "file": "final-workspace-build.log",
+      "sha256": "ac86202a28fd899c724cf74e6a4dc2a27ebf9e0d1d8d0de7277b70b5362c0924"
+    },
+    {
+      "file": "negative-evidence-tests.log",
+      "sha256": "1a05e4fcfaba129308a0cb31d163dc64ce8808ce056bcb5cb3389285157d71e3"
+    },
+    {
+      "file": "parent-completion-recovery-tests.log",
+      "sha256": "2086a6a2005d60227a281a5f029a28f95d503762feabf2026550c679266a0e59"
+    },
+    {
+      "file": "planner-bootstrap-build.log",
+      "sha256": "70dfdae874a39269a6ac4bae28c8b1e9ad9cc06914193a4e6a6d432bdabbfc2f"
+    },
+    {
+      "file": "planner-bootstrap-tests.log",
+      "sha256": "08654a8ce137756131af03a4c78ececee93905f39360d917dae21edbf6178a06"
+    },
+    {
+      "file": "planner-contract-tests-corrected.log",
+      "sha256": "d074e1f96029aa3a21fc52aaeebee73dc94d6e523d635e8464f036662286be28"
+    },
+    {
+      "file": "planner-contract-tests.log",
+      "sha256": "fd5435c5f64692cb096726c0b040c8124dd989cf33b825d66fc4c781567e69e6"
+    },
+    {
+      "file": "planner-graph-repair-tests.log",
+      "sha256": "4d7e7895c9e89886ad7146ce65ae6256a88c885b1b68cc632040f717893c98ce"
+    },
+    {
+      "file": "planner-protocol-alignment-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pre-retry-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "protocol-package-alignment-tests.log",
+      "sha256": "c815ebcb26b91dc271b97c7be137c4ca03dbc7fd3bec5c63c3a1086ceaf25cdc"
+    },
+    {
+      "file": "R74-CONFIGURATION-COMPLETION.log",
+      "sha256": "ca92da01be280ddd4d96e0c349d4e792785f85aa5e33c7f2f283f380a15839d9"
+    },
+    {
+      "file": "R74-CORRECTED-CATEGORY-CAMPAIGN.log",
+      "sha256": "a572ba260b7aa186d797fd01068f9e2d136ce2d895a8a76b4aeed0648a7f5fe3"
+    },
+    {
+      "file": "R74-FEATURE-REPAIR.log",
+      "sha256": "d11d8b0bc63843e4a0401e37538e05db00e2447c415bb01e2d38d97e3994671e"
+    },
+    {
+      "file": "R74-PARENT-RECOVERY-LIVE.log",
+      "sha256": "a620982d9015147bdedb84ec8f052e586a98a08d460baa87e1074666e622922f"
+    },
+    {
+      "file": "root-cause-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "secret-scan.log",
+      "sha256": "2f9d6132f102f461cbf973be87efd626ce9b14de222ea1c832db0e09bf4f689e"
+    },
+    {
+      "file": "security-refresh-forced-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "security-refresh-workspace-build.log",
+      "sha256": "7710cddb19b56e6a67e28418d7a37321bc53a771dd83bb1610525f56e328f324"
+    },
+    {
+      "file": "security-tests.log",
+      "sha256": "0a138b5dedf886994f55bfabaaad298ce642d31890fad6e905ba1a7655290718"
+    },
+    {
+      "file": "windows-auth-endpoint-0f03e53d-final.log",
+      "sha256": "f61eca0ea1ff2047d38d29b6e12768df94d59a2327fc95336d59b04ca923aaa2"
+    },
+    {
+      "file": "windows-auth-endpoint-0f03e53d.log",
+      "sha256": "1f0fcbf40bc058e05a5ed5b5dba9ae82106ebbecc38aeade6de1a8f6ad162d4a"
+    },
+    {
+      "file": "windows-auth-endpoint-9728ea95.log",
+      "sha256": "6b35a73ed3548bfe0ba1fee0b859076709eeb1add455cf654be2017048df68ae"
+    },
+    {
+      "file": "windows-browser-security-0f03e53d-final.log",
+      "sha256": "cca1ac144231df632bd352569b7076eee1c0f6bf117c69d581762f28b583aedd"
+    },
+    {
+      "file": "windows-browser-security-0f03e53d.log",
+      "sha256": "0c28fe34c244066427962b94149eedc04e2269f73c06104802393dcc047a2b3e"
+    },
+    {
+      "file": "windows-browser-security-9728ea95.log",
+      "sha256": "2ebe6ee45fc81cdf0d2f95eac8bccab4f64cf07138bb4e034cb169fb0b5630ec"
+    },
+    {
+      "file": "windows-build-identity-0f03e53d-final.log",
+      "sha256": "3198813b0b1762bad74e542cf4e23a03ddacfa74c749654676e424cae1811af5"
+    },
+    {
+      "file": "windows-build-identity-0f03e53d.log",
+      "sha256": "6db09fcbabf8ff3e464b85e9fc70be88f9f9c01bde152a6f14e5cd04125c25aa"
+    },
+    {
+      "file": "windows-build-identity-9728ea95.log",
+      "sha256": "e0bc9ba006344124f84242fce43d16d8c841a6608fef9394b7e02c65a9ae48a5"
+    },
+    {
+      "file": "windows-internal-dependencies-0f03e53d-final.log",
+      "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+    },
+    {
+      "file": "windows-internal-dependencies-0f03e53d.log",
+      "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+    },
+    {
+      "file": "windows-internal-dependencies-9728ea95.log",
+      "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+    },
+    {
+      "file": "windows-json-asset-negative-check.log",
+      "sha256": "c3fca77dcaca76bbd1205dc2b4cecc1fa48ebb0f235779162056913aef98f41b"
+    },
+    {
+      "file": "windows-main-build-0f03e53d.log",
+      "sha256": "2bf90fa697b0c643e1448ab39c04fd48e274baeec02f912584534683652127b7"
+    },
+    {
+      "file": "windows-main-build-9728ea95.log",
+      "sha256": "b1ae73836e26b06f4a984515513d95bce7f0f1f35d3c0b368c28fe7e2cfce8b2"
+    },
+    {
+      "file": "windows-package-build-0f03e53d-final.log",
+      "sha256": "95bda7d5990ff672dcc27a2bc3fc54a6f2a051312bcf7ea7762eb7fb7f39f27c"
+    },
+    {
+      "file": "windows-package-build-0f03e53d.log",
+      "sha256": "ac088cf69d04999312f9a156d8065d907514ba3a38036064ebfcd2cc088c9b70"
+    },
+    {
+      "file": "windows-package-build-9728ea95.log",
+      "sha256": "26cc12a121dd361ff9768f9f3715b11309dc599e46afd24d105ab25d24c6d5fd"
+    },
+    {
+      "file": "windows-package-build-corrected-9728ea95.log",
+      "sha256": "ae7246d2d2763a2b62b889c4d8fa554d7f9b0b2cd8b2f8c38cd7de3110036f7f"
+    },
+    {
+      "file": "windows-renderer-build-0f03e53d-final.log",
+      "sha256": "87bb565a4145e97deb717cb1a8305f1bb4296cc6fdc84d76a4623b3b6e57c942"
+    },
+    {
+      "file": "windows-runtime-dependencies-0f03e53d-final.log",
+      "sha256": "8b90cd7e7054f507fb077add1d26a7b6bf6b8766f8a4c0e33a666b59e2166617"
+    },
+    {
+      "file": "windows-runtime-dependencies-0f03e53d.log",
+      "sha256": "8b90cd7e7054f507fb077add1d26a7b6bf6b8766f8a4c0e33a666b59e2166617"
+    },
+    {
+      "file": "windows-runtime-dependencies-9728ea95.log",
+      "sha256": "b54fe5ff5bc1dcb88414d3bad17f8bec99fb51bcf23ec8ae373cd4fd608a86f7"
+    },
+    {
+      "file": "windows-static-audits-0f03e53d-final.log",
+      "sha256": "e0410abdc8db9355d766462085c8cfa374e4404503cbaad563c782502a1a4759"
+    },
+    {
+      "file": "windows-static-audits-0f03e53d.log",
+      "sha256": "de6d2eae13732be10fd5bc36aae40e9273e2a2fe492614ec284cd23d0b23ecdb"
+    },
+    {
+      "file": "windows-static-audits-9728ea95.log",
+      "sha256": "87115cc3a80565677126d6f9e764ebc685fb1d1195cca2225bb242da650f0107"
+    }
+  ],
+  "diffCheck": {
+    "sourceAndStructuredEvidence": "PASS",
+    "command": "git diff --cached --check -- . :(exclude)docs/evidence/r74-autonomous-completion-and-free-reliability/*.log",
+    "rawLogs": "Preserved byte-for-byte; git whitespace warnings are emitted by captured build output, not edited source",
+    "rawLogWhitespaceWarnings": [
+      {
+        "file": "baseline-build.log",
+        "line": 4,
+        "kind": "blank line at EOF"
+      },
+      {
+        "file": "current-workspace-build.log",
+        "line": 227,
+        "kind": "Vite reporter trailing whitespace"
+      },
+      {
+        "file": "final-workspace-build.log",
+        "line": 227,
+        "kind": "Vite reporter trailing whitespace"
+      },
+      {
+        "file": "security-refresh-workspace-build.log",
+        "line": 227,
+        "kind": "Vite reporter trailing whitespace"
+      },
+      {
+        "file": "windows-renderer-build-0f03e53d-final.log",
+        "line": 18,
+        "kind": "Vite reporter trailing whitespace"
+      }
+    ]
+  }
+}

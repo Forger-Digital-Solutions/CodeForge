@@ -1,0 +1,12 @@
+npm warn allow-scripts .npmrc allow-scripts setting is being ignored because package.json declares its own allowScripts field
+npm error code ETARGET
+npm error notarget No matching version found for braces@3.0.4.
+npm error notarget In most cases you or one of your dependencies are requesting a package version that doesn't exist.
+{
+  "error": {
+    "code": "ETARGET",
+    "summary": "No matching version found for braces@3.0.4.",
+    "detail": "In most cases you or one of your dependencies are requesting a package version that doesn't exist."
+  }
+}
+npm error A complete log of this run can be found in: C:\Users\Daddy_FDS\AppData\Local\npm-cache\_logs\2026-10-10T11_32_28_410Z-debug-0.log

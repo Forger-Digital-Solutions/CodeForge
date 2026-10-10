@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "summary": {
+    "info": 0,
+    "low": 0,
+    "moderate": 8,
+    "high": 0,
+    "critical": 0,
+    "total": 8
+  },
+  "dependenciesAudited": 652,
+  "auditError": null,
+  "blocking": [],
+  "components": 599,
+  "installScriptPackages": [
+    "better-sqlite3@12.11.1",
+    "electron-winstaller@5.4.0",
+    "fsevents@2.3.3",
+    "node-pty@1.1.0"
+  ],
+  "report": "docs/evidence/r74-autonomous-completion-and-free-reliability/final-dependency-audit.json",
+  "sbom": "docs/evidence/r74-autonomous-completion-and-free-reliability/final-sbom.json"
+}

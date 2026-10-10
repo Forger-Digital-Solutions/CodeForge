@@ -1,0 +1,9 @@
+{
+  "sourceRevision": "0f03e53da239680fb300cd10eee8c963c16df648",
+  "artifact": "G:\\CodeForge\\worktrees\\r74-autonomous-completion-and-free-reliability\\apps\\desktop\\release-r74-0f03e53d\\win-unpacked",
+  "staticAuditsPassed": 4,
+  "includedModules": 44,
+  "nativeFiles": 10,
+  "signature": "UNAVAILABLE",
+  "passed": false
+}

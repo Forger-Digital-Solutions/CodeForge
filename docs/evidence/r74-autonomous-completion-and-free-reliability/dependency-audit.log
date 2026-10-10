@@ -1,0 +1,32 @@
+{
+  "status": "FAIL",
+  "summary": {
+    "info": 0,
+    "low": 1,
+    "moderate": 8,
+    "high": 8,
+    "critical": 0,
+    "total": 17
+  },
+  "dependenciesAudited": 674,
+  "auditError": null,
+  "blocking": [
+    "@modelcontextprotocol/sdk (high)",
+    "brace-expansion (high)",
+    "braces (high)",
+    "find-yarn-workspace-root (high)",
+    "http-cache-semantics (high)",
+    "micromatch (high)",
+    "patch-package (high)",
+    "source-map-js (high)"
+  ],
+  "components": 621,
+  "installScriptPackages": [
+    "better-sqlite3@12.11.1",
+    "electron-winstaller@5.4.0",
+    "fsevents@2.3.3",
+    "node-pty@1.1.0"
+  ],
+  "report": "docs/evidence/r74-autonomous-completion-and-free-reliability/dependency-audit.json",
+  "sbom": "docs/evidence/r74-autonomous-completion-and-free-reliability/sbom.json"
+}

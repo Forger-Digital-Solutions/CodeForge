@@ -1,0 +1,5 @@
+
+> codeforge-desktop@0.4.0 build:main
+> tsc -p tsconfig.main.json && node -e "const fs=require('fs'); fs.copyFileSync('src/preload.cjs', 'dist/preload.cjs'); fs.copyFileSync('cloud-endpoints.json', 'dist/cloud-endpoints.json')" && node scripts/build-identity.mjs
+
+{"version":"0.4.0","commit":"0f03e53da239680fb300cd10eee8c963c16df648","shortCommit":"0f03e53da239","branch":"codex/r74-autonomous-completion-and-free-reliability","dirty":false,"builtAt":"2026-10-10T11:55:38.759Z"}

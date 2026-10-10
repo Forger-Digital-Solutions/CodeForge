@@ -1,0 +1,3 @@
+JSON report written to G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability/docs/evidence/r74-autonomous-completion-and-free-reliability/final-remaining-regression-tests.json
+Release packaging supports only the staging or production channel.
+The production Cloud URL must be HTTPS and must not be loopback.

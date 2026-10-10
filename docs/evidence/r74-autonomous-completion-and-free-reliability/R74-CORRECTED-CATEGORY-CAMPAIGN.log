@@ -1,0 +1,5 @@
+{"id":"02-feature","status":"blocked","timeMs":70066}
+{"id":"03-refactor","status":"completed","timeMs":119853}
+{"id":"04-test-creation","status":"blocked","timeMs":96366}
+{"id":"05-debugging","status":"blocked","timeMs":94151}
+{"status":"PARTIAL","attempted":4,"completed":1}

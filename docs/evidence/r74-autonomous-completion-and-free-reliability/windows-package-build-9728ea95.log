@@ -1,0 +1,9 @@
+  • electron-builder  version=26.15.3 os=10.0.26300
+  ⨯ ENOENT: no such file or directory, open 'G:\CodeForge\worktrees\r74-autonomous-completion-and-free-reliability\apps\desktop\.directories.output=release-r74-9728ea95'  failedTask=build stackTrace=Error: ENOENT: no such file or directory, open 'G:\CodeForge\worktrees\r74-autonomous-completion-and-free-reliability\apps\desktop\.directories.output=release-r74-9728ea95'
+    at open (node:internal/fs/promises:697:25)
+    at Object.readFile (node:internal/fs/promises:1348:14)
+    at readConfig (G:\CodeForge\node_modules\app-builder-lib\src\util\config\load.ts:19:16)
+    at getConfig (G:\CodeForge\node_modules\app-builder-lib\src\util\config\config.ts:43:34)
+    at Packager.validateConfig (G:\CodeForge\node_modules\app-builder-lib\src\packager.ts:367:27)
+    at Packager.build (G:\CodeForge\node_modules\app-builder-lib\src\packager.ts:398:5)
+    at executeFinally (G:\CodeForge\node_modules\builder-util\src\promise.ts:12:14)

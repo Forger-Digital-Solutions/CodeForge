@@ -1,0 +1,8 @@
+PACKAGED_BROWSER_SECURITY_VALID=PASS
+sandbox=true
+nodeIntegration=false
+contextIsolation=true
+webSecurity=true
+controlPlaneBearerInjection=true
+preloadBearerFree=true
+archive=G:\CodeForge\worktrees\r74-autonomous-completion-and-free-reliability\apps\desktop\release-r74-0f03e53d\win-unpacked\resources\app.asar
