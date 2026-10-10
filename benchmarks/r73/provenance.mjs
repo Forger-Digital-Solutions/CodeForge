@@ -2,6 +2,7 @@ import { readFile, readdir, mkdir, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
 
 const original = 'G:/CodeForge';
 const r72 = `${original}/worktrees/r72-free-supply-and-autonomy`;
@@ -25,7 +26,24 @@ const file = process.argv.includes('--final') ? 'final-preservation.json' : 'bas
 const receipt = { at: new Date().toISOString(), source: process.cwd(), startingHead: expected, currentHead: git(process.cwd(), 'rev-parse', 'HEAD'), branch: git(process.cwd(), 'branch', '--show-current'), r72Head: expected, r72Clean: true, originalHead: git(original, 'rev-parse', 'HEAD'), originalBranch: git(original, 'branch', '--show-current'), originalStatus: git(original, 'status', '--short'), preservedFiles, priorEvidence, lockfileSha256: hash(await readFile('package-lock.json')) };
 if (process.argv.includes('--final')) {
   const baseline = JSON.parse(await readFile(`${directory}/baseline-provenance.json`, 'utf8'));
-  receipt.unchanged = ['originalHead', 'originalBranch', 'preservedFiles', 'priorEvidence', 'lockfileSha256'].every(key => JSON.stringify(receipt[key]) === JSON.stringify(baseline[key]));
+  const originalLockBytes = await readFile(path.join(original, 'package-lock.json'));
+  const r72LockBytes = await readFile(path.join(r72, 'package-lock.json'));
+  const currentLock = JSON.parse(await readFile('package-lock.json', 'utf8'));
+  const expectedLock = JSON.parse(r72LockBytes.toString('utf8'));
+  const desktopDependencies = expectedLock.packages?.['apps/desktop']?.dependencies;
+  if (!desktopDependencies || Object.hasOwn(desktopDependencies, '@codeforge/secrets')) throw new Error('AUTHORIZED_LOCK_BASELINE_UNEXPECTED');
+  desktopDependencies['@codeforge/secrets'] = '*';
+  const originalLockUnchanged = hash(originalLockBytes) === baseline.lockfileSha256;
+  const r72LockUnchanged = hash(r72LockBytes) === baseline.lockfileSha256;
+  const r73LockUnchanged = receipt.lockfileSha256 === baseline.lockfileSha256;
+  const exactAuthorizedChangeOnly = isDeepStrictEqual(currentLock, expectedLock);
+  receipt.lockfilePreservation = {
+    baselineSha256: baseline.lockfileSha256, originalSha256: hash(originalLockBytes), r72Sha256: hash(r72LockBytes), r73Sha256: receipt.lockfileSha256,
+    originalLockUnchanged, r72LockUnchanged, r73LockUnchanged, exactAuthorizedChangeOnly,
+    authorizedDifference: exactAuthorizedChangeOnly ? [{ path: 'packages.apps/desktop.dependencies.@codeforge/secrets', before: null, after: '*', reason: 'User-authorized account addendum reuses existing encrypted secret workspace in desktop production dependencies' }] : [],
+    passed: originalLockUnchanged && r72LockUnchanged && (r73LockUnchanged || exactAuthorizedChangeOnly),
+  };
+  receipt.unchanged = ['originalHead', 'originalBranch', 'preservedFiles', 'priorEvidence'].every(key => JSON.stringify(receipt[key]) === JSON.stringify(baseline[key])) && receipt.lockfilePreservation.passed;
   if (!receipt.unchanged) throw new Error('PRESERVATION_MISMATCH');
 }
 await writeFile(`${directory}/${file}`, `${JSON.stringify(receipt, null, 2)}\n`);

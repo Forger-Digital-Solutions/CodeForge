@@ -86,14 +86,16 @@ describe("ProviderConnections — delegated entitlement authority", () => {
     expect(h.connections.credentialSourceOf("openrouter")).toBe("NONE");
   });
 
-  it("refuses paid and ambiguous accounts before persisting a delegated key", async () => {
+  it("connects paid accounts without Free admission and refuses ambiguous accounts", async () => {
     for (const metadata of [{ is_free_tier: false }, {}]) {
       const h = harness({}, undefined, true, { verifyOpenRouter: async (binding) => classifyOpenRouterEntitlement({ data: metadata }, binding) });
-      expect(await h.connections.connect("openrouter", { apiKey: OR_SECRET }, "OAUTH")).toMatchObject({ ok: false });
-      expect(h.secrets.size).toBe(0);
+      const paid = metadata.is_free_tier === false;
+      expect(await h.connections.connect("openrouter", { apiKey: OR_SECRET }, "OAUTH")).toMatchObject({ ok: paid });
+      expect(h.secrets.size).toBe(paid ? 1 : 0);
       expect(h.discovered).toEqual([]);
       const view = h.connections.listConnections().find((connection) => connection.providerId === "openrouter");
-      expect(view?.freeConnectionAttempt?.accountClass).toBe(metadata.is_free_tier === false ? "PAID" : "UNKNOWN");
+      if (paid) expect(h.connections.listProviderAccounts()[0]).toMatchObject({ classification: "PAID", paidSpendingEnabled: false, paidDispatchEligible: false, freeOnly: true, freeRouteCount: 0 });
+      else expect(view?.freeConnectionAttempt?.accountClass).toBe("UNKNOWN");
       expect(view?.freeCapacity?.admittedDomains).toBe(0);
       expect(JSON.stringify(view)).not.toContain("credentialFingerprint");
     }

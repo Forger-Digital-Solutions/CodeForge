@@ -225,7 +225,7 @@ export interface OrchestratorRunOptions {
   /** R21: visual assets present — routes through the vision topology. */
   hasImages?: boolean;
   /** Trusted user policy snapshot; admission is rechecked against runtime capacity on every role. */
-  rosterContext?: { roster: ForgeAutoRoster; catalog: readonly RosterCandidate[] };
+  rosterContext?: { roster: ForgeAutoRoster; catalog: readonly RosterCandidate[]; dataContext?: { privateCode: boolean; userConsented: boolean }; personalRoutingMode?: RosterRouteAllowance["personalRoutingMode"] };
 }
 
 export interface OrchestratorOptions {
@@ -291,6 +291,7 @@ export class AutonomousRunOrchestrator {
   private readonly runs: Map<string, AutonomousRun> = new Map();
   private readonly abortControllers: Map<string, AbortController> = new Map();
   private readonly parentStates = new Map<string, AutonomousParentState>();
+  private readonly authorizationWorkspaces = new Map<string, string>();
 
   private async saveParentState(run: AutonomousRun): Promise<void> {
     const state = this.parentStates.get(run.id);
@@ -304,12 +305,13 @@ export class AutonomousRunOrchestrator {
   private async spawnRole(options: SpawnChildOptions): Promise<AgentResult> {
     const run = this.runs.get(options.parentRunId);
     if (run) await this.saveParentState(run);
+    const authorizationWorkspacePath = this.authorizationWorkspaces.get(options.parentRunId) ?? this.parentStates.get(options.parentRunId)?.workspacePath;
     const recoveryKey = this.parentStates.has(options.parentRunId)
       ? crypto.createHash("sha256").update(JSON.stringify({ agentId: options.agentId, task: options.task,
         workspacePath: options.workspacePath, contextSummary: options.contextSummary,
         reviewFeedback: options.reviewFeedback, excludeRoleRoute: options.excludeRoleRoute,
         excludeRoleRoutes: options.excludeRoleRoutes, preferIndependentFromPoolId: options.preferIndependentFromPoolId })).digest("hex") : undefined;
-    return this.subagentManager.spawnChildAgent({ ...options, ...(recoveryKey ? { recoveryKey } : {}) });
+    return this.subagentManager.spawnChildAgent({ ...options, ...(authorizationWorkspacePath ? { authorizationWorkspacePath } : {}), ...(recoveryKey ? { recoveryKey } : {}) });
   }
 
   constructor(options: OrchestratorOptions) {
@@ -535,9 +537,10 @@ export class AutonomousRunOrchestrator {
       const roster = role === "LEAD" && options.rosterContext.roster.lead.mode === "MANUAL"
         ? { ...options.rosterContext.roster, slots: options.rosterContext.roster.slots.map((slot, index) => ({ ...slot, enabled: slot.enabled && index === options.rosterContext!.roster.lead.slotIndex })) }
         : options.rosterContext.roster;
-      const resolved = resolveForgeAutoRole(roster, options.rosterContext.catalog, role, { privateCode: true, userConsented: false });
+      const resolved = resolveForgeAutoRole(roster, options.rosterContext.catalog, role, options.rosterContext.dataContext ?? { privateCode: true, userConsented: false });
       if (resolved.status !== "READY") throw new Error(`ROSTER_${resolved.status}:${role}`);
       const allowance = rosterRouteAllowance(resolved, { ownerUserId: roster.ownerUserId, rosterUpdatedAt: roster.updatedAt, role });
+      allowance.personalRoutingMode = options.rosterContext.personalRoutingMode;
       if (allowance.freeRoutes.length === 0 && allowance.paidModelIds.length === 0 && allowance.userRoutes.length === 0) throw new Error(`ROSTER_NO_EXECUTABLE_SOURCE:${role}`);
       return allowance;
     };
@@ -656,6 +659,7 @@ export class AutonomousRunOrchestrator {
     }
 
     this.runs.set(runId, run);
+    this.authorizationWorkspaces.set(runId, targetWs.rootPath);
     this.persistRun(run);
     if (this.persistence && this.subagentsR1Enabled && !coderExecutor && !options.rosterContext) {
       const now = new Date().toISOString();
@@ -1062,6 +1066,7 @@ export class AutonomousRunOrchestrator {
             goal,
             workspaceId: worktreeWs.id,
             workspacePath: worktreeWs.rootPath,
+            authorizationWorkspacePath: targetWs.rootPath,
             permissions: { read: true, search: true, write: true, executeCommand: true, network: false },
             signal: controller.signal,
             adapter,
@@ -1724,7 +1729,8 @@ export class AutonomousRunOrchestrator {
       state.recoveryAttempts = (state.recoveryAttempts ?? 0) + 1;
       await persistence.upsertWorkItem(state as unknown as import("@codeforge/sessions").WorkItem);
       if (["integrating", "completed"].includes(state.phase)) throw new Error("AMBIGUOUS_INTEGRATION_REQUIRES_REVALIDATION");
-      const workers = await this.subagentManager.recoverInterruptedWorkers({ parentRunId: state.runId, recoveryOwnerId: ownerId, signal: controller.signal });
+      this.authorizationWorkspaces.set(state.runId, state.workspacePath);
+      const workers = await this.subagentManager.recoverInterruptedWorkers({ parentRunId: state.runId, authorizationWorkspacePath: state.workspacePath, recoveryOwnerId: ownerId, signal: controller.signal });
       if (workers.failed || workers.replanned) throw new Error("PARENT_WORKER_RECOVERY_REQUIRES_REVALIDATION");
       if (controller.signal.aborted) throw new Error("PARENT_RECOVERY_LEASE_LOST");
       this.runs.delete(state.runId);

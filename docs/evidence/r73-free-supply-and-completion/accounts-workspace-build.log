@@ -1,0 +1,5 @@
+
+> codeforge@0.4.0 build
+> npm run build --workspaces --if-present
+
+      0 [main] bash (23368) C:\Program Files\Git\bin\..\usr\bin\bash.exe: *** fatal error - NtCreateDirectoryObject(\BaseNamedObjects\msys-2.0S5-1888ae32e00d56aa): 0xC0000022

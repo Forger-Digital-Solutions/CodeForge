@@ -33,7 +33,7 @@ export function quotaScopeEvidenceExclusionReason(route: CapacityRoute, now = Da
   const recheck = Date.parse(evidence.recheckAt);
   if (!Number.isFinite(verified) || verified > now || !Number.isFinite(recheck) || recheck <= now
     || recheck <= verified) return "QUOTA_SCOPE_EVIDENCE_STALE";
-  const key = `${route.providerId}:${evidence.scope}:${evidence.identityHash}`;
+  const key = `${route.quotaProviderId ?? route.providerId}:${evidence.scope}:${evidence.identityHash}`;
   if (route.independenceKey !== undefined && route.independenceKey !== key) return "INDEPENDENCE_KEY_MISMATCH";
   return undefined;
 }
@@ -41,7 +41,7 @@ export function quotaScopeEvidenceExclusionReason(route: CapacityRoute, now = Da
 export function deriveCapacityIndependence(route: CapacityRoute, now = Date.now()): CapacityIndependence {
   const evidence = route.quotaScopeEvidence;
   if (evidence && quotaScopeEvidenceExclusionReason(route, now) === undefined) {
-    return { key: `${route.providerId}:${evidence.scope}:${evidence.identityHash}`, scopeVerified: true, reason: "VERIFIED_QUOTA_SCOPE" };
+    return { key: `${route.quotaProviderId ?? route.providerId}:${evidence.scope}:${evidence.identityHash}`, scopeVerified: true, reason: "VERIFIED_QUOTA_SCOPE" };
   }
   // An account key, model name, installation or session cannot prove independent quota.
   // Unknown egress scopes are pooled together so NAT users can never inflate capacity.

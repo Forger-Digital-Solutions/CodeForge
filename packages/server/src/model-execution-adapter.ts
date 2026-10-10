@@ -22,7 +22,9 @@ import type { PaidAutoService } from "@codeforge/paid-auto";
 import { redactSecrets } from "@codeforge/secrets";
 import { fingerprint, type ForgeGreenAdvisor } from "@codeforge/forge-green";
 import type { ForgeGreenRunPolicy } from "./forgegreen-run-policy.js";
-import { isUserApiAdapter } from "./user-intelligence.js";
+import { isUserApiAdapter, userApiAdapterIdentity } from "./user-intelligence.js";
+import { randomUUID } from "node:crypto";
+import { PersonalAccountPolicyError } from "./personal-account-policy.js";
 
 export interface ModelExecutionRequest {
   modelSelection?: AgentModelSelection;
@@ -35,6 +37,7 @@ export interface ModelExecutionRequest {
   signal?: AbortSignal;
   userId?: string;
   role?: string;
+  workspacePath?: string;
   runId?: string;
   workspaceId?: string;
   authorityState?: string;
@@ -247,6 +250,11 @@ export class ModelExecutionAdapter {
       // R55: USER_API adapters are owner-authorized through the roster allowance upstream —
       // ForgeZero's managed-free catalog holds no record for them and must not gate them.
       if (isUserApiAdapter(provider)) {
+        const identity = userApiAdapterIdentity(provider);
+        if (identity?.connectionId && identity.personalAdmission === "FREE_VERIFIED") {
+          const verified = this.firewall.verify(selection.providerId, selection.modelId);
+          if (!verified.ok) throw new Error("PERSONAL_ACCOUNT_FREE_FIREWALL_DENIED");
+        }
         return { providerId: selection.providerId, modelId: selection.modelId };
       }
 
@@ -322,6 +330,7 @@ export class ModelExecutionAdapter {
     }
 
     const tools = convertToProviderTools(req.tools);
+    const personalIdentity = userApiAdapterIdentity(provider);
     const chatRequest: ChatRequest = {
       model: modelId,
       messages: providerConversationMessages(req.messages),
@@ -330,6 +339,12 @@ export class ModelExecutionAdapter {
       toolChoice: req.toolChoice ?? (tools && tools.length > 0 ? "auto" : undefined),
       temperature: req.temperature ?? 0.7,
       maxTokens: req.maxTokens ?? 4096,
+      ...(personalIdentity?.connectionId ? { metadata: {
+        personalAccountOwnerUserId: req.userId,
+        personalAccountConnectionId: personalIdentity.connectionId,
+        personalAccountWorkspacePath: req.workspacePath,
+        personalAccountRequestId: `personal-dispatch-${randomUUID()}`,
+      } } : {}),
     };
 
     let reservation: { release: (actualTokens?: number) => void } | undefined;
@@ -344,7 +359,11 @@ export class ModelExecutionAdapter {
 
     try {
       const stream = provider.streamChatWithContext
-        ? provider.streamChatWithContext(chatRequest, { userId: req.userId, metadata: { role: req.role ?? "CODER", runId: req.runId, workspaceId: req.workspaceId } }, req.signal)
+        ? provider.streamChatWithContext(chatRequest, { userId: req.userId, metadata: {
+          role: req.role ?? "CODER", runId: req.runId, workspaceId: req.workspaceId,
+          personalAccountOwnerUserId: req.userId,
+          personalAccountRequestId: `personal-dispatch-${randomUUID()}`,
+        } }, req.signal)
         : provider.streamChat(chatRequest, req.signal);
       for await (const event of stream) {
         if (req.signal?.aborted) {
@@ -378,6 +397,7 @@ export class ModelExecutionAdapter {
       if (req.signal?.aborted) {
         return;
       }
+      if (err instanceof PersonalAccountPolicyError) throw err;
       // R55 wave 2: a proven pre-dispatch rejection (executionCertainty "not_started" —
       // e.g. the paid gate refused before any billable provider work began) keeps its
       // typed identity so allowance accounting can release rather than settle.
@@ -478,7 +498,13 @@ export class ModelExecutionAdapter {
 
   private assertFreeDispatch(selection: { providerId: string; modelId: string }, request: ModelExecutionRequest): FreeDispatchCapacityAuthority | void {
     const provider = this.providerCatalog.get(selection.providerId);
-    if (provider?.isTestProvider === true || isUserApiAdapter(provider) || selection.providerId === "paid-auto"
+    const personalIdentity = userApiAdapterIdentity(provider);
+    if (personalIdentity?.connectionId && (personalIdentity.ownerUserId !== request.userId
+      || !personalIdentity.qualifiedEightBitRoles?.includes((request.role ?? "CODER") as import("@codeforge/eight-bit").EightBitRole))) {
+      throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_ROLE_NOT_QUALIFIED");
+    }
+    const userRouteBypassesFree = !!personalIdentity && (!personalIdentity.connectionId || personalIdentity.personalAdmission === "PAID_AUTHORIZED");
+    if (provider?.isTestProvider === true || userRouteBypassesFree || selection.providerId === "paid-auto"
       || this.firewall.getModel(selection.providerId, selection.modelId)?.tier === "gems_paid") return;
     if (!this.authorizeFreeDispatch) throw new Error("FREE_FABRIC_AUTHORITY_REQUIRED");
     return this.authorizeFreeDispatch(selection, request);

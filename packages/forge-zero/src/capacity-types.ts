@@ -163,6 +163,8 @@ export interface ProviderCapacityPool {
 export interface CapacityRoute {
   routeId: string;
   providerId: string;
+  /** Physical quota authority when the transport adapter has an owner/connection alias. */
+  quotaProviderId?: string;
   modelId: string;
   canonicalModelId: string;
   family: string;

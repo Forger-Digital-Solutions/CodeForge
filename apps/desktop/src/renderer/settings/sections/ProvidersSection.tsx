@@ -3,6 +3,8 @@ import { useSettings } from "../settings-context.js";
 import { CfSelect, SettingsButton, SettingsGroup, SettingsRow, StatusBadge, Toggle } from "../settings-controls.js";
 import { AddProviderFlow } from "../../AddProviderFlow.js";
 import { OllamaUserConnectedFreePanel } from "../../OllamaUserConnectedFreePanel.js";
+import { ConnectedAccountsPanel } from "../../ConnectedAccountsPanel.js";
+import type { ConnectedAccountView, ProviderRoutingPolicy } from "../../../connected-account-types.js";
 import {
   attestFreePlan,
   connectOpenRouterOAuth,
@@ -31,6 +33,8 @@ export interface ProvidersSectionProps {
   environment?: EnvironmentCredentialView[];
   summary?: FreeCloudSummaryView | null;
   policy?: EnvironmentCredentialPolicy;
+  accounts?: ConnectedAccountView[];
+  routingPolicy?: ProviderRoutingPolicy;
 }
 
 const POLICY_OPTIONS = [
@@ -118,6 +122,8 @@ export function ProvidersSection(props: ProvidersSectionProps = {}): React.React
 
   const connectedCount = connections.filter((c) => c.connected).length;
   const detected = environment.filter((e) => e.anyDetected);
+  const packaged = connections.filter((connection) => ["PACKAGED_FREE_DIRECT", "PACKAGED_FREE_PROVIDER_FUNDED", "CODEFORGE_MANAGED_FREE"].includes(connection.supplyClass ?? ""));
+  const packagedHealthy = packaged.reduce((count, connection) => count + (connection.freeCapacity?.healthyGroups ?? 0), 0);
 
   const run = async (key: string, fn: () => Promise<void>, doneNote?: string) => {
     setBusy(key);
@@ -136,14 +142,15 @@ export function ProvidersSection(props: ProvidersSectionProps = {}): React.React
 
   return (
     <div>
-      <h1 className="settings-section-title">Provider Connections</h1>
+      <h1 className="settings-section-title">Connected Accounts</h1>
       <p className="settings-section-subtitle">
         Optional providers expand CodeForge beyond the built-in Free / ForgeAuto model catalog. CodeForge Free and
         ForgeAuto/Free remain fully usable without any provider configuration where eligible free routes exist.
         Credentials stay on this device, encrypted; environment credentials are read live and never copied.
       </p>
 
-      <SettingsGroup title="Free Cloud Models">
+      <SettingsGroup title="Packaged Free and available supply">
+        <SettingsRow title="Packaged Free supply" description="Connected automatically when policy and qualified capacity permit. No external provider account required." control={<StatusBadge kind={packagedHealthy > 0 ? "ok" : "info"}>{packagedHealthy > 0 ? `${packagedHealthy} healthy groups` : "Checking qualified capacity"}</StatusBadge>} />
         <SettingsRow
           title={summary ? `${summary.verifiedFreeModels} verified free models · ${summary.healthyFreeRoutes} healthy routes` : "Registry loading…"}
           description={
@@ -155,8 +162,12 @@ export function ProvidersSection(props: ProvidersSectionProps = {}): React.React
         />
       </SettingsGroup>
 
+      <ConnectedAccountsPanel providers={connections} accounts={props.accounts} policy={props.routingPolicy} onChanged={() => ctx.refreshModels()} />
+
       <OllamaUserConnectedFreePanel connection={connections.find((c) => c.providerId === "ollama-cloud")} onChanged={() => void live.reload()} />
 
+      <details className="provider-availability">
+      <summary>Provider setup and environment credentials</summary>
       <SettingsGroup title={`Detected environment credentials (${detected.length})`}>
         <SettingsRow
           settingId="env-credential-policy"
@@ -321,6 +332,7 @@ export function ProvidersSection(props: ProvidersSectionProps = {}): React.React
           <AddProviderFlow providers={connections} onConnected={() => void ctx.refreshModels()} />
         </div>
       </SettingsGroup>
+      </details>
 
       {note ? <div className="settings-note" role="status">{note}</div> : null}
       <div className="provider-setup-note" role="note" aria-label="Free Mode note">

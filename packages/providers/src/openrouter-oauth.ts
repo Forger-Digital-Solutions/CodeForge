@@ -113,6 +113,7 @@ export async function exchangeCodeForKey(opts: ExchangeOptions): Promise<string>
   try {
     const res = await fetchFn(opts.endpoint ?? KEYS_ENDPOINT, {
       method: "POST",
+      redirect: "error",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         code: opts.code,

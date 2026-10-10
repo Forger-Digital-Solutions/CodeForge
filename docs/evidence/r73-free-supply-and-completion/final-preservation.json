@@ -1,8 +1,8 @@
 {
-  "at": "2026-10-09T09:57:57.177Z",
+  "at": "2026-10-09T23:57:10.833Z",
   "source": "G:\\CodeForge\\worktrees\\r73-free-supply-and-completion",
   "startingHead": "220b365c553bff0b1ee952fb6b96498c8ddea325",
-  "currentHead": "220b365c553bff0b1ee952fb6b96498c8ddea325",
+  "currentHead": "97dafd4cab4cf4e4c14bb9c2104191323659fb6d",
   "branch": "codex/r73-free-supply-and-completion",
   "r72Head": "220b365c553bff0b1ee952fb6b96498c8ddea325",
   "r72Clean": true,
@@ -402,6 +402,25 @@
       "sha256": "5401ceb7ac51e1c6931355301df6cdb05a2af98558f8bbf9f848b52043b055c1"
     }
   ],
-  "lockfileSha256": "8cc332bdd8b2a53126592aa45960497d1892223ce2b37162f47496690dc31d45",
+  "lockfileSha256": "45a47cff4b0dbb7346c5eba07fb3a34063a962175e4d1b74881199b13bd3cf68",
+  "lockfilePreservation": {
+    "baselineSha256": "8cc332bdd8b2a53126592aa45960497d1892223ce2b37162f47496690dc31d45",
+    "originalSha256": "8cc332bdd8b2a53126592aa45960497d1892223ce2b37162f47496690dc31d45",
+    "r72Sha256": "8cc332bdd8b2a53126592aa45960497d1892223ce2b37162f47496690dc31d45",
+    "r73Sha256": "45a47cff4b0dbb7346c5eba07fb3a34063a962175e4d1b74881199b13bd3cf68",
+    "originalLockUnchanged": true,
+    "r72LockUnchanged": true,
+    "r73LockUnchanged": false,
+    "exactAuthorizedChangeOnly": true,
+    "authorizedDifference": [
+      {
+        "path": "packages.apps/desktop.dependencies.@codeforge/secrets",
+        "before": null,
+        "after": "*",
+        "reason": "User-authorized account addendum reuses existing encrypted secret workspace in desktop production dependencies"
+      }
+    ],
+    "passed": true
+  },
   "unchanged": true
 }

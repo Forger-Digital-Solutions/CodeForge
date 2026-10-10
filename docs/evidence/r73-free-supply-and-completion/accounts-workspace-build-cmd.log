@@ -1,0 +1,247 @@
+
+> codeforge@0.4.0 build
+> npm run build --workspaces --if-present
+
+
+> @codeforge/agent@0.4.0 build
+> tsc -b
+
+
+> @codeforge/benchmark@0.4.0 build
+> tsc -b
+
+
+> @codeforge/browser@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cli@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-auth@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-billing@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-db@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-entitlements@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-gateway@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-usage@0.4.0 build
+> tsc -b
+
+
+> @codeforge/computer-use@0.4.0 build
+> tsc -b
+
+
+> @codeforge/context@0.4.0 build
+> tsc -b
+
+
+> @codeforge/core@0.4.0 build
+> tsc -b
+
+
+> @codeforge/crypto@0.4.0 build
+> tsc -b
+
+
+> @codeforge/director@0.4.0 build
+> tsc -b
+
+
+> @codeforge/eight-bit@0.4.0 build
+> tsc -b
+
+
+> @codeforge/forge-green@0.4.0 build
+> tsc -b
+
+
+> @codeforge/forge-zero@0.4.0 build
+> tsc -b
+
+
+> @codeforge/forgegreen-campaign@0.4.0 build
+> tsc -b
+
+
+> @codeforge/gems@0.4.0 build
+> tsc -b
+
+
+> @codeforge/git@0.4.0 build
+> tsc -b
+
+
+> @codeforge/identity@0.4.0 build
+> tsc -b
+
+
+> @codeforge/integration-tests@0.4.0 build
+> tsc -b
+
+
+> @codeforge/intelligence@0.4.0 build
+> tsc -b
+
+
+> @codeforge/legal-policy@0.4.0 build
+> tsc -b
+
+
+> @codeforge/lsp@0.4.0 build
+> tsc -b
+
+
+> @codeforge/mcp@0.4.0 build
+> tsc -b
+
+
+> @codeforge/model-registry@0.4.0 build
+> tsc -b
+
+
+> @codeforge/paid-auto@0.4.0 build
+> tsc -b
+
+
+> @codeforge/permissions@0.4.0 build
+> tsc -b
+
+
+> @codeforge/plugins@0.4.0 build
+> tsc -b
+
+
+> @codeforge/protocol@0.4.0 build
+> tsc -b
+
+
+> @codeforge/providers@0.4.0 build
+> tsc -b
+
+
+> @codeforge/repo-intelligence@0.4.0 build
+> tsc -b
+
+
+> @codeforge/router@0.4.0 build
+> tsc -b
+
+
+> @codeforge/sandbox@0.4.0 build
+> tsc -b
+
+
+> @codeforge/sdk@0.4.0 build
+> tsc -b
+
+
+> @codeforge/secrets@0.4.0 build
+> tsc -b
+
+
+> @codeforge/server@0.4.0 build
+> tsc -b
+
+
+> @codeforge/sessions@0.4.0 build
+> tsc -b
+
+
+> @codeforge/shared@0.4.0 build
+> tsc -b
+
+
+> @codeforge/telemetry@0.4.0 build
+> tsc -b
+
+
+> @codeforge/terminal@0.4.0 build
+> tsc -b
+
+
+> @codeforge/tools@0.4.0 build
+> tsc -b
+
+
+> @codeforge/ui@0.4.0 build
+> tsc -b
+
+
+> codeforge-vscode@0.4.0 build
+> tsc -b
+
+
+> @codeforge/workflow@0.4.0 build
+> tsc -b
+
+
+> codeforge-cloud-api@0.4.0 build
+> tsc -b
+
+
+> codeforge-desktop@0.4.0 build
+> npm run build:packages && npm run build:main && npm run build:renderer
+
+
+> codeforge-desktop@0.4.0 build:packages
+> tsc -b ../../tsconfig.json
+
+
+> codeforge-desktop@0.4.0 build:main
+> tsc -p tsconfig.main.json && node -e "const fs=require('fs'); fs.copyFileSync('src/preload.cjs', 'dist/preload.cjs'); fs.copyFileSync('cloud-endpoints.json', 'dist/cloud-endpoints.json')" && node scripts/build-identity.mjs
+
+{"version":"0.4.0","commit":"97dafd4cab4cf4e4c14bb9c2104191323659fb6d","shortCommit":"97dafd4cab4c","branch":"codex/r73-free-supply-and-completion","dirty":true,"builtAt":"2026-10-09T23:35:45.371Z"}
+
+> codeforge-desktop@0.4.0 build:renderer
+> node scripts/check-renderer-sources.mjs && vite build
+
+RENDERER_SOURCE_TREE=PASS (apps\desktop\src, packages\ui\src)
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 194 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/renderer/index.html                             0.78 kB │ gzip:   0.44 kB
+dist/renderer/assets/index-CF04DA_B.css            105.24 kB │ gzip:  16.58 kB
+dist/renderer/assets/rolldown-runtime-CbXtAM7H.js    0.58 kB │ gzip:   0.36 kB
+dist/renderer/assets/vendor-ClNNG_bI.js            246.22 kB │ gzip:  72.19 kB
+dist/renderer/assets/index-Cu43D2eR.js             522.09 kB │ gzip: 176.10 kB
+
+✓ built in 1.01s
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+> @codeforge/web@0.4.0 build
+> tsc -b && vite build
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 148 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                             0.61 kB │ gzip:   0.36 kB
+dist/assets/index-CA343vyI.css             68.17 kB │ gzip:  11.08 kB
+dist/assets/rolldown-runtime-CbXtAM7H.js    0.58 kB │ gzip:   0.36 kB
+dist/assets/vendor-CdbtticQ.js            246.21 kB │ gzip:  72.22 kB
+dist/assets/index-YfKT9Rk7.js             319.25 kB │ gzip: 121.66 kB
+
+✓ built in 858ms

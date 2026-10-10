@@ -31,6 +31,7 @@ packages/vscode/.vscode-test/
 # Local scratch/probe scripts are never committed (they may reference local endpoints or profiles)
 /scratch-*.mjs
 /scratch-*.cjs
+/.tmp/
 /security-gate/
 
 # R16 native-audit profile copies (sealed tokens, databases) never belong in evidence

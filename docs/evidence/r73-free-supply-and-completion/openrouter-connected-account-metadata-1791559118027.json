@@ -1,0 +1,53 @@
+{
+  "kind": "LIVE_ACCOUNT_METADATA_ONLY",
+  "startedAt": "2026-10-09T15:18:37.512Z",
+  "localOwnerContext": "Headless fixture owner label; does not establish desktop session authorization or encrypted storage",
+  "sourceHashes": {
+    "connectedAccounts": "d21740ae05ecdcfb70077be957b9d65283099d0fc14406d4c560ef9d6019970e",
+    "transpiledConnectedAccounts": "a092f81708b137f6ac1b405ab88149227b1b6d885b984dda46b05a06717f319f",
+    "openRouterEntitlement": "0c2f5c666dca0aef8f2ed0a1e168076aa3a0635717835d66ae5f286cfa8b2393",
+    "compiledOpenRouterEntitlement": "9c34c14cac4d43a68129961b23733f80876a70c58bcb298b8902ad90e65bd8f7"
+  },
+  "dependencyResolution": "Every @codeforge package pinned to this R73 worktree dist, not original repository workspace symlinks",
+  "requests": [
+    {
+      "method": "GET",
+      "url": "https://openrouter.ai/api/v1/models",
+      "startedAt": "2026-10-09T15:18:37.517Z",
+      "status": 200,
+      "completedAt": "2026-10-09T15:18:37.865Z"
+    },
+    {
+      "method": "GET",
+      "url": "https://openrouter.ai/api/v1/key",
+      "startedAt": "2026-10-09T15:18:37.918Z",
+      "status": 200,
+      "completedAt": "2026-10-09T15:18:38.008Z"
+    }
+  ],
+  "inferenceRequests": 0,
+  "paidRequests": 0,
+  "accountsCreated": 0,
+  "externalAccountsTested": 1,
+  "catalogModelsObserved": 469,
+  "modelsQualified": 0,
+  "connectionAccepted": true,
+  "accountClass": "PAID",
+  "authState": "ok",
+  "quotaScopeVerified": true,
+  "quotaScope": "USER_ACCOUNT",
+  "identityPresent": true,
+  "zeroCostCertificate": false,
+  "defaultPaidSpendingEnabled": false,
+  "defaultPaidDispatchEligible": false,
+  "freeOnlyCredentialAvailable": false,
+  "personalPaidCredentialAvailable": false,
+  "status": "LIVE_PAID_ACCOUNT_CONNECTED_FREE_ONLY_DENIED_DEFAULT_PAID_OFF",
+  "restartConnectionPreserved": true,
+  "restartRequiresRecheck": true,
+  "restartCredentialDispatchAvailable": false,
+  "localDisconnectRemovesCredential": true,
+  "localDisconnectBlocksCredentialDispatch": true,
+  "publicViewContainsSecrets": false,
+  "completedAt": "2026-10-09T15:18:38.023Z"
+}

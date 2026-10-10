@@ -1,0 +1,10 @@
+{
+  "status": "INTERRUPTED_NO_COMPLETION_RECEIPT",
+  "observedAt": "2026-10-09T23:56:26.0735000Z",
+  "processStillRunning": false,
+  "testReceiptExists": false,
+  "log": "accounts-final-affected-tests.log",
+  "logBytes": 0,
+  "resultClaim": "NO_PASS_OR_FAIL_CLAIM",
+  "reason": "Session was interrupted and no surviving matching test process or final JSON receipt was found"
+}

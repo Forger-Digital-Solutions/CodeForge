@@ -21,6 +21,7 @@ import os from "node:os";
 import crypto from "node:crypto";
 import { redactSecrets } from "@codeforge/secrets";
 import { describeRunFailure } from "./run-failure.js";
+import { PersonalAccountPolicyError } from "./personal-account-policy.js";
 import { compactSupersededToolOutputs } from "./history-compaction.js";
 import { prepareShellCommand } from "@codeforge/workflow";
 import { executePrepared } from "@codeforge/terminal";
@@ -116,6 +117,7 @@ import { CodingProgress } from "./coding-progress.js";
 import { assertReviewerEvidenceCurrent, type ReviewerEvidenceBinding } from "./reviewer-evidence.js";
 
 export interface AgentRuntimeRequest {
+  authorizationWorkspacePath?: string;
   runId: string;
   agentId: string;
   role: AgentRoleType | string;
@@ -633,6 +635,7 @@ export interface AgentRuntimeOptions {
    */
   freeCloud?: FreeCloudRoutingHooks;
   additionalFreeRoleAdmission?: (providerId: string, modelId: string) => boolean;
+  personalRoleAllowance?: (ownerUserId: string, role: AgentRuntimeRequest["role"], workspacePath: string) => RosterRouteAllowance | undefined;
   /**
    * R24 Mission C: the Free Fabric admission authority. When attached (the host builds one
    * over the live Free Cloud projections), ForgeAuto and role-routed selection decide through
@@ -1067,6 +1070,7 @@ export class AgentRuntime {
   private readonly eightBit: EightBitRuntime;
   private readonly freeCloud?: FreeCloudRoutingHooks;
   private readonly additionalFreeRoleAdmission?: (providerId: string, modelId: string) => boolean;
+  private readonly personalRoleAllowance?: AgentRuntimeOptions["personalRoleAllowance"];
   private readonly paidAuto?: PaidAutoService;
   private readonly managedPaidPolicy?: ManagedPaidPolicy;
   private readonly managedPaidLedger?: ManagedPaidAllowanceLedger;
@@ -1114,6 +1118,7 @@ export class AgentRuntime {
     });
     this.freeCloud = options.freeCloud;
     this.additionalFreeRoleAdmission = options.additionalFreeRoleAdmission;
+    this.personalRoleAllowance = options.personalRoleAllowance;
     this.paidAuto = options.paidAuto;
     this.managedPaidPolicy = options.managedPaidPolicy;
     this.managedPaidLedger = options.managedPaidLedger;
@@ -1427,6 +1432,10 @@ export class AgentRuntime {
    * loop detection, budget governance, and structured result extraction.
    */
   async executeAgentRun(req: AgentRuntimeRequest): Promise<AgentRuntimeResult> {
+    if (!req.rosterAllowance && req.roleRouting) {
+      const allowance = this.personalRoleAllowance?.(req.userId ?? this.userId, req.role, req.authorizationWorkspacePath ?? req.workspacePath);
+      if (allowance) req = { ...req, rosterAllowance: allowance };
+    }
     let budget: AgentExecutionBudget = {
       // A caller-supplied budget is a partial override over the role's defaults, not a
       // replacement — passing only `maxModelTurns` used to leave `maxContextTokens` undefined,
@@ -2059,7 +2068,7 @@ export class AgentRuntime {
       // cooldown, and — when wired — Free Cloud admission gates still apply to every replacement)
       // up to the bounded budget; an explicit exact selection is never replaced.
       let activeSelection: AgentModelSelection | undefined = req.modelSelection
-        ?? (this.modelSelection ? { providerId: this.modelSelection.providerId, modelId: this.modelSelection.modelId } : undefined);
+        ?? (this.modelSelection && !(req.roleRouting && req.rosterAllowance?.personalRoutingMode) ? { providerId: this.modelSelection.providerId, modelId: this.modelSelection.modelId } : undefined);
       const excludedRoleRoutes = [...(req.excludeRoleRoutes ?? []), ...(req.excludeRoleRoute ? [req.excludeRoleRoute] : [])];
       const roleRouteExcluded = (providerId: string, modelId: string): boolean => excludedRoleRoutes.some((route) => route.providerId === providerId && route.modelId === modelId);
       if (req.rosterAllowance && activeSelection) {
@@ -2081,6 +2090,44 @@ export class AgentRuntime {
       let paidChargeEvidence: { chargedUsd: number; confidence: "OBSERVED" | "ESTIMATED" } | undefined;
       const resolveUserRoute = (providerId: string, modelId: string): RosterUserRoute | undefined =>
         (req.rosterAllowance?.userRoutes ?? []).find((route) => route.providerId === providerId && route.modelId === modelId);
+      const triedPersonalRoutes = new Set<string>();
+      const personalPaidFallback = (): RosterUserRoute | undefined => {
+        if (!req.rosterAllowance?.personalRoutingMode || req.rosterAllowance.personalRoutingMode === "FREE_ONLY") return undefined;
+        return req.rosterAllowance.userRoutes.filter(route => {
+          if (!route.personalConnectionId || route.personalAdmission !== "PAID_AUTHORIZED" || roleRouteExcluded(route.providerId, route.modelId)
+            || triedPersonalRoutes.has(`${route.providerId}/${route.modelId}`) || !reviewRouteSupportsEvidence(route.providerId, route.modelId)) return false;
+          const provider = this.providerCatalog.get(route.providerId);
+          const identity = userApiAdapterIdentity(provider);
+          return identity?.ownerUserId === (req.userId ?? this.userId) && identity.sourceId === route.sourceId && identity.qualification === "QUALIFIED"
+            && identity.qualifiedEightBitRoles?.includes(eightBitRoleForAgentRole(req.role)) === true
+            && identity.personalAdmission === "PAID_AUTHORIZED" && provider?.canRoute?.(route.modelId) === true;
+        }).sort((a, b) => {
+          if (req.rosterAllowance?.personalRoutingMode !== "AUTO_BEST") return 0;
+          const role = eightBitRoleForAgentRole(req.role);
+          const aScore = userApiAdapterIdentity(this.providerCatalog.get(a.providerId))?.qualifiedRoleScores?.[role] ?? -1;
+          const bScore = userApiAdapterIdentity(this.providerCatalog.get(b.providerId))?.qualifiedRoleScores?.[role] ?? -1;
+          return bScore - aScore;
+        })[0];
+      };
+      const bestPersonalPaid = (): RosterUserRoute | undefined => {
+        if (req.rosterAllowance?.personalRoutingMode !== "AUTO_BEST") return undefined;
+        const paid = personalPaidFallback();
+        if (!paid) return undefined;
+        const role = eightBitRoleForAgentRole(req.role);
+        const paidScore = userApiAdapterIdentity(this.providerCatalog.get(paid.providerId))?.qualifiedRoleScores?.[role];
+        if (paidScore === undefined) return undefined;
+        const freeScores = req.rosterAllowance.freeRoutes.flatMap(route => {
+          const status = this.roleQualificationStatus(route.providerId, route.modelId, role);
+          if (roleRouteExcluded(route.providerId, route.modelId) || !reviewRouteSupportsEvidence(route.providerId, route.modelId)
+            || this.providerCatalog.get(route.providerId)?.canRoute?.(route.modelId) === false || status !== undefined && status !== "QUALIFIED") return [];
+          const personal = userApiAdapterIdentity(this.providerCatalog.get(route.providerId));
+          const receipt = this.freeCloud?.getQualificationReceipt?.(route.providerId, route.modelId);
+          const result = receipt?.roleResults[role] ?? (role === "EXPLORER" ? receipt?.roleResults.TOOL_AGENT : undefined);
+          const score = personal?.qualifiedRoleScores?.[role] ?? result?.overallScore ?? (result?.testCases.length ? result.testCases.filter(test => test.passed).length / result.testCases.length : undefined);
+          return [score ?? 1];
+        });
+        return paidScore > Math.max(...freeScores, -1) ? paid : undefined;
+      };
       // R55 wave 2: append-only ForgeAuto routing decision receipts — present only when the
       // caller attached a decision audit to the allowance. Receipts carry bounded candidate
       // identity + reason codes; never endpoint URLs, credential refs, or message bodies.
@@ -2132,7 +2179,9 @@ export class AgentRuntime {
         if (!identity
           || identity.ownerUserId !== (req.userId ?? this.userId)
           || identity.sourceId !== route.sourceId
-          || identity.qualification !== "QUALIFIED") {
+          || identity.qualification !== "QUALIFIED"
+          || (route.personalConnectionId !== undefined && (identity.connectionId !== route.personalConnectionId || identity.personalAdmission !== route.personalAdmission
+            || identity.qualifiedEightBitRoles?.includes(eightBitRoleForAgentRole(req.role)) !== true || this.providerCatalog.get(route.providerId)?.canRoute?.(route.modelId) !== true))) {
           throw new Error("ROSTER_ROUTE_NOT_SELECTED");
         }
       };
@@ -2158,20 +2207,25 @@ export class AgentRuntime {
       // R55: a role allowance admitting only user routes selects the first one directly —
       // user sources never enter the Free Fabric, paid-auto, or capacity logic.
       if (!activeSelection && req.roleRouting && req.rosterAllowance
-        && req.rosterAllowance.freeRoutes.length === 0
+        && (req.rosterAllowance.freeRoutes.length === 0 || req.rosterAllowance.personalRoutingMode === "PAID_PREFERRED" || bestPersonalPaid() !== undefined)
         && req.rosterAllowance.paidModelIds.length === 0
         && (req.rosterAllowance.userRoutes?.length ?? 0) > 0) {
-        const firstUserRoute = req.rosterAllowance.userRoutes[0]!;
+        const firstUserRoute = req.rosterAllowance.personalRoutingMode === "PAID_PREFERRED" ? personalPaidFallback() : bestPersonalPaid()
+          ?? (req.rosterAllowance.freeRoutes.length === 0 ? req.rosterAllowance.userRoutes.find(route => !route.personalConnectionId) ?? personalPaidFallback() : undefined);
+        if (firstUserRoute) {
         if (!isUserApiAdapter(this.providerCatalog.get(firstUserRoute.providerId))) {
           throw new Error(`[${ERROR_CODES.PROVIDER_UNAVAILABLE}] ROSTER_NO_ADMITTED_ROUTE: user route ${firstUserRoute.sourceId} has no registered adapter; failing closed.`);
         }
         assertUserAdapterOwned(firstUserRoute);
         activeUserRoute = firstUserRoute;
+        servedPoolId = undefined;
+        servedIndependenceKey = undefined;
         activeSelection = { providerId: firstUserRoute.providerId, modelId: firstUserRoute.modelId };
         roleRouteRotatable = !firstUserRoute.pinned;
         journalActiveRoute = activeSelection;
         adapter.emitRouterSelection(req.runId, firstUserRoute.modelId, firstUserRoute.providerId, 0, ["ROSTER_USER_API_EXPLICIT"]);
         await recordRouteDecision(activeSelection, ["ROSTER_USER_API_EXPLICIT"]);
+        }
       }
       if (!activeSelection && req.roleRouting && this.hasRoutableFleet()) {
         const role = eightBitRoleForAgentRole(req.role);
@@ -2287,7 +2341,8 @@ export class AgentRuntime {
             routing = await selectRoute();
           }
         }
-        if (routing.outcome === "no_eligible_route") {
+        const personalFallback = routing.outcome === "no_eligible_route" ? personalPaidFallback() : undefined;
+        if (routing.outcome === "no_eligible_route" && !personalFallback) {
           // The denial reason codes are the evidence of WHY the floor held (verdict floor,
           // capability contract, capacity exhaustion, health) — they must reach the run's
           // failure summary, not only the durable receipt store. A QUEUED verdict that never
@@ -2303,6 +2358,17 @@ export class AgentRuntime {
             `[${ERROR_CODES.PROVIDER_UNAVAILABLE}] No eligible free route for role ${req.role}: 8-Bit admission found no healthy route meeting this role's capability contract${detailText}. No paid or unknown-cost route was used.`,
           );
         }
+        if (personalFallback) {
+          assertUserAdapterOwned(personalFallback);
+          activeUserRoute = personalFallback;
+          servedPoolId = undefined;
+          servedIndependenceKey = undefined;
+          activeSelection = { providerId: personalFallback.providerId, modelId: personalFallback.modelId };
+          roleRouteRotatable = !personalFallback.pinned;
+          journalActiveRoute = activeSelection;
+          adapter.emitRouterSelection(req.runId, activeSelection.modelId, activeSelection.providerId, 0, ["PERSONAL_PAID_FALLBACK_AUTHORIZED"]);
+          await recordRouteDecision(activeSelection, ["PERSONAL_PAID_FALLBACK_AUTHORIZED"]);
+        } else if (routing.outcome !== "no_eligible_route") {
         activeSelection = { providerId: routing.model.providerId, modelId: routing.model.modelId };
         roleRouteRotatable = true;
         journalActiveRoute = activeSelection;
@@ -2317,6 +2383,7 @@ export class AgentRuntime {
             `${activeSelection.providerId}/${activeSelection.modelId}`,
             req.routeReplacementReason ?? "QUALITY_DRIVEN_ROLE_SWITCH",
           );
+        }
         }
       }
 
@@ -2502,6 +2569,7 @@ export class AgentRuntime {
               userId: req.userId ?? this.userId,
               authorityState: req.authorityState ?? "canonical",
               role: eightBitRoleForAgentRole(req.role),
+              workspacePath: req.authorizationWorkspacePath ?? req.workspacePath,
               runId: req.runId,
               workspaceId: req.workspaceId,
               dedupeScope: req.runId,
@@ -2584,6 +2652,7 @@ export class AgentRuntime {
             // unpriceable route must end a paid-only role before the wire, never rotate into
             // a route the policy did not authorize.
             if (err instanceof ManagedPaidAllowanceError) throw err;
+            if (err instanceof PersonalAccountPolicyError) throw err;
             if (paidReservation) {
               // A proven pre-dispatch rejection releases the hold; a failed or ambiguous
               // post-dispatch attempt settles the estimate — the provider may have billed.
@@ -2675,7 +2744,7 @@ export class AgentRuntime {
               await recordRouteDecision(activeSelection, [normalized.code], `${failing.providerId}/${failing.modelId}`);
               continue;
             }
-            if (activeUserRoute) {
+            if (activeUserRoute && !activeUserRoute.personalConnectionId) {
               // R55: user failover stays inside the already-resolved allowance — a pinned
               // route only earns the bounded same-route retry and never substitutes another
               // model; an AUTO user route may rotate to another admitted userRoutes entry,
@@ -2715,6 +2784,26 @@ export class AgentRuntime {
               rotations++;
               await recordRouteDecision(activeSelection, [normalized.code], `${failing.providerId}/${failing.modelId}`);
               continue;
+            }
+            if (activeUserRoute?.personalConnectionId) {
+              triedPersonalRoutes.add(`${failing.providerId}/${failing.modelId}`);
+              const recoverable = (err as { retryable?: unknown }).retryable === true || normalized.code === ERROR_CODES.PROVIDER_AUTH_FAILED;
+              const replacement = !pinned && recoverable ? personalPaidFallback() : undefined;
+              if (replacement) {
+                adapter.emitRouterFailover(req.runId, `${failing.providerId}/${failing.modelId}`, `${replacement.providerId}/${replacement.modelId}`, normalized.code);
+                routeFailovers.push({ from: `${failing.providerId}/${failing.modelId}`, to: `${replacement.providerId}/${replacement.modelId}`, at: new Date().toISOString(), reason: normalized.code, callsBeforeFailure: routeWindowFor(failing.providerId, failing.modelId).calls });
+                greenPolicy.escalate("provider_failover", normalized.code);
+                activeUserRoute = replacement;
+                servedPoolId = undefined;
+                servedIndependenceKey = undefined;
+                activeSelection = { providerId: replacement.providerId, modelId: replacement.modelId };
+                journalActiveRoute = activeSelection;
+                rotations++;
+                await recordRouteDecision(activeSelection, [normalized.code], `${failing.providerId}/${failing.modelId}`);
+                continue;
+              }
+              if (pinned || (err as { retryable?: unknown }).retryable !== true) throw err;
+              activeUserRoute = undefined;
             }
             const qualifiedForFailureRole = this.roleRouteFilter(eightBitRoleForAgentRole(req.role));
             const outcome = await this.eightBit.handleTurnFailure({
@@ -2799,7 +2888,22 @@ export class AgentRuntime {
               if (pinned) sameRouteRetries++;
               continue;
             }
-            if (outcome.action !== "rotate" || pinned) throw err;
+            if (outcome.action !== "rotate" || pinned) {
+              const replacement = !pinned ? personalPaidFallback() : undefined;
+              if (!replacement) throw err;
+              assertUserAdapterOwned(replacement);
+              activeUserRoute = replacement;
+              servedPoolId = undefined;
+              servedIndependenceKey = undefined;
+              activeSelection = { providerId: replacement.providerId, modelId: replacement.modelId };
+              journalActiveRoute = activeSelection;
+              rotations++;
+              adapter.emitRouterFailover(req.runId, `${failing.providerId}/${failing.modelId}`, `${replacement.providerId}/${replacement.modelId}`, normalized.code);
+              routeFailovers.push({ from: `${failing.providerId}/${failing.modelId}`, to: `${replacement.providerId}/${replacement.modelId}`, at: new Date().toISOString(), reason: normalized.code, callsBeforeFailure: routeWindowFor(failing.providerId, failing.modelId).calls });
+              greenPolicy.escalate("provider_failover", normalized.code);
+              await recordRouteDecision(activeSelection, ["PERSONAL_PAID_FALLBACK_AUTHORIZED", normalized.code], `${failing.providerId}/${failing.modelId}`);
+              continue;
+            }
             if (!this.providerCatalog.get(outcome.replacement.providerId)) throw err;
             adapter.emitRouterFailover(req.runId, `${failing.providerId}/${failing.modelId}`, `${outcome.replacement.providerId}/${outcome.replacement.modelId}`, outcome.reason);
             routeFailovers.push({
@@ -5388,6 +5492,10 @@ export class AgentRuntime {
    * verdict — no cross-role substitution.
    */
   private roleQualificationStatus(providerId: string, modelId: string, role: EightBitRole): RoleQualificationStatus | undefined {
+    const personal = userApiAdapterIdentity(this.providerCatalog.get(providerId));
+    if (personal?.connectionId) {
+      return personal.qualification === "QUALIFIED" && personal.qualifiedEightBitRoles?.includes(role) ? "QUALIFIED" : "NOT_TESTED";
+    }
     const receipt: ModelQualificationReceipt | undefined = this.freeCloud?.getQualificationReceipt?.(providerId, modelId);
     if ((this.freeCloud?.runtimeRequalificationRoles?.(providerId, modelId) ?? []).includes(role)) return "NOT_QUALIFIED";
     return roleQualificationStatusFor(receipt, role);
@@ -5404,6 +5512,8 @@ export class AgentRuntime {
     const freeCloud = this.freeCloud;
     if (!freeCloud) return undefined;
     return (providerId, modelId) => {
+      const personal = userApiAdapterIdentity(this.providerCatalog.get(providerId));
+      if (personal?.connectionId) return personal.personalAdmission === "FREE_VERIFIED" && this.roleQualificationStatus(providerId, modelId, role) === "QUALIFIED";
       if ((freeCloud.runtimeRequalificationRoles?.(providerId, modelId) ?? []).includes(role)) return false;
       if (this.eightBit.hasFreeFabric && this.additionalFreeRoleAdmission?.(providerId, modelId)) return true;
       if (!freeCloud.isForgeAutoEligible(providerId, modelId)) return false;

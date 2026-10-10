@@ -93,6 +93,7 @@ export const SubagentRunWorkItemSchema = z.object({
   model: z.object({ providerId: z.string().min(1), modelId: z.string().min(1) }).optional(),
   /** A resumed Reviewer must retain prior exclusions and implementer independence. */
   routingHints: z.object({
+    authorizationWorkspacePath: z.string().min(1).max(2_048).optional(),
     preferIndependentFromPoolId: z.string().min(1).optional(),
     excludeRoleRoute: z.object({ providerId: z.string().min(1), modelId: z.string().min(1) }).optional(),
     excludeRoleRoutes: z.array(z.object({ providerId: z.string().min(1), modelId: z.string().min(1) })).optional(),
@@ -107,6 +108,7 @@ export const SubagentRunWorkItemSchema = z.object({
   rosterAllowance: z.object({
     freeRoutes: z.array(z.object({ providerId: z.string().min(1), modelId: z.string().min(1) })),
     paidModelIds: z.array(z.string().min(1)),
+    personalRoutingMode: z.enum(["FREE_ONLY", "FREE_PREFERRED", "PAID_PREFERRED", "SPECIFIC_ACCOUNT", "AUTO_BEST"]).optional(),
     /** R55: owner-scoped USER_API routes resolved for this worker's role. Absent on
      *  pre-R55 records — readers must treat a missing list as empty. */
     userRoutes: z.array(z.object({
@@ -119,6 +121,8 @@ export const SubagentRunWorkItemSchema = z.object({
       outputCostPerMillion: z.number().nullable(),
       costConfidence: z.enum(["AUTHORITATIVE", "OBSERVED", "ESTIMATED", "UNKNOWN"]),
       priceSource: z.string().optional(),
+      personalConnectionId: z.string().min(1).max(256).optional(),
+      personalAdmission: z.enum(["FREE_VERIFIED", "PAID_AUTHORIZED"]).optional(),
     })).optional(),
     /** R55 wave 2: bounded routing-decision audit — candidate identity + lifecycle only.
      *  Never carries endpoint URLs, credential references, headers, prompts, or bodies. */

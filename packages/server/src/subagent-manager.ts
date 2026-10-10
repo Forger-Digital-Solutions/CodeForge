@@ -44,6 +44,7 @@ export const MAX_SUBAGENT_DEPTH = 1;
 export const MAX_CHILDREN_PER_PARENT = 8;
 
 export interface SpawnChildOptions {
+  authorizationWorkspacePath?: string;
   recoveryKey?: string;
   parentRunId: string;
   sessionId?: string;
@@ -278,13 +279,14 @@ export class SubagentManager {
       },
       workspacePath: child.workspacePath,
       routingHints: {
+        ...(options.authorizationWorkspacePath ? { authorizationWorkspacePath: options.authorizationWorkspacePath } : {}),
         ...(options.preferIndependentFromPoolId ? { preferIndependentFromPoolId: options.preferIndependentFromPoolId } : {}),
         ...(options.excludeRoleRoute ? { excludeRoleRoute: { ...options.excludeRoleRoute } } : {}),
         ...(options.excludeRoleRoutes ? { excludeRoleRoutes: options.excludeRoleRoutes.map((route) => ({ ...route })) } : {}),
         ...(options.routeReplacementReason ? { routeReplacementReason: options.routeReplacementReason } : {}),
         ...(options.reviewEvidence ? { reviewEvidence: { ...options.reviewEvidence } } : {}),
       },
-      ...(options.rosterAllowance ? { rosterAllowance: { freeRoutes: [...options.rosterAllowance.freeRoutes], paidModelIds: [...options.rosterAllowance.paidModelIds], userRoutes: [...options.rosterAllowance.userRoutes], ...(options.rosterAllowance.decision ? { decision: { ...options.rosterAllowance.decision, candidates: options.rosterAllowance.decision.candidates.map((candidate) => ({ ...candidate })) } } : {}) } } : {}),
+      ...(options.rosterAllowance ? { rosterAllowance: { freeRoutes: [...options.rosterAllowance.freeRoutes], paidModelIds: [...options.rosterAllowance.paidModelIds], userRoutes: options.rosterAllowance.userRoutes.map((route) => ({ ...route })), ...(options.rosterAllowance.personalRoutingMode ? { personalRoutingMode: options.rosterAllowance.personalRoutingMode } : {}), ...(options.rosterAllowance.decision ? { decision: { ...options.rosterAllowance.decision, candidates: options.rosterAllowance.decision.candidates.map((candidate) => ({ ...candidate })) } } : {}) } } : {}),
       budget: {
         ...this.executionBudget(def.id, options.executionBudget),
         wallTimeMs: options.timeoutMs
@@ -527,6 +529,7 @@ export class SubagentManager {
           goal: task,
           workspaceId: childRunId,
           workspacePath,
+          ...(options.authorizationWorkspacePath ? { authorizationWorkspacePath: options.authorizationWorkspacePath } : {}),
           permissions: effectivePermissions,
           signal: controller.signal,
           adapter,
@@ -549,11 +552,10 @@ export class SubagentManager {
           customToolExecutor: options.customToolExecutor,
           roleRouting: this.r1Enabled || options.rosterAllowance !== undefined,
           ...(options.rosterAllowance ? { rosterAllowance: options.rosterAllowance } : {}),
-          // R55 precedence: selected Free routes stay on the existing free path; otherwise a
-          // paid-only allowance selects paid-auto; otherwise the first explicit USER_API
-          // route. A mixed roster never authorizes hidden cross-class fallback.
+          // Legacy user-only rosters pin their first route; personal policies must let the
+          // runtime compare eligible accounts using their configured routing mode.
           ...(options.rosterAllowance && options.rosterAllowance.freeRoutes.length === 0 && options.rosterAllowance.paidModelIds.length > 0 ? { modelSelection: { providerId: "paid-auto", modelId: "auto" } } : {}),
-          ...(options.rosterAllowance && options.rosterAllowance.freeRoutes.length === 0 && options.rosterAllowance.paidModelIds.length === 0 && options.rosterAllowance.userRoutes.length > 0 ? { modelSelection: { providerId: options.rosterAllowance.userRoutes[0]!.providerId, modelId: options.rosterAllowance.userRoutes[0]!.modelId } } : {}),
+          ...(options.rosterAllowance && !options.rosterAllowance.personalRoutingMode && options.rosterAllowance.freeRoutes.length === 0 && options.rosterAllowance.paidModelIds.length === 0 && options.rosterAllowance.userRoutes.length > 0 ? { modelSelection: { providerId: options.rosterAllowance.userRoutes[0]!.providerId, modelId: options.rosterAllowance.userRoutes[0]!.modelId } } : {}),
           ...(options.preferIndependentFromPoolId ? { preferIndependentFromPoolId: options.preferIndependentFromPoolId } : {}),
           ...(options.excludeRoleRoute ? { excludeRoleRoute: options.excludeRoleRoute } : {}),
           ...(options.excludeRoleRoutes ? { excludeRoleRoutes: options.excludeRoleRoutes } : {}),
@@ -737,7 +739,7 @@ export class SubagentManager {
    * recovery entry point — it classifies each non-terminal worker into RESUME/REPLAN/FAIL based
    * on journal content and tool execution records, then executes the corresponding strategy.
    */
-  async recoverInterruptedWorkers(options?: { recoveryOwnerId?: string; parentRunId?: string; signal?: AbortSignal; excludeParentRunIds?: readonly string[] }): Promise<{ resumed: number; replanned: number; failed: number; decisions: Array<{ workerId: string; outcome: string; reason: string }> }> {
+  async recoverInterruptedWorkers(options?: { recoveryOwnerId?: string; parentRunId?: string; authorizationWorkspacePath?: string; signal?: AbortSignal; excludeParentRunIds?: readonly string[] }): Promise<{ resumed: number; replanned: number; failed: number; decisions: Array<{ workerId: string; outcome: string; reason: string }> }> {
     if (!this.persistence) return { resumed: 0, replanned: 0, failed: 0, decisions: [] };
 
     const ownerId = options?.recoveryOwnerId ?? `recovery-owner-${process.pid}-${crypto.randomUUID().slice(0, 8)}`;
@@ -881,11 +883,12 @@ export class SubagentManager {
           structuredOutput: ["reviewer", "explorer", "planner"].includes(item.agentId) ? item.agentId as StructuredOutputKind : undefined,
           roleRouting: this.r1Enabled || item.rosterAllowance !== undefined,
           ...(item.routingHints ?? {}),
+          ...(options?.parentRunId === item.parentRunId && options.authorizationWorkspacePath ? { authorizationWorkspacePath: options.authorizationWorkspacePath } : {}),
           // R55: recovery re-decides from the exact persisted allowance — userRoutes must
           // round-trip verbatim so the recovered run keeps the same class boundary.
-          ...(item.rosterAllowance ? { rosterAllowance: { freeRoutes: [...item.rosterAllowance.freeRoutes], paidModelIds: [...item.rosterAllowance.paidModelIds], userRoutes: (item.rosterAllowance.userRoutes ?? []).map((route) => ({ ...route })), ...(item.rosterAllowance.decision ? { decision: { ...item.rosterAllowance.decision, role: item.rosterAllowance.decision.role as RosterRole, candidates: item.rosterAllowance.decision.candidates.map((candidate) => ({ ...candidate, sourceClass: candidate.sourceClass as IntelligenceSourceClass, lifecycle: candidate.lifecycle as RosterCandidate["lifecycle"] })) } } : {}) } } : {}),
+          ...(item.rosterAllowance ? { rosterAllowance: { freeRoutes: [...item.rosterAllowance.freeRoutes], paidModelIds: [...item.rosterAllowance.paidModelIds], userRoutes: (item.rosterAllowance.userRoutes ?? []).map((route) => ({ ...route })), ...(item.rosterAllowance.personalRoutingMode ? { personalRoutingMode: item.rosterAllowance.personalRoutingMode } : {}), ...(item.rosterAllowance.decision ? { decision: { ...item.rosterAllowance.decision, role: item.rosterAllowance.decision.role as RosterRole, candidates: item.rosterAllowance.decision.candidates.map((candidate) => ({ ...candidate, sourceClass: candidate.sourceClass as IntelligenceSourceClass, lifecycle: candidate.lifecycle as RosterCandidate["lifecycle"] })) } } : {}) } } : {}),
           ...(item.rosterAllowance && item.rosterAllowance.freeRoutes.length === 0 && item.rosterAllowance.paidModelIds.length > 0 ? { modelSelection: { providerId: "paid-auto", modelId: "auto" } } : {}),
-          ...(item.rosterAllowance && item.rosterAllowance.freeRoutes.length === 0 && item.rosterAllowance.paidModelIds.length === 0 && (item.rosterAllowance.userRoutes?.length ?? 0) > 0 ? { modelSelection: { providerId: item.rosterAllowance.userRoutes![0]!.providerId, modelId: item.rosterAllowance.userRoutes![0]!.modelId } } : {}),
+          ...(item.rosterAllowance && !item.rosterAllowance.personalRoutingMode && item.rosterAllowance.freeRoutes.length === 0 && item.rosterAllowance.paidModelIds.length === 0 && (item.rosterAllowance.userRoutes?.length ?? 0) > 0 ? { modelSelection: { providerId: item.rosterAllowance.userRoutes![0]!.providerId, modelId: item.rosterAllowance.userRoutes![0]!.modelId } } : {}),
           ...(options?.signal ? { signal: options.signal } : {}),
           resumeJournal: {
             journal,

@@ -8,6 +8,7 @@ import {
   validateProvider,
   type ProviderCatalogModelView,
   type ProviderConnectionView,
+  type ConnectResult,
 } from "./provider-connections-client.js";
 
 /**
@@ -25,11 +26,15 @@ export interface AddProviderFlowProps {
   onConnected?: (providerId: string) => void;
   onCancel?: () => void;
   compact?: boolean;
+  accountTransport?: {
+    connect(providerId: string, fields: Record<string, string>): Promise<ConnectResult>;
+    oauth(providerId: string): Promise<ConnectResult>;
+  };
 }
 
 type Step = "choose" | "validated" | "saving" | "done";
 
-export function AddProviderFlow({ providers, initialProviderId, onConnected, onCancel, compact }: AddProviderFlowProps): React.ReactElement {
+export function AddProviderFlow({ providers, initialProviderId, onConnected, onCancel, compact, accountTransport }: AddProviderFlowProps): React.ReactElement {
   const connectable = useMemo(
     () =>
       providers
@@ -97,7 +102,9 @@ export function AddProviderFlow({ providers, initialProviderId, onConnected, onC
     setError(null);
     setStep("saving");
     try {
-      const result = await connectProvider(provider.providerId, fields);
+      const result = accountTransport
+        ? await accountTransport.connect(provider.providerId, fields)
+        : await connectProvider(provider.providerId, fields);
       if (!result.ok) {
         setError(result.error ?? "Could not connect");
         setStep("validated");
@@ -106,8 +113,10 @@ export function AddProviderFlow({ providers, initialProviderId, onConnected, onC
       // Field values are cleared the moment the trusted process has them (R1 §105).
       setFields({});
       setReveal({});
-      if (enabled.size > 0 && enabled.size < models.length) await setEnabledModels(provider.providerId, [...enabled]);
-      else await setEnabledModels(provider.providerId, null);
+      if (!accountTransport) {
+        if (enabled.size > 0 && enabled.size < models.length) await setEnabledModels(provider.providerId, [...enabled]);
+        else await setEnabledModels(provider.providerId, null);
+      }
       setVerifiedFree(result.verifiedFree ?? 0);
       setStep("done");
       notifyProviderUpdated();
@@ -121,7 +130,7 @@ export function AddProviderFlow({ providers, initialProviderId, onConnected, onC
     setBusy(true);
     setError(null);
     try {
-      const result = await connectOpenRouterOAuth();
+      const result = accountTransport ? await accountTransport.oauth(provider.providerId) : await connectOpenRouterOAuth();
       if (!result.ok) {
         setError(result.error ?? "Authorization failed");
         return;
@@ -213,7 +222,7 @@ export function AddProviderFlow({ providers, initialProviderId, onConnected, onC
 
       {step === "validated" || step === "saving" ? (
         <div className="add-provider-models">
-          <div className="add-provider-row">
+          {!accountTransport ? <div className="add-provider-row">
             <label className="add-provider-label">Model</label>
             <CfSelect
               label="Model"
@@ -222,11 +231,11 @@ export function AddProviderFlow({ providers, initialProviderId, onConnected, onC
               onChange={setSelectedModel}
               disabled={busy}
             />
-          </div>
+          </div> : null}
           <div className="settings-note">
             {models.length} model{models.length === 1 ? "" : "s"} loaded from {provider.displayName} · {models.filter((m) => m.free).length} free. Free routes are verified and qualified by 8-Bit before ForgeAuto uses them.
           </div>
-          <details className="add-provider-enable">
+          {!accountTransport ? <details className="add-provider-enable">
             <summary>Enable specific models ({enabled.size === 0 || enabled.size === models.length ? "all" : enabled.size})</summary>
             <div className="add-provider-enable-list">
               {models.map((m) => (
@@ -248,7 +257,7 @@ export function AddProviderFlow({ providers, initialProviderId, onConnected, onC
                 </label>
               ))}
             </div>
-          </details>
+          </details> : null}
           <div className="provider-actions">
             <SettingsButton variant="primary" onClick={() => void runSave()} disabled={busy}>
               {step === "saving" ? "Saving…" : "Save & connect"}
@@ -261,7 +270,7 @@ export function AddProviderFlow({ providers, initialProviderId, onConnected, onC
         <div className="add-provider-done">
           <StatusBadge kind="ok">Connected</StatusBadge>
           <span className="settings-note">
-            {provider.displayName} is connected{verifiedFree !== null ? ` · ${verifiedFree} verified free route${verifiedFree === 1 ? "" : "s"}` : ""}. Models appear in the picker automatically.
+            {provider.displayName} is connected{verifiedFree !== null ? ` · ${verifiedFree} verified free route${verifiedFree === 1 ? "" : "s"}` : ""}.{accountTransport ? " Account spending stays off until you explicitly authorize it." : " Models appear in the picker automatically."}
           </span>
           {onCancel ? <SettingsButton onClick={onCancel}>Done</SettingsButton> : null}
         </div>

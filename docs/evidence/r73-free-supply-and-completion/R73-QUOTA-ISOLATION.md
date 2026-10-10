@@ -1,6 +1,6 @@
 # R73 quota and user isolation
 
-Audit date: 2026-10-08. Baseline: R72 delivery `220b365c553bff0b1ee952fb6b96498c8ddea325`. Quota ownership remains based on the existing `provider:scope:identityHash` evidence and physical capacity-independence rules. Registered users, local sessions, model aliases, and extra API keys do not create additional provider allowances.
+Updated 2026-10-09. Baseline: R72 delivery `220b365c553bff0b1ee952fb6b96498c8ddea325`. Quota ownership remains based on the existing `provider:scope:identityHash` evidence and physical capacity-independence rules. Registered users, local sessions, model aliases, connections and extra API keys do not create additional provider allowances.
 
 ## Deterministic validation
 
@@ -38,10 +38,20 @@ The desktop OpenRouter key is now stored under the local owner's hashed credenti
 
 ## Live constraints and practical capacity
 
-R71's account-owned OpenRouter inference remains historical evidence. R72's accessible OpenRouter credential was paid-tier and therefore excluded from automatic Free. This workstream received no newly verified unpaid OpenRouter account, no second independently owned authorized account, and no second independently verified public-IP egress. It created no external accounts, rotated no IPs, and performed no live account authentication or revocation.
+R71's account-owned OpenRouter inference remains historical evidence. R72's accessible OpenRouter credential was paid-tier and therefore excluded from automatic Free. The addendum now accepted that valid account through two read-only official GETs while retaining PAID classification and all dispatch disabled. It established one verified USER_ACCOUNT scope, without publishing its raw identity. No newly verified unpaid OpenRouter account, second independently owned authorized account or second independently verified public-IP egress was supplied. No external account was created, IP rotated or live provider revocation performed.
 
 R73's actual anonymous inference and Reviewer results are recorded in [R73-SUPPLY-MATRIX.md](R73-SUPPLY-MATRIX.md), [R73-REVIEWER-RECOVERY.md](R73-REVIEWER-RECOVERY.md), and individual live receipts. They do not prove live two-user allowance independence, same-NAT external counters, or account revocation/restart in an installed desktop. The 2/10/25/50-user assertions demonstrate deterministic application isolation only.
 
 The application imposes no arbitrary registered-user ceiling. Real capacity is finite: all users on one public IP share the applicable Kilo and BlockRun quotas; every distinct verified unpaid OpenRouter account contributes its own allowance; managed fallback remains shared. Requests are not equivalent to autonomous tasks, since a task uses multiple model calls and qualification/recovery also consume quota. Do not multiply source-IP or organization quotas by registrations. No live aggregate capacity guarantee is claimed.
 
 Outstanding live evidence requires two legitimate authorized unpaid account entitlements or distinct verified egress domains, same-NAT observations that remain within limits, cross-user revocation/credential isolation through the real application, and authorized packaged desktop restart. None of those prerequisites is fabricated or waived by the passing fixture tests.
+
+## Multi-connection accounting addendum
+
+Connection IDs represent local credential/lifecycle/routing/spending permissions, while canonical provider plus verified account/organization/IP identity represents physical capacity. Typed per-connection route aliases retain their canonical quota provider; aliasing cannot split one physical domain. A personal Free projection uses the minimum observed remaining allowance for a shared pool rather than summing identical account observations. Unknown identity is provider-conservative; no fingerprint is promoted to upstream account evidence.
+
+The personal account guard keeps connection-local durable request IDs, UTC-month budget/reservations and audit receipts separate from shared upstream concurrency/cooldown. Same-account keys serialize through one physical domain, structured 429 cools that domain, and an unrelated evidenced domain remains usable. Post-dispatch uncertain usage and unresolved crash holds are retained conservatively. Paid permission requires both global and per-account consent plus finite budget/current authoritative token-only pricing; FreeOnly cannot reach a paid credential. These are application controls, not a provider invoice guarantee.
+
+Current policy fixtures passed 16/16 plus 4/4 existing R55 multi-user assertions. Backend/provider fixtures passed 90/90 and UI/security/preload 62/62 in their recorded separate runs. They cover duplicate credentials, distinct connection IDs, replacement/revocation, owner isolation, credential fingerprints, permission default-off and shared-domain controls. Actual two-account independence and same-NAT provider counters remain unproven. The one live paid metadata observation counts as valid connection admission, not an independent Free allowance or additional paid execution proof.
+
+The final 393/393 affected transport/account run retains the same physical-domain restrictions. Authentication rejection permits another qualified authorized personal paid connection only in automatic routing; explicit account selection remains pinned, and a shared 429 domain is never split to evade its cooldown. Four current HTTP consent fixtures reject a mismatched workspace before any model dispatch; workflow returns HTTP409 `WORKSPACE_MISMATCH` while preserving its existing session. These are deterministic authority/accounting checks, with zero external calls and no newly proven independent quota domain.

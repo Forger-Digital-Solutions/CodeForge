@@ -1,0 +1,60 @@
+{
+  "observedAt": "2026-10-10T00:11:00.779Z",
+  "phase": "VALIDATED_WORKING_SOURCE_BEFORE_FREEZE",
+  "workspaceBuild": {
+    "exitCode": 0,
+    "log": "accounts-final-workspace-build.log"
+  },
+  "forcedWorkspaceTypecheck": {
+    "exitCode": 0,
+    "log": "accounts-final-frozen-typecheck.log"
+  },
+  "tests": [
+    {
+      "file": "accounts-final-affected-retry-tests.json",
+      "sha256": "7a60f63d1c66471ced7b31c94c8465328ee7b5574cd058cafc1dda72c3e8c303",
+      "passed": 821,
+      "failed": 2,
+      "pending": 0,
+      "success": false
+    },
+    {
+      "file": "accounts-final-workspace-billing-routing-tests.json",
+      "sha256": "9bfb2833d16d83891bc683711d633de3dc868295b412dd6ee8d7cd8b2edb9ac9",
+      "passed": 33,
+      "failed": 1,
+      "pending": 0,
+      "success": false
+    },
+    {
+      "file": "accounts-final-heavy-orchestrator-retry-tests.json",
+      "sha256": "862e5c2c978f39e587aa9743e6348a876cbe2b1c3895aaeaca4b1730101bdf67",
+      "passed": 1,
+      "failed": 0,
+      "pending": 22,
+      "success": true
+    },
+    {
+      "file": "accounts-final-billing-auth-transport-tests.json",
+      "sha256": "4008398534db01abfed8cc9363fab83735cf19144e5006deb7ed3b3a841c0a80",
+      "passed": 393,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    }
+  ],
+  "interpretation": "The two original broad failures were followed by a fixed workspace check and unchanged heavy-test standalone pass; the intermediate runtime assertion failure was a fixture property corrected before the final393/393 run. Do not sum overlapping reruns or count scripted roles as live completions.",
+  "secretScan": {
+    "schemaVersion": 2,
+    "generatedAt": "2026-10-10T00:10:32.370Z",
+    "filesScanned": 2104,
+    "totalFindings": 671,
+    "synthetic": 649,
+    "allowlisted": 22,
+    "ownerReviewRequired": [],
+    "status": "PASS",
+    "policy": "Findings carry path, line and pattern type only; matched values and source line hashes are never emitted. Reviewed fixture allowlist entries are pinned to exact source line hashes."
+  },
+  "externalInferenceRequests": 0,
+  "paidInferenceRequests": 0
+}

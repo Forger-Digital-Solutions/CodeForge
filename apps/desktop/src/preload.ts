@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { CloudAccount, CloudUsage } from "./cloud-account.js";
 import type { PuterAccountView } from "./puter-account-types.js";
+import type { ConnectedAccountView, ConnectedAccountResult, ConnectedAccountPolicyPatch, ProviderAccountOAuthOptions, ProviderRoutingPolicy } from "./connected-account-types.js";
 
 // Startup-chain marks at verbose console level (see renderer/lifecycle.ts). Observation only:
 // nothing is exposed to the page and nothing is read from the main process.
@@ -161,6 +162,15 @@ const api = {
   // --- R1 Free Cloud Platform: provider connections (schemas + state; never secret values) ---
   getProviderDefinitions: (): Promise<unknown[]> => ipcRenderer.invoke("provider:definitions"),
   getProviderConnections: (): Promise<unknown[]> => ipcRenderer.invoke("provider:connections"),
+  listProviderAccounts: (): Promise<ConnectedAccountView[]> => ipcRenderer.invoke("providerAccounts:list"),
+  addProviderAccount: (providerId: string, fields: Record<string, string>, label?: string): Promise<ConnectedAccountResult> => ipcRenderer.invoke("providerAccounts:add", providerId, fields, label),
+  updateProviderAccount: (connectionId: string, patch: ConnectedAccountPolicyPatch): Promise<ConnectedAccountResult> => ipcRenderer.invoke("providerAccounts:update", connectionId, patch),
+  disconnectProviderAccount: (connectionId: string): Promise<ConnectedAccountResult> => ipcRenderer.invoke("providerAccounts:disconnect", connectionId),
+  replaceProviderAccountCredential: (connectionId: string, fields: Record<string, string>): Promise<ConnectedAccountResult> => ipcRenderer.invoke("providerAccounts:replaceCredential", connectionId, fields),
+  qualifyProviderAccount: (connectionId: string, modelId?: string): Promise<ConnectedAccountResult> => ipcRenderer.invoke("providerAccounts:qualify", connectionId, modelId),
+  connectProviderAccountOAuth: (providerId: string, options?: ProviderAccountOAuthOptions, browser?: "default" | "firefox"): Promise<ConnectedAccountResult> => ipcRenderer.invoke("providerAccounts:oauth", providerId, options, browser),
+  getProviderRoutingPolicy: (): Promise<ProviderRoutingPolicy> => ipcRenderer.invoke("providerRouting:getPolicy"),
+  setProviderRoutingPolicy: (policy: ProviderRoutingPolicy): Promise<{ ok: boolean; error?: string }> => ipcRenderer.invoke("providerRouting:setPolicy", policy),
   listEnvironmentCredentials: (): Promise<unknown[]> => ipcRenderer.invoke("provider:env:list"),
   getEnvironmentCredentialPolicy: (): Promise<string> => ipcRenderer.invoke("provider:env:policy:get"),
   setEnvironmentCredentialPolicy: (policy: string): Promise<string> => ipcRenderer.invoke("provider:env:policy:set", policy),

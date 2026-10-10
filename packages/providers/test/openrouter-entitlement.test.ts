@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyOpenRouterEntitlement, verifyOpenRouterEntitlement, isOpenRouterEntitlementCurrent } from "../src/openrouter-entitlement.js";
+import { classifyOpenRouterEntitlement, verifyOpenRouterEntitlement, isOpenRouterEntitlementCurrent, isOpenRouterConnectionCurrent } from "../src/openrouter-entitlement.js";
 
 const now = new Date("2026-10-02T12:00:00Z");
 const binding = { key: "test-delegated-secret", ownerUserId: "alice", now };
@@ -39,6 +39,40 @@ describe("OpenRouter delegated Free entitlement", () => {
     const b = classifyOpenRouterEntitlement({ data }, { ...binding, key: "other-key", ownerUserId: "bob" });
     expect(a.accountIdentityHash).toBe(b.accountIdentityHash);
     expect(a.credentialFingerprint).not.toBe(b.credentialFingerprint);
+  });
+
+  it("accepts an authenticated paid connection while preserving Free-only exclusion and shared account identity", () => {
+    const paid = classifyOpenRouterEntitlement({ data: { ...data, is_free_tier: false } }, binding);
+    const second = classifyOpenRouterEntitlement({ data: { ...data, is_free_tier: false } }, { ...binding, key: "second-owned-key" });
+    expect(isOpenRouterConnectionCurrent(paid, binding.ownerUserId, binding.key, now)).toBe(true);
+    expect(isOpenRouterEntitlementCurrent(paid, binding.ownerUserId, binding.key, now)).toBe(false);
+    expect(paid.accountIdentityHash).toBe(second.accountIdentityHash);
+    expect(paid.admissionEvidence).toBeUndefined();
+    expect(paid.freeRequests).toBeUndefined();
+  });
+
+  it.each([
+    [{ ...data, is_free_tier: false, is_management_key: true }, "UNKNOWN"],
+    [{ ...data, is_free_tier: false, is_provisioning_key: true }, "UNKNOWN"],
+    [{ ...data, is_free_tier: false, expires_at: "2026-10-02T11:59:59Z" }, "REVOKED"],
+    [{ ...data, is_free_tier: false, expires_at: "invalid" }, "UNKNOWN"],
+  ])("rejects invalid inference credentials even on a paid account %#", (metadata, expected) => {
+    const receipt = classifyOpenRouterEntitlement({ data: metadata }, binding);
+    expect(receipt.accountClass).toBe(expected);
+    expect(isOpenRouterConnectionCurrent(receipt, binding.ownerUserId, binding.key, now)).toBe(false);
+  });
+
+  it("groups paid organization credentials by the authoritative organization without admitting shared Free capacity", () => {
+    const organization = { ...data, is_free_tier: false, organization_id: "provider-organization" };
+    const first = classifyOpenRouterEntitlement({ data: organization }, binding);
+    const second = classifyOpenRouterEntitlement({ data: { ...organization, creator_user_id: "another-member" } }, { ...binding, key: "second-member-key" });
+    const personal = classifyOpenRouterEntitlement({ data: { ...data, is_free_tier: false } }, binding);
+    expect(first.quotaScopeEvidence?.scope).toBe("ORG");
+    expect(first.accountIdentityHash).toBe(second.accountIdentityHash);
+    expect(first.accountIdentityHash).not.toBe(personal.accountIdentityHash);
+    expect(JSON.stringify(first)).not.toContain(organization.organization_id);
+    expect(isOpenRouterEntitlementCurrent(first, binding.ownerUserId, binding.key, now)).toBe(false);
+    expect(classifyOpenRouterEntitlement({ data: { ...organization, is_free_tier: true } }, binding).accountClass).toBe("UNKNOWN");
   });
 
   it("requires independent public policy reads before issuing an admission receipt", async () => {

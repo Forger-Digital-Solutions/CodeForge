@@ -35,6 +35,10 @@ export interface RosterCandidate {
   ownerUserId?: string;
   /** R55: durable id of the owning user-intelligence source (USER_API candidates only). */
   sourceId?: string;
+  personalConnectionId?: string;
+  personalAdmission?: "FREE_VERIFIED" | "PAID_AUTHORIZED";
+  personalPreference?: "AUTO" | "PREFERRED" | "FALLBACK" | "MANUAL";
+  qualificationAt?: string;
   /** R55: user-declared per-million-token pricing carried into the route allowance. */
   inputCostPerMillion?: number | null;
   outputCostPerMillion?: number | null;
@@ -57,12 +61,16 @@ const ROSTER_ROLES = new Set<RosterRole>(["EXPLORER", "PLANNER", "CODER", "TESTE
 const SOURCE_CLASSES = new Set<IntelligenceSourceClass>(["MANAGED_FREE", "MANAGED_PAID", "USER_API", "USER_HOSTED", "LOCAL"]);
 
 function sourceAllowed(entitlement: RosterEntitlement, source: IntelligenceSourceClass): boolean {
-  if (entitlement === "FREE") return source === "MANAGED_FREE";
-  if (entitlement === "PAID") return source === "MANAGED_FREE" || source === "MANAGED_PAID";
+  if (entitlement === "FREE") return source === "MANAGED_FREE" || source === "USER_API";
+  if (entitlement === "PAID") return source === "MANAGED_FREE" || source === "MANAGED_PAID" || source === "USER_API";
   return entitlement === "CUSTOM" && SOURCE_CLASSES.has(source);
 }
 
 function candidateAuthorized(candidate: RosterCandidate, roster: ForgeAutoRoster): boolean {
+  if (candidate.sourceClass === "USER_API" && roster.entitlement !== "CUSTOM") {
+    return candidate.approved && candidate.ownerUserId === roster.ownerUserId && !!candidate.personalConnectionId
+      && (candidate.personalAdmission === "FREE_VERIFIED" || candidate.personalAdmission === "PAID_AUTHORIZED");
+  }
   return candidate.approved && sourceAllowed(roster.entitlement, candidate.sourceClass)
     && (candidate.sourceClass === "MANAGED_FREE" || candidate.sourceClass === "MANAGED_PAID" || candidate.ownerUserId === roster.ownerUserId);
 }
@@ -102,7 +110,8 @@ export function validateForgeAutoRoster(
       if (!candidate || !candidateAuthorized(candidate, roster)) throw new Error("ROSTER_MODEL_INELIGIBLE");
       if (NON_EXECUTABLE_V1_SOURCES.has(candidate.sourceClass)) throw new Error("ROSTER_SOURCE_NOT_EXECUTABLE_V1");
     } else {
-      if (!sourceAllowed(roster.entitlement, slot.sourceClass)) throw new Error("ROSTER_SOURCE_INELIGIBLE");
+      if (!sourceAllowed(roster.entitlement, slot.sourceClass)
+        || slot.sourceClass === "USER_API" && roster.entitlement !== "CUSTOM" && !catalog.some(entry => entry.sourceClass === "USER_API" && candidateAuthorized(entry, roster))) throw new Error("ROSTER_SOURCE_INELIGIBLE");
       if (NON_EXECUTABLE_V1_SOURCES.has(slot.sourceClass)) throw new Error("ROSTER_SOURCE_NOT_EXECUTABLE_V1");
       if (slot.kind === "AUTO_CURRENT" && !catalog.some((entry) => entry.familyId === slot.familyId && entry.sourceClass === slot.sourceClass && candidateAuthorized(entry, roster))) throw new Error("ROSTER_FAMILY_UNKNOWN");
       if (slot.kind === "AUTO" && !catalog.some((entry) => entry.sourceClass === slot.sourceClass && candidateAuthorized(entry, roster))) throw new Error("ROSTER_POOL_EMPTY");
@@ -246,6 +255,8 @@ export interface RosterUserRoute {
   providerId: string;
   modelId: string;
   sourceClass: "USER_API";
+  personalConnectionId?: string;
+  personalAdmission?: "FREE_VERIFIED" | "PAID_AUTHORIZED";
   pinned: boolean;
   inputCostPerMillion: number | null;
   outputCostPerMillion: number | null;
@@ -257,6 +268,7 @@ export interface RosterRouteAllowance {
   freeRoutes: readonly { providerId: string; modelId: string }[];
   paidModelIds: readonly PaidAutoCanonicalModelId[];
   userRoutes: readonly RosterUserRoute[];
+  personalRoutingMode?: "FREE_ONLY" | "FREE_PREFERRED" | "PAID_PREFERRED" | "SPECIFIC_ACCOUNT" | "AUTO_BEST";
   /**
    * R55 wave 2: bounded routing-decision evidence for append-only receipts. Populated only
    * when the resolving caller supplies audit identity — it carries candidate identity and
@@ -283,7 +295,7 @@ export function rosterRouteAllowance(
   audit?: { ownerUserId: string; rosterUpdatedAt: string; role: RosterRole },
 ): RosterRouteAllowance {
   return {
-    freeRoutes: resolution.candidates.filter((candidate) => candidate.sourceClass === "MANAGED_FREE")
+    freeRoutes: resolution.candidates.filter((candidate) => candidate.sourceClass === "MANAGED_FREE" || candidate.personalAdmission === "FREE_VERIFIED")
       .flatMap((candidate) => candidate.routes ?? [{ providerId: candidate.providerId, modelId: candidate.providerModelId }]),
     paidModelIds: resolution.candidates.filter((candidate) => candidate.sourceClass === "MANAGED_PAID").map((candidate) => candidate.modelId as PaidAutoCanonicalModelId),
     userRoutes: resolution.candidates.filter((candidate) => candidate.sourceClass === "USER_API")
@@ -292,6 +304,8 @@ export function rosterRouteAllowance(
         providerId: candidate.providerId,
         modelId: candidate.providerModelId,
         sourceClass: "USER_API" as const,
+        ...(candidate.personalConnectionId ? { personalConnectionId: candidate.personalConnectionId } : {}),
+        ...(candidate.personalAdmission ? { personalAdmission: candidate.personalAdmission } : {}),
         pinned: candidate.resolvedViaSlot === "PINNED_VERSION",
         inputCostPerMillion: candidate.inputCostPerMillion ?? null,
         outputCostPerMillion: candidate.outputCostPerMillion ?? null,

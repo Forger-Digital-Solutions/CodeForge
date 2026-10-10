@@ -21,6 +21,7 @@ import {
   type SettingsSnapshot,
 } from "./app-settings.js";
 import { ProviderConnections, type ProviderConnectionsHost } from "./provider-connections.js";
+import { readPersonalProviderRoutingPolicy, writePersonalProviderRoutingPolicy } from "./provider-account-routing.js";
 import { refreshWindowsEnvironment } from "./environment-refresh.js";
 import { offlineCloudAccount } from "./cloud-account.js";
 import {
@@ -37,10 +38,11 @@ if (process.env.CODEFORGE_SMOKE_OUT) {
   } catch {}
 }
 
-import { CodeForgeServer, type CodeForgeRuntimeStatus } from "@codeforge/server";
+import { CodeForgeServer, type CodeForgeRuntimeStatus, type PersonalAccountAuthority, type UserIntelligenceSource, type RosterRole } from "@codeforge/server";
+import { roleQualificationStatusFor, runRoleAwareQualification } from "@codeforge/eight-bit";
 import { ExtensionManager, MarketplaceClient, MarketplaceError, type ExtensionRecord, type ExtensionStateStore, type MarketplaceCatalogEntry, type MarketplaceSource, type SecretStore } from "@codeforge/plugins";
 import { ForgeZero, createGenericFreeRecord, hashUserAccountIdentity, type ProviderAvailabilityOracle } from "@codeforge/forge-zero";
-import { InMemoryProviderCatalog, createMockProvider, createProviderAdapterFromDefinition, HostedProviderAdapter, CloudflareNeuronBudgetGuard, FileCloudflareNeuronBudgetStore, GraphqlCloudflareUsageSource, configFieldKey, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent, type ProviderResponseObservation } from "@codeforge/providers";
+import { InMemoryProviderCatalog, createMockProvider, createProviderAdapterFromDefinition, HostedProviderAdapter, ProviderError, CloudflareNeuronBudgetGuard, FileCloudflareNeuronBudgetStore, GraphqlCloudflareUsageSource, configFieldKey, type ProviderAdapter, type CredentialStore, type ProviderHealthResponse, type StreamEvent, type ProviderResponseObservation } from "@codeforge/providers";
 import { createPaidAutoService } from "@codeforge/paid-auto";
 import {
   NormalizedModelRegistry,
@@ -882,11 +884,16 @@ function getStoredCloudTokens(): { accessToken?: string; refreshToken?: string; 
 }
 
 function saveCloudTokens(accessToken: string, refreshToken: string, user: any): void {
+  const priorOwner = userConnectedFreeScopeId();
   const settings = readSettings();
   settings[CLOUD_ACCESS_TOKEN_KEY] = encryptCredential(accessToken);
   settings[CLOUD_REFRESH_TOKEN_KEY] = encryptCredential(refreshToken);
   settings[CLOUD_USER_KEY] = user;
   if (!writeSettingsAtomic(settings)) throw new Error("Could not save the secure cloud session. Check that the CodeForge data folder is writable.");
+  if (priorOwner !== userConnectedFreeScopeId()) {
+    cloudAccountFetchInFlight = null;
+    void synchronizeProviderAccounts().catch(() => {});
+  }
 }
 
 function clearCloudTokens(): void {
@@ -895,6 +902,8 @@ function clearCloudTokens(): void {
   delete settings[CLOUD_REFRESH_TOKEN_KEY];
   delete settings[CLOUD_USER_KEY];
   if (!writeSettingsAtomic(settings)) throw new Error("Could not clear the secure cloud session. Check that the CodeForge data folder is writable.");
+  cloudAccountFetchInFlight = null;
+  void synchronizeProviderAccounts().catch(() => {});
 }
 
 function userConnectedFreeScopeId(): string {
@@ -915,6 +924,7 @@ function createCloudAdapter(): HostedProviderAdapter {
     },
     onAuthExpired: async () => {
       const tokens = getStoredCloudTokens();
+      const owner = userConnectedFreeScopeId();
       if (!tokens.refreshToken) return null;
       try {
         const refreshRes = await cloudFetch("/v1/auth/refresh", {
@@ -922,9 +932,18 @@ function createCloudAdapter(): HostedProviderAdapter {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refreshToken: tokens.refreshToken }),
         });
+        if (owner !== userConnectedFreeScopeId() || getStoredCloudTokens().refreshToken !== tokens.refreshToken) return null;
+        if (refreshRes.status === 401 || refreshRes.status === 403) {
+          clearCloudTokens();
+          await synchronizeProviderAccounts();
+          return null;
+        }
         if (refreshRes.ok) {
           const data = (await refreshRes.json()) as any;
+          if (owner !== userConnectedFreeScopeId() || getStoredCloudTokens().refreshToken !== tokens.refreshToken) return null;
           saveCloudTokens(data.accessToken, data.refreshToken, data.user);
+          await synchronizeProviderAccounts();
+          void refreshProviderAccounts().catch(() => {});
           return data.accessToken;
         }
       } catch {}
@@ -1298,7 +1317,86 @@ function createProviderConnectionsHost(): ProviderConnectionsHost {
     },
     ollamaUserConnectedFreeEnabled: OLLAMA_USER_CONNECTED_FREE_ENABLED,
     notifyChanged: notifyProviderChanged,
+    paidAccountAdmission: (account) => {
+      const policy = readPersonalProviderRoutingPolicy(readSettings(), account.ownerUserId);
+      if (!policy.paidEnabled || !policy.explicitConsent || !policy.limitationsAcknowledged || policy.mode === "FREE_ONLY") return { eligible: false, reason: "PERSONAL_PAID_GLOBAL_PERMISSION_OFF" };
+      let candidate;
+      try { candidate = server?.personalAccountCandidates(account.ownerUserId).find(item => item.personalConnectionId === account.connectionId && item.personalAdmission === "PAID_AUTHORIZED" && item.available); } catch {}
+      return candidate ? { eligible: true } : { eligible: false, reason: "QUALIFIED_CURRENT_PERSONAL_ROUTE_REQUIRED" };
+    },
   };
+}
+
+function connectedAccountRuntimeAuthority(owner: string, connectionId: string): PersonalAccountAuthority | undefined {
+  if (owner !== userConnectedFreeScopeId()) return undefined;
+  const data = freeCodeContextForWorkspace(readAppSettings(), currentWorkspacePath);
+  if (!currentWorkspacePath || !data.userConsented) return undefined;
+  const account = providerConnections?.providerAccountAuthority(connectionId);
+  const catalog = providerConnections?.providerAccountModels(connectionId);
+  if (!account || account.ownerUserId !== owner || !catalog || catalog.credentialRef !== account.credentialRef || catalog.credentialFingerprint !== account.credentialFingerprint) return undefined;
+  const resetAt = new Date(Math.floor(Date.now() / 86_400_000) * 86_400_000 + 86_400_000).toISOString();
+  return { ...account, authorizedWorkspacePath: currentWorkspacePath,
+    modelPricing: catalog.models.flatMap(model => model.pricing ? [{ modelId: model.modelId, ...model.pricing }] : []),
+    capacityWindows: account.freeAdmissionVerified && account.freeRequests && account.verifiedAt ? [{ unit: "requests", limit: account.freeRequests.limit, remaining: account.freeRequests.remaining,
+      resetAt, scope: "USER_ACCOUNT", observedAt: account.verifiedAt, authoritative: true, period: "DAILY_RESET" }] : [],
+  };
+}
+
+let accountRuntimeSync: Promise<void> | undefined;
+let accountRuntimeSyncRequested = false;
+async function synchronizeProviderAccounts(): Promise<void> {
+  accountRuntimeSyncRequested = true;
+  if (accountRuntimeSync) return accountRuntimeSync;
+  accountRuntimeSync = (async () => {
+    syncPass: while (accountRuntimeSyncRequested) {
+      accountRuntimeSyncRequested = false;
+      const runtime = server;
+      const connections = providerConnections;
+      if (!runtime || !connections) return;
+      const owner = connections.accountOwnerUserId();
+      await runtime.setLocalUserId(owner);
+      if (owner !== connections.accountOwnerUserId() || runtime !== server) { accountRuntimeSyncRequested = true; continue; }
+      const prior = await runtime.listUserIntelligenceSources(owner);
+      if (owner !== connections.accountOwnerUserId() || runtime !== server) { accountRuntimeSyncRequested = true; continue; }
+      for (const account of connections.listProviderAccounts()) {
+        if (account.providerId !== "openrouter" && account.providerId !== "groq") continue;
+        const authority = connections.providerAccountAuthority(account.connectionId);
+        const catalog = connections.providerAccountModels(account.connectionId);
+        if (!authority || !catalog) continue;
+        const endpointUrl = account.providerId === "openrouter" ? "https://openrouter.ai/api/v1" : "https://api.groq.com/openai/v1";
+        for (const model of catalog.models) {
+          if (owner !== connections.accountOwnerUserId() || runtime !== server) { accountRuntimeSyncRequested = true; continue syncPass; }
+          const sourceId = `account-${crypto.createHash("sha256").update(`${account.connectionId}\0${model.modelId}`).digest("hex").slice(0, 24)}`;
+          const existing = prior.find(source => source.sourceId === sourceId);
+          const evidence = freeCloud?.getReceipt(account.providerId, model.modelId) ?? existing?.qualificationEvidence;
+          const qualifiedRoles = (["EXPLORER", "PLANNER", "CODER", "REVIEWER"] as const).filter(role => evidence?.providerId === account.providerId && evidence.modelId === model.modelId && roleQualificationStatusFor(evidence, role) === "QUALIFIED") as RosterRole[];
+          if (!existing && qualifiedRoles.length === 0) continue;
+          const source: UserIntelligenceSource = { sourceId, ownerUserId: owner, providerId: "derived-by-registry", protocol: "OPENAI_COMPATIBLE", endpointUrl, modelId: model.modelId,
+            familyId: `${account.providerId}/${model.modelId}`, version: model.modelId, credentialRef: authority.credentialRef, connectionId: account.connectionId, canonicalProviderId: account.providerId,
+            qualification: qualifiedRoles.length > 0 ? "QUALIFIED" : "UNQUALIFIED", qualifiedRoles, ...(evidence ? { qualificationEvidence: evidence } : {}),
+            dataPolicy: { privateCode: true, userConsentRequired: true },
+            pricing: model.pricing ? { inputCostPerMillion: model.pricing.inputCostPerMillion, outputCostPerMillion: model.pricing.outputCostPerMillion,
+              currency: "USD", confidence: "AUTHORITATIVE", source: model.pricing.source } : { inputCostPerMillion: null, outputCostPerMillion: null, currency: "USD", confidence: "UNKNOWN" },
+            createdAt: existing?.createdAt ?? new Date().toISOString(), updatedAt: new Date().toISOString() };
+          await runtime.putUserIntelligenceSource(owner, source);
+          if (owner !== connections.accountOwnerUserId() || runtime !== server) { accountRuntimeSyncRequested = true; continue syncPass; }
+        }
+      }
+    }
+  })().finally(() => { accountRuntimeSync = undefined; });
+  return accountRuntimeSync;
+}
+
+async function refreshProviderAccounts(): Promise<void> {
+  const connections = providerConnections;
+  if (!connections) return;
+  const owner = connections.accountOwnerUserId();
+  for (const account of connections.listProviderAccounts()) {
+    if (owner !== connections.accountOwnerUserId()) return;
+    if (account.connected && account.enabled) await connections.recheckProviderAccount(account.connectionId);
+  }
+  await synchronizeProviderAccounts();
+  notifyProviderChanged();
 }
 
 async function initializeServer(dbPath: string): Promise<void> {
@@ -1328,6 +1426,13 @@ async function initializeServer(dbPath: string): Promise<void> {
         userConnectedFreeScopeId,
         (credentialRef) => desktopCredentialStore?.get(credentialRef),
       ),
+      personalAccountPolicy: {
+        personalAccountAuthority: connectedAccountRuntimeAuthority,
+        personalRoutingPolicy: (owner) => {
+          const policy = readPersonalProviderRoutingPolicy(readSettings(), owner);
+          return { ...policy, specificConnectionId: policy.specificAccountConnectionId };
+        },
+      },
       // R22: bridge contributed extension commands into the agent tool surface. The delegate
       // reads the live manager so initExtensions() ordering never strands the bridge.
       pluginCommandHost: {
@@ -1349,6 +1454,7 @@ async function initializeServer(dbPath: string): Promise<void> {
     // facts into the same authority so routing, admission and the ledger never disagree.
     freeCloud?.setRouteHealth(server.routeHealth);
     await server.start();
+    void refreshProviderAccounts().catch(() => {});
     localServerPort = server.httpPort;
     recordRuntimeMetadata();
     if (readAppSettings().general.openLastWorkspaceOnStartup) {
@@ -2458,7 +2564,8 @@ async function startPrimaryInstance(): Promise<void> {
     void providerConnections.reconcile("openrouter").catch(() => {});
     const delegatedRecheckTimer = setInterval(() => {
       if (providerConnections?.credentialSourceOf("openrouter") === "OAUTH") void providerConnections.reconcile("openrouter").catch(() => {});
-    }, 15 * 60_000);
+      void refreshProviderAccounts().catch(() => {});
+    }, 4 * 60_000);
     delegatedRecheckTimer.unref();
     app.once("before-quit", () => clearInterval(delegatedRecheckTimer));
     if (registerProviderAdapter("kilo-free-direct")) {
@@ -3297,6 +3404,219 @@ ipcMain.handle("provider:connections", (event) => {
   return requireConnections().listConnections();
 });
 
+ipcMain.handle("providerAccounts:list", (event) => {
+  assertMainWindowSender(event);
+  const connections = requireConnections();
+  let candidates: ReturnType<CodeForgeServer["personalAccountCandidates"]> = [];
+  try { candidates = server?.personalAccountCandidates(connections.accountOwnerUserId()) ?? []; } catch {}
+  return connections.listProviderAccounts().map(connection => ({ ...connection,
+    qualifiedModels: candidates.filter(candidate => candidate.personalConnectionId === connection.connectionId && candidate.available).map(candidate => candidate.providerModelId),
+    freeRouteCount: candidates.filter(candidate => candidate.personalConnectionId === connection.connectionId && candidate.personalAdmission === "FREE_VERIFIED" && candidate.available).length,
+  }));
+});
+
+ipcMain.handle("providerAccounts:add", async (event, providerId: unknown, fields: unknown, label: unknown) => {
+  assertMainWindowSender(event);
+  if (!isKnownProviderId(providerId) || !fields || typeof fields !== "object" || Array.isArray(fields)) return { ok: false, error: "Invalid provider connection" };
+  if (PACKAGED_SMOKE) return { ok: false, error: "Unavailable in smoke mode" };
+  const connections = requireConnections();
+  const owner = connections.accountOwnerUserId();
+  const result = await connections.addProviderAccount(providerId, fields as Record<string, unknown>, typeof label === "string" ? label : undefined);
+  if (result.ok) await synchronizeProviderAccounts();
+  if (owner !== connections.accountOwnerUserId()) return { ok: false, error: "The signed-in account changed" };
+  notifyProviderChanged();
+  return result;
+});
+
+ipcMain.handle("providerAccounts:update", async (event, connectionId: unknown, patch: unknown) => {
+  assertMainWindowSender(event);
+  if (typeof connectionId !== "string" || !patch || typeof patch !== "object" || Array.isArray(patch)) return { ok: false, error: "Invalid account policy" };
+  try {
+    const connections = requireConnections();
+    const owner = connections.accountOwnerUserId();
+    const connection = connections.updateProviderAccount(connectionId, patch as Record<string, unknown>);
+    await synchronizeProviderAccounts();
+    if (owner !== connections.accountOwnerUserId()) return { ok: false, error: "The signed-in account changed" };
+    notifyProviderChanged();
+    return { ok: true, connection };
+  } catch { return { ok: false, error: "Account policy could not be saved" }; }
+});
+
+ipcMain.handle("providerAccounts:disconnect", async (event, connectionId: unknown) => {
+  assertMainWindowSender(event);
+  if (typeof connectionId !== "string") return { ok: false, error: "Invalid account connection" };
+  try {
+    const connections = requireConnections();
+    const owner = connections.accountOwnerUserId();
+    await connections.disconnectProviderAccount(connectionId);
+    await synchronizeProviderAccounts();
+    if (owner !== connections.accountOwnerUserId()) return { ok: false, error: "The signed-in account changed" };
+    notifyProviderChanged();
+    return { ok: true };
+  } catch { return { ok: false, error: "Account could not be disconnected" }; }
+});
+
+ipcMain.handle("providerAccounts:replaceCredential", async (event, connectionId: unknown, fields: unknown) => {
+  assertMainWindowSender(event);
+  if (typeof connectionId !== "string" || !fields || typeof fields !== "object" || Array.isArray(fields)) return { ok: false, error: "Invalid account credential" };
+  if (PACKAGED_SMOKE) return { ok: false, error: "Unavailable in smoke mode" };
+  const connections = requireConnections();
+  const owner = connections.accountOwnerUserId();
+  const result = await connections.replaceProviderAccountCredential(connectionId, fields as Record<string, unknown>);
+  if (result.ok) await synchronizeProviderAccounts();
+  if (owner !== connections.accountOwnerUserId()) return { ok: false, error: "The signed-in account changed" };
+  notifyProviderChanged();
+  return result;
+});
+
+const qualifyingAccounts = new Set<string>();
+ipcMain.handle("providerAccounts:qualify", async (event, connectionId: unknown, modelId: unknown) => {
+  assertMainWindowSender(event);
+  if (typeof connectionId !== "string" || modelId !== undefined && typeof modelId !== "string") return { ok: false, error: "Invalid account model" };
+  if (PACKAGED_SMOKE || !freeCloud) return { ok: false, error: "Qualification is unavailable" };
+  const connections = requireConnections();
+  const owner = connections.accountOwnerUserId();
+  if (qualifyingAccounts.has(connectionId)) return { ok: false, error: "This account is already being qualified" };
+  qualifyingAccounts.add(connectionId);
+  try {
+    const recheck = await connections.recheckProviderAccount(connectionId);
+    if (!recheck.ok || owner !== connections.accountOwnerUserId()) return { ok: false, error: "Reconnect this account before qualification" };
+    const authority = connections.providerAccountAuthority(connectionId);
+    const catalog = connections.providerAccountModels(connectionId);
+    const credentialStore = connections.providerAccountCredentialStore(connectionId, "FREE_ONLY");
+    if (!authority?.freeAdmissionVerified || !authority.freeRequests || !catalog || !credentialStore || authority.providerId !== "openrouter") return { ok: false, error: "A current zero-cost account certificate is required. Paid qualification is disabled." };
+    const model = catalog.models.find(candidate => (modelId === undefined || candidate.modelId === modelId) && candidate.isFree && candidate.freeStatus === "verified_free"
+      && candidate.capabilities.toolCalling && candidate.pricing?.tokenOnly === true && candidate.pricing.inputCostPerMillion === 0 && candidate.pricing.outputCostPerMillion === 0);
+    if (!model) return { ok: false, error: "No exact-zero tool-capable model is eligible" };
+    const cached = freeCloud.getReceipt(authority.providerId, model.modelId);
+    const cachedAge = cached ? Date.now() - Date.parse(cached.completedAt) : NaN;
+    if (cached && !cached.metadata?.transient && cachedAge >= 0 && cachedAge < 6 * 3_600_000) {
+      await synchronizeProviderAccounts();
+      if (owner !== connections.accountOwnerUserId()) return { ok: false, error: "The signed-in account changed" };
+      return { ok: true, connection: connections.listProviderAccounts().find(account => account.connectionId === connectionId) };
+    }
+    const requestLimit = Math.min(24, authority.freeRequests.remaining);
+    if (requestLimit < 20) return { ok: false, error: "Insufficient observed Free allowance for bounded role qualification" };
+    const definition = connections.definition(authority.providerId)!;
+    const transport = createProviderAdapterFromDefinition(definition, { credentialStore });
+    if (!transport) return { ok: false, error: "Provider transport unavailable" };
+    let requests = 0;
+    const assertAuthority = (): void => {
+      const current = connections.providerAccountAuthority(connectionId);
+      if (owner !== connections.accountOwnerUserId() || !connections.providerAccountCredentialStore(connectionId, "FREE_ONLY")
+        || current?.credentialRef !== authority.credentialRef || current.credentialFingerprint !== authority.credentialFingerprint) throw new Error("ACCOUNT_AUTHORITY_CHANGED");
+    };
+    const assertCurrent = (): void => {
+      assertAuthority();
+      if (requests++ >= requestLimit) throw new Error("R41_BOUND: Free account qualification request ceiling reached");
+    };
+    const assertZeroCost = (cost: number | undefined): void => {
+      if (cost !== undefined && (!Number.isFinite(cost) || cost !== 0)) {
+        assertAuthority();
+        connections.updateProviderAccount(connectionId, { enabled: false });
+        throw new Error("FREE_COST_CERTIFICATE_ANOMALY");
+      }
+    };
+    const bounded: ProviderAdapter = { providerId: authority.providerId, listModels: () => transport.listModels(), healthCheck: () => transport.healthCheck(),
+      async chat(request) {
+        assertCurrent();
+        if (request.model !== model.modelId || request.fallbackModels?.some(id => id !== model.modelId)) throw new Error("EXACT_FREE_MODEL_REQUIRED");
+        const response = await transport.chat(request);
+        assertAuthority();
+        if (response.model !== model.modelId) throw new ProviderError("Qualification served-model identity is unverified", response.model ? "MODEL_SUBSTITUTED" : "MODEL_IDENTITY_MISSING", true);
+        assertZeroCost(response.usage?.costUsd);
+        return response;
+      },
+      async *streamChat(request, signal) {
+        assertCurrent();
+        if (request.model !== model.modelId || request.fallbackModels?.some(id => id !== model.modelId)) throw new Error("EXACT_FREE_MODEL_REQUIRED");
+        const frames: StreamEvent[] = [];
+        let finished = false;
+        for await (const frame of transport.streamChat(request, signal)) {
+          assertAuthority();
+          if (finished && frame.type !== "usage") throw new ProviderError("Qualification provider stream interrupted", "STREAM_INTERRUPTED", true);
+          if (frame.type === "usage") assertZeroCost(frame.usage.costUsd);
+          if (frame.type === "finish") {
+            if (frame.model !== model.modelId) throw new ProviderError("Qualification served-model identity is unverified", frame.model ? "MODEL_SUBSTITUTED" : "MODEL_IDENTITY_MISSING", true);
+            if (finished || frame.finishReason === "error") throw new ProviderError("Qualification provider stream interrupted", "STREAM_INTERRUPTED", true);
+            finished = true;
+          }
+          if (frame.type === "error") {
+            const category = frame.status === 429 || frame.code === "RATE_LIMITED" || frame.code === "429" ? "rate limit 429"
+              : frame.status === 401 || frame.status === 403 || frame.code === "AUTH_REQUIRED" || frame.code === "UNAUTHORIZED" ? "authentication rejected 401"
+              : frame.status && frame.status >= 500 ? `HTTP ${frame.status}`
+              : frame.code === "TIMEOUT" || frame.code === "STREAM_INTERRUPTED" ? "timed out or interrupted"
+              : frame.code === "EMPTY_COMPLETION" ? "no usable completion choices" : "request failed";
+            throw new ProviderError(`Qualification provider ${category}`, frame.code, frame.retryable, {
+              status: frame.status, retryAfter: frame.retryAfter, rateLimitScope: frame.rateLimitScope,
+            });
+          }
+          frames.push(frame);
+        }
+        assertAuthority();
+        if (!finished || signal?.aborted) throw new ProviderError("Qualification provider timed out or interrupted", "STREAM_INTERRUPTED", true);
+        for (const frame of frames) yield frame;
+      } };
+    const record = { ...createGenericFreeRecord({ providerId: authority.providerId, modelId: model.modelId, displayName: model.displayName }), capabilities: model.capabilities, contextWindow: model.contextWindow ?? 4_096 };
+    const receipt = await runRoleAwareQualification(record, bounded, { roles: ["EXPLORER", "REVIEWER"], signal: AbortSignal.timeout(360_000) });
+    if (owner !== connections.accountOwnerUserId()) return { ok: false, error: "The account changed during qualification" };
+    assertAuthority();
+    await freeCloud.recordReceipt(receipt);
+    assertAuthority();
+    await synchronizeProviderAccounts();
+    if (owner !== connections.accountOwnerUserId()) return { ok: false, error: "The signed-in account changed" };
+    notifyProviderChanged();
+    return { ok: true, connection: connections.listProviderAccounts().find(account => account.connectionId === connectionId) };
+  } catch { return { ok: false, error: "Qualification did not establish a current eligible route. Existing receipts are preserved." }; }
+  finally { qualifyingAccounts.delete(connectionId); }
+});
+
+ipcMain.handle("providerAccounts:oauth", async (event, providerId: unknown, options: unknown, browser: unknown) => {
+  assertMainWindowSender(event);
+  if (providerId !== "openrouter") return { ok: false, error: "This provider does not offer a supported OAuth connection" };
+  if (PACKAGED_SMOKE) return { ok: false, error: "Unavailable in smoke mode" };
+  if (browser !== undefined && browser !== "default" && browser !== "firefox") return { ok: false, error: "Unsupported authorization browser" };
+  const raw = options && typeof options === "object" && !Array.isArray(options) ? options as Record<string, unknown> : {};
+  if (raw.label !== undefined && typeof raw.label !== "string" || raw.reauthorizeConnectionId !== undefined && typeof raw.reauthorizeConnectionId !== "string") return { ok: false, error: "Invalid authorization options" };
+  try {
+    const connections = requireConnections();
+    const expectedOwnerUserId = connections.accountOwnerUserId();
+    if (!expectedOwnerUserId) return { ok: false, error: "Sign in to CodeForge before adding an account" };
+    if (typeof raw.reauthorizeConnectionId === "string" && !connections.providerAccountAuthority(raw.reauthorizeConnectionId)) return { ok: false, error: "Account connection unavailable" };
+    const key = await runOpenRouterOAuth({ browser: browser === "firefox" ? "firefox" : "default" });
+    const result = await connections.connectOAuthAccount(key, {
+      expectedOwnerUserId,
+      ...(typeof raw.label === "string" ? { label: raw.label } : {}),
+      ...(typeof raw.reauthorizeConnectionId === "string" ? { reauthorizeConnectionId: raw.reauthorizeConnectionId } : {}),
+    });
+    if (result.ok) await synchronizeProviderAccounts();
+    if (expectedOwnerUserId !== connections.accountOwnerUserId()) return { ok: false, error: "The signed-in account changed" };
+    notifyProviderChanged();
+    return result;
+  } catch { return { ok: false, error: "OpenRouter authorization did not complete. Try again." }; }
+});
+
+ipcMain.handle("providerRouting:getPolicy", (event) => {
+  assertMainWindowSender(event);
+  return readPersonalProviderRoutingPolicy(readSettings(), requireConnections().accountOwnerUserId());
+});
+
+ipcMain.handle("providerRouting:setPolicy", async (event, policy: unknown) => {
+  assertMainWindowSender(event);
+  try {
+    const connections = requireConnections();
+    const owner = connections.accountOwnerUserId();
+    const settings = writePersonalProviderRoutingPolicy(readSettings(), owner, policy);
+    const parsed = readPersonalProviderRoutingPolicy(settings, owner);
+    if (parsed.specificAccountConnectionId && !connections.providerAccountAuthority(parsed.specificAccountConnectionId)) return { ok: false, error: "Account connection unavailable" };
+    if (writeSettingsAtomic(settings) === false) return { ok: false, error: "Account routing preferences could not be saved" };
+    await synchronizeProviderAccounts();
+    if (owner !== connections.accountOwnerUserId()) return { ok: false, error: "The signed-in account changed" };
+    notifyProviderChanged();
+    return { ok: true };
+  } catch { return { ok: false, error: "Invalid routing preferences or missing paid consent" }; }
+});
+
 ipcMain.handle("provider:env:list", (event) => {
   assertMainWindowSender(event);
   return requireConnections().listEnvironmentCredentials();
@@ -3438,12 +3758,14 @@ ipcMain.handle("oauth:openrouter:start", async (event, browser: unknown) => {
     const authorizingUserId = connections.accountOwnerUserId();
     const key = await runOpenRouterOAuth({ browser: browser === "firefox" ? "firefox" : "default" });
     if (authorizingUserId !== connections.accountOwnerUserId()) return { ok: false, error: "The CodeForge account changed during authorization. Connect again." };
-    const result = await connections.connect("openrouter", { apiKey: key }, "OAUTH");
+    const result = await connections.connectOAuthAccount(key, { expectedOwnerUserId: authorizingUserId });
+    if (result.ok) await synchronizeProviderAccounts();
+    if (authorizingUserId !== connections.accountOwnerUserId()) return { ok: false, error: "The CodeForge account changed during authorization. Connect again." };
     notifyProviderChanged();
     if (!result.ok) return { ok: false, error: result.error };
-    return { ok: true, verifiedFree: result.verifiedFree ?? 0 };
-  } catch (e) {
-    return { ok: false, error: (e instanceof Error ? e.message : String(e)).slice(0, 200) };
+    return { ok: true, verifiedFree: result.connection?.freeRouteCount ?? 0 };
+  } catch {
+    return { ok: false, error: "OpenRouter authorization did not complete. Try again." };
   }
 });
 
@@ -3536,6 +3858,8 @@ ipcMain.handle("cloud:auth:start", async (event) => {
       cloudApiUrl: CLOUD_API_URL,
     });
     saveCloudTokens(result.accessToken, result.refreshToken, result.user);
+    await synchronizeProviderAccounts();
+    void refreshProviderAccounts().catch(() => {});
     await providerConnections?.reconcile("ollama-cloud");
     await providerConnections?.reconcile("openrouter");
     await registerCloudAdapter();
@@ -3562,36 +3886,56 @@ let cloudAccountFetchInFlight: Promise<unknown> | null = null;
 async function fetchCloudAccountAuthoritative(): Promise<unknown> {
   const tokens = getStoredCloudTokens();
   if (!tokens.accessToken) return null;
+  const owner = userConnectedFreeScopeId();
+  let expectedAccessToken = tokens.accessToken;
+  const isCurrent = (): boolean => owner === userConnectedFreeScopeId() && getStoredCloudTokens().accessToken === expectedAccessToken;
   try {
     const res = await cloudFetch("/v1/account", {
       headers: { Authorization: `Bearer ${tokens.accessToken}` },
     });
+    if (!isCurrent()) return null;
     if (res.status === 401 && tokens.refreshToken) {
       const refreshRes = await cloudFetch("/v1/auth/refresh", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: tokens.refreshToken }),
       });
+      if (!isCurrent() || getStoredCloudTokens().refreshToken !== tokens.refreshToken) return null;
+      if (refreshRes.status >= 500) return offlineCloudAccount(tokens.user);
       if (refreshRes.ok) {
         const data = (await refreshRes.json()) as any;
+        if (!isCurrent() || getStoredCloudTokens().refreshToken !== tokens.refreshToken) return null;
         saveCloudTokens(data.accessToken, data.refreshToken, data.user);
+        expectedAccessToken = data.accessToken;
+        await synchronizeProviderAccounts();
+        void refreshProviderAccounts().catch(() => {});
+        if (!isCurrent()) return null;
         const retryRes = await cloudFetch("/v1/account", {
           headers: { Authorization: `Bearer ${data.accessToken}` },
         });
-        if (retryRes.ok) return await retryRes.json();
+        if (!isCurrent()) return null;
+        if (retryRes.ok) {
+          const account = await retryRes.json();
+          return isCurrent() ? account : null;
+        }
+        if (retryRes.status >= 500) return offlineCloudAccount(tokens.user);
       }
     }
     if (res.ok) {
-      return await res.json();
+      const account = await res.json();
+      return isCurrent() ? account : null;
     }
     // Cloud answered and refused (401 without a usable refresh, 403, …): the session is not valid.
-    if (res.status >= 400 && res.status < 500) return null;
+    if (res.status >= 400 && res.status < 500) {
+      if (isCurrent()) { clearCloudTokens(); await synchronizeProviderAccounts(); }
+      return null;
+    }
     // A 5xx is an outage, not a sign-out.
-    return offlineCloudAccount(tokens.user);
+    return isCurrent() ? offlineCloudAccount(tokens.user) : null;
   } catch {
     // Unreachable Cloud must not lock a signed-in user out of local work: keep the remembered
     // identity, claim nothing about plan or credits.
-    return offlineCloudAccount(tokens.user);
+    return isCurrent() ? offlineCloudAccount(tokens.user) : null;
   }
 }
 
@@ -3642,11 +3986,14 @@ ipcMain.handle("cloud:account:delete", async (event) => {
     headers: { Authorization: `Bearer ${tokens.accessToken}`, "Content-Type": "application/json" },
     body: JSON.stringify({ confirmation: "DELETE_MY_ACCOUNT" }),
   });
+  if (getStoredCloudTokens().accessToken !== tokens.accessToken) throw new Error("The signed-in account changed during deletion");
   if (res.status === 401) {
     // The Cloud refuses tokens whose session is gone — which is exactly the state after a deletion
     // whose response was lost in transit, or after the session was revoked elsewhere. Either way
     // the local credential is dead: clear it so the app is honestly signed out.
     clearCloudTokens();
+    await synchronizeProviderAccounts();
+    void refreshProviderAccounts().catch(() => {});
     await providerConnections?.reconcile("ollama-cloud");
     await providerConnections?.reconcile("openrouter");
     providerAuthState.delete("codeforge-cloud");
@@ -3657,7 +4004,10 @@ ipcMain.handle("cloud:account:delete", async (event) => {
     throw new Error(`Account deletion failed (HTTP ${res.status})${detail ? `: ${detail.slice(0, 200)}` : ""}`);
   }
   const receipt = await res.json();
+  if (getStoredCloudTokens().accessToken !== tokens.accessToken) throw new Error("The signed-in account changed during deletion");
   clearCloudTokens();
+  await synchronizeProviderAccounts();
+  void refreshProviderAccounts().catch(() => {});
   await providerConnections?.reconcile("ollama-cloud");
   await providerConnections?.reconcile("openrouter");
   providerAuthState.delete("codeforge-cloud");
@@ -3681,7 +4031,10 @@ ipcMain.handle("cloud:auth:logout", async (event) => {
       });
     } catch {}
   }
+  if (getStoredCloudTokens().accessToken !== tokens.accessToken) return;
   clearCloudTokens();
+  await synchronizeProviderAccounts();
+  void refreshProviderAccounts().catch(() => {});
   await providerConnections?.reconcile("ollama-cloud");
   await providerConnections?.reconcile("openrouter");
   providerAuthState.delete("codeforge-cloud");

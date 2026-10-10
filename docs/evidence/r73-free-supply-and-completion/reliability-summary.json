@@ -1,33 +1,1323 @@
 {
-  "generatedAt": "2026-10-09T09:50:08.397Z",
+  "generatedAt": "2026-10-09T23:35:22.575Z",
   "campaigns": [
     "R73-FIRST-COMPLETION.json",
     "R73-COMPLETION-RECOVERY-1791538224699.json",
-    "R73-BOUND-REVIEW-PROOF-1791539210052.json"
+    "R73-BOUND-REVIEW-PROOF-1791539210052.json",
+    "R73-FROZEN-COMPLETION-1791540147216.json",
+    "R73-PROTOCOL-ALIGNED-COMPLETION-1791541166828.json",
+    "R73-READABLE-REVIEW-COMPLETION-1791557269712.json"
   ],
-  "attempts": 3,
+  "attempts": 6,
   "completed": 0,
   "failed": 0,
-  "blocked": 3,
+  "blocked": 6,
   "parked": 0,
   "cancelled": 0,
   "running": 0,
   "completionPercentage": 0,
   "longestSuccessfulStreak": 0,
-  "modelRequests": 61,
-  "observedInferenceCallsIncludingCapacityProbes": 66,
-  "toolCalls": 63,
+  "modelRequests": 105,
+  "observedInferenceCallsIncludingCapacityProbes": 116,
+  "toolCalls": 96,
   "duplicateWorkReportedByRuntime": 0,
-  "observedProviderFailures": 0,
+  "observedProviderFailures": 2,
   "providerFailureUnknownWorkers": 0,
   "providerRequests": {
-    "kilo-free-direct": 54,
-    "blockrun-free-direct": 12
+    "kilo-free-direct": 97,
+    "blockrun-free-direct": 19
   },
-  "providerErrorFrames": 0,
-  "providerRateLimits": 0,
-  "reviewerFailedWorkers": 2,
+  "providerErrorFrames": 2,
+  "providerRateLimits": 1,
+  "reviewerFailedWorkers": 6,
+  "workerOutcomesByRole": {
+    "explorer": {
+      "completed": 6
+    },
+    "coder": {
+      "blocked": 2,
+      "completed": 4,
+      "failed": 2
+    },
+    "reviewer": {
+      "blocked": 4,
+      "failed": 2
+    }
+  },
+  "failedWorkersByRole": {
+    "reviewer": {
+      "failed": 2
+    },
+    "coder": {
+      "failed": 2
+    }
+  },
+  "blockedWorkersByRole": {
+    "coder": {
+      "blocked": 2
+    },
+    "reviewer": {
+      "blocked": 4
+    }
+  },
+  "reviewerNonPassingOutputs": [
+    {
+      "campaign": "R73-COMPLETION-RECOVERY-1791538224699.json",
+      "taskId": "01-bug-fix",
+      "id": "child-41eeac6260c5473bf9cc757f5173b4c5",
+      "status": "blocked",
+      "reason": "Expected non-empty string for summary"
+    },
+    {
+      "campaign": "R73-COMPLETION-RECOVERY-1791538224699.json",
+      "taskId": "01-bug-fix",
+      "id": "child-07148d805498cb003a8648696a7e2f65",
+      "status": "failed",
+      "reason": "Agent reviewer failed: [PROVIDER_UNAVAILABLE] No eligible free route for role reviewer: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ROLE_QUALIFIED_ROUTE, NO_ELIGIBLE_ROUTE, candidates: 1 role_ineligible:ROLE_NOT_QUALIFIED [cohere/north-mini-code:free]; 1 role_ineligible:ROLE_VERDICT_EXCLUDED [nvidia/llama-3.2-11b-vision]). No paid or unknown-cost route was used."
+    },
+    {
+      "campaign": "R73-FROZEN-COMPLETION-1791540147216.json",
+      "taskId": "01-bug-fix",
+      "id": "child-e1446662966467f31b087b7902c4dbeb",
+      "status": "blocked",
+      "reason": "The retryDelays function has two critical bugs: an attempt boundary bug and a missing zero-budget case. The function should not iterate until maxAttempts, but until maxAttempts - 1, and it should return an empty array when maxAttempts is 0. The test suite also needs to verify these edge cases."
+    },
+    {
+      "campaign": "R73-PROTOCOL-ALIGNED-COMPLETION-1791541166828.json",
+      "taskId": "01-bug-fix",
+      "id": "child-18f95cdaf958cefa991f9e94c263b367",
+      "status": "blocked",
+      "reason": "Structured output is not valid JSON"
+    },
+    {
+      "campaign": "R73-PROTOCOL-ALIGNED-COMPLETION-1791541166828.json",
+      "taskId": "01-bug-fix",
+      "id": "child-b5960fdd4096d1bf0581b0b264e4b12d",
+      "status": "failed",
+      "reason": "Agent reviewer failed: [PROVIDER_UNAVAILABLE] No eligible free route for role reviewer: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ROLE_QUALIFIED_ROUTE, NO_ELIGIBLE_ROUTE, candidates: 1 role_ineligible:ROLE_NOT_QUALIFIED [cohere/north-mini-code:free]; 1 role_ineligible:ROLE_VERDICT_EXCLUDED [nvidia/llama-3.2-11b-vision]). No paid or unknown-cost route was used."
+    },
+    {
+      "campaign": "R73-READABLE-REVIEW-COMPLETION-1791557269712.json",
+      "taskId": "01-bug-fix",
+      "id": "child-cf5f5aeb36d84311c2233e2cf642cbf4",
+      "status": "blocked",
+      "reason": "The retryDelays function has a bug in its attempt-boundary logic, causing it to include the maxAttempts attempt in the delays array. This is a regression against the stated requirements. The test suite does not cover this case, and the function's behavior is not as expected."
+    }
+  ],
+  "taskMetrics": [
+    {
+      "campaign": "R73-FIRST-COMPLETION.json",
+      "id": "01-bug-fix",
+      "modelRequests": 27,
+      "observedInferenceCalls": 27,
+      "toolCalls": 28,
+      "duplicateWorkReportedByRuntime": 0,
+      "workerOutcomesByRole": {
+        "explorer": {
+          "completed": 1
+        },
+        "coder": {
+          "blocked": 1
+        }
+      },
+      "failedWorkers": [],
+      "blockedWorkers": [
+        {
+          "id": "child-b9caf9573c795ef3bf81c509e290738f",
+          "agentId": "coder",
+          "role": "Autonomous Builder",
+          "reason": "[AGENT_MODEL_TURN_LIMIT] The coder agent used all 25 model turns without finishing; the work is unfinished, not complete."
+        }
+      ],
+      "reviewerNonPassingWorkers": [],
+      "routeDecisions": [
+        {
+          "receiptId": "a0da8b7b-706e-4f94-9327-91cde9b0c242",
+          "runId": "child-e3b579ae95de0276e3a1694ad4518b2c",
+          "agentId": "explorer",
+          "role": "EXPLORER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        },
+        {
+          "receiptId": "0da21370-72ec-4f40-a43b-c1f4eed194a1",
+          "runId": "child-b9caf9573c795ef3bf81c509e290738f",
+          "agentId": "coder",
+          "role": "CODER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        }
+      ],
+      "emittedToolRequests": {
+        "source": "immutable inferenceFrames.events tool_call_completed only",
+        "emittedRequests": 28,
+        "identicalRepeatedRequests": 4,
+        "repeatedRequestGroups": [
+          {
+            "requestSha256": "2c77b6b9ab56c54d5ed7947e67b8782682c918789d8273022d387e8c3dbb4407",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 0,
+                "eventIndex": 30,
+                "at": "2026-10-08T17:24:12.346Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_2yxms882nrw0"
+              },
+              {
+                "frameIndex": 2,
+                "eventIndex": 10,
+                "at": "2026-10-08T17:25:02.362Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_dphe3hwrx2vv"
+              },
+              {
+                "frameIndex": 7,
+                "eventIndex": 10,
+                "at": "2026-10-08T17:25:48.839Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_ewdjy87s7ke5"
+              }
+            ],
+            "emittedCount": 3,
+            "repeatCount": 2
+          },
+          {
+            "requestSha256": "7851227d2857c898728615696a609976e9897fbc836225724f3f45ee3eaea15d",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 0,
+                "eventIndex": 31,
+                "at": "2026-10-08T17:24:12.346Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_zz7k4hjhayve"
+              },
+              {
+                "frameIndex": 4,
+                "eventIndex": 9,
+                "at": "2026-10-08T17:25:21.402Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_s6pv8afn7rfw"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          },
+          {
+            "requestSha256": "ed03d1c3c8b5153cb737ca54900e0a3cda6526833ef2c1501092e15bf7ce8464",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 0,
+                "eventIndex": 32,
+                "at": "2026-10-08T17:24:12.346Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_mkx6rqr0czhw"
+              },
+              {
+                "frameIndex": 3,
+                "eventIndex": 11,
+                "at": "2026-10-08T17:25:12.723Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_jwsmp0c1gcpd"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          }
+        ],
+        "interpretation": "Repeated emissions are not proof of duplicated execution or side effects; request histories and accumulated mutable messages are not counted."
+      },
+      "observedInferenceMapping": "Campaign frame.at within persisted task startedAt/finishedAt; excludes pre-task capacity probes. Worker request and executed-tool telemetry is reported separately."
+    },
+    {
+      "campaign": "R73-COMPLETION-RECOVERY-1791538224699.json",
+      "id": "01-bug-fix",
+      "modelRequests": 25,
+      "observedInferenceCalls": 25,
+      "toolCalls": 24,
+      "duplicateWorkReportedByRuntime": 0,
+      "workerOutcomesByRole": {
+        "explorer": {
+          "completed": 1
+        },
+        "coder": {
+          "completed": 1
+        },
+        "reviewer": {
+          "blocked": 1,
+          "failed": 1
+        }
+      },
+      "failedWorkers": [
+        {
+          "id": "child-07148d805498cb003a8648696a7e2f65",
+          "agentId": "reviewer",
+          "role": "Independent Code Reviewer",
+          "reason": "Agent reviewer failed: [PROVIDER_UNAVAILABLE] No eligible free route for role reviewer: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ROLE_QUALIFIED_ROUTE, NO_ELIGIBLE_ROUTE, candidates: 1 role_ineligible:ROLE_NOT_QUALIFIED [cohere/north-mini-code:free]; 1 role_ineligible:ROLE_VERDICT_EXCLUDED [nvidia/llama-3.2-11b-vision]). No paid or unknown-cost route was used."
+        }
+      ],
+      "blockedWorkers": [
+        {
+          "id": "child-41eeac6260c5473bf9cc757f5173b4c5",
+          "agentId": "reviewer",
+          "role": "Independent Code Reviewer",
+          "reason": "Expected non-empty string for summary"
+        }
+      ],
+      "reviewerNonPassingWorkers": [
+        {
+          "id": "child-41eeac6260c5473bf9cc757f5173b4c5",
+          "status": "blocked",
+          "reason": "Expected non-empty string for summary"
+        },
+        {
+          "id": "child-07148d805498cb003a8648696a7e2f65",
+          "status": "failed",
+          "reason": "Agent reviewer failed: [PROVIDER_UNAVAILABLE] No eligible free route for role reviewer: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ROLE_QUALIFIED_ROUTE, NO_ELIGIBLE_ROUTE, candidates: 1 role_ineligible:ROLE_NOT_QUALIFIED [cohere/north-mini-code:free]; 1 role_ineligible:ROLE_VERDICT_EXCLUDED [nvidia/llama-3.2-11b-vision]). No paid or unknown-cost route was used."
+        }
+      ],
+      "routeDecisions": [
+        {
+          "receiptId": "ed3d2787-a069-4707-bdc1-5a345af149d6",
+          "runId": "child-b40f21e8b7870cf39424146162c914d9",
+          "agentId": "explorer",
+          "role": "EXPLORER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        },
+        {
+          "receiptId": "5cccdae1-af43-48ac-8302-8b68f62829ee",
+          "runId": "child-88200862ad89a904dc68901dabc00bb3",
+          "agentId": "coder",
+          "role": "CODER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        },
+        {
+          "receiptId": "b8b74358-241d-4590-9502-31ada28b7fd7",
+          "runId": "child-41eeac6260c5473bf9cc757f5173b4c5",
+          "agentId": "reviewer",
+          "role": "REVIEWER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "blockrun-free-direct",
+          "modelId": "nvidia/llama-3.2-11b-vision",
+          "routeId": "fabric:blockrun-free-direct::nvidia/llama-3.2-11b-vision",
+          "capacityPoolId": "blockrun-free-direct:user:localconn:blockrun-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "blockrun-free-direct:user:localconn:blockrun-free-direct",
+          "independenceKey": "blockrun-free-direct:PUBLIC_IP:shared-unverified"
+        }
+      ],
+      "emittedToolRequests": {
+        "source": "immutable inferenceFrames.events tool_call_completed only",
+        "emittedRequests": 24,
+        "identicalRepeatedRequests": 7,
+        "repeatedRequestGroups": [
+          {
+            "requestSha256": "2c77b6b9ab56c54d5ed7947e67b8782682c918789d8273022d387e8c3dbb4407",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 0,
+                "eventIndex": 30,
+                "at": "2026-10-09T09:30:33.257Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_asd3fwf42k8k"
+              },
+              {
+                "frameIndex": 5,
+                "eventIndex": 10,
+                "at": "2026-10-09T09:31:08.650Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_srs44yfwzzer"
+              },
+              {
+                "frameIndex": 13,
+                "eventIndex": 10,
+                "at": "2026-10-09T09:31:35.641Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_tgzjvfjk788h"
+              }
+            ],
+            "emittedCount": 3,
+            "repeatCount": 2
+          },
+          {
+            "requestSha256": "ed03d1c3c8b5153cb737ca54900e0a3cda6526833ef2c1501092e15bf7ce8464",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 0,
+                "eventIndex": 31,
+                "at": "2026-10-09T09:30:33.257Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_32nhkxdkpd8g"
+              },
+              {
+                "frameIndex": 7,
+                "eventIndex": 11,
+                "at": "2026-10-09T09:31:20.174Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_f81kkhx63fx2"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          },
+          {
+            "requestSha256": "7851227d2857c898728615696a609976e9897fbc836225724f3f45ee3eaea15d",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 0,
+                "eventIndex": 32,
+                "at": "2026-10-09T09:30:33.257Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_qm1f2rke97pt"
+              },
+              {
+                "frameIndex": 8,
+                "eventIndex": 9,
+                "at": "2026-10-09T09:31:24.023Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_4axqxwfxw33m"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          },
+          {
+            "requestSha256": "aa6ae4e1ae649c0ef22d26ab19eff56b40de78f5b7fdc5b3210ce1ae310f317c",
+            "toolName": "list_files",
+            "occurrences": [
+              {
+                "frameIndex": 2,
+                "eventIndex": 14,
+                "at": "2026-10-09T09:30:46.963Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "list_files_9c3jmj2bebyt"
+              },
+              {
+                "frameIndex": 11,
+                "eventIndex": 7,
+                "at": "2026-10-09T09:31:31.783Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "list_files_dj3c9mbxpwtk"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          },
+          {
+            "requestSha256": "27f465a32e1e88cb8b182b01b5c3b49f568b8b7f0e440079879ed6d79725628d",
+            "toolName": "list_files",
+            "occurrences": [
+              {
+                "frameIndex": 2,
+                "eventIndex": 15,
+                "at": "2026-10-09T09:30:46.963Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "list_files_b8mr72qbfkk9"
+              },
+              {
+                "frameIndex": 12,
+                "eventIndex": 7,
+                "at": "2026-10-09T09:31:33.705Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "list_files_jvysw7jjzqja"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          },
+          {
+            "requestSha256": "22652445d2487a3179450c1ef3c232539f27595496d20b9144753472088821fe",
+            "toolName": "run_command",
+            "occurrences": [
+              {
+                "frameIndex": 6,
+                "eventIndex": 9,
+                "at": "2026-10-09T09:31:13.132Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "run_command_87snbda1yf0x"
+              },
+              {
+                "frameIndex": 10,
+                "eventIndex": 9,
+                "at": "2026-10-09T09:31:30.326Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "run_command_x8rszxscrbwn"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          }
+        ],
+        "interpretation": "Repeated emissions are not proof of duplicated execution or side effects; request histories and accumulated mutable messages are not counted."
+      },
+      "observedInferenceMapping": "Campaign frame.at within persisted task startedAt/finishedAt; excludes pre-task capacity probes. Worker request and executed-tool telemetry is reported separately."
+    },
+    {
+      "campaign": "R73-BOUND-REVIEW-PROOF-1791539210052.json",
+      "id": "01-bug-fix",
+      "modelRequests": 9,
+      "observedInferenceCalls": 9,
+      "toolCalls": 11,
+      "duplicateWorkReportedByRuntime": 0,
+      "workerOutcomesByRole": {
+        "explorer": {
+          "completed": 1
+        },
+        "coder": {
+          "blocked": 1
+        }
+      },
+      "failedWorkers": [],
+      "blockedWorkers": [
+        {
+          "id": "child-0e8770606fac839bc784180c34a8a044",
+          "agentId": "coder",
+          "role": "Autonomous Builder",
+          "reason": "Error: [TOOL_WORKSPACE_ESCAPE] Path traversal denied (escapes workspace root): /workspace/coder-forge"
+        }
+      ],
+      "reviewerNonPassingWorkers": [],
+      "routeDecisions": [
+        {
+          "receiptId": "0010924f-492a-4f03-86b8-9452eac09cdc",
+          "runId": "child-e0f6674913cb8c329e00e654d59771e5",
+          "agentId": "explorer",
+          "role": "EXPLORER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        },
+        {
+          "receiptId": "57113289-8ad2-44f5-bb03-ad765af7e31f",
+          "runId": "child-0e8770606fac839bc784180c34a8a044",
+          "agentId": "coder",
+          "role": "CODER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        }
+      ],
+      "emittedToolRequests": {
+        "source": "immutable inferenceFrames.events tool_call_completed only",
+        "emittedRequests": 11,
+        "identicalRepeatedRequests": 3,
+        "repeatedRequestGroups": [
+          {
+            "requestSha256": "2c77b6b9ab56c54d5ed7947e67b8782682c918789d8273022d387e8c3dbb4407",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 1,
+                "eventIndex": 21,
+                "at": "2026-10-09T09:47:01.453Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_cy48z139t40e"
+              },
+              {
+                "frameIndex": 5,
+                "eventIndex": 10,
+                "at": "2026-10-09T09:47:18.246Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_7aq9va39qwem"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          },
+          {
+            "requestSha256": "ed03d1c3c8b5153cb737ca54900e0a3cda6526833ef2c1501092e15bf7ce8464",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 1,
+                "eventIndex": 22,
+                "at": "2026-10-09T09:47:01.453Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_1jsym3vh9g43"
+              },
+              {
+                "frameIndex": 4,
+                "eventIndex": 11,
+                "at": "2026-10-09T09:47:13.798Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_9de55q23ga4f"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          },
+          {
+            "requestSha256": "7851227d2857c898728615696a609976e9897fbc836225724f3f45ee3eaea15d",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 2,
+                "eventIndex": 9,
+                "at": "2026-10-09T09:47:02.452Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_0hd25m5dmwa6"
+              },
+              {
+                "frameIndex": 6,
+                "eventIndex": 9,
+                "at": "2026-10-09T09:47:19.163Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_s82h8m3gvz9p"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          }
+        ],
+        "interpretation": "Repeated emissions are not proof of duplicated execution or side effects; request histories and accumulated mutable messages are not counted."
+      },
+      "observedInferenceMapping": "Campaign frame.at within persisted task startedAt/finishedAt; excludes pre-task capacity probes. Worker request and executed-tool telemetry is reported separately."
+    },
+    {
+      "campaign": "R73-FROZEN-COMPLETION-1791540147216.json",
+      "id": "01-bug-fix",
+      "modelRequests": 18,
+      "observedInferenceCalls": 18,
+      "toolCalls": 13,
+      "duplicateWorkReportedByRuntime": 0,
+      "workerOutcomesByRole": {
+        "explorer": {
+          "completed": 1
+        },
+        "coder": {
+          "completed": 1,
+          "failed": 1
+        },
+        "reviewer": {
+          "blocked": 1
+        }
+      },
+      "failedWorkers": [
+        {
+          "id": "child-086fb306f1164d1c296bd4ccbc3ee661",
+          "agentId": "coder",
+          "role": "Autonomous Builder",
+          "reason": "Agent coder failed: [PROVIDER_UNAVAILABLE] [PROVIDER_UNAVAILABLE] kilo-free-direct error (400): {\"error\":{\"message\":\"Provider returned error\",\"code\":400,\"metadata\":{\"raw\":\"{\\\"id\\\":\\\"7d392e0d-c04d-4fa3-8efe-cec1abd272b4\\\",\\\"message\\\":\\\"invalid request: invalid message provided at index 15: must h"
+        }
+      ],
+      "blockedWorkers": [
+        {
+          "id": "child-e1446662966467f31b087b7902c4dbeb",
+          "agentId": "reviewer",
+          "role": "Independent Code Reviewer",
+          "reason": "The retryDelays function has two critical bugs: an attempt boundary bug and a missing zero-budget case. The function should not iterate until maxAttempts, but until maxAttempts - 1, and it should return an empty array when maxAttempts is 0. The test suite also needs to verify these edge cases."
+        }
+      ],
+      "reviewerNonPassingWorkers": [
+        {
+          "id": "child-e1446662966467f31b087b7902c4dbeb",
+          "status": "blocked",
+          "reason": "The retryDelays function has two critical bugs: an attempt boundary bug and a missing zero-budget case. The function should not iterate until maxAttempts, but until maxAttempts - 1, and it should return an empty array when maxAttempts is 0. The test suite also needs to verify these edge cases."
+        }
+      ],
+      "routeDecisions": [
+        {
+          "receiptId": "76e6dc05-4c86-41b5-ba46-e45d94994ffe",
+          "runId": "child-b6f7c66b394ffe75a209e01268334d98",
+          "agentId": "explorer",
+          "role": "EXPLORER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        },
+        {
+          "receiptId": "99ae36a1-eb7f-4bde-9aa6-b42c352153be",
+          "runId": "child-0710977b2e42a1a7d96e9abe61be32fe",
+          "agentId": "coder",
+          "role": "CODER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        },
+        {
+          "receiptId": "f2f0fc83-cd4b-473d-98c6-8179405a1b4c",
+          "runId": "child-e1446662966467f31b087b7902c4dbeb",
+          "agentId": "reviewer",
+          "role": "REVIEWER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "blockrun-free-direct",
+          "modelId": "nvidia/llama-3.2-11b-vision",
+          "routeId": "fabric:blockrun-free-direct::nvidia/llama-3.2-11b-vision",
+          "capacityPoolId": "blockrun-free-direct:user:localconn:blockrun-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "blockrun-free-direct:user:localconn:blockrun-free-direct",
+          "independenceKey": "blockrun-free-direct:PUBLIC_IP:shared-unverified"
+        },
+        {
+          "receiptId": "e819a4d1-8a43-43b4-8957-86504274fc45",
+          "runId": "child-086fb306f1164d1c296bd4ccbc3ee661",
+          "agentId": "coder",
+          "role": "CODER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        }
+      ],
+      "emittedToolRequests": {
+        "source": "immutable inferenceFrames.events tool_call_completed only",
+        "emittedRequests": 13,
+        "identicalRepeatedRequests": 8,
+        "repeatedRequestGroups": [
+          {
+            "requestSha256": "2c77b6b9ab56c54d5ed7947e67b8782682c918789d8273022d387e8c3dbb4407",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 1,
+                "eventIndex": 10,
+                "at": "2026-10-09T10:02:50.642Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_7chd8snm78jc"
+              },
+              {
+                "frameIndex": 5,
+                "eventIndex": 10,
+                "at": "2026-10-09T10:02:57.207Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_8e7kgcd5cgvd"
+              },
+              {
+                "frameIndex": 10,
+                "eventIndex": 10,
+                "at": "2026-10-09T10:03:25.071Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_bkcsxwn4rw4y"
+              },
+              {
+                "frameIndex": 14,
+                "eventIndex": 10,
+                "at": "2026-10-09T10:03:33.351Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_x244ya84ybqb"
+              }
+            ],
+            "emittedCount": 4,
+            "repeatCount": 3
+          },
+          {
+            "requestSha256": "ed03d1c3c8b5153cb737ca54900e0a3cda6526833ef2c1501092e15bf7ce8464",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 2,
+                "eventIndex": 11,
+                "at": "2026-10-09T10:02:52.384Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_3cs4b4ffy660"
+              },
+              {
+                "frameIndex": 6,
+                "eventIndex": 11,
+                "at": "2026-10-09T10:03:00.541Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_zvgfd63faynz"
+              },
+              {
+                "frameIndex": 11,
+                "eventIndex": 11,
+                "at": "2026-10-09T10:03:27.571Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_heehrxfqm3az"
+              }
+            ],
+            "emittedCount": 3,
+            "repeatCount": 2
+          },
+          {
+            "requestSha256": "22652445d2487a3179450c1ef3c232539f27595496d20b9144753472088821fe",
+            "toolName": "run_command",
+            "occurrences": [
+              {
+                "frameIndex": 4,
+                "eventIndex": 9,
+                "at": "2026-10-09T10:02:55.918Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "run_command_na54jqpsj41n"
+              },
+              {
+                "frameIndex": 13,
+                "eventIndex": 9,
+                "at": "2026-10-09T10:03:31.449Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "run_command_pked956k89n4"
+              },
+              {
+                "frameIndex": 15,
+                "eventIndex": 9,
+                "at": "2026-10-09T10:03:48.069Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "run_command_ajpb9vmm9x26"
+              }
+            ],
+            "emittedCount": 3,
+            "repeatCount": 2
+          },
+          {
+            "requestSha256": "7851227d2857c898728615696a609976e9897fbc836225724f3f45ee3eaea15d",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 7,
+                "eventIndex": 9,
+                "at": "2026-10-09T10:03:02.040Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_mnvxvvd0zjp9"
+              },
+              {
+                "frameIndex": 12,
+                "eventIndex": 9,
+                "at": "2026-10-09T10:03:28.840Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_w6b3v0t4xe6h"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          }
+        ],
+        "interpretation": "Repeated emissions are not proof of duplicated execution or side effects; request histories and accumulated mutable messages are not counted."
+      },
+      "observedInferenceMapping": "Campaign frame.at within persisted task startedAt/finishedAt; excludes pre-task capacity probes. Worker request and executed-tool telemetry is reported separately."
+    },
+    {
+      "campaign": "R73-PROTOCOL-ALIGNED-COMPLETION-1791541166828.json",
+      "id": "01-bug-fix",
+      "modelRequests": 15,
+      "observedInferenceCalls": 15,
+      "toolCalls": 11,
+      "duplicateWorkReportedByRuntime": 0,
+      "workerOutcomesByRole": {
+        "explorer": {
+          "completed": 1
+        },
+        "coder": {
+          "completed": 1
+        },
+        "reviewer": {
+          "blocked": 1,
+          "failed": 1
+        }
+      },
+      "failedWorkers": [
+        {
+          "id": "child-b5960fdd4096d1bf0581b0b264e4b12d",
+          "agentId": "reviewer",
+          "role": "Independent Code Reviewer",
+          "reason": "Agent reviewer failed: [PROVIDER_UNAVAILABLE] No eligible free route for role reviewer: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ROLE_QUALIFIED_ROUTE, NO_ELIGIBLE_ROUTE, candidates: 1 role_ineligible:ROLE_NOT_QUALIFIED [cohere/north-mini-code:free]; 1 role_ineligible:ROLE_VERDICT_EXCLUDED [nvidia/llama-3.2-11b-vision]). No paid or unknown-cost route was used."
+        }
+      ],
+      "blockedWorkers": [
+        {
+          "id": "child-18f95cdaf958cefa991f9e94c263b367",
+          "agentId": "reviewer",
+          "role": "Independent Code Reviewer",
+          "reason": "Structured output is not valid JSON"
+        }
+      ],
+      "reviewerNonPassingWorkers": [
+        {
+          "id": "child-18f95cdaf958cefa991f9e94c263b367",
+          "status": "blocked",
+          "reason": "Structured output is not valid JSON"
+        },
+        {
+          "id": "child-b5960fdd4096d1bf0581b0b264e4b12d",
+          "status": "failed",
+          "reason": "Agent reviewer failed: [PROVIDER_UNAVAILABLE] No eligible free route for role reviewer: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ROLE_QUALIFIED_ROUTE, NO_ELIGIBLE_ROUTE, candidates: 1 role_ineligible:ROLE_NOT_QUALIFIED [cohere/north-mini-code:free]; 1 role_ineligible:ROLE_VERDICT_EXCLUDED [nvidia/llama-3.2-11b-vision]). No paid or unknown-cost route was used."
+        }
+      ],
+      "routeDecisions": [
+        {
+          "receiptId": "2085507b-93d2-46c5-9ac8-cdf60c1b3e50",
+          "runId": "child-1c3cffb078d5fec54eaeb722bbc88ccc",
+          "agentId": "explorer",
+          "role": "EXPLORER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        },
+        {
+          "receiptId": "9a014d8d-2747-4814-98e4-e9b39a5ca60d",
+          "runId": "child-86fa373137f4480d12e9a4987640d677",
+          "agentId": "coder",
+          "role": "CODER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        },
+        {
+          "receiptId": "013afa03-e090-4654-9b5b-f0364a1542a3",
+          "runId": "child-18f95cdaf958cefa991f9e94c263b367",
+          "agentId": "reviewer",
+          "role": "REVIEWER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "blockrun-free-direct",
+          "modelId": "nvidia/llama-3.2-11b-vision",
+          "routeId": "fabric:blockrun-free-direct::nvidia/llama-3.2-11b-vision",
+          "capacityPoolId": "blockrun-free-direct:user:localconn:blockrun-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "blockrun-free-direct:user:localconn:blockrun-free-direct",
+          "independenceKey": "blockrun-free-direct:PUBLIC_IP:shared-unverified"
+        }
+      ],
+      "emittedToolRequests": {
+        "source": "immutable inferenceFrames.events tool_call_completed only",
+        "emittedRequests": 11,
+        "identicalRepeatedRequests": 4,
+        "repeatedRequestGroups": [
+          {
+            "requestSha256": "2c77b6b9ab56c54d5ed7947e67b8782682c918789d8273022d387e8c3dbb4407",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 0,
+                "eventIndex": 10,
+                "at": "2026-10-09T10:19:35.727Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_tyx5y0agtrx8"
+              },
+              {
+                "frameIndex": 6,
+                "eventIndex": 10,
+                "at": "2026-10-09T10:20:07.880Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_sgfb0255xkbm"
+              },
+              {
+                "frameIndex": 8,
+                "eventIndex": 10,
+                "at": "2026-10-09T10:20:22.237Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_ce7k2z09j59z"
+              }
+            ],
+            "emittedCount": 3,
+            "repeatCount": 2
+          },
+          {
+            "requestSha256": "ed03d1c3c8b5153cb737ca54900e0a3cda6526833ef2c1501092e15bf7ce8464",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 1,
+                "eventIndex": 11,
+                "at": "2026-10-09T10:19:42.721Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_czh3b0d4ex3g"
+              },
+              {
+                "frameIndex": 9,
+                "eventIndex": 11,
+                "at": "2026-10-09T10:20:23.398Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_kagtzxkbp0v1"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          },
+          {
+            "requestSha256": "7851227d2857c898728615696a609976e9897fbc836225724f3f45ee3eaea15d",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 2,
+                "eventIndex": 9,
+                "at": "2026-10-09T10:19:43.992Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_phjv7sr3qyp7"
+              },
+              {
+                "frameIndex": 10,
+                "eventIndex": 9,
+                "at": "2026-10-09T10:20:24.787Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_dnbc03j5j7gs"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          }
+        ],
+        "interpretation": "Repeated emissions are not proof of duplicated execution or side effects; request histories and accumulated mutable messages are not counted."
+      },
+      "observedInferenceMapping": "Campaign frame.at within persisted task startedAt/finishedAt; excludes pre-task capacity probes. Worker request and executed-tool telemetry is reported separately."
+    },
+    {
+      "campaign": "R73-READABLE-REVIEW-COMPLETION-1791557269712.json",
+      "id": "01-bug-fix",
+      "modelRequests": 11,
+      "observedInferenceCalls": 11,
+      "toolCalls": 9,
+      "duplicateWorkReportedByRuntime": 0,
+      "workerOutcomesByRole": {
+        "explorer": {
+          "completed": 1
+        },
+        "coder": {
+          "completed": 1,
+          "failed": 1
+        },
+        "reviewer": {
+          "blocked": 1
+        }
+      },
+      "failedWorkers": [
+        {
+          "id": "child-fc874b58024717a9034eeb557952a640",
+          "agentId": "coder",
+          "role": "Autonomous Builder",
+          "reason": "Agent coder failed: [PROVIDER_RATE_LIMITED] kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m"
+        }
+      ],
+      "blockedWorkers": [
+        {
+          "id": "child-cf5f5aeb36d84311c2233e2cf642cbf4",
+          "agentId": "reviewer",
+          "role": "Independent Code Reviewer",
+          "reason": "The retryDelays function has a bug in its attempt-boundary logic, causing it to include the maxAttempts attempt in the delays array. This is a regression against the stated requirements. The test suite does not cover this case, and the function's behavior is not as expected."
+        }
+      ],
+      "reviewerNonPassingWorkers": [
+        {
+          "id": "child-cf5f5aeb36d84311c2233e2cf642cbf4",
+          "status": "blocked",
+          "reason": "The retryDelays function has a bug in its attempt-boundary logic, causing it to include the maxAttempts attempt in the delays array. This is a regression against the stated requirements. The test suite does not cover this case, and the function's behavior is not as expected."
+        }
+      ],
+      "routeDecisions": [
+        {
+          "receiptId": "e9da7ccc-6eb3-41d2-b164-0ef136c70327",
+          "runId": "child-66daad8c0913ad2939be7a3395cb76a7",
+          "agentId": "explorer",
+          "role": "EXPLORER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        },
+        {
+          "receiptId": "909520fa-f6ca-42d9-9c1c-7bb934f0fb9e",
+          "runId": "child-db99d9b6900c9ecae11b16c053e46de8",
+          "agentId": "coder",
+          "role": "CODER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        },
+        {
+          "receiptId": "21e44405-d78e-4cc2-acf3-4c8db95d46e6",
+          "runId": "child-cf5f5aeb36d84311c2233e2cf642cbf4",
+          "agentId": "reviewer",
+          "role": "REVIEWER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "blockrun-free-direct",
+          "modelId": "nvidia/llama-3.2-11b-vision",
+          "routeId": "fabric:blockrun-free-direct::nvidia/llama-3.2-11b-vision",
+          "capacityPoolId": "blockrun-free-direct:user:localconn:blockrun-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "blockrun-free-direct:user:localconn:blockrun-free-direct",
+          "independenceKey": "blockrun-free-direct:PUBLIC_IP:shared-unverified"
+        },
+        {
+          "receiptId": "1434b7b7-ecf7-435d-bfb9-21bd40a09582",
+          "runId": "child-fc874b58024717a9034eeb557952a640",
+          "agentId": "coder",
+          "role": "CODER",
+          "action": "INITIAL_SELECTION",
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "routeId": "fabric:kilo-free-direct::cohere/north-mini-code:free",
+          "capacityPoolId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "supplyClass": "PACKAGED_FREE_DIRECT",
+          "quotaDomainType": "PUBLIC_IP",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct",
+          "independenceKey": "kilo-free-direct:PUBLIC_IP:shared-unverified"
+        }
+      ],
+      "emittedToolRequests": {
+        "source": "immutable inferenceFrames.events tool_call_completed only",
+        "emittedRequests": 9,
+        "identicalRepeatedRequests": 1,
+        "repeatedRequestGroups": [
+          {
+            "requestSha256": "2c77b6b9ab56c54d5ed7947e67b8782682c918789d8273022d387e8c3dbb4407",
+            "toolName": "read_file",
+            "occurrences": [
+              {
+                "frameIndex": 2,
+                "eventIndex": 10,
+                "at": "2026-10-09T14:48:36.737Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_8dvbaejexrad"
+              },
+              {
+                "frameIndex": 9,
+                "eventIndex": 10,
+                "at": "2026-10-09T14:49:10.211Z",
+                "providerId": "kilo-free-direct",
+                "toolCallId": "read_file_fn1xw0znx7d6"
+              }
+            ],
+            "emittedCount": 2,
+            "repeatCount": 1
+          }
+        ],
+        "interpretation": "Repeated emissions are not proof of duplicated execution or side effects; request histories and accumulated mutable messages are not counted."
+      },
+      "observedInferenceMapping": "Campaign frame.at within persisted task startedAt/finishedAt; excludes pre-task capacity probes. Worker request and executed-tool telemetry is reported separately."
+    }
+  ],
+  "qualificationAndSupplyProbeRequests": {
+    "actualRequests": 70,
+    "byProvider": {
+      "blockrun-free-direct": 18,
+      "kilo-free-direct": 52
+    },
+    "sourceFiles": [
+      {
+        "file": "blockrun-compact-observations-1791538496172.json",
+        "providerId": "blockrun-free-direct",
+        "actualRequests": 4,
+        "localReportedRequestCounter": 4,
+        "evidenceSha256": "29ecc6d0af1a05157a740df6120ed6832c05bbc7b639b01bef4cd836b0ad19dd"
+      },
+      {
+        "file": "blockrun-live-observations-1791479241875.json",
+        "providerId": "blockrun-free-direct",
+        "actualRequests": 1,
+        "localReportedRequestCounter": 1,
+        "evidenceSha256": "7204d7f12ebbae659b8137875c9cc22525088f0bcf09a29bce44fb55f2351388"
+      },
+      {
+        "file": "blockrun-live-observations-1791479624335.json",
+        "providerId": "blockrun-free-direct",
+        "actualRequests": 1,
+        "localReportedRequestCounter": 1,
+        "evidenceSha256": "d96e64cfd9921e273ea7284077bca825cfed1829fa6f53968972437aa4859395"
+      },
+      {
+        "file": "blockrun-live-observations-1791479664564.json",
+        "providerId": "blockrun-free-direct",
+        "actualRequests": 2,
+        "localReportedRequestCounter": 2,
+        "evidenceSha256": "bb2310c8324d4e95e2fd200c0c3012db64cf8726875141ff305c293e92e9b16d"
+      },
+      {
+        "file": "blockrun-live-observations-1791479681280.json",
+        "providerId": "blockrun-free-direct",
+        "actualRequests": 0,
+        "localReportedRequestCounter": 0,
+        "evidenceSha256": "d6faa51def5cf8996ca63d64cc52952a04a2f176373c6581e2a70d180e1adaa6"
+      },
+      {
+        "file": "blockrun-live-observations-1791479794100.json",
+        "providerId": "blockrun-free-direct",
+        "actualRequests": 7,
+        "localReportedRequestCounter": 7,
+        "evidenceSha256": "3cbf87a02ce5f5604e5d1877947f2d28d76414aa0ce31f1c7fd1a36a1ec2ea3c"
+      },
+      {
+        "file": "blockrun-live-observations-1791479995772.json",
+        "providerId": "blockrun-free-direct",
+        "actualRequests": 1,
+        "localReportedRequestCounter": 1,
+        "evidenceSha256": "9a7097b15f2d9c6e6e5911dfb1e641973844fef9f83d52e58e2ea8f7c1d29d49"
+      },
+      {
+        "file": "blockrun-live-observations.json",
+        "providerId": "blockrun-free-direct",
+        "actualRequests": 2,
+        "localReportedRequestCounter": 2,
+        "evidenceSha256": "d30a31870fc0c444be92a7eb54c3cb09a36a3df94d5d6e6b347c1512433d8d66"
+      },
+      {
+        "file": "reviewer-cohere_north-mini-code_free-1791479086989.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 10,
+        "localReportedRequestCounter": 10,
+        "evidenceSha256": "5891bcc37569c08a2f40aa64596353b4b9e5a6f6b71f654be190f1da89b53d3c"
+      },
+      {
+        "file": "reviewer-dots-studio_dots-3-note-preview_free-1791469937409.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 0,
+        "evidenceSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "file": "reviewer-dots-studio_dots-3-note-preview_free-1791469967716.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 1,
+        "localReportedRequestCounter": 1,
+        "evidenceSha256": "43b9aa02f6e95a825bfee02660847a524fe4408846aef40eab9a8069fd7fdb63"
+      },
+      {
+        "file": "reviewer-dots-studio_dots-3-note-preview_free-1791479228680.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 1,
+        "localReportedRequestCounter": 1,
+        "evidenceSha256": "7d76487d3bc1308b55b1d1a1a034c8114e0243ede2844e0643fbba5ce02b92ae"
+      },
+      {
+        "file": "reviewer-dots-studio_dots-3-note-preview_free-1791540558093.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 0,
+        "evidenceSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "file": "reviewer-dots-studio_dots-3-note-preview_free-1791540616465.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 8,
+        "localReportedRequestCounter": 9,
+        "evidenceSha256": "a044833d187375c117e5ca477b8fc567a35ec1bbb8b4608c30ebf7be670982ab"
+      },
+      {
+        "file": "reviewer-liquid_lfm-2.5-2.6b_free-1791478991059.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 3,
+        "localReportedRequestCounter": 3,
+        "evidenceSha256": "ca8c25b13fad1568d28ea895ea47a73a76c64a835995737f7c7a77b3c429c617"
+      },
+      {
+        "file": "reviewer-nvidia_nemotron-3-super-120b-a12b_free-1791479328096.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 8,
+        "localReportedRequestCounter": 8,
+        "evidenceSha256": "59c365547db44c444c7cbb9d660cfac20b275fe984c7e39460eeb80167603ed8"
+      },
+      {
+        "file": "reviewer-nvidia_nemotron-3-super-120b-a12b_free-1791479717487.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 9,
+        "localReportedRequestCounter": 9,
+        "evidenceSha256": "a5d0ba914741c627d4480cc37141748a66140764785d3b256d25584454929156"
+      },
+      {
+        "file": "reviewer-nvidia_nemotron-3-ultra-550b-a55b_free-1791479634287.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 1,
+        "localReportedRequestCounter": 1,
+        "evidenceSha256": "c140edf9e5917d8648db223291f42e64ee9bb378ddcbc89181481623f1d1269d"
+      },
+      {
+        "file": "reviewer-nvidia_nemotron-3.5-lightning_free-1791478615107.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 10,
+        "localReportedRequestCounter": 10,
+        "evidenceSha256": "a991cf379e45900d8fe30b1e52d609279cd671f9e9a7adbd043dec8fe5ec7900"
+      },
+      {
+        "file": "reviewer-poolside_laguna-s-2.1_free-1791480508273.json",
+        "providerId": "kilo-free-direct",
+        "actualRequests": 1,
+        "localReportedRequestCounter": 1,
+        "evidenceSha256": "60bfd80e64123ca96eecc8788b1cd47f51a91a6ccfa2b5a28b84136adf856d04"
+      }
+    ],
+    "excludedDuplicateFiles": [],
+    "interpretation": "Kilo counts owned LIVE_REVIEWER_ONLY_PUBLIC_CASES frames; BlockRun counts POSTs in unique owned live/compact observation files, including public transport/tool probes. Derived qualification receipts and copied receipt projections are excluded. A locally refused invocation is not an actual POST or an organic outage."
+  },
   "forgeVerifyFailures": 0,
+  "forgeVerifyExecutions": 0,
+  "independentReviewsPassed": 0,
+  "integratedParents": 0,
   "falseCompletions": 0,
   "averageObservedInferenceCallsPerCompletedTask": null,
   "taskOutcomes": [
@@ -233,7 +1523,282 @@
         "reason": "SUBAGENT_WRITER_BLOCKED"
       },
       "testsAfterExitCode": 1
+    },
+    {
+      "id": "01-bug-fix",
+      "taskClass": "bug fix",
+      "campaign": "R73-FROZEN-COMPLETION-1791540147216.json",
+      "status": "blocked",
+      "reason": "Writer did not complete: Agent coder failed: [PROVIDER_UNAVAILABLE] [PROVIDER_UNAVAILABLE] kilo-free-direct error (400): {\"error\":{\"message\":\"Provider returned error\",\"code\":400,\"metadata\":{\"raw\":\"{\\\"id\\\":\\\"7d392e0d-c04d-4fa3-8efe-cec1abd272b4\\\",\\\"message\\\":\\\"invalid request: invalid message provided at index 15: must h",
+      "workers": [
+        {
+          "agentId": "explorer",
+          "status": "completed",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 15853,
+            "modelRequests": 1,
+            "inputTokens": 2627,
+            "outputTokens": 955,
+            "toolCalls": 0,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "coder",
+          "status": "completed",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 23622,
+            "modelRequests": 8,
+            "inputTokens": 27096,
+            "outputTokens": 1453,
+            "toolCalls": 7,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "reviewer",
+          "status": "blocked",
+          "model": {
+            "providerId": "blockrun-free-direct",
+            "modelId": "nvidia/llama-3.2-11b-vision"
+          },
+          "telemetry": {
+            "wallTimeMs": 9555,
+            "modelRequests": 1,
+            "inputTokens": 1192,
+            "outputTokens": 378,
+            "toolCalls": 0,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "coder",
+          "status": "failed",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 51469,
+            "modelRequests": 8,
+            "inputTokens": 28491,
+            "outputTokens": 5612,
+            "toolCalls": 6,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 1
+          }
+        }
+      ],
+      "review": {
+        "passed": false,
+        "findings": []
+      },
+      "verification": [],
+      "integration": {
+        "status": "blocked",
+        "branch": "codeforge/worktree/run-56c22ab1-c3f6-49b2-84e9-898e90231e69-442be0b6",
+        "worktreeId": "wt-442be0b6",
+        "reason": "SUBAGENT_WRITER_BLOCKED"
+      },
+      "testsAfterExitCode": 1
+    },
+    {
+      "id": "01-bug-fix",
+      "taskClass": "bug fix",
+      "campaign": "R73-PROTOCOL-ALIGNED-COMPLETION-1791541166828.json",
+      "status": "blocked",
+      "reason": "Independent review did not complete (REVIEWER_FAILED): Agent reviewer failed: [PROVIDER_UNAVAILABLE] No eligible free route for role reviewer: 8-Bit admission found no healthy route meeting this role's capability contract (FABRIC_DENIED_NO_SUPPLY, NO_ROLE_QUALIFIED_ROUTE, NO_ELIGIBLE_ROUTE, candidates: 1 role_ineligible:ROLE_NOT_QUALIFIED [cohere/north-mini-code:free]; 1 role_ineligible:ROLE_VERDICT_EXCLUDED [nvidia/llama-3.2-11b-vision]). No paid or unknown-cost route was used.",
+      "workers": [
+        {
+          "agentId": "explorer",
+          "status": "completed",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 28880,
+            "modelRequests": 6,
+            "inputTokens": 17047,
+            "outputTokens": 2057,
+            "toolCalls": 5,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "coder",
+          "status": "completed",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 26553,
+            "modelRequests": 7,
+            "inputTokens": 22413,
+            "outputTokens": 1490,
+            "toolCalls": 6,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "reviewer",
+          "status": "blocked",
+          "model": {
+            "providerId": "blockrun-free-direct",
+            "modelId": "nvidia/llama-3.2-11b-vision"
+          },
+          "telemetry": {
+            "wallTimeMs": 34914,
+            "modelRequests": 2,
+            "inputTokens": 2839,
+            "outputTokens": 566,
+            "toolCalls": 0,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "reviewer",
+          "status": "failed",
+          "telemetry": {
+            "wallTimeMs": 256,
+            "modelRequests": 0,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "toolCalls": 0,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        }
+      ],
+      "review": {
+        "passed": false,
+        "findings": []
+      },
+      "verification": [],
+      "integration": {
+        "status": "blocked",
+        "branch": "codeforge/worktree/run-e7267a12-a0cc-4d68-a23f-8f0363f48fe1-8b761130",
+        "worktreeId": "wt-8b761130",
+        "reason": "REVIEWER_FAILED"
+      },
+      "testsAfterExitCode": 1
+    },
+    {
+      "id": "01-bug-fix",
+      "taskClass": "bug fix",
+      "campaign": "R73-READABLE-REVIEW-COMPLETION-1791557269712.json",
+      "status": "blocked",
+      "reason": "Writer did not complete: Agent coder failed: [PROVIDER_RATE_LIMITED] kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m",
+      "workers": [
+        {
+          "agentId": "explorer",
+          "status": "completed",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 34617,
+            "modelRequests": 2,
+            "inputTokens": 5569,
+            "outputTokens": 2802,
+            "toolCalls": 3,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "coder",
+          "status": "completed",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 18245,
+            "modelRequests": 6,
+            "inputTokens": 20934,
+            "outputTokens": 1340,
+            "toolCalls": 5,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "reviewer",
+          "status": "blocked",
+          "model": {
+            "providerId": "blockrun-free-direct",
+            "modelId": "nvidia/llama-3.2-11b-vision"
+          },
+          "telemetry": {
+            "wallTimeMs": 13911,
+            "modelRequests": 1,
+            "inputTokens": 1212,
+            "outputTokens": 292,
+            "toolCalls": 0,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 0
+          }
+        },
+        {
+          "agentId": "coder",
+          "status": "failed",
+          "model": {
+            "providerId": "kilo-free-direct",
+            "modelId": "cohere/north-mini-code:free"
+          },
+          "telemetry": {
+            "wallTimeMs": 3766,
+            "modelRequests": 2,
+            "inputTokens": 4044,
+            "outputTokens": 339,
+            "toolCalls": 1,
+            "retryCount": 0,
+            "duplicateWorkCount": 0,
+            "providerFailures": 1
+          }
+        }
+      ],
+      "review": {
+        "passed": false,
+        "findings": []
+      },
+      "verification": [],
+      "integration": {
+        "status": "blocked",
+        "branch": "codeforge/worktree/run-9a0342b6-89da-48cf-a4c5-97914c5d3030-cfa0ad5b",
+        "worktreeId": "wt-cfa0ad5b",
+        "reason": "SUBAGENT_WRITER_BLOCKED"
+      },
+      "testsAfterExitCode": 1
     }
   ],
-  "interpretation": "Qualification calls are separate from coding attempts. Runtime duplicate-work classification is not a count of every repeated read. An unavailable roster is not a provider inference failure. Requests per completion include failed attempts and capacity probes."
+  "interpretation": "Qualification calls are separate from coding attempts. Runtime duplicate-work classification and identical terminal tool emissions are distinct; repeats do not prove duplicate side effects. Physical quota ownership is taken from decision evidence, never inferred from model/user counts. An unavailable roster or local request ceiling is not an organic provider inference failure. Requests per completion include failed attempts and capacity probes."
 }

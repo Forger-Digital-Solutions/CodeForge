@@ -1,4 +1,4 @@
-import type { CredentialStore } from "./index.js";
+import type { CredentialStore, ProviderModelPricing } from "./index.js";
 import { ProviderError, EnvironmentCredentialStore, quotaHeadersOf, type ProviderResponseObserver } from "./index.js";
 import { redactSecrets } from "./redact.js";
 import type { ChatRequest, ChatResponse, StreamEvent } from "./chat-types.js";
@@ -17,6 +17,7 @@ export interface ProviderModel {
   };
   isFree: boolean;
   freeStatus: "verified_free" | "unknown" | "paid";
+  pricing?: ProviderModelPricing;
 }
 
 export interface ProviderAdapter {
@@ -45,6 +46,13 @@ export interface OpenRouterOptions {
 }
 
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+const ACCOUNT_PRICE_EVIDENCE_TTL_MS = 5 * 60_000;
+
+function catalogPrice(value: unknown): number | undefined {
+  if (typeof value !== "string" || !/^(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value)) return undefined;
+  const rate = Number(value);
+  return rate >= 0 && Number.isFinite(rate * 1_000_000) ? rate : undefined;
+}
 
 export class OpenRouterAdapter implements ProviderAdapter {
   readonly providerId = "openrouter";
@@ -114,6 +122,23 @@ export class OpenRouterAdapter implements ProviderAdapter {
     // tool-capable must never be routed a tool-driven coding task.
     const supported = Array.isArray(m.supported_parameters) ? m.supported_parameters : undefined;
     const inputs = inputModalities(m);
+    const inputRate = catalogPrice(pricing?.prompt);
+    const outputRate = catalogPrice(pricing?.completion);
+    const priceAt = new Date().toISOString();
+    const measuredPricing = inputRate !== undefined && outputRate !== undefined
+      ? { inputCostPerMillion: inputRate * 1_000_000, outputCostPerMillion: outputRate * 1_000_000,
+          currency: "USD" as const, confidence: "AUTHORITATIVE" as const, source: `${this.baseUrl}/models`, verifiedAt: priceAt,
+          recheckAt: new Date(Date.parse(priceAt) + ACCOUNT_PRICE_EVIDENCE_TTL_MS).toISOString(),
+          // Cached inputs and reasoning outputs are token subsets; the full token price remains
+          // conservative only when each observed subset price is no higher than its base rate.
+          tokenOnly: catalogPrice(pricing?.request) === 0 && Object.entries(pricing ?? {}).every(([dimension, value]) => {
+            if (dimension === "prompt" || dimension === "completion") return true;
+            const rate = catalogPrice(value);
+            if (dimension === "input_cache_read" || dimension === "input_cache_write") return rate !== undefined && rate <= inputRate;
+            if (dimension === "internal_reasoning") return rate !== undefined && rate <= outputRate;
+            return rate === 0;
+          }) }
+      : undefined;
 
     return {
       modelId: m.id,
@@ -129,6 +154,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
       },
       isFree,
       freeStatus: isFree ? "verified_free" : "paid",
+      ...(measuredPricing ? { pricing: measuredPricing } : {}),
     };
   }
 
@@ -620,10 +646,7 @@ interface OpenRouterModel {
   id: string;
   name?: string;
   context_length?: number;
-  pricing?: {
-    prompt?: string;
-    completion?: string;
-  };
+  pricing?: Record<string, string | undefined>;
   architecture?: {
     /** e.g. "text+image->text" */
     modality?: string;

@@ -1,4 +1,5 @@
 import type { SupplyClass } from "@codeforge/forge-zero";
+import type { ConnectedAccountView } from "./connected-account-types.js";
 import type {
   AuthClass,
   CredentialSource,
@@ -98,6 +99,7 @@ export interface ConnectResult {
   error?: string;
   models?: ProviderCatalogModelView[];
   verifiedFree?: number;
+  connection?: ConnectedAccountView;
 }
 
 export type FirstRunOffer =

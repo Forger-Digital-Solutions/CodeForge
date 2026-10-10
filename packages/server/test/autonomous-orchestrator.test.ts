@@ -454,6 +454,36 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     }
   });
 
+  it("retains the trusted parent authorization workspace for roster children in isolated worktrees", async () => {
+    const requests: AgentRuntimeRequest[] = [];
+    const runtime = {
+      recordRoleOutcome: vi.fn(),
+      executeAgentRun: async (request: AgentRuntimeRequest): Promise<AgentRuntimeResult> => {
+        requests.push(request);
+        const common = { findings: [], evidence: [], toolExecutions: [], usage: { inputTokens: 0, outputTokens: 0, requestCount: 0, toolCount: 0 }, stopReason: "completed" as const };
+        if (request.role === "coder") {
+          const file = join(request.workspacePath, "src", "math.ts");
+          await writeFile(file, `${await readFile(file, "utf8")}\nexport const authorizationChecked = true;\n`);
+          return { ...common, status: "completed", summary: "Implemented", filesChanged: ["src/math.ts"] };
+        }
+        return { ...common, status: "completed", summary: "Inspected", filesChanged: [], ...(request.role === "reviewer" ? { structuredData: { verdict: "pass", findings: [], summary: "Reviewed" } } : {}) };
+      },
+    } as unknown as AgentRuntime;
+    const roster = { ownerUserId: "alice", entitlement: "FREE" as const, slots: [{ kind: "PINNED_VERSION" as const, modelId: "fixture-free", enabled: true, allowedRoles: ["EXPLORER" as const, "CODER" as const, "REVIEWER" as const] }], lead: { mode: "NONE" as const }, updatedAt: new Date().toISOString() };
+    const catalog = [{ modelId: "fixture-free", providerId: "test", providerModelId: "fixture-free", familyId: "fixture", version: "1", sourceClass: "MANAGED_FREE" as const, lifecycle: "ACTIVE" as const, available: true, approved: true, qualifiedRoles: ["EXPLORER" as const, "CODER" as const, "REVIEWER" as const], dataPolicy: { privateCode: true } }];
+    const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
+    const orchestrator = createAutonomousRunOrchestrator({ workspaceService: wsService, persistence, agentRuntime: runtime, subagentsR1Enabled: true });
+    const result = await orchestrator.startRun({ sessionId: "sess-roster-authorization", workspacePath: targetRepo, goal: "Add authorization marker", topology: "normal", verificationCommands: ["node -e \"process.exit(0)\""], rosterContext: { roster, catalog } });
+    expect(result.status, JSON.stringify(result)).toBe("completed");
+    const isolated = requests.filter(request => request.role === "coder" || request.role === "reviewer");
+    expect(isolated.map(request => request.role)).toEqual(["coder", "reviewer"]);
+    for (const request of requests) expect(request.authorizationWorkspacePath).toBe(targetRepo);
+    for (const request of isolated) expect(request.workspacePath).not.toBe(targetRepo);
+    const workers = await persistence.getWorkItemsByKind("subagent_run");
+    expect(workers.filter(item => item.kind === "subagent_run").every(item => item.routingHints?.authorizationWorkspacePath === targetRepo)).toBe(true);
+    expect(await persistence.getWorkItem(`parent-state-${result.runId}`)).toBeUndefined();
+  });
+
   it("Scenario 7 (Target Divergence Protection): detects when target HEAD moved (A -> U) and fails closed", async () => {
     const wsService = createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir });
     const orchestrator = createAutonomousRunOrchestrator({

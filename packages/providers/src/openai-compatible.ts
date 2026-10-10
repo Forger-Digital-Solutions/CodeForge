@@ -655,14 +655,23 @@ interface OaiUsage {
   prompt_tokens_details?: { cached_tokens?: number };
   /** R23: reasoning-token detail reported by reasoning models on OpenAI-compatible routes. */
   completion_tokens_details?: { reasoning_tokens?: number };
+  cost?: unknown;
+  costUsd?: unknown;
 }
 
-function cachedFieldsFromOaiUsage(usage: OaiUsage): { cachedInputTokens?: number; reasoningTokens?: number } {
+function cachedFieldsFromOaiUsage(usage: OaiUsage): { cachedInputTokens?: number; reasoningTokens?: number; costUsd?: number } {
   const cached = usage.prompt_tokens_details?.cached_tokens;
   const reasoning = usage.completion_tokens_details?.reasoning_tokens;
+  const reportedCosts = [usage.cost, usage.costUsd].filter(value => value !== undefined);
+  if (reportedCosts.some(value => typeof value !== "number" || !Number.isFinite(value) || value < 0)) {
+    throw new ProviderError("Provider returned invalid usage cost", "MALFORMED_USAGE_COST", false);
+  }
+  // Aliased cost fields must never reduce the provider's reported charge.
+  const costUsd = reportedCosts.length ? Math.max(...reportedCosts as number[]) : undefined;
   return {
     ...(typeof cached === "number" && cached >= 0 ? { cachedInputTokens: cached } : {}),
     ...(typeof reasoning === "number" && Number.isFinite(reasoning) && reasoning >= 0 ? { reasoningTokens: Math.floor(reasoning) } : {}),
+    ...(costUsd !== undefined ? { costUsd } : {}),
   };
 }
 

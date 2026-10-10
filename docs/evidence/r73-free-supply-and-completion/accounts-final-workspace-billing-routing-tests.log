@@ -1,0 +1,49 @@
+
+ RUN  v5.0.1 G:/CodeForge/worktrees/r73-free-supply-and-completion
+
+stdout | packages/server/test/workspace-inference-consent.test.ts > workspace inference consent at server entry points
+CodeForge server running at http://localhost:55286
+
+ ✓ packages/server/test/workspace-inference-consent.test.ts (4 tests) 206ms
+stdout | packages/server/test/workspace-binding-guard.test.ts > workspace binding guard
+CodeForge server running at http://localhost:55289
+
+ ✓ packages/server/test/workspace-binding-guard.test.ts (4 tests) 272ms
+ ✓ apps/desktop/test/connected-accounts-settings.test.tsx (13 tests) 230ms
+ ❯ packages/server/test/personal-account-runtime.test.ts (13 tests | 1 failed) 49520ms
+   ❯ personal paid routing uses the existing autonomous role runtime (13)
+     ✓ FREE_ONLY selects available packaged Free while leaving connected paid capacity unused 1237ms
+     ✓ FREE_PREFERRED selects available packaged Free while leaving connected paid capacity unused 1111ms
+     ✓ Paid Preferred selects a qualified, explicitly authorized personal account 1142ms
+     ✓ resolves personal capacity through the trusted host callback for a normal run without an explicit roster allowance 1088ms
+     ✓ keeps a Manual account outside automatic routing while permitting its explicit account selection 2361ms
+     ✓ Auto Best selects the stronger measured personal role only when paid consent remains enabled 2077ms
+     ✓ keeps unknown Free quality ahead of a paid route rather than manufacturing a comparison 1085ms
+     ✓ uses the parent-authorized disclosure workspace for an isolated child worktree 1930ms
+     ✓ keeps a local personal disclosure denial out of provider health and retry accounting 952ms
+     × handles credential rejection without replaying or replacing an explicit account in PAID_PREFERRED 979ms
+     ✓ handles credential rejection without replaying or replacing an explicit account in SPECIFIC_ACCOUNT 1112ms
+     ✓ Free Preferred preserves successful edits and tool observations through injected Free failure and authorized paid continuation 17489ms
+     ✓ Free Only never consumes the connected paid route when every allowed Free attempt fails 16955ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/server/test/personal-account-runtime.test.ts > personal paid routing uses the existing autonomous role runtime > handles credential rejection without replaying or replacing an explicit account in PAID_PREFERRED
+AssertionError: Target cannot be null or undefined.
+ ❯ packages/server/test/personal-account-runtime.test.ts:177:37
+    175|       expect(result.status).toBe("completed");
+    176|       expect(seen).toEqual(["conn-a", "conn-b"]);
+    177|       expect(result.routeFailovers).toHaveLength(1);
+       |                                     ^
+    178|     } else {
+    179|       expect(result.status).not.toBe("completed");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 33 passed (34)
+   Start at  20:03:40
+   Duration  53.76s (tests 83%, transform 9%, import 7%)
+
+JSON report written to G:/CodeForge/worktrees/r73-free-supply-and-completion/docs/evidence/r73-free-supply-and-completion/accounts-final-workspace-billing-routing-tests.json

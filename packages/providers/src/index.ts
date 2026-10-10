@@ -83,6 +83,17 @@ export type ModelTier = "free" | "paid" | "gems_paid";
  */
 export type EntitlementStatus = "included" | "requires_subscription" | "trial" | "not_entitled";
 
+export interface ProviderModelPricing {
+  inputCostPerMillion: number;
+  outputCostPerMillion: number;
+  currency: "USD";
+  confidence: "AUTHORITATIVE";
+  source: string;
+  verifiedAt: string;
+  recheckAt: string;
+  tokenOnly: boolean;
+}
+
 export interface ProviderModel {
   modelId: string;
   displayName: string;
@@ -102,6 +113,7 @@ export interface ProviderModel {
   tier?: ModelTier;
   /** User's entitlement for this model - whether they can use it */
   entitlementStatus?: EntitlementStatus;
+  pricing?: ProviderModelPricing;
 }
 
 export type ProviderRegistry = Map<string, ProviderAdapter>;

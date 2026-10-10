@@ -1,0 +1,30 @@
+
+ RUN  v5.0.1 G:/CodeForge/worktrees/r73-free-supply-and-completion
+
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/intelligence/dist/index.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/intelligence/dist/schema.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/intelligence/dist/splits.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/intelligence/dist/baselines.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/intelligence/dist/predictors.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/intelligence/dist/telemetry.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/intelligence/dist/report.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/intelligence/dist/outcome-taxonomy.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/intelligence/dist/historical.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/terminal/dist/index.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/terminal/dist/pty-loader.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/terminal/dist/ansi.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/terminal/dist/shells.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/terminal/dist/executor.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/terminal/dist/console-host.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/terminal/dist/session.js" points to missing source files
+Sourcemap for "G:/CodeForge/worktrees/r73-free-supply-and-completion/packages/terminal/dist/wsl.js" points to missing source files
+ ✓ packages/server/test/autonomous-orchestrator.test.ts (23 tests | 22 skipped) 29670ms
+   ✓ CF-06 Production Multi-Agent Orchestrator, Review & Integration (23)
+     ✓ uses repeated abstract prior outcomes to advise a later revision without changing completion authority 29668ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 22 skipped (23)
+   Start at  20:05:27
+   Duration  39.86s (tests 75%, transform 23%, import 1%)
+
+JSON report written to G:/CodeForge/worktrees/r73-free-supply-and-completion/docs/evidence/r73-free-supply-and-completion/accounts-final-heavy-orchestrator-retry-tests.json

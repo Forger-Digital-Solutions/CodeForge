@@ -1,5 +1,5 @@
 import type { CredentialStore, ProviderAdapter, ProviderModel, ProviderCatalog, ProviderResponseObserver } from "@codeforge/providers";
-import { configFieldKey, createProviderAdapterFromDefinition, InMemoryProviderCatalog, verifyOpenRouterEntitlement, isOpenRouterEntitlementCurrent, PuterSdkAdapter, type PuterSdkClient, type OpenRouterEntitlementReceipt } from "@codeforge/providers";
+import { configFieldKey, createProviderAdapterFromDefinition, InMemoryProviderCatalog, verifyOpenRouterEntitlement, isOpenRouterEntitlementCurrent, isOpenRouterConnectionCurrent, PuterSdkAdapter, type PuterSdkClient, type OpenRouterEntitlementReceipt } from "@codeforge/providers";
 import { capacityIndependenceSnapshot, hashUserAccountIdentity, userConnectedPoolId, type ForgeZero } from "@codeforge/forge-zero";
 import type {
   ConnectResult,
@@ -36,6 +36,8 @@ import {
   REGION_UNKNOWN,
 } from "@codeforge/legal-policy";
 import { parsePuterAuthorization, type PuterAuthorization, type PuterAccountView } from "./puter-account-types.js";
+import { ConnectedAccounts, type ConnectedAccountAuthority } from "./connected-accounts.js";
+import type { ConnectedAccountPolicyPatch } from "./connected-account-types.js";
 
 /**
  * Desktop provider connections (R1 §13-§31, §59-§64, §97-§99, §104-§106).
@@ -93,6 +95,7 @@ export interface ProviderConnectionsHost {
   userId?: string;
   ollamaUserConnectedFreeEnabled?: boolean;
   verifyOpenRouter?: typeof verifyOpenRouterEntitlement;
+  paidAccountAdmission?: (account: ConnectedAccountAuthority) => { eligible: boolean; reason?: string };
 }
 
 const CONNECTABLE_FIELD_RE = /^[a-zA-Z][a-zA-Z0-9_-]{0,40}$/;
@@ -102,6 +105,7 @@ export class ProviderConnections {
   private readonly now: () => Date;
   private readonly delegatedReceipts = new Map<string, OpenRouterEntitlementReceipt>();
   private readonly checkedDelegatedOwners = new Set<string>();
+  private readonly accounts: ConnectedAccounts;
 
   private delegatedReceipt(): OpenRouterEntitlementReceipt | undefined {
     return this.delegatedReceipts.get(this.accountOwnerUserId());
@@ -167,12 +171,43 @@ export class ProviderConnections {
   constructor(host: ProviderConnectionsHost) {
     this.host = host;
     this.now = host.now ?? (() => new Date());
+    this.accounts = new ConnectedAccounts({ ownerUserId: () => this.accountOwnerUserId(), readSettings: () => host.readSettings(),
+      writeSettings: (settings) => host.writeSettings(settings), secrets: host.secrets, now: this.now,
+      providerName: (id) => this.definition(id)?.displayName,
+      probe: async (providerId, fields) => {
+        const definition = this.definition(providerId);
+        if (!definition?.implemented || definition.apiStyle === "hosted" || definition.apiStyle === "internal") throw new Error("ACCOUNT_PROVIDER_UNSUPPORTED");
+        const values = this.validateFields(definition, fields);
+        const adapter = this.ephemeralAdapter(definition, values);
+        if (!adapter) throw new Error("ACCOUNT_PROVIDER_UNSUPPORTED");
+        return { values, models: await adapter.listModels() };
+      },
+      verifyOpenRouter: (options) => (host.verifyOpenRouter ?? verifyOpenRouterEntitlement)(options),
+      paidAccountAdmission: (authority) => host.paidAccountAdmission?.(authority) ?? { eligible: false, reason: "PAID_RUNTIME_AUTHORITY_REQUIRED" },
+      notifyChanged: host.notifyChanged });
     const raw = host.readSettings()[DELEGATED_ENTITLEMENTS_KEY] as Record<string, OpenRouterEntitlementReceipt> | undefined;
     for (const receipt of Object.values(raw ?? {})) {
       if (receipt?.provider === "openrouter" && typeof receipt.ownerUserId === "string") this.delegatedReceipts.set(receipt.ownerUserId, receipt);
     }
     this.migrateLegacyOpenRouterOAuth();
   }
+
+  listProviderAccounts() { return this.accounts.list(); }
+  addProviderAccount(providerId: string, fields: Record<string, unknown>, label?: string) { return this.accounts.connect(providerId, fields, { label }); }
+  connectOAuthAccount(key: string, options: { expectedOwnerUserId: string; label?: string; reauthorizeConnectionId?: string }) {
+    return this.accounts.connect("openrouter", { apiKey: key }, { authMethod: "OAUTH_PKCE", expectedOwnerUserId: options.expectedOwnerUserId, label: options.label, replaceConnectionId: options.reauthorizeConnectionId });
+  }
+  replaceProviderAccountCredential(connectionId: string, fields: Record<string, unknown>) {
+    const authority = this.accounts.authority(connectionId);
+    if (!authority) return Promise.resolve({ ok: false, error: "Account connection is unavailable." });
+    return this.accounts.connect(authority.providerId, fields, { replaceConnectionId: connectionId, authMethod: "API_KEY" });
+  }
+  updateProviderAccount(connectionId: string, patch: ConnectedAccountPolicyPatch) { return this.accounts.update(connectionId, patch); }
+  disconnectProviderAccount(connectionId: string) { return this.accounts.disconnect(connectionId); }
+  recheckProviderAccount(connectionId: string) { return this.accounts.recheck(connectionId); }
+  providerAccountAuthority(connectionId: string) { return this.accounts.authority(connectionId); }
+  providerAccountModels(connectionId: string) { return this.accounts.models(connectionId); }
+  providerAccountCredentialStore(connectionId: string, mode: "FREE_ONLY" | "PERSONAL_PAID") { return this.accounts.credentials(connectionId, mode); }
 
   private migrateLegacyOpenRouterOAuth(): void {
     const sources = this.host.readSettings()[CREDENTIAL_SOURCES_KEY] as Record<string, string> | undefined;
@@ -701,6 +736,17 @@ export class ProviderConnections {
     if (providerId === "openrouter" && source === "OAUTH") {
       const receipt = await (this.host.verifyOpenRouter ?? verifyOpenRouterEntitlement)({ key: values.apiKey!, ownerUserId: authorizingOwner, now: this.now() });
       if (authorizingOwner !== this.accountOwnerUserId()) return { ok: false, error: "The CodeForge account changed during authorization. Connect again." };
+      if (receipt.accountClass === "PAID" && isOpenRouterConnectionCurrent(receipt, authorizingOwner, values.apiKey!, this.now())) {
+        const account = await this.accounts.connect(providerId, values, { authMethod: "OAUTH_PKCE", expectedOwnerUserId: authorizingOwner, verifiedProbe: { values, models, entitlement: receipt } });
+        return { ok: account.ok, error: account.error, connection: account.connection, verifiedFree: 0, models: this.classifyCatalog(def, models).map((model) => ({ ...model, free: false, freeReason: "Paid account excluded from ForgeAuto/Free" })) };
+      }
+      const prior = this.delegatedReceipt();
+      const priorKey = this.resolveField(providerId, "apiKey")?.value;
+      if (prior && priorKey && isOpenRouterEntitlementCurrent(prior, authorizingOwner, priorKey, this.now()) && prior.credentialFingerprint !== receipt.credentialFingerprint) {
+        if (!isOpenRouterEntitlementCurrent(receipt, authorizingOwner, values.apiKey!, this.now()) || !receipt.admissionEvidence) return { ok: false, error: "The new Free entitlement was not verified; the connected account was preserved." };
+        const account = await this.accounts.connect(providerId, values, { authMethod: "OAUTH_PKCE", expectedOwnerUserId: authorizingOwner, verifiedProbe: { values, models, entitlement: receipt } });
+        return { ok: account.ok, error: account.error, connection: account.connection, verifiedFree: 0 };
+      }
       this.saveDelegatedReceipt(receipt);
       if (!isOpenRouterEntitlementCurrent(receipt, this.host.userId ?? "", values.apiKey!, this.now()) || !receipt.admissionEvidence) {
         this.publishConnection(def, this.credentialSourceOf(providerId));
@@ -734,6 +780,8 @@ export class ProviderConnections {
   async disconnect(providerId: string): Promise<void> {
     const def = this.definition(providerId);
     if (!def) throw new Error("Unknown provider");
+    const connectedKey = this.resolveField(providerId, "apiKey")?.value;
+    if (connectedKey) await this.accounts.disconnectMatchingCredential(providerId, connectedKey);
     this.host.secrets.delete(this.credentialStorageKey(providerId));
     for (const field of def.connection.fields) if (field.id !== "apiKey") this.host.secrets.delete(configFieldKey(providerId, field.id));
     if (providerId === "cloudflare-workers-ai") this.host.secrets.delete("cloudflare-account-id");
@@ -769,6 +817,7 @@ export class ProviderConnections {
         this.host.notifyChanged?.();
         return;
       }
+      await this.accounts.migrate(providerId, key, this.delegatedReceipt()!, "OAUTH").catch(() => undefined);
     }
     const catalog = this.host.providerCatalog;
     if (def.apiStyle === "hosted" || def.apiStyle === "internal") {

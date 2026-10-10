@@ -137,11 +137,11 @@ export class CapacityReservationLedger {
       sawEligibleRoute = true;
       // Two model routes backed by one provider account must contend for the same reservation
       // budget. Distributed pools are deliberately isolated by their natural end user.
-      const active = route.capacityPoolScope === "SHARED_OWNER_POOL"
+      const active = route.capacityPoolScope === "SHARED_OWNER_POOL" || route.quotaProviderId !== undefined
         ? (this.poolDemand.get(route.capacityPoolId) ?? ZERO_DEMAND)
         : (this.userPoolDemand.get(`${request.userId}${route.capacityPoolId}`) ?? ZERO_DEMAND);
       const physicalRoute = this.pools.get(route.capacityPoolId);
-      if (physicalRoute && (physicalRoute.providerId !== route.providerId
+      if (physicalRoute && (physicalRoute.providerId !== (route.quotaProviderId ?? route.providerId)
         || physicalRoute.scope !== route.capacityPoolScope
         || physicalRoute.supplyClass !== route.supplyClass
         || (physicalRoute.capacityIdentity !== undefined && route.capacityIdentity !== undefined && physicalRoute.capacityIdentity !== route.capacityIdentity))) {

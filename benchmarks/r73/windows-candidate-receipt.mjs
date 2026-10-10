@@ -50,21 +50,49 @@ for (const [source, entry] of [
   ["packages/providers/dist/openai-compatible.js", "node_modules/@codeforge/providers/dist/openai-compatible.js"],
   ["packages/providers/dist/provider-factory.js", "node_modules/@codeforge/providers/dist/provider-factory.js"],
   ["packages/providers/dist/puter.js", "node_modules/@codeforge/providers/dist/puter.js"],
+  ["packages/providers/dist/openrouter.js", "node_modules/@codeforge/providers/dist/openrouter.js"],
+  ["packages/providers/dist/openrouter-entitlement.js", "node_modules/@codeforge/providers/dist/openrouter-entitlement.js"],
+  ["packages/providers/dist/openrouter-oauth.js", "node_modules/@codeforge/providers/dist/openrouter-oauth.js"],
   ["packages/model-registry/dist/blockrun-policy-reverification.js", "node_modules/@codeforge/model-registry/dist/blockrun-policy-reverification.js"],
   ["packages/model-registry/dist/free-cloud-service.js", "node_modules/@codeforge/model-registry/dist/free-cloud-service.js"],
   ["packages/server/dist/autonomous-orchestrator.js", "node_modules/@codeforge/server/dist/autonomous-orchestrator.js"],
+  ["packages/server/dist/subagent-manager.js", "node_modules/@codeforge/server/dist/subagent-manager.js"],
+  ["packages/protocol/dist/subagent-runtime.js", "node_modules/@codeforge/protocol/dist/subagent-runtime.js"],
   ["packages/server/dist/agent-runtime.js", "node_modules/@codeforge/server/dist/agent-runtime.js"],
   ["packages/server/dist/reviewer-evidence.js", "node_modules/@codeforge/server/dist/reviewer-evidence.js"],
   ["packages/server/dist/model-execution-adapter.js", "node_modules/@codeforge/server/dist/model-execution-adapter.js"],
+  ["packages/server/dist/index.js", "node_modules/@codeforge/server/dist/index.js"],
+  ["packages/server/dist/user-intelligence.js", "node_modules/@codeforge/server/dist/user-intelligence.js"],
+  ["packages/server/dist/forgeauto-roster.js", "node_modules/@codeforge/server/dist/forgeauto-roster.js"],
+  ["packages/server/dist/personal-account-policy.js", "node_modules/@codeforge/server/dist/personal-account-policy.js"],
+  ["packages/server/dist/personal-free-capacity.js", "node_modules/@codeforge/server/dist/personal-free-capacity.js"],
+  ["packages/forge-zero/dist/capacity-independence.js", "node_modules/@codeforge/forge-zero/dist/capacity-independence.js"],
+  ["packages/forge-zero/dist/capacity-forecast.js", "node_modules/@codeforge/forge-zero/dist/capacity-forecast.js"],
+  ["packages/forge-zero/dist/capacity-reservations.js", "node_modules/@codeforge/forge-zero/dist/capacity-reservations.js"],
+  ["packages/secrets/dist/index.js", "node_modules/@codeforge/secrets/dist/index.js"],
   ["packages/agent/dist/index.js", "node_modules/@codeforge/agent/dist/index.js"],
   ["packages/eight-bit/dist/qualification/role-suite.js", "node_modules/@codeforge/eight-bit/dist/qualification/role-suite.js"],
   ["apps/desktop/dist/provider-connections.js", "apps/desktop/dist/provider-connections.js"],
   ["apps/desktop/dist/openrouter-oauth-flow.js", "apps/desktop/dist/openrouter-oauth-flow.js"],
   ["apps/desktop/dist/main.js", "apps/desktop/dist/main.js"],
+  ["apps/desktop/dist/connected-accounts.js", "apps/desktop/dist/connected-accounts.js"],
+  ["apps/desktop/dist/connected-account-types.js", "apps/desktop/dist/connected-account-types.js"],
+  ["apps/desktop/dist/provider-account-routing.js", "apps/desktop/dist/provider-account-routing.js"],
+  ["apps/desktop/dist/preload.cjs", "apps/desktop/dist/preload.cjs"],
 ]) {
   const compiled = readFileSync(join(root, source));
   const packaged = readEntry(entry);
   included.push({ source, entry, bytes: packaged.length, sha256: hash(packaged), compiledSha256: hash(compiled), matchesFrozenBuildOutput: packaged.equals(compiled) });
+}
+const rendererAccountControls = [];
+for (const rawEntry of listPackage(archive)) {
+  const entry = rawEntry.replaceAll("\\", "/").replace(/^\//, "");
+  if (!/^apps\/desktop\/dist\/renderer\/assets\/index-[^/]+\.js$/.test(entry)) continue;
+  const compiled = readFileSync(join(root, entry));
+  const packaged = readEntry(entry);
+  included.push({ source: entry, entry, bytes: packaged.length, sha256: hash(packaged), compiledSha256: hash(compiled), matchesFrozenBuildOutput: packaged.equals(compiled) });
+  const source = packaged.toString("utf8");
+  rendererAccountControls.push({ entry, controls: ["Your connected accounts", "Save account preferences", "Permit paid account routing"].map((label) => ({ label, present: source.includes(label) })) });
 }
 const nativeRoot = join(artifact, "resources/app.asar.unpacked/node_modules");
 const nativeFiles = [];
@@ -100,10 +128,12 @@ const receipt = {
   sourceIdentity: stamp, sourceTrackedStatusAtAudit: git("status", "--porcelain", "--untracked-files=no"),
   node: process.version, dependencyVersions, packageLockSha256: hash(readFileSync(join(root, "package-lock.json"))),
   files: [fileReceipt(join(artifact, "CodeForge.exe")), fileReceipt(archive)], nativeFiles,
-  archiveEntries: listPackage(archive).length, included, audits, signature: signatureReceipt,
+  archiveEntries: listPackage(archive).length, included, rendererAccountControls, audits, signature: signatureReceipt,
   execution: "NOT_EXECUTED_NO_AUTHORIZED_ISOLATED_WINDOWS_ENVIRONMENT", installer: "NOT_BUILT_NOT_CERTIFIED", nativeRebuild: false,
 };
 writeFileSync(join(evidence, receiptName("artifact-manifest", "json")), `${JSON.stringify(receipt, null, 2)}\n`);
-const passed = audits.every((audit) => audit.passed) && included.every((entry) => entry.matchesFrozenBuildOutput) && stamp.commit === frozenRevision && stamp.dirty === false;
+const passed = audits.every((audit) => audit.passed) && included.every((entry) => entry.matchesFrozenBuildOutput)
+  && rendererAccountControls.length > 0 && rendererAccountControls.every((bundle) => bundle.controls.every((control) => control.present))
+  && stamp.commit === frozenRevision && stamp.dirty === false;
 console.log(JSON.stringify({ sourceRevision: frozenRevision, artifact, staticAuditsPassed: audits.filter((audit) => audit.passed).length, includedModules: included.length, nativeFiles: nativeFiles.length, signature: signatureReceipt.Status, passed }, null, 2));
 if (!passed) process.exitCode = 1;

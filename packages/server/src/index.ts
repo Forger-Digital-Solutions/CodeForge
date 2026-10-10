@@ -22,7 +22,7 @@ import {
 } from "@codeforge/forge-zero";
 import type { CapacityRoute, ProviderCapacityPool, FreeModelRecord, RouteDataContext } from "@codeforge/forge-zero";
 import type { FreeCloudService } from "@codeforge/model-registry";
-import { SqliteQualificationPersistence, EightBitRouteHealthLedger, createEightBitRouteHealthAuthority, FreeFabric, buildRouteLedger, forgeAutoSupplyPlan, type EightBitRouteHealthAuthority, type FabricContextProvider } from "@codeforge/eight-bit";
+import { SqliteQualificationPersistence, EightBitRouteHealthLedger, createEightBitRouteHealthAuthority, FreeFabric, buildRouteLedger, forgeAutoSupplyPlan, roleQualificationStatusFor, type EightBitRouteHealthAuthority, type FabricContextProvider } from "@codeforge/eight-bit";
 import type { ProviderTopologyCapacity } from "@codeforge/forge-green";
 import { ForgeRouter } from "@codeforge/router";
 import type { ChatRequest, ProviderExecutionContext, ProviderAdapter, ProviderCatalog } from "@codeforge/providers";
@@ -58,8 +58,10 @@ import { createExternalToolSurface, loadExternalToolConfig, type ExternalToolCon
 import { buildActivityOverview, type ActivityOverview, type ActivityPeriod } from "./activity-overview.js";
 export * from "./forgeauto-roster.js";
 export * from "./user-intelligence.js";
-import { ForgeAutoRosterStore, type ForgeAutoRoster, type RosterCandidate, type RosterEntitlement, type RosterRole } from "./forgeauto-roster.js";
+import { ForgeAutoRosterStore, resolveForgeAutoRole, rosterRouteAllowance, type ForgeAutoRoster, type RosterCandidate, type RosterEntitlement, type RosterRole, type RosterRouteAllowance } from "./forgeauto-roster.js";
 import { UserIntelligenceRuntimeRegistry, type OwnerCredentialResolver, type UserIntelligenceSource } from "./user-intelligence.js";
+import { projectPersonalFreeCapacity } from "./personal-free-capacity.js";
+import type { PersonalAccountPolicyOptions } from "./personal-account-policy.js";
 import { RemoteDirectProviderAdapter } from "./remote-direct-provider.js";
 import type { RemoteDirectTransport, RemoteDirectBinding } from "./remote-direct-transport.js";
 
@@ -191,6 +193,7 @@ export interface ServerOptions {
    *  safeStorage-backed resolver). Absent, every lookup returns undefined — user sources stay
    *  listed but never execute, fail closed. */
   userCredentialResolver?: OwnerCredentialResolver;
+  personalAccountPolicy?: PersonalAccountPolicyOptions;
   /**
    * R55 wave 2: the owner's managed-paid policy — entitlement, cost mode, included
    * allowance, overage ceiling, and user-owned/paid-lead gates. Its `ownerUserId` must
@@ -274,7 +277,8 @@ export class CodeForgeServer {
    *  session runtime, so shared-pool fairness is enforced across sessions, not per session. */
   private readonly freeFabric?: FreeFabric;
   private readonly fabricContext?: FabricContextProvider;
-  private readonly localUserId?: string;
+  private localUserId?: string;
+  private readonly personalAccountPolicy?: PersonalAccountPolicyOptions;
   private readonly rosterEntitlement: RosterEntitlement;
   private readonly rosterStore: ForgeAutoRosterStore;
   private readonly userIntelligence: UserIntelligenceRuntimeRegistry;
@@ -358,12 +362,14 @@ export class CodeForgeServer {
     this.routeHealthLedger = new EightBitRouteHealthLedger(this.persistence);
     this.routeHealthLedger.attach(this.routeHealth);
     this.localUserId = options.localUserId;
+    this.personalAccountPolicy = options.personalAccountPolicy;
     this.rosterEntitlement = options.rosterEntitlement ?? "FREE";
     this.rosterStore = new ForgeAutoRosterStore(this.persistence);
     this.userIntelligence = new UserIntelligenceRuntimeRegistry(
       this.persistence,
       this.providerCatalog,
       options.userCredentialResolver ?? { get: () => undefined },
+      options.personalAccountPolicy,
     );
     // R55 wave 2: a managed-paid policy is trusted server configuration — it must name
     // this owner or the server refuses to start rather than silently binding one owner's
@@ -381,15 +387,19 @@ export class CodeForgeServer {
     // measured demotions/exclusions, and ONE process-wide reservation ledger enforces
     // shared-pool fairness across all session runtimes. Without a Free Cloud Service there is
     // no verifiable free supply to admit against, so production Free routing fails closed.
-    if (this.freeCloud || this.sponsorCapacitySource) {
+    if (this.freeCloud || this.sponsorCapacitySource || this.personalAccountPolicy) {
       const freeCloud = this.freeCloud;
       this.freeFabric = new FreeFabric({
         managedRoutes: () => {
           this.refreshSponsorCapacity();
+          if (this.localUserId && this.personalAccountPolicy?.personalRoutingPolicy?.(this.localUserId)?.mode === "SPECIFIC_ACCOUNT") return [];
           return [...(freeCloud?.productionCapacityRoutes() ?? []), ...(this.sponsorCapacitySource?.capacityRoutes() ?? [])].filter((route) => route.capacityPoolScope !== "PER_USER_POOL");
         },
         managedPools: () => [...(freeCloud?.capacityPools() ?? []), ...(this.sponsorCapacitySource?.capacityPools() ?? [])].filter((pool) => pool.scope !== "PER_USER_POOL"),
-        userSources: freeCloud ? [{ routesForUser: (userId) => freeCloud.routesForUser(userId), poolsForUser: (userId) => freeCloud.poolsForUser(userId) }] : [],
+        userSources: [
+          ...(freeCloud ? [{ routesForUser: (userId: string) => this.personalAccountPolicy?.personalRoutingPolicy?.(userId)?.mode === "SPECIFIC_ACCOUNT" ? [] : freeCloud.routesForUser(userId), poolsForUser: (userId: string) => freeCloud.poolsForUser(userId) }] : []),
+          { routesForUser: (userId) => this.personalFreeCapacity(userId).routes, poolsForUser: (userId) => this.personalFreeCapacity(userId).pools },
+        ],
         policy: { ...DEFAULT_FREE_CAPACITY_POLICY, allowSponsoredFree: Boolean(this.sponsorCapacitySource) },
         health: this.routeHealth,
         // Per-user cap is a fairness backstop, not a precision limiter: it must leave room for
@@ -406,7 +416,7 @@ export class CodeForgeServer {
       });
       this.fabricContext = ({ userId }) => {
         const uid = userId ?? this.localUserId ?? "anonymous";
-        return { userId: uid, userIdentities: freeCloud?.capacityIdentitiesFor(uid) ?? [], dataContext: this.freeDataContext?.() ?? { dataClass: "PRIVATE_CODE" } };
+        return { userId: uid, userIdentities: [...(freeCloud?.capacityIdentitiesFor(uid) ?? []), ...this.personalFreeCapacity(uid).identities], dataContext: this.freeDataContext?.() ?? { dataClass: "PRIVATE_CODE" } };
       };
     }
     if (!options.paidAuto) {
@@ -655,7 +665,10 @@ export class CodeForgeServer {
   async init(): Promise<void> {
     await this.persistence.init();
     // R55: re-register durable user-source adapters before any recovered turn can route.
-    if (this.localUserId) await this.userIntelligence.hydrateOwner(this.localUserId);
+    if (this.localUserId) {
+      await this.userIntelligence.hydrateOwner(this.localUserId);
+      this.refreshPersonalFreeModels(this.localUserId);
+    }
     if (this.paidFamilyCatalog && this.paidFamilyCatalogStore) {
       this.paidFamilyCatalog.hydrate((await this.paidFamilyCatalogStore.load()).all());
     }
@@ -847,6 +860,10 @@ export class CodeForgeServer {
     const active = this.activeWorkspacePath;
     if (active && sameWorkspacePath(bound, active)) return { ok: true };
     return { ok: false, sessionWorkspace: bound, activeWorkspace: active ?? undefined };
+  }
+
+  private assertWorkspaceInferenceContext(workspacePath: string | null | undefined): void {
+    if (this.freeDataContext && (!workspacePath || !this.activeWorkspacePath || !sameWorkspacePath(workspacePath, this.activeWorkspacePath))) throw new Error("WORKSPACE_MISMATCH");
   }
 
   private rejectWorkspaceMismatch(res: http.ServerResponse, mismatch: { sessionWorkspace: string; activeWorkspace: string | undefined }, requestId: string, executionMode: ExecutionMode): void {
@@ -1411,6 +1428,9 @@ export class CodeForgeServer {
       ? String((error as { code: unknown }).code)
       : "";
 
+    if (explicitCode === "WORKSPACE_MISMATCH" || raw === "WORKSPACE_MISMATCH") {
+      return { code: "WORKSPACE_MISMATCH", message: "Open the authorized workspace before starting this request.", status: 409 };
+    }
     if (explicitCode === "WORKSPACE_LEASE_CONFLICT" || raw.includes("WORKSPACE_LEASE_CONFLICT")) {
       return { code: "WORKSPACE_LEASE_CONFLICT", message: "Workspace is already in use by another autonomous run.", status: 409 };
     }
@@ -2002,6 +2022,7 @@ export class CodeForgeServer {
           return;
         }
         const workspacePath = typeof data.workspacePath === "string" && data.workspacePath ? data.workspacePath : this.activeWorkspacePath ?? undefined;
+        this.assertWorkspaceInferenceContext(workspacePath);
         const workspaceCheck = await this.checkSessionWorkspace(sessionId);
         if (!workspaceCheck.ok && !(workspacePath && sameWorkspacePath(workspaceCheck.sessionWorkspace, workspacePath))) {
           this.rejectWorkspaceMismatch(res, workspaceCheck, requestId, "agent");
@@ -2038,6 +2059,10 @@ export class CodeForgeServer {
         const sessionId = typeof data.sessionId === "string" && data.sessionId ? data.sessionId : "default";
         const requestId = typeof data.turnId === "string" && data.turnId ? data.turnId : crypto.randomUUID();
         const failure = this.classifyExecutionStartError("agent", error);
+        if (failure.code === "WORKSPACE_MISMATCH") {
+          this.sendJson(res, failure.status, { error: failure.code, message: failure.message, executionMode: "agent", requestId });
+          return;
+        }
         await this.appendExecutionEvent(sessionId, "execution.start_failed", { requestId, executionMode: "agent", code: failure.code, message: failure.message });
         await this.markSessionFailed(sessionId);
         res.writeHead(failure.status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
@@ -2122,6 +2147,7 @@ export class CodeForgeServer {
         const goal = data.goal || data.message;
         const sessionId = data.sessionId || `sess-${crypto.randomUUID()}`;
         const workspacePath = data.workspacePath || this.activeWorkspacePath;
+        this.assertWorkspaceInferenceContext(typeof workspacePath === "string" ? workspacePath : undefined);
         if (!workspacePath) {
           res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ error: "No workspace path specified" }));
@@ -2137,8 +2163,19 @@ export class CodeForgeServer {
           eventStore: this.eventStore,
           persistence: this.persistence,
         });
+        const personalPolicy = this.localUserId ? this.personalAccountPolicy?.personalRoutingPolicy?.(this.localUserId) : undefined;
+        const catalog = this.rosterCatalog();
         const selectedRoster = this.localUserId ? await this.rosterStore.get(this.localUserId) : undefined;
-        const rosterContext = selectedRoster ? { roster: selectedRoster, catalog: this.rosterCatalog() } : undefined;
+        const automaticAccounts = personalPolicy && personalPolicy.mode !== "FREE_ONLY" && catalog.some(candidate => candidate.personalConnectionId && candidate.available && candidate.approved);
+        const accountRoster: ForgeAutoRoster | undefined = automaticAccounts && this.localUserId ? {
+          ownerUserId: this.localUserId, entitlement: this.rosterEntitlement,
+          slots: [...(personalPolicy.mode === "SPECIFIC_ACCOUNT" ? [] : [{ kind: "AUTO" as const, sourceClass: "MANAGED_FREE" as const, enabled: true }]), { kind: "AUTO", sourceClass: "USER_API", enabled: true }],
+          lead: { mode: "NONE" }, updatedAt: new Date().toISOString(),
+        } : undefined;
+        const dataContext = this.freeDataContext?.() ?? { dataClass: "PRIVATE_CODE" as const };
+        if (personalPolicy?.mode === "SPECIFIC_ACCOUNT" && !accountRoster) throw new Error("PERSONAL_SELECTED_ACCOUNT_UNAVAILABLE");
+        const roster = personalPolicy?.mode === "SPECIFIC_ACCOUNT" ? accountRoster : selectedRoster ?? accountRoster;
+        const rosterContext = roster ? { roster, catalog, dataContext: { privateCode: dataContext.dataClass !== "PUBLIC_CODE", userConsented: dataContext.userConsented === true }, personalRoutingMode: personalPolicy?.mode } : undefined;
         const runId = `run-${crypto.randomUUID()}`;
         void this.orchestrator.startRun({
           runId,
@@ -2161,21 +2198,18 @@ export class CodeForgeServer {
   private rosterCatalog(): RosterCandidate[] {
     const candidates: RosterCandidate[] = [];
     const dataProfiles = new Map((this.freeCloud?.capacityRoutes() ?? []).map((route) => [`${route.providerId}/${route.modelId}`, route.dataPolicyProfile]));
-    const roleMap: Partial<Record<string, RosterRole>> = {
-      PRIMARY_CODING_AGENT: "CODER", PLANNER: "PLANNER", REVIEWER: "REVIEWER",
-      SEARCH_ASSIST: "EXPLORER", FAST_REASONER: "LEAD", SUBAGENT: "TESTER",
-    };
     for (const model of this.freeCloud?.snapshot().models ?? []) {
-      const routes = model.routes.filter((route) => route.forgeAutoEligible && route.supplyClass === "PURE_MANAGED_FREE" && dataProfiles.get(`${route.providerId}/${route.providerModelId}`) === "PRIVATE_CODE_ALLOWED");
+      const routes = model.routes.filter((route) => route.forgeAutoEligible && route.supplyClass !== "USER_ENTITLED_FREE" && route.supplyClass !== "USER_CONNECTED_FREE");
       if (routes.length === 0) continue;
       const primary = routes[0]!;
+      const qualifiedRoles = (["EXPLORER", "PLANNER", "CODER", "REVIEWER"] as const).filter(role => routes.some(route => roleQualificationStatusFor(this.freeCloud?.getQualificationReceipt(route.providerId, route.providerModelId), role) === "QUALIFIED"));
       candidates.push({
         modelId: model.canonicalId, providerId: primary.providerId, providerModelId: primary.providerModelId,
         routes: routes.map((route) => ({ providerId: route.providerId, modelId: route.providerModelId })),
         familyId: model.family, version: model.canonicalId, sourceClass: "MANAGED_FREE", lifecycle: "ACTIVE",
         approved: true, available: true,
-        qualifiedRoles: [...new Set([...model.roles.map((role) => roleMap[role]).filter((role): role is RosterRole => role !== undefined), ...(model.roles.includes("PLANNER") ? ["LEAD" as const] : [])])],
-        dataPolicy: { privateCode: true },
+        qualifiedRoles,
+        dataPolicy: { privateCode: routes.every(route => dataProfiles.get(`${route.providerId}/${route.providerModelId}`) === "PRIVATE_CODE_ALLOWED"), userConsentRequired: routes.some(route => dataProfiles.get(`${route.providerId}/${route.providerModelId}`) !== "PRIVATE_CODE_ALLOWED") },
       });
     }
     // R55 wave 2: MANAGED_PAID candidates exist only under a PAID product entitlement —
@@ -2202,8 +2236,9 @@ export class CodeForgeServer {
     // R55: user-owned sources are offered only under a CUSTOM entitlement AND an explicit
     // policy opt-in — no policy means sources stay registrable but never roster-admissible.
     // Only the registry's credentialRef-free projection is offered.
-    if (this.rosterEntitlement === "CUSTOM" && this.localUserId && this.managedPaidPolicy?.userOwnedAllowed === true) {
-      candidates.push(...this.userIntelligence.rosterCandidates(this.localUserId));
+    if (this.localUserId) {
+      candidates.push(...this.userIntelligence.rosterCandidates(this.localUserId).filter(candidate => candidate.personalConnectionId
+        || this.rosterEntitlement === "CUSTOM" && this.managedPaidPolicy?.userOwnedAllowed === true));
     }
     return candidates;
   }
@@ -2211,7 +2246,53 @@ export class CodeForgeServer {
   /** R55 trusted programmatic management — owner-only, no unauthenticated HTTP surface. */
   async putUserIntelligenceSource(ownerUserId: string, source: UserIntelligenceSource): Promise<UserIntelligenceSource> {
     this.assertLocalOwner(ownerUserId);
-    return this.userIntelligence.put(ownerUserId, source);
+    const stored = await this.userIntelligence.put(ownerUserId, source);
+    this.refreshPersonalFreeModels(ownerUserId);
+    return stored;
+  }
+
+  private personalFreeCapacity(ownerUserId: string) {
+    return projectPersonalFreeCapacity(ownerUserId, this.userIntelligence.rosterCandidates(ownerUserId),
+      (owner, connection) => this.personalAccountPolicy?.personalAccountAuthority?.(owner, connection));
+  }
+
+  private automaticPersonalRoleAllowance(ownerUserId: string, role: string, workspacePath: string): RosterRouteAllowance | undefined {
+    const policy = this.personalAccountPolicy?.personalRoutingPolicy?.(ownerUserId);
+    if (!policy || policy.mode === "FREE_ONLY") return undefined;
+    this.assertLocalOwner(ownerUserId);
+    this.assertWorkspaceInferenceContext(workspacePath);
+    const catalog = this.rosterCatalog();
+    if (policy.mode !== "SPECIFIC_ACCOUNT" && !catalog.some(candidate => candidate.personalConnectionId && candidate.approved && candidate.available)) return undefined;
+    const roster: ForgeAutoRoster = { ownerUserId, entitlement: this.rosterEntitlement,
+      slots: [...(policy.mode === "SPECIFIC_ACCOUNT" ? [] : [{ kind: "AUTO" as const, sourceClass: "MANAGED_FREE" as const, enabled: true }]), { kind: "AUTO", sourceClass: "USER_API", enabled: true }],
+      lead: { mode: "NONE" }, updatedAt: new Date().toISOString() };
+    const data = this.freeDataContext?.() ?? { dataClass: "PRIVATE_CODE" as const };
+    const resolution = resolveForgeAutoRole(roster, catalog, role.toUpperCase() as RosterRole, { privateCode: data.dataClass !== "PUBLIC_CODE", userConsented: data.userConsented === true });
+    return { ...rosterRouteAllowance(resolution, { ownerUserId, rosterUpdatedAt: roster.updatedAt, role: role.toUpperCase() as RosterRole }), personalRoutingMode: policy.mode };
+  }
+
+  private refreshPersonalFreeModels(ownerUserId: string): void {
+    for (const route of this.personalFreeCapacity(ownerUserId).routes) {
+      this.firewall.register({ ...createGenericFreeRecord({ providerId: route.providerId, modelId: route.modelId, displayName: route.canonicalModelId }),
+        tier: "free", accessClass: "FREE_ROUTED", freeStatus: "verified_free", freeStatusVerifiedAt: route.admissionReceipt!.verifiedAt,
+        privacyClass: route.privacyClass, health: { status: "available", lastCheckedAt: route.admissionReceipt!.verifiedAt },
+        costProfile: { isFree: true, inputCostPerMillion: 0, outputCostPerMillion: 0, freeTierVerifiedAt: route.admissionReceipt!.verifiedAt, paidFallbackPossible: false, paidFallbackDisabled: true, source: route.admissionReceipt!.priceEvidence } });
+    }
+  }
+
+  async setLocalUserId(ownerUserId: string): Promise<void> {
+    if (!ownerUserId.trim() || ownerUserId.length > 512) throw new Error("USER_SOURCE_OWNER_MISMATCH");
+    if (ownerUserId !== this.localUserId) {
+      this.localUserId = ownerUserId;
+      this.runtimes.clear();
+    }
+    await this.userIntelligence.hydrateOwner(ownerUserId);
+    this.refreshPersonalFreeModels(ownerUserId);
+  }
+
+  personalAccountCandidates(ownerUserId: string): RosterCandidate[] {
+    this.assertLocalOwner(ownerUserId);
+    return this.userIntelligence.rosterCandidates(ownerUserId).filter(candidate => !!candidate.personalConnectionId);
   }
 
   async getUserIntelligenceSource(ownerUserId: string, sourceId: string): Promise<UserIntelligenceSource | undefined> {
@@ -2323,6 +2404,7 @@ export class CodeForgeServer {
     void this.readJsonBody(req).then(async (data) => {
       const sessionId = typeof data.sessionId === "string" && data.sessionId ? data.sessionId : `sess-${crypto.randomUUID()}`;
       const workspacePath = typeof data.workspacePath === "string" && data.workspacePath ? data.workspacePath : this.activeWorkspacePath;
+      this.assertWorkspaceInferenceContext(workspacePath);
       const goal = typeof data.goal === "string" ? data.goal : "";
       if (!workspacePath || !goal) {
         this.sendJson(res, 400, { error: !workspacePath ? "No workspace path specified" : "Goal is required" });
@@ -2489,6 +2571,7 @@ export class CodeForgeServer {
         const data = JSON.parse(body || "{}") as { sessionId?: string; workspacePath?: string; goal?: string; verificationCommands?: string[] };
         const sessionId = data.sessionId ?? `sess-${crypto.randomUUID()}`;
         const workspacePath = data.workspacePath ?? this.activeWorkspacePath;
+        this.assertWorkspaceInferenceContext(workspacePath);
         if (!workspacePath || !data.goal) throw new Error(!workspacePath ? "No workspace path specified" : "Goal is required");
         const orchestrator = this.getParallelOrchestrator(sessionId);
         void orchestrator.startRun({ sessionId, workspacePath, goal: data.goal, verificationCommands: data.verificationCommands });
@@ -2636,6 +2719,7 @@ export class CodeForgeServer {
         afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
         freeCloud: this.freeCloud,
         additionalFreeRoleAdmission: (providerId, modelId) => this.sponsorCapacitySource?.capacityRoutes().some((route) => route.providerId === providerId && route.modelId === modelId) === true,
+        personalRoleAllowance: (owner, role, workspace) => this.automaticPersonalRoleAllowance(owner, role, workspace),
         freeFabric: this.freeFabric,
         fabricContext: this.fabricContext,
         paidAuto: this.paidAuto,
@@ -2664,6 +2748,7 @@ export class CodeForgeServer {
         afterApprovalResolvedBoundary: this.afterApprovalResolvedBoundary,
         freeCloud: this.freeCloud,
         additionalFreeRoleAdmission: (providerId, modelId) => this.sponsorCapacitySource?.capacityRoutes().some((route) => route.providerId === providerId && route.modelId === modelId) === true,
+        personalRoleAllowance: (owner, role, workspace) => this.automaticPersonalRoleAllowance(owner, role, workspace),
         freeFabric: this.freeFabric,
         fabricContext: this.fabricContext,
         paidAuto: this.paidAuto,

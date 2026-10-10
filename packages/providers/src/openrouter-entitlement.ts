@@ -40,28 +40,34 @@ export function classifyOpenRouterEntitlement(
   const raw = (metadata as { data?: unknown }).data;
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return base;
   const data = raw as Record<string, unknown>;
-  if (data.is_free_tier === false) return { ...base, accountClass: "PAID", reason: "PROVIDER_REPORTS_PAID_TIER" };
-  if (data.is_free_tier !== true || data.is_management_key === true || data.is_provisioning_key === true) return base;
-  if (typeof data.creator_user_id !== "string" || !data.creator_user_id.trim() || data.organization_id != null) {
-    return { ...base, reason: "INDEPENDENT_PERSONAL_QUOTA_OWNER_UNVERIFIED" };
-  }
+  if (data.is_management_key === true || data.is_provisioning_key === true) return { ...base, reason: "INFERENCE_CREDENTIAL_REQUIRED" };
   if (!binding.ownerUserId.trim()) return { ...base, reason: "LOCAL_ACCOUNT_OWNER_MISSING" };
   const expiry = data.expires_at;
   if (expiry !== undefined && expiry !== null && (typeof expiry !== "string" || !Number.isFinite(Date.parse(expiry)))) return base;
   if (typeof expiry === "string" && Date.parse(expiry) <= now.getTime()) return { ...base, accountClass: "REVOKED", reason: "KEY_EXPIRED", expiresAt: expiry };
+  const accountIdentityHash = typeof data.creator_user_id === "string" && data.creator_user_id.trim() && data.organization_id == null
+    ? hashQuotaScope("openrouter", "USER_ACCOUNT", data.creator_user_id) : undefined;
+  const recheckAt = new Date(Math.min(Date.parse(base.recheckAt), typeof expiry === "string" ? Date.parse(expiry) : Infinity)).toISOString();
+  if (data.is_free_tier === false) {
+    const organizationIdentityHash = typeof data.organization_id === "string" && data.organization_id.trim() ? hashQuotaScope("openrouter", "ORG", data.organization_id) : undefined;
+    const identityHash = organizationIdentityHash ?? accountIdentityHash;
+    return { ...base, accountClass: "PAID", reason: "PROVIDER_REPORTS_PAID_TIER", accountIdentityHash: identityHash, recheckAt, ...(typeof expiry === "string" ? { expiresAt: expiry } : {}),
+      ...(identityHash ? { quotaScopeEvidence: { scope: organizationIdentityHash ? "ORG" : "USER_ACCOUNT", identityHash, source: "https://openrouter.ai/api/v1/key", verifiedAt, recheckAt } } : {}) };
+  }
+  if (data.is_free_tier !== true) return base;
+  if (!accountIdentityHash) return { ...base, reason: "INDEPENDENT_PERSONAL_QUOTA_OWNER_UNVERIFIED" };
   const quota = data.free_model_daily_requests as Record<string, unknown> | undefined;
   if (!quota || ![quota.limit, quota.remaining, quota.used].every((v) => typeof v === "number" && Number.isSafeInteger(v) && v >= 0)
     || (quota.limit as number) <= 0 || (quota.remaining as number) + (quota.used as number) !== quota.limit) {
     return { ...base, reason: "AUTHORITATIVE_FREE_QUOTA_MISSING" };
   }
-  const accountIdentityHash = hashQuotaScope("openrouter", "USER_ACCOUNT", data.creator_user_id);
   const nextDailyReset = Math.floor(now.getTime() / 86_400_000) * 86_400_000 + 86_400_000;
-  const recheckAt = new Date(Math.min(Date.parse(base.recheckAt), nextDailyReset, typeof expiry === "string" ? Date.parse(expiry) : Infinity)).toISOString();
+  const freeRecheckAt = new Date(Math.min(Date.parse(recheckAt), nextDailyReset)).toISOString();
   return {
-    ...base, accountClass: "FREE_VERIFIED", reason: "PERSONAL_FREE_TIER_AND_RECURRING_QUOTA_VERIFIED", accountIdentityHash, recheckAt,
+    ...base, accountClass: "FREE_VERIFIED", reason: "PERSONAL_FREE_TIER_AND_RECURRING_QUOTA_VERIFIED", accountIdentityHash, recheckAt: freeRecheckAt,
     ...(typeof expiry === "string" ? { expiresAt: expiry } : {}),
     freeRequests: { limit: quota.limit as number, remaining: quota.remaining as number, used: quota.used as number },
-    quotaScopeEvidence: { scope: "USER_ACCOUNT", identityHash: accountIdentityHash, source: "https://openrouter.ai/api/v1/key", verifiedAt, recheckAt },
+    quotaScopeEvidence: { scope: "USER_ACCOUNT", identityHash: accountIdentityHash, source: "https://openrouter.ai/api/v1/key", verifiedAt, recheckAt: freeRecheckAt },
   };
 }
 
@@ -102,7 +108,11 @@ export async function verifyOpenRouterEntitlement(options: {
 }
 
 export function isOpenRouterEntitlementCurrent(receipt: OpenRouterEntitlementReceipt | undefined, ownerUserId: string, key: string, now = new Date()): boolean {
-  return !!receipt && receipt.accountClass === "FREE_VERIFIED" && receipt.ownerUserId === ownerUserId
+  return receipt?.accountClass === "FREE_VERIFIED" && isOpenRouterConnectionCurrent(receipt, ownerUserId, key, now);
+}
+
+export function isOpenRouterConnectionCurrent(receipt: OpenRouterEntitlementReceipt | undefined, ownerUserId: string, key: string, now = new Date()): boolean {
+  return !!receipt && (receipt.accountClass === "FREE_VERIFIED" || receipt.accountClass === "PAID") && !!ownerUserId.trim() && receipt.ownerUserId === ownerUserId
     && receipt.credentialFingerprint === openRouterCredentialFingerprint(key)
     && Date.parse(receipt.verifiedAt) <= now.getTime() && Date.parse(receipt.recheckAt) > now.getTime()
     && (!receipt.expiresAt || Date.parse(receipt.expiresAt) > now.getTime());

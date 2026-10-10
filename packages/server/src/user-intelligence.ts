@@ -1,8 +1,11 @@
 import { createHash } from "node:crypto";
 import { OpenAICompatibleAdapter, ProviderError } from "@codeforge/providers";
-import type { ChatRequest, ChatResponse, CredentialStore, ProviderAdapter, ProviderCatalog, ProviderHealthResponse, ProviderModel, StreamEvent } from "@codeforge/providers";
+import type { ChatRequest, ChatResponse, CredentialStore, ProviderAdapter, ProviderCatalog, ProviderHealthResponse, ProviderModel, StreamEvent, Usage } from "@codeforge/providers";
 import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
+import { ModelQualificationReceiptSchema, roleQualificationStatusFor, type EightBitRole, type ModelQualificationReceipt } from "@codeforge/eight-bit";
 import type { RosterCandidate, RosterRole } from "./forgeauto-roster.js";
+import { PersonalAccountBudgetGuard, PersonalAccountPolicyError, type PersonalAccountBinding, type PersonalAccountPolicyOptions } from "./personal-account-policy.js";
+export * from "./personal-account-policy.js";
 
 /**
  * R55 wave 1 — owner-scoped USER_API intelligence sources.
@@ -12,9 +15,9 @@ import type { RosterCandidate, RosterRole } from "./forgeauto-roster.js";
  * persisted; the resolved key is looked up by the owning host at request time and is
  * never copied into roster state, events, errors, or work items.
  *
- * V1 boundaries: USER_API is the only executable user source class — USER_HOSTED and
- * LOCAL remain forward-compatible schema values only. User routes never pass through
- * the Free Fabric, Paid Auto, ForgeZero managed-free admission, or capacity pacing.
+ * Legacy USER_API remains an explicitly selected CUSTOM source. Typed personal account
+ * sources add trusted current authorization and durable spend reservation at execution;
+ * only independently certified zero-cost connections can join the Free Fabric.
  */
 
 export type UserSourceProtocol = "OPENAI_COMPATIBLE";
@@ -30,6 +33,9 @@ export interface UserIntelligenceSource {
   familyId: string;
   version: string;
   credentialRef: string;
+  connectionId?: string;
+  canonicalProviderId?: string;
+  qualificationEvidence?: ModelQualificationReceipt;
   qualification: UserSourceQualification;
   qualifiedRoles: RosterRole[];
   dataPolicy: { privateCode: boolean; userConsentRequired?: boolean };
@@ -77,6 +83,12 @@ export interface UserApiAdapterIdentity {
   sourceId: string;
   /** Live qualification of the durable source record — reads reflect the latest put(). */
   qualification: UserSourceQualification;
+  connectionId?: string;
+  canonicalProviderId?: string;
+  qualifiedRoles?: readonly RosterRole[];
+  qualifiedEightBitRoles?: readonly EightBitRole[];
+  qualifiedRoleScores?: Readonly<Partial<Record<EightBitRole, number>>>;
+  personalAdmission?: "FREE_VERIFIED" | "PAID_AUTHORIZED";
 }
 
 const USER_API_ADAPTER_MARKER = "codeforgeUserApiSource";
@@ -88,7 +100,8 @@ export function userApiAdapterIdentity(adapter: ProviderAdapter | undefined): Us
   const { ownerUserId, sourceId, qualification } = marker as { ownerUserId?: unknown; sourceId?: unknown; qualification?: unknown };
   if (typeof ownerUserId !== "string" || typeof sourceId !== "string") return undefined;
   if (qualification !== "UNQUALIFIED" && qualification !== "QUALIFIED" && qualification !== "SUSPENDED") return undefined;
-  return Object.freeze({ ownerUserId, sourceId, qualification });
+  const { connectionId, canonicalProviderId, qualifiedRoles, qualifiedEightBitRoles, qualifiedRoleScores, personalAdmission } = marker as UserApiAdapterIdentity;
+  return Object.freeze({ ownerUserId, sourceId, qualification, ...(connectionId === undefined ? {} : { connectionId, canonicalProviderId, qualifiedRoles: Object.freeze([...(qualifiedRoles ?? [])]), qualifiedEightBitRoles: Object.freeze([...(qualifiedEightBitRoles ?? [])]), qualifiedRoleScores: Object.freeze({ ...qualifiedRoleScores }), ...(personalAdmission === undefined ? {} : { personalAdmission }) }) });
 }
 
 /** True when the catalog adapter is an R55 owner-scoped user source. */
@@ -98,6 +111,23 @@ export function isUserApiAdapter(adapter: ProviderAdapter | undefined): boolean 
 
 function fail(code: string): never {
   throw new Error(code);
+}
+
+const RECEIPT_ROLES: readonly EightBitRole[] = ["CODER", "REASONER", "PLANNER", "REVIEWER", "FAST_WORKER", "LONG_CONTEXT", "VISION", "TOOL_AGENT", "ANALYST", "EXPLORER"];
+
+function currentEvidenceRoles(source: UserIntelligenceSource, now: number): EightBitRole[] {
+  const receipt = source.qualificationEvidence;
+  if (!receipt || receipt.providerId !== source.canonicalProviderId || receipt.modelId !== source.modelId || !Number.isFinite(Date.parse(receipt.completedAt)) || Date.parse(receipt.completedAt) > now) return [];
+  return RECEIPT_ROLES.filter(role => {
+    const completedAt = receipt.roleResults[role]?.completedAt ?? (role === "EXPLORER" ? receipt.roleResults.TOOL_AGENT?.completedAt : undefined);
+    return !!completedAt && Number.isFinite(Date.parse(completedAt)) && Date.parse(completedAt) <= now && roleQualificationStatusFor(receipt, role, now) === "QUALIFIED";
+  });
+}
+
+function currentSourceRoles(source: UserIntelligenceSource, now: number): RosterRole[] {
+  if (source.connectionId === undefined) return [...source.qualifiedRoles];
+  const roles = currentEvidenceRoles(source, now);
+  return source.qualifiedRoles.filter(role => roles.includes(role as EightBitRole));
 }
 
 function requireBoundedString(value: unknown, field: string, max: number = MAX_FIELD_LENGTH): void {
@@ -188,6 +218,14 @@ function validateSource(source: UserIntelligenceSource): void {
   requireBoundedString(source.familyId, "FAMILY");
   requireBoundedString(source.version, "VERSION");
   requireBoundedString(source.credentialRef, "CREDENTIAL_REF");
+  if (source.connectionId !== undefined || source.canonicalProviderId !== undefined) {
+    if (typeof source.connectionId !== "string" || !SOURCE_ID_PATTERN.test(source.connectionId)) fail("USER_SOURCE_CONNECTION_INVALID");
+    if (source.canonicalProviderId !== "openrouter" && source.canonicalProviderId !== "groq") fail("USER_SOURCE_ACCOUNT_PROVIDER_INVALID");
+    const canonicalEndpoint = source.canonicalProviderId === "openrouter" ? "https://openrouter.ai/api/v1" : "https://api.groq.com/openai/v1";
+    if (source.endpointUrl.replace(/\/+$/, "") !== canonicalEndpoint) fail("USER_SOURCE_ACCOUNT_ENDPOINT_INVALID");
+    if (source.qualificationEvidence !== undefined && (!ModelQualificationReceiptSchema.safeParse(source.qualificationEvidence).success || source.qualificationEvidence.providerId !== source.canonicalProviderId || source.qualificationEvidence.modelId !== source.modelId)) fail("USER_SOURCE_ACCOUNT_QUALIFICATION_INVALID");
+    if (source.qualification === "QUALIFIED" && source.qualificationEvidence === undefined) fail("USER_SOURCE_ACCOUNT_QUALIFICATION_MISSING");
+  }
   if (source.qualification !== "UNQUALIFIED" && source.qualification !== "QUALIFIED" && source.qualification !== "SUSPENDED") fail("USER_SOURCE_QUALIFICATION_INVALID");
   if (!Array.isArray(source.qualifiedRoles) || source.qualifiedRoles.some((role) => !ROSTER_ROLES.has(role)) || new Set(source.qualifiedRoles).size !== source.qualifiedRoles.length) fail("USER_SOURCE_ROLES_INVALID");
   if (!source.dataPolicy || typeof source.dataPolicy.privateCode !== "boolean") fail("USER_SOURCE_DATA_POLICY_INVALID");
@@ -263,11 +301,13 @@ class UserApiSourceAdapter implements ProviderAdapter {
     private readonly inner: ProviderAdapter,
     private readonly liveSource: () => UserIntelligenceSource | undefined,
     private readonly resolveCredential: () => string | undefined,
+    private readonly personalGuard: PersonalAccountBudgetGuard,
+    private readonly now: () => number,
   ) {
     this.providerId = inner.providerId;
   }
 
-  private assertExecutable(modelId?: string): void {
+  private assertExecutable(modelId?: string): UserIntelligenceSource {
     const source = this.liveSource();
     if (!source || source.qualification !== "QUALIFIED") {
       throw new ProviderError("USER_API source is not currently qualified", "USER_SOURCE_NOT_EXECUTABLE", false);
@@ -278,6 +318,15 @@ class UserApiSourceAdapter implements ProviderAdapter {
     if (this.resolveCredential() === undefined) {
       throw new ProviderError("USER_API credential reference does not resolve", "USER_CREDENTIAL_UNAVAILABLE", false);
     }
+    if (source.connectionId !== undefined && !this.personalGuard.eligible(this.personalBinding(source))) {
+      throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_NOT_ADMITTED");
+    }
+    if (source.connectionId !== undefined && currentSourceRoles(source, this.now()).length === 0) throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_QUALIFICATION_STALE");
+    return source;
+  }
+
+  private personalBinding(source: UserIntelligenceSource): PersonalAccountBinding {
+    return { ownerUserId: source.ownerUserId, connectionId: source.connectionId!, canonicalProviderId: source.canonicalProviderId!, credentialRef: source.credentialRef, modelId: source.modelId, pricing: source.pricing };
   }
 
   async listModels(): Promise<ProviderModel[]> {
@@ -286,13 +335,47 @@ class UserApiSourceAdapter implements ProviderAdapter {
   }
 
   async chat(req: ChatRequest): Promise<ChatResponse> {
-    this.assertExecutable(req.model);
-    return this.inner.chat(req);
+    const source = this.assertExecutable(req.model);
+    if (source.connectionId === undefined) return this.inner.chat(req);
+    const reservation = await this.personalGuard.reserve(this.personalBinding(source), req, this.resolveCredential()!);
+    try {
+      this.assertExecutable(req.model);
+      await reservation.dispatch();
+      const response = await this.inner.chat(req);
+      if (response.model !== req.model) throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_MODEL_IDENTITY_MISMATCH");
+      if (!response.choices.length) throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_EMPTY_COMPLETION");
+      await reservation.settle(response.usage);
+      return response;
+    } catch (error) { await reservation.fail(error); throw error; }
   }
 
-  streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
-    this.assertExecutable(req.model);
-    return this.inner.streamChat(req, signal);
+  async *streamChat(req: ChatRequest, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+    const source = this.assertExecutable(req.model);
+    if (source.connectionId === undefined) { yield* this.inner.streamChat(req, signal); return; }
+    const reservation = await this.personalGuard.reserve(this.personalBinding(source), req, this.resolveCredential()!);
+    let completed = false;
+    let usage: Usage | undefined;
+    let finish: Extract<StreamEvent, { type: "finish" }> | undefined;
+    const pendingTools: StreamEvent[] = [];
+    try {
+      this.assertExecutable(req.model);
+      await reservation.dispatch();
+      for await (const event of this.inner.streamChat(req, signal)) {
+        if (event.type === "error") throw new ProviderError(event.message, event.code, false, { status: event.status, retryAfter: event.retryAfter, rateLimitScope: event.rateLimitScope });
+        if (event.type === "usage") usage = event.usage;
+        if (event.type === "finish") { finish = event; continue; }
+        if (event.type.startsWith("tool_call_")) { pendingTools.push(event); continue; }
+        yield event;
+      }
+      if (signal?.aborted || !finish) throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_INCOMPLETE_STREAM");
+      if (finish.model !== req.model) throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_MODEL_IDENTITY_MISMATCH");
+      if (finish.finishReason === "error" || finish.finishReason === "content_filter" || (pendingTools.length > 0 && finish.finishReason !== "tool_calls")) throw new PersonalAccountPolicyError("PERSONAL_ACCOUNT_INCOMPLETE_STREAM");
+      await reservation.settle(usage);
+      completed = true;
+      for (const event of pendingTools) yield event;
+      yield finish;
+    } catch (error) { await reservation.fail(error); throw error; }
+    finally { if (!completed) await reservation.fail(); }
   }
 
   async healthCheck(): Promise<ProviderHealthResponse> {
@@ -301,7 +384,8 @@ class UserApiSourceAdapter implements ProviderAdapter {
 
   canRoute(modelId: string): boolean {
     const source = this.liveSource();
-    return source !== undefined && source.qualification === "QUALIFIED" && source.modelId === modelId && this.resolveCredential() !== undefined;
+    return source !== undefined && source.qualification === "QUALIFIED" && source.modelId === modelId && this.resolveCredential() !== undefined
+      && (source.connectionId === undefined || (currentSourceRoles(source, this.now()).length > 0 && this.personalGuard.eligible(this.personalBinding(source))));
   }
 }
 
@@ -315,18 +399,21 @@ class UserApiSourceAdapter implements ProviderAdapter {
 export class UserIntelligenceRuntimeRegistry {
   private readonly store: UserIntelligenceSourceStore;
   private readonly sources = new Map<string, UserIntelligenceSource>();
+  private readonly personalGuard: PersonalAccountBudgetGuard;
 
   constructor(
     private readonly persistence: ISessionPersistence,
     private readonly providerCatalog: ProviderCatalog,
     private readonly credentialResolver: OwnerCredentialResolver,
-    private readonly options?: { fetchFn?: typeof fetch },
+    private readonly options?: { fetchFn?: typeof fetch } & PersonalAccountPolicyOptions,
   ) {
     this.store = new UserIntelligenceSourceStore(persistence);
+    this.personalGuard = new PersonalAccountBudgetGuard(persistence, options ?? {});
   }
 
   /** Re-register adapters for every durable source after persistence init. */
   async hydrateOwner(ownerUserId: string): Promise<void> {
+    await this.personalGuard.hydrateOwner(ownerUserId);
     for (const source of await this.store.list(ownerUserId)) this.registerAdapter(source);
   }
 
@@ -356,19 +443,41 @@ export class UserIntelligenceRuntimeRegistry {
       providerId: source.providerId,
       baseUrl: source.endpointUrl.replace(/\/+$/, ""),
       credentialStore,
+      ...(source.connectionId === undefined ? {} : { requireExactServedModel: true }),
+      ...(source.canonicalProviderId === "openrouter" ? { requestBodyExtras: { usage: { include: true } }, includeUsageInStream: true } : {}),
       ...(this.options?.fetchFn ? { fetchFn: this.options.fetchFn } : {}),
     });
     const adapter = new UserApiSourceAdapter(
       inner,
       () => this.sources.get(source.providerId),
       () => resolver.get(source.ownerUserId, source.credentialRef),
+      this.personalGuard,
+      this.options?.now ?? Date.now,
     );
     // Immutable binding of owner + source identity; qualification reads stay live so a
     // SUSPENDED put() invalidates the adapter without re-registering it.
     const sources = this.sources;
+    const personalGuard = this.personalGuard;
+    const now = this.options?.now ?? Date.now;
     const marker: UserApiAdapterIdentity = Object.freeze({
       ownerUserId: source.ownerUserId,
       sourceId: source.sourceId,
+      get connectionId() { return sources.get(source.providerId)?.connectionId; },
+      get canonicalProviderId() { return sources.get(source.providerId)?.canonicalProviderId; },
+      get qualifiedRoles() { const currentSource = sources.get(source.providerId); return Object.freeze(currentSource ? currentSourceRoles(currentSource, now()) : []); },
+      get qualifiedEightBitRoles() { const currentSource = sources.get(source.providerId); return Object.freeze(currentSource ? currentEvidenceRoles(currentSource, now()) : []); },
+      get qualifiedRoleScores() {
+        const currentSource = sources.get(source.providerId);
+        return Object.freeze(Object.fromEntries(currentSource ? currentEvidenceRoles(currentSource, now()).flatMap(role => {
+          const result = currentSource.qualificationEvidence?.roleResults[role] ?? (role === "EXPLORER" ? currentSource.qualificationEvidence?.roleResults.TOOL_AGENT : undefined);
+          const score = result?.overallScore ?? (result?.testCases.length ? result.testCases.filter(test => test.passed).length / result.testCases.length : undefined);
+          return score === undefined ? [] : [[role, score]];
+        }) : []));
+      },
+      get personalAdmission() {
+        const currentSource = sources.get(source.providerId);
+        return currentSource?.connectionId === undefined ? undefined : personalGuard.classification({ ownerUserId: currentSource.ownerUserId, connectionId: currentSource.connectionId, canonicalProviderId: currentSource.canonicalProviderId!, credentialRef: currentSource.credentialRef, modelId: currentSource.modelId, pricing: currentSource.pricing });
+      },
       get qualification() {
         return sources.get(source.providerId)?.qualification ?? "SUSPENDED";
       },
@@ -390,7 +499,13 @@ export class UserIntelligenceRuntimeRegistry {
     for (const source of this.sources.values()) {
       if (source.ownerUserId !== ownerUserId) continue;
       const credentialAvailable = this.credentialResolver.get(ownerUserId, source.credentialRef) !== undefined;
-      const executable = source.qualification === "QUALIFIED" && credentialAvailable;
+      const personalAdmission = source.connectionId === undefined ? undefined : this.personalGuard.classification({ ownerUserId: source.ownerUserId, connectionId: source.connectionId, canonicalProviderId: source.canonicalProviderId!, credentialRef: source.credentialRef, modelId: source.modelId, pricing: source.pricing });
+      const qualifiedRoles = currentSourceRoles(source, (this.options?.now ?? Date.now)());
+      const authority = source.connectionId === undefined ? undefined : this.options?.personalAccountAuthority?.(ownerUserId, source.connectionId);
+      const policy = this.options?.personalRoutingPolicy?.(ownerUserId);
+      const executable = source.qualification === "QUALIFIED" && credentialAvailable
+        && (source.connectionId === undefined || (personalAdmission !== undefined && qualifiedRoles.length > 0
+          && (authority?.preference !== "MANUAL" || policy?.mode === "SPECIFIC_ACCOUNT" && policy.specificConnectionId === source.connectionId)));
       candidates.push({
         modelId: `${source.sourceId}/${source.modelId}`,
         providerId: source.providerId,
@@ -402,9 +517,12 @@ export class UserIntelligenceRuntimeRegistry {
         lifecycle: executable ? "ACTIVE" : "DISCOVERED",
         available: executable,
         approved: executable,
-        qualifiedRoles: [...source.qualifiedRoles],
+        qualifiedRoles,
+        ...(source.connectionId !== undefined && source.qualificationEvidence ? { qualificationAt: source.qualificationEvidence.completedAt } : {}),
         ownerUserId: source.ownerUserId,
         sourceId: source.sourceId,
+        ...(source.connectionId === undefined ? {} : { personalConnectionId: source.connectionId, ...(personalAdmission === undefined ? {} : { personalAdmission }) }),
+        ...(authority?.preference ? { personalPreference: authority.preference } : {}),
         dataPolicy: {
           privateCode: source.dataPolicy.privateCode,
           ...(source.dataPolicy.userConsentRequired !== undefined ? { userConsentRequired: source.dataPolicy.userConsentRequired } : {}),
@@ -415,6 +533,7 @@ export class UserIntelligenceRuntimeRegistry {
         ...(source.pricing.source ? { priceSource: source.pricing.source } : {}),
       });
     }
-    return candidates;
+    const preference = { PREFERRED: -1, AUTO: 0, FALLBACK: 1, MANUAL: 2 };
+    return candidates.sort((a, b) => preference[a.personalPreference ?? "AUTO"] - preference[b.personalPreference ?? "AUTO"]);
   }
 }

@@ -62,17 +62,23 @@ describe("OpenRouter OAuth PKCE core", () => {
     await expect(exchangeCodeForKey({ code: "x", codeVerifier: "y", fetchFn: async () => { throw new Error("private-verifier"); } })).rejects.not.toThrow("private-verifier");
   });
 
-  it("exchangeCodeForKey posts code + verifier and returns the key", async () => {
-    let sentBody: any = null;
-    const fetchFn = (async (_url: string, init: RequestInit) => {
-      sentBody = JSON.parse(init.body as string);
+  it("posts code + verifier only to the exact exchange endpoint without following redirects", async () => {
+    let sentBody: Record<string, unknown> = {};
+    let sentUrl: string | undefined;
+    let redirect: RequestRedirect | undefined;
+    const fetchFn: typeof fetch = async (url, init) => {
+      sentUrl = String(url);
+      redirect = init?.redirect;
+      sentBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
       return new Response(JSON.stringify({ key: "sk-or-v1-REDACTED" }), { status: 200 });
-    }) as unknown as typeof fetch;
+    };
     const key = await exchangeCodeForKey({ code: "authcode", codeVerifier: "verifier", fetchFn });
     expect(key).toBe("sk-or-v1-REDACTED");
     expect(sentBody.code).toBe("authcode");
     expect(sentBody.code_verifier).toBe("verifier");
     expect(sentBody.code_challenge_method).toBe("S256");
+    expect(sentUrl).toBe("https://openrouter.ai/api/v1/auth/keys");
+    expect(redirect).toBe("error");
   });
 
   it("exchangeCodeForKey throws (status only, no body leak) on HTTP error", async () => {
