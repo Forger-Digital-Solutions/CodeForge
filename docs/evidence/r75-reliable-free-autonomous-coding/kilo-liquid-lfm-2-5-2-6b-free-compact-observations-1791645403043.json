@@ -1,0 +1,9 @@
+{
+  "providerId": "kilo-free-direct",
+  "modelId": "liquid/lfm-2.5-2.6b:free",
+  "requestBudget": 6,
+  "inferenceRequests": 0,
+  "publicSyntheticCodeOnly": true,
+  "observations": [],
+  "frames": []
+}

@@ -391,6 +391,8 @@
         "firstObservationReceipt": "kilo-liquid-lfm-2-5-2-6b-free-compact-observations-1791645074030.json",
         "diagnosticReceipt": "kilo-liquid-lfm-2-5-2-6b-free-compact-1791645223751.json",
         "diagnosticObservationReceipt": "kilo-liquid-lfm-2-5-2-6b-free-compact-observations-1791645223751.json",
+        "latestReceipt": "kilo-liquid-lfm-2-5-2-6b-free-compact-1791645403043.json",
+        "latestObservationReceipt": "kilo-liquid-lfm-2-5-2-6b-free-compact-observations-1791645403043.json",
         "status": "UNAVAILABLE",
         "source": "terms",
         "unavailableReason": "FETCH_FAILED",
@@ -398,6 +400,21 @@
         "inferenceRequests": 0,
         "qualification": "not run; policy gate stopped before catalog and inference"
       }
+    },
+    "postDiagnosticsCampaignPreflight": {
+      "receipt": "R75-TASK-CAMPAIGN-1791645422063.json",
+      "sourceManifest": "R75-TASK-CAMPAIGN-1791645422063-source.json",
+      "sourceRevision": "381602ff67247e2fe7d7aae439de82cd244638e5",
+      "sourceDirty": false,
+      "status": "BLOCKED_BEFORE_TASKS",
+      "taskCount": 0,
+      "inferenceRequests": 0,
+      "policyReverification": {
+        "kilo-free-direct": { "status": "UNAVAILABLE", "source": "terms", "unavailableReason": "FETCH_FAILED", "failureCode": "ENOTFOUND" },
+        "blockrun-free-direct": { "status": "UNAVAILABLE", "source": "terms", "unavailableReason": "FETCH_FAILED", "failureCode": "ENOTFOUND" }
+      },
+      "failClosedRoleRoster": "CURRENT_QUALIFIED_EXPLORER_ROSTER_UNAVAILABLE",
+      "spend": "none; no inference request was sent"
     },
     "capacitySummaryFix": "Campaign harness now collects child governor reports through persisted quotaDomainId values and writes a raw-frame request summary."
   },
