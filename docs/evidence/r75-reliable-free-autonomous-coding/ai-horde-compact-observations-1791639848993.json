@@ -1,0 +1,123 @@
+{
+  "modelId": "google/gemma-4-31b",
+  "inferenceRequests": 1,
+  "requestBudget": 8,
+  "windowBudget": 8,
+  "minimumPostIntervalMs": 8000,
+  "publicSyntheticCodeOnly": true,
+  "observations": [
+    {
+      "requestedAt": "2026-10-10T13:44:09.327Z",
+      "url": "https://aihorde.net/api/v2/status/models?type=text",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "60"
+        ],
+        [
+          "x-ratelimit-limit",
+          "90"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "89"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791639911"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T13:44:09.633Z",
+      "url": "https://oai.aihorde.net/v1/models",
+      "method": "GET",
+      "status": 200,
+      "headers": []
+    },
+    {
+      "requestedAt": "2026-10-10T13:44:09.787Z",
+      "url": "https://oai.aihorde.net/v1/chat/completions",
+      "method": "POST",
+      "status": 500,
+      "headers": []
+    }
+  ],
+  "frames": [
+    {
+      "requestedAt": "2026-10-10T13:44:09.637Z",
+      "request": {
+        "model": "google/gemma-4-31b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+          },
+          {
+            "role": "user",
+            "content": "Open src/calc.ts and report what it exports. Use the read_file tool."
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "read_file",
+              "description": "Read a file from the repository. Returns its full contents.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Repository-relative path"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "edit_file",
+              "description": "Replace an exact text span in a file. oldText must match the file exactly.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "oldText": {
+                    "type": "string"
+                  },
+                  "newText": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "oldText",
+                  "newText"
+                ]
+              }
+            }
+          }
+        ],
+        "toolChoice": "auto",
+        "temperature": 0,
+        "maxTokens": 200
+      },
+      "events": [],
+      "error": {
+        "message": "ProviderError: ai-horde request failed: HTTP 500 Internal Server Error",
+        "code": "PROVIDER_ERROR",
+        "status": 500,
+        "retryable": true
+      }
+    }
+  ]
+}

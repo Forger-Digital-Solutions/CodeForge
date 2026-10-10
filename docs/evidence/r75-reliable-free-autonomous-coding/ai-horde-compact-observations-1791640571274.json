@@ -1,0 +1,35 @@
+{
+  "modelId": "google/gemma-4-31b",
+  "inferenceRequests": 0,
+  "requestBudget": 8,
+  "windowBudget": 8,
+  "minimumPostIntervalMs": 8000,
+  "publicSyntheticCodeOnly": true,
+  "observations": [
+    {
+      "requestedAt": "2026-10-10T13:56:11.535Z",
+      "url": "https://aihorde.net/api/v2/status/models?type=text",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "50"
+        ],
+        [
+          "x-ratelimit-limit",
+          "90"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "88"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791640623"
+        ]
+      ]
+    }
+  ],
+  "frames": []
+}

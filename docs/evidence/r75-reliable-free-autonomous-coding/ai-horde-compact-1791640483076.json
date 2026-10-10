@@ -1,0 +1,24 @@
+{
+  "startedAt": "2026-10-10T13:54:43.076Z",
+  "providerId": "ai-horde",
+  "modelId": "google/gemma-4-31b",
+  "requestBudget": 8,
+  "windowBudget": 8,
+  "minimumPostIntervalMs": 8000,
+  "suiteDeadlineMs": 300000,
+  "publicSyntheticCodeOnly": true,
+  "anonymousDocumentedAccess": true,
+  "paidCredentialsUsed": false,
+  "purchasedKudosUsed": false,
+  "privateWorkspaceDataSent": false,
+  "billing": "AI Horde anonymous community workers; no monetary billing rail or purchasable kudos",
+  "privacy": "Community worker hosts can technically see prompts; synthetic public fixture only",
+  "inferenceRequests": 0,
+  "error": {
+    "message": "TypeError: fetch failed",
+    "causeCode": "ENOTFOUND",
+    "causeMessage": "getaddrinfo ENOTFOUND aihorde.net"
+  },
+  "observationFile": "ai-horde-compact-observations-1791640483076.json",
+  "completedAt": "2026-10-10T13:54:43.153Z"
+}

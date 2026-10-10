@@ -1,0 +1,10 @@
+{
+  "modelId": "google/gemma-4-31b",
+  "inferenceRequests": 0,
+  "requestBudget": 8,
+  "windowBudget": 8,
+  "minimumPostIntervalMs": 8000,
+  "publicSyntheticCodeOnly": true,
+  "observations": [],
+  "frames": []
+}

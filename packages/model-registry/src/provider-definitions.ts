@@ -92,6 +92,7 @@ export interface ProviderConnectionSchema {
 
 export type ProviderApiStyle =
   | "openai-compatible"
+  | "ai-horde-native"
   | "anthropic-messages"
   | "openrouter"
   | "opencode"
@@ -856,8 +857,8 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
     id: "ai-horde",
     displayName: "AI Horde",
     kind: "gateway",
-    apiStyle: "openai-compatible",
-    baseUrl: "https://oai.aihorde.net/v1",
+    apiStyle: "ai-horde-native",
+    baseUrl: "https://aihorde.net/api/v2",
     authClasses: ["ZERO_TOUCH"],
     connection: { fields: [] },
     discoverySources: ["live-catalog"],
@@ -870,8 +871,8 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
       maxRequestsPerMinute: 10,
       evidence: {
         source: "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/README.md + live GET https://aihorde.net/api/v2/find_user",
-        checkedAt: "2026-10-02",
-        note: "Anonymous key 0000000000 is provider-documented; kudos cannot be bought or sold so no billing rail exists on this route.",
+        checkedAt: "2026-10-10",
+        note: "The native async text API accepts provider-documented anonymous key 0000000000; the adapter fixes model identity and uses no purchased kudos.",
       },
     },
     privacy: {

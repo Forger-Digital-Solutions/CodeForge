@@ -1,0 +1,503 @@
+{
+  "startedAt": "2026-10-10T13:44:08.994Z",
+  "providerId": "ai-horde",
+  "modelId": "google/gemma-4-31b",
+  "requestBudget": 8,
+  "windowBudget": 8,
+  "minimumPostIntervalMs": 8000,
+  "suiteDeadlineMs": 300000,
+  "publicSyntheticCodeOnly": true,
+  "anonymousDocumentedAccess": true,
+  "paidCredentialsUsed": false,
+  "purchasedKudosUsed": false,
+  "privateWorkspaceDataSent": false,
+  "billing": "AI Horde anonymous community workers; no monetary billing rail or purchasable kudos",
+  "privacy": "Community worker hosts can technically see prompts; synthetic public fixture only",
+  "inferenceRequests": 1,
+  "statusEndpoint": {
+    "url": "https://aihorde.net/api/v2/status/models?type=text",
+    "status": 200
+  },
+  "liveStatus": {
+    "name": "google/gemma-4-31b",
+    "count": 4,
+    "jobs": 0,
+    "queued": 0,
+    "eta": 0,
+    "performance": 35.2
+  },
+  "catalog": [
+    {
+      "modelId": "koboldcpp/Qwen_Qwen3-0.6B-IQ4_XS",
+      "displayName": "koboldcpp/Qwen_Qwen3-0.6B-IQ4_XS",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/gemma-3-4b-it",
+      "displayName": "koboldcpp/gemma-3-4b-it",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Dusk_Rainbow",
+      "displayName": "koboldcpp/Dusk_Rainbow",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/debug-L3-8B-Stheno-v3.2-SynthRP-r1_Q5_K_M-650",
+      "displayName": "koboldcpp/debug-L3-8B-Stheno-v3.2-SynthRP-r1_Q5_K_M-650",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "aphrodite/SicariusSicariiStuff/Impish_LLAMA_4B",
+      "displayName": "aphrodite/SicariusSicariiStuff/Impish_LLAMA_4B",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "google/gemma-4-31b",
+      "displayName": "google/gemma-4-31b",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Rocinante-X-12B",
+      "displayName": "koboldcpp/Rocinante-X-12B",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Qwen3-4B-Nymphaea-RP.i1-Q4_K_S",
+      "displayName": "koboldcpp/Qwen3-4B-Nymphaea-RP.i1-Q4_K_S",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Llama-3.2-3B-Instruct-Q4_K_M",
+      "displayName": "koboldcpp/Llama-3.2-3B-Instruct-Q4_K_M",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/L3-8B-Stheno-v3.2",
+      "displayName": "koboldcpp/L3-8B-Stheno-v3.2",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Llama-3.2-3B-Instruct",
+      "displayName": "koboldcpp/Llama-3.2-3B-Instruct",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/llama-3.2-3b-instruct-q4_k_m",
+      "displayName": "koboldcpp/llama-3.2-3b-instruct-q4_k_m",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/gemma-3-4b-it-heretic",
+      "displayName": "koboldcpp/gemma-3-4b-it-heretic",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/debug-Serenity-26B-A4B-Q4_K_M",
+      "displayName": "koboldcpp/debug-Serenity-26B-A4B-Q4_K_M",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "aphrodite/TheDrummer/Behemoth-128B-v3-NVFP4",
+      "displayName": "aphrodite/TheDrummer/Behemoth-128B-v3-NVFP4",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Magidonia-24B-v4.3",
+      "displayName": "koboldcpp/Magidonia-24B-v4.3",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Gemma-4-26B-A4B-StyleTune-V2.Q8_0",
+      "displayName": "koboldcpp/Gemma-4-26B-A4B-StyleTune-V2.Q8_0",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Angelic_Eclipse-12B",
+      "displayName": "koboldcpp/Angelic_Eclipse-12B",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Mistral-Nemo-2407-Thinking-Claude-Gemini-GPT5.2-Uncensored-HERETIC",
+      "displayName": "koboldcpp/Mistral-Nemo-2407-Thinking-Claude-Gemini-GPT5.2-Uncensored-HERETIC",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Rocinante-X-12B-v1",
+      "displayName": "koboldcpp/Rocinante-X-12B-v1",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/gemma-4-31B-it-heretic",
+      "displayName": "koboldcpp/gemma-4-31B-it-heretic",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/L3-Super-Nova-RP-8B",
+      "displayName": "koboldcpp/L3-Super-Nova-RP-8B",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/mini-magnum-12b-v1.1",
+      "displayName": "koboldcpp/mini-magnum-12b-v1.1",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Qwen/Qwen3.5-0.8B",
+      "displayName": "koboldcpp/Qwen/Qwen3.5-0.8B",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Gemma-4-E4B-it-Ultra-Uncensored-Heretic",
+      "displayName": "koboldcpp/Gemma-4-E4B-it-Ultra-Uncensored-Heretic",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    },
+    {
+      "modelId": "koboldcpp/Gemma-4-E4B-Uncensored-HauhauCS-Aggressive-Q4_K_M",
+      "displayName": "koboldcpp/Gemma-4-E4B-Uncensored-HauhauCS-Aggressive-Q4_K_M",
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    }
+  ],
+  "compactSuiteBuildSha256": "f4541f001e594aa5015c88b6c894b7bea6fa7410c2c61aa2b841bcd6d21a5c65",
+  "receipt": {
+    "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+    "providerId": "ai-horde",
+    "modelId": "google/gemma-4-31b",
+    "modelDisplayName": "google/gemma-4-31b",
+    "accessClass": "COMMUNITY_ANONYMOUS_FREE",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 153,
+            "retries": 0,
+            "error": "ai-horde request failed: HTTP 500 Internal Server Error"
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 0,
+            "retries": 0,
+            "error": "skipped: provider unavailable during qualification"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-10T13:44:09.637Z",
+        "completedAt": "2026-10-10T13:44:09.791Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 153,
+            "retries": 0,
+            "error": "ai-horde request failed: HTTP 500 Internal Server Error"
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 0,
+            "retries": 0,
+            "error": "skipped: provider unavailable during qualification"
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 0,
+            "retries": 0,
+            "error": "skipped: provider unavailable during qualification"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-10T13:44:09.637Z",
+        "completedAt": "2026-10-10T13:44:09.791Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 0,
+            "retries": 0,
+            "error": "skipped: provider unavailable during qualification"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-10T13:44:09.637Z",
+        "completedAt": "2026-10-10T13:44:09.791Z"
+      }
+    },
+    "startedAt": "2026-10-10T13:44:09.637Z",
+    "completedAt": "2026-10-10T13:44:09.791Z",
+    "totalLatencyMs": 154,
+    "qualificationState": "NOT_QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 1,
+      "transient": true,
+      "quotaExhausted": false
+    }
+  },
+  "observationFile": "ai-horde-compact-observations-1791639848993.json",
+  "completedAt": "2026-10-10T13:44:09.791Z"
+}

@@ -7,7 +7,7 @@ import {
   type ProviderDefinition,
 } from "./provider-definitions.js";
 
-export type ProviderTransport = "openai-compatible" | "anthropic-messages" | "internal";
+export type ProviderTransport = "openai-compatible" | "anthropic-messages" | "ai-horde-native" | "internal";
 export type ProviderKind = "direct" | "gateway";
 
 /**
@@ -66,7 +66,9 @@ function authModeFor(def: ProviderDefinition): AuthMode {
 
 export function policyFromDefinition(def: ProviderDefinition): ProviderPolicy {
   const transport: ProviderTransport =
-    def.apiStyle === "anthropic-messages" ? "anthropic-messages" : def.apiStyle === "hosted" || def.apiStyle === "internal" ? "internal" : "openai-compatible";
+    def.apiStyle === "anthropic-messages" ? "anthropic-messages"
+      : def.apiStyle === "ai-horde-native" ? "ai-horde-native"
+      : def.apiStyle === "hosted" || def.apiStyle === "internal" ? "internal" : "openai-compatible";
   const kind: ProviderKind = def.kind === "gateway" || def.kind === "fds-gateway" ? "gateway" : "direct";
   const env = environmentVariablesFor(def);
   return {

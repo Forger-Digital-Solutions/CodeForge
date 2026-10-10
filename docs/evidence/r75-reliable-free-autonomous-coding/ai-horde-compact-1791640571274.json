@@ -1,0 +1,34 @@
+{
+  "startedAt": "2026-10-10T13:56:11.275Z",
+  "providerId": "ai-horde",
+  "modelId": "google/gemma-4-31b",
+  "requestBudget": 8,
+  "windowBudget": 8,
+  "minimumPostIntervalMs": 8000,
+  "suiteDeadlineMs": 300000,
+  "publicSyntheticCodeOnly": true,
+  "anonymousDocumentedAccess": true,
+  "paidCredentialsUsed": false,
+  "purchasedKudosUsed": false,
+  "privateWorkspaceDataSent": false,
+  "billing": "AI Horde anonymous community workers; no monetary billing rail or purchasable kudos",
+  "privacy": "Community worker hosts can technically see prompts; synthetic public fixture only",
+  "inferenceRequests": 0,
+  "statusEndpoint": {
+    "url": "https://aihorde.net/api/v2/status/models?type=text",
+    "status": 200
+  },
+  "liveStatus": {
+    "name": "google/gemma-4-31b",
+    "count": 4,
+    "jobs": 2,
+    "queued": 1012,
+    "eta": 14,
+    "performance": 34.3
+  },
+  "error": {
+    "message": "Error: Candidate no longer has an active worker with an empty queue; no inference sent"
+  },
+  "observationFile": "ai-horde-compact-observations-1791640571274.json",
+  "completedAt": "2026-10-10T13:56:11.546Z"
+}

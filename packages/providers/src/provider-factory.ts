@@ -33,7 +33,7 @@ export interface ProviderFactoryOptions {
  */
 export interface ProviderTransportDefinition {
   id: string;
-  apiStyle: "openai-compatible" | "anthropic-messages" | "openrouter" | "opencode" | "hosted" | "internal";
+  apiStyle: "openai-compatible" | "anthropic-messages" | "openrouter" | "opencode" | "ai-horde-native" | "hosted" | "internal";
   baseUrl?: string;
   modelsPath?: string;
   connection: { fields: Array<{ id: string; secret: boolean; environmentAliases: string[] }> };

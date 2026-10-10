@@ -1,0 +1,198 @@
+{
+  "startedAt": "2026-10-10T14:10:10.830Z",
+  "evidenceClass": "LIVE_ANONYMOUS_FREE_PUBLIC_FIXTURES",
+  "sourceRevision": "822dfaa63b9896f1575a928728680910a95ae46b",
+  "sourceDiffSha256": "3202d7cb0625d0ae0dee322e6d30e59d0fbb2109b5a76e7c23ac9a7929f01abd",
+  "sourceDirty": true,
+  "status": "DIAGNOSTIC_ONLY",
+  "tasks": [],
+  "supply": [
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "cohere/north-mini-code:free",
+      "qualificationAt": "2026-10-08T12:03:49.727Z",
+      "qualificationSource": "bundled:kilo-free-direct/cohere/north-mini-code:free",
+      "qualificationFreshness": "PRODUCTION_ROLE_QUALITY_AUTHORITY",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "HARD_FAILURE"
+      }
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "qualificationAt": "2026-10-10T10:35:30.841Z",
+      "qualificationSource": "bundled:kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free",
+      "qualificationFreshness": "PRODUCTION_ROLE_QUALITY_AUTHORITY",
+      "roles": {
+        "REVIEWER": "QUALIFIED"
+      }
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "qualificationAt": "2026-10-10T10:44:27.772Z",
+      "qualificationSource": "bundled:kilo-free-direct/nvidia/nemotron-3-super-120b-a12b:free",
+      "qualificationFreshness": "PRODUCTION_ROLE_QUALITY_AUTHORITY",
+      "roles": {
+        "PLANNER": "QUALIFIED"
+      }
+    },
+    {
+      "providerId": "blockrun-free-direct",
+      "modelId": "nvidia/llama-3.2-11b-vision",
+      "qualificationAt": "2026-10-10T10:53:20.898Z",
+      "qualificationSource": "bundled:blockrun-free-direct/nvidia/llama-3.2-11b-vision",
+      "qualificationFreshness": "PRODUCTION_ROLE_QUALITY_AUTHORITY",
+      "roles": {
+        "PLANNER": "QUALIFIED"
+      }
+    }
+  ],
+  "inferenceFrames": [],
+  "costState": "UNKNOWN",
+  "sourceFilesSha256": "70bd562bb5362f969bec5e1504fb3591846923576d0ab40ff0ca3f19ae1308d2",
+  "sourceManifest": "R75-TASK-CAMPAIGN-1791641410733-source.json",
+  "qualificationMode": "INSTALLED_BUNDLED_LIVE_ROLE_EVIDENCE",
+  "routeAdmissionSnapshot": [
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "cohere/north-mini-code:free",
+      "health": "HEALTHY",
+      "toolSupport": true,
+      "qualificationState": "QUALIFIED",
+      "roleSuitability": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "HARD_FAILURE"
+      },
+      "forgeAutoEligible": true,
+      "admission": {
+        "state": "FORGEAUTO_ELIGIBLE",
+        "passed": [
+          "DISCOVERED",
+          "TERMS_ALLOWED",
+          "AUTH_SUPPORTED",
+          "CONNECTED",
+          "FREE_VERIFIED",
+          "CAPABILITY_VERIFIED",
+          "CODEFORGE_QUALIFIED",
+          "HEALTHY",
+          "FORGEAUTO_ELIGIBLE"
+        ]
+      },
+      "runtimeRequalificationRoles": [],
+      "reviewerStatus": "HARD_FAILURE"
+    },
+    {
+      "providerId": "blockrun-free-direct",
+      "modelId": "nvidia/llama-3.2-11b-vision",
+      "health": "HEALTHY",
+      "toolSupport": true,
+      "qualificationState": "QUALIFIED",
+      "roleSuitability": {
+        "PLANNER": "QUALIFIED"
+      },
+      "forgeAutoEligible": true,
+      "admission": {
+        "state": "FORGEAUTO_ELIGIBLE",
+        "passed": [
+          "DISCOVERED",
+          "TERMS_ALLOWED",
+          "AUTH_SUPPORTED",
+          "CONNECTED",
+          "FREE_VERIFIED",
+          "CAPABILITY_VERIFIED",
+          "CODEFORGE_QUALIFIED",
+          "HEALTHY",
+          "FORGEAUTO_ELIGIBLE"
+        ]
+      },
+      "runtimeRequalificationRoles": [],
+      "reviewerStatus": "NOT_TESTED"
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "health": "HEALTHY",
+      "toolSupport": true,
+      "qualificationState": "QUALIFIED",
+      "roleSuitability": {
+        "PLANNER": "QUALIFIED"
+      },
+      "forgeAutoEligible": true,
+      "admission": {
+        "state": "FORGEAUTO_ELIGIBLE",
+        "passed": [
+          "DISCOVERED",
+          "TERMS_ALLOWED",
+          "AUTH_SUPPORTED",
+          "CONNECTED",
+          "FREE_VERIFIED",
+          "CAPABILITY_VERIFIED",
+          "CODEFORGE_QUALIFIED",
+          "HEALTHY",
+          "FORGEAUTO_ELIGIBLE"
+        ]
+      },
+      "runtimeRequalificationRoles": [],
+      "reviewerStatus": "NOT_TESTED"
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "health": "HEALTHY",
+      "toolSupport": true,
+      "qualificationState": "QUALIFIED",
+      "roleSuitability": {
+        "REVIEWER": "QUALIFIED"
+      },
+      "forgeAutoEligible": true,
+      "admission": {
+        "state": "FORGEAUTO_ELIGIBLE",
+        "passed": [
+          "DISCOVERED",
+          "TERMS_ALLOWED",
+          "AUTH_SUPPORTED",
+          "CONNECTED",
+          "FREE_VERIFIED",
+          "CAPABILITY_VERIFIED",
+          "CODEFORGE_QUALIFIED",
+          "HEALTHY",
+          "FORGEAUTO_ELIGIBLE"
+        ]
+      },
+      "runtimeRequalificationRoles": [],
+      "reviewerStatus": "QUALIFIED"
+    }
+  ],
+  "runtimeReviewerAdmission": {
+    "modelSelection": null,
+    "reviewerRoute": {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free"
+    },
+    "reviewerRouteAllowed": true,
+    "fabricOutcome": "ADMITTED",
+    "selectedRoute": {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free"
+    },
+    "reasonCodes": [
+      "AUTHORIZED",
+      "ROLE_QUALIFIED",
+      "QUOTA_RESERVED",
+      "ADMITTED",
+      "ROLE_QUALIFIED_EVIDENCE",
+      "ROLE_RUNTIME_EVIDENCE_ABSENT"
+    ]
+  },
+  "finishedAt": "2026-10-10T14:10:13.710Z"
+}

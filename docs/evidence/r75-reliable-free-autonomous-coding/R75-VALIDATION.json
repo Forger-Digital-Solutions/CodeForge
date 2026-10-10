@@ -44,6 +44,13 @@
       "status": "passed",
       "exitCode": 0,
       "scope": "desktop packages, main process, build identity, and renderer at commit 8899a028681e5bbf5a57af78c138cfe58dbc4f71"
+    },
+    {
+      "name": "AI Horde native adapter TypeScript build",
+      "command": "node node_modules/typescript/bin/tsc -b packages/model-registry/tsconfig.json packages/providers/tsconfig.json",
+      "status": "passed",
+      "exitCode": 0,
+      "scope": "provider definitions, policy projection, native AI Horde adapter, and package references"
     }
   ],
   "focusedTests": [
@@ -67,6 +74,19 @@
       "passed": 12,
       "failed": 0,
       "receipt": "blockrun-free-tests.json"
+    },
+    {
+      "file": "packages/providers/test/ai-horde.test.ts",
+      "status": "passed",
+      "passed": 12,
+      "failed": 0,
+      "receipt": "ai-horde-adapter-tests.json"
+    },
+    {
+      "file": "packages/model-registry/test/community-anonymous-free.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0
     },
     {
       "file": "packages/server/test/autonomous-orchestrator.test.ts",
@@ -101,10 +121,12 @@
     "unknownResetCooldownMs": 60000,
     "hourlyResetHeaders": "tested",
     "catalogMembershipAvailability": "tested",
-    "roleQualificationPromotion": false
+    "roleQualificationPromotion": false,
+    "campaignCounterLimitation": "original R75 task campaign captured zero parent-governor requests and no inference frames; production execution accounts through quota-domain governors; the harness now records quota-domain reports and traces inside the governed adapter"
   },
   "liveEvaluation": {
     "freeInferenceRequests": 2,
+    "freeInferenceRequestScope": "two BlockRun compact qualification requests; the separate AI Horde facade attempt sent one request, while native AI Horde sent none",
     "moneySpentUsd": 0,
     "purchasedCreditsConsumed": 0,
     "blockrunCatalogProbe": {
@@ -137,10 +159,62 @@
       "rolePromotion": false,
       "candidateDisposition": "NOT_TESTED"
     },
-    "additionalCoder": "not qualified: exact model identity changed during the edit probe",
-    "productionCodingTask": "not dispatched because no additional Coder passed exact-model qualification",
+    "aiHordeNativeAttempt": {
+      "modelId": "google/gemma-4-31b",
+      "nativeAdapterImplemented": true,
+      "nativeAdapterTests": "12/12 passed",
+      "qualificationPreflightReceipts": [
+        "ai-horde-compact-1791640441393.json",
+        "ai-horde-compact-1791640483076.json"
+      ],
+      "preflightFailure": "ENOTFOUND aihorde.net",
+      "nativeInferenceRequests": 0,
+      "latestStatusCheck": {
+        "receipt": "ai-horde-compact-1791640571274.json",
+        "status": 200,
+        "workers": 4,
+        "activeJobs": 2,
+        "queuedJobs": 1012,
+        "etaMinutes": 14,
+        "stoppedBeforeInference": true
+      },
+      "priorOpenAiFacadeAttempt": {
+        "receipt": "ai-horde-compact-1791639848993.json",
+        "inferenceRequests": 1,
+        "status": 500,
+        "qualification": "not qualified"
+      },
+      "candidateDisposition": "NOT_TESTED"
+    },
+    "additionalCoder": "not qualified: BlockRun failed exact identity on the edit probe; AI Horde native preflight could not resolve its host",
+    "productionCodingTask": "two public synthetic fixture tasks attempted on the previously qualified Kilo Coder; both blocked before independent review because Reviewer admission denied the qualified Kilo Ultra route",
     "threeCompletionStreak": "not attempted; no additional exact-model-qualified Coder",
-    "organicCrossProviderFailover": "not demonstrated"
+    "organicCrossProviderFailover": "not demonstrated",
+    "productionTaskCampaign": {
+      "receipt": "R75-TASK-CAMPAIGN-1791640869690.json",
+      "declaredTaskSequence": ["bug fix", "feature", "refactor"],
+      "attempted": 2,
+      "completed": 0,
+      "blocked": 2,
+      "agentModelTurnRows": 31,
+      "stopReason": "TWO_CONSECUTIVE_NONCOMPLETIONS_STOP_SCARCE_QUOTA",
+      "independentReviewDispatched": false,
+      "verificationAndIntegrationRan": false,
+      "reviewAdmissionFailure": "ROLE_VERDICT_EXCLUDED for nvidia/nemotron-3-ultra-550b-a55b:free; the other two candidates were not Reviewer-qualified",
+      "followupDiagnostic": {
+        "receipt": "R75-TASK-CAMPAIGN-1791641410733.json",
+        "mode": "diagnostic only; zero inference requests",
+        "reviewerAdmission": "ADMITTED",
+        "selectedRoute": "kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "discrepancyResolved": false
+      },
+      "inferenceFrameInstrumentation": "missing in the original attempt; wrapper order corrected in the campaign harness after the run",
+      "providerRootGovernorCounters": { "requestsPerMinute": 0, "requestsPerHour": 0 },
+      "capacityTotalClaimed": false,
+      "thirdTaskDispatched": false,
+      "threeCompletionStreak": false,
+      "organicCrossProviderFailover": false
+    }
   },
   "windowsPackaging": {
     "evidence": "R75-WINDOWS-PACKAGING.json",
@@ -166,6 +240,9 @@
     "R75-LIVE-CATALOG-CHECK.json",
     "R75-WINDOWS-PACKAGING.json",
     "https://blockrun.ai/docs/api-reference/models",
-    "https://blockrun.ai/docs/rate-limits"
+    "https://blockrun.ai/docs/rate-limits",
+    "https://github.com/Haidra-Org/AI-Horde/blob/main/README_integration.md",
+    "https://ai.google.dev/gemma/docs/core/prompt-formatting-gemma4",
+    "https://ai.google.dev/gemma/docs/capabilities/text/function-calling-gemma4"
   ]
 }
