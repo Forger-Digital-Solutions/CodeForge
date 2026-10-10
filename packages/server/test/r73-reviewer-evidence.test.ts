@@ -57,6 +57,20 @@ describe("R73 workspace-bound text Reviewer", () => {
     expect(first.context).not.toContain("\\nexport const");
   });
 
+  it("builds complete evidence when the workspace is reached through a directory alias", async () => {
+    const alias = path.join(os.tmpdir(), `r73-review-evidence-alias-${crypto.randomUUID()}`);
+    try {
+      await fs.symlink(workspace, alias, process.platform === "win32" ? "junction" : "dir");
+      const packet = await snapshot(alias);
+      expect(packet.binding.complete).toBe(true);
+      expect(packet.binding.workspacePath).toBe(await fs.realpath(workspace));
+      assertReviewerEvidenceCurrent(packet.binding, alias, packet.context);
+      assertReviewerEvidenceCurrent(packet.binding, workspace, packet.context);
+    } finally {
+      await fs.rm(alias, { recursive: true, force: true });
+    }
+  });
+
   it("counts presentation overhead against the whole packet cap without silently truncating files", async () => {
     const content = "x".repeat(REVIEWER_SNAPSHOT_BYTES - 200);
     await fs.writeFile(path.join(workspace, "almost-full.mjs"), content);

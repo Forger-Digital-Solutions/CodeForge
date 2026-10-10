@@ -1,0 +1,877 @@
+{
+  "modelId": "google/gemma-4-31b",
+  "inferenceRequests": 5,
+  "requestBudget": 8,
+  "windowBudget": 8,
+  "minimumPostIntervalMs": 8000,
+  "publicSyntheticCodeOnly": true,
+  "observations": [
+    {
+      "requestedAt": "2026-10-10T14:26:29.851Z",
+      "url": "https://aihorde.net/api/v2/status/models?type=text",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "60"
+        ],
+        [
+          "x-ratelimit-limit",
+          "90"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "89"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642451"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:30.029Z",
+      "url": "https://aihorde.net/api/v2/status/models?type=text",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "60"
+        ],
+        [
+          "x-ratelimit-limit",
+          "90"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "88"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642451"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:30.395Z",
+      "url": "https://aihorde.net/api/v2/generate/text/async",
+      "method": "POST",
+      "status": 202,
+      "headers": [
+        [
+          "retry-after",
+          "1"
+        ],
+        [
+          "x-ratelimit-limit",
+          "2"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "1"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642393"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:30.644Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/7607104e-5e8a-4da1-8d82-0e40e46475e3",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "60"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "59"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642452"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:32.183Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/7607104e-5e8a-4da1-8d82-0e40e46475e3",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "58"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "58"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642452"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:33.573Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/7607104e-5e8a-4da1-8d82-0e40e46475e3",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "57"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "57"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642452"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:35.102Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/7607104e-5e8a-4da1-8d82-0e40e46475e3",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "55"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "56"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642451"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:38.349Z",
+      "url": "https://aihorde.net/api/v2/generate/text/async",
+      "method": "POST",
+      "status": 202,
+      "headers": [
+        [
+          "retry-after",
+          "1"
+        ],
+        [
+          "x-ratelimit-limit",
+          "2"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "1"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642401"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:38.591Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/bc9a4970-7601-4964-a4c6-424124826ca0",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "60"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "59"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642460"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:40.159Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/bc9a4970-7601-4964-a4c6-424124826ca0",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "58"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "58"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642460"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:41.706Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/bc9a4970-7601-4964-a4c6-424124826ca0",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "57"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "57"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642460"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:47.499Z",
+      "url": "https://aihorde.net/api/v2/generate/text/async",
+      "method": "POST",
+      "status": 202,
+      "headers": [
+        [
+          "retry-after",
+          "0"
+        ],
+        [
+          "x-ratelimit-limit",
+          "2"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "2"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642409"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:47.690Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/c4ad416a-b685-4c7c-ba1f-e558dd46e2bd",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "60"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "59"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642469"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:49.052Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/c4ad416a-b685-4c7c-ba1f-e558dd46e2bd",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "59"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "58"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642469"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:50.412Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/c4ad416a-b685-4c7c-ba1f-e558dd46e2bd",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "57"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "57"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642469"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:54.310Z",
+      "url": "https://aihorde.net/api/v2/generate/text/async",
+      "method": "POST",
+      "status": 202,
+      "headers": [
+        [
+          "retry-after",
+          "1"
+        ],
+        [
+          "x-ratelimit-limit",
+          "2"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "1"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642417"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:55.276Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/a805fb2a-c355-43d7-b54d-e3fff2690526",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "59"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "59"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642476"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:56.802Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/a805fb2a-c355-43d7-b54d-e3fff2690526",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "58"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "58"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642476"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:27:03.448Z",
+      "url": "https://aihorde.net/api/v2/generate/text/async",
+      "method": "POST",
+      "status": 202,
+      "headers": [
+        [
+          "retry-after",
+          "0"
+        ],
+        [
+          "x-ratelimit-limit",
+          "2"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "2"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642425"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:27:03.690Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/ec3528ba-9259-4d4c-a28e-54a853b149df",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "60"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "59"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642485"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:27:05.305Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/ec3528ba-9259-4d4c-a28e-54a853b149df",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "58"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "58"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642485"
+        ]
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:27:06.674Z",
+      "url": "https://aihorde.net/api/v2/generate/text/status/ec3528ba-9259-4d4c-a28e-54a853b149df",
+      "method": "GET",
+      "status": 200,
+      "headers": [
+        [
+          "retry-after",
+          "57"
+        ],
+        [
+          "x-ratelimit-limit",
+          "60"
+        ],
+        [
+          "x-ratelimit-remaining",
+          "57"
+        ],
+        [
+          "x-ratelimit-reset",
+          "1791642485"
+        ]
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "requestedAt": "2026-10-10T14:26:30.033Z",
+      "request": {
+        "model": "google/gemma-4-31b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+          },
+          {
+            "role": "user",
+            "content": "Open src/calc.ts and report what it exports. Use the read_file tool."
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "read_file",
+              "description": "Read a file from the repository. Returns its full contents.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Repository-relative path"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "edit_file",
+              "description": "Replace an exact text span in a file. oldText must match the file exactly.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "oldText": {
+                    "type": "string"
+                  },
+                  "newText": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "oldText",
+                  "newText"
+                ]
+              }
+            }
+          }
+        ],
+        "toolChoice": "auto",
+        "temperature": 0,
+        "maxTokens": 200
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "<tool_call>\n<function=SenseNova>\n<parameter=action>\nread_file\n</parameter>\n<parameter=path>\nsrc/calc.ts\n</parameter>\n</function>\n</tool_call>"
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:35.106Z",
+      "request": {
+        "model": "google/gemma-4-31b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+          },
+          {
+            "role": "user",
+            "content": "Open src/calc.ts and report what it exports. Use the read_file tool."
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "read_file",
+              "description": "Read a file from the repository. Returns its full contents.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Repository-relative path"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "edit_file",
+              "description": "Replace an exact text span in a file. oldText must match the file exactly.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "oldText": {
+                    "type": "string"
+                  },
+                  "newText": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "oldText",
+                  "newText"
+                ]
+              }
+            }
+          }
+        ],
+        "toolChoice": "auto",
+        "temperature": 0,
+        "maxTokens": 200
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "<tool_call>\n<function=SenseNova>\n<parameter=action>\nread_file\n</parameter>\n<parameter=path>\nsrc/calc.ts\n</parameter>\n</function>\n</tool_call>"
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:41.710Z",
+      "request": {
+        "model": "google/gemma-4-31b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+          },
+          {
+            "role": "user",
+            "content": "src/calc.ts has a bug: the add function subtracts. Fix it so it returns a + b. Read the file if you need to, then use edit_file with an exact oldText."
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "read_file",
+              "description": "Read a file from the repository. Returns its full contents.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Repository-relative path"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "edit_file",
+              "description": "Replace an exact text span in a file. oldText must match the file exactly.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "oldText": {
+                    "type": "string"
+                  },
+                  "newText": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "oldText",
+                  "newText"
+                ]
+              }
+            }
+          }
+        ],
+        "toolChoice": "auto",
+        "temperature": 0,
+        "maxTokens": 400
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "<tool_call>\n<function=read_file>\n<parameter=path>\nsrc/calc.ts\n</parameter>\n</function>\n</tool_call>"
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:50.416Z",
+      "request": {
+        "model": "google/gemma-4-31b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+          },
+          {
+            "role": "user",
+            "content": "src/calc.ts has a bug: the add function subtracts. Fix it so it returns a + b. Read the file if you need to, then use edit_file with an exact oldText."
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "read_file",
+              "description": "Read a file from the repository. Returns its full contents.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Repository-relative path"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "edit_file",
+              "description": "Replace an exact text span in a file. oldText must match the file exactly.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "oldText": {
+                    "type": "string"
+                  },
+                  "newText": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "oldText",
+                  "newText"
+                ]
+              }
+            }
+          }
+        ],
+        "toolChoice": "auto",
+        "temperature": 0,
+        "maxTokens": 400
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "<tool_call>\n<function=read_file>\n<parameter=path>\nsrc/calc.ts\n</parameter>\n</function>\n</tool_call>"
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T14:26:56.805Z",
+      "request": {
+        "model": "google/gemma-4-31b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Respond with JSON only. No prose, no code fences."
+          },
+          {
+            "role": "user",
+            "content": "Return a JSON object with keys \"files\" (array of strings) listing exactly [\"src/calc.ts\",\"test/calc.test.ts\"] and \"verified\" (boolean true)."
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 120
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\"files\":[\"src/calc.ts\",\"test/calc.test.ts\"],\"verified\":true}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ]
+    }
+  ]
+}

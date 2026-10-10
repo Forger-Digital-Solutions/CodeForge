@@ -1,0 +1,13 @@
+{
+  "schema": "codeforge-r75-focused-test/v1",
+  "recordedAt": "2026-10-10T14:22:01Z",
+  "command": "node_modules/.bin/vitest.cmd run packages/server/test/r73-reviewer-evidence.test.ts",
+  "file": "packages/server/test/r73-reviewer-evidence.test.ts",
+  "status": "passed",
+  "passed": 14,
+  "failed": 0,
+  "skipped": 0,
+  "platform": "Windows, Node.js 24.19.0",
+  "coverageNote": "Includes the Windows directory-junction alias regression for complete evidence and current-binding checks.",
+  "environmentNote": "The sandboxed attempt failed because it denied realpath and symlink operations in its temporary directory. The same suite passed with normal host filesystem access."
+}

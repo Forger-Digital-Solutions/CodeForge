@@ -51,6 +51,35 @@
       "status": "passed",
       "exitCode": 0,
       "scope": "provider definitions, policy projection, native AI Horde adapter, and package references"
+    },
+    {
+      "name": "forced workspace typecheck after Reviewer path fix",
+      "command": "node node_modules/typescript/bin/tsc -b --force --pretty false",
+      "status": "passed",
+      "exitCode": 0,
+      "scope": "full npm workspace"
+    },
+    {
+      "name": "full workspace build after Reviewer path fix",
+      "command": "npm run build",
+      "status": "passed",
+      "exitCode": 0,
+      "scope": "all workspace packages, desktop main and renderer, and web app",
+      "note": "Renderer emitted its existing large-chunk advisory."
+    },
+    {
+      "name": "security gate after supplemental evidence",
+      "command": "npm run security:gate",
+      "status": "passed",
+      "exitCode": 0,
+      "scope": "secret scan, dependency audit, public-claims scan, and documentation links"
+    },
+    {
+      "name": "campaign and qualification script syntax plus evidence JSON parse",
+      "command": "node --check benchmarks/r75/live-campaign.mjs; node --check scripts/r75-kilo-ultra-compact-qualification.mjs; JSON.parse for current receipts",
+      "status": "passed",
+      "exitCode": 0,
+      "scope": "R75 campaign tooling and supplemental live receipts"
     }
   ],
   "focusedTests": [
@@ -95,6 +124,13 @@
       "passed": 1,
       "failed": 0,
       "receipt": "planner-repair-integration.json"
+    },
+    {
+      "file": "packages/server/test/r73-reviewer-evidence.test.ts",
+      "status": "passed",
+      "passed": 14,
+      "failed": 0,
+      "receipt": "r75-reviewer-evidence-tests.json"
     }
   ],
   "broadOrchestrationRun": {
@@ -122,11 +158,11 @@
     "hourlyResetHeaders": "tested",
     "catalogMembershipAvailability": "tested",
     "roleQualificationPromotion": false,
-    "campaignCounterLimitation": "original R75 task campaign captured zero parent-governor requests and no inference frames; production execution accounts through quota-domain governors; the harness now records quota-domain reports and traces inside the governed adapter"
+    "campaignCounterLimitation": "Original campaign: 31 agent_model_turn rows without physical frames, so its physical request total remains unrecoverable. Follow-up: 16 raw provider frames reconciled in R75-CAPACITY-RECONCILIATION-1791642500000.json. The old report omitted quota-domain child governors because it looked for quotaDomainId in route-health rows; the harness now reads persisted turn quotaDomainId values and reports physical frames. The old in-memory governor state cannot be reconstructed."
   },
   "liveEvaluation": {
-    "freeInferenceRequests": 2,
-    "freeInferenceRequestScope": "two BlockRun compact qualification requests; the separate AI Horde facade attempt sent one request, while native AI Horde sent none",
+    "freeInferenceRequests": 28,
+    "freeInferenceRequestScope": "28 exact instrumented attempts across the known AI Horde, BlockRun, Kilo, and post-fix campaign runs; excludes the earlier production campaign with 31 model-turn rows but no physical frames, so the overall total is incomplete",
     "moneySpentUsd": 0,
     "purchasedCreditsConsumed": 0,
     "blockrunCatalogProbe": {
@@ -145,7 +181,17 @@
       "availabilityVariedAcrossChecks": true,
       "latestSnapshot": "R75-LIVE-CATALOG-CHECK.json",
       "latestSnapshotAt": "2026-10-10T13:34:39.589Z",
-      "latestAvailableFreeCodingModels": []
+      "latestAvailableFreeCodingModels": [],
+      "postReappearanceCheck": {
+        "receipt": "blockrun-compact-1791642692191.json",
+        "checkedAt": "2026-10-10T14:31:32.191Z",
+        "policyReverification": "passed",
+        "exactPoolsideModelPresent": false,
+        "inferenceRequests": 0,
+        "catalogAtCheck": [
+          "nvidia/llama-3.2-11b-vision"
+        ]
+      }
     },
     "qualification": {
       "receipt": "blockrun-compact-1791638168218.json",
@@ -170,13 +216,19 @@
       "preflightFailure": "ENOTFOUND aihorde.net",
       "nativeInferenceRequests": 0,
       "latestStatusCheck": {
-        "receipt": "ai-horde-compact-1791640571274.json",
+        "receipt": "ai-horde-compact-1791642389524.json",
         "status": 200,
         "workers": 4,
-        "activeJobs": 2,
-        "queuedJobs": 1012,
-        "etaMinutes": 14,
-        "stoppedBeforeInference": true
+        "activeJobs": 0,
+        "queuedJobs": 0,
+        "etaMinutes": 0,
+        "inferenceRequests": 5,
+        "qualificationRoles": {
+          "CODER": "NOT_QUALIFIED",
+          "TOOL_AGENT": "NOT_QUALIFIED",
+          "ANALYST": "QUALIFIED"
+        },
+        "candidateDisposition": "ANALYST_ONLY; no coding route promotion"
       },
       "priorOpenAiFacadeAttempt": {
         "receipt": "ai-horde-compact-1791639848993.json",
@@ -184,15 +236,19 @@
         "status": 500,
         "qualification": "not qualified"
       },
-      "candidateDisposition": "NOT_TESTED"
+      "candidateDisposition": "ANALYST_ONLY; Coder and Tool Agent not qualified in the later five-request bounded run"
     },
-    "additionalCoder": "not qualified: BlockRun failed exact identity on the edit probe; AI Horde native preflight could not resolve its host",
-    "productionCodingTask": "two public synthetic fixture tasks attempted on the previously qualified Kilo Coder; both blocked before independent review because Reviewer admission denied the qualified Kilo Ultra route",
-    "threeCompletionStreak": "not attempted; no additional exact-model-qualified Coder",
+    "additionalCoder": "not achieved: AI Horde qualified only Analyst, Kilo Ultra receipt remained transient after upstream 503, and BlockRun Poolside was absent at the exact-model check",
+    "productionCodingTask": "Three public synthetic production tasks total: two initially blocked at Reviewer admission due incomplete evidence snapshots; after the path fix, one follow-up blocked at Cohere model-scoped HTTP 429 before editing. Completed 0/3; no reviews, ForgeVerify, or integration completed.",
+    "threeCompletionStreak": "0 in R75; 0/3 current production attempts completed",
     "organicCrossProviderFailover": "not demonstrated",
     "productionTaskCampaign": {
       "receipt": "R75-TASK-CAMPAIGN-1791640869690.json",
-      "declaredTaskSequence": ["bug fix", "feature", "refactor"],
+      "declaredTaskSequence": [
+        "bug fix",
+        "feature",
+        "refactor"
+      ],
       "attempted": 2,
       "completed": 0,
       "blocked": 2,
@@ -209,12 +265,47 @@
         "discrepancyResolved": false
       },
       "inferenceFrameInstrumentation": "missing in the original attempt; wrapper order corrected in the campaign harness after the run",
-      "providerRootGovernorCounters": { "requestsPerMinute": 0, "requestsPerHour": 0 },
+      "providerRootGovernorCounters": {
+        "requestsPerMinute": 0,
+        "requestsPerHour": 0
+      },
       "capacityTotalClaimed": false,
       "thirdTaskDispatched": false,
       "threeCompletionStreak": false,
       "organicCrossProviderFailover": false
-    }
+    },
+    "measuredFreeInferenceRequestAttempts": 28,
+    "measuredRequestScope": "Known instrumented attempts: one AI Horde facade HTTP 500, two earlier BlockRun compact requests, 16 post-fix production-campaign frames, five native AI Horde compact requests, and four Kilo Ultra compact requests. This excludes the earlier 31-turn campaign whose physical frames were not recorded.",
+    "overallRequestTotalStatus": "incomplete because earlier production campaign physical frames are missing",
+    "kiloUltraCoderProbe": {
+      "receipt": "kilo-ultra-compact-1791642584336.json",
+      "observationReceipt": "kilo-ultra-compact-observations-1791642584336.json",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "inferenceRequests": 4,
+      "coderCases": "tool-call and edit passed",
+      "toolAgent": "PROBATION",
+      "structuredProbe": "transient NVIDIA upstream HTTP 503",
+      "qualificationState": "NOT_QUALIFIED",
+      "transient": true,
+      "admission": "not promoted"
+    },
+    "postReviewerFixTask": {
+      "receipt": "R75-TASK-CAMPAIGN-POST-REVIEWER-FIX-1791642500000.json",
+      "reconciliation": "R75-CAPACITY-RECONCILIATION-1791642500000.json",
+      "status": "blocked",
+      "physicalRequests": 16,
+      "byRole": {
+        "explorer": 10,
+        "planner": 1,
+        "coder": 5
+      },
+      "modelScopedRateLimit": "cohere/north-mini-code:free; upstream states 15 requests per minute",
+      "changedFiles": 0,
+      "independentReview": false,
+      "forgeVerify": false,
+      "integration": false
+    },
+    "capacitySummaryFix": "Campaign harness now collects child governor reports through persisted quotaDomainId values and writes a raw-frame request summary."
   },
   "windowsPackaging": {
     "evidence": "R75-WINDOWS-PACKAGING.json",
@@ -232,7 +323,8 @@
     "implementationCommit": "8899a028681e5bbf5a57af78c138cfe58dbc4f71",
     "implementationCommitPushed": true,
     "evidenceAndQualificationScriptUpdatePushed": true,
-    "remoteDnsPreviouslyFailedButPushSucceeded": true
+    "remoteDnsPreviouslyFailedButPushSucceeded": true,
+    "pendingCurrentCommit": true
   },
   "sources": [
     "../r74-autonomous-completion-and-free-reliability/R74-LIVE-STATISTICS.json",
@@ -244,5 +336,11 @@
     "https://github.com/Haidra-Org/AI-Horde/blob/main/README_integration.md",
     "https://ai.google.dev/gemma/docs/core/prompt-formatting-gemma4",
     "https://ai.google.dev/gemma/docs/capabilities/text/function-calling-gemma4"
-  ]
+  ],
+  "reviewerPathRootCause": {
+    "status": "fixed and regression-tested",
+    "receipt": "R75-REVIEWER-PATH-ROOT-CAUSE.json",
+    "cause": "Windows 8.3 workspace path disagreed with per-file realpath path, making a complete text-review snapshot appear incomplete",
+    "behavior": "Workspace roots are canonicalized for snapshot containment and stale-binding checks; file symlink rejection is retained."
+  }
 }

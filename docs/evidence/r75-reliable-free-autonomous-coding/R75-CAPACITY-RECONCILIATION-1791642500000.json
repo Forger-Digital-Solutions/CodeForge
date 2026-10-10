@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "DERIVED_FROM_RAW_LIVE_PROVIDER_FRAMES_NO_PROMPT_CONTENT",
+  "createdAt": "2026-10-10T14:32:58.013Z",
+  "source": {
+    "campaignFile": "R75-TASK-CAMPAIGN-POST-REVIEWER-FIX-1791642500000.json",
+    "campaignSha256": "67faa2e29292808c7eff002d91ff7e7fb1afae323142eb0d088a62b82d1e2799",
+    "sourceRevision": "898c792618faa6da1844b83bddef0b10fe60f698",
+    "sourceDiffSha256": "386f2ab9228b78d927113f878ad49c6db46a05d9de6122fab2aab5b892d10de7",
+    "sourceDirty": true
+  },
+  "task": {
+    "id": "01-bug-fix",
+    "taskClass": "bug fix",
+    "status": "blocked",
+    "parentStatus": "blocked",
+    "changedFiles": [],
+    "testsBeforeExitCode": 1,
+    "testsAfterExitCode": 1,
+    "reviewPassed": false,
+    "verificationCount": 0,
+    "integrationStatus": "blocked"
+  },
+  "physicalRequests": {
+    "frameCount": 16,
+    "failedFrameCount": 1,
+    "byProviderModel": [
+      {
+        "providerId": "kilo-free-direct",
+        "modelId": "cohere/north-mini-code:free",
+        "requests": 15,
+        "failures": 1,
+        "errors": {
+          "RATE_LIMITED": 1
+        }
+      },
+      {
+        "providerId": "blockrun-free-direct",
+        "modelId": "nvidia/llama-3.2-11b-vision",
+        "requests": 1,
+        "failures": 0,
+        "errors": {}
+      }
+    ],
+    "byAgentModelTurns": {
+      "explorer": {
+        "modelTurns": 10,
+        "providerRequestsStarted": 0
+      },
+      "planner": {
+        "modelTurns": 1,
+        "providerRequestsStarted": 0
+      },
+      "coder": {
+        "modelTurns": 5,
+        "providerRequestsStarted": 1
+      }
+    },
+    "failedRequests": [
+      {
+        "providerId": "kilo-free-direct",
+        "modelId": "cohere/north-mini-code:free",
+        "status": 429,
+        "code": "RATE_LIMITED",
+        "rateLimitScope": "model",
+        "messageExcerpt": "kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: cohere/north-mini-code-20260617/d3a18412-b833-40de-bc07-c4ba9a1dea53. High demand for cohere/north-mini-code:free on OpenRouter - limited to 15 requests per m"
+      }
+    ]
+  },
+  "economics": {
+    "costState": "CATALOG_VERIFIED_EXACT_ZERO_NO_CREDENTIALS_NO_PAID_FALLBACK",
+    "noCredentials": true,
+    "noPaidFallback": true
+  },
+  "capacityTelemetry": {
+    "savedParentReport": {
+      "kilo": {
+        "providerId": "kilo-free-direct",
+        "tpmUsed": 0,
+        "tpmLimit": 60000,
+        "rpmUsed": 0,
+        "rpmLimit": 14,
+        "rphUsed": 0,
+        "rphLimit": 190,
+        "activeConcurrent": 0,
+        "maxConcurrent": 2,
+        "inFlightTokens": 0,
+        "queueDepth": 0,
+        "isCoolingDown": false,
+        "cooldownRemainingMs": 0
+      },
+      "blockrun": {
+        "providerId": "blockrun-free-direct",
+        "tpmUsed": 0,
+        "tpmLimit": 60000,
+        "rpmUsed": 0,
+        "rpmLimit": 28,
+        "rphUsed": 0,
+        "rphLimit": 285,
+        "activeConcurrent": 0,
+        "maxConcurrent": 2,
+        "inFlightTokens": 0,
+        "queueDepth": 0,
+        "isCoolingDown": false,
+        "cooldownRemainingMs": 0
+      },
+      "quotaDomains": []
+    },
+    "reasonForUndercount": "The campaign report looked for quotaDomainId on route-health snapshots, while production dispatch created per-quota-domain child governors keyed on agent_model_turn.quotaDomainId. Those child reports were omitted from the old receipt; their in-memory state cannot be reconstructed after process exit.",
+    "reportingFix": "R75 campaign harness now resolves governor reports from persisted turn quotaDomainId values and includes a raw-frame request reconciliation."
+  }
+}

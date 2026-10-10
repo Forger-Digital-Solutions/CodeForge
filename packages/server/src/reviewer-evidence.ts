@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createVerificationInputStateHash } from "@codeforge/workflow";
@@ -22,6 +23,10 @@ const digest = (value: string): string => crypto.createHash("sha256").update(val
 const sensitivePath = /(?:^|\/)(?:\.env(?:\.[^/]*)?|[^/]+\.(?:pem|p12|pfx|key)|id_(?:rsa|ed25519))$/i;
 const untrustedDelimiter = /<<<(?:END_)?UNTRUSTED_DATA(?:\s|>)/;
 const metadata = (value: string): string => JSON.stringify(redactSecrets(value)).replaceAll("<", "\\u003c");
+const canonicalWorkspacePath = (value: string): string => {
+  const resolved = path.resolve(value);
+  try { return fsSync.realpathSync.native(resolved); } catch { return resolved; }
+};
 
 export async function buildReviewerEvidenceSnapshot(input: {
   workspacePath: string;
@@ -30,7 +35,8 @@ export async function buildReviewerEvidenceSnapshot(input: {
   files: readonly string[];
   verificationCommands: readonly string[];
 }): Promise<ReviewerEvidenceSnapshot> {
-  const workspacePath = path.resolve(input.workspacePath);
+  // Windows temporary roots can use 8.3 aliases while realpath returns the long spelling.
+  const workspacePath = canonicalWorkspacePath(input.workspacePath);
   const before = createVerificationInputStateHash(workspacePath);
   const observations: Array<{ path: string; hash?: string; content?: string; unavailable?: string }> = [];
   const diff = redactSecrets(input.diff);
@@ -90,8 +96,9 @@ export async function buildReviewerEvidenceSnapshot(input: {
 }
 
 export function assertReviewerEvidenceCurrent(binding: ReviewerEvidenceBinding, workspacePath: string, context?: string): void {
-  if (path.resolve(workspacePath) !== path.resolve(binding.workspacePath)
-    || binding.inputStateHash !== createVerificationInputStateHash(workspacePath)
+  const currentWorkspacePath = canonicalWorkspacePath(workspacePath);
+  if (currentWorkspacePath !== canonicalWorkspacePath(binding.workspacePath)
+    || binding.inputStateHash !== createVerificationInputStateHash(currentWorkspacePath)
     || (context !== undefined && digest(context) !== binding.contextHash)) {
     throw new Error("REVIEWER_EVIDENCE_STALE: isolated workspace no longer matches the review snapshot");
   }

@@ -1,0 +1,36 @@
+{
+  "schema": "codeforge-r75-reviewer-path-root-cause/v1",
+  "recordedAt": "2026-10-10T14:34:03Z",
+  "evidenceClass": "LOCAL_FIXTURE_REPRODUCTION_AND_REGRESSION",
+  "sourceCampaign": "R75-TASK-CAMPAIGN-1791640869690.json",
+  "sourceTaskEvidence": {
+    "reviewerModel": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "reviewEvidenceComplete": false,
+    "inputStateHash": "77f1f2b194a73777a9ec2d288fe0cb1d7f0c2534a5b8ad07deb2f54de253ef02",
+    "routeDecision": "ROLE_VERDICT_EXCLUDED"
+  },
+  "reproduction": {
+    "cause": "The Windows task used an 8.3 short-path spelling for the workspace root, while realpath returned the long spelling for each file. Containment compared those different roots and marked every observation outside the workspace.",
+    "snapshotThroughShortPathComplete": false,
+    "snapshotThroughCanonicalPathComplete": true,
+    "inputStateHashMatchesOriginalTask": true,
+    "originalTaskHash": "77f1f2b194a73777a9ec2d288fe0cb1d7f0c2534a5b8ad07deb2f54de253ef02"
+  },
+  "fix": {
+    "files": [
+      "packages/server/src/reviewer-evidence.ts",
+      "packages/server/test/r73-reviewer-evidence.test.ts"
+    ],
+    "behavior": "Canonicalize the workspace root before hashing and containment checks in both snapshot creation and stale-evidence validation. Per-file symbolic-link rejection remains enforced.",
+    "regression": "Builds and validates complete review evidence through a Windows directory junction alias and the canonical workspace path."
+  },
+  "validation": {
+    "testFile": "packages/server/test/r73-reviewer-evidence.test.ts",
+    "passed": 14,
+    "failed": 0,
+    "executionNote": "The sandboxed process could not call realpath or create a symlink in its temporary directory. The same targeted test passed with normal host filesystem access.",
+    "serverTypeScriptBuild": "passed"
+  },
+  "postFixLiveEvidence": "R75-TASK-CAMPAIGN-POST-REVIEWER-FIX-1791642500000.json",
+  "postFixOutcome": "The run progressed through exploration and planning, then blocked at the Kilo Cohere model-scoped HTTP 429 before independent review. It does not count as task completion or a Reviewer pass."
+}

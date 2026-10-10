@@ -1,0 +1,216 @@
+{
+  "startedAt": "2026-10-10T14:26:29.524Z",
+  "providerId": "ai-horde",
+  "modelId": "google/gemma-4-31b",
+  "requestBudget": 8,
+  "windowBudget": 8,
+  "minimumPostIntervalMs": 8000,
+  "suiteDeadlineMs": 300000,
+  "publicSyntheticCodeOnly": true,
+  "anonymousDocumentedAccess": true,
+  "paidCredentialsUsed": false,
+  "purchasedKudosUsed": false,
+  "privateWorkspaceDataSent": false,
+  "billing": "AI Horde anonymous community workers; no monetary billing rail or purchasable kudos",
+  "privacy": "Community worker hosts can technically see prompts; synthetic public fixture only",
+  "inferenceRequests": 5,
+  "statusEndpoint": {
+    "url": "https://aihorde.net/api/v2/status/models?type=text",
+    "status": 200
+  },
+  "liveStatus": {
+    "name": "google/gemma-4-31b",
+    "count": 4,
+    "jobs": 0,
+    "queued": 0,
+    "eta": 0,
+    "performance": 34.7
+  },
+  "catalog": [
+    {
+      "modelId": "google/gemma-4-31b",
+      "displayName": "google/gemma-4-31b",
+      "contextWindow": 8192,
+      "capabilities": {
+        "text": true,
+        "coding": true,
+        "toolCalling": true,
+        "vision": false,
+        "structuredOutput": true,
+        "longContext": false
+      },
+      "isFree": true,
+      "freeStatus": "verified_free"
+    }
+  ],
+  "compactSuiteBuildSha256": "f4541f001e594aa5015c88b6c894b7bea6fa7410c2c61aa2b841bcd6d21a5c65",
+  "receipt": {
+    "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+    "providerId": "ai-horde",
+    "modelId": "google/gemma-4-31b",
+    "modelDisplayName": "google/gemma-4-31b",
+    "accessClass": "COMMUNITY_ANONYMOUS_FREE",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 6603,
+            "retries": 1,
+            "details": {
+              "toolCalls": [],
+              "path": "",
+              "firstAttempt": {
+                "toolCalls": [],
+                "path": ""
+              }
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 6389,
+            "retries": 1,
+            "details": {
+              "calls": 1,
+              "toolCalls": [],
+              "turns": [
+                {
+                  "toolCalls": [],
+                  "finishReason": "stop",
+                  "textLength": 99
+                }
+              ],
+              "firstAttempt": {
+                "calls": 1,
+                "toolCalls": [],
+                "turns": [
+                  {
+                    "toolCalls": [],
+                    "finishReason": "stop",
+                    "textLength": 99
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-10T14:26:30.033Z",
+        "completedAt": "2026-10-10T14:27:06.680Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 6603,
+            "retries": 1,
+            "details": {
+              "toolCalls": [],
+              "path": "",
+              "firstAttempt": {
+                "toolCalls": [],
+                "path": ""
+              }
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 6389,
+            "retries": 1,
+            "details": {
+              "calls": 1,
+              "toolCalls": [],
+              "turns": [
+                {
+                  "toolCalls": [],
+                  "finishReason": "stop",
+                  "textLength": 99
+                }
+              ],
+              "firstAttempt": {
+                "calls": 1,
+                "toolCalls": [],
+                "turns": [
+                  {
+                    "toolCalls": [],
+                    "finishReason": "stop",
+                    "textLength": 99
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 9875,
+            "retries": 0,
+            "details": {
+              "textLength": 61,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.3333333333333333,
+        "startedAt": "2026-10-10T14:26:30.033Z",
+        "completedAt": "2026-10-10T14:27:06.680Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 9875,
+            "retries": 0,
+            "details": {
+              "textLength": 61,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-10T14:26:30.033Z",
+        "completedAt": "2026-10-10T14:27:06.680Z"
+      }
+    },
+    "startedAt": "2026-10-10T14:26:30.033Z",
+    "completedAt": "2026-10-10T14:27:06.680Z",
+    "totalLatencyMs": 36647,
+    "qualificationState": "NOT_QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 5,
+      "transient": false,
+      "quotaExhausted": false
+    }
+  },
+  "observationFile": "ai-horde-compact-observations-1791642389524.json",
+  "completedAt": "2026-10-10T14:27:06.680Z"
+}

@@ -34,6 +34,7 @@ const catalog = new InMemoryProviderCatalog();
 const health = createEightBitRouteHealthAuthority();
 const freeCloud = new FreeCloudService({ firewall, providerCatalog: catalog, registry: new NormalizedModelRegistry(), routeHealth: health, useBundledRoleEvidence: true });
 const capacityGovernor = new ProviderCapacityGovernor();
+const policyChecks = new Map();
 await mkdir(root, { recursive: true });
 try {
   await freeCloud.loadQualification();
@@ -53,8 +54,17 @@ try {
     } });
     const adapter = capacityGovernor.wrapAdapter(traceProvider(rawAdapter, campaign, persist));
     const policyFn = blockrun ? reverifyBlockRunPolicy : reverifyKiloPolicy;
-    const policy = await policyFn(new Date().toISOString());
-    if (policy.status !== 'VERIFIED') { campaign.supply.push({ providerId: adapter.providerId, status: 'POLICY_DENIED' }); continue; }
+    let policy = policyChecks.get(adapter.providerId);
+    if (!policy) {
+      policy = await policyFn(new Date().toISOString());
+      policyChecks.set(adapter.providerId, policy);
+      campaign.policyReverification ??= [];
+      campaign.policyReverification.push({ providerId: adapter.providerId, ...policy, receipt: undefined });
+    }
+    if (policy.status !== 'VERIFIED') {
+      campaign.supply.push({ providerId: adapter.providerId, status: 'POLICY_DENIED', policyStatus: policy.status, policySource: policy.source, observedHash: policy.observedHash });
+      continue;
+    }
     const roleStatuses = Object.fromEntries(Object.keys(qualification.roleResults).map(role => [role, roleQualificationStatusFor(qualification, role)]));
     if (qualification.metadata?.transient || !Object.values(roleStatuses).some(status => status === 'QUALIFIED')) throw new Error('CURRENT_CONCLUSIVE_QUALIFICATION_REQUIRED');
     const models = await adapter.listModels();
@@ -128,7 +138,7 @@ try {
   for (let index = 0; index < count; index++) {
     const task = taskAt(index + offset);
     const workspacePath = await mkdtemp(path.join(root, 'public-task-'));
-    const taskEvidence = { id: task.id, taskClass: task.taskClass, startedAt: new Date().toISOString(), workspacePath, status: 'RUNNING' };
+    const taskEvidence = { id: task.id, taskClass: task.taskClass, startedAt: new Date().toISOString(), workspacePath, inferenceFramesStart: campaign.inferenceFrames.length, status: 'RUNNING' };
     campaign.tasks.push(taskEvidence);
     await persist();
     let persistence;
@@ -181,7 +191,8 @@ try {
       const decisions = await persistence.getWorkItemsByKind('eight_bit_decision_receipt');
       const turns = await persistence.getWorkItemsByKind('agent_model_turn');
       const diff = (await execFile('git', ['diff', result.baseRevision, 'HEAD'], { cwd: workspacePath, windowsHide: true })).stdout;
-      Object.assign(taskEvidence, { status: result.status, result, testsAfter, workers, decisions, turns, verificationRecords: await persistence.getWorkItemsByKind('verification'), parentRecords: await persistence.getWorkItemsByKind('autonomous_run'), parentStates: await persistence.getWorkItemsByKind('autonomous_parent_state'), experience: await persistence.getWorkItemsByKind('generalized_experience_signal'), diff, diffSha256: createHash('sha256').update(diff).digest('hex'), routeHealth: health.snapshot(), capacityGovernor: capacityReportSnapshot(), rssBytes: process.memoryUsage().rss, reservations: reservations.snapshot() });
+      const inferenceFrames = campaign.inferenceFrames.slice(taskEvidence.inferenceFramesStart);
+      Object.assign(taskEvidence, { status: result.status, result, testsAfter, workers, decisions, turns, inferenceRequestSummary: summarizeInferenceRequests(inferenceFrames, turns), verificationRecords: await persistence.getWorkItemsByKind('verification'), parentRecords: await persistence.getWorkItemsByKind('autonomous_run'), parentStates: await persistence.getWorkItemsByKind('autonomous_parent_state'), experience: await persistence.getWorkItemsByKind('generalized_experience_signal'), diff, diffSha256: createHash('sha256').update(diff).digest('hex'), routeHealth: health.snapshot(), capacityGovernor: capacityReportSnapshot(turns), rssBytes: process.memoryUsage().rss, reservations: reservations.snapshot() });
       if (result.status === 'completed' && (result.completion?.outcome !== 'completed' || !result.review?.passed || !result.verification?.every((item) => item.passed) || result.integration?.status !== 'integrated' || testsAfter.exitCode !== 0)) throw new Error('FALSE_COMPLETION_OBSERVED');
       if (result.status === 'completed' && !taskEvidence.parentStates.some(state => state.runId === result.runId && state.phase === 'completed')) throw new Error('DURABLE_PARENT_COMPLETION_MISSING');
     } catch (error) { taskEvidence.status = 'FAILED'; taskEvidence.error = String(error); }
@@ -193,17 +204,49 @@ try {
   campaign.status = campaign.tasks.every((task) => task.status === 'completed') ? 'PASS' : 'PARTIAL';
 } catch (error) { campaign.status = 'BLOCKED'; campaign.error = String(error); }
 campaign.finishedAt = new Date().toISOString();
-campaign.capacityGovernorFinal = capacityReportSnapshot();
+campaign.inferenceRequestSummary = summarizeInferenceRequests(campaign.inferenceFrames, campaign.tasks.flatMap(task => task.turns ?? []));
+campaign.capacityGovernorFinal = capacityReportSnapshot(campaign.tasks.flatMap(task => task.turns ?? []));
 await persist();
 console.log(JSON.stringify({ status: campaign.status, attempted: campaign.tasks.length, completed: campaign.tasks.filter((task) => task.status === 'completed').length, error: campaign.error }));
 
-function capacityReportSnapshot() {
+function summarizeInferenceRequests(frames, turns) {
+  const byProviderModel = new Map();
+  for (const frame of frames) {
+    const key = `${frame.providerId}/${frame.request?.model ?? 'unknown'}`;
+    const row = byProviderModel.get(key) ?? { providerId: frame.providerId, modelId: frame.request?.model ?? 'unknown', requests: 0, failed: 0, errors: {} };
+    row.requests++;
+    if (frame.error) {
+      row.failed++;
+      const code = frame.error.code ?? 'UNKNOWN';
+      row.errors[code] = (row.errors[code] ?? 0) + 1;
+    }
+    byProviderModel.set(key, row);
+  }
+  const byAgent = new Map();
+  for (const turn of turns) {
+    const agentId = turn.agentId ?? 'unknown';
+    const row = byAgent.get(agentId) ?? { agentId, modelTurns: 0, providerRequestsStarted: 0 };
+    row.modelTurns++;
+    if (turn.state === 'provider_request_started') row.providerRequestsStarted++;
+    byAgent.set(agentId, row);
+  }
+  return {
+    physicalProviderRequests: frames.length,
+    failedRequests: frames.filter(frame => frame.error).length,
+    byProviderModel: [...byProviderModel.values()],
+    byAgentModelTurns: [...byAgent.values()],
+  };
+}
+
+function capacityReportSnapshot(turns = []) {
   const domains = new Map();
-  for (const route of health.snapshot()) {
-    if (!route.quotaDomainId) continue;
-    const key = `${route.providerId}::${route.quotaDomainId}`;
-    const governor = capacityGovernor.quotaDomainGovernor(route.providerId, route.quotaDomainId);
-    if (governor) domains.set(key, { providerId: route.providerId, quotaDomainId: route.quotaDomainId, report: governor.getCapacityReport(route.providerId) });
+  for (const turn of turns) {
+    const providerId = turn.servedProviderId;
+    const quotaDomainId = turn.quotaDomainId;
+    if (!providerId || !quotaDomainId) continue;
+    const key = `${providerId}::${quotaDomainId}`;
+    const governor = capacityGovernor.quotaDomainGovernor(providerId, quotaDomainId);
+    if (governor) domains.set(key, { providerId, quotaDomainId, report: governor.getCapacityReport(providerId) });
   }
   return {
     kilo: capacityGovernor.getCapacityReport('kilo-free-direct'),

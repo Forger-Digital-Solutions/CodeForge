@@ -1,0 +1,67 @@
+{
+  "startedAt": "2026-10-10T14:23:08.446Z",
+  "evidenceClass": "LIVE_ANONYMOUS_FREE_PUBLIC_FIXTURES",
+  "sourceRevision": "898c792618faa6da1844b83bddef0b10fe60f698",
+  "sourceDiffSha256": "c72a5eb67cc387b2234f38ab6536fece4611e3177dc0954f2e4480badc63065a",
+  "sourceDirty": true,
+  "status": "BLOCKED",
+  "tasks": [],
+  "supply": [
+    {
+      "providerId": "kilo-free-direct",
+      "status": "POLICY_DENIED"
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "status": "POLICY_DENIED"
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "status": "POLICY_DENIED"
+    },
+    {
+      "providerId": "blockrun-free-direct",
+      "status": "POLICY_DENIED"
+    }
+  ],
+  "inferenceFrames": [],
+  "costState": "UNKNOWN",
+  "sourceFilesSha256": "67ef1b7ee84a6679c9cb7c815a8122b0a9770e141d1a78ade77d4d5ac1f2ded2",
+  "sourceManifest": "R75-TASK-CAMPAIGN-1791642188305-source.json",
+  "qualificationMode": "INSTALLED_BUNDLED_LIVE_ROLE_EVIDENCE",
+  "error": "Error: CURRENT_QUALIFIED_EXPLORER_ROSTER_UNAVAILABLE",
+  "finishedAt": "2026-10-10T14:23:09.523Z",
+  "capacityGovernorFinal": {
+    "kilo": {
+      "providerId": "kilo-free-direct",
+      "tpmUsed": 0,
+      "tpmLimit": 60000,
+      "rpmUsed": 0,
+      "rpmLimit": 14,
+      "rphUsed": 0,
+      "rphLimit": 190,
+      "activeConcurrent": 0,
+      "maxConcurrent": 2,
+      "inFlightTokens": 0,
+      "queueDepth": 0,
+      "isCoolingDown": false,
+      "cooldownRemainingMs": 0
+    },
+    "blockrun": {
+      "providerId": "blockrun-free-direct",
+      "tpmUsed": 0,
+      "tpmLimit": 60000,
+      "rpmUsed": 0,
+      "rpmLimit": 28,
+      "rphUsed": 0,
+      "rphLimit": 285,
+      "activeConcurrent": 0,
+      "maxConcurrent": 2,
+      "inFlightTokens": 0,
+      "queueDepth": 0,
+      "isCoolingDown": false,
+      "cooldownRemainingMs": 0
+    },
+    "quotaDomains": []
+  }
+}
