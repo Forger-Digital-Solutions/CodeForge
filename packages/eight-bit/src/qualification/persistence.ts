@@ -1,6 +1,6 @@
 import type { ISessionPersistence, WorkItem } from "@codeforge/sessions";
 import { createHash } from "node:crypto";
-import type { ModelQualificationReceipt } from "./types.js";
+import type { ModelQualificationReceipt, RoleQualificationResult } from "./types.js";
 
 export interface QualificationSpend {
   providerId: string;
@@ -27,6 +27,21 @@ export interface QualificationPersistence {
   loadHistory?(providerId: string, modelId: string): Promise<ModelQualificationReceipt[]>;
 }
 
+export function qualificationAdmissionReceipt(receipt: ModelQualificationReceipt): ModelQualificationReceipt | undefined {
+  if (receipt.metadata?.transient !== true) return structuredClone(receipt);
+  const failures = Object.values(receipt.roleResults).filter((result): result is RoleQualificationResult => result?.status === "HARD_FAILURE");
+  if (failures.length === 0) return undefined;
+  // An interruption cannot certify any role, but it cannot erase a critical defect already
+  // measured before that interruption. Keep the complete original in history separately.
+  return {
+    ...structuredClone(receipt),
+    roleResults: Object.fromEntries(failures.map(result => [result.role, structuredClone(result)])),
+    qualificationState: "HARD_FAILURE",
+    hardFailureRoles: failures.map(result => result.role),
+    metadata: { ...receipt.metadata, transient: false, partialNegativeEvidence: true },
+  };
+}
+
 /** In-memory qualification persistence (for testing) */
 export class InMemoryQualificationPersistence implements QualificationPersistence {
   private readonly receipts = new Map<string, ModelQualificationReceipt>();
@@ -49,7 +64,8 @@ export class InMemoryQualificationPersistence implements QualificationPersistenc
     const preserved = structuredClone(receipt);
     const digest = createHash("sha256").update(JSON.stringify(preserved)).digest("hex");
     this.history.set(digest, preserved);
-    if (receipt.metadata?.transient !== true) this.receipts.set(this.key(receipt.providerId, receipt.modelId), preserved);
+    const admission = qualificationAdmissionReceipt(receipt);
+    if (admission) this.receipts.set(this.key(receipt.providerId, receipt.modelId), admission);
   }
 
   async loadHistory(providerId: string, modelId: string): Promise<ModelQualificationReceipt[]> {
@@ -142,7 +158,8 @@ export class SqliteQualificationPersistence implements QualificationPersistence 
     if (!await this.persistence.getWorkItem(id)) {
       await this.persistence.upsertWorkItem({ ...this.toWorkItem(receipt), id } as WorkItem);
     }
-    if (receipt.metadata?.transient !== true) await this.persistence.upsertWorkItem(this.toWorkItem(receipt));
+    const admission = qualificationAdmissionReceipt(receipt);
+    if (admission) await this.persistence.upsertWorkItem(this.toWorkItem(admission));
   }
 
   async loadHistory(providerId: string, modelId: string): Promise<ModelQualificationReceipt[]> {

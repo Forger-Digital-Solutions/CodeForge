@@ -20,6 +20,7 @@ import {
   type ModelQualificationReceipt,
   type QualificationPersistence,
   InMemoryQualificationPersistence,
+  qualificationAdmissionReceipt,
 } from "@codeforge/eight-bit";
 import { canonicalIdentityFor } from "./canonical.js";
 import { bundledFreeRoleReceipts } from "./bundled-role-evidence.js";
@@ -657,8 +658,9 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   /** Test/certification seam: record an externally produced receipt. */
   async recordReceipt(receipt: ModelQualificationReceipt): Promise<void> {
     await this.qualificationStore.save(receipt);
-    if (receipt.metadata?.transient === true) return;
-    this.receipts.set(`${receipt.providerId}::${receipt.modelId}`, structuredClone(receipt));
+    const admission = qualificationAdmissionReceipt(receipt);
+    if (!admission) return;
+    this.receipts.set(`${receipt.providerId}::${receipt.modelId}`, admission);
     this.emit();
   }
 
@@ -945,6 +947,12 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
           ? { ...receipt, metadata: { ...receipt.metadata, transient: true, qualificationBudgetExhausted: true } }
           : receipt;
         await this.qualificationStore.save(preservedReceipt).catch(() => undefined);
+        const negativeAdmission = preservedReceipt.metadata?.transient === true ? qualificationAdmissionReceipt(preservedReceipt) : undefined;
+        if (negativeAdmission) {
+          this.receipts.set(`${receipt.providerId}::${receipt.modelId}`, negativeAdmission);
+          this.applyReceiptToFirewall(negativeAdmission);
+          this.emit();
+        }
         // A partial suite cannot certify a model or poison its runtime capacity/role health.
         if (budgetExhausted || measured > dispatchLimit) { ctx.taken++; continue; }
         // A transient (429/401/timeout) probe is not evidence about the model; keep it pending.

@@ -31,6 +31,24 @@ import {
 const NOW = new Date();
 
 describe("R68 fresh packaged qualification", () => {
+  it("revokes a measured critical failure despite a later interruption, across restart, without promoting partial roles", async () => {
+    const store = new InMemoryQualificationPersistence();
+    const service = new FreeCloudService({ firewall: new ForgeZero(), providerCatalog: new InMemoryProviderCatalog(), registry: new NormalizedModelRegistry(), qualificationStore: store });
+    const qualified = receipt("kilo-free-direct", "critical:free");
+    const interrupted = { ...qualified, roleResults: { ...qualified.roleResults, REVIEWER: { ...qualified.roleResults.CODER!, role: "REVIEWER" as const, status: "HARD_FAILURE" as const, hardFailures: ["reviewer.one_bug"] } }, metadata: { transient: true, qualificationBudgetExhausted: true } };
+    await service.recordReceipt(qualified);
+    await service.recordReceipt(interrupted);
+    for (const restart of [false, true]) {
+      if (restart) await service.loadQualification();
+      const active = service.getReceipt("kilo-free-direct", "critical:free")!;
+      expect(active.roleResults.REVIEWER?.status).toBe("HARD_FAILURE");
+      expect(active.roleResults.CODER).toBeUndefined();
+      expect(active.qualificationState).toBe("HARD_FAILURE");
+      expect(active.metadata).toMatchObject({ partialNegativeEvidence: true, transient: false });
+    }
+    expect(await store.loadHistory("kilo-free-direct", "critical:free")).toEqual([qualified, interrupted]);
+  });
+
   it("isolates active role evidence from caller and consumer mutations", async () => {
     const service = new FreeCloudService({ firewall: new ForgeZero(), providerCatalog: new InMemoryProviderCatalog(), registry: new NormalizedModelRegistry() });
     const measured = receipt("kilo-free-direct", "immutable:free");

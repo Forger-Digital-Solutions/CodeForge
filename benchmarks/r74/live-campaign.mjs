@@ -15,7 +15,7 @@ import { snapshotSource } from './source-snapshot.mjs';
 
 const execFile = promisify(callback);
 const directory = 'docs/evidence/r74-autonomous-completion-and-free-reliability';
-const campaignName = process.env.R74_CAMPAIGN_NAME ?? `R73-TASK-CAMPAIGN-${Date.now()}`;
+const campaignName = process.env.R74_CAMPAIGN_NAME ?? `R74-TASK-CAMPAIGN-${Date.now()}`;
 const sourceDiff = (await execFile('git', ['-c', 'core.fsmonitor=false', 'diff'])).stdout;
 const campaign = { startedAt: new Date().toISOString(), evidenceClass: 'LIVE_ANONYMOUS_FREE_PUBLIC_FIXTURES', sourceRevision: (await execFile('git', ['rev-parse', 'HEAD'])).stdout.trim(), sourceDiffSha256: createHash('sha256').update(sourceDiff).digest('hex'), sourceDirty: sourceDiff.length > 0, status: 'RUNNING', tasks: [], supply: [], inferenceFrames: [], costState: 'UNKNOWN' };
 const source = await snapshotSource();

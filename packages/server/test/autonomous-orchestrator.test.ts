@@ -57,11 +57,15 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     let plannerCalls = 0;
     let coderCalls = 0;
     const tasks = [{ id: "C", title: "Implement src/math.ts", objective: "Add repairMarker to src/math.ts", dependencies: [], assignedRole: "coder" }];
-    const subagentManager = { spawnChildAgent: async (options: { agentId: string; task: string; workspacePath: string }) => {
+    const subagentManager = { spawnChildAgent: async (options: { agentId: string; task: string; workspacePath: string; contextSummary?: string }) => {
       const base = { status: "completed", summary: "Completed role", findings: [], evidence: [], files: [] };
       if (options.agentId === "planner") {
         plannerCalls++;
-        if (plannerCalls === 2) expect(options.task).toContain("previous plan did not satisfy");
+        if (plannerCalls === 2) {
+          expect(options.task).toContain("previous plan did not satisfy");
+          expect(options.contextSummary).toContain("Missing planning obligations:");
+          expect(options.contextSummary).toContain("independent reviewer task");
+        }
         return { ...base, structuredData: { protocol: "task_graph_v1", summary: "Add repairMarker to src/math.ts", tasks: plannerCalls === 1 || persistent ? tasks : [...tasks, { id: "R", title: "Review src/math.ts", objective: "Independently review and verify src/math.ts", dependencies: ["C"], assignedRole: "reviewer" }] } };
       }
       if (options.agentId === "coder") {

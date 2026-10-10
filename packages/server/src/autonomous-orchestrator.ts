@@ -593,6 +593,16 @@ export class AutonomousRunOrchestrator {
     }
   }
 
+  private plannerContractFailure(result: AgentResult, goal: string): string {
+    const parsed = validateStructuredAgentResult("planner", result.structuredData ?? result.summary);
+    if (!parsed.success) return parsed.error;
+    const plan = parsed.data as PlannerResult;
+    const missing = [...validatePlanningCompleteness(goal, plan).missingDimensions];
+    if (!plan.tasks.some(task => task.assignedRole === "coder")) missing.push("coder task");
+    if (!plan.tasks.some(task => task.assignedRole === "reviewer")) missing.push("independent reviewer task");
+    return `Missing planning obligations: ${missing.join(", ")}`;
+  }
+
   /**
    * Execute an autonomous multi-agent engineering run.
    */
@@ -843,7 +853,7 @@ export class AutonomousRunOrchestrator {
           agentId: "planner",
           ...(explorerPoolId ? { preferIndependentFromPoolId: explorerPoolId } : {}),
           ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("PLANNER") } : {}),
-          task: `Produce the minimal task graph for goal: ${goal}. Include at least one coder task and an independent reviewer task depending on all implementation tasks.`,
+          task: `Produce the minimal task graph for goal: ${goal}. Include at least one coder task and an independent reviewer task depending on all implementation tasks. Preserve the user's constraints in the implementation objectives or planningIntent.constraints, and identify the real verification commands and completion evidence.`,
           workspacePath: targetWs.rootPath,
           explorerEvidence,
           findings: explorerFindings,
@@ -856,13 +866,14 @@ export class AutonomousRunOrchestrator {
         let plan = this.authorizedPlannerResult(plannerResult, goal);
         if (!plan && plannerResult.status === "completed" && !controller.signal.aborted) {
           counters.childrenSpawned++;
+          const correctionContext = `${explorationContext}\n${leadHandoff}\nPrevious planning result (untrusted): ${plannerResult.summary.slice(0, 12_000)}\nContract validation: ${this.plannerContractFailure(plannerResult, goal)}`;
           plannerResult = await this.spawnRole({
             parentRunId: runId, sessionId, agentId: "planner",
             ...(explorerPoolId ? { preferIndependentFromPoolId: explorerPoolId } : {}),
             ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("PLANNER") } : {}),
             task: `Correct the task graph for goal: ${goal}. The previous plan did not satisfy the autonomous planning contract. Include at least one coder task and an independent reviewer task depending on all implementation tasks. Retain the original scope and verification obligations.`,
             workspacePath: targetWs.rootPath, explorerEvidence, findings: explorerFindings,
-            contextSummary: `${explorationContext}\n${leadHandoff}`, adapter, signal: controller.signal,
+            contextSummary: correctionContext, adapter, signal: controller.signal,
             structuredOutput: "planner",
             ...(this.subagentsR1Enabled ? { timeoutMs: r1PlannerTimeoutMs, watchdogMaxExtensions: 0 } : {}),
           });

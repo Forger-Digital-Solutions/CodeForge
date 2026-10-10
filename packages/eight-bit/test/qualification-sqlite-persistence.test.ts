@@ -26,6 +26,27 @@ function receipt(modelId: string, state: ModelQualificationReceipt["qualificatio
 }
 
 describe("SqliteQualificationPersistence against the real session database", () => {
+  it("retains critical negative evidence through an interrupted suite and database reopen", async () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "r74-critical-history-"));
+    const dbPath = path.join(directory, "receipts.db");
+    const prior = receipt("critical:free", "QUALIFIED");
+    const interrupted: ModelQualificationReceipt = { ...prior, roleResults: { REVIEWER: { role: "REVIEWER", status: "HARD_FAILURE", testCases: [], hardFailures: ["reviewer.one_bug"], startedAt: prior.startedAt, completedAt: prior.completedAt } }, metadata: { transient: true } };
+    let persistence = createSqliteSessionPersistence({ dbPath });
+    try {
+      const store = new SqliteQualificationPersistence(persistence);
+      await store.save(prior);
+      await store.save(interrupted);
+      await persistence.close?.();
+      persistence = createSqliteSessionPersistence({ dbPath });
+      const reopened = new SqliteQualificationPersistence(persistence);
+      expect((await reopened.load("openrouter", "critical:free"))?.roleResults.REVIEWER?.status).toBe("HARD_FAILURE");
+      expect(await reopened.loadHistory("openrouter", "critical:free")).toEqual([prior, interrupted]);
+    } finally {
+      await persistence.close?.();
+      fs.rmSync(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+    }
+  });
+
   it("retains the conclusive receipt across a transient retry and database restart, with both runs archived", async () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "r73-qualification-history-"));
     const dbPath = path.join(directory, "receipts.db");
