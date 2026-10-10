@@ -87,6 +87,38 @@
       "status": "passed",
       "exitCode": 0,
       "scope": "providers package and TypeScript project references"
+    },
+    {
+      "name": "desktop main and renderer build after Kilo headroom change",
+      "command": "npm run build --workspace=codeforge-desktop",
+      "status": "passed",
+      "exitCode": 0,
+      "scope": "desktop packages, main process, renderer, and build identity at 56a154b9397edaf8b17220f77df02f1bd6f0f194",
+      "buildIdentityDirty": false
+    },
+    {
+      "name": "Windows package rebuild after Kilo headroom change",
+      "command": "node ../../node_modules/electron-builder/cli.js",
+      "status": "blocked",
+      "exitCode": 1,
+      "scope": "Electron Builder stopped after getaddrinfo ENOTFOUND github.com; the existing Setup and Portable artifacts remain from commit 8217d70e8a344efb826b15c37723171f92c6f294"
+    },
+    {
+      "name": "documentation links after final R75 updates",
+      "command": "node scripts/security/validate-doc-links.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "filesScanned": 61,
+      "relativeLinksChecked": 166,
+      "broken": 0
+    },
+    {
+      "name": "public claims scan after final R75 updates",
+      "command": "node scripts/security/public-claims-scan.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "filesScanned": 167,
+      "blocking": 0
     }
   ],
   "focusedTests": [
@@ -350,11 +382,19 @@
     "setupAuthenticode": "NotSigned",
     "portableAuthenticode": "NotSigned",
     "installerExecuted": false,
-    "installedLifecycleCertified": false
+    "installedLifecycleCertified": false,
+    "followUpBuildAttempt": {
+      "desktopBuildCommit": "56a154b9397edaf8b17220f77df02f1bd6f0f194",
+      "desktopBuildAt": "2026-10-10T15:01:03.832Z",
+      "desktopBuildIdentityDirty": false,
+      "electronBuilderStatus": "blocked by getaddrinfo ENOTFOUND github.com",
+      "existingSetupAndPortableArtifactsRemainFromPriorCommit": true,
+      "currentCommitPackageAudits": "not run"
+    }
   },
   "delivery": {
-    "implementationCommit": "8217d70e8a344efb826b15c37723171f92c6f294",
-    "evidencePayloadCommit": "5181272fdbeee9ab27e4b5ac42f4461d6254323a",
+    "implementationCommit": "d3c472a487c829b0746cc422f0c5e88e4e6d5dcb",
+    "previousEvidencePayloadCommit": "56a154b9397edaf8b17220f77df02f1bd6f0f194",
     "implementationCommitPushed": true,
     "evidenceAndQualificationScriptUpdatePushed": true,
     "remoteDnsPreviouslyFailedButPushSucceeded": true,

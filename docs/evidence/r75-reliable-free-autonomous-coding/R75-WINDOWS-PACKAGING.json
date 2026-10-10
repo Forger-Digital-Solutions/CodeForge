@@ -51,6 +51,22 @@
   ],
   "installerExecuted": false,
   "installedLifecycleCertified": false,
+  "followUpBuildAttempt": {
+    "commit": "56a154b9397edaf8b17220f77df02f1bd6f0f194",
+    "desktopBuild": {
+      "status": "passed",
+      "builtAt": "2026-10-10T15:01:03.832Z",
+      "dirty": false
+    },
+    "electronBuilder": {
+      "command": "node ../../node_modules/electron-builder/cli.js",
+      "status": "blocked",
+      "error": "getaddrinfo ENOTFOUND github.com"
+    },
+    "existingArtifactsUnchanged": true,
+    "existingArtifactCommit": "8217d70e8a344efb826b15c37723171f92c6f294",
+    "currentCommitPackageAudits": "not run"
+  },
   "primaryCheckoutArtifactIncident": {
     "occurred": true,
     "trackedSourceChanged": false,
