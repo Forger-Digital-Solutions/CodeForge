@@ -11,10 +11,12 @@ export interface ObservedQuota {
   limitTokens?: number;
   remainingTokens?: number;
   resetTokensMs?: number;
+  limitRequests?: number;
   remainingRequests?: number;
   resetRequestsMs?: number;
   retryAfterMs?: number;
   observedAt: number;
+  requestCountAtObservation?: number;
 }
 
 /**
@@ -24,8 +26,13 @@ export interface ObservedQuota {
 export interface ProviderCapacityLimit {
   maxTokensPerMinute: number;
   maxRequestsPerMinute: number;
+  maxRequestsPerHour?: number;
   maxConcurrent: number;
 }
+
+const REQUEST_MINUTE_MS = 60_000;
+const REQUEST_HOUR_MS = 60 * REQUEST_MINUTE_MS;
+const UNKNOWN_RATE_LIMIT_COOLDOWN_MS = REQUEST_MINUTE_MS;
 
 /**
  * Conservative fallback limits applied when live provider quota is unobserved.
@@ -38,11 +45,14 @@ export const DEFAULT_FALLBACK_LIMITS: Readonly<Record<string, ProviderCapacityLi
     // R74 observed a 15 RPM upstream wall on the packaged Coder; anonymous users share
     // source-IP capacity, so conservative provider pacing must not multiply it per role.
     maxRequestsPerMinute: 14,
+    // The public gateway allowance is shared per source IP across all models.
+    maxRequestsPerHour: 190,
     maxConcurrent: 2,
   },
   "blockrun-free-direct": {
     maxTokensPerMinute: 60000,
     maxRequestsPerMinute: 28,
+    maxRequestsPerHour: 285,
     maxConcurrent: 2,
   },
   openrouter: {
@@ -105,6 +115,7 @@ const PROMPT_ESTIMATE_MIN_MARGIN = 1.15;
 interface ProviderState {
   tokenHistory: Array<{ timestamp: number; tokens: number }>;
   requestHistory: number[];
+  totalRequests: number;
   activeConcurrent: number;
   inFlightTokens: number;
   cooldownUntil: number;
@@ -161,6 +172,8 @@ export interface ProviderCapacityReport {
   tpmLimit: number;
   rpmUsed: number;
   rpmLimit: number;
+  rphUsed?: number;
+  rphLimit?: number;
   activeConcurrent: number;
   maxConcurrent: number;
   inFlightTokens: number;
@@ -259,6 +272,7 @@ export class ProviderCapacityGovernor {
       state = {
         tokenHistory: [],
         requestHistory: [],
+        totalRequests: 0,
         activeConcurrent: 0,
         inFlightTokens: 0,
         cooldownUntil: 0,
@@ -272,13 +286,23 @@ export class ProviderCapacityGovernor {
   }
 
   private pruneHistory(state: ProviderState, now: number): void {
-    const cutoff = now - 60_000;
-    while (state.tokenHistory.length > 0 && state.tokenHistory[0]!.timestamp <= cutoff) {
+    const cutoff = now - REQUEST_HOUR_MS;
+    const tokenCutoff = now - REQUEST_MINUTE_MS;
+    while (state.tokenHistory.length > 0 && state.tokenHistory[0]!.timestamp <= tokenCutoff) {
       state.tokenHistory.shift();
     }
     while (state.requestHistory.length > 0 && state.requestHistory[0]! <= cutoff) {
       state.requestHistory.shift();
     }
+  }
+
+  private observedRequestWaitMs(state: ProviderState, now: number): number {
+    const quota = state.observedQuota;
+    if (quota?.remainingRequests === undefined || quota.resetRequestsMs === undefined || quota.requestCountAtObservation === undefined) return 0;
+    const resetAt = quota.observedAt + quota.resetRequestsMs;
+    if (now >= resetAt) return 0;
+    const dispatchedSinceObservation = Math.max(0, state.totalRequests - quota.requestCountAtObservation);
+    return quota.remainingRequests - dispatchedSinceObservation <= 0 ? resetAt - now : 0;
   }
 
   /**
@@ -363,6 +387,7 @@ export class ProviderCapacityGovernor {
 
     let maxTokensPerMinute = custom.maxTokensPerMinute ?? fallback.maxTokensPerMinute;
     let maxRequestsPerMinute = custom.maxRequestsPerMinute ?? fallback.maxRequestsPerMinute;
+    const maxRequestsPerHour = custom.maxRequestsPerHour ?? fallback.maxRequestsPerHour;
     const maxConcurrent = custom.maxConcurrent ?? fallback.maxConcurrent;
 
     // Evidence-driven override: if the provider explicitly told us remaining tokens/requests
@@ -380,7 +405,12 @@ export class ProviderCapacityGovernor {
       }
     }
 
-    return { maxTokensPerMinute, maxRequestsPerMinute, maxConcurrent };
+    return {
+      maxTokensPerMinute,
+      maxRequestsPerMinute,
+      ...(maxRequestsPerHour !== undefined ? { maxRequestsPerHour } : {}),
+      maxConcurrent,
+    };
   }
 
   /**
@@ -412,11 +442,14 @@ export class ProviderCapacityGovernor {
         const isCooldown = now < effectiveCooldownUntil;
         const limits = this.getEffectiveLimits(providerId);
         const currentTokens = state.tokenHistory.reduce((sum, entry) => sum + entry.tokens, 0) + state.inFlightTokens;
-        const currentRequests = state.requestHistory.length;
+        const currentRequestsPerMinute = state.requestHistory.filter((at) => at > now - REQUEST_MINUTE_MS).length;
+        const currentRequestsPerHour = state.requestHistory.length;
 
         // 2. Concurrency, RPM, TPM checks
         const isConcurrencyFull = state.activeConcurrent >= limits.maxConcurrent;
-        const isRpmFull = currentRequests >= limits.maxRequestsPerMinute;
+        const isRpmFull = currentRequestsPerMinute >= limits.maxRequestsPerMinute;
+        const observedRequestWaitMs = this.observedRequestWaitMs(state, now);
+        const isRphFull = observedRequestWaitMs > 0 || (limits.maxRequestsPerHour !== undefined && currentRequestsPerHour >= limits.maxRequestsPerHour);
         const windowTpmFull = currentTokens + estimatedTokens > limits.maxTokensPerMinute && state.tokenHistory.length > 0;
         // Evidence-driven token bucket: when the provider's own headers describe a refilling
         // per-minute bucket and the observation is fresh, admission follows the provider's rule
@@ -425,7 +458,7 @@ export class ProviderCapacityGovernor {
         const bucket = promptEstimate !== undefined ? this.tokenBucketDecision(providerId, state, promptEstimate, now) : undefined;
         const isTpmFull = bucket ? !bucket.admit : windowTpmFull;
 
-        if (isCooldown || isConcurrencyFull || isRpmFull || isTpmFull) {
+        if (isCooldown || isConcurrencyFull || isRpmFull || isRphFull || isTpmFull) {
           if (!enqueued) {
             if (this.maxQueueDepth !== undefined && state.waitingQueue >= this.maxQueueDepth) {
               throw new Error(`[PROVIDER_CAPACITY_EXCEEDED] Provider '${providerId}' queue depth limit (${this.maxQueueDepth}) exceeded`);
@@ -452,9 +485,23 @@ export class ProviderCapacityGovernor {
             continue;
           }
 
+          if (isRphFull) {
+            const oldestRequest = state.requestHistory[0];
+            const staticWindowWaitMs = limits.maxRequestsPerHour !== undefined && currentRequestsPerHour >= limits.maxRequestsPerHour && oldestRequest !== undefined
+              ? Math.max(0, oldestRequest + REQUEST_HOUR_MS - now)
+              : 0;
+            const waitMs = Math.max(observedRequestWaitMs, staticWindowWaitMs, 50);
+            if (waitMs > REQUEST_MINUTE_MS) {
+              const recoveryAt = new Date(now + waitMs).toISOString();
+              throw new Error(`[PROVIDER_RATE_LIMITED] Provider '${providerId}' request allowance is exhausted until ${recoveryAt}`);
+            }
+            await this.sleep(waitMs, signal);
+            continue;
+          }
+
           if (isRpmFull) {
-            const oldestRequest = state.requestHistory[0]!;
-            const waitMs = Math.max(50, oldestRequest + 60_000 - now);
+            const oldestRequest = state.requestHistory.find((at) => at > now - REQUEST_MINUTE_MS) ?? now;
+            const waitMs = Math.max(50, oldestRequest + REQUEST_MINUTE_MS - now);
             await this.sleep(waitMs, signal);
             continue;
           }
@@ -481,6 +528,7 @@ export class ProviderCapacityGovernor {
         state.activeConcurrent++;
         state.inFlightTokens += estimatedTokens;
         state.requestHistory.push(now);
+        state.totalRequests++;
         const acquiredAt = now;
 
         let released = false;
@@ -571,7 +619,10 @@ export class ProviderCapacityGovernor {
    * caller's observer with this method, so every Groq/Cloudflare/… response updates the bucket.
    */
   readonly observeResponse = (observation: ProviderResponseObservation): void => {
-    this.recordResponse(observation.providerId, observation.status, observation.headers);
+    this.recordResponse(observation.providerId, observation.status, observation.headers, {
+      ...(observation.modelId ? { modelId: observation.modelId } : {}),
+      ...(observation.rateLimitScope ? { scope: observation.rateLimitScope } : {}),
+    });
   };
 
   /**
@@ -581,6 +632,7 @@ export class ProviderCapacityGovernor {
     providerId: string,
     status: number,
     headers: Array<[string, string]> | Record<string, string | undefined>,
+    scope?: { modelId?: string; scope?: "model" | "provider" },
   ): void {
     const state = this.getState(providerId);
     const now = this.now();
@@ -597,6 +649,7 @@ export class ProviderCapacityGovernor {
     let limitTokens: number | undefined;
     let remainingTokens: number | undefined;
     let resetTokensMs: number | undefined;
+    let limitRequests: number | undefined;
     let remainingRequests: number | undefined;
     let resetRequestsMs: number | undefined;
     let retryAfterMs: number | undefined;
@@ -619,14 +672,24 @@ export class ProviderCapacityGovernor {
     }
 
     const remReqsHeader = headerMap.get("x-ratelimit-remaining-requests");
-    if (remReqsHeader) {
-      const parsed = parseInt(remReqsHeader, 10);
+    const remReqs = remReqsHeader ?? headerMap.get("x-ratelimit-remaining");
+    if (remReqs) {
+      const parsed = parseInt(remReqs, 10);
       if (!Number.isNaN(parsed)) remainingRequests = parsed;
+    }
+
+    const limitReqsHeader = headerMap.get("x-ratelimit-limit-requests") ?? headerMap.get("x-ratelimit-limit");
+    if (limitReqsHeader) {
+      const parsed = parseInt(limitReqsHeader, 10);
+      if (!Number.isNaN(parsed) && parsed > 0) limitRequests = parsed;
     }
 
     const resetReqsHeader = headerMap.get("x-ratelimit-reset-requests");
     if (resetReqsHeader) {
       resetRequestsMs = parseResetTimeToMs(resetReqsHeader);
+    } else {
+      const resetHeader = headerMap.get("x-ratelimit-reset");
+      if (resetHeader) resetRequestsMs = parseResetTimestampToMs(resetHeader, now);
     }
 
     const retryAfterHeader = headerMap.get("retry-after");
@@ -642,19 +705,29 @@ export class ProviderCapacityGovernor {
 
     // 429 rate limit backoff
     if (status === 429) {
-      const backoffMs = retryAfterMs ?? resetTokensMs ?? resetRequestsMs ?? 5000;
-      state.cooldownUntil = Math.max(state.cooldownUntil, now + backoffMs);
+      const backoffMs = retryAfterMs ?? resetTokensMs ?? resetRequestsMs ?? UNKNOWN_RATE_LIMIT_COOLDOWN_MS;
+      if (scope?.scope === "model" && scope.modelId) {
+        this.recordRateLimit(providerId, now + backoffMs, { modelId: scope.modelId, scope: "model" });
+      } else {
+        state.cooldownUntil = Math.max(state.cooldownUntil, now + backoffMs);
+      }
     }
 
-    state.observedQuota = {
-      limitTokens,
-      remainingTokens,
-      resetTokensMs,
-      remainingRequests,
-      resetRequestsMs,
-      retryAfterMs,
-      observedAt: now,
-    };
+    const providerQuotaObserved = [limitTokens, remainingTokens, resetTokensMs, limitRequests, remainingRequests, resetRequestsMs]
+      .some((value) => value !== undefined);
+    if (providerQuotaObserved && !(status === 429 && scope?.scope === "model" && scope.modelId)) {
+      state.observedQuota = {
+        limitTokens,
+        remainingTokens,
+        resetTokensMs,
+        limitRequests,
+        remainingRequests,
+        resetRequestsMs,
+        retryAfterMs,
+        observedAt: now,
+        requestCountAtObservation: state.totalRequests,
+      };
+    }
   }
 
   /**
@@ -665,7 +738,7 @@ export class ProviderCapacityGovernor {
    * still owns the route-level health and failover decision.
    */
   recordRateLimit(providerId: string, retryAfter?: number, options?: { modelId?: string; scope?: "model" | "provider" }): void {
-    const fallbackUntil = this.now() + 5_000;
+    const fallbackUntil = this.now() + UNKNOWN_RATE_LIMIT_COOLDOWN_MS;
     const suppliedUntil = typeof retryAfter === "number" && Number.isFinite(retryAfter)
       ? Math.max(this.now(), retryAfter)
       : fallbackUntil;
@@ -699,7 +772,7 @@ export class ProviderCapacityGovernor {
     this.pruneHistory(state, now);
     const limits = this.getEffectiveLimits(providerId);
     const tpmUsed = state.tokenHistory.reduce((sum, e) => sum + e.tokens, 0) + state.inFlightTokens;
-    const rpmUsed = state.requestHistory.length;
+    const rpmUsed = state.requestHistory.filter((at) => at > now - REQUEST_MINUTE_MS).length;
     const isCoolingDown = now < state.cooldownUntil;
     const cooldownRemainingMs = isCoolingDown ? state.cooldownUntil - now : 0;
 
@@ -709,6 +782,7 @@ export class ProviderCapacityGovernor {
       tpmLimit: limits.maxTokensPerMinute,
       rpmUsed,
       rpmLimit: limits.maxRequestsPerMinute,
+      ...(limits.maxRequestsPerHour !== undefined ? { rphUsed: state.requestHistory.length, rphLimit: limits.maxRequestsPerHour } : {}),
       activeConcurrent: state.activeConcurrent,
       maxConcurrent: limits.maxConcurrent,
       inFlightTokens: state.inFlightTokens,
@@ -862,6 +936,20 @@ function parseResetTimeToMs(raw: string): number {
     if (!Number.isNaN(parsed)) totalMs = parsed * 1000;
   }
   return totalMs > 0 ? totalMs : 60_000;
+}
+
+function parseResetTimestampToMs(raw: string, now: number): number {
+  const trimmed = raw.trim();
+  const numeric = Number(trimmed);
+  if (Number.isFinite(numeric) && numeric > 0) {
+    const resetAt = numeric > 1_000_000_000_000
+      ? numeric
+      : numeric > 1_000_000_000
+        ? numeric * 1000
+        : Number.NaN;
+    if (Number.isFinite(resetAt)) return Math.max(0, resetAt - now);
+  }
+  return parseResetTimeToMs(trimmed);
 }
 
 export const defaultCapacityGovernor = new ProviderCapacityGovernor();

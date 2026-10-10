@@ -5,7 +5,7 @@ import type { StreamEvent } from "../src/chat-types.js";
 import { gatewayRateLimitScope } from "../src/gateway-rate-limit.js";
 
 const MODEL = "nvidia/llama-3.2-11b-vision";
-const raw = { id: MODEL, billing_mode: "free", available: true, pricing: { input: 0, output: 0 }, categories: ["chat", "vision"], context_window: 128_000 };
+const raw = { id: MODEL, billing_mode: "free", pricing: { input: 0, output: 0 }, categories: ["chat", "vision"], context_window: 128_000 };
 const request = { model: MODEL, messages: [{ role: "user" as const, content: "public synthetic fixture" }] };
 const catalog = () => new Response(JSON.stringify({ data: [raw] }), { status: 200 });
 const completion = (model = MODEL) => new Response(JSON.stringify({ id: "r1", model, choices: [{ index: 0, message: { role: "assistant", content: "ok" }, finish_reason: "stop" }] }), { status: 200 });
@@ -26,10 +26,10 @@ describe("BlockRun anonymous Free transport", () => {
     }
   });
 
-  it("requires all explicit economic and availability facts", () => {
+  it("requires explicit zero-cost metadata and treats catalog membership as current availability", () => {
     expect(mapBlockRunFreeModel(raw)?.freeStatus).toBe("verified_free");
     for (const patch of [
-      { billing_mode: "paid" }, { billing_mode: undefined }, { available: false }, { available: undefined },
+      { billing_mode: "paid" }, { billing_mode: undefined }, { available: false },
       { pricing: { input: null, output: null } }, { pricing: { input: "", output: "0" } },
       { pricing: { input: 0, output: 0, transaction_fee: 0.001 } }, { categories: ["image"] },
     ]) expect(mapBlockRunFreeModel({ ...raw, ...patch })).toBeNull();

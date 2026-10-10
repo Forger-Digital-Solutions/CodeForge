@@ -1,0 +1,144 @@
+{
+  "schema": "codeforge-r75-validation/v1",
+  "evidenceClass": "current_local_validation_and_external_prerequisite_status",
+  "recordedAt": "2026-10-10",
+  "repository": {
+    "branch": "codex/r75-reliable-free-autonomous-coding",
+    "baselineHead": "230510131f40532ad8a402bdef131c3b8c637436",
+    "baselineMatchesR74Remote": true,
+    "mainCheckoutPreserved": true
+  },
+  "engineeringChecks": [
+    {
+      "name": "forced workspace typecheck",
+      "command": "npm run typecheck",
+      "status": "passed",
+      "exitCode": 0,
+      "scope": "full npm workspace"
+    },
+    {
+      "name": "final server dependency-graph compile",
+      "command": "node G:\\CodeForge\\node_modules\\typescript\\bin\\tsc -b packages\\server\\tsconfig.json --force",
+      "status": "passed",
+      "exitCode": 0,
+      "scope": "server and referenced workspace packages after the final planner-contract edit"
+    },
+    {
+      "name": "full workspace build",
+      "command": "npm run build",
+      "status": "passed",
+      "exitCode": 0,
+      "scope": "all workspace packages, Windows desktop main and renderer, and web app"
+    },
+    {
+      "name": "security gate",
+      "command": "npm run security:gate",
+      "status": "passed",
+      "exitCode": 0,
+      "scope": "secret scan, dependency audit, public-claims scan, and documentation links"
+    }
+  ],
+  "focusedTests": [
+    {
+      "file": "packages/server/test/r75-planner-contract-repair.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "receipt": "planner-contract-tests.json"
+    },
+    {
+      "file": "packages/providers/test/capacity-governor.test.ts",
+      "status": "passed",
+      "passed": 26,
+      "failed": 0,
+      "receipt": "capacity-governor-tests.json"
+    },
+    {
+      "file": "packages/providers/test/blockrun-free.test.ts",
+      "status": "passed",
+      "passed": 12,
+      "failed": 0,
+      "receipt": "blockrun-free-tests.json"
+    },
+    {
+      "file": "packages/server/test/autonomous-orchestrator.test.ts",
+      "filter": "repairs an omitted Reviewer without paying for a second Planner request",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "receipt": "planner-repair-integration.json"
+    }
+  ],
+  "broadOrchestrationRun": {
+    "file": "packages/server/test/autonomous-orchestrator.test.ts",
+    "status": "wall_clock_timeout_in_one_case",
+    "passed": 24,
+    "timedOut": 1,
+    "timeoutMs": 30000,
+    "timedOutCase": "uses repeated abstract prior outcomes to advise a later revision without changing completion authority",
+    "isolatedRerun": {
+      "status": "passed",
+      "passed": 1,
+      "timeoutMs": 60000,
+      "receipt": "experience-advice-isolated.json",
+      "note": "The case passed alone; the initial full-file run also emitted a Windows EBUSY cleanup error for a temporary Git fixture."
+    },
+    "countsAreNotSummed": true
+  },
+  "capacityAndRouteChanges": {
+    "kiloRequestsPerHourFallback": 190,
+    "blockrunRequestsPerMinuteFallback": 28,
+    "blockrunRequestsPerHourFallback": 285,
+    "modelScoped429DoesNotCoolHealthySibling": "tested",
+    "unknownResetCooldownMs": 60000,
+    "hourlyResetHeaders": "tested",
+    "catalogMembershipAvailability": "tested",
+    "roleQualificationPromotion": false
+  },
+  "liveEvaluation": {
+    "freeInferenceRequests": 0,
+    "moneySpentUsd": 0,
+    "purchasedCreditsConsumed": 0,
+    "blockrunCatalogProbe": {
+      "method": "GET",
+      "url": "https://blockrun.ai/api/v1/models",
+      "status": "blocked_by_dns",
+      "error": "No such host is known",
+      "inferenceAttempted": false
+    },
+    "additionalCoder": "not qualified",
+    "threeCompletionStreak": "not attempted because the current external Free routes could not be revalidated",
+    "organicCrossProviderFailover": "not demonstrated"
+  },
+  "windowsPackaging": {
+    "desktopBuild": "passed",
+    "packageBuilderScript": {
+      "status": "failed_before_audits",
+      "exitCode": 3221225794,
+      "reason": "npm lifecycle process launched through Git Bash terminated in this host"
+    },
+    "directElectronBuilder": {
+      "commands": [
+        "electron-builder --win",
+        "electron-builder --win --dir"
+      ],
+      "status": "blocked_by_dns",
+      "error": "getaddrinfo ENOTFOUND github.com",
+      "requiredPackagingHelperCached": false,
+      "artifactProduced": false
+    },
+    "installerExecuted": false,
+    "installedLifecycleCertified": false
+  },
+  "delivery": {
+    "commitCreated": false,
+    "pushAttempted": false,
+    "remoteDnsPreviouslyFailed": true
+  },
+  "sources": [
+    "../r74-autonomous-completion-and-free-reliability/R74-LIVE-STATISTICS.json",
+    "../r74-autonomous-completion-and-free-reliability/R74-FINAL-REPORT.md",
+    "https://blockrun.ai/docs/api-reference/models",
+    "https://blockrun.ai/docs/rate-limits"
+  ]
+}

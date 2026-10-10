@@ -65,6 +65,30 @@ describe("ProviderCapacityGovernor — evidence-driven capacity control", () => 
     expect(admitted).toBe(true);
   });
 
+  it("shares the published hourly source-IP allowance across Kilo models", async () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep });
+    for (let minute = 0; minute < 14; minute++) {
+      const requests = minute < 13 ? 14 : 8;
+      for (let request = 0; request < requests; request++) {
+        const reservation = await governor.acquire("kilo-free-direct", 100, undefined, {
+          modelId: request % 2 === 0 ? "cohere/north-mini-code:free" : "nvidia/nemotron-3-super-120b-a12b:free",
+        });
+        reservation.release(100);
+      }
+      if (minute < 13) await clock.advanceTime(60_001);
+    }
+
+    expect(governor.getCapacityReport("kilo-free-direct")).toMatchObject({ rphUsed: 190, rphLimit: 190, rpmUsed: 8 });
+    await expect(governor.acquire("kilo-free-direct", 100, undefined, { modelId: "cohere/north-mini-code:free" }))
+      .rejects.toThrow("[PROVIDER_RATE_LIMITED]");
+
+    await clock.advanceTime(2_820_000);
+    const resumed = await governor.acquire("kilo-free-direct", 100, undefined, { modelId: "cohere/north-mini-code:free" });
+    resumed.release(100);
+    expect(governor.getCapacityReport("kilo-free-direct").rphUsed).toBe(177);
+  });
+
   it("uses a conservative OpenRouter fallback below the observed 15 RPM free-route limit", () => {
     const governor = new ProviderCapacityGovernor();
 
@@ -199,6 +223,32 @@ describe("ProviderCapacityGovernor — evidence-driven capacity control", () => 
     expect(governor.getCapacityReport("groq").isCoolingDown).toBe(false);
   });
 
+  it("keeps an observed model-scoped 429 off healthy siblings", async () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep });
+    governor.observeResponse({
+      providerId: "kilo-free-direct",
+      modelId: "cohere/north-mini-code:free",
+      rateLimitScope: "model",
+      status: 429,
+      headers: [["retry-after", "120"]],
+      observedAt: clock.now(),
+    });
+
+    await expect(governor.acquire("kilo-free-direct", 100, undefined, { modelId: "cohere/north-mini-code:free" }))
+      .rejects.toThrow("[PROVIDER_RATE_LIMITED]");
+    expect(governor.getCapacityReport("kilo-free-direct").isCoolingDown).toBe(false);
+    const sibling = await governor.acquire("kilo-free-direct", 100, undefined, { modelId: "nvidia/nemotron-3-super-120b-a12b:free" });
+    sibling.release(100);
+  });
+
+  it("uses a conservative one-minute cooldown when a 429 provides no reset", () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({ now: clock.now });
+    governor.recordResponse("groq", 429, {});
+    expect(governor.getCapacityReport("groq").cooldownRemainingMs).toBe(60_000);
+  });
+
   it("5. parses x-ratelimit-reset-tokens and updates observed quota evidence", () => {
     const clock = createMockClock();
     const governor = new ProviderCapacityGovernor({ now: clock.now });
@@ -215,6 +265,28 @@ describe("ProviderCapacityGovernor — evidence-driven capacity control", () => 
     expect(report.observedQuota?.resetTokensMs).toBe(2500);
     expect(report.observedQuota?.remainingRequests).toBe(15);
     expect(report.observedQuota?.resetRequestsMs).toBe(12000);
+  });
+
+  it("honors an authoritative hourly reset and remaining-request headers", async () => {
+    const clock = createMockClock(Date.parse("2026-10-10T12:00:00.000Z"));
+    const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep });
+    const resetAt = clock.getCurrentTime() + 3_600_000;
+    governor.recordResponse("blockrun-free-direct", 200, {
+      "x-ratelimit-limit": "300",
+      "x-ratelimit-remaining": "0",
+      "x-ratelimit-reset": String(resetAt),
+    });
+
+    expect(governor.getCapacityReport("blockrun-free-direct").observedQuota).toMatchObject({
+      limitRequests: 300,
+      remainingRequests: 0,
+      resetRequestsMs: 3_600_000,
+    });
+    await expect(governor.acquire("blockrun-free-direct", 100)).rejects.toThrow("[PROVIDER_RATE_LIMITED]");
+
+    await clock.advanceTime(3_600_000);
+    const reservation = await governor.acquire("blockrun-free-direct", 100);
+    reservation.release(100);
   });
 
   it("6. supports AbortSignal cancellation during queue wait without leaking in-flight tokens", async () => {

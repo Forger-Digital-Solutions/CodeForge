@@ -24,7 +24,7 @@ export function mapBlockRunFreeModel(raw: unknown): ProviderModel | null {
   const price = model.pricing && typeof model.pricing === "object" ? model.pricing as Record<string, unknown> : undefined;
   const categories = Array.isArray(model.categories) ? model.categories : [];
   if (typeof model.id !== "string" || !/^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*$/.test(model.id)
-    || model.billing_mode !== "free" || model.available !== true || !categories.includes("chat")
+    || model.billing_mode !== "free" || model.available === false || !categories.includes("chat")
     || !price || !zero(price.input) || !zero(price.output) || (price.transaction_fee !== undefined && !zero(price.transaction_fee))) return null;
   const contextWindow = typeof model.context_window === "number" ? model.context_window : undefined;
   return {

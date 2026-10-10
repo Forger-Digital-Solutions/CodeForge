@@ -1,0 +1,115 @@
+{
+  "schema": "codeforge-r75-r74-root-cause-classification/v1",
+  "evidenceClass": "historical_live_autonomous_attempts",
+  "source": "../r74-autonomous-completion-and-free-reliability/R74-LIVE-STATISTICS.json",
+  "baseline": {
+    "attempts": 10,
+    "completed": 3,
+    "failed": 1,
+    "blocked": 6,
+    "cancelled": 0,
+    "completionRate": 0.3,
+    "longestCompletionStreak": 1,
+    "falseCompletions": 0,
+    "recordedProviderRateLimits": 5
+  },
+  "attempts": [
+    {
+      "ordinal": 1,
+      "id": "01-bug-fix",
+      "taskClass": "bug fix",
+      "status": "completed",
+      "receipt": "R74-FIRST-COMPLETION.json",
+      "rootCause": "none",
+      "evidence": "Coder, independent Reviewer, ForgeVerify, verification, and integration all passed."
+    },
+    {
+      "ordinal": 2,
+      "id": "02-feature",
+      "taskClass": "small feature",
+      "status": "failed",
+      "receipt": "R74-STREAK-CONTINUATION.json",
+      "rootCause": "planner_contract_missing_mandatory_roles",
+      "evidence": "TASK_AUTHORIZATION_FAILED because the accepted Planner graph had no mandatory Coder and Reviewer tasks. No code change or integration occurred."
+    },
+    {
+      "ordinal": 3,
+      "id": "03-refactor",
+      "taskClass": "refactor",
+      "status": "blocked",
+      "receipt": "R74-STREAK-CONTINUATION.json",
+      "rootCause": "planner_execution_cancelled_underlying_trigger_unresolved",
+      "evidence": "Planner returned AGENT_CANCELLED before an authorized task graph existed; the receipt summary does not establish an upstream 429."
+    },
+    {
+      "ordinal": 4,
+      "id": "02-feature",
+      "taskClass": "small feature",
+      "status": "blocked",
+      "receipt": "R74-FEATURE-REPAIR.json",
+      "rootCause": "planner_execution_cancelled_underlying_trigger_unresolved",
+      "evidence": "Corrective Planner execution returned AGENT_CANCELLED before an authorized task graph existed; no code change or integration occurred."
+    },
+    {
+      "ordinal": 5,
+      "id": "02-feature",
+      "taskClass": "small feature",
+      "status": "blocked",
+      "receipt": "R74-CORRECTED-CATEGORY-CAMPAIGN.json",
+      "rootCause": "recoverable_planning_contract_omissions_and_verbose_output",
+      "evidence": "The final Planner output did not produce an authorized complete graph. The original request explicitly prohibited input mutation and test edits, while planningIntent.constraints was empty; the graph also split implementation and review work across incomplete dependencies."
+    },
+    {
+      "ordinal": 6,
+      "id": "03-refactor",
+      "taskClass": "refactor",
+      "status": "completed",
+      "receipt": "R74-CORRECTED-CATEGORY-CAMPAIGN.json",
+      "rootCause": "none",
+      "evidence": "Real code change passed independent review, verification, and integration."
+    },
+    {
+      "ordinal": 7,
+      "id": "04-test-creation",
+      "taskClass": "test creation",
+      "status": "blocked",
+      "receipt": "R74-CORRECTED-CATEGORY-CAMPAIGN.json",
+      "rootCause": "qualified_coder_capacity_unavailable",
+      "evidence": "The only qualified Coder route was hard-excluded after HTTP 429. Three available alternatives were role-ineligible, so fail-closed admission correctly blocked dispatch."
+    },
+    {
+      "ordinal": 8,
+      "id": "05-debugging",
+      "taskClass": "debugging",
+      "status": "blocked",
+      "receipt": "R74-CORRECTED-CATEGORY-CAMPAIGN.json",
+      "rootCause": "upstream_model_rate_limit",
+      "evidence": "Kilo returned HTTP 429 identifying Cohere North Mini Code's upstream 15 requests/minute condition."
+    },
+    {
+      "ordinal": 9,
+      "id": "R74-live-process-recovery",
+      "taskClass": "bug fix with process recovery",
+      "status": "completed",
+      "receipt": "R74-PARENT-RECOVERY-LIVE.json",
+      "rootCause": "none",
+      "evidence": "After process interruption, the durable successful Coder was reused, Reviewer and verification completed, and integration passed with zero recorded mutation replays."
+    },
+    {
+      "ordinal": 10,
+      "id": "06-configuration",
+      "taskClass": "configuration/build issue",
+      "status": "blocked",
+      "receipt": "R74-CONFIGURATION-COMPLETION.json",
+      "rootCause": "upstream_model_rate_limit",
+      "evidence": "The qualified Coder route returned HTTP 429 for the Cohere upstream model; no qualified alternate Coder was available."
+    }
+  ],
+  "productFindings": [
+    "Missing mandatory roles and exact user constraints caused avoidable Planner rejection and regeneration.",
+    "A corrective Planner cancellation is distinct from a rate limit; its underlying trigger remains unknown in the summarized receipts.",
+    "The single qualified Coder created a real supply bottleneck; role-ineligible models were correctly rejected.",
+    "The five aggregate 429 events are retained in R74-LIVE-STATISTICS.json; task summaries above identify the attempts where rate limiting blocked completion.",
+    "R74 had no false completions and no cross-provider completed-parent recovery."
+  ]
+}

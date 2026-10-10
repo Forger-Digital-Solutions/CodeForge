@@ -53,7 +53,7 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
     await rm(dbDir, { recursive: true, force: true });
   });
 
-  it.each([false, true])("bounds correction of a Planner that omitted independent review (persistent=%s)", async (persistent) => {
+  it("repairs an omitted Reviewer without paying for a second Planner request", async () => {
     let plannerCalls = 0;
     let coderCalls = 0;
     const tasks = [{ id: "C", title: "Implement src/math.ts", objective: "Add repairMarker to src/math.ts", dependencies: [], assignedRole: "coder" }];
@@ -61,15 +61,11 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
       const base = { status: "completed", summary: "Completed role", findings: [], evidence: [], files: [] };
       if (options.agentId === "planner") {
         plannerCalls++;
-        if (plannerCalls === 2) {
-          expect(options.task).toContain("previous plan did not satisfy");
-          expect(options.contextSummary).toContain("Missing planning obligations:");
-          expect(options.contextSummary).toContain("independent reviewer task");
-        }
-        return { ...base, structuredData: { protocol: "task_graph_v1", summary: "Add repairMarker to src/math.ts", tasks: plannerCalls === 1 || persistent ? tasks : [...tasks, { id: "R", title: "Review src/math.ts", objective: "Independently review and verify src/math.ts", dependencies: ["C"], assignedRole: "reviewer" }] } };
+        return { ...base, structuredData: { protocol: "task_graph_v1", summary: "Add repairMarker to src/math.ts", tasks } };
       }
       if (options.agentId === "coder") {
         coderCalls++;
+        expect(options.task).toBe("Add repairMarker to src/math.ts");
         const file = join(options.workspacePath, "src", "math.ts");
         await writeFile(file, `${await readFile(file, "utf8")}\nexport const repairMarker = true;\n`);
         return { ...base, files: ["src/math.ts"], filesChanged: ["src/math.ts"] };
@@ -77,12 +73,13 @@ describe("CF-06 Production Multi-Agent Orchestrator, Review & Integration", () =
       return { ...base, ...(options.agentId === "reviewer" ? { structuredData: { verdict: "pass", findings: [], summary: "Reviewed marker" } } : {}) };
     } };
     const orchestrator = createAutonomousRunOrchestrator({ workspaceService: createWorkspaceService({ persistence, worktreeParentDir: worktreeBaseDir }), persistence, agentRuntime: { recordRoleOutcome: () => undefined } as unknown as AgentRuntime, subagentManager: subagentManager as never, subagentsR1Enabled: true });
-    const result = await orchestrator.startRun({ sessionId: `planner-repair-${persistent}`, workspacePath: targetRepo, goal: "Add repairMarker to src/math.ts", topology: "fixed_r1", verificationCommands: ["node -e \"process.exit(0)\""] });
-    expect(plannerCalls).toBe(2);
-    expect(coderCalls).toBe(persistent ? 0 : 1);
-    expect(result.status).toBe(persistent ? "blocked" : "completed");
-    if (persistent) expect(result.integration.status).toBe("not_attempted");
-    else { expect(result.review.passed).toBe(true); expect(result.integration.status).toBe("integrated"); }
+    const result = await orchestrator.startRun({ sessionId: "planner-repair-omitted-reviewer", workspacePath: targetRepo, goal: "Add repairMarker to src/math.ts", topology: "fixed_r1", verificationCommands: ["node -e \"process.exit(0)\""] });
+    expect(plannerCalls).toBe(1);
+    expect(coderCalls).toBe(1);
+    expect(result.status).toBe("completed");
+    expect(result.review.passed).toBe(true);
+    expect(result.integration.status).toBe("integrated");
+    expect(result.evidence).toContainEqual(expect.objectContaining({ kind: "planner_contract_repair", description: "added the mandatory independent Reviewer task" }));
   });
 
   it("Scenario 1 (Happy Path): explorer -> isolated coder -> reviewer PASS -> verification PASS -> integration PASS", async () => {

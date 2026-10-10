@@ -23,6 +23,7 @@ import {
   type CheckpointService,
   createCheckpointService,
 } from "./checkpoint-service.js";
+import { repairPlannerContract } from "./planner-contract-repair.js";
 import {
   type SubagentManager,
   createSubagentManager,
@@ -568,20 +569,20 @@ export class AutonomousRunOrchestrator {
     return ordered;
   }
 
-  private authorizedPlannerResult(result: AgentResult, goal: string): PlannerResult | undefined {
+  private authorizedPlannerResult(result: AgentResult, goal: string, verificationCommands: readonly string[]) {
     if (result.status !== "completed") return undefined;
     if (result.structuredData) {
       const validated = validateStructuredAgentResult("planner", result.structuredData);
       if (!validated.success) return undefined;
       const plan = validated.data as PlannerResult;
-      return validatePlanningCompleteness(goal, plan).valid && plan.tasks.some(task => task.assignedRole === "coder") && plan.tasks.some(task => task.assignedRole === "reviewer") ? plan : undefined;
+      return repairPlannerContract({ plan, goal, verificationCommands });
     }
     // Some provider adapters preserve a validated JSON payload only in the final summary. Recover
     // it through the same strict validator; prose or malformed output remains blocked.
     const recovered = validateStructuredAgentResult("planner", result.summary);
     if (!recovered.success) return undefined;
     const plan = recovered.data as PlannerResult;
-    return validatePlanningCompleteness(goal, plan).valid && plan.tasks.some(task => task.assignedRole === "coder") && plan.tasks.some(task => task.assignedRole === "reviewer") ? plan : undefined;
+    return repairPlannerContract({ plan, goal, verificationCommands });
   }
 
   private validateAuthorizedPlannerGraph(graph: TaskGraph): void {
@@ -863,7 +864,8 @@ export class AutonomousRunOrchestrator {
           structuredOutput: "planner",
           ...(this.subagentsR1Enabled ? { timeoutMs: r1PlannerTimeoutMs, watchdogMaxExtensions: 0 } : {}),
         });
-        let plan = this.authorizedPlannerResult(plannerResult, goal);
+        let plannerAdmission = this.authorizedPlannerResult(plannerResult, goal, verificationCommands);
+        let plan = plannerAdmission?.plan;
         if (!plan && plannerResult.status === "completed" && !controller.signal.aborted) {
           counters.childrenSpawned++;
           const correctionContext = `${explorationContext}\n${leadHandoff}\nPrevious planning result (untrusted): ${plannerResult.summary.slice(0, 12_000)}\nContract validation: ${this.plannerContractFailure(plannerResult, goal)}`;
@@ -877,7 +879,8 @@ export class AutonomousRunOrchestrator {
             structuredOutput: "planner",
             ...(this.subagentsR1Enabled ? { timeoutMs: r1PlannerTimeoutMs, watchdogMaxExtensions: 0 } : {}),
           });
-          plan = this.authorizedPlannerResult(plannerResult, goal);
+          plannerAdmission = this.authorizedPlannerResult(plannerResult, goal, verificationCommands);
+          plan = plannerAdmission?.plan;
         }
         if (!plan) {
           const error = "AGENT_INVALID_STRUCTURED_OUTPUT";
@@ -899,6 +902,13 @@ export class AutonomousRunOrchestrator {
           run.result = result;
           this.persistRun(run);
           return result;
+        }
+        for (const [index, repair] of (plannerAdmission?.repairs ?? []).entries()) {
+          allEvidence.push({
+            kind: "planner_contract_repair",
+            ref: `${runId}:${index + 1}`,
+            description: repair,
+          });
         }
         run.taskGraph = { tasks: plan.tasks.map((task) => ({ ...task, status: "pending" })) };
         this.validateAuthorizedPlannerGraph(run.taskGraph);
