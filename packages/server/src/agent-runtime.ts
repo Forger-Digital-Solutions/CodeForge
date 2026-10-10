@@ -87,6 +87,8 @@ import {
   ROLE_PROMPTS,
   REVIEWER_CLEAN_DIFF_INSTRUCTION,
   REVIEWER_TEMPERATURE,
+  PLANNER_TEXT_PROTOCOL_INSTRUCTION,
+  renderAuthorityBoundaryContract,
   type AgentPermissions,
   type AgentExecutionBudget,
   type AgentUsage,
@@ -2495,9 +2497,15 @@ export class AgentRuntime {
             // R34 Mission F: same superseded-output compaction as the interactive loop —
             // role transcripts accumulate stale identical reads too. `messages` itself is
             // the durable transcript and is left untouched.
-            const dispatchMessages = greenPolicy.compactsSuperseded()
+            let dispatchMessages = greenPolicy.compactsSuperseded()
               ? compactSupersededToolOutputs(messages)
               : messages;
+            if (plannerTextOnly && expectedStructuredOutput === "planner") {
+              // This route qualified under the compact text protocol at temperature zero;
+              // unrelated tool/shell instructions changed its measured output behavior.
+              const protocol = `${PLANNER_TEXT_PROTOCOL_INSTRUCTION}\nPreserve the original constraints in task objectives or planningIntent.constraints:string[]. Use only supplied verification commands. The reviewer must depend on all implementation tasks.\n${renderAuthorityBoundaryContract("planner")}`;
+              dispatchMessages = dispatchMessages.map((message, index) => index === 0 && message.role === "system" ? { ...message, content: protocol } : message);
+            }
             // R41: the request's output budget is recomputed per dispatch — a failover
             // replacement route may carry a different measured reasoning profile, and the
             // context room left shrinks as the transcript grows. A profiled reasoning route
@@ -2569,6 +2577,7 @@ export class AgentRuntime {
               tools: dispatchTools,
               toolChoice: reviewerTextOnly || plannerTextOnly || (expectedStructuredOutput && !req.permissions.write && !req.permissions.executeCommand && turnCount >= effectiveMaxModelTurns()) ? "none" : "auto",
               ...(req.role === "reviewer" ? { temperature: REVIEWER_TEMPERATURE } : {}),
+              ...(plannerTextOnly ? { temperature: 0 } : {}),
               maxTokens: dispatchOutputBudget.maxTokens,
               signal: req.signal,
               userId: req.userId ?? this.userId,

@@ -66,7 +66,7 @@ try {
   for (const role of ['EXPLORER', 'PLANNER', 'CODER', 'REVIEWER']) {
     if (!campaign.supply.some(route => route.roles?.[role] === 'QUALIFIED')) throw new Error(`CURRENT_QUALIFIED_${role}_ROSTER_UNAVAILABLE`);
   }
-  for (const route of campaign.supply) if (route.roles) route.capacityMeasured = await freeCloud.probeRouteCapacity(route.providerId, route.modelId);
+  campaign.capacityMeasurement = 'LIVE_PRODUCTION_OBSERVATIONS_ONLY_NO_REPEATED_HEADERLESS_PINGS';
   campaign.costState = 'CATALOG_VERIFIED_EXACT_ZERO_NO_CREDENTIALS_NO_PAID_FALLBACK';
   await persist();
   const reservations = new CapacityReservationLedger({ routes: [], pools: [] });

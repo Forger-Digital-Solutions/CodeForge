@@ -13,7 +13,7 @@
  */
 
 import type { ChatRequest, ToolDefinition } from "@codeforge/providers";
-import { type PlannerResult, type ReviewResult, ROLE_PROMPTS, REVIEWER_CLEAN_DIFF_INSTRUCTION, REVIEWER_TEMPERATURE, formatUntrustedData, validateStructuredAgentResult } from "@codeforge/agent";
+import { type PlannerResult, type ReviewResult, ROLE_PROMPTS, REVIEWER_CLEAN_DIFF_INSTRUCTION, REVIEWER_TEMPERATURE, PLANNER_TEXT_PROTOCOL_INSTRUCTION, formatUntrustedData, validateStructuredAgentResult } from "@codeforge/agent";
 import type { FreeModelRecord, ModelQualificationReceipt, RoleQualificationResult, TestCaseResult } from "./types.js";
 import type { EightBitRole } from "../types.js";
 import { firstJsonObject, runCompactQualification, type CompactQualificationAdapter, type CompactQualificationOptions } from "./compact.js";
@@ -342,12 +342,7 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
       messages: [
         {
           role: "system",
-          content:
-            "You are a task planner. Return exactly one JSON object, no markdown. " +
-            'Use task_graph_v1: {"protocol":"task_graph_v1","summary":"string","tasks":[{"id":"C","title":"string","objective":"string","dependencies":[],"assignedRole":"coder"},{"id":"R","title":"string","objective":"string","dependencies":["C"],"assignedRole":"reviewer"}]}. ' +
-            'Each assignedRole MUST be exactly one of "explorer", "planner", "coder", "reviewer". ' +
-            "Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. " +
-            "Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites.",
+          content: PLANNER_TEXT_PROTOCOL_INSTRUCTION,
         },
         { role: "user", content: `Task: ${caze.task}\n\nExplorer findings (the only repository files that exist for you):\n${findings}` },
       ],

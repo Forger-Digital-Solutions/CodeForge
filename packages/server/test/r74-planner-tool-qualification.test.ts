@@ -43,6 +43,10 @@ describe("R74 measured Planner tool protocol", () => {
     expect(requests).toHaveLength(1);
     expect(requests[0]?.tools ?? []).toEqual([]);
     expect(requests[0]?.toolChoice).toBe("none");
+    expect(requests[0]?.temperature).toBe(0);
+    expect(requests[0]?.messages[0]?.content).toContain("Return exactly one JSON object, no markdown");
+    expect(requests[0]?.messages[0]?.content).toContain("CODEFORGE AUTHORITY BOUNDARY CONTRACT");
+    expect(requests[0]?.messages[0]?.content).not.toContain("host command shell");
   });
   it("blocks unexpected tools without execution or a manufactured plan", async () => {
     const { result } = await plan(false, true);

@@ -1,0 +1,7 @@
+{
+  "sourceArtifact": "9728ea956af19f96b48085bce13b622ee1d1f1a0",
+  "evidenceClass": "ACTUAL_ARCHIVE_NEGATIVE_CHECK",
+  "exitCode": 1,
+  "expectedMissing": "node_modules/@codeforge/model-registry/dist/bundled-role-evidence.json",
+  "log": "PACKAGED_RUNTIME_DEPENDENCY_GRAPH_FAIL\r\nMissing node_modules/@codeforge/model-registry/dist/bundled-role-evidence.json; imported by node_modules/@codeforge/model-registry/dist/bundled-role-evidence.js\r\n"
+}

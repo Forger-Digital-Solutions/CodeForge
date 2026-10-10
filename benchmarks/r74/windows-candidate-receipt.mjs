@@ -46,6 +46,7 @@ for (const [name, script, args] of [
 }
 const included = [];
 for (const [source, entry] of [
+  ["packages/agent/dist/planner-protocol.js", "node_modules/@codeforge/agent/dist/planner-protocol.js"],
   ["packages/providers/dist/capacity-governor.js", "node_modules/@codeforge/providers/dist/capacity-governor.js"],
   ["packages/model-registry/dist/bundled-role-evidence.js", "node_modules/@codeforge/model-registry/dist/bundled-role-evidence.js"],
   ["packages/model-registry/dist/bundled-role-evidence.json", "node_modules/@codeforge/model-registry/dist/bundled-role-evidence.json"],

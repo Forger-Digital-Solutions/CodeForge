@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { builtinModules } from "node:module";
-import { resolve } from "node:path";
+import { resolve, posix } from "node:path";
 import { extractFile, listPackage } from "@electron/asar";
 
 function resolveArchive(input) {
@@ -37,6 +37,8 @@ for (const builtin of builtinModules) {
   ignored.add(builtin.replace(/^node:/, ""));
 }
 const imports = new Map();
+const archiveFiles = new Set(entries.map(normalizedPath));
+const missingAssets = [];
 const runtimeModules = entries.filter((entry) => {
   const normalized = normalizedPath(entry);
   return normalized.endsWith(".js")
@@ -62,6 +64,10 @@ for (const entry of runtimeModules) {
   const source = extractFile(asarPath, archivePath(entry)).toString("utf8");
   for (const match of source.matchAll(/(?:from|import\s*\(|require\s*\()\s*["']([^"']+)["']/g)) {
     const specifier = match[1];
+    if (specifier?.startsWith(".") && specifier.endsWith(".json")) {
+      const asset = posix.normalize(posix.join(posix.dirname(normalizedPath(entry)), specifier));
+      if (!archiveFiles.has(asset)) missingAssets.push({ name: asset, locations: [normalizedPath(entry)] });
+    }
     if (!specifier || specifier.includes("${") || specifier.startsWith(".") || specifier.startsWith("/") || specifier.startsWith("node:") || specifier.startsWith("@codeforge/") || /[\s,;]/.test(specifier)) continue;
     const packageName = externalPackageName(specifier);
     if (ignored.has(packageName)) continue;
@@ -75,6 +81,7 @@ const missing = [...imports.entries()]
   .filter(([name]) => !shipped.has(`node_modules/${name}`))
   .map(([name, locations]) => ({ name, locations: [...new Set(locations)].sort() }))
   .sort((a, b) => a.name.localeCompare(b.name));
+missing.push(...missingAssets);
 
 const updaterClosureMissing = new Set();
 const updaterClosureVisited = new Set();

@@ -123,6 +123,7 @@
           "forge-zero/dist/**/*.js",
           "forge-zero/package.json",
           "model-registry/dist/**/*.js",
+          "model-registry/dist/**/*.json",
           "model-registry/package.json",
           "paid-auto/dist/**/*.js",
           "paid-auto/package.json",
