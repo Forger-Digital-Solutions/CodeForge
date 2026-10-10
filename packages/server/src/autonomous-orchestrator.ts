@@ -574,14 +574,14 @@ export class AutonomousRunOrchestrator {
       const validated = validateStructuredAgentResult("planner", result.structuredData);
       if (!validated.success) return undefined;
       const plan = validated.data as PlannerResult;
-      return validatePlanningCompleteness(goal, plan).valid ? plan : undefined;
+      return validatePlanningCompleteness(goal, plan).valid && plan.tasks.some(task => task.assignedRole === "coder") && plan.tasks.some(task => task.assignedRole === "reviewer") ? plan : undefined;
     }
     // Some provider adapters preserve a validated JSON payload only in the final summary. Recover
     // it through the same strict validator; prose or malformed output remains blocked.
     const recovered = validateStructuredAgentResult("planner", result.summary);
     if (!recovered.success) return undefined;
     const plan = recovered.data as PlannerResult;
-    return validatePlanningCompleteness(goal, plan).valid ? plan : undefined;
+    return validatePlanningCompleteness(goal, plan).valid && plan.tasks.some(task => task.assignedRole === "coder") && plan.tasks.some(task => task.assignedRole === "reviewer") ? plan : undefined;
   }
 
   private validateAuthorizedPlannerGraph(graph: TaskGraph): void {
@@ -804,6 +804,7 @@ export class AutonomousRunOrchestrator {
       // to the planner branch only, which left normal topologies (no planner) without it.
       const explorerEvidence = explorerResults.flatMap((result) => result.evidence ?? []);
       const explorerFindings = explorerResults.flatMap((result) => result.findings ?? []);
+      const explorerPoolId = explorerResults.find(result => result.routePoolId)?.routePoolId;
 
       // ==========================================
       // PHASE 2: TASK & EXECUTION PLANNING
@@ -836,12 +837,13 @@ export class AutonomousRunOrchestrator {
         const explorationContext = incompleteExplorerRoles.length > 0
           ? `R1 exploration was bounded and incomplete: ${incompleteExplorerRoles.join(", ")}. Treat missing evidence as unknown and continue with only the evidence supplied below.`
           : "R1 exploration completed; use only the evidence supplied below.";
-        const plannerResult = await this.spawnRole({
+        let plannerResult = await this.spawnRole({
           parentRunId: runId,
           sessionId,
           agentId: "planner",
+          ...(explorerPoolId ? { preferIndependentFromPoolId: explorerPoolId } : {}),
           ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("PLANNER") } : {}),
-          task: `Produce the minimal task graph for goal: ${goal}`,
+          task: `Produce the minimal task graph for goal: ${goal}. Include at least one coder task and an independent reviewer task depending on all implementation tasks.`,
           workspacePath: targetWs.rootPath,
           explorerEvidence,
           findings: explorerFindings,
@@ -851,7 +853,21 @@ export class AutonomousRunOrchestrator {
           structuredOutput: "planner",
           ...(this.subagentsR1Enabled ? { timeoutMs: r1PlannerTimeoutMs, watchdogMaxExtensions: 0 } : {}),
         });
-        const plan = this.authorizedPlannerResult(plannerResult, goal);
+        let plan = this.authorizedPlannerResult(plannerResult, goal);
+        if (!plan && plannerResult.status === "completed" && !controller.signal.aborted) {
+          counters.childrenSpawned++;
+          plannerResult = await this.spawnRole({
+            parentRunId: runId, sessionId, agentId: "planner",
+            ...(explorerPoolId ? { preferIndependentFromPoolId: explorerPoolId } : {}),
+            ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("PLANNER") } : {}),
+            task: `Correct the task graph for goal: ${goal}. The previous plan did not satisfy the autonomous planning contract. Include at least one coder task and an independent reviewer task depending on all implementation tasks. Retain the original scope and verification obligations.`,
+            workspacePath: targetWs.rootPath, explorerEvidence, findings: explorerFindings,
+            contextSummary: `${explorationContext}\n${leadHandoff}`, adapter, signal: controller.signal,
+            structuredOutput: "planner",
+            ...(this.subagentsR1Enabled ? { timeoutMs: r1PlannerTimeoutMs, watchdogMaxExtensions: 0 } : {}),
+          });
+          plan = this.authorizedPlannerResult(plannerResult, goal);
+        }
         if (!plan) {
           const error = "AGENT_INVALID_STRUCTURED_OUTPUT";
           this.transitionRun(run, "blocked", adapter);

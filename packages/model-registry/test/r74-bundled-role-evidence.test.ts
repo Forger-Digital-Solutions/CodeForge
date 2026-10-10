@@ -14,7 +14,7 @@ describe("R74 packaged live role bootstrap", () => {
     const store = new InMemoryQualificationPersistence();
     const service = make(true, store);
     const receipts = bundledFreeRoleReceipts(at);
-    expect(await service.loadQualification()).toBe(3);
+    expect(await service.loadQualification()).toBe(4);
     expect((await store.loadAll()).map(receipt => receipt.modelId).sort()).toEqual(receipts.map(receipt => receipt.modelId).sort());
     for (const receipt of receipts) expect(service.isForgeAutoEligible(receipt.providerId, receipt.modelId)).toBe(false);
     expect(service.getReceipt("kilo-free-direct", "nvidia/nemotron-3-ultra-550b-a55b:free")?.roleResults.REVIEWER?.overallScore).toBe(0.875);

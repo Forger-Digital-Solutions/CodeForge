@@ -48,6 +48,23 @@ function createMockClock(initialTime = 1_000_000) {
 }
 
 describe("ProviderCapacityGovernor — evidence-driven capacity control", () => {
+  it("paces packaged Kilo roles against one conservative shared request window", async () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep });
+    for (let index = 0; index < 14; index++) {
+      const reservation = await governor.acquire("kilo-free-direct", 100, undefined, { modelId: index % 2 ? "coder" : "reviewer" });
+      reservation.release(100);
+    }
+    let admitted = false;
+    const next = governor.acquire("kilo-free-direct", 100, undefined, { modelId: "planner" }).then(reservation => { admitted = true; reservation.release(100); });
+    await new Promise(resolve => setImmediate(resolve));
+    expect(admitted).toBe(false);
+    expect(governor.getCapacityReport("kilo-free-direct").rpmUsed).toBe(14);
+    await clock.advanceTime(60_000);
+    await next;
+    expect(admitted).toBe(true);
+  });
+
   it("uses a conservative OpenRouter fallback below the observed 15 RPM free-route limit", () => {
     const governor = new ProviderCapacityGovernor();
 

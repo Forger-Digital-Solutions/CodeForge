@@ -6,6 +6,7 @@ const files = [
   'docs/evidence/r71-packaged-free-supply-expansion/kilo-free-direct-cohere_north-mini-code_free-2026-10-08T12-03-32-552Z-qualification.json',
   'docs/evidence/r74-autonomous-completion-and-free-reliability/reviewer-nvidia_nemotron-3-ultra-550b-a55b_free-1791628393855.json',
   'docs/evidence/r74-autonomous-completion-and-free-reliability/planner-nvidia_nemotron-3-super-120b-a12b_free-1791629043713.json',
+  'docs/evidence/r74-autonomous-completion-and-free-reliability/planner-nvidia_llama-3.2-11b-vision-1791629583054.json',
 ];
 const entries = [];
 for (const file of files) {

@@ -33,6 +33,18 @@ export interface ProviderCapacityLimit {
  * Other providers are given conservative pacing until headers establish true limits.
  */
 export const DEFAULT_FALLBACK_LIMITS: Readonly<Record<string, ProviderCapacityLimit>> = {
+  "kilo-free-direct": {
+    maxTokensPerMinute: 60000,
+    // R74 observed a 15 RPM upstream wall on the packaged Coder; anonymous users share
+    // source-IP capacity, so conservative provider pacing must not multiply it per role.
+    maxRequestsPerMinute: 14,
+    maxConcurrent: 2,
+  },
+  "blockrun-free-direct": {
+    maxTokensPerMinute: 60000,
+    maxRequestsPerMinute: 28,
+    maxConcurrent: 2,
+  },
   openrouter: {
     maxTokensPerMinute: 60000,
     maxRequestsPerMinute: 14,

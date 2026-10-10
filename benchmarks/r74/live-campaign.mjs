@@ -38,7 +38,7 @@ try {
   const explicitReceipts = process.argv.slice(3);
   const qualifications = explicitReceipts.length > 0
     ? await Promise.all(explicitReceipts.map(async source => ({ source, document: JSON.parse(await readFile(source, 'utf8')) })))
-    : ['cohere/north-mini-code:free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'nvidia/nemotron-3-super-120b-a12b:free'].map(modelId => ({ source: `bundled:kilo-free-direct/${modelId}`, document: freeCloud.getReceipt('kilo-free-direct', modelId) }));
+    : [['kilo-free-direct', 'cohere/north-mini-code:free'], ['kilo-free-direct', 'nvidia/nemotron-3-ultra-550b-a55b:free'], ['kilo-free-direct', 'nvidia/nemotron-3-super-120b-a12b:free'], ['blockrun-free-direct', 'nvidia/llama-3.2-11b-vision']].map(([providerId, modelId]) => ({ source: `bundled:${providerId}/${modelId}`, document: freeCloud.getReceipt(providerId, modelId) }));
   campaign.qualificationMode = explicitReceipts.length > 0 ? 'EXPLICIT_LIVE_RECEIPTS' : 'INSTALLED_BUNDLED_LIVE_ROLE_EVIDENCE';
   for (const { source: qualificationPath, document } of qualifications) {
     if (!document) throw new Error('CURRENT_BUNDLED_ROLE_EVIDENCE_UNAVAILABLE');
