@@ -5,7 +5,7 @@
     "rootDir": "./src",
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/**/*.json"],
   "exclude": ["test", "dist"],
   "references": [
     { "path": "../core" },

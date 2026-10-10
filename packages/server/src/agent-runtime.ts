@@ -2028,6 +2028,9 @@ export class AgentRuntime {
       const requiresTextReview = (providerId: string, modelId: string): boolean => req.role === "reviewer"
         && this.roleQualificationStatus(providerId, modelId, "REVIEWER") === "QUALIFIED"
         && this.roleQualificationStatus(providerId, modelId, "TOOL_AGENT") !== "QUALIFIED";
+      const requiresTextPlanning = (providerId: string, modelId: string): boolean => req.role === "planner"
+        && this.roleQualificationStatus(providerId, modelId, "PLANNER") === "QUALIFIED"
+        && this.roleQualificationStatus(providerId, modelId, "TOOL_AGENT") !== "QUALIFIED";
       const reviewRouteSupportsEvidence = (providerId: string, modelId: string): boolean => !requiresTextReview(providerId, modelId) || req.reviewEvidence?.complete === true;
 
       // 2. Multi-turn Model & Tool Loop
@@ -2467,6 +2470,7 @@ export class AgentRuntime {
         }
       };
       let reviewerTextOnly = false;
+      let plannerTextOnly = false;
       const requestModelTurn = async (modelTurnId: string): Promise<ModelExecutionResponse> => {
         let rotations = 0;
         let sameRouteRetries = 0;
@@ -2474,8 +2478,9 @@ export class AgentRuntime {
         for (;;) {
           if (req.role === "reviewer" && req.reviewEvidence) assertReviewerEvidenceCurrent(req.reviewEvidence, req.workspacePath);
           reviewerTextOnly = !!activeSelection && requiresTextReview(activeSelection.providerId, activeSelection.modelId);
+          plannerTextOnly = !!activeSelection && requiresTextPlanning(activeSelection.providerId, activeSelection.modelId);
           if (reviewerTextOnly && !req.reviewEvidence?.complete) throw new Error("REVIEWER_EVIDENCE_MISSING: text-qualified Reviewer requires a complete workspace snapshot");
-          const dispatchTools = reviewerTextOnly ? [] : availableTools;
+          const dispatchTools = reviewerTextOnly || plannerTextOnly ? [] : availableTools;
           forgeGreenR0Telemetry.recordModelAttempt({
             providerId: activeSelection?.providerId,
             modelId: activeSelection?.modelId,
@@ -2562,7 +2567,7 @@ export class AgentRuntime {
               modelSelection: activeSelection,
               messages: dispatchMessages,
               tools: dispatchTools,
-              toolChoice: reviewerTextOnly || (expectedStructuredOutput && !req.permissions.write && !req.permissions.executeCommand && turnCount >= effectiveMaxModelTurns()) ? "none" : "auto",
+              toolChoice: reviewerTextOnly || plannerTextOnly || (expectedStructuredOutput && !req.permissions.write && !req.permissions.executeCommand && turnCount >= effectiveMaxModelTurns()) ? "none" : "auto",
               ...(req.role === "reviewer" ? { temperature: REVIEWER_TEMPERATURE } : {}),
               maxTokens: dispatchOutputBudget.maxTokens,
               signal: req.signal,
@@ -3269,9 +3274,11 @@ export class AgentRuntime {
         totalUsage.provider = response.providerId;
         totalUsage.model = response.modelId;
         if (req.role === "reviewer" && req.reviewEvidence) assertReviewerEvidenceCurrent(req.reviewEvidence, req.workspacePath);
-        if (reviewerTextOnly && response.toolCalls.length > 0) {
-          this.recordRoleOutcome({ providerId: response.providerId, modelId: response.modelId }, "reviewer", "role_failed", req.runId, "MALFORMED_STRUCTURED_OUTPUT");
-          finalSummary = "REVIEWER_TOOL_PROTOCOL_UNQUALIFIED: text-qualified Reviewer returned tool requests instead of a verdict";
+        if ((reviewerTextOnly || plannerTextOnly) && response.toolCalls.length > 0) {
+          this.recordRoleOutcome({ providerId: response.providerId, modelId: response.modelId }, req.role, "role_failed", req.runId, "MALFORMED_STRUCTURED_OUTPUT");
+          finalSummary = reviewerTextOnly
+            ? "REVIEWER_TOOL_PROTOCOL_UNQUALIFIED: text-qualified Reviewer returned tool requests instead of a verdict"
+            : "PLANNER_TOOL_PROTOCOL_UNQUALIFIED: text-qualified Planner returned tool requests instead of a plan";
           stopReason = "error";
           break;
         }

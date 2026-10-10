@@ -31,11 +31,17 @@ const firewall = new ForgeZero();
 firewall.setPrivacyMode('MAXIMUM_FREE');
 const catalog = new InMemoryProviderCatalog();
 const health = createEightBitRouteHealthAuthority();
-const freeCloud = new FreeCloudService({ firewall, providerCatalog: catalog, registry: new NormalizedModelRegistry(), routeHealth: health });
+const freeCloud = new FreeCloudService({ firewall, providerCatalog: catalog, registry: new NormalizedModelRegistry(), routeHealth: health, useBundledRoleEvidence: true });
 await mkdir(root, { recursive: true });
 try {
-  for (const qualificationPath of [process.argv[3] ?? 'docs/evidence/r71-packaged-free-supply-expansion/kilo-free-direct-cohere_north-mini-code_free-2026-10-08T12-03-32-552Z-qualification.json', process.argv[4], process.argv[5]].filter(Boolean)) {
-    const document = JSON.parse(await readFile(qualificationPath, 'utf8'));
+  await freeCloud.loadQualification();
+  const explicitReceipts = process.argv.slice(3);
+  const qualifications = explicitReceipts.length > 0
+    ? await Promise.all(explicitReceipts.map(async source => ({ source, document: JSON.parse(await readFile(source, 'utf8')) })))
+    : ['cohere/north-mini-code:free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'nvidia/nemotron-3-super-120b-a12b:free'].map(modelId => ({ source: `bundled:kilo-free-direct/${modelId}`, document: freeCloud.getReceipt('kilo-free-direct', modelId) }));
+  campaign.qualificationMode = explicitReceipts.length > 0 ? 'EXPLICIT_LIVE_RECEIPTS' : 'INSTALLED_BUNDLED_LIVE_ROLE_EVIDENCE';
+  for (const { source: qualificationPath, document } of qualifications) {
+    if (!document) throw new Error('CURRENT_BUNDLED_ROLE_EVIDENCE_UNAVAILABLE');
     const qualification = document.qualification ?? document;
     const blockrun = qualification.providerId === 'blockrun-free-direct';
     if (!blockrun && qualification.providerId !== 'kilo-free-direct') throw new Error('UNSUPPORTED_LIVE_PROVIDER');

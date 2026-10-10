@@ -22,6 +22,7 @@ import {
   InMemoryQualificationPersistence,
 } from "@codeforge/eight-bit";
 import { canonicalIdentityFor } from "./canonical.js";
+import { bundledFreeRoleReceipts } from "./bundled-role-evidence.js";
 import {
   buildFreeCloudSnapshot,
   explainRoute,
@@ -105,6 +106,7 @@ export interface FreeCloudServiceOptions {
   registry: NormalizedModelRegistry;
   definitions?: Record<string, ProviderDefinition>;
   qualificationStore?: QualificationPersistence;
+  useBundledRoleEvidence?: boolean;
   now?: () => Date;
   /** Max routes to qualify per `qualifyPending` cycle (free quota is finite). Default 3. */
   maxQualificationsPerCycle?: number;
@@ -345,6 +347,7 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   private qualificationSpendWrite: Promise<void> = Promise.resolve();
   /** R59: cooldown-aligned recovery retries — one armed timer per provider at most. */
   private readonly recoveryTimers = new Map<string, { timer: ReturnType<typeof setTimeout>; at: string }>();
+  private readonly useBundledRoleEvidence: boolean;
   private qualifying = false;
   private listeners = new Set<() => void>();
   private routeHealth?: EightBitRouteHealthAuthority;
@@ -356,6 +359,10 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
     this.definitions = options.definitions ?? PROVIDER_DEFINITIONS;
     this.qualificationStore = options.qualificationStore ?? new InMemoryQualificationPersistence();
     this.now = options.now ?? (() => new Date());
+    this.useBundledRoleEvidence = options.useBundledRoleEvidence === true;
+    if (this.useBundledRoleEvidence) for (const receipt of bundledFreeRoleReceipts(this.now().getTime())) {
+      this.receipts.set(`${receipt.providerId}::${receipt.modelId}`, receipt);
+    }
     this.maxQualificationsPerCycle = options.maxQualificationsPerCycle ?? 3;
     this.qualificationRunner = options.qualificationRunner ?? ((model, adapter, runOpts) => {
       const runOptions = { now: this.now, signal: runOpts?.signal };
@@ -590,6 +597,11 @@ export class FreeCloudService implements FreeCloudRoutingHooks {
   async loadQualification(): Promise<number> {
     await this.loadQualificationSpend();
     const all = await this.qualificationStore.loadAll();
+    if (this.useBundledRoleEvidence) for (const receipt of bundledFreeRoleReceipts(this.now().getTime())) {
+      if (all.some(existing => existing.providerId === receipt.providerId && existing.modelId === receipt.modelId)) continue;
+      await this.qualificationStore.save(receipt);
+      all.push(receipt);
+    }
     for (const r of all) {
       this.receipts.set(`${r.providerId}::${r.modelId}`, structuredClone(r));
       this.applyReceiptToFirewall(r);

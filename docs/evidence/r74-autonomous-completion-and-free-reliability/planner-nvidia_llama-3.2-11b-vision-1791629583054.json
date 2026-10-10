@@ -1,0 +1,1670 @@
+{
+  "startedAt": "2026-10-10T10:53:03.054Z",
+  "providerId": "blockrun-free-direct",
+  "modelId": "nvidia/llama-3.2-11b-vision",
+  "evidenceClass": "LIVE_ROLE_ONLY_PUBLIC_CASES",
+  "intendedRole": "PLANNER",
+  "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+  "reviewerProtocol": "REVIEWER_PROTOCOL_V4",
+  "frames": [
+    {
+      "at": "2026-10-10T10:53:03.704Z",
+      "request": {
+        "model": "nvidia/llama-3.2-11b-vision",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites."
+          },
+          {
+            "role": "user",
+            "content": "Task: Reservation holds must also be released when a run is cancelled. Plan the smallest change that adds a release call on the cancellation path of src/server.ts, using src/fabric/admission.ts's release().\n\nExplorer findings (the only repository files that exist for you):\n--- src/server.ts ---\nimport { createRouter } from \"./router.js\";\nimport { createFabric } from \"./fabric/admission.js\";\nexport function serve() {\n  const fabric = createFabric();\n  const router = createRouter(fabric);\n  return router.listen();\n}\n--- src/fabric/admission.ts ---\nconst holds = new Map<string, { routeId: string }>();\nexport function reserve(requestId: string, routeId: string) {\n  holds.set(requestId, { routeId });\n}\nexport function release(requestId: string) {\n  holds.delete(requestId);\n}\nexport function settleRun(requestId: string, ok: boolean) {\n  try { /* settle */ } finally { release(requestId); }\n}"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 1200
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "protocol"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "task"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_graph"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_v"
+        },
+        {
+          "type": "text_delta",
+          "delta": "1"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " reservation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " holds"
+        },
+        {
+          "type": "text_delta",
+          "delta": " on"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancellation"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "tasks"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "P"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Plan"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " call"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Add"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " call"
+        },
+        {
+          "type": "text_delta",
+          "delta": " on"
+        },
+        {
+          "type": "text_delta",
+          "delta": " cancellation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " path"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":["
+        },
+        {
+          "type": "text_delta",
+          "delta": "],\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "assigned"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Role"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "pl"
+        },
+        {
+          "type": "text_delta",
+          "delta": "anner"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"},{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "C"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Code"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " call"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Implement"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " call"
+        },
+        {
+          "type": "text_delta",
+          "delta": " in"
+        },
+        {
+          "type": "text_delta",
+          "delta": " src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/server"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "P"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"],\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "assigned"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Role"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "coder"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"},{\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "R"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Review"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " call"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Verify"
+        },
+        {
+          "type": "text_delta",
+          "delta": " release"
+        },
+        {
+          "type": "text_delta",
+          "delta": " call"
+        },
+        {
+          "type": "text_delta",
+          "delta": " is"
+        },
+        {
+          "type": "text_delta",
+          "delta": " correct"
+        },
+        {
+          "type": "text_delta",
+          "delta": " and"
+        },
+        {
+          "type": "text_delta",
+          "delta": " complete"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":[\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "C"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"],\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "assigned"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Role"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "review"
+        },
+        {
+          "type": "text_delta",
+          "delta": "er"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"}"
+        },
+        {
+          "type": "text_delta",
+          "delta": "]}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 387,
+            "outputTokens": 107,
+            "totalTokens": 494
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/llama-3.2-11b-vision"
+        }
+      ],
+      "finishedAt": "2026-10-10T10:53:07.709Z"
+    },
+    {
+      "at": "2026-10-10T10:53:07.714Z",
+      "request": {
+        "model": "nvidia/llama-3.2-11b-vision",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a task planner. Return exactly one JSON object, no markdown. Use task_graph_v1: {\"protocol\":\"task_graph_v1\",\"summary\":\"string\",\"tasks\":[{\"id\":\"C\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[],\"assignedRole\":\"coder\"},{\"id\":\"R\",\"title\":\"string\",\"objective\":\"string\",\"dependencies\":[\"C\"],\"assignedRole\":\"reviewer\"}]}. Each assignedRole MUST be exactly one of \"explorer\", \"planner\", \"coder\", \"reviewer\". Alternatively use semantic_steps_v1 with phase investigation/planning/implementation/verification and after:string[]. Never mix protocols. Implementation must precede verification. Plan only what the task requires - no invented files, no rewrites."
+          },
+          {
+            "role": "user",
+            "content": "Task: Plan the smallest change that fixes executeProviderCall returning the wrong status when the provider answers 429.\n\nExplorer findings (the only repository files that exist for you):\n--- src/provider/client.ts ---\nexport async function executeProviderCall(route: { providerId: string }, task: string) {\n  return { route, task, status: 200 };\n}\n--- test/router.test.ts ---\n/// <reference types=\"vitest\" />\ntest(\"route executes\", () => {});"
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 1200
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": " "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "protocol"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "task"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_graph"
+        },
+        {
+          "type": "text_delta",
+          "delta": "_v"
+        },
+        {
+          "type": "text_delta",
+          "delta": "1"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": " "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "summary"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Fix"
+        },
+        {
+          "type": "text_delta",
+          "delta": " execute"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Call"
+        },
+        {
+          "type": "text_delta",
+          "delta": " returning"
+        },
+        {
+          "type": "text_delta",
+          "delta": " wrong"
+        },
+        {
+          "type": "text_delta",
+          "delta": " status"
+        },
+        {
+          "type": "text_delta",
+          "delta": " when"
+        },
+        {
+          "type": "text_delta",
+          "delta": " provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": " answers"
+        },
+        {
+          "type": "text_delta",
+          "delta": " "
+        },
+        {
+          "type": "text_delta",
+          "delta": "429"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": " "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "tasks"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " {\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "E"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Explore"
+        },
+        {
+          "type": "text_delta",
+          "delta": " existing"
+        },
+        {
+          "type": "text_delta",
+          "delta": " code"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Under"
+        },
+        {
+          "type": "text_delta",
+          "delta": "stand"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " current"
+        },
+        {
+          "type": "text_delta",
+          "delta": " implementation"
+        },
+        {
+          "type": "text_delta",
+          "delta": " of"
+        },
+        {
+          "type": "text_delta",
+          "delta": " execute"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Call"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [],\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "assigned"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Role"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "expl"
+        },
+        {
+          "type": "text_delta",
+          "delta": "orer"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " },\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " {\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "P"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Plan"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fix"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "D"
+        },
+        {
+          "type": "text_delta",
+          "delta": "etermine"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " necessary"
+        },
+        {
+          "type": "text_delta",
+          "delta": " changes"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fix"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " issue"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "E"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"],\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "assigned"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Role"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "pl"
+        },
+        {
+          "type": "text_delta",
+          "delta": "anner"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " },\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " {\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "C"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Implement"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fix"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Modify"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " execute"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Provider"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Call"
+        },
+        {
+          "type": "text_delta",
+          "delta": " function"
+        },
+        {
+          "type": "text_delta",
+          "delta": " to"
+        },
+        {
+          "type": "text_delta",
+          "delta": " handle"
+        },
+        {
+          "type": "text_delta",
+          "delta": " "
+        },
+        {
+          "type": "text_delta",
+          "delta": "429"
+        },
+        {
+          "type": "text_delta",
+          "delta": " responses"
+        },
+        {
+          "type": "text_delta",
+          "delta": " correctly"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "P"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"],\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "assigned"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Role"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "coder"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " },\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " {\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "id"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "R"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "title"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Review"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fix"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "objective"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "Verify"
+        },
+        {
+          "type": "text_delta",
+          "delta": " that"
+        },
+        {
+          "type": "text_delta",
+          "delta": " the"
+        },
+        {
+          "type": "text_delta",
+          "delta": " fix"
+        },
+        {
+          "type": "text_delta",
+          "delta": " works"
+        },
+        {
+          "type": "text_delta",
+          "delta": " as"
+        },
+        {
+          "type": "text_delta",
+          "delta": " expected"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\",\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "dependencies"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "C"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"],\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "     "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "assigned"
+        },
+        {
+          "type": "text_delta",
+          "delta": "Role"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "review"
+        },
+        {
+          "type": "text_delta",
+          "delta": "er"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "   "
+        },
+        {
+          "type": "text_delta",
+          "delta": " }\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": " "
+        },
+        {
+          "type": "text_delta",
+          "delta": " ]\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 288,
+            "outputTokens": 240,
+            "totalTokens": 528
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/llama-3.2-11b-vision"
+        }
+      ],
+      "finishedAt": "2026-10-10T10:53:20.895Z"
+    }
+  ],
+  "maxRequests": 4,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-10T10:53:03.055Z",
+    "receipt": {
+      "sourceDocumentation": "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl",
+      "termsEvidence": "https://blockrun.ai/terms",
+      "privacyEvidence": "https://blockrun.ai/privacy",
+      "priceEvidence": "https://blockrun.ai/docs/rate-limits",
+      "verifiedAt": "2026-10-10T10:53:03.055Z",
+      "recheckAt": "2026-10-17T10:53:03.055Z",
+      "qualificationAt": "2026-10-10T10:53:03.054Z",
+      "termsVerifiedAt": "2026-10-10T10:53:03.055Z",
+      "termsEvidenceHash": "73f2ef461e086bec3f80579ad7699ce819ab9fd78cef6763f8ff7a83bde3d649",
+      "termsExpiresAt": "2026-10-17T10:53:03.055Z",
+      "privacyVerifiedAt": "2026-10-10T10:53:03.055Z",
+      "privacyEvidenceHash": "21b97f5ca395e4b0ce3b434c8fca6f20cf63285ec57a93cbf88fe1628eb8e3b7",
+      "privacyExpiresAt": "2026-10-17T10:53:03.055Z",
+      "priceVerifiedAt": "2026-10-10T10:53:03.055Z",
+      "priceEvidenceHash": "4921f5b2f8c4b51559078915381fa0956ee12030bb4e09fe86e49ecd6ccdf27f",
+      "priceExpiresAt": "2026-10-17T10:53:03.055Z",
+      "nextReverifyAt": "2026-10-10T16:53:03.055Z"
+    }
+  },
+  "catalog": {
+    "modelId": "nvidia/llama-3.2-11b-vision",
+    "displayName": "Llama 3.2 11B Vision (Free)",
+    "contextWindow": 128000,
+    "capabilities": {
+      "text": true,
+      "coding": false,
+      "toolCalling": true,
+      "vision": true,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "result": {
+    "roleResults": {
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-10T10:53:03.703Z",
+        "completedAt": "2026-10-10T10:53:20.898Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "planner.release_callsite",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4010,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 3,
+              "roles": [
+                "planner",
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": false
+            }
+          },
+          {
+            "caseId": "planner.schema",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 13184,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 4,
+              "roles": [
+                "explorer",
+                "planner",
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-10T10:53:03.703Z",
+        "completedAt": "2026-10-10T10:53:20.898Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-10T10:53:03.703Z",
+        "completedAt": "2026-10-10T10:53:20.898Z"
+      }
+    },
+    "requestCount": 2,
+    "transientCases": 0
+  },
+  "qualification": {
+    "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+    "providerId": "blockrun-free-direct",
+    "modelId": "nvidia/llama-3.2-11b-vision",
+    "modelDisplayName": "Llama 3.2 11B Vision (Free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "planner.release_callsite",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4010,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 3,
+              "roles": [
+                "planner",
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": false
+            }
+          },
+          {
+            "caseId": "planner.schema",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 13184,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 4,
+              "roles": [
+                "explorer",
+                "planner",
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-10T10:53:03.703Z",
+        "completedAt": "2026-10-10T10:53:20.898Z"
+      }
+    },
+    "startedAt": "2026-10-10T10:53:03.703Z",
+    "completedAt": "2026-10-10T10:53:20.898Z",
+    "totalLatencyMs": 17195,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "roleOnly": true,
+      "requests": 2,
+      "roleTransientCases": 0,
+      "transient": false,
+      "roleProtocolVersions": {
+        "EXPLORER": "EXPLORER_PROTOCOL_V2",
+        "PLANNER": "PLANNER_PROTOCOL_V4",
+        "REVIEWER": "REVIEWER_PROTOCOL_V4"
+      },
+      "reviewerProtocolOnly": false,
+      "publicCasesOnly": true
+    }
+  },
+  "status": "MEASURED",
+  "finishedAt": "2026-10-10T10:53:20.899Z"
+}

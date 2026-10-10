@@ -2571,7 +2571,7 @@ async function startPrimaryInstance(): Promise<void> {
   modelRegistry.loadSnapshot();
 
   // R1: 8-Bit Free Cloud Service + trusted provider-connection authority.
-  freeCloud = createFreeCloudService({ firewall, providerCatalog, registry: modelRegistry });
+  freeCloud = createFreeCloudService({ firewall, providerCatalog, registry: modelRegistry, useBundledRoleEvidence: true });
   providerConnections = new ProviderConnections(createProviderConnectionsHost());
   providerConnections.migrateEnvironmentPreferences();
   smokeRecord("WHEN_READY_PROVIDER_CONNECTIONS_DONE");
