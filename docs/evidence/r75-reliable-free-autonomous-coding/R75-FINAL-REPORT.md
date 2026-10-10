@@ -10,6 +10,7 @@ R75 delivered the Planner contract repair and shared hourly capacity controls, t
 - Worktree: `G:\CodeForge\worktrees\r75-reliable-free-autonomous-coding`
 - R74 baseline: `230510131f40532ad8a402bdef131c3b8c637436`, aligned with the R74 remote branch at start.
 - Final implementation commit: `8217d70e8a344efb826b15c37723171f92c6f294`. The package receipts and report update are included in the final evidence push; remote branch alignment is checked at delivery.
+- Final evidence payload SHA: `5181272fdbeee9ab27e4b5ac42f4461d6254323a` (packaging hashes, validation receipt, and final report content).
 - R74 historical evidence remains intact. The ten-attempt classification is in [R75-R74-ROOT-CAUSE-CLASSIFICATION.json](R75-R74-ROOT-CAUSE-CLASSIFICATION.json).
 
 ## Changes delivered
