@@ -1,0 +1,86 @@
+{
+  "startedAt": "2026-10-11T05:24:25.026Z",
+  "evidenceClass": "MODEL_DIRECTED_DOOR_SPEC",
+  "model": "nvidia/nemotron-3-super-120b-a12b:free",
+  "frames": [
+    {
+      "at": "2026-10-11T05:24:25.707Z",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "events": 38,
+      "chars": 310,
+      "attempt": 1,
+      "finishedAt": "2026-10-11T05:24:33.138Z"
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "raw": "{\n  \"moduleId\": \"dtw/building/door-western/v1\",\n  \"opening\": {\"widthCm\": 100, \"heightCm\": 210},\n  \"leaf\": {\"thicknessCm\": 5, \"clearanceCm\": 0.5, \"battens\": 3},\n  \"frame\": {\"depthCm\": 10, \"jambWidthCm\": 5},\n  \"hinge\": {\"side\": \"left\", \"pivotOffsetCm\": 2},\n  \"motion\": {\"openAngleDeg\": -95, \"transitionS\": 0.8}\n}",
+      "parsed": "valid"
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T05:24:25.026Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T05:24:25.026Z",
+      "recheckAt": "2026-10-18T05:24:25.026Z",
+      "qualificationAt": "2026-10-11T05:24:25.026Z",
+      "termsVerifiedAt": "2026-10-11T05:24:25.026Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T05:24:25.026Z",
+      "privacyVerifiedAt": "2026-10-11T05:24:25.026Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T05:24:25.026Z",
+      "priceVerifiedAt": "2026-10-11T05:24:25.026Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T05:24:25.026Z",
+      "nextReverifyAt": "2026-10-11T11:24:25.026Z"
+    }
+  },
+  "catalogEntry": {
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "displayName": "NVIDIA: Nemotron 3 Super (free)",
+    "contextWindow": 262144,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": true,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "doorSpec": {
+    "moduleId": "dtw/building/door-western/v1",
+    "opening": {
+      "widthCm": 100,
+      "heightCm": 210
+    },
+    "leaf": {
+      "thicknessCm": 5,
+      "clearanceCm": 0.5,
+      "battens": 3
+    },
+    "frame": {
+      "depthCm": 10,
+      "jambWidthCm": 5
+    },
+    "hinge": {
+      "side": "left",
+      "pivotOffsetCm": 2
+    },
+    "motion": {
+      "openAngleDeg": -95,
+      "transitionS": 0.8
+    }
+  },
+  "status": "MODEL_SPEC_VALID",
+  "finishedAt": "2026-10-11T05:24:33.143Z"
+}

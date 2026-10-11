@@ -1,4 +1,5 @@
 import { promises as fs, existsSync, readdirSync } from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import { spawn, type ChildProcess } from "node:child_process";
 import { FORGE_AAA_ERRORS, ForgeAaaError } from "../types.js";
@@ -68,7 +69,24 @@ export interface UnrealCommandletRequest {
    * no editor subsystems). Map is inserted as the second positional argument.
    */
   game?: { map: string };
+  /** Called synchronously once the engine process exists — used to record the PID
+   *  in the config lock so a later recovery pass can reap an orphaned engine. */
+  onSpawn?: (child: { pid?: number }) => void;
 }
+
+interface ForgeAaaConfigLock {
+  runId: string;
+  ownerPid: number;
+  iniPath: string;
+  /** Present iff the ini existed before injection — its original bytes live here. */
+  backupPath: string | null;
+  originalAbsent: boolean;
+  injectedSha256: string;
+  enginePid: number | null;
+  startedAt: string;
+}
+
+const sha256 = (content: string): string => crypto.createHash("sha256").update(content, "utf8").digest("hex");
 
 export interface UnrealCommandletResult {
   ok: boolean;
@@ -427,6 +445,73 @@ export interface UnrealFunctionalTestResult extends UnrealCommandletResult {
   scriptPath: string;
   /** Engine-reported metrics: samples, z-gain, displacement, stuck detection. */
   metrics?: Record<string, unknown>;
+  /** False means DefaultEngine.ini did not restore cleanly — see configRestoreDetail. */
+  configRestored?: boolean;
+  configRestoreDetail?: string;
+}
+
+/**
+ * Door/interaction scenario (mission §6.5-§6.8): a Character is driven through an action
+ * timeline against a door leaf actor — summoned at runtime, or a level actor found by
+ * label (persistence path). Every action gets its own measured displacement + door-state
+ * record so assertions bind to engine evidence, not intent.
+ */
+export interface UnrealInteractionAction {
+  op: "move" | "interact" | "wait";
+  /** `move` only — unit-ish input direction. */
+  direction?: [number, number, number];
+  durationS: number;
+  expect?: {
+    maxDisplacementCm?: number;
+    minDisplacementCm?: number;
+    /** Asserted character world-Y at action end (cm). */
+    minEndY?: number;
+    maxEndY?: number;
+    /** Asserted door leaf world yaw at action end (deg). */
+    doorYawDeg?: number;
+    /** Asserted door state label at action end. */
+    doorState?: "closed" | "opening" | "open" | "closing";
+  };
+}
+
+export interface UnrealInteractionTestRequest {
+  projectPath: string;
+  levelPath: string;
+  scriptPath: string;
+  logPath?: string;
+  spawn: [number, number, number];
+  door: {
+    /** `/Game/...` static-mesh asset for the leaf (hinge-at-origin). */
+    leafAsset: string;
+    /** World location of the hinge axis at the sill. */
+    hingeLocation: [number, number, number];
+    closedYawDeg: number;
+    /** Signed swing — final open yaw = closedYaw + openAngle. */
+    openAngleDeg: number;
+    transitionS: number;
+    /** Level-actor label to reuse (persisted placement); absent → summon a leaf actor. */
+    leafActorLabel?: string;
+    /** Start the scenario with the leaf already open. */
+    initiallyOpen?: boolean;
+    /** Center of the doorway opening [x,y,z] — line-traced each action end to report
+     *  whether the passage is physically clear (probeHit evidence). */
+    probeCenter?: [number, number, number];
+  };
+  actions: UnrealInteractionAction[];
+  samplePeriodS?: number;
+  timeoutMs?: number;
+  install?: UnrealInstall;
+}
+
+export interface UnrealInteractionTestResult extends UnrealFunctionalTestResult {
+  /** Per-action engine measurements in spec order. */
+  actionMetrics?: {
+    op: string; displacementCm: number; doorYawDeg: number | null; doorState: string | null;
+    /** Yaw read back from the leaf actor at action end — evidence the rotation
+     *  actually applied (commanded yaw alone proves nothing). */
+    obsDoorYawDeg?: number | null;
+    start: [number, number, number]; end: [number, number, number];
+  }[];
 }
 
 export interface UnrealPythonScriptRequest {
@@ -477,6 +562,14 @@ export class UnrealAdapter {
   private rootDirs(): string[] {
     if (this.platform !== "win32") return ["/opt", "/usr/local", ...this.extraRoots];
     return [...UE_DEFAULT_ROOTS, ...this.extraRoots];
+  }
+
+  private async readJson<T>(p: string): Promise<T | undefined> {
+    try {
+      return JSON.parse(await this.readFile(p)) as T;
+    } catch {
+      return undefined;
+    }
   }
 
   private engineRoots(): { roots: string[]; probed: string[] } {
@@ -625,6 +718,7 @@ export class UnrealAdapter {
       let child: ChildProcess;
       try {
         child = this.spawnProcess(exePath, args, { windowsHide: true });
+        req.onSpawn?.({ pid: child.pid });
       } catch (err) {
         resolve({ ok: false, exitCode: null, timedOut: false, durationMs: 0, logTail: "", error: err instanceof Error ? err.message : String(err) });
         return;
@@ -774,27 +868,132 @@ export class UnrealAdapter {
   }
 
   /**
-   * Temporarily point PythonScriptPlugin's StartupScripts at our file by appending the
-   * setting section to the project's DefaultEngine.ini. Returns a
-   * restore() that puts back the exact prior bytes (or deletes a file we created).
+   * Crash-safe temporary DefaultEngine.ini modification.
+   *
+   * Instead of an in-memory restore closure (lost when the adapter process dies), the
+   * pre-edit bytes are written to a sibling backup file and a lock records what the ini
+   * is supposed to contain while we own it (sha256 of the injected content). The next
+   * acquisition that finds an abandoned lock can therefore distinguish three states:
+   *   - ini still holds exactly our injected bytes  → previous owner died; restore+reap.
+   *   - ini changed since                          → someone else owns it now; fail closed.
+   *   - lock/backup unreadable                     → ambiguous; fail closed.
+   * Restore also verifies the ini still holds our bytes before overwriting — a user edit
+   * made mid-test is never clobbered.
    */
-  private async injectStartupScript(iniPath: string, scriptPath: string): Promise<() => Promise<void>> {
+  private async acquireConfigOwnership(iniPath: string, scriptPath: string, runId: string): Promise<{
+    restore: () => Promise<{ restored: boolean; detail: string }>;
+    setEnginePid: (pid: number | undefined) => void;
+  }> {
+    const lockPath = `${iniPath}.forgeaaa.lock`;
+    const backupPath = `${iniPath}.forgeaaa-backup.${runId}`;
+    // UE4 ini values eat backslashes — a Windows path must be forward-slashed or the
+    // plugin can't find the file and execs the path string as code (live evidence R80).
+    const iniScriptPath = scriptPath.replace(/\\/g, "/");
+    const section = `\n[/Script/PythonScriptPlugin.PythonScriptPluginSettings]\n+StartupScripts="${iniScriptPath}"\n`;
+
+    const priorLock = await this.readJson<ForgeAaaConfigLock>(lockPath);
+    if (priorLock !== undefined) {
+      await this.recoverAbandonedOwnership(priorLock, lockPath);
+    }
+
     let original: string | undefined;
     try {
       original = await this.readFile(iniPath);
     } catch {
       original = undefined;
     }
-    const section = `\n[/Script/PythonScriptPlugin.PythonScriptPluginSettings]\n+StartupScripts="${scriptPath}"\n`;
+    const injected = (original ?? "") + section;
     await fs.mkdir(path.dirname(iniPath), { recursive: true });
-    await this.writeFile(iniPath, (original ?? "") + section);
-    const restoreBytes = original;
-    return async () => {
-      try {
-        if (restoreBytes === undefined) await fs.rm(iniPath, { force: true });
-        else await this.writeFile(iniPath, restoreBytes);
-      } catch { /* best effort restore */ }
+    if (original !== undefined) {
+      await this.writeFile(backupPath, original);
+    }
+    await this.writeFile(iniPath, injected);
+    const lock: ForgeAaaConfigLock = {
+      runId,
+      ownerPid: process.pid,
+      iniPath,
+      backupPath: original !== undefined ? backupPath : null,
+      originalAbsent: original === undefined,
+      injectedSha256: sha256(injected),
+      enginePid: null,
+      startedAt: new Date().toISOString(),
     };
+    await this.writeFile(lockPath, JSON.stringify(lock, null, 2));
+
+    const restore = async (): Promise<{ restored: boolean; detail: string }> => {
+      try {
+        const current = await this.readFile(iniPath).catch(() => undefined);
+        const currentSha = current === undefined ? null : sha256(current);
+        if (currentSha !== lock.injectedSha256) {
+          // Bytes changed under us — ownership is ambiguous, so nothing is overwritten.
+          // Backup and lock stay on disk for manual or next-run recovery.
+          return { restored: false, detail: `ini changed during test (sha ${currentSha ?? "missing"} != ${lock.injectedSha256}) — original preserved at ${lock.backupPath ?? "none (file was absent)"}` };
+        }
+        if (lock.originalAbsent) await fs.rm(iniPath, { force: true });
+        else await this.writeFile(iniPath, original!);
+        await fs.rm(backupPath, { force: true });
+        await fs.rm(lockPath, { force: true });
+        return { restored: true, detail: "original bytes restored" };
+      } catch (err) {
+        return { restored: false, detail: `restore failed: ${err instanceof Error ? err.message : String(err)}` };
+      }
+    };
+    const setEnginePid = (pid: number | undefined): void => {
+      lock.enginePid = pid ?? null;
+      void this.writeFile(lockPath, JSON.stringify(lock, null, 2)).catch(() => undefined);
+    };
+    return { restore, setEnginePid };
+  }
+
+  /**
+   * A prior run left its lock behind. Safe to reclaim only when the ini still holds the
+   * exact bytes that run injected — anything else means legitimate post-crash edits we
+   * must not clobber.
+   */
+  private async recoverAbandonedOwnership(lock: ForgeAaaConfigLock, lockPath: string): Promise<void> {
+    const current = await this.readFile(lock.iniPath).catch(() => undefined);
+    const currentSha = current === undefined ? null : sha256(current);
+    if (currentSha === lock.injectedSha256) {
+      if (lock.enginePid) await this.reapOrphanedEngine(lock.enginePid, lock.iniPath);
+      if (lock.originalAbsent || !lock.backupPath) {
+        await fs.rm(lock.iniPath, { force: true });
+      } else {
+        const original = await this.readFile(lock.backupPath);
+        await this.writeFile(lock.iniPath, original);
+      }
+      if (lock.backupPath) await fs.rm(lock.backupPath, { force: true });
+      await fs.rm(lockPath, { force: true });
+      return;
+    }
+    throw new ForgeAaaError(
+      FORGE_AAA_ERRORS.OPERATION_DENIED,
+      `abandoned config lock at ${lockPath} but ${lock.iniPath} no longer matches the recorded bytes — refusing to overwrite; inspect and remove the lock manually`,
+    );
+  }
+
+  /**
+   * Kill an engine PID recorded in an abandoned lock — but only after confirming the
+   * live process is actually a UE4Editor launched on our project (PID reuse must not
+   * kill an unrelated user session). Best-effort, never throws.
+   */
+  private async reapOrphanedEngine(pid: number, iniPath: string): Promise<void> {
+    if (this.platform !== "win32") return;
+    const projectDir = path.basename(path.dirname(path.dirname(iniPath))).toLowerCase();
+    try {
+      const { execFile } = await import("node:child_process");
+      const cmdline = await new Promise<string>((resolve) => {
+        execFile(
+          "powershell.exe",
+          ["-NoProfile", "-Command", `(Get-CimInstance Win32_Process -Filter "ProcessId=${pid}").CommandLine`],
+          { timeout: 10_000, windowsHide: true },
+          (err, stdout) => resolve(err ? "" : String(stdout)),
+        );
+      });
+      const lower = cmdline.toLowerCase();
+      if (lower.includes("ue4editor") && lower.includes(projectDir)) {
+        process.kill(pid);
+      }
+    } catch { /* process already gone or query failed — nothing to reap */ }
   }
 
   /**
@@ -838,8 +1037,9 @@ export class UnrealAdapter {
     // StartupScripts setting — UPythonScriptPluginSettings is config=Engine, verified
     // against the plugin source. Injected into DefaultEngine.ini, always restored.
     const iniPath = path.join(path.dirname(req.projectPath), "Config", "DefaultEngine.ini");
-    const restore = await this.injectStartupScript(iniPath, req.scriptPath);
-    let result: UnrealCommandletResult;
+    const { restore, setEnginePid } = await this.acquireConfigOwnership(iniPath, req.scriptPath, runId);
+    let result: UnrealCommandletResult & Pick<UnrealFunctionalTestResult, "configRestored" | "configRestoreDetail">;
+    let config: { restored: boolean; detail: string };
     try {
       result = await this.runCommandlet({
         projectPath: req.projectPath,
@@ -848,10 +1048,12 @@ export class UnrealAdapter {
         install: req.install,
         logPath: req.logPath,
         host: "editor",
+        onSpawn: ({ pid }) => setEnginePid(pid),
       });
     } finally {
-      await restore();
+      config = await restore();
     }
+    result = { ...result, configRestored: config.restored, configRestoreDetail: config.detail };
     if (result.timedOut) return { ...result, state: "timeout", scriptPath: req.scriptPath };
     // The report FILE is authoritative — print() inside slate callbacks doesn't reach
     // LogPython, so result.report may legitimately be absent on successful runs.
@@ -887,4 +1089,394 @@ export class UnrealAdapter {
     }
     return { ...result, state, scriptPath: req.scriptPath, metrics };
   }
+
+  /**
+   * Door interaction scenario in `-game` mode (mission §8 TEST 1-8): drives a Character
+   * through a move/interact/wait timeline against a door leaf whose yaw is lerped over
+   * the configured transition — a deterministic timeline-style mechanism (allowed by
+   * §6.4) with live collision, not a two-position flip. `interact` toggles the leaf's
+   * target yaw and is recorded as INTERACTION_COMMAND, an explicitly implemented
+   * interaction path — it is not claimed as player-input (§6.7).
+   */
+  async runInteractionTest(req: UnrealInteractionTestRequest): Promise<UnrealInteractionTestResult> {
+    if (!/^\/Game(\/|$)/.test(req.levelPath)) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `levelPath must be under /Game — got "${req.levelPath}"`);
+    }
+    if (!/^\/(Game|Engine)(\/|$)/.test(req.door.leafAsset)) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `leafAsset must be under /Game or /Engine — got "${req.door.leafAsset}"`);
+    }
+    if (req.actions.length === 0 || req.actions.length > 64) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, "actions must contain 1..64 entries");
+    }
+    if (Math.abs(req.door.openAngleDeg) < 1 || Math.abs(req.door.openAngleDeg) > 180) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, "openAngleDeg must be in [-180,-1]∪[1,180]");
+    }
+    if (req.door.transitionS <= 0 || req.door.transitionS > 30) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, "transitionS must be in (0,30]");
+    }
+    for (const a of req.actions) {
+      if (a.durationS <= 0 || a.durationS > 60) {
+        throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `action durationS must be in (0,60] — got ${a.durationS}`);
+      }
+      if (a.op === "move") {
+        if (!a.direction) throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, "move action requires direction");
+        const mag = Math.hypot(a.direction[0], a.direction[1], a.direction[2]);
+        if (mag < 0.5 || mag > 1.5) throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, "move direction must be a unit vector");
+      }
+    }
+    const reportPath = req.scriptPath.replace(/\.py$/i, ".report.json");
+    const runId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const spec = JSON.stringify({
+      level: req.levelPath,
+      spawn: req.spawn,
+      door: req.door,
+      actions: req.actions,
+      samplePeriod: req.samplePeriodS ?? 0.1,
+      reportPath,
+      runId,
+    });
+    try { await this.deleteFile(reportPath); } catch { /* absent is fine */ }
+    const script = INTERACTION_SCRIPT.replace("__FORGEAAA_SPEC__", spec.replace(/\\/g, "\\\\").replace(/"/g, '\\"'));
+    await this.writeFile(req.scriptPath, script);
+    const iniPath = path.join(path.dirname(req.projectPath), "Config", "DefaultEngine.ini");
+    const { restore, setEnginePid } = await this.acquireConfigOwnership(iniPath, req.scriptPath, runId);
+    let result: UnrealCommandletResult & Pick<UnrealFunctionalTestResult, "configRestored" | "configRestoreDetail">;
+    let config: { restored: boolean; detail: string };
+    try {
+      result = await this.runCommandlet({
+        projectPath: req.projectPath,
+        game: { map: req.levelPath },
+        timeoutMs: req.timeoutMs,
+        install: req.install,
+        logPath: req.logPath,
+        host: "editor",
+        onSpawn: ({ pid }) => setEnginePid(pid),
+      });
+    } finally {
+      config = await restore();
+    }
+    result = { ...result, configRestored: config.restored, configRestoreDetail: config.detail };
+    if (result.timedOut) return { ...result, state: "timeout", scriptPath: req.scriptPath };
+    let rep = (result.report ?? {}) as Record<string, unknown>;
+    try {
+      const onDisk = JSON.parse(await this.readFile(reportPath)) as Record<string, unknown>;
+      if (onDisk.runId === runId) rep = onDisk;
+      else rep = { executed: false, errors: [...(rep.errors as string[] ?? []), "stale report discarded"], stale: true };
+    } catch {
+      if (!result.report) rep = { executed: false, errors: ["no report produced"], not_executed: true };
+    }
+    if (rep.executed !== true) return { ...result, state: rep.errors ? "blocked" : "not_executed", scriptPath: req.scriptPath };
+    const actionMetrics = (Array.isArray(rep.actions) ? rep.actions : []) as NonNullable<UnrealInteractionTestResult["actionMetrics"]>;
+    // An action that never produced an engine metric is unmeasured, not passed — the
+    // scenario that dies mid-run is blocked, never a silent success.
+    let state: UnrealFunctionalTestState = actionMetrics.length >= req.actions.length ? "pass" : "blocked";
+    const failures: string[] = [];
+    if (actionMetrics.length < req.actions.length) {
+      failures.push(`scenario incomplete: ${actionMetrics.length}/${req.actions.length} actions measured`);
+    }
+    req.actions.forEach((a, i) => {
+      const m = actionMetrics?.[i];
+      if (!a.expect || !m) return;
+      if (a.expect.maxDisplacementCm !== undefined && m.displacementCm > a.expect.maxDisplacementCm) {
+        state = "fail"; failures.push(`action[${i}] displacement ${m.displacementCm} > ${a.expect.maxDisplacementCm}`);
+      }
+      if (a.expect.minDisplacementCm !== undefined && m.displacementCm < a.expect.minDisplacementCm) {
+        state = "fail"; failures.push(`action[${i}] displacement ${m.displacementCm} < ${a.expect.minDisplacementCm}`);
+      }
+      if (a.expect.minEndY !== undefined && m.end[1] < a.expect.minEndY) {
+        state = "fail"; failures.push(`action[${i}] endY ${m.end[1]} < ${a.expect.minEndY}`);
+      }
+      if (a.expect.maxEndY !== undefined && m.end[1] > a.expect.maxEndY) {
+        state = "fail"; failures.push(`action[${i}] endY ${m.end[1]} > ${a.expect.maxEndY}`);
+      }
+      if (a.expect.doorState !== undefined && m.doorState !== a.expect.doorState) {
+        state = "fail"; failures.push(`action[${i}] doorState ${m.doorState} != ${a.expect.doorState}`);
+      }
+      if (a.expect.doorYawDeg !== undefined && (m.doorYawDeg === null || Math.abs(m.doorYawDeg - a.expect.doorYawDeg) > 3)) {
+        state = "fail"; failures.push(`action[${i}] doorYaw ${m.doorYawDeg} != ${a.expect.doorYawDeg}`);
+      }
+      if (m.obsDoorYawDeg === undefined || m.obsDoorYawDeg === null) {
+        if (state === "pass") state = "fail";
+        failures.push(`action[${i}] observed door yaw missing: commanded rotation is unverified`);
+      } else if (m.doorYawDeg !== null && Math.abs(m.obsDoorYawDeg - m.doorYawDeg) > 8) {
+        if (state === "pass") state = "fail";
+        failures.push(`action[${i}] observed door yaw ${m.obsDoorYawDeg} diverges from commanded ${m.doorYawDeg}: rotation not applied`);
+      }
+    });
+    const metrics: Record<string, unknown> = {
+      samples: Array.isArray(rep.samples) ? rep.samples.length : 0,
+      door: rep.door ?? {},
+      failures,
+      errors: rep.errors ?? [],
+    };
+    return { ...result, state, scriptPath: req.scriptPath, metrics, actionMetrics };
+  }
 }
+
+/**
+ * Game-world interaction driver: same proven boot path as the traversal script
+ * (world via find_object, pawn sweep, summon Character, MOVE_WALKING + physics-without-
+ * controller) plus a door leaf actor — found by level label or summoned — whose yaw is
+ * stepped toward a target every tick with live collision.
+ */
+const INTERACTION_SCRIPT = `import unreal, json, math
+spec = json.loads("__FORGEAAA_SPEC__")
+report = {"kind": "interaction", "level": spec["level"], "runId": spec["runId"], "executed": False,
+          "samples": [], "actions": [], "door": {"interactions": 0}, "errors": [], "trace": []}
+state = {"phase": "boot", "world": None, "pc": None, "char": None, "leaf": None,
+         "action_idx": 0, "action_t": 0.0, "action_start": None, "moved": False,
+         "t": 0.0, "last_sample_t": -1.0, "handle": None, "ticks": 0, "wait": 0}
+door = {"closed_yaw": spec["door"]["closedYawDeg"],
+        "open_yaw": spec["door"]["closedYawDeg"] + spec["door"]["openAngleDeg"],
+        "rate": abs(spec["door"]["openAngleDeg"]) / spec["door"]["transitionS"]}
+door["cur"] = door["open_yaw"] if spec["door"].get("initiallyOpen") else door["closed_yaw"]
+door["target"] = door["cur"]
+
+def door_state():
+    if abs(door["cur"] - door["open_yaw"]) < 1.0: return "open"
+    if abs(door["cur"] - door["closed_yaw"]) < 1.0: return "closed"
+    return "opening" if abs(door["cur"] - door["open_yaw"]) < abs(door["cur"] - door["closed_yaw"]) else "closing"
+
+def write_report():
+    try:
+        with open(spec["reportPath"], "w") as f:
+            json.dump(report, f)
+    except Exception as e:
+        report["errors"].append("report write: " + str(e))
+
+def finish():
+    write_report()
+    try:
+        unreal.unregister_slate_post_tick_callback(state["handle"])
+    except Exception:
+        pass
+    print("FORGEAAA_REPORT:" + json.dumps(report))
+    try:
+        unreal.SystemLibrary.execute_console_command(state.get("world"), "quit", state.get("pc"))
+    except Exception:
+        pass
+
+def prep_char(c):
+    try:
+        cm = c.character_movement
+        cm.run_physics_with_no_controller = True
+        cm.set_movement_mode(unreal.MovementMode.MOVE_WALKING)
+    except Exception as e:
+        report["trace"].append("prep_warn:" + str(e))
+
+def resolve_context():
+    map_name = spec["level"].rsplit("/", 1)[-1]
+    for name in (spec["level"] + "." + map_name, "PersistentLevel", map_name):
+        try:
+            obj = unreal.find_object(None, name)
+            if obj is not None:
+                return obj
+        except Exception:
+            pass
+    return None
+
+def setup_door(ctx):
+    # Prefer a persisted level actor (label or proximity match) — that is the
+    # level-persistence path; otherwise summon a leaf and assign the mesh.
+    hp = spec["door"]["hingeLocation"]
+    leaf = None
+    label = spec["door"].get("leafActorLabel")
+    for a in unreal.GameplayStatics.get_all_actors_of_class(ctx, unreal.StaticMeshActor):
+        try:
+            if label and a.get_actor_label() == label:
+                leaf = a; break
+        except Exception:
+            pass
+    if leaf is None and label:
+        report["errors"].append("leafActorLabel not found: " + label)
+        return None
+    if leaf is None:
+        best = None; bestd = 50.0
+        for a in unreal.GameplayStatics.get_all_actors_of_class(ctx, unreal.StaticMeshActor):
+            try:
+                p = a.get_actor_location()
+                d = math.sqrt((p.x - hp[0])**2 + (p.y - hp[1])**2 + (p.z - hp[2])**2)
+                if d < bestd: best, bestd = a, d
+            except Exception:
+                pass
+        leaf = best
+    if leaf is None:
+        unreal.SystemLibrary.execute_console_command(ctx, "summon Engine.StaticMeshActor", state["pc"])
+        actors = unreal.GameplayStatics.get_all_actors_of_class(ctx, unreal.StaticMeshActor)
+        leaf = actors[len(actors) - 1] if len(actors) else None
+        if leaf is not None:
+            try:
+                mesh = unreal.load_asset(spec["door"]["leafAsset"])
+                leaf.static_mesh_component.set_static_mesh(mesh)
+            except Exception as e:
+                report["errors"].append("leaf mesh: " + str(e))
+    if leaf is None:
+        report["errors"].append("no door leaf actor")
+        return None
+    try:
+        leaf.static_mesh_component.set_mobility(unreal.ComponentMobility.MOVABLE)
+    except Exception as e:
+        report["trace"].append("set_mobility_warn:" + str(e))
+    leaf.set_actor_location(unreal.Vector(hp[0], hp[1], hp[2]), False, True)
+    leaf.set_actor_rotation(unreal.Rotator(0, 0, door["cur"]), False)
+    try:
+        mob = leaf.static_mesh_component.mobility
+        report["trace"].append("leaf_mobility:%s" % mob)
+        if "STATIC" in str(mob):
+            report["errors"].append("leaf mobility STATIC: rotation commands will be dropped")
+    except Exception:
+        pass
+    return leaf
+
+def door_tick(dt):
+    leaf = state.get("leaf")
+    if leaf is None or not unreal.SystemLibrary.is_valid(leaf):
+        return
+    diff = door["target"] - door["cur"]
+    if abs(diff) > 0.05:
+        step = door["rate"] * dt
+        door["cur"] += step if diff > 0 else -step
+        if abs(door["target"] - door["cur"]) < step:
+            door["cur"] = door["target"]
+        try:
+            # Sweep-style rotation — never teleport; the observed yaw (sampled back
+            # from the actor below) is the evidence, this call is only the command.
+            leaf.set_actor_rotation(unreal.Rotator(0, 0, door["cur"]), False)
+        except Exception as e:
+            report["errors"].append("door rotate: " + str(e))
+
+def begin_action():
+    acts = spec["actions"]
+    if state["action_idx"] >= len(acts):
+        state["phase"] = "done"
+        finish()
+        return
+    a = acts[state["action_idx"]]
+    state["action_t"] = 0.0
+    state["moved"] = False
+    p = state["char"].get_actor_location()
+    state["action_start"] = (p.x, p.y, p.z)
+    if a["op"] == "interact":
+        door["target"] = door["open_yaw"] if door_state() != "open" and door["target"] != door["open_yaw"] else door["closed_yaw"]
+        report["door"]["interactions"] += 1
+        report["trace"].append("interact:target=%s" % round(door["target"], 1))
+
+def end_action():
+    a = spec["actions"][state["action_idx"]]
+    c = state["char"]
+    p = c.get_actor_location()
+    s = state["action_start"]
+    m = {"op": a["op"], "displacementCm": round(math.hypot(p.x - s[0], p.y - s[1]), 2),
+         "doorYawDeg": round(door["cur"], 2), "doorState": door_state(),
+         "start": [round(v, 2) for v in s], "end": [round(p.x, 2), round(p.y, 2), round(p.z, 2)]}
+    leaf = state.get("leaf")
+    if leaf is not None and unreal.SystemLibrary.is_valid(leaf):
+        try:
+            m["obsDoorYawDeg"] = round(leaf.get_actor_rotation().yaw, 2)
+        except Exception:
+            pass
+    pc = spec["door"].get("probeCenter")
+    if pc is not None:
+        try:
+            rad = math.radians(door["closed_yaw"])
+            nx, ny = -math.sin(rad), math.cos(rad)
+            chan = getattr(getattr(unreal, "TraceChannel", None), "VISIBILITY", None)
+            if chan is None:
+                raise RuntimeError("visibility trace channel unavailable in this engine's python binding")
+            hit = unreal.SystemLibrary.line_trace_single(state["world"],
+                unreal.Vector(pc[0] - nx * 90, pc[1] - ny * 90, pc[2]), unreal.Vector(pc[0] + nx * 90, pc[1] + ny * 90, pc[2]),
+                chan, False, [], unreal.DrawDebugTrace.NONE, True)
+            out = unreal.SystemLibrary.break_hit_result(hit)
+            m["probeHit"] = bool(out.blocking_hit)
+            m["probeHitActor"] = out.hit_actor.get_actor_label() if out.hit_actor else None
+        except Exception as e:
+            m["probeError"] = str(e)
+    report["actions"].append(m)
+    state["action_idx"] += 1
+    begin_action()
+
+def tick(dt):
+    state["ticks"] += 1
+    if state["ticks"] > 30000:
+        report["errors"].append("tick watchdog")
+        finish()
+        return
+    try:
+        door_tick(dt)
+        if state["phase"] == "boot":
+            ctx = resolve_context()
+            if ctx is not None:
+                state["world"] = ctx
+                state["pc"] = unreal.GameplayStatics.get_player_controller(ctx, 0)
+                report["trace"].append("world_ready:" + ctx.get_name())
+                for p in unreal.GameplayStatics.get_all_actors_of_class(ctx, unreal.Pawn):
+                    p.destroy_actor()
+                state["leaf"] = setup_door(ctx)
+                unreal.SystemLibrary.execute_console_command(ctx, "summon Engine.Character", state["pc"])
+                state["phase"] = "spawn_wait"
+        elif state["phase"] == "spawn_wait":
+            chars = unreal.GameplayStatics.get_all_actors_of_class(state["world"], unreal.Character)
+            if len(chars):
+                c = chars[0]
+                sp = spec["spawn"]
+                c.set_actor_location(unreal.Vector(sp[0], sp[1], sp[2]), False, False)
+                d0 = spec["actions"][0].get("direction") or [1, 0, 0]
+                yaw = math.degrees(math.atan2(d0[1], d0[0]))
+                c.set_actor_rotation(unreal.Rotator(0, 0, yaw), False)
+                try:
+                    c.character_movement.stop_movement_immediately()
+                    c.character_movement.velocity = unreal.Vector(0, 0, 0)
+                except Exception:
+                    pass
+                prep_char(c)
+                state["char"] = c
+                state["phase"] = "settle"
+                state["settle"] = 0.0
+            else:
+                state["wait"] += 1
+                if state["wait"] > 600:
+                    report["errors"].append("spawn produced no Character")
+                    finish()
+        elif state["phase"] == "settle":
+            state["settle"] += dt
+            if state["settle"] >= 0.5:
+                state["phase"] = "run"
+                report["executed"] = True
+                begin_action()
+        elif state["phase"] == "run":
+            c = state.get("char")
+            if c is None or not unreal.SystemLibrary.is_valid(c):
+                report["errors"].append("character lost mid-run")
+                finish()
+                return
+            a = spec["actions"][state["action_idx"]]
+            if a["op"] == "move":
+                d = a["direction"]
+                c.add_movement_input(unreal.Vector(d[0], d[1], d[2]), 1.0, True)
+                state["moved"] = True
+            state["action_t"] += dt
+            state["t"] += dt
+            if state["t"] - state["last_sample_t"] >= spec["samplePeriod"]:
+                state["last_sample_t"] = state["t"]
+                p = c.get_actor_location()
+                v = c.get_velocity()
+                leaf = state.get("leaf")
+                obs_yaw = None
+                if leaf is not None and unreal.SystemLibrary.is_valid(leaf):
+                    try:
+                        obs_yaw = round(leaf.get_actor_rotation().yaw, 2)
+                    except Exception:
+                        pass
+                report["samples"].append({"t": round(state["t"], 2),
+                    "x": round(p.x, 2), "y": round(p.y, 2), "z": round(p.z, 2),
+                    "yaw": round(door["cur"], 2), "obsYaw": obs_yaw, "state": door_state(),
+                    "v": round(math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z), 2)})
+            if state["action_t"] >= a["durationS"]:
+                end_action()
+    except Exception as e:
+        report["errors"].append("tick: " + str(e))
+        state["phase"] = "done"
+        finish()
+
+state["handle"] = unreal.register_slate_post_tick_callback(tick)
+`;

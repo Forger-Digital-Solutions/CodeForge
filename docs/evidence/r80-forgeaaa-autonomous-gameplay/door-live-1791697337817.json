@@ -1,0 +1,202 @@
+{
+  "startedAt": "2026-10-11T05:42:17.816Z",
+  "phases": {
+    "blender": {
+      "ok": true,
+      "report": {
+        "ok": true,
+        "moduleId": "dtw/building/door-western/v1",
+        "meshes": 6,
+        "vertices": 88,
+        "faces": 66,
+        "nonmanifold_objects": [],
+        "degenerate_faces": 0,
+        "validate_errors": 0,
+        "bounds_cm": [
+          110,
+          10.5,
+          215
+        ],
+        "errors": [],
+        "leaf_origin_is_hinge": true,
+        "leaf_origin_cm": [
+          -48,
+          0,
+          0
+        ],
+        "hinge_world_x_cm": -48,
+        "sockets": [
+          "SOCKET_FrameAttachL",
+          "SOCKET_FrameAttachR",
+          "SOCKET_Handle",
+          "SOCKET_HingeBottom",
+          "SOCKET_HingeTop"
+        ],
+        "ucx_collision_count": 4,
+        "objects": 11,
+        "exported_glb": ".scratch\\door\\door.glb",
+        "exported_fbx": ".scratch\\door\\door.fbx"
+      },
+      "glb": ".scratch\\door\\door.glb",
+      "fbx": ".scratch\\door\\door.fbx",
+      "exists": {
+        "glb": true,
+        "fbx": true
+      }
+    },
+    "import": {
+      "result": {
+        "ok": false,
+        "exitCode": 1,
+        "error": "exit 1"
+      },
+      "newTopLevel": [],
+      "doorAssets": [
+        "door_SM_DoorFrame.uasset",
+        "door_SM_DoorLeaf.uasset"
+      ]
+    },
+    "place": {
+      "ok": true,
+      "placed": [
+        {
+          "name": "Door_Floor",
+          "actor": "Door_Floor",
+          "action": "updated",
+          "bounds_cm": [
+            0,
+            0,
+            -5,
+            300,
+            300,
+            5
+          ]
+        },
+        {
+          "name": "Door_WallL",
+          "actor": "Door_WallL",
+          "action": "updated",
+          "bounds_cm": [
+            -150,
+            0,
+            127.5,
+            100,
+            10,
+            127.5
+          ]
+        },
+        {
+          "name": "Door_WallR",
+          "actor": "Door_WallR",
+          "action": "updated",
+          "bounds_cm": [
+            150,
+            0,
+            127.5,
+            100,
+            10,
+            127.5
+          ]
+        },
+        {
+          "name": "Door_Lintel",
+          "actor": "Door_Lintel",
+          "action": "updated",
+          "bounds_cm": [
+            0,
+            0,
+            235,
+            55,
+            10,
+            20
+          ]
+        },
+        {
+          "name": "Door_Frame",
+          "actor": "Door_Frame",
+          "action": "updated",
+          "bounds_cm": [
+            0,
+            0,
+            107.5,
+            55,
+            5,
+            107.5
+          ]
+        },
+        {
+          "name": "Door_Leaf",
+          "actor": "Door_Leaf",
+          "action": "updated",
+          "bounds_cm": [
+            -47.25,
+            1.5,
+            105.25,
+            48.75,
+            4,
+            104.75
+          ]
+        }
+      ],
+      "errors": []
+    },
+    "interaction": {
+      "state": "pass",
+      "configRestored": true,
+      "actionMetrics": [],
+      "failures": [],
+      "errors": [
+        "leaf mesh: load_asset: Failed to convert 'name' (NoneType) to 'String'\n  TypeError: Nativize: Cannot nativize 'NoneType' as 'String'",
+        "tick: module 'math' has no attribute 'dist'"
+      ],
+      "door": {
+        "interactions": 0
+      }
+    },
+    "persistence": {
+      "state": "pass",
+      "configRestored": true,
+      "actionMetrics": [],
+      "errors": [
+        "tick: module 'math' has no attribute 'dist'"
+      ]
+    }
+  },
+  "spec": {
+    "moduleId": "dtw/building/door-western/v1",
+    "opening": {
+      "widthCm": 100,
+      "heightCm": 210
+    },
+    "leaf": {
+      "thicknessCm": 5,
+      "clearanceCm": 0.5,
+      "battens": 3
+    },
+    "frame": {
+      "depthCm": 10,
+      "jambWidthCm": 5
+    },
+    "hinge": {
+      "side": "left",
+      "pivotOffsetCm": 2
+    },
+    "motion": {
+      "openAngleDeg": -95,
+      "transitionS": 0.8
+    }
+  },
+  "specSource": "docs/evidence/r80-forgeaaa-autonomous-gameplay/model-door-spec-1791696265026.json",
+  "engine": {
+    "root": "C:\\Program Files\\Epic Games\\UE_4.27",
+    "version": {
+      "major": 4,
+      "minor": 27,
+      "patch": 2,
+      "changelist": 18319896,
+      "branch": "++UE4+Release-4.27"
+    }
+  },
+  "hingeX": -48,
+  "finishedAt": "2026-10-11T05:43:27.305Z"
+}

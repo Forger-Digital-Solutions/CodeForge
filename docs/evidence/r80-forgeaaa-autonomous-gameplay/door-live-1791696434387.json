@@ -1,0 +1,99 @@
+{
+  "startedAt": "2026-10-11T05:27:14.386Z",
+  "phases": {
+    "blender": {
+      "ok": true,
+      "report": {
+        "ok": true,
+        "moduleId": "dtw/building/door-western/v1",
+        "meshes": 6,
+        "vertices": 88,
+        "faces": 66,
+        "nonmanifold_objects": [],
+        "degenerate_faces": 0,
+        "validate_errors": 0,
+        "bounds_cm": [
+          110,
+          10.5,
+          215
+        ],
+        "errors": [],
+        "leaf_origin_is_hinge": true,
+        "leaf_origin_cm": [
+          -48,
+          0,
+          0
+        ],
+        "hinge_world_x_cm": -48,
+        "sockets": [
+          "SOCKET_FrameAttachL",
+          "SOCKET_FrameAttachR",
+          "SOCKET_Handle",
+          "SOCKET_HingeBottom",
+          "SOCKET_HingeTop"
+        ],
+        "ucx_collision_count": 4,
+        "objects": 11,
+        "exported_glb": ".scratch\\door\\door.glb",
+        "exported_fbx": ".scratch\\door\\door.fbx"
+      },
+      "glb": ".scratch\\door\\door.glb",
+      "fbx": ".scratch\\door\\door.fbx",
+      "exists": {
+        "glb": true,
+        "fbx": true
+      }
+    },
+    "import": {
+      "result": {
+        "ok": false,
+        "exitCode": 1,
+        "error": "exit 1"
+      },
+      "newTopLevel": [],
+      "doorAssets": [
+        "door_SM_DoorFrame.uasset",
+        "door_SM_DoorLeaf.uasset"
+      ]
+    },
+    "place": {
+      "ok": true,
+      "placed": []
+    }
+  },
+  "spec": {
+    "moduleId": "dtw/building/door-western/v1",
+    "opening": {
+      "widthCm": 100,
+      "heightCm": 210
+    },
+    "leaf": {
+      "thicknessCm": 5,
+      "clearanceCm": 0.5,
+      "battens": 3
+    },
+    "frame": {
+      "depthCm": 10,
+      "jambWidthCm": 5
+    },
+    "hinge": {
+      "side": "left",
+      "pivotOffsetCm": 2
+    },
+    "motion": {
+      "openAngleDeg": -95,
+      "transitionS": 0.8
+    }
+  },
+  "specSource": "docs/evidence/r80-forgeaaa-autonomous-gameplay/model-door-spec-1791696265026.json",
+  "engine": {
+    "root": "C:\\Program Files\\Epic Games\\UE_4.27",
+    "version": {
+      "major": 4,
+      "minor": 27,
+      "patch": 2,
+      "changelist": 18319896,
+      "branch": "++UE4+Release-4.27"
+    }
+  }
+}

@@ -345,5 +345,107 @@ describe("UnrealAdapter", () => {
       });
       expect(r.state).toBe("timeout");
     });
+
+    // Snapshot the lock/backup/injected-ini artifacts mid-run, let the normal restore
+    // finish, then replay them to stand in for a process that died before restoring.
+    const replayAbandonedState = async (dir: string) => {
+      const snap = await fs.readFile(path.join(dir, "snap.json"), "utf8");
+      const { ini, iniPath, lock, backup, backupPath } = JSON.parse(snap) as {
+        ini: string; iniPath: string; lock: string; backup: string | null; backupPath: string | null;
+      };
+      await fs.mkdir(path.dirname(iniPath), { recursive: true });
+      await fs.writeFile(iniPath, ini);
+      await fs.writeFile(`${iniPath}.forgeaaa.lock`, lock);
+      if (backup !== null && backupPath) await fs.writeFile(backupPath, backup);
+      return { iniPath, backupPath, lockPath: `${iniPath}.forgeaaa.lock` };
+    };
+
+    const snapshottingSpawn = (dir: string, iniPath: string) => ((() => {
+      const child = new EventEmitter() as unknown as ChildProcess;
+      Object.assign(child, { stdout: new EventEmitter(), stderr: new EventEmitter(), kill: () => true });
+      setImmediate(async () => {
+        const ini = await fs.readFile(iniPath, "utf8");
+        const lock = await fs.readFile(`${iniPath}.forgeaaa.lock`, "utf8");
+        const { backupPath } = JSON.parse(lock) as { backupPath: string | null };
+        const backup = backupPath ? await fs.readFile(backupPath, "utf8") : null;
+        await fs.writeFile(path.join(dir, "snap.json"), JSON.stringify({ ini, iniPath, lock, backup, backupPath }));
+        child.emit("close", 0);
+      });
+      return child;
+    }) as never);
+
+    it("recovers an abandoned lock+backup left by a crashed run and still owns the ini", async () => {
+      const { dir, projectPath } = await mkProject();
+      const iniPath = path.join(dir, "Config", "DefaultEngine.ini");
+      const sentinel = "[/Script/Engine.Engine]\nSentinel=1\n";
+      await fs.mkdir(path.dirname(iniPath), { recursive: true });
+      await fs.writeFile(iniPath, sentinel);
+      const adapter = new UnrealAdapter({
+        platform: "win32", fileExists: () => true,
+        spawnProcess: snapshottingSpawn(dir, iniPath),
+      });
+      await adapter.runFunctionalTest({
+        projectPath, levelPath: "/Game/L", scriptPath: path.join(dir, "ft.py"), traversal, install,
+      });
+      const { backupPath, lockPath } = await replayAbandonedState(dir);
+      await adapter.runFunctionalTest({
+        projectPath, levelPath: "/Game/L", scriptPath: path.join(dir, "ft2.py"), traversal, install,
+      });
+      expect(await fs.readFile(iniPath, "utf8")).toBe(sentinel);
+      await expect(fs.access(lockPath)).rejects.toThrow();
+      if (backupPath) await expect(fs.access(backupPath)).rejects.toThrow();
+    });
+
+    it("fails closed when an abandoned lock's ini no longer matches the recorded bytes", async () => {
+      const { dir, projectPath } = await mkProject();
+      const iniPath = path.join(dir, "Config", "DefaultEngine.ini");
+      await fs.mkdir(path.dirname(iniPath), { recursive: true });
+      await fs.writeFile(iniPath, "[/Script/Engine.Engine]\nSentinel=1\n");
+      const adapter = new UnrealAdapter({
+        platform: "win32", fileExists: () => true,
+        spawnProcess: snapshottingSpawn(dir, iniPath),
+      });
+      await adapter.runFunctionalTest({
+        projectPath, levelPath: "/Game/L", scriptPath: path.join(dir, "ft.py"), traversal, install,
+      });
+      const { lockPath } = await replayAbandonedState(dir);
+      const userEdited = await fs.readFile(iniPath, "utf8") + "\nUserEdit=1\n";
+      await fs.writeFile(iniPath, userEdited);
+      await expect(adapter.runFunctionalTest({
+        projectPath, levelPath: "/Game/L", scriptPath: path.join(dir, "ft2.py"), traversal, install,
+      })).rejects.toThrowError(/abandoned config lock/);
+      expect(await fs.readFile(iniPath, "utf8")).toBe(userEdited);
+      await expect(fs.access(lockPath)).resolves.toBeUndefined();
+    });
+
+    it("does not clobber an ini edited mid-test — reports configRestored=false and keeps the backup", async () => {
+      const { dir, projectPath } = await mkProject();
+      const iniPath = path.join(dir, "Config", "DefaultEngine.ini");
+      const sentinel = "[/Script/Engine.Engine]\nSentinel=1\n";
+      await fs.mkdir(path.dirname(iniPath), { recursive: true });
+      await fs.writeFile(iniPath, sentinel);
+      const adapter = new UnrealAdapter({
+        platform: "win32", fileExists: () => true,
+        spawnProcess: ((() => {
+          const child = new EventEmitter() as unknown as ChildProcess;
+          Object.assign(child, { stdout: new EventEmitter(), stderr: new EventEmitter(), kill: () => true });
+          setImmediate(async () => {
+            await fs.appendFile(iniPath, "\nMidTestEdit=1\n");
+            child.emit("close", 0);
+          });
+          return child;
+        }) as never),
+      });
+      const r = await adapter.runFunctionalTest({
+        projectPath, levelPath: "/Game/L", scriptPath: path.join(dir, "ft.py"), traversal, install,
+      });
+      expect(r.configRestored).toBe(false);
+      expect(r.configRestoreDetail).toContain("ini changed during test");
+      const current = await fs.readFile(iniPath, "utf8");
+      expect(current).toContain("MidTestEdit=1");
+      expect(current).toContain("PythonScriptPlugin");
+      const lock = JSON.parse(await fs.readFile(`${iniPath}.forgeaaa.lock`, "utf8")) as { backupPath: string };
+      expect(await fs.readFile(lock.backupPath, "utf8")).toBe(sentinel);
+    });
   });
 });

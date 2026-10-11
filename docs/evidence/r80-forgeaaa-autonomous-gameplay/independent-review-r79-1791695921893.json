@@ -1,0 +1,79 @@
+{
+  "startedAt": "2026-10-11T05:18:41.893Z",
+  "evidenceClass": "LIVE_INDEPENDENT_REVIEW_R79_STAIRCASE",
+  "reviewerModel": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "frames": [
+    {
+      "at": "2026-10-11T05:18:42.707Z",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "events": 146,
+      "chars": 1974,
+      "finishedAt": "2026-10-11T05:19:01.664Z"
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T05:18:41.894Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T05:18:41.894Z",
+      "recheckAt": "2026-10-18T05:18:41.894Z",
+      "qualificationAt": "2026-10-11T05:18:41.893Z",
+      "termsVerifiedAt": "2026-10-11T05:18:41.894Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T05:18:41.894Z",
+      "privacyVerifiedAt": "2026-10-11T05:18:41.894Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T05:18:41.894Z",
+      "priceVerifiedAt": "2026-10-11T05:18:41.894Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T05:18:41.894Z",
+      "nextReverifyAt": "2026-10-11T11:18:41.894Z"
+    }
+  },
+  "catalogCount": 12,
+  "catalogEntry": {
+    "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "displayName": "NVIDIA: Nemotron 3 Ultra (free)",
+    "contextWindow": 1000000,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "reviewerQualification": {
+    "providerId": "kilo-free-direct",
+    "suiteVersion": "R73_ROLE_QUALIFICATION_V7",
+    "protocolVersion": "REVIEWER_PROTOCOL_V4",
+    "status": "QUALIFIED",
+    "score": 0.875,
+    "completedAt": "2026-10-10T10:35:30.841Z"
+  },
+  "review": {
+    "approved": true,
+    "findings": [
+      "reviewer: kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free (QUALIFIED, suite R73_ROLE_QUALIFICATION_V7, protocol REVIEWER_PROTOCOL_V4, qualified 2026-10-10T10:35:30.841Z)",
+      "[advisory] scope: Traversal uses summoned Engine.Character with run_physics_with_no_controller — real CharacterMovement physics but not a player-controller/possessed pawn path. This is a known limitation declared by executor; does not invalidate Level 7 functional gameplay claim. (Executor report: 'Traversal used a summoned Engine.Character with no controller (run_physics_with_no_controller) — real CharacterMovement physics, but not a player-controller path.')",
+      "[advisory] scope: Level floors use engine /Engine/BasicShapes/Cube — acceptable for validation milestone, not a content claim. Declared honestly by executor. (Executor report: 'The traversal level's floors use engine /Engine/BasicShapes/Cube — fine for validation, not a content claim.')",
+      "[advisory] independence: Director review.independent = false — no qualified independent Reviewer exists for Level 8 gate. This milestone claims Level 7 only; Level 8 not claimed. (Director run record: 'review': {'approved': true, 'findings': ['structural review — no qualified independent reviewer'], 'independent': false})"
+    ],
+    "independent": true,
+    "reviewer": {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free"
+    },
+    "verdict": "pass",
+    "rawResponse": "{\"verdict\":\"pass\",\"findings\":[{\"id\":\"F1\",\"severity\":\"advisory\",\"category\":\"scope\",\"message\":\"Traversal uses summoned Engine.Character with run_physics_with_no_controller — real CharacterMovement physics but not a player-controller/possessed pawn path. This is a known limitation declared by executor; does not invalidate Level 7 functional gameplay claim.\",\"evidence\":\"Executor report: 'Traversal used a summoned Engine.Character with no controller (run_physics_with_no_controller) — real CharacterMovement physics, but not a player-controller path.'\"},{\"id\":\"F2\",\"severity\":\"advisory\",\"category\":\"scope\",\"message\":\"Level floors use engine /Engine/BasicShapes/Cube — acceptable for validation milestone, not a content claim. Declared honestly by executor.\",\"evidence\":\"Executor report: 'The traversal level's floors use engine /Engine/BasicShapes/Cube — fine for validation, not a content claim.'\"},{\"id\":\"F3\",\"severity\":\"advisory\",\"category\":\"independence\",\"message\":\"Director review.independent = false — no qualified independent Reviewer exists for Level 8 gate. This milestone claims Level 7 only; Level 8 not claimed.\",\"evidence\":\"Director run record: 'review': {'approved': true, 'findings': ['structural review — no qualified independent reviewer'], 'independent': false}\"}],\"summary\":\"All six declared requirements are backed by measured, repeatable evidence from real UE4.27 game-world runs: ascend (z 90→198, 6×18cm steps, stands on top platform), descend (198→90, no fall-through/trap), handrail collision (1.87cm displacement over 3s push), step-height consistency (continuous 18cm step-ups at 30ms sampling), persistence (identical behavior on fresh process launches), and repeatability (±0.4cm across 3 independent launches). Trajectory reports (traversal-*.report.json), engine logs, and Director verification records are present and runId-bound with stale rejection. No blocking defects or false-positive paths found. FORGEAAA_LEVEL7_VERIFIED is supported.\"}"
+  },
+  "status": "INDEPENDENT_REVIEW_COMPLETED",
+  "finishedAt": "2026-10-11T05:19:01.669Z"
+}
