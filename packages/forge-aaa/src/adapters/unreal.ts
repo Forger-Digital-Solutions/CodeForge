@@ -70,10 +70,28 @@ const UE_DEFAULT_ROOTS = [
 const DEFAULT_CMD_TIMEOUT_MS = 10 * 60_000;
 const MAX_LOG_TAIL = 128 * 1024;
 
+export interface UnrealImportRequest {
+  projectPath: string;
+  files: string[];
+  /** Engine content path, must start with `/Game/`. */
+  destinationPath: string;
+  groupName?: string;
+  replaceExisting?: boolean;
+  /** Where the generated AutomatedAssetImportData JSON is written. */
+  settingsPath: string;
+  timeoutMs?: number;
+  install?: UnrealInstall;
+}
+
+export interface UnrealImportResult extends UnrealCommandletResult {
+  settingsPath: string;
+}
+
 export interface UnrealAdapterDeps {
   fileExists?: (p: string) => boolean;
   listDir?: (p: string) => string[];
   readFile?: (p: string) => Promise<string>;
+  writeFile?: (p: string, content: string) => Promise<void>;
   spawnProcess?: typeof spawn;
   platform?: NodeJS.Platform;
   extraRoots?: string[];
@@ -83,6 +101,7 @@ export class UnrealAdapter {
   private readonly fileExists: (p: string) => boolean;
   private readonly listDir?: (p: string) => string[];
   private readonly readFile: (p: string) => Promise<string>;
+  private readonly writeFile: (p: string, content: string) => Promise<void>;
   private readonly spawnProcess: typeof spawn;
   private readonly platform: NodeJS.Platform;
   private readonly extraRoots: string[];
@@ -91,6 +110,7 @@ export class UnrealAdapter {
     this.fileExists = deps.fileExists ?? ((p) => existsSync(p));
     this.listDir = deps.listDir;
     this.readFile = deps.readFile ?? ((p) => fs.readFile(p, "utf8"));
+    this.writeFile = deps.writeFile ?? ((p, content) => fs.writeFile(p, content, "utf8"));
     this.spawnProcess = deps.spawnProcess ?? spawn;
     this.platform = deps.platform ?? process.platform;
     this.extraRoots = deps.extraRoots ?? [];
@@ -255,5 +275,41 @@ export class UnrealAdapter {
       child.on("error", (err) => finish({ ok: false, exitCode: null, timedOut: false, logTail: out.slice(-MAX_LOG_TAIL), error: err.message }));
       child.on("close", (code) => finish({ ok: code === 0, exitCode: code, timedOut: false, logTail: out.slice(-MAX_LOG_TAIL), ...(code === 0 ? {} : { error: `exit ${code}` }) }));
     });
+  }
+
+  /**
+   * Scripted asset import through the real `ImportAssets` commandlet — proven against
+   * UE 4.27.2 to write .uasset files under the destination path. Caveat recorded from
+   * live evidence: the launcher build counts the expected "Could not connect to source
+   * control" message in its error summary even when import succeeds, so callers must
+   * verify produced .uasset files themselves rather than trusting the exit code.
+   */
+  async importAssets(req: UnrealImportRequest): Promise<UnrealImportResult> {
+    if (!/^\/Game(\/|$)/.test(req.destinationPath)) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `destinationPath must be under /Game — got "${req.destinationPath}"`);
+    }
+    for (const file of req.files) {
+      if (!this.fileExists(file)) {
+        throw new ForgeAaaError(FORGE_AAA_ERRORS.MANIFEST_INVALID, `import source missing: ${file}`);
+      }
+    }
+    const settings = {
+      ImportGroups: [{
+        GroupName: req.groupName ?? "ForgeAAA",
+        Filenames: req.files.map((f) => f.replace(/\\/g, "/")),
+        DestinationPath: req.destinationPath,
+        bReplaceExisting: req.replaceExisting === true,
+        bSkipReadOnly: true,
+      }],
+    };
+    await this.writeFile(req.settingsPath, JSON.stringify(settings, null, 2));
+    const result = await this.runCommandlet({
+      projectPath: req.projectPath,
+      commandlet: "ImportAssets",
+      args: [`-importSettings=${req.settingsPath}`],
+      timeoutMs: req.timeoutMs,
+      install: req.install,
+    });
+    return { ...result, settingsPath: req.settingsPath };
   }
 }

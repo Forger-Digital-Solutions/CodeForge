@@ -1,0 +1,64 @@
+{
+  "manifestVersion": 1,
+  "assetId": "dtw/farmhouse/stair-module/v2",
+  "taskId": "stair-v2-live",
+  "provenance": {
+    "generator": "forge-aaa-stair-v2",
+    "generatorVersion": "Blender 4.5.14 LTS",
+    "tool": "blender"
+  },
+  "license": {
+    "commercialUse": "yes",
+    "detail": "procedurally generated"
+  },
+  "files": [
+    {
+      "path": "stair-module-v2.fbx",
+      "role": "output",
+      "sha256": "25502c4fc0c9b530e05820d2bbac13df37168136fd38a4ec806196f90fdbdd6a",
+      "bytes": 48060
+    },
+    {
+      "path": "stair-module-v2.glb",
+      "role": "output",
+      "sha256": "1ad773ebf955b0380c24199d7648c393766fa437ac10e593906d10507a8ad572",
+      "bytes": 24404
+    }
+  ],
+  "units": {
+    "system": "metric",
+    "scale": 1,
+    "upAxis": "Z"
+  },
+  "stats": {
+    "vertices": 128,
+    "triangles": 96,
+    "boundsCm": [
+      165,
+      90,
+      201.328
+    ],
+    "nonmanifoldEdges": 0
+  },
+  "engines": {
+    "blender": [
+      "Blender 4.5.14 LTS"
+    ],
+    "unreal": [
+      "4.27"
+    ]
+  },
+  "validation": {
+    "checks": [
+      {
+        "id": "manifold+ucx+sockets",
+        "kind": "blender-scene",
+        "status": "passed"
+      }
+    ],
+    "validatedAt": "2026-10-11T02:53:15.483Z"
+  },
+  "revision": 2,
+  "supersedes": "dtw/farmhouse/stair-module",
+  "createdAt": "2026-10-11T02:53:15.483Z"
+}

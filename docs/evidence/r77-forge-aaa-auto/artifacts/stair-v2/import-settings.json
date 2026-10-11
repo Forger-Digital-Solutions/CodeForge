@@ -1,0 +1,13 @@
+{
+  "ImportGroups": [
+    {
+      "GroupName": "ForgeAAA",
+      "Filenames": [
+        "G:/CodeForge/worktrees/forge-aaa-auto/docs/evidence/r77-forge-aaa-auto/artifacts/stair-v2/stair-module-v2.fbx"
+      ],
+      "DestinationPath": "/Game/ForgeAAA",
+      "bReplaceExisting": false,
+      "bSkipReadOnly": true
+    }
+  ]
+}

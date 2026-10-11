@@ -127,6 +127,23 @@
           "independent": true
         }
       }
+    },
+    {
+      "gate": "unreal-import",
+      "status": "VERIFIED",
+      "detail": "ImportAssets commandlet wrote 10 real .uasset files under Content/ForgeAAA (stair v2: 6 steps, 3 rail posts, handrail); exit code non-authoritative due to expected SCC error",
+      "evidence": {
+        "file": "unreal-import-attempt.json",
+        "assets": 10
+      }
+    },
+    {
+      "gate": "stair-v2",
+      "status": "VERIFIED",
+      "detail": "Modular stair with handrail, 6 UCX collision proxies, sockets; 16 meshes/128 verts, manifold+degenerate+validate clean; GLB+FBX",
+      "evidence": {
+        "file": "stair-v2-run.json"
+      }
     }
   ],
   "finalStatus": "FORGEAAA_VERIFIED"

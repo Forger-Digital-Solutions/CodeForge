@@ -11,4 +11,5 @@ export * from "./adapters/unreal.js";
 export * from "./hardware.js";
 export * from "./verification.js";
 export * from "./orchestrator.js";
+export * from "./project-discovery.js";
 export * from "./service.js";

@@ -100,11 +100,33 @@ Result: `FORGEAAA_VERIFIED` (`pilot-run.json`).
 - Tool adapters: `blender-headless` (4.5.14 LTS, INTEGRATED), `UE4Editor-Cmd` (4.27.2,
   INTEGRATED).
 
+## R77 continuation (this session)
+
+- **`project-discovery.ts`**: real project inspection + four-mode classification
+  (`EXISTING_PROJECT`/`NEW_PROJECT`/`PILOT_PROJECT`/`MIGRATION_PROJECT`) + denial guard.
+  Generated `.uasset` content honestly upgrades a pilot project to EXISTING — the
+  classifier never downgrades content back to disposable.
+- **`UnrealAdapter.importAssets`**: first-class scripted import through the real UE4.27
+  `ImportAssets` commandlet (AutomatedAssetImportData settings JSON, `/Game/…` guard,
+  missing-source guard).
+- **Stair module v2** (live): handrail posts + continuous rail (90 cm), 6 UCX per-step
+  collision proxies, top/bottom modular sockets, normals/degenerate/manifold validation —
+  16 meshes, 128 vertices, GLB + FBX exported (`stair-v2-run.json`).
+- **Real UE4.27 import VERIFIED**: `ImportAssets` commandlet wrote **10 real `.uasset`
+  files** under `Dead Trails West/Content/ForgeAAA/` (6 steps, 3 rail posts, handrail).
+  Commandlet exit code is not authoritative — this launcher build counts the expected
+  "no source control" error in its summary while import succeeds; the gate verifies
+  on-disk `.uasset` existence (`unreal-import-attempt.json`).
+- DTW discovery limitation stands: no authored farmhouse exists anywhere on the searched
+  drives; the project remains an explicitly-labeled pilot.
+
 ## Blockers / next steps
 
 - `sol-lead`/`opus-lead`/`dual-lead` need provider credentials exposing those model ids.
+- Imported assets land as separate static meshes (FBX object split) — no combined
+  `SM_Stairs` actor, no in-level placement yet (map authoring needs Python plugin or
+  Editor scripting enablement — next milestone).
+- Smoothing-group warning on import — normals should be visually verified next round.
 - UE5 adapter is a separate version-aware implementation — not started.
-- Full Phase H specialist expansion (terrain, characters, audio, cinematics) requires
-  provider/service qualification runs per candidate.
-- Desktop workspace panel exists in model picker; the dedicated AAA workspace view
-  (task graph, artifact preview, rollback UI) is future work.
+- Full Phase H specialist expansion requires provider/service qualification per candidate.
+- Dedicated AAA workspace view (task graph, artifact preview, rollback UI) is future work.

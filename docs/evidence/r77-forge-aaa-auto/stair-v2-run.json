@@ -1,0 +1,100 @@
+{
+  "detection": {
+    "installed": true,
+    "executablePath": "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+    "version": {
+      "major": 4,
+      "minor": 5,
+      "patch": 14,
+      "raw": "Blender 4.5.14 LTS"
+    },
+    "candidatesProbed": [
+      "C:\\Program Files\\Blender Foundation\\blender.exe",
+      "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+      "C:\\Program Files (x86)\\Blender Foundation\\blender.exe",
+      "C:\\Program Files\\Git\\mingw64\\bin\\blender.exe",
+      "C:\\Program Files\\Git\\usr\\bin\\blender.exe",
+      "C:\\Users\\Daddy_FDS\\bin\\blender.exe",
+      "G:\\CodeForge\\worktrees\\forge-aaa-auto\\node_modules\\.bin\\blender.exe",
+      "G:\\CodeForge\\worktrees\\node_modules\\.bin\\blender.exe",
+      "G:\\CodeForge\\node_modules\\.bin\\blender.exe",
+      "G:\\node_modules\\.bin\\blender.exe",
+      "C:\\Users\\Daddy_FDS\\AppData\\Roaming\\npm\\node_modules\\npm\\node_modules\\@npmcli\\run-script\\lib\\node-gyp-bin\\blender.exe",
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin\\blender.exe",
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.19.10-hotspot\\bin\\blender.exe",
+      "C:\\WINDOWS\\system32\\blender.exe",
+      "C:\\WINDOWS\\blender.exe",
+      "C:\\WINDOWS\\System32\\Wbem\\blender.exe",
+      "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\blender.exe",
+      "C:\\WINDOWS\\System32\\OpenSSH\\blender.exe",
+      "C:\\Program Files\\dotnet\\blender.exe",
+      "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR\\blender.exe",
+      "C:\\Program Files\\Microsoft SQL Server\\170\\Tools\\Binn\\blender.exe",
+      "C:\\Program Files\\Microsoft SQL Server\\Client SDK\\ODBC\\170\\Tools\\Binn\\blender.exe",
+      "C:\\Program Files\\Microsoft SQL Server\\150\\Tools\\Binn\\blender.exe",
+      "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\blender.exe",
+      "C:\\Program Files\\usbipd-win\\blender.exe",
+      "C:\\Program Files\\GitHub CLI\\blender.exe",
+      "C:\\Program Files\\Git\\cmd\\blender.exe",
+      "C:\\Program Files\\Amazon\\AWSCLIV2\\blender.exe",
+      "C:\\Program Files\\Docker\\Docker\\resources\\bin\\blender.exe",
+      "C:\\Program Files\\nodejs\\blender.exe",
+      "C:\\Program Files\\PowerShell\\7\\blender.exe",
+      "C:\\Users\\Daddy_FDS\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\blender.exe",
+      "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\Devin\\bin\\blender.exe",
+      "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\Microsoft VS Code\\bin\\blender.exe",
+      "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\Kiro\\bin\\blender.exe",
+      "C:\\Users\\Daddy_FDS\\.dotnet\\tools\\blender.exe",
+      "C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\codex-dotnet-home-cleanup-20261010\\.dotnet\\tools\\blender.exe"
+    ],
+    "detectedAt": "2026-10-11T02:53:13.431Z"
+  },
+  "run": {
+    "ok": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "stdoutTail": "INFO Draco mesh compression is available, use library at C:\\Program Files\\Blender Foundation\\Blender 4.5\\4.5\\scripts\\addons_core\\io_scene_gltf2\\extern_draco.dll\r\n22:53:15 | INFO: Starting glTF 2.0 export\r\n22:53:15 | INFO: Extracting primitive: Cube\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.001\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.002\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.003\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.004\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.005\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.006\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.007\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.008\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.009\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.010\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.011\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.012\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.013\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.014\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Extracting primitive: Cube.015\r\n22:53:15 | INFO: Primitives created: 1\r\n22:53:15 | INFO: Finished glTF 2.0 export in 0.026012182235717773 s\r\n\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\forge-aaa-auto\\\\docs\\\\evidence\\\\r77-forge-aaa-auto\\\\artifacts\\\\stair-v2\\\\stair-module-v2.fbx'\r\nexport finished in 0.0213 sec.\r\nFORGEAAA_REPORT:{\"ok\": true, \"meshes\": 16, \"vertices\": 128, \"faces\": 96, \"nonmanifold_objects\": [], \"degenerate_faces\": 0, \"validate_errors\": 0, \"bounds_cm\": [165.0, 90.0, 201.328], \"errors\": [], \"rise_cm\": 18.0, \"tread_cm\": 27.0, \"width_cm\": 90.0, \"rail_height_cm\": 90.0, \"objects\": 18, \"ucx_collision_count\": 6, \"sockets\": [\"Socket_Bottom\", \"Socket_Top\"], \"exported_glb\": \"G:\\\\CodeForge\\\\worktrees\\\\forge-aaa-auto\\\\docs\\\\evidence\\\\r77-forge-aaa-auto\\\\artifacts\\\\stair-v2\\\\stair-module-v2.glb\", \"exported_fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\forge-aaa-auto\\\\docs\\\\evidence\\\\r77-forge-aaa-auto\\\\artifacts\\\\stair-v2\\\\stair-module-v2.fbx\"}\r\nBlender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)\n\nBlender quit\n",
+    "stderrTail": "",
+    "durationMs": 1841,
+    "report": {
+      "ok": true,
+      "meshes": 16,
+      "vertices": 128,
+      "faces": 96,
+      "nonmanifold_objects": [],
+      "degenerate_faces": 0,
+      "validate_errors": 0,
+      "bounds_cm": [
+        165,
+        90,
+        201.328
+      ],
+      "errors": [],
+      "rise_cm": 18,
+      "tread_cm": 27,
+      "width_cm": 90,
+      "rail_height_cm": 90,
+      "objects": 18,
+      "ucx_collision_count": 6,
+      "sockets": [
+        "Socket_Bottom",
+        "Socket_Top"
+      ],
+      "exported_glb": "G:\\CodeForge\\worktrees\\forge-aaa-auto\\docs\\evidence\\r77-forge-aaa-auto\\artifacts\\stair-v2\\stair-module-v2.glb",
+      "exported_fbx": "G:\\CodeForge\\worktrees\\forge-aaa-auto\\docs\\evidence\\r77-forge-aaa-auto\\artifacts\\stair-v2\\stair-module-v2.fbx"
+    }
+  },
+  "classification": {
+    "mode": "EXISTING_PROJECT",
+    "engineTarget": "ue-4.27",
+    "hasAuthoredContent": true,
+    "rationale": [
+      "10 authored asset(s) detected"
+    ],
+    "protections": [
+      "no deletion or overwrite of authored files",
+      "changes land under isolated ForgeAAA paths or new assets only",
+      "high-risk edits require a git commit point or backup first"
+    ]
+  }
+}
