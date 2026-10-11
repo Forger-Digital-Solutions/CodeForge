@@ -1,6 +1,7 @@
 import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import { constants } from "node:fs";
 import { UnrealAdapter } from "../../packages/forge-aaa/dist/index.js";
 
 const evidence = path.resolve("docs/evidence/r83-forgeaaa-autonomous-multiroom");
@@ -8,9 +9,9 @@ const stamp = Date.now();
 const recovery = path.join(evidence, "continuation-start");
 await mkdir(recovery, { recursive: true });
 for (const file of ["packages/forge-aaa/src/building-revision.ts", "benchmarks/r83/r83-assemble-live.mjs", "benchmarks/r83/r83-assets-live.mjs", ".scratch/r83-migration-receipt.json", ".scratch/r83-rollback-receipt.json"]) {
-  await copyFile(file, path.join(recovery, path.basename(file) + ".txt"));
+  await copyFile(file, path.join(recovery, path.basename(file) + ".txt"), constants.COPYFILE_EXCL).catch(error => { if (error.code !== "EEXIST") throw error; });
 }
-await writeFile(path.join(recovery,"git-state.txt"), execFileSync("git", ["-c","core.fsmonitor=false","status","--short"], {encoding:"utf8"}) + execFileSync("git", ["rev-parse","HEAD"], {encoding:"utf8"}));
+await writeFile(path.join(recovery,"git-state.txt"), execFileSync("git", ["-c","core.fsmonitor=false","status","--short"], {encoding:"utf8"}) + execFileSync("git", ["rev-parse","HEAD"], {encoding:"utf8"}), {flag:"wx"}).catch(error => { if (error.code !== "EEXIST") throw error; });
 const adapter = new UnrealAdapter();
 const install = (await adapter.detect()).installs.find(i => i.version.major === 4 && i.version.minor === 27);
 const logPath = path.resolve(`.scratch/native-diagnostic-${stamp}.log`);

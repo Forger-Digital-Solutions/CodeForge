@@ -1,0 +1,121 @@
+{
+  "removedInstanceIds": [
+    "wall-right"
+  ],
+  "addedInstances": [
+    {
+      "instanceId": "floor-b",
+      "moduleId": "forge/building/SM_PlankFloor/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        580,
+        260,
+        -5
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "front-b",
+      "moduleId": "forge/building/SM_FrontWall_B/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        580,
+        -10,
+        130
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "back-b",
+      "moduleId": "forge/building/SM_FrontWall_B/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        580,
+        530,
+        130
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "wall-right-b",
+      "moduleId": "forge/building/SM_SideWall/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        870,
+        260,
+        130
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "ceiling-b",
+      "moduleId": "forge/building/SM_Ceiling_B/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        590,
+        260,
+        265
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "shared-wall-front",
+      "moduleId": "forge/building/SM_SharedWall_Front/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        290,
+        92.5,
+        130
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "shared-wall-back",
+      "moduleId": "forge/building/SM_SharedWall_Back/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        290,
+        427.5,
+        130
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "shared-wall-lintel",
+      "moduleId": "forge/building/SM_SharedWall_Lintel/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        290,
+        260,
+        237.5
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "threshold",
+      "moduleId": "forge/building/SM_DoorThreshold/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        290,
+        260,
+        -5
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "door-interior",
+      "moduleId": "dtw/building/door-western/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        290,
+        260,
+        0
+      ],
+      "yawDeg": 90,
+      "attachment": {
+        "instanceId": "shared-wall-front",
+        "socketId": "door-int"
+      }
+    }
+  ]
+}

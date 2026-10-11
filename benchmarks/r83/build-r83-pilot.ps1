@@ -3,6 +3,7 @@ $ErrorActionPreference='Stop'
 $workspace=(Resolve-Path '.').Path
 $project=Join-Path $workspace '.scratch/r83pilot/DeadTrailsWest.uproject'
 if (-not (Test-Path -LiteralPath $project)) { throw 'Run node benchmarks/r83/init-r83-pilot.mjs first' }
+Copy-Item -LiteralPath (Join-Path $workspace 'benchmarks/r83/forge-gameplay-plugin/Source') -Destination (Join-Path $workspace '.scratch/r83pilot/Plugins/ForgeGameplay') -Recurse -Force
 $buildTemp=Join-Path $workspace '.scratch/r83build-temp'
 New-Item -ItemType Directory -Path $buildTemp -Force | Out-Null
 $oldTemp=$env:TEMP

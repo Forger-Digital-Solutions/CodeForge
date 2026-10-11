@@ -13,7 +13,6 @@ import {
   rollbackMigration,
   isMigrationIdempotent,
   migrationAssemblyScript,
-  computeBuildingFingerprint,
   verifySavedMigration,
   type BuildingRevisionMigration,
   type SavedLevelVerification,
@@ -421,6 +420,7 @@ describe("building revision migration system", () => {
     const applying = applyMigration(migration, migration.previousRevision.fingerprint);
     const verifying = verifyMigration(applying);
     const dir = mkdtempSync(join(tmpdir(), "forge-migration-forgery-"));
+    if (!dir.startsWith(join(tmpdir(),"forge-migration-forgery-"))) throw new Error("unexpected test directory");
     try {
       expect(commitMigration(verifying, makeLevelEvidence(migration,"COMMITTED",dir)).status).toBe("BLOCKED");
       expect(rollbackMigration(applying, makeLevelEvidence(migration,"ROLLED_BACK",dir)).status).toBe("BLOCKED");
@@ -429,7 +429,6 @@ describe("building revision migration system", () => {
       writeFileSync(issued.levelFilePath,"changed after verification");
       expect(commitMigration(verifying, issued).status).toBe("BLOCKED");
     } finally {
-      if (!dir.startsWith(join(tmpdir(),"forge-migration-forgery-"))) throw new Error("unexpected test directory");
       rmSync(dir, { recursive: true, force: true });
     }
   });

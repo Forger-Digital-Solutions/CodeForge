@@ -1,0 +1,707 @@
+
+> codeforge@0.4.0 build
+> npm run build --workspaces --if-present
+
+
+> @codeforge/agent@0.4.0 build
+> tsc -b
+
+
+> @codeforge/benchmark@0.4.0 build
+> tsc -b
+
+
+> @codeforge/browser@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cli@0.4.0 build
+> tsc -b
+
+../eight-bit/src/qualification/role-suite.ts(16,63): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../eight-bit/src/qualification/role-suite.ts(16,96): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../eight-bit/src/qualification/role-suite.ts(16,118): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../eight-bit/src/route-health-authority.ts(568,53): error TS2554: Expected 1 arguments, but got 2.
+../model-registry/src/free-cloud-service.ts(16,3): error TS2724: '"@codeforge/eight-bit"' has no exported member named 'runRoleOnlyQualification'. Did you mean 'runRoleQualification'?
+../model-registry/src/free-cloud-service.ts(23,3): error TS2305: Module '"@codeforge/eight-bit"' has no exported member 'qualificationAdmissionReceipt'.
+../model-registry/src/free-cloud-service.ts(799,51): error TS2339: Property 'loadSpend' does not exist on type 'QualificationPersistence'.
+../model-registry/src/free-cloud-service.ts(812,137): error TS2339: Property 'saveSpend' does not exist on type 'QualificationPersistence'.
+../model-registry/src/free-cloud-service.ts(1251,82): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type 'ObservationBase & { kind: "rate_limit_headers"; requestsLimit?: number | undefined; requestsRemaining?: number | undefined; requestsResetAt?: string | undefined; ... 4 more ...; status?: number | undefined; }'.
+../model-registry/src/free-cloud-service.ts(1251,102): error TS2339: Property 'rateLimitScope' does not exist on type 'ProviderResponseObservation'.
+../server/src/agent-runtime.ts(80,30): error TS2305: Module '"@codeforge/tools"' has no exported member 'isVerificationCommand'.
+../server/src/agent-runtime.ts(80,53): error TS2305: Module '"@codeforge/tools"' has no exported member 'renderFileRead'.
+../server/src/agent-runtime.ts(88,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../server/src/agent-runtime.ts(89,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../server/src/agent-runtime.ts(90,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../server/src/agent-runtime.ts(2949,45): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+../server/src/agent-runtime.ts(6223,43): error TS2339: Property 'quotaDomainGovernor' does not exist on type 'ProviderCapacityGovernor'.
+../server/src/agent-runtime.ts(6253,31): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+../server/src/agent-runtime.ts(6777,37): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+../server/src/index.ts(31,223): error TS2307: Cannot find module '@codeforge/forge-aaa' or its corresponding type declarations.
+../server/src/index.ts(457,24): error TS7006: Parameter 'route' implicitly has an 'any' type.
+../server/src/index.ts(3115,66): error TS7006: Parameter 'v' implicitly has an 'any' type.
+../server/src/index.ts(3227,60): error TS7006: Parameter 'v' implicitly has an 'any' type.
+../server/src/model-execution-adapter.ts(356,77): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+../server/src/model-execution-adapter.ts(384,125): error TS2554: Expected 1 arguments, but got 2.
+../server/src/model-execution-adapter.ts(384,131): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(393,13): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(393,35): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(410,206): error TS2554: Expected 1 arguments, but got 2.
+../server/src/model-execution-adapter.ts(598,67): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(598,89): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/personal-free-capacity.ts(42,7): error TS2561: Object literal may only specify known properties, but 'quotaProviderId' does not exist in type 'CapacityRoute'. Did you mean to write 'providerId'?
+../server/src/subagent-manager.ts(281,7): error TS2353: Object literal may only specify known properties, and 'routingHints' does not exist in type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(303,30): error TS2345: Argument of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; } | undefined' is not assignable to parameter of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+  Type 'undefined' is not assignable to type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(605,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../server/src/subagent-manager.ts(646,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../server/src/subagent-manager.ts(882,51): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(885,20): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(889,272): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../server/src/subagent-manager.ts(889,338): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../server/src/subagent-manager.ts(891,61): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../server/src/subagent-manager.ts(907,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../server/src/turn-state-machine.ts(147,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+../server/src/turn-state-machine.ts(168,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+../server/src/user-intelligence.ts(362,102): error TS2339: Property 'observedUsage' does not exist on type 'ProviderError'.
+../server/src/user-intelligence.ts(379,149): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+../server/src/user-intelligence.ts(379,171): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+
+> @codeforge/cloud-auth@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-billing@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-db@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-entitlements@0.4.0 build
+> tsc -b
+
+
+> @codeforge/cloud-gateway@0.4.0 build
+> tsc -b
+
+../eight-bit/src/qualification/role-suite.ts(16,63): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../eight-bit/src/qualification/role-suite.ts(16,96): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../eight-bit/src/qualification/role-suite.ts(16,118): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../eight-bit/src/route-health-authority.ts(568,53): error TS2554: Expected 1 arguments, but got 2.
+../model-registry/src/free-cloud-service.ts(16,3): error TS2724: '"@codeforge/eight-bit"' has no exported member named 'runRoleOnlyQualification'. Did you mean 'runRoleQualification'?
+../model-registry/src/free-cloud-service.ts(23,3): error TS2305: Module '"@codeforge/eight-bit"' has no exported member 'qualificationAdmissionReceipt'.
+../model-registry/src/free-cloud-service.ts(799,51): error TS2339: Property 'loadSpend' does not exist on type 'QualificationPersistence'.
+../model-registry/src/free-cloud-service.ts(812,137): error TS2339: Property 'saveSpend' does not exist on type 'QualificationPersistence'.
+../model-registry/src/free-cloud-service.ts(1251,82): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type 'ObservationBase & { kind: "rate_limit_headers"; requestsLimit?: number | undefined; requestsRemaining?: number | undefined; requestsResetAt?: string | undefined; ... 4 more ...; status?: number | undefined; }'.
+../model-registry/src/free-cloud-service.ts(1251,102): error TS2339: Property 'rateLimitScope' does not exist on type 'ProviderResponseObservation'.
+
+> @codeforge/cloud-usage@0.4.0 build
+> tsc -b
+
+
+> @codeforge/computer-use@0.4.0 build
+> tsc -b
+
+
+> @codeforge/context@0.4.0 build
+> tsc -b
+
+
+> @codeforge/core@0.4.0 build
+> tsc -b
+
+
+> @codeforge/crypto@0.4.0 build
+> tsc -b
+
+
+> @codeforge/director@0.4.0 build
+> tsc -b
+
+
+> @codeforge/eight-bit@0.4.0 build
+> tsc -b
+
+src/qualification/role-suite.ts(16,63): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+src/qualification/role-suite.ts(16,96): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+src/qualification/role-suite.ts(16,118): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+src/route-health-authority.ts(568,53): error TS2554: Expected 1 arguments, but got 2.
+
+> @codeforge/forge-aaa@0.4.0 build
+> tsc -b
+
+
+> @codeforge/forge-green@0.4.0 build
+> tsc -b
+
+
+> @codeforge/forge-zero@0.4.0 build
+> tsc -b
+
+
+> @codeforge/forgegreen-campaign@0.4.0 build
+> tsc -b
+
+../eight-bit/src/qualification/role-suite.ts(16,63): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../eight-bit/src/qualification/role-suite.ts(16,96): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../eight-bit/src/qualification/role-suite.ts(16,118): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../eight-bit/src/route-health-authority.ts(568,53): error TS2554: Expected 1 arguments, but got 2.
+../model-registry/src/free-cloud-service.ts(16,3): error TS2724: '"@codeforge/eight-bit"' has no exported member named 'runRoleOnlyQualification'. Did you mean 'runRoleQualification'?
+../model-registry/src/free-cloud-service.ts(23,3): error TS2305: Module '"@codeforge/eight-bit"' has no exported member 'qualificationAdmissionReceipt'.
+../model-registry/src/free-cloud-service.ts(799,51): error TS2339: Property 'loadSpend' does not exist on type 'QualificationPersistence'.
+../model-registry/src/free-cloud-service.ts(812,137): error TS2339: Property 'saveSpend' does not exist on type 'QualificationPersistence'.
+../model-registry/src/free-cloud-service.ts(1251,82): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type 'ObservationBase & { kind: "rate_limit_headers"; requestsLimit?: number | undefined; requestsRemaining?: number | undefined; requestsResetAt?: string | undefined; ... 4 more ...; status?: number | undefined; }'.
+../model-registry/src/free-cloud-service.ts(1251,102): error TS2339: Property 'rateLimitScope' does not exist on type 'ProviderResponseObservation'.
+../server/src/agent-runtime.ts(80,30): error TS2305: Module '"@codeforge/tools"' has no exported member 'isVerificationCommand'.
+../server/src/agent-runtime.ts(80,53): error TS2305: Module '"@codeforge/tools"' has no exported member 'renderFileRead'.
+../server/src/agent-runtime.ts(88,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../server/src/agent-runtime.ts(89,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../server/src/agent-runtime.ts(90,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../server/src/agent-runtime.ts(2949,45): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+../server/src/agent-runtime.ts(6223,43): error TS2339: Property 'quotaDomainGovernor' does not exist on type 'ProviderCapacityGovernor'.
+../server/src/agent-runtime.ts(6253,31): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+../server/src/agent-runtime.ts(6777,37): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+../server/src/index.ts(31,223): error TS2307: Cannot find module '@codeforge/forge-aaa' or its corresponding type declarations.
+../server/src/index.ts(457,24): error TS7006: Parameter 'route' implicitly has an 'any' type.
+../server/src/index.ts(3115,66): error TS7006: Parameter 'v' implicitly has an 'any' type.
+../server/src/index.ts(3227,60): error TS7006: Parameter 'v' implicitly has an 'any' type.
+../server/src/model-execution-adapter.ts(356,77): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+../server/src/model-execution-adapter.ts(384,125): error TS2554: Expected 1 arguments, but got 2.
+../server/src/model-execution-adapter.ts(384,131): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(393,13): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(393,35): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(410,206): error TS2554: Expected 1 arguments, but got 2.
+../server/src/model-execution-adapter.ts(598,67): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(598,89): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/personal-free-capacity.ts(42,7): error TS2561: Object literal may only specify known properties, but 'quotaProviderId' does not exist in type 'CapacityRoute'. Did you mean to write 'providerId'?
+../server/src/subagent-manager.ts(281,7): error TS2353: Object literal may only specify known properties, and 'routingHints' does not exist in type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(303,30): error TS2345: Argument of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; } | undefined' is not assignable to parameter of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+  Type 'undefined' is not assignable to type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(605,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../server/src/subagent-manager.ts(646,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../server/src/subagent-manager.ts(882,51): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(885,20): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(889,272): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../server/src/subagent-manager.ts(889,338): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../server/src/subagent-manager.ts(891,61): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../server/src/subagent-manager.ts(907,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../server/src/turn-state-machine.ts(147,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+../server/src/turn-state-machine.ts(168,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+../server/src/user-intelligence.ts(362,102): error TS2339: Property 'observedUsage' does not exist on type 'ProviderError'.
+../server/src/user-intelligence.ts(379,149): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+../server/src/user-intelligence.ts(379,171): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+
+> @codeforge/gems@0.4.0 build
+> tsc -b
+
+
+> @codeforge/git@0.4.0 build
+> tsc -b
+
+
+> @codeforge/identity@0.4.0 build
+> tsc -b
+
+
+> @codeforge/integration-tests@0.4.0 build
+> tsc -b
+
+../eight-bit/src/qualification/role-suite.ts(16,63): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../eight-bit/src/qualification/role-suite.ts(16,96): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../eight-bit/src/qualification/role-suite.ts(16,118): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../eight-bit/src/route-health-authority.ts(568,53): error TS2554: Expected 1 arguments, but got 2.
+../model-registry/src/free-cloud-service.ts(16,3): error TS2724: '"@codeforge/eight-bit"' has no exported member named 'runRoleOnlyQualification'. Did you mean 'runRoleQualification'?
+../model-registry/src/free-cloud-service.ts(23,3): error TS2305: Module '"@codeforge/eight-bit"' has no exported member 'qualificationAdmissionReceipt'.
+../model-registry/src/free-cloud-service.ts(799,51): error TS2339: Property 'loadSpend' does not exist on type 'QualificationPersistence'.
+../model-registry/src/free-cloud-service.ts(812,137): error TS2339: Property 'saveSpend' does not exist on type 'QualificationPersistence'.
+../model-registry/src/free-cloud-service.ts(1251,82): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type 'ObservationBase & { kind: "rate_limit_headers"; requestsLimit?: number | undefined; requestsRemaining?: number | undefined; requestsResetAt?: string | undefined; ... 4 more ...; status?: number | undefined; }'.
+../model-registry/src/free-cloud-service.ts(1251,102): error TS2339: Property 'rateLimitScope' does not exist on type 'ProviderResponseObservation'.
+../server/src/agent-runtime.ts(80,30): error TS2305: Module '"@codeforge/tools"' has no exported member 'isVerificationCommand'.
+../server/src/agent-runtime.ts(80,53): error TS2305: Module '"@codeforge/tools"' has no exported member 'renderFileRead'.
+../server/src/agent-runtime.ts(88,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../server/src/agent-runtime.ts(89,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../server/src/agent-runtime.ts(90,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../server/src/agent-runtime.ts(2949,45): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+../server/src/agent-runtime.ts(6223,43): error TS2339: Property 'quotaDomainGovernor' does not exist on type 'ProviderCapacityGovernor'.
+../server/src/agent-runtime.ts(6253,31): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+../server/src/agent-runtime.ts(6777,37): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+../server/src/index.ts(31,223): error TS2307: Cannot find module '@codeforge/forge-aaa' or its corresponding type declarations.
+../server/src/index.ts(457,24): error TS7006: Parameter 'route' implicitly has an 'any' type.
+../server/src/index.ts(3115,66): error TS7006: Parameter 'v' implicitly has an 'any' type.
+../server/src/index.ts(3227,60): error TS7006: Parameter 'v' implicitly has an 'any' type.
+../server/src/model-execution-adapter.ts(356,77): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+../server/src/model-execution-adapter.ts(384,125): error TS2554: Expected 1 arguments, but got 2.
+../server/src/model-execution-adapter.ts(384,131): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(393,13): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(393,35): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(410,206): error TS2554: Expected 1 arguments, but got 2.
+../server/src/model-execution-adapter.ts(598,67): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(598,89): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/personal-free-capacity.ts(42,7): error TS2561: Object literal may only specify known properties, but 'quotaProviderId' does not exist in type 'CapacityRoute'. Did you mean to write 'providerId'?
+../server/src/subagent-manager.ts(281,7): error TS2353: Object literal may only specify known properties, and 'routingHints' does not exist in type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(303,30): error TS2345: Argument of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; } | undefined' is not assignable to parameter of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+  Type 'undefined' is not assignable to type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(605,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../server/src/subagent-manager.ts(646,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../server/src/subagent-manager.ts(882,51): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(885,20): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(889,272): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../server/src/subagent-manager.ts(889,338): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../server/src/subagent-manager.ts(891,61): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../server/src/subagent-manager.ts(907,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../server/src/turn-state-machine.ts(147,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+../server/src/turn-state-machine.ts(168,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+../server/src/user-intelligence.ts(362,102): error TS2339: Property 'observedUsage' does not exist on type 'ProviderError'.
+../server/src/user-intelligence.ts(379,149): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+../server/src/user-intelligence.ts(379,171): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+
+> @codeforge/intelligence@0.4.0 build
+> tsc -b
+
+
+> @codeforge/legal-policy@0.4.0 build
+> tsc -b
+
+
+> @codeforge/lsp@0.4.0 build
+> tsc -b
+
+
+> @codeforge/mcp@0.4.0 build
+> tsc -b
+
+
+> @codeforge/model-registry@0.4.0 build
+> tsc -b
+
+../eight-bit/src/qualification/role-suite.ts(16,63): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../eight-bit/src/qualification/role-suite.ts(16,96): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../eight-bit/src/qualification/role-suite.ts(16,118): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../eight-bit/src/route-health-authority.ts(568,53): error TS2554: Expected 1 arguments, but got 2.
+src/free-cloud-service.ts(16,3): error TS2724: '"@codeforge/eight-bit"' has no exported member named 'runRoleOnlyQualification'. Did you mean 'runRoleQualification'?
+src/free-cloud-service.ts(23,3): error TS2305: Module '"@codeforge/eight-bit"' has no exported member 'qualificationAdmissionReceipt'.
+src/free-cloud-service.ts(799,51): error TS2339: Property 'loadSpend' does not exist on type 'QualificationPersistence'.
+src/free-cloud-service.ts(812,137): error TS2339: Property 'saveSpend' does not exist on type 'QualificationPersistence'.
+src/free-cloud-service.ts(1251,82): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type 'ObservationBase & { kind: "rate_limit_headers"; requestsLimit?: number | undefined; requestsRemaining?: number | undefined; requestsResetAt?: string | undefined; ... 4 more ...; status?: number | undefined; }'.
+src/free-cloud-service.ts(1251,102): error TS2339: Property 'rateLimitScope' does not exist on type 'ProviderResponseObservation'.
+
+> @codeforge/paid-auto@0.4.0 build
+> tsc -b
+
+
+> @codeforge/permissions@0.4.0 build
+> tsc -b
+
+
+> @codeforge/plugins@0.4.0 build
+> tsc -b
+
+
+> @codeforge/protocol@0.4.0 build
+> tsc -b
+
+
+> @codeforge/providers@0.4.0 build
+> tsc -b
+
+
+> @codeforge/repo-intelligence@0.4.0 build
+> tsc -b
+
+
+> @codeforge/router@0.4.0 build
+> tsc -b
+
+
+> @codeforge/sandbox@0.4.0 build
+> tsc -b
+
+
+> @codeforge/sdk@0.4.0 build
+> tsc -b
+
+
+> @codeforge/secrets@0.4.0 build
+> tsc -b
+
+
+> @codeforge/server@0.4.0 build
+> tsc -b
+
+../eight-bit/src/qualification/role-suite.ts(16,63): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../eight-bit/src/qualification/role-suite.ts(16,96): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../eight-bit/src/qualification/role-suite.ts(16,118): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../eight-bit/src/route-health-authority.ts(568,53): error TS2554: Expected 1 arguments, but got 2.
+../model-registry/src/free-cloud-service.ts(16,3): error TS2724: '"@codeforge/eight-bit"' has no exported member named 'runRoleOnlyQualification'. Did you mean 'runRoleQualification'?
+../model-registry/src/free-cloud-service.ts(23,3): error TS2305: Module '"@codeforge/eight-bit"' has no exported member 'qualificationAdmissionReceipt'.
+../model-registry/src/free-cloud-service.ts(799,51): error TS2339: Property 'loadSpend' does not exist on type 'QualificationPersistence'.
+../model-registry/src/free-cloud-service.ts(812,137): error TS2339: Property 'saveSpend' does not exist on type 'QualificationPersistence'.
+../model-registry/src/free-cloud-service.ts(1251,82): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type 'ObservationBase & { kind: "rate_limit_headers"; requestsLimit?: number | undefined; requestsRemaining?: number | undefined; requestsResetAt?: string | undefined; ... 4 more ...; status?: number | undefined; }'.
+../model-registry/src/free-cloud-service.ts(1251,102): error TS2339: Property 'rateLimitScope' does not exist on type 'ProviderResponseObservation'.
+src/agent-runtime.ts(80,30): error TS2305: Module '"@codeforge/tools"' has no exported member 'isVerificationCommand'.
+src/agent-runtime.ts(80,53): error TS2305: Module '"@codeforge/tools"' has no exported member 'renderFileRead'.
+src/agent-runtime.ts(88,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+src/agent-runtime.ts(89,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+src/agent-runtime.ts(90,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+src/agent-runtime.ts(2949,45): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+src/agent-runtime.ts(6223,43): error TS2339: Property 'quotaDomainGovernor' does not exist on type 'ProviderCapacityGovernor'.
+src/agent-runtime.ts(6253,31): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+src/agent-runtime.ts(6777,37): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+src/index.ts(31,223): error TS2307: Cannot find module '@codeforge/forge-aaa' or its corresponding type declarations.
+src/index.ts(457,24): error TS7006: Parameter 'route' implicitly has an 'any' type.
+src/index.ts(3115,66): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/index.ts(3227,60): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/model-execution-adapter.ts(356,77): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+src/model-execution-adapter.ts(384,125): error TS2554: Expected 1 arguments, but got 2.
+src/model-execution-adapter.ts(384,131): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+src/model-execution-adapter.ts(393,13): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+src/model-execution-adapter.ts(393,35): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+src/model-execution-adapter.ts(410,206): error TS2554: Expected 1 arguments, but got 2.
+src/model-execution-adapter.ts(598,67): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+src/model-execution-adapter.ts(598,89): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+src/personal-free-capacity.ts(42,7): error TS2561: Object literal may only specify known properties, but 'quotaProviderId' does not exist in type 'CapacityRoute'. Did you mean to write 'providerId'?
+src/subagent-manager.ts(281,7): error TS2353: Object literal may only specify known properties, and 'routingHints' does not exist in type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+src/subagent-manager.ts(303,30): error TS2345: Argument of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; } | undefined' is not assignable to parameter of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+  Type 'undefined' is not assignable to type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+src/subagent-manager.ts(605,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+src/subagent-manager.ts(646,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+src/subagent-manager.ts(882,51): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+src/subagent-manager.ts(885,20): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+src/subagent-manager.ts(889,272): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+src/subagent-manager.ts(889,338): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+src/subagent-manager.ts(891,61): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+src/subagent-manager.ts(907,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+src/turn-state-machine.ts(147,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+src/turn-state-machine.ts(168,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+src/user-intelligence.ts(362,102): error TS2339: Property 'observedUsage' does not exist on type 'ProviderError'.
+src/user-intelligence.ts(379,149): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+src/user-intelligence.ts(379,171): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+
+> @codeforge/sessions@0.4.0 build
+> tsc -b
+
+
+> @codeforge/shared@0.4.0 build
+> tsc -b
+
+
+> @codeforge/telemetry@0.4.0 build
+> tsc -b
+
+
+> @codeforge/terminal@0.4.0 build
+> tsc -b
+
+
+> @codeforge/tools@0.4.0 build
+> tsc -b
+
+
+> @codeforge/ui@0.4.0 build
+> tsc -b
+
+src/workspace-sse.ts(330,3): error TS2322: Type '"blocked"' is not assignable to type '"completed" | "failed" | "cancelled" | "running" | "paused" | "recovering" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "idle"'.
+src/workspace-sse.ts(466,16): error TS2322: Type '"blocked"' is not assignable to type '"completed" | "failed" | "cancelled" | "running" | "paused" | "recovering" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "idle" | undefined'.
+src/workspace-sse.ts(917,17): error TS2322: Type '"blocked" | "failed" | "cancelled" | "idle"' is not assignable to type '"completed" | "failed" | "cancelled" | "running" | "paused" | "recovering" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "idle"'.
+  Type '"blocked"' is not assignable to type '"completed" | "failed" | "cancelled" | "running" | "paused" | "recovering" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "idle"'.
+
+> codeforge-vscode@0.4.0 build
+> tsc -b
+
+../eight-bit/src/qualification/role-suite.ts(16,63): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../eight-bit/src/qualification/role-suite.ts(16,96): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../eight-bit/src/qualification/role-suite.ts(16,118): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../eight-bit/src/route-health-authority.ts(568,53): error TS2554: Expected 1 arguments, but got 2.
+../model-registry/src/free-cloud-service.ts(16,3): error TS2724: '"@codeforge/eight-bit"' has no exported member named 'runRoleOnlyQualification'. Did you mean 'runRoleQualification'?
+../model-registry/src/free-cloud-service.ts(23,3): error TS2305: Module '"@codeforge/eight-bit"' has no exported member 'qualificationAdmissionReceipt'.
+../model-registry/src/free-cloud-service.ts(799,51): error TS2339: Property 'loadSpend' does not exist on type 'QualificationPersistence'.
+../model-registry/src/free-cloud-service.ts(812,137): error TS2339: Property 'saveSpend' does not exist on type 'QualificationPersistence'.
+../model-registry/src/free-cloud-service.ts(1251,82): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type 'ObservationBase & { kind: "rate_limit_headers"; requestsLimit?: number | undefined; requestsRemaining?: number | undefined; requestsResetAt?: string | undefined; ... 4 more ...; status?: number | undefined; }'.
+../model-registry/src/free-cloud-service.ts(1251,102): error TS2339: Property 'rateLimitScope' does not exist on type 'ProviderResponseObservation'.
+../server/src/agent-runtime.ts(80,30): error TS2305: Module '"@codeforge/tools"' has no exported member 'isVerificationCommand'.
+../server/src/agent-runtime.ts(80,53): error TS2305: Module '"@codeforge/tools"' has no exported member 'renderFileRead'.
+../server/src/agent-runtime.ts(88,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../server/src/agent-runtime.ts(89,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../server/src/agent-runtime.ts(90,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../server/src/agent-runtime.ts(2949,45): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+../server/src/agent-runtime.ts(6223,43): error TS2339: Property 'quotaDomainGovernor' does not exist on type 'ProviderCapacityGovernor'.
+../server/src/agent-runtime.ts(6253,31): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+../server/src/agent-runtime.ts(6777,37): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+../server/src/index.ts(31,223): error TS2307: Cannot find module '@codeforge/forge-aaa' or its corresponding type declarations.
+../server/src/index.ts(457,24): error TS7006: Parameter 'route' implicitly has an 'any' type.
+../server/src/index.ts(3115,66): error TS7006: Parameter 'v' implicitly has an 'any' type.
+../server/src/index.ts(3227,60): error TS7006: Parameter 'v' implicitly has an 'any' type.
+../server/src/model-execution-adapter.ts(356,77): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+../server/src/model-execution-adapter.ts(384,125): error TS2554: Expected 1 arguments, but got 2.
+../server/src/model-execution-adapter.ts(384,131): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(393,13): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(393,35): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(410,206): error TS2554: Expected 1 arguments, but got 2.
+../server/src/model-execution-adapter.ts(598,67): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+../server/src/model-execution-adapter.ts(598,89): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../server/src/personal-free-capacity.ts(42,7): error TS2561: Object literal may only specify known properties, but 'quotaProviderId' does not exist in type 'CapacityRoute'. Did you mean to write 'providerId'?
+../server/src/subagent-manager.ts(281,7): error TS2353: Object literal may only specify known properties, and 'routingHints' does not exist in type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(303,30): error TS2345: Argument of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; } | undefined' is not assignable to parameter of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+  Type 'undefined' is not assignable to type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(605,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../server/src/subagent-manager.ts(646,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../server/src/subagent-manager.ts(882,51): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(885,20): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../server/src/subagent-manager.ts(889,272): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../server/src/subagent-manager.ts(889,338): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../server/src/subagent-manager.ts(891,61): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../server/src/subagent-manager.ts(907,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../server/src/turn-state-machine.ts(147,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+../server/src/turn-state-machine.ts(168,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+../server/src/user-intelligence.ts(362,102): error TS2339: Property 'observedUsage' does not exist on type 'ProviderError'.
+../server/src/user-intelligence.ts(379,149): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+../server/src/user-intelligence.ts(379,171): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+
+> @codeforge/workflow@0.4.0 build
+> tsc -b
+
+
+> codeforge-cloud-api@0.4.0 build
+> tsc -b
+
+../../packages/eight-bit/src/qualification/role-suite.ts(16,63): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../../packages/eight-bit/src/qualification/role-suite.ts(16,96): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../../packages/eight-bit/src/qualification/role-suite.ts(16,118): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../../packages/eight-bit/src/route-health-authority.ts(568,53): error TS2554: Expected 1 arguments, but got 2.
+../../packages/model-registry/src/free-cloud-service.ts(16,3): error TS2724: '"@codeforge/eight-bit"' has no exported member named 'runRoleOnlyQualification'. Did you mean 'runRoleQualification'?
+../../packages/model-registry/src/free-cloud-service.ts(23,3): error TS2305: Module '"@codeforge/eight-bit"' has no exported member 'qualificationAdmissionReceipt'.
+../../packages/model-registry/src/free-cloud-service.ts(799,51): error TS2339: Property 'loadSpend' does not exist on type 'QualificationPersistence'.
+../../packages/model-registry/src/free-cloud-service.ts(812,137): error TS2339: Property 'saveSpend' does not exist on type 'QualificationPersistence'.
+../../packages/model-registry/src/free-cloud-service.ts(1251,82): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type 'ObservationBase & { kind: "rate_limit_headers"; requestsLimit?: number | undefined; requestsRemaining?: number | undefined; requestsResetAt?: string | undefined; ... 4 more ...; status?: number | undefined; }'.
+../../packages/model-registry/src/free-cloud-service.ts(1251,102): error TS2339: Property 'rateLimitScope' does not exist on type 'ProviderResponseObservation'.
+../../packages/server/src/agent-runtime.ts(80,30): error TS2305: Module '"@codeforge/tools"' has no exported member 'isVerificationCommand'.
+../../packages/server/src/agent-runtime.ts(80,53): error TS2305: Module '"@codeforge/tools"' has no exported member 'renderFileRead'.
+../../packages/server/src/agent-runtime.ts(88,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../../packages/server/src/agent-runtime.ts(89,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../../packages/server/src/agent-runtime.ts(90,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../../packages/server/src/agent-runtime.ts(2949,45): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+../../packages/server/src/agent-runtime.ts(6223,43): error TS2339: Property 'quotaDomainGovernor' does not exist on type 'ProviderCapacityGovernor'.
+../../packages/server/src/agent-runtime.ts(6253,31): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+../../packages/server/src/agent-runtime.ts(6777,37): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+../../packages/server/src/index.ts(31,223): error TS2307: Cannot find module '@codeforge/forge-aaa' or its corresponding type declarations.
+../../packages/server/src/index.ts(457,24): error TS7006: Parameter 'route' implicitly has an 'any' type.
+../../packages/server/src/index.ts(3115,66): error TS7006: Parameter 'v' implicitly has an 'any' type.
+../../packages/server/src/index.ts(3227,60): error TS7006: Parameter 'v' implicitly has an 'any' type.
+../../packages/server/src/model-execution-adapter.ts(356,77): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+../../packages/server/src/model-execution-adapter.ts(384,125): error TS2554: Expected 1 arguments, but got 2.
+../../packages/server/src/model-execution-adapter.ts(384,131): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../../packages/server/src/model-execution-adapter.ts(393,13): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../../packages/server/src/model-execution-adapter.ts(393,35): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../../packages/server/src/model-execution-adapter.ts(410,206): error TS2554: Expected 1 arguments, but got 2.
+../../packages/server/src/model-execution-adapter.ts(598,67): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+../../packages/server/src/model-execution-adapter.ts(598,89): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../../packages/server/src/personal-free-capacity.ts(42,7): error TS2561: Object literal may only specify known properties, but 'quotaProviderId' does not exist in type 'CapacityRoute'. Did you mean to write 'providerId'?
+../../packages/server/src/subagent-manager.ts(281,7): error TS2353: Object literal may only specify known properties, and 'routingHints' does not exist in type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../../packages/server/src/subagent-manager.ts(303,30): error TS2345: Argument of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; } | undefined' is not assignable to parameter of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+  Type 'undefined' is not assignable to type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../../packages/server/src/subagent-manager.ts(605,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../../packages/server/src/subagent-manager.ts(646,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../../packages/server/src/subagent-manager.ts(882,51): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../../packages/server/src/subagent-manager.ts(885,20): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../../packages/server/src/subagent-manager.ts(889,272): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../../packages/server/src/subagent-manager.ts(889,338): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../../packages/server/src/subagent-manager.ts(891,61): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../../packages/server/src/subagent-manager.ts(907,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../../packages/server/src/turn-state-machine.ts(147,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+../../packages/server/src/turn-state-machine.ts(168,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+../../packages/server/src/user-intelligence.ts(362,102): error TS2339: Property 'observedUsage' does not exist on type 'ProviderError'.
+../../packages/server/src/user-intelligence.ts(379,149): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+../../packages/server/src/user-intelligence.ts(379,171): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+
+> codeforge-desktop@0.4.0 build
+> npm run build:packages && npm run build:main && npm run build:renderer
+
+
+> codeforge-desktop@0.4.0 build:packages
+> tsc -b ../../tsconfig.json
+
+../../packages/eight-bit/src/qualification/role-suite.ts(16,63): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../../packages/eight-bit/src/qualification/role-suite.ts(16,96): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../../packages/eight-bit/src/qualification/role-suite.ts(16,118): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../../packages/eight-bit/src/route-health-authority.ts(568,53): error TS2554: Expected 1 arguments, but got 2.
+../../packages/model-registry/src/free-cloud-service.ts(16,3): error TS2724: '"@codeforge/eight-bit"' has no exported member named 'runRoleOnlyQualification'. Did you mean 'runRoleQualification'?
+../../packages/model-registry/src/free-cloud-service.ts(23,3): error TS2305: Module '"@codeforge/eight-bit"' has no exported member 'qualificationAdmissionReceipt'.
+../../packages/model-registry/src/free-cloud-service.ts(799,51): error TS2339: Property 'loadSpend' does not exist on type 'QualificationPersistence'.
+../../packages/model-registry/src/free-cloud-service.ts(812,137): error TS2339: Property 'saveSpend' does not exist on type 'QualificationPersistence'.
+../../packages/model-registry/src/free-cloud-service.ts(1251,82): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type 'ObservationBase & { kind: "rate_limit_headers"; requestsLimit?: number | undefined; requestsRemaining?: number | undefined; requestsResetAt?: string | undefined; ... 4 more ...; status?: number | undefined; }'.
+../../packages/model-registry/src/free-cloud-service.ts(1251,102): error TS2339: Property 'rateLimitScope' does not exist on type 'ProviderResponseObservation'.
+../../packages/server/src/agent-runtime.ts(80,30): error TS2305: Module '"@codeforge/tools"' has no exported member 'isVerificationCommand'.
+../../packages/server/src/agent-runtime.ts(80,53): error TS2305: Module '"@codeforge/tools"' has no exported member 'renderFileRead'.
+../../packages/server/src/agent-runtime.ts(88,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_CLEAN_DIFF_INSTRUCTION'.
+../../packages/server/src/agent-runtime.ts(89,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'REVIEWER_TEMPERATURE'.
+../../packages/server/src/agent-runtime.ts(90,3): error TS2305: Module '"@codeforge/agent"' has no exported member 'PLANNER_TEXT_PROTOCOL_INSTRUCTION'.
+../../packages/server/src/agent-runtime.ts(2949,45): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+../../packages/server/src/agent-runtime.ts(6223,43): error TS2339: Property 'quotaDomainGovernor' does not exist on type 'ProviderCapacityGovernor'.
+../../packages/server/src/agent-runtime.ts(6253,31): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+../../packages/server/src/agent-runtime.ts(6777,37): error TS2339: Property 'independenceKey' does not exist on type '{ action: "rotate"; reason: "UNKNOWN" | "FREE_ELIGIBILITY_REMOVED" | "TRANSIENT_NETWORK" | "TIMEOUT" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "MODEL_NOT_FOUND" | "MODEL_RETIRED" | ... 10 more ... | "BAD_REQUEST"; replacement: RouteKey; capacityPoolId?: string | undefined; receipt: DecisionReceipt; }'.
+../../packages/server/src/index.ts(31,223): error TS2307: Cannot find module '@codeforge/forge-aaa' or its corresponding type declarations.
+../../packages/server/src/index.ts(457,24): error TS7006: Parameter 'route' implicitly has an 'any' type.
+../../packages/server/src/index.ts(3115,66): error TS7006: Parameter 'v' implicitly has an 'any' type.
+../../packages/server/src/index.ts(3227,60): error TS7006: Parameter 'v' implicitly has an 'any' type.
+../../packages/server/src/model-execution-adapter.ts(356,77): error TS2339: Property 'forQuotaDomain' does not exist on type 'ProviderCapacityGovernor'.
+../../packages/server/src/model-execution-adapter.ts(384,125): error TS2554: Expected 1 arguments, but got 2.
+../../packages/server/src/model-execution-adapter.ts(384,131): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../../packages/server/src/model-execution-adapter.ts(393,13): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../../packages/server/src/model-execution-adapter.ts(393,35): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../../packages/server/src/model-execution-adapter.ts(410,206): error TS2554: Expected 1 arguments, but got 2.
+../../packages/server/src/model-execution-adapter.ts(598,67): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+../../packages/server/src/model-execution-adapter.ts(598,89): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../../packages/server/src/personal-free-capacity.ts(42,7): error TS2561: Object literal may only specify known properties, but 'quotaProviderId' does not exist in type 'CapacityRoute'. Did you mean to write 'providerId'?
+../../packages/server/src/subagent-manager.ts(281,7): error TS2353: Object literal may only specify known properties, and 'routingHints' does not exist in type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../../packages/server/src/subagent-manager.ts(303,30): error TS2345: Argument of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; } | undefined' is not assignable to parameter of type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+  Type 'undefined' is not assignable to type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../../packages/server/src/subagent-manager.ts(605,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../../packages/server/src/subagent-manager.ts(646,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../../packages/server/src/subagent-manager.ts(882,51): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../../packages/server/src/subagent-manager.ts(885,20): error TS2339: Property 'routingHints' does not exist on type '{ status: "created" | "queued" | "starting" | "running" | "waiting" | "blocked" | "completed" | "failed" | "cancelled" | "recovering"; kind: "subagent_run"; createdAt: string; id: string; ... 26 more ...; completedAt?: string | undefined; }'.
+../../packages/server/src/subagent-manager.ts(889,272): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../../packages/server/src/subagent-manager.ts(889,338): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../../packages/server/src/subagent-manager.ts(891,61): error TS2339: Property 'personalRoutingMode' does not exist on type '{ freeRoutes: { providerId: string; modelId: string; }[]; paidModelIds: string[]; userRoutes?: { providerId: string; modelId: string; sourceId: string; sourceClass: "USER_API"; pinned: boolean; inputCostPerMillion: number | null; outputCostPerMillion: number | null; costConfidence: "AUTHORITATIVE" | ... 2 more ... |...'.
+../../packages/server/src/subagent-manager.ts(907,11): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+../../packages/server/src/turn-state-machine.ts(147,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+../../packages/server/src/turn-state-machine.ts(168,3): error TS2322: Type '"blocked"' is not assignable to type '"running" | "completed" | "failed" | "cancelled" | "recovering" | "idle" | "paused" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity"'.
+../../packages/server/src/user-intelligence.ts(362,102): error TS2339: Property 'observedUsage' does not exist on type 'ProviderError'.
+../../packages/server/src/user-intelligence.ts(379,149): error TS2353: Object literal may only specify known properties, and 'rateLimitScope' does not exist in type '{ status?: number | undefined; retryAfter?: number | undefined; }'.
+../../packages/server/src/user-intelligence.ts(379,171): error TS2339: Property 'rateLimitScope' does not exist on type '{ code: string; message: string; type: "error"; status?: number | undefined; retryable?: boolean | undefined; retryAfter?: number | undefined; }'.
+../../packages/ui/src/workspace-sse.ts(330,3): error TS2322: Type '"blocked"' is not assignable to type '"completed" | "failed" | "cancelled" | "running" | "paused" | "recovering" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "idle"'.
+../../packages/ui/src/workspace-sse.ts(466,16): error TS2322: Type '"blocked"' is not assignable to type '"completed" | "failed" | "cancelled" | "running" | "paused" | "recovering" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "idle" | undefined'.
+../../packages/ui/src/workspace-sse.ts(917,17): error TS2322: Type '"blocked" | "failed" | "cancelled" | "idle"' is not assignable to type '"completed" | "failed" | "cancelled" | "running" | "paused" | "recovering" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "idle"'.
+  Type '"blocked"' is not assignable to type '"completed" | "failed" | "cancelled" | "running" | "paused" | "recovering" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "idle"'.
+
+> @codeforge/web@0.4.0 build
+> tsc -b && vite build
+
+../../packages/ui/src/workspace-sse.ts(330,3): error TS2322: Type '"blocked"' is not assignable to type '"completed" | "failed" | "cancelled" | "running" | "paused" | "recovering" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "idle"'.
+../../packages/ui/src/workspace-sse.ts(466,16): error TS2322: Type '"blocked"' is not assignable to type '"completed" | "failed" | "cancelled" | "running" | "paused" | "recovering" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "idle" | undefined'.
+../../packages/ui/src/workspace-sse.ts(917,17): error TS2322: Type '"blocked" | "failed" | "cancelled" | "idle"' is not assignable to type '"completed" | "failed" | "cancelled" | "running" | "paused" | "recovering" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "idle"'.
+  Type '"blocked"' is not assignable to type '"completed" | "failed" | "cancelled" | "running" | "paused" | "recovering" | "waiting_for_approval" | "waiting_for_question" | "waiting_for_free_capacity" | "idle"'.
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\cli
+npm error workspace @codeforge/cli@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\cli
+npm error command failed
+npm error command cmd.exe /d /s /c tsc -b
+
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\cloud-gateway
+npm error workspace @codeforge/cloud-gateway@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\cloud-gateway
+npm error command failed
+npm error command cmd.exe /d /s /c tsc -b
+
+npm error Lifecycle script `build` failed with error:
+npm error code 1
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\eight-bit
+npm error workspace @codeforge/eight-bit@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\eight-bit
+npm error command failed
+npm error command cmd.exe /d /s /c tsc -b
+
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\forgegreen-campaign
+npm error workspace @codeforge/forgegreen-campaign@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\forgegreen-campaign
+npm error command failed
+npm error command cmd.exe /d /s /c tsc -b
+
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\integration-tests
+npm error workspace @codeforge/integration-tests@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\integration-tests
+npm error command failed
+npm error command cmd.exe /d /s /c tsc -b
+
+npm error Lifecycle script `build` failed with error:
+npm error code 1
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\model-registry
+npm error workspace @codeforge/model-registry@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\model-registry
+npm error command failed
+npm error command cmd.exe /d /s /c tsc -b
+
+npm error Lifecycle script `build` failed with error:
+npm error code 1
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\server
+npm error workspace @codeforge/server@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\server
+npm error command failed
+npm error command cmd.exe /d /s /c tsc -b
+
+npm error Lifecycle script `build` failed with error:
+npm error code 1
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\ui
+npm error workspace @codeforge/ui@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\ui
+npm error command failed
+npm error command cmd.exe /d /s /c tsc -b
+
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\vscode
+npm error workspace codeforge-vscode@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\packages\vscode
+npm error command failed
+npm error command cmd.exe /d /s /c tsc -b
+
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\apps\cloud-api
+npm error workspace codeforge-cloud-api@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\apps\cloud-api
+npm error command failed
+npm error command cmd.exe /d /s /c tsc -b
+
+npm error Lifecycle script `build:packages` failed with error:
+npm error code 2
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\apps\desktop
+npm error workspace codeforge-desktop@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\apps\desktop
+npm error command failed
+npm error command cmd.exe /d /s /c tsc -b ../../tsconfig.json
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\apps\desktop
+npm error workspace codeforge-desktop@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\apps\desktop
+npm error command failed
+npm error command cmd.exe /d /s /c npm run build:packages && npm run build:main && npm run build:renderer
+
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\apps\web
+npm error workspace @codeforge/web@0.4.0
+npm error location G:\CodeForge\worktrees\r83-forgeaaa-autonomous-multiroom\apps\web
+npm error command failed
+npm error command cmd.exe /d /s /c tsc -b && vite build

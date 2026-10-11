@@ -1,0 +1,209 @@
+{
+  "startedAt": "2026-10-11T19:32:15.078Z",
+  "stamp": 1791747135078,
+  "model": "nvidia/nemotron-3-super-120b-a12b:free",
+  "provider": "kilo-free-direct",
+  "costUSD": 0,
+  "tools": {
+    "inspect": {
+      "exitCode": 0,
+      "timedOut": false,
+      "ok": true,
+      "logPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\director-inspect-1791747135078.log",
+      "report": {
+        "ok": true,
+        "assets": [
+          {
+            "path": "/Game/ForgeAAA/R82/SM_FrontWall.SM_FrontWall",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_DoorLintel.SM_DoorLintel",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_SideWall.SM_SideWall",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_BackWall.SM_BackWall",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_WindowSillWall.SM_WindowSillWall",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_WindowHeader.SM_WindowHeader",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_Ceiling.SM_Ceiling",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_ExteriorFloor.SM_ExteriorFloor",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_PlankFloor.SM_PlankFloor",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_WindowFrame.SM_WindowFrame",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/door_SM_DoorFrame.door_SM_DoorFrame",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R83/SM_DoorThreshold.SM_DoorThreshold",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R83/SM_SharedWall_Front.SM_SharedWall_Front",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R83/SM_SharedWall_Back.SM_SharedWall_Back",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R83/SM_SharedWall_Lintel.SM_SharedWall_Lintel",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R83/SM_FrontWall_B.SM_FrontWall_B",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R83/SM_Ceiling_B.SM_Ceiling_B",
+            "class": "/Script/Engine.StaticMesh"
+          }
+        ]
+      },
+      "reports": [
+        {
+          "ok": true,
+          "assets": [
+            {
+              "path": "/Game/ForgeAAA/R82/SM_FrontWall.SM_FrontWall",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_DoorLintel.SM_DoorLintel",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_SideWall.SM_SideWall",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_BackWall.SM_BackWall",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_WindowSillWall.SM_WindowSillWall",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_WindowHeader.SM_WindowHeader",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_Ceiling.SM_Ceiling",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_ExteriorFloor.SM_ExteriorFloor",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_PlankFloor.SM_PlankFloor",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_WindowFrame.SM_WindowFrame",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/door_SM_DoorFrame.door_SM_DoorFrame",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R83/SM_DoorThreshold.SM_DoorThreshold",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R83/SM_SharedWall_Front.SM_SharedWall_Front",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R83/SM_SharedWall_Back.SM_SharedWall_Back",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R83/SM_SharedWall_Lintel.SM_SharedWall_Lintel",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R83/SM_FrontWall_B.SM_FrontWall_B",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R83/SM_Ceiling_B.SM_Ceiling_B",
+              "class": "/Script/Engine.StaticMesh"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "executionCounts": {
+    "inspect": 1,
+    "layout": 1
+  },
+  "predecessor": "director-live-evidence-complete-invalid-1791746982211.json",
+  "adapterOperations": 1,
+  "reusedModelEvidence": {
+    "path": "director-live-evidence-complete-invalid-1791746982211.json",
+    "failedInferenceAttempts": 2,
+    "completeModelResponseSha256": "cd01ef3e108d15dfc3d7dfc790cb5f7f480f014d7e6df6ce1544bfc3ca360ae7",
+    "newInferenceRequests": 0
+  },
+  "corrections": [
+    {
+      "instanceId": "wall-right-b",
+      "axis": 0,
+      "from": 860,
+      "to": 870,
+      "reason": "east wall lies outside the declared interior"
+    },
+    {
+      "instanceId": "ceiling-b",
+      "axis": 0,
+      "from": 580,
+      "to": 590,
+      "reason": "ceiling begins beyond shared wall and does not overlap Room A ceiling"
+    },
+    {
+      "instanceId": "shared-wall-lintel",
+      "axis": 2,
+      "from": 130,
+      "to": 237.5,
+      "reason": "lintel clears the entire declared doorway height"
+    }
+  ],
+  "modelArtifact": {
+    "path": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\model-connected-layout.corrected.json",
+    "rawPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\model-connected-layout.json",
+    "sha256": "2301c76bba15481ad9317859587577dadeaba7425b74cdadc0fbb263d81ebbd3",
+    "rawSha256": "5a3d41ed77a81604cc3778234277122d17fbb2e742840ddb3194f02b6aa7aa5f",
+    "origin": "qualified Coder complete proposal; three explicit deterministic constraint repairs",
+    "correctionCount": 3
+  },
+  "error": "Error: CONTROLLED_DIRECTOR_CHECKPOINT",
+  "status": "CHECKPOINTED_FOR_RESUME",
+  "updatedAt": "2026-10-11T19:32:29.142Z"
+}

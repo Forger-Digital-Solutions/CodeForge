@@ -17,7 +17,7 @@ try {
 await mkdir(root, { recursive: true });
 // Copy project skeleton and plugin from r82 benchmarks (versioned source)
 await cp("benchmarks/r82/project", pilot, { recursive: true });
-await cp("benchmarks/r82/forge-gameplay-plugin", path.join(pilot, "Plugins/ForgeGameplay"), { recursive: true });
+await cp("benchmarks/r83/forge-gameplay-plugin", path.join(pilot, "Plugins/ForgeGameplay"), { recursive: true });
 // Use workspace-local DDC to avoid polluting the machine's shared cache
 const ddc = path.join(root, "r83ddc").replaceAll("\\", "/");
 await mkdir(ddc, { recursive: true });

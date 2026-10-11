@@ -1,0 +1,142 @@
+{
+  "checkedAt": "2026-10-11T19:37:59.116Z",
+  "status": "FORGEAAA_PARTIAL",
+  "taskStates": [
+    {
+      "id": "inspect",
+      "status": "verified",
+      "attempts": 1
+    },
+    {
+      "id": "layout",
+      "status": "verified",
+      "attempts": 1
+    },
+    {
+      "id": "validate",
+      "status": "verified",
+      "attempts": 1
+    },
+    {
+      "id": "build-source-and-save",
+      "status": "verified",
+      "attempts": 1
+    },
+    {
+      "id": "migrate",
+      "status": "verified",
+      "attempts": 1
+    },
+    {
+      "id": "engine-verify",
+      "status": "verified",
+      "attempts": 1
+    },
+    {
+      "id": "gameplay-verify",
+      "status": "verified",
+      "attempts": 1
+    },
+    {
+      "id": "integrate",
+      "status": "verified",
+      "attempts": 1
+    }
+  ],
+  "counters": {
+    "taskAttempts": 8,
+    "retries": 0,
+    "modelCalls": 0,
+    "adapterOps": 8
+  },
+  "sourceFingerprint": "53c12cd4c43120cb81def19652489dcaaebf8af79f2d6f99e2143a825d36ca49",
+  "targetFingerprint": "264b76eb41822e23cba43f8a35b93b1c7b1b00fbba92ebe7607a38b2c8162957",
+  "levelFileSha256": "d0423713f6c7596f700204098eba84bf488b180666b733a4307fb7395019a592",
+  "instanceCount": 23,
+  "interiorDoor": {
+    "actor": "/Game/ForgeAAA/Maps/FAAA_R83_Director_1791747135078.FAAA_R83_Director_1791747135078:PersistentLevel.forge-building_western-room-a_door-interior",
+    "class": "/Script/ForgeGameplay.ForgeInteractableDoor",
+    "identity": "forge-building:western-room-a:door-interior",
+    "positionCm": [
+      290,
+      260,
+      0
+    ],
+    "requestedPositionCm": [
+      290,
+      260,
+      0
+    ],
+    "requestedYawDeg": 90,
+    "rotationDeg": [
+      0,
+      89.99998474121094,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "resumeProof": {
+    "modelCalls": 0,
+    "layoutExecutions": 1,
+    "inspectExecutions": 1,
+    "noDuplicateInference": true,
+    "reusedCompleteProposal": true,
+    "predecessorInferenceAttempts": 2
+  },
+  "modelArtifact": {
+    "path": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\model-connected-layout.corrected.json",
+    "rawPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\model-connected-layout.json",
+    "sha256": "2301c76bba15481ad9317859587577dadeaba7425b74cdadc0fbb263d81ebbd3",
+    "rawSha256": "5a3d41ed77a81604cc3778234277122d17fbb2e742840ddb3194f02b6aa7aa5f",
+    "origin": "qualified Coder complete proposal; three explicit deterministic constraint repairs",
+    "correctionCount": 3
+  },
+  "corrections": [
+    {
+      "instanceId": "wall-right-b",
+      "axis": 0,
+      "from": 860,
+      "to": 870,
+      "reason": "east wall lies outside the declared interior"
+    },
+    {
+      "instanceId": "ceiling-b",
+      "axis": 0,
+      "from": 580,
+      "to": 590,
+      "reason": "ceiling begins beyond shared wall and does not overlap Room A ceiling"
+    },
+    {
+      "instanceId": "shared-wall-lintel",
+      "axis": 2,
+      "from": 130,
+      "to": 237.5,
+      "reason": "lintel clears the entire declared doorway height"
+    }
+  ],
+  "predecessorInferenceAttempts": 2,
+  "nativeStages": {
+    "director-pre-upgrade": {
+      "state": "pass",
+      "exitCode": 0,
+      "pythonModuleLoaded": true,
+      "failures": []
+    },
+    "director-post-upgrade": {
+      "state": "pass",
+      "exitCode": 0,
+      "pythonModuleLoaded": true,
+      "failures": []
+    },
+    "director-fresh-process": {
+      "state": "pass",
+      "exitCode": 0,
+      "pythonModuleLoaded": true,
+      "failures": []
+    }
+  }
+}

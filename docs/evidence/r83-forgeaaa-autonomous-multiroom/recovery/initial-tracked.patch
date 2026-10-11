@@ -1,0 +1,10 @@
+diff --git a/packages/forge-aaa/src/index.ts b/packages/forge-aaa/src/index.ts
+index b0260507..ff6c1888 100644
+--- a/packages/forge-aaa/src/index.ts
++++ b/packages/forge-aaa/src/index.ts
+@@ -19,3 +19,5 @@ export * from "./architectural-template.js";
+ export * from "./door-template.js";
+ export * from "./project-discovery.js";
+ export * from "./service.js";
++export * from "./building-revision.js";
++export * from "./r83-building-spec.js";

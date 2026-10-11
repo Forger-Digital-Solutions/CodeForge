@@ -1,0 +1,17 @@
+{
+  "startedAt": "2026-10-11T19:29:42.211Z",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "costUSD": 0,
+  "scope": "Source and structured engine evidence; no image input or visual model review claim",
+  "qualification": {
+    "providerId": "kilo-free-direct",
+    "suiteVersion": "R73_ROLE_QUALIFICATION_V7",
+    "protocolVersion": "REVIEWER_PROTOCOL_V4",
+    "status": "QUALIFIED",
+    "completedAt": "2026-10-10T10:35:30.841Z",
+    "score": 0.875
+  },
+  "status": "BLOCKED",
+  "error": "Error: ENOENT: no such file or directory, open 'G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\r83-review-packet.md'",
+  "finishedAt": "2026-10-11T19:29:42.212Z"
+}

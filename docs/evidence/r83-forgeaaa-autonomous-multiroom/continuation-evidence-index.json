@@ -1,0 +1,756 @@
+{
+  "generatedAt": "2026-10-11T19:38:33.097Z",
+  "sourceHead": "9ac8ae572c55ee94792a973b60015c3445d323a6",
+  "startingHead": "a9db8ae8e8d3bb42e71b951c1c7383d48f10e8d5",
+  "startingRemoteHead": "18ae424942a1669ba91a34ccff74a8163635bfc7",
+  "r82Baseline": "f1b02e3f4ae5c522964743ccf04a33d004a91c33",
+  "classification": {
+    "reported": "Historical claims retained with limitations",
+    "observed": "Raw tool outputs and images inspected by engineering agent",
+    "engineVerified": "Fresh Unreal assertions and native game results",
+    "independentlyReviewed": "Only complete qualified model verdicts",
+    "certified": "Withheld while declared acceptance requirements remain unsatisfied"
+  },
+  "assets": {
+    "evidence": "asset-readback-1791746588101.json",
+    "regenerated": false,
+    "sourceHashes": {
+      "SM_DoorThreshold": {
+        "fbx": "c4537b27c0217985fdc24ba134f9b0cc1277c24c0e637d01ac757e5b2e55f476",
+        "blend": "c056f495ef5b4f58bb58ac3617df95b87f99d3b5ec8d3e527968d2e77c0c6cf8"
+      },
+      "SM_SharedWall_Front": {
+        "fbx": "a46a7d4167135a8642d756a44515038e13ca9afd4c3a30d20dd5bfee60c95351",
+        "blend": "fbbe805898c451979345cad50baec4ede883cf02179f1c83cf3839c67ef4c345"
+      },
+      "SM_SharedWall_Back": {
+        "fbx": "4e5450afa8ed711f7be2b677080460e8482a35f577300c839b11f5cab9eefefc",
+        "blend": "1eff5a67308b3e19dc0e966546552a119d9251142b4e017ec2b43a4f5834f0aa"
+      },
+      "SM_SharedWall_Lintel": {
+        "fbx": "ca921021f3a14fd9983c92b501520339c93a8d460314162f93132e53fdef26d6",
+        "blend": "39803e2011f520a929c0e2e23ca2c02c175aeff434921bcb775ec6deecd2cc25"
+      },
+      "SM_FrontWall_B": {
+        "fbx": "1569fcd183f5c177f761a58085ff7139f423a1bb96276d5b9da1237de805d047",
+        "blend": "6f0611fc4583a931bdc990ddffae638b23d986eed85050434ef78d66174cfb87"
+      },
+      "SM_Ceiling_B": {
+        "fbx": "fe848a8b39c2e3743f3fcbe68eeaf3dc68d72ae75af5bd1a5fbd50a89bfac3b1",
+        "blend": "a4a4075c55257fc8cad180cb7ff38b8031bb7ce706e6b1bfd305ae20b4007a6e"
+      }
+    },
+    "dimensions": [
+      {
+        "path": "/Game/ForgeAAA/R83/SM_DoorThreshold.SM_DoorThreshold",
+        "dimensionsCm": [
+          20.000009536743164,
+          110.00000762939453,
+          10
+        ],
+        "convexCollisionCount": 1,
+        "boxCollisionCount": 0,
+        "sockets": [
+          {
+            "name": "AssemblyOrigin",
+            "positionCm": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Game/ForgeAAA/R83/SM_SharedWall_Front.SM_SharedWall_Front",
+        "dimensionsCm": [
+          20.000019073486328,
+          225,
+          260
+        ],
+        "convexCollisionCount": 1,
+        "boxCollisionCount": 0,
+        "sockets": [
+          {
+            "name": "AssemblyOrigin",
+            "positionCm": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "name": "door-int",
+            "positionCm": [
+              0,
+              167.5,
+              -130
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Game/ForgeAAA/R83/SM_SharedWall_Back.SM_SharedWall_Back",
+        "dimensionsCm": [
+          20.000019073486328,
+          225,
+          260
+        ],
+        "convexCollisionCount": 1,
+        "boxCollisionCount": 0,
+        "sockets": [
+          {
+            "name": "AssemblyOrigin",
+            "positionCm": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Game/ForgeAAA/R83/SM_SharedWall_Lintel.SM_SharedWall_Lintel",
+        "dimensionsCm": [
+          20.000009536743164,
+          110.00000762939453,
+          45
+        ],
+        "convexCollisionCount": 1,
+        "boxCollisionCount": 0,
+        "sockets": [
+          {
+            "name": "AssemblyOrigin",
+            "positionCm": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Game/ForgeAAA/R83/SM_FrontWall_B.SM_FrontWall_B",
+        "dimensionsCm": [
+          560,
+          20.000049591064453,
+          260
+        ],
+        "convexCollisionCount": 1,
+        "boxCollisionCount": 0,
+        "sockets": [
+          {
+            "name": "AssemblyOrigin",
+            "positionCm": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Game/ForgeAAA/R83/SM_Ceiling_B.SM_Ceiling_B",
+        "dimensionsCm": [
+          580.0000610351562,
+          560.0000610351562,
+          10
+        ],
+        "convexCollisionCount": 1,
+        "boxCollisionCount": 0,
+        "sockets": [
+          {
+            "name": "AssemblyOrigin",
+            "positionCm": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "faults": {
+    "evidence": "migration-fault-campaign-1791746387783.json",
+    "sourceHash": "0674846894fa63552d3318c3314473cdc8fac69508335f21182d757e86f4685e",
+    "cases": {
+      "missing-mesh": {
+        "phase": "BLOCKED",
+        "exitCode": 0,
+        "mutationStarted": false,
+        "idempotent": false,
+        "levelHash": "0674846894fa63552d3318c3314473cdc8fac69508335f21182d757e86f4685e",
+        "errors": [
+          "unresolved module asset forge/building/SM_Ceiling_B/v1"
+        ]
+      },
+      "source-conflict": {
+        "phase": "BLOCKED",
+        "exitCode": 0,
+        "mutationStarted": false,
+        "idempotent": false,
+        "levelHash": "0674846894fa63552d3318c3314473cdc8fac69508335f21182d757e86f4685e",
+        "errors": [
+          "mixed or stale revision forge-building:western-room-a:floor"
+        ]
+      },
+      "fault-after-three": {
+        "phase": "ROLLED_BACK",
+        "state": "ROLLED_BACK",
+        "exitCode": 0,
+        "mutationStarted": true,
+        "idempotent": false,
+        "levelHash": "0674846894fa63552d3318c3314473cdc8fac69508335f21182d757e86f4685e",
+        "errors": [
+          "injected failure after mutation 3"
+        ]
+      },
+      "interrupted": {
+        "exitCode": 86,
+        "levelHash": "a1b94612d06090d9bbd017d8754a0d3490c859611c1095a9df1fbc7cf108c385",
+        "errors": []
+      },
+      "interrupted-recovery": {
+        "phase": "ROLLED_BACK",
+        "state": "ROLLED_BACK",
+        "exitCode": 0,
+        "mutationStarted": false,
+        "idempotent": false,
+        "levelHash": "0674846894fa63552d3318c3314473cdc8fac69508335f21182d757e86f4685e",
+        "errors": []
+      },
+      "caller-evidence": {
+        "errors": [],
+        "boolean": "BLOCKED",
+        "copiedRollback": "BLOCKED"
+      },
+      "commit-before-repeat": {
+        "phase": "COMMITTED",
+        "exitCode": 0,
+        "mutationStarted": true,
+        "idempotent": false,
+        "levelHash": "99babe3bf9257f4f3540692c5dc3b47efd3b887336b02427aa89688f115afb01",
+        "errors": []
+      },
+      "idempotency-repeat": {
+        "phase": "COMMITTED",
+        "exitCode": 0,
+        "mutationStarted": false,
+        "idempotent": true,
+        "levelHash": "99babe3bf9257f4f3540692c5dc3b47efd3b887336b02427aa89688f115afb01",
+        "errors": []
+      },
+      "separate-process-commit": {
+        "state": "COMMITTED",
+        "errors": []
+      }
+    },
+    "committed": {
+      "phase": "COMMITTED",
+      "fingerprint": "f39dc7bdad42e3b2617b6d06a4f07826653af82596bd83eb42ac7b0fb5e649ab",
+      "instanceCount": 23,
+      "levelFileSha256": "99babe3bf9257f4f3540692c5dc3b47efd3b887336b02427aa89688f115afb01",
+      "receiptPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\migration-readback-f430f0d8-de5e-45df-82d2-7cf02e74a8c4.json",
+      "interiorDoor": {
+        "actor": "/Game/ForgeAAA/Maps/FAAA_R83_FaultCampaign_1791746387783.FAAA_R83_FaultCampaign_1791746387783:PersistentLevel.forge-building_western-room-a_door-interior",
+        "class": "/Script/ForgeGameplay.ForgeInteractableDoor",
+        "identity": "forge-building:western-room-a:door-interior",
+        "positionCm": [
+          290,
+          260,
+          0
+        ],
+        "requestedPositionCm": [
+          290,
+          260,
+          0
+        ],
+        "requestedYawDeg": 90,
+        "rotationDeg": [
+          0,
+          89.99998474121094,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    }
+  },
+  "artifactPathSafety": {
+    "evidence": "artifact-path-safety-1791746602149.json",
+    "sourceHash": "c2b81e09ed68b5014d5b8ebf79840831331a13e156690931c591c5b667e897b1",
+    "cases": [
+      "receipt-aliases-level",
+      "backup-aliases-level",
+      "receipt-temp-aliases-backup"
+    ]
+  },
+  "gameplay": {
+    "evidence": "r83-gameplay-1791745266807.json",
+    "level": "/Game/ForgeAAA/Maps/FAAA_R83_RoomA_Strict_1791744588174",
+    "classification": {
+      "input": "SYNTHETIC_INPUT via native PlayerInput",
+      "movement": "CharacterMovement with collision; no traversal teleports",
+      "gameplay": "native C++; no Python gameplay injection"
+    },
+    "identities": {
+      "door": "a836fa4dea044e03bb3f1f08d7321907",
+      "interior": "586650c61a881c31ed7ba09e5513aed4",
+      "window": "75c84e620f55e7cf42b23d97b7cf4773"
+    },
+    "stages": {
+      "two-room-traversal": {
+        "state": "pass",
+        "exitCode": 0,
+        "pythonModuleLoaded": true,
+        "failures": []
+      },
+      "two-room-restart": {
+        "state": "pass",
+        "exitCode": 0,
+        "pythonModuleLoaded": true,
+        "failures": []
+      }
+    }
+  },
+  "persistence": {
+    "evidence": "persistence-upgrade-1791746291414.json",
+    "level": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791746291414",
+    "saveSlot": "ForgeR83Upgrade_1791746291414",
+    "identities": {
+      "door": "a836fa4dea044e03bb3f1f08d7321907",
+      "interior": "586650c61a881c31ed7ba09e5513aed4",
+      "window": "75c84e620f55e7cf42b23d97b7cf4773"
+    },
+    "stages": {
+      "pre-upgrade": {
+        "state": "pass",
+        "exitCode": 0,
+        "pythonModuleLoaded": true,
+        "failures": []
+      },
+      "post-upgrade": {
+        "state": "pass",
+        "exitCode": 0,
+        "pythonModuleLoaded": true,
+        "failures": []
+      },
+      "upgrade-fresh-process": {
+        "state": "pass",
+        "exitCode": 0,
+        "pythonModuleLoaded": true,
+        "failures": []
+      }
+    }
+  },
+  "regression": {
+    "regression-unsandboxed.json": {
+      "passed": 556,
+      "failed": 0,
+      "skipped": 6,
+      "files": 63
+    },
+    "regression-routing.json": {
+      "passed": 769,
+      "failed": 0,
+      "skipped": 2,
+      "files": 76
+    },
+    "regression-recovery-safety.json": {
+      "passed": 89,
+      "failed": 0,
+      "skipped": 1,
+      "files": 10
+    },
+    "regression-focused-final.json": {
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0,
+      "files": 2
+    }
+  },
+  "knownFailures": [
+    "Historical native transform bypass reports r83-assemble-1791743703641/3706894/3894692/3898558 cannot certify the bypassed assertions",
+    "Diagnostic first process verified relocation then quit_editor shutdown crashed (exit 3); separate reload exited 0",
+    "Gameplay 1791744880028 stage 2 interaction targeted through solid wall; repaired approach, passing 1791745266807",
+    "Persistence 1791745968706 restored states but final direct exit movement hit opened leaf; centered waypoint route passes 1791746291414",
+    "Asset readback 1791745333033 used protected sockets property; 1791746100874 used wrong socket schema key; final actual readback passes",
+    "Sandbox regression run had 16 environmental failures; elevated same core scopes pass",
+    "Workspace build and full repository lint fail outside the changed ForgeAAA scope"
+  ],
+  "modelEligibility": {
+    "checkedAt": "2026-10-11T19:20:15.134Z",
+    "inferenceRequests": 0,
+    "projectPayloadsSent": 0,
+    "models": {
+      "CODER": {
+        "model": "nvidia/nemotron-3-super-120b-a12b:free",
+        "role": "CODER",
+        "qualificationReceiptPath": "docs/evidence/r80-forgeaaa-autonomous-gameplay/phase-g-coder-capacity-1791699174859.json",
+        "qualification": {
+          "historical": true,
+          "status": "QUALIFIED",
+          "score": 1
+        },
+        "policy": {
+          "status": "VERIFIED",
+          "checkedAt": "2026-10-11T19:20:15.137Z",
+          "receipt": {
+            "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+            "termsEvidence": "https://kilo.ai/terms",
+            "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+            "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+            "verifiedAt": "2026-10-11T19:20:15.137Z",
+            "recheckAt": "2026-10-18T19:20:15.137Z",
+            "qualificationAt": "2026-10-11T19:20:15.137Z",
+            "termsVerifiedAt": "2026-10-11T19:20:15.137Z",
+            "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+            "termsExpiresAt": "2026-10-18T19:20:15.137Z",
+            "privacyVerifiedAt": "2026-10-11T19:20:15.137Z",
+            "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+            "privacyExpiresAt": "2026-10-18T19:20:15.137Z",
+            "priceVerifiedAt": "2026-10-11T19:20:15.137Z",
+            "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+            "priceExpiresAt": "2026-10-18T19:20:15.137Z",
+            "nextReverifyAt": "2026-10-12T01:20:15.137Z"
+          }
+        },
+        "catalog": [
+          {
+            "modelId": "kilo-auto/free",
+            "isFree": true
+          },
+          {
+            "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+            "isFree": true
+          },
+          {
+            "modelId": "dots-studio/dots-3-note-preview:free",
+            "isFree": true
+          },
+          {
+            "modelId": "poolside/laguna-s-2.1:free",
+            "isFree": true
+          },
+          {
+            "modelId": "liquid/lfm-2.5-2.6b:free",
+            "isFree": true
+          },
+          {
+            "modelId": "nvidia/nemotron-3.5-lightning:free",
+            "isFree": true
+          },
+          {
+            "modelId": "thinkingmachines/inkling-small:free",
+            "isFree": true
+          },
+          {
+            "modelId": "poolside/laguna-xs-2.1:free",
+            "isFree": true
+          },
+          {
+            "modelId": "cohere/north-mini-code:free",
+            "isFree": true
+          },
+          {
+            "modelId": "nvidia/nemotron-3.5-content-safety:free",
+            "isFree": true
+          },
+          {
+            "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+            "isFree": true
+          },
+          {
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "isFree": true
+          }
+        ],
+        "admission": {
+          "ok": true,
+          "costProfile": {
+            "inputCostPerMillion": 0,
+            "outputCostPerMillion": 0,
+            "isFree": true,
+            "freeTierVerifiedAt": "2026-10-11T19:20:16.022Z",
+            "paidFallbackPossible": false,
+            "paidFallbackDisabled": true,
+            "source": "kilo-free-direct-live"
+          },
+          "privacyClass": "permissive"
+        },
+        "status": "CURRENT_FREE_ADMISSION_PASSED"
+      },
+      "REVIEWER": {
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "role": "REVIEWER",
+        "qualificationReceiptPath": "docs/evidence/r74-autonomous-completion-and-free-reliability/reviewer-nvidia_nemotron-3-ultra-550b-a55b_free-1791628393855.json",
+        "qualification": {
+          "historical": true,
+          "status": "QUALIFIED",
+          "score": 0.875
+        },
+        "policy": {
+          "status": "VERIFIED",
+          "checkedAt": "2026-10-11T19:20:16.028Z",
+          "receipt": {
+            "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+            "termsEvidence": "https://kilo.ai/terms",
+            "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+            "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+            "verifiedAt": "2026-10-11T19:20:16.028Z",
+            "recheckAt": "2026-10-18T19:20:16.028Z",
+            "qualificationAt": "2026-10-11T19:20:16.028Z",
+            "termsVerifiedAt": "2026-10-11T19:20:16.028Z",
+            "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+            "termsExpiresAt": "2026-10-18T19:20:16.028Z",
+            "privacyVerifiedAt": "2026-10-11T19:20:16.028Z",
+            "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+            "privacyExpiresAt": "2026-10-18T19:20:16.028Z",
+            "priceVerifiedAt": "2026-10-11T19:20:16.028Z",
+            "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+            "priceExpiresAt": "2026-10-18T19:20:16.028Z",
+            "nextReverifyAt": "2026-10-12T01:20:16.028Z"
+          }
+        },
+        "catalog": [
+          {
+            "modelId": "kilo-auto/free",
+            "isFree": true
+          },
+          {
+            "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+            "isFree": true
+          },
+          {
+            "modelId": "dots-studio/dots-3-note-preview:free",
+            "isFree": true
+          },
+          {
+            "modelId": "poolside/laguna-s-2.1:free",
+            "isFree": true
+          },
+          {
+            "modelId": "liquid/lfm-2.5-2.6b:free",
+            "isFree": true
+          },
+          {
+            "modelId": "nvidia/nemotron-3.5-lightning:free",
+            "isFree": true
+          },
+          {
+            "modelId": "thinkingmachines/inkling-small:free",
+            "isFree": true
+          },
+          {
+            "modelId": "poolside/laguna-xs-2.1:free",
+            "isFree": true
+          },
+          {
+            "modelId": "cohere/north-mini-code:free",
+            "isFree": true
+          },
+          {
+            "modelId": "nvidia/nemotron-3.5-content-safety:free",
+            "isFree": true
+          },
+          {
+            "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+            "isFree": true
+          },
+          {
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "isFree": true
+          }
+        ],
+        "admission": {
+          "ok": true,
+          "costProfile": {
+            "inputCostPerMillion": 0,
+            "outputCostPerMillion": 0,
+            "isFree": true,
+            "freeTierVerifiedAt": "2026-10-11T19:20:17.763Z",
+            "paidFallbackPossible": false,
+            "paidFallbackDisabled": true,
+            "source": "kilo-free-direct-live"
+          },
+          "privacyClass": "permissive"
+        },
+        "status": "CURRENT_FREE_ADMISSION_PASSED"
+      }
+    }
+  },
+  "externalApproval": {
+    "recordedAt": "2026-10-11T19:24:37.834Z",
+    "status": "EXPLICIT_USER_APPROVAL_RECEIVED",
+    "rejectedAction": "node benchmarks/r83/director-live.mjs --prepare",
+    "destination": "https://api.kilo.ai/api/gateway",
+    "reason": "Automatic approval review rejected sending the source building definition, module metadata, constraints and project layout request to the external Kilo endpoint without explicit payload/destination authorization.",
+    "requestFile": "docs/evidence/r83-forgeaaa-autonomous-multiroom/model-layout-request.json",
+    "reviewPackets": [
+      "docs/evidence/r83-forgeaaa-autonomous-multiroom/r82-review-packet.md",
+      "docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-review-packet.md"
+    ],
+    "modelInferenceExecuted": false,
+    "currentAdmissionEvidence": "docs/evidence/r83-forgeaaa-autonomous-multiroom/model-eligibility.json",
+    "costUSD": 0,
+    "independentReviewsExecuted": false,
+    "approval": {
+      "receivedAt": "2026-10-11T19:25:34.753Z",
+      "answer": "Approve free model layout and reviews",
+      "destination": "https://api.kilo.ai/api/gateway",
+      "scope": "Prepared synthetic R83 layout and R82/R83 code-and-evidence review packets; current ForgeZero free admission required"
+    }
+  },
+  "director": {
+    "status": "FORGEAAA_PARTIAL",
+    "executionCounts": {
+      "inspect": 1,
+      "layout": 1,
+      "validate": 1,
+      "build-source-and-save": 1,
+      "migrate": 1,
+      "engine-verify": 1,
+      "gameplay-verify": 1,
+      "integrate": 1
+    },
+    "resumeProof": {
+      "modelCalls": 0,
+      "layoutExecutions": 1,
+      "inspectExecutions": 1,
+      "noDuplicateInference": true,
+      "reusedCompleteProposal": true,
+      "predecessorInferenceAttempts": 2
+    },
+    "modelArtifact": {
+      "path": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\model-connected-layout.corrected.json",
+      "rawPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\model-connected-layout.json",
+      "sha256": "2301c76bba15481ad9317859587577dadeaba7425b74cdadc0fbb263d81ebbd3",
+      "rawSha256": "5a3d41ed77a81604cc3778234277122d17fbb2e742840ddb3194f02b6aa7aa5f",
+      "origin": "qualified Coder complete proposal; three explicit deterministic constraint repairs",
+      "correctionCount": 3
+    },
+    "corrections": [
+      {
+        "instanceId": "wall-right-b",
+        "axis": 0,
+        "from": 860,
+        "to": 870,
+        "reason": "east wall lies outside the declared interior"
+      },
+      {
+        "instanceId": "ceiling-b",
+        "axis": 0,
+        "from": 580,
+        "to": 590,
+        "reason": "ceiling begins beyond shared wall and does not overlap Room A ceiling"
+      },
+      {
+        "instanceId": "shared-wall-lintel",
+        "axis": 2,
+        "from": 130,
+        "to": 237.5,
+        "reason": "lintel clears the entire declared doorway height"
+      }
+    ],
+    "reusedModelEvidence": {
+      "path": "director-live-evidence-complete-invalid-1791746982211.json",
+      "failedInferenceAttempts": 2,
+      "completeModelResponseSha256": "cd01ef3e108d15dfc3d7dfc790cb5f7f480f014d7e6df6ce1544bfc3ca360ae7",
+      "newInferenceRequests": 0
+    },
+    "model": "nvidia/nemotron-3-super-120b-a12b:free",
+    "costUSD": 0,
+    "counters": {
+      "taskAttempts": 8,
+      "retries": 0,
+      "modelCalls": 0,
+      "adapterOps": 8
+    },
+    "taskStates": [
+      {
+        "id": "inspect",
+        "status": "verified",
+        "attempts": 1
+      },
+      {
+        "id": "layout",
+        "status": "verified",
+        "attempts": 1
+      },
+      {
+        "id": "validate",
+        "status": "verified",
+        "attempts": 1
+      },
+      {
+        "id": "build-source-and-save",
+        "status": "verified",
+        "attempts": 1
+      },
+      {
+        "id": "migrate",
+        "status": "verified",
+        "attempts": 1
+      },
+      {
+        "id": "engine-verify",
+        "status": "verified",
+        "attempts": 1
+      },
+      {
+        "id": "gameplay-verify",
+        "status": "verified",
+        "attempts": 1
+      },
+      {
+        "id": "integrate",
+        "status": "verified",
+        "attempts": 1
+      }
+    ]
+  },
+  "reviewAddenda": [
+    {
+      "file": "r82-review-addendum-1791747223353.json",
+      "status": "BLOCKED",
+      "approved": false,
+      "findings": [
+        "reviewer: kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free (QUALIFIED, suite R73_ROLE_QUALIFICATION_V7, protocol REVIEWER_PROTOCOL_V4, qualified 2026-10-10T10:35:30.841Z) — review call failed: kilo-free-direct stream error (503) after HTTP 200: Upstream error from Nvidia: Service temporarily overloaded"
+      ]
+    },
+    {
+      "file": "r83-review-addendum-1791746788457.json",
+      "status": "BLOCKED",
+      "error": "Error: ENOENT: no such file or directory, open 'G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\r83-review-packet.md'"
+    },
+    {
+      "file": "r83-review-addendum-1791746982211.json",
+      "status": "BLOCKED",
+      "error": "Error: ENOENT: no such file or directory, open 'G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\r83-review-packet.md'"
+    },
+    {
+      "file": "r83-review-addendum-1791747312929.json",
+      "status": "BLOCKED",
+      "error": "Error: Review packet exceeds bounded budget"
+    },
+    {
+      "file": "r83-review-addendum-1791747387007.json",
+      "status": "BLOCKED",
+      "approved": false,
+      "findings": [
+        "reviewer: kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free (QUALIFIED, suite R73_ROLE_QUALIFICATION_V7, protocol REVIEWER_PROTOCOL_V4, qualified 2026-10-10T10:35:30.841Z) — review call failed: Expected ',' or ']' after array element in JSON at position 893 (line 1 column 894)"
+      ]
+    }
+  ],
+  "evidenceHashes": {
+    "asset-readback-1791746588101.json": "abd947c0153b8607e5cc4c95dc1c9e52247a47b5907e61f07058d27c1b07ab51",
+    "migration-fault-campaign-1791746387783.json": "b86889bcbc5cb5c78256965b3804e6953bb77e8adf9c4c66e91c8daeb975a1c7",
+    "persistence-upgrade-1791746291414.json": "6dcde7e8f1f66e9a6d8a2427f05e12b4f1c12d9644a8e546e0f362096f748145",
+    "artifact-path-safety-1791746602149.json": "d7293687e11a9f9ce79d49de41114a2d852abcac8b044f5174baa1905c8e1b49",
+    "r83-gameplay-1791745266807.json": "7d12e076d4dbe227d514cfe9aec34e57e10a17136632dcc264f8280cf5a5045a"
+  }
+}

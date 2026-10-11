@@ -1,0 +1,22 @@
+[
+  {
+    "Path": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\packages\\forge-aaa\\src\\index.ts",
+    "Hash": "27161EB712F4669C9C7317809A8C02F6AD84C6616750DE605745F8F26114473A"
+  },
+  {
+    "Path": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\packages\\forge-aaa\\src\\building-revision.ts",
+    "Hash": "7B578B61608F9DDE27A1D05D325058A534967DE7104128B61BBADBEE972B3BF7"
+  },
+  {
+    "Path": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\packages\\forge-aaa\\src\\r83-building-spec.ts",
+    "Hash": "EF6EFC1C8FC80746930C56304D8ED9F6DCE2D2BBDA20AFEADFEB5390B1307A85"
+  },
+  {
+    "Path": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\packages\\forge-aaa\\test\\building-revision.test.ts",
+    "Hash": "D24D4BBD69BE837D15BC4EC5572EE2A6179D1707298A16632F691D591726DAE8"
+  },
+  {
+    "Path": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\packages\\forge-aaa\\test\\r83-building-spec.test.ts",
+    "Hash": "707E6C583F9793FBA1AF66DFC26C627CB2DFC0AB1A8DA3F9A1301BC7B16E1F72"
+  }
+]

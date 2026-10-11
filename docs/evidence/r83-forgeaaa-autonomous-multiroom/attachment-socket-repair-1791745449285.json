@@ -1,0 +1,170 @@
+{
+  "exitCode": 0,
+  "timedOut": false,
+  "ok": true,
+  "logPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83-attachment-sockets-1791745433012.log",
+  "report": {
+    "ok": true,
+    "changes": [
+      {
+        "mesh": "/Game/ForgeAAA/R82/SM_PlankFloor",
+        "socket": "door",
+        "positionCm": [
+          0,
+          -270,
+          5
+        ]
+      },
+      {
+        "mesh": "/Game/ForgeAAA/R82/SM_PlankFloor",
+        "socket": "window",
+        "positionCm": [
+          0,
+          270,
+          95
+        ]
+      },
+      {
+        "mesh": "/Game/ForgeAAA/door_SM_DoorFrame",
+        "socket": "frame",
+        "positionCm": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "mesh": "/Game/ForgeAAA/R83/SM_SharedWall_Front",
+        "socket": "door-int",
+        "positionCm": [
+          0,
+          167.5,
+          -130
+        ]
+      }
+    ],
+    "verified": [
+      {
+        "mesh": "/Game/ForgeAAA/R82/SM_PlankFloor",
+        "socket": "door",
+        "positionCm": [
+          0,
+          -270,
+          5
+        ]
+      },
+      {
+        "mesh": "/Game/ForgeAAA/R82/SM_PlankFloor",
+        "socket": "window",
+        "positionCm": [
+          0,
+          270,
+          95
+        ]
+      },
+      {
+        "mesh": "/Game/ForgeAAA/door_SM_DoorFrame",
+        "socket": "frame",
+        "positionCm": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "mesh": "/Game/ForgeAAA/R83/SM_SharedWall_Front",
+        "socket": "door-int",
+        "positionCm": [
+          0,
+          167.5,
+          -130
+        ]
+      }
+    ],
+    "errors": [],
+    "scope": "R83 pilot mesh socket metadata only; source geometry unchanged"
+  },
+  "reports": [
+    {
+      "ok": true,
+      "changes": [
+        {
+          "mesh": "/Game/ForgeAAA/R82/SM_PlankFloor",
+          "socket": "door",
+          "positionCm": [
+            0,
+            -270,
+            5
+          ]
+        },
+        {
+          "mesh": "/Game/ForgeAAA/R82/SM_PlankFloor",
+          "socket": "window",
+          "positionCm": [
+            0,
+            270,
+            95
+          ]
+        },
+        {
+          "mesh": "/Game/ForgeAAA/door_SM_DoorFrame",
+          "socket": "frame",
+          "positionCm": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "mesh": "/Game/ForgeAAA/R83/SM_SharedWall_Front",
+          "socket": "door-int",
+          "positionCm": [
+            0,
+            167.5,
+            -130
+          ]
+        }
+      ],
+      "verified": [
+        {
+          "mesh": "/Game/ForgeAAA/R82/SM_PlankFloor",
+          "socket": "door",
+          "positionCm": [
+            0,
+            -270,
+            5
+          ]
+        },
+        {
+          "mesh": "/Game/ForgeAAA/R82/SM_PlankFloor",
+          "socket": "window",
+          "positionCm": [
+            0,
+            270,
+            95
+          ]
+        },
+        {
+          "mesh": "/Game/ForgeAAA/door_SM_DoorFrame",
+          "socket": "frame",
+          "positionCm": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "mesh": "/Game/ForgeAAA/R83/SM_SharedWall_Front",
+          "socket": "door-int",
+          "positionCm": [
+            0,
+            167.5,
+            -130
+          ]
+        }
+      ],
+      "errors": [],
+      "scope": "R83 pilot mesh socket metadata only; source geometry unchanged"
+    }
+  ]
+}

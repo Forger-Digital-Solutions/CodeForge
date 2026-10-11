@@ -1,0 +1,258 @@
+{
+  "id": "aaa-3caa9027-78b2-462a-9ac9-fa2693a3f6b6",
+  "goal": "Expand the existing Western room into two connected rooms while preserving native gameplay identities and SaveGame state",
+  "projectPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83pilot\\DeadTrailsWest.uproject",
+  "engineTarget": "ue-4.27",
+  "leadPolicy": "auto",
+  "status": "done",
+  "tasks": [
+    {
+      "id": "inspect",
+      "title": "inspect",
+      "objective": "inspect",
+      "specialty": "forge-modeler",
+      "dependencies": [],
+      "status": "verified",
+      "attempts": 1,
+      "artifacts": [
+        "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+      ],
+      "evidence": [
+        {
+          "kind": "route",
+          "ref": "local-tool/UE4.27",
+          "detail": "ROUTE_SELECTED"
+        },
+        {
+          "kind": "check",
+          "ref": "report:0",
+          "detail": "1 passed/0 failed/0 blocked"
+        }
+      ],
+      "execution": {
+        "partial": false
+      }
+    },
+    {
+      "id": "layout",
+      "title": "layout",
+      "objective": "layout",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "inspect"
+      ],
+      "status": "failed",
+      "attempts": 1,
+      "artifacts": [],
+      "evidence": [
+        {
+          "kind": "route",
+          "ref": "kilo-free-direct/nvidia/nemotron-3-super-120b-a12b:free",
+          "detail": "ROUTE_SELECTED"
+        }
+      ],
+      "lastFailureSignature": "ForgeAaaError: structural overlap: ceiling/ceiling-b",
+      "detail": "ForgeAaaError: structural overlap: ceiling/ceiling-b"
+    },
+    {
+      "id": "validate",
+      "title": "validate",
+      "objective": "validate",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "layout"
+      ],
+      "status": "blocked",
+      "attempts": 0,
+      "artifacts": [],
+      "evidence": [],
+      "detail": "dependency unfinished: layout"
+    },
+    {
+      "id": "build-source-and-save",
+      "title": "build-source-and-save",
+      "objective": "build-source-and-save",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "validate"
+      ],
+      "status": "blocked",
+      "attempts": 0,
+      "artifacts": [],
+      "evidence": [],
+      "detail": "dependency unfinished: validate"
+    },
+    {
+      "id": "migrate",
+      "title": "migrate",
+      "objective": "migrate",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "build-source-and-save"
+      ],
+      "status": "blocked",
+      "attempts": 0,
+      "artifacts": [],
+      "evidence": [],
+      "detail": "dependency unfinished: build-source-and-save"
+    },
+    {
+      "id": "engine-verify",
+      "title": "engine-verify",
+      "objective": "engine-verify",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "migrate"
+      ],
+      "status": "blocked",
+      "attempts": 0,
+      "artifacts": [],
+      "evidence": [],
+      "detail": "dependency unfinished: migrate"
+    },
+    {
+      "id": "gameplay-verify",
+      "title": "gameplay-verify",
+      "objective": "gameplay-verify",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "engine-verify"
+      ],
+      "status": "blocked",
+      "attempts": 0,
+      "artifacts": [],
+      "evidence": [],
+      "detail": "dependency unfinished: engine-verify"
+    },
+    {
+      "id": "integrate",
+      "title": "integrate",
+      "objective": "integrate",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "gameplay-verify"
+      ],
+      "status": "blocked",
+      "attempts": 0,
+      "artifacts": [],
+      "evidence": [],
+      "detail": "dependency unfinished: gameplay-verify"
+    }
+  ],
+  "routeDecisions": [
+    {
+      "taskId": "inspect",
+      "specialty": "forge-modeler",
+      "role": "CODER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "UE4.27-deterministic-adapter",
+        "providerId": "local-tool",
+        "providerModelId": "UE4.27",
+        "domain": "local_tool",
+        "lifecycle": "QUALIFIED",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": true
+      },
+      "ordered": [
+        {
+          "modelId": "UE4.27-deterministic-adapter",
+          "providerId": "local-tool",
+          "providerModelId": "UE4.27",
+          "domain": "local_tool",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        }
+      ],
+      "reasonCodes": [
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T19:28:42.824Z"
+    },
+    {
+      "taskId": "layout",
+      "specialty": "forge-modeler",
+      "role": "CODER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "providerId": "kilo-free-direct",
+        "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "domain": "managed_free",
+        "lifecycle": "QUALIFIED",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": false
+      },
+      "ordered": [
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "providerId": "kilo-free-direct",
+          "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "domain": "managed_free",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": false
+        }
+      ],
+      "reasonCodes": [
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T19:28:55.117Z"
+    }
+  ],
+  "verificationReports": [
+    {
+      "checks": [
+        {
+          "id": "inspect",
+          "kind": "custom",
+          "status": "passed",
+          "durationMs": 0,
+          "evidenceRef": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "blocked": 0,
+      "verified": true,
+      "ranAt": "2026-10-11T19:28:55.115Z"
+    }
+  ],
+  "manifests": [],
+  "counters": {
+    "taskAttempts": 2,
+    "retries": 0,
+    "modelCalls": 1,
+    "adapterOps": 1
+  },
+  "blockers": [],
+  "createdAt": "2026-10-11T19:28:42.818Z",
+  "updatedAt": "2026-10-11T19:29:42.215Z",
+  "maxAttemptsPerTask": 1,
+  "review": {
+    "approved": false,
+    "findings": [
+      "Error: ENOENT: no such file or directory, open 'G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\r83-review-packet.md'"
+    ],
+    "independent": false
+  },
+  "finalStatus": "FORGEAAA_FAILED",
+  "completedAt": "2026-10-11T19:29:42.215Z"
+}

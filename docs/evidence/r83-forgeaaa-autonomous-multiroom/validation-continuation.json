@@ -1,0 +1,112 @@
+{
+  "startedAt": "2026-10-11T19:13:55.552Z",
+  "checks": [
+    {
+      "name": "forge-aaa-build",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "G:/CodeForge/node_modules/typescript/bin/tsc",
+        "-b",
+        "packages/forge-aaa"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 1630,
+      "logPath": "docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\validation-forge-aaa-build.log"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cmd.exe",
+        "/d",
+        "/s",
+        "/c",
+        "npm run build --script-shell=cmd.exe"
+      ],
+      "exitCode": 2,
+      "signal": null,
+      "durationMs": 30376,
+      "logPath": "docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\validation-workspace-build.log"
+    },
+    {
+      "name": "lint",
+      "command": [
+        "G:/CodeForge/node_modules/@oxlint/win32-x64/oxlint.exe",
+        "--deny-warnings",
+        "--ignore-pattern",
+        "tests/evidence/**",
+        "packages",
+        "apps",
+        "tests",
+        "scripts"
+      ],
+      "exitCode": null,
+      "error": "spawnSync G:/CodeForge/node_modules/@oxlint/win32-x64/oxlint.exe ENOENT",
+      "signal": null,
+      "durationMs": 2,
+      "logPath": "docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\validation-lint.log"
+    },
+    {
+      "name": "secret-scan",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/security/secret-scan.mjs",
+        "--self-test",
+        "--scan",
+        "--json",
+        "docs/evidence/r83-forgeaaa-autonomous-multiroom/secret-scan.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 3094,
+      "logPath": "docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\validation-secret-scan.log"
+    },
+    {
+      "name": "dependency-audit",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/security/audit-dependencies.mjs",
+        "--json",
+        "docs/evidence/r83-forgeaaa-autonomous-multiroom/dependency-audit.json",
+        "--sbom",
+        "docs/evidence/r83-forgeaaa-autonomous-multiroom/sbom.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 3848,
+      "logPath": "docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\validation-dependency-audit.log"
+    },
+    {
+      "name": "public-claims",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/security/public-claims-scan.mjs",
+        "--json",
+        "docs/evidence/r83-forgeaaa-autonomous-multiroom/public-claims.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 473,
+      "logPath": "docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\validation-public-claims.log"
+    },
+    {
+      "name": "doc-links",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/security/validate-doc-links.mjs",
+        "--json",
+        "docs/evidence/r83-forgeaaa-autonomous-multiroom/doc-links.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 170,
+      "logPath": "docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\validation-doc-links.log"
+    },
+    {
+      "name": "lint-retry",
+      "exitCode": 1,
+      "logPath": "docs/evidence/r83-forgeaaa-autonomous-multiroom/validation-lint-retry.log"
+    }
+  ],
+  "finishedAt": "2026-10-11T19:14:35.157Z"
+}

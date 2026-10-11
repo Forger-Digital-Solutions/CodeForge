@@ -1,0 +1,201 @@
+{
+  "checkedAt": "2026-10-11T19:20:15.134Z",
+  "inferenceRequests": 0,
+  "projectPayloadsSent": 0,
+  "models": {
+    "CODER": {
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "role": "CODER",
+      "qualificationReceiptPath": "docs/evidence/r80-forgeaaa-autonomous-gameplay/phase-g-coder-capacity-1791699174859.json",
+      "qualification": {
+        "historical": true,
+        "status": "QUALIFIED",
+        "score": 1
+      },
+      "policy": {
+        "status": "VERIFIED",
+        "checkedAt": "2026-10-11T19:20:15.137Z",
+        "receipt": {
+          "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+          "termsEvidence": "https://kilo.ai/terms",
+          "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+          "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+          "verifiedAt": "2026-10-11T19:20:15.137Z",
+          "recheckAt": "2026-10-18T19:20:15.137Z",
+          "qualificationAt": "2026-10-11T19:20:15.137Z",
+          "termsVerifiedAt": "2026-10-11T19:20:15.137Z",
+          "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+          "termsExpiresAt": "2026-10-18T19:20:15.137Z",
+          "privacyVerifiedAt": "2026-10-11T19:20:15.137Z",
+          "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+          "privacyExpiresAt": "2026-10-18T19:20:15.137Z",
+          "priceVerifiedAt": "2026-10-11T19:20:15.137Z",
+          "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+          "priceExpiresAt": "2026-10-18T19:20:15.137Z",
+          "nextReverifyAt": "2026-10-12T01:20:15.137Z"
+        }
+      },
+      "catalog": [
+        {
+          "modelId": "kilo-auto/free",
+          "isFree": true
+        },
+        {
+          "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "isFree": true
+        },
+        {
+          "modelId": "dots-studio/dots-3-note-preview:free",
+          "isFree": true
+        },
+        {
+          "modelId": "poolside/laguna-s-2.1:free",
+          "isFree": true
+        },
+        {
+          "modelId": "liquid/lfm-2.5-2.6b:free",
+          "isFree": true
+        },
+        {
+          "modelId": "nvidia/nemotron-3.5-lightning:free",
+          "isFree": true
+        },
+        {
+          "modelId": "thinkingmachines/inkling-small:free",
+          "isFree": true
+        },
+        {
+          "modelId": "poolside/laguna-xs-2.1:free",
+          "isFree": true
+        },
+        {
+          "modelId": "cohere/north-mini-code:free",
+          "isFree": true
+        },
+        {
+          "modelId": "nvidia/nemotron-3.5-content-safety:free",
+          "isFree": true
+        },
+        {
+          "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "isFree": true
+        },
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "isFree": true
+        }
+      ],
+      "admission": {
+        "ok": true,
+        "costProfile": {
+          "inputCostPerMillion": 0,
+          "outputCostPerMillion": 0,
+          "isFree": true,
+          "freeTierVerifiedAt": "2026-10-11T19:20:16.022Z",
+          "paidFallbackPossible": false,
+          "paidFallbackDisabled": true,
+          "source": "kilo-free-direct-live"
+        },
+        "privacyClass": "permissive"
+      },
+      "status": "CURRENT_FREE_ADMISSION_PASSED"
+    },
+    "REVIEWER": {
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "role": "REVIEWER",
+      "qualificationReceiptPath": "docs/evidence/r74-autonomous-completion-and-free-reliability/reviewer-nvidia_nemotron-3-ultra-550b-a55b_free-1791628393855.json",
+      "qualification": {
+        "historical": true,
+        "status": "QUALIFIED",
+        "score": 0.875
+      },
+      "policy": {
+        "status": "VERIFIED",
+        "checkedAt": "2026-10-11T19:20:16.028Z",
+        "receipt": {
+          "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+          "termsEvidence": "https://kilo.ai/terms",
+          "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+          "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+          "verifiedAt": "2026-10-11T19:20:16.028Z",
+          "recheckAt": "2026-10-18T19:20:16.028Z",
+          "qualificationAt": "2026-10-11T19:20:16.028Z",
+          "termsVerifiedAt": "2026-10-11T19:20:16.028Z",
+          "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+          "termsExpiresAt": "2026-10-18T19:20:16.028Z",
+          "privacyVerifiedAt": "2026-10-11T19:20:16.028Z",
+          "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+          "privacyExpiresAt": "2026-10-18T19:20:16.028Z",
+          "priceVerifiedAt": "2026-10-11T19:20:16.028Z",
+          "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+          "priceExpiresAt": "2026-10-18T19:20:16.028Z",
+          "nextReverifyAt": "2026-10-12T01:20:16.028Z"
+        }
+      },
+      "catalog": [
+        {
+          "modelId": "kilo-auto/free",
+          "isFree": true
+        },
+        {
+          "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "isFree": true
+        },
+        {
+          "modelId": "dots-studio/dots-3-note-preview:free",
+          "isFree": true
+        },
+        {
+          "modelId": "poolside/laguna-s-2.1:free",
+          "isFree": true
+        },
+        {
+          "modelId": "liquid/lfm-2.5-2.6b:free",
+          "isFree": true
+        },
+        {
+          "modelId": "nvidia/nemotron-3.5-lightning:free",
+          "isFree": true
+        },
+        {
+          "modelId": "thinkingmachines/inkling-small:free",
+          "isFree": true
+        },
+        {
+          "modelId": "poolside/laguna-xs-2.1:free",
+          "isFree": true
+        },
+        {
+          "modelId": "cohere/north-mini-code:free",
+          "isFree": true
+        },
+        {
+          "modelId": "nvidia/nemotron-3.5-content-safety:free",
+          "isFree": true
+        },
+        {
+          "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "isFree": true
+        },
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "isFree": true
+        }
+      ],
+      "admission": {
+        "ok": true,
+        "costProfile": {
+          "inputCostPerMillion": 0,
+          "outputCostPerMillion": 0,
+          "isFree": true,
+          "freeTierVerifiedAt": "2026-10-11T19:20:17.763Z",
+          "paidFallbackPossible": false,
+          "paidFallbackDisabled": true,
+          "source": "kilo-free-direct-live"
+        },
+        "privacyClass": "permissive"
+      },
+      "status": "CURRENT_FREE_ADMISSION_PASSED"
+    }
+  }
+}

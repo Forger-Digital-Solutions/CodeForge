@@ -61,19 +61,23 @@ const box = (name, dims, material = "plaster") => ({
 });
 
 const r83Meshes = [
-  box("SM_DoorThreshold", [110, 20, 10], "wood"),
+  box("SM_DoorThreshold", [20, 110, 10], "wood"),
   box("SM_SharedWall_Front", [20, 225, 260]),
   box("SM_SharedWall_Back", [20, 225, 260]),
-  box("SM_SharedWall_Lintel", [110, 20, 45]),
+  box("SM_SharedWall_Lintel", [20, 110, 45]),
   box("SM_FrontWall_B", [560, 20, 260]),
   box("SM_Ceiling_B", [580, 560, 10], "wood"),
 ];
 
 // Check if already generated (avoid re-running Blender on retry)
-const alreadyGenerated = await fileExists(path.join(r83ArchDir, "SM_DoorThreshold.fbx"));
+const alreadyGenerated = (await Promise.all(r83Meshes.flatMap(m => [".fbx", ".blend"].map(extension => fileExists(path.join(r83ArchDir, m.name + extension)))))).every(Boolean);
 if (alreadyGenerated) {
-  console.log("R83 FBX files already present, skipping Blender generation");
-  report.blender = { ok: true, skipped: true, report: { ok: true, assets: r83Meshes.map((m) => ({ name: m.name, dimensionsCm: m.parts[0].dimensionsCm })) } };
+  const { assetReadback } = await import("./verify-assets-live.mjs");
+  Object.assign(report, { kind: "R83_EXISTING_ASSET_VERIFICATION", regenerated: false, reimported: false, readback: assetReadback, ok: assetReadback.ok });
+  await persist();
+  if (!report.ok) throw new Error("Existing assets failed actual Blender/editor readback; repair must be explicit");
+  console.log(JSON.stringify({ evidenceFile, ok: report.ok, regenerated: false }));
+  process.exit(0);
 } else {
   console.log("Generating R83 architectural meshes via Blender...");
   report.blender = await blender.runHeadless({

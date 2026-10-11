@@ -8,7 +8,6 @@
  * level — not a new target level.
  */
 import { mkdir, readFile, writeFile, access } from "node:fs/promises";
-import { createHash } from "node:crypto";
 import path from "node:path";
 import {
   UnrealAdapter,
@@ -18,7 +17,6 @@ import {
   verifyMigration,
   commitMigration,
   rollbackMigration,
-  isMigrationIdempotent,
   computeBuildingFingerprint,
   migrationAssemblyScript,
   verifySavedMigration,

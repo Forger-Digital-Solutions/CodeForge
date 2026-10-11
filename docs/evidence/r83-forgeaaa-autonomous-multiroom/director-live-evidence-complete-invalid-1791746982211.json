@@ -1,0 +1,698 @@
+{
+  "startedAt": "2026-10-11T19:28:42.818Z",
+  "stamp": 1791746922818,
+  "model": "nvidia/nemotron-3-super-120b-a12b:free",
+  "provider": "kilo-free-direct",
+  "costUSD": 0,
+  "tools": {
+    "inspect": {
+      "exitCode": 0,
+      "timedOut": false,
+      "ok": true,
+      "logPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\director-inspect-1791746922818.log",
+      "report": {
+        "ok": true,
+        "assets": [
+          {
+            "path": "/Game/ForgeAAA/R82/SM_FrontWall.SM_FrontWall",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_DoorLintel.SM_DoorLintel",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_SideWall.SM_SideWall",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_BackWall.SM_BackWall",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_WindowSillWall.SM_WindowSillWall",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_WindowHeader.SM_WindowHeader",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_Ceiling.SM_Ceiling",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_ExteriorFloor.SM_ExteriorFloor",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_PlankFloor.SM_PlankFloor",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R82/SM_WindowFrame.SM_WindowFrame",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/door_SM_DoorFrame.door_SM_DoorFrame",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R83/SM_DoorThreshold.SM_DoorThreshold",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R83/SM_SharedWall_Front.SM_SharedWall_Front",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R83/SM_SharedWall_Back.SM_SharedWall_Back",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R83/SM_SharedWall_Lintel.SM_SharedWall_Lintel",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R83/SM_FrontWall_B.SM_FrontWall_B",
+            "class": "/Script/Engine.StaticMesh"
+          },
+          {
+            "path": "/Game/ForgeAAA/R83/SM_Ceiling_B.SM_Ceiling_B",
+            "class": "/Script/Engine.StaticMesh"
+          }
+        ]
+      },
+      "reports": [
+        {
+          "ok": true,
+          "assets": [
+            {
+              "path": "/Game/ForgeAAA/R82/SM_FrontWall.SM_FrontWall",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_DoorLintel.SM_DoorLintel",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_SideWall.SM_SideWall",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_BackWall.SM_BackWall",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_WindowSillWall.SM_WindowSillWall",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_WindowHeader.SM_WindowHeader",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_Ceiling.SM_Ceiling",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_ExteriorFloor.SM_ExteriorFloor",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_PlankFloor.SM_PlankFloor",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R82/SM_WindowFrame.SM_WindowFrame",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/door_SM_DoorFrame.door_SM_DoorFrame",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R83/SM_DoorThreshold.SM_DoorThreshold",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R83/SM_SharedWall_Front.SM_SharedWall_Front",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R83/SM_SharedWall_Back.SM_SharedWall_Back",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R83/SM_SharedWall_Lintel.SM_SharedWall_Lintel",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R83/SM_FrontWall_B.SM_FrontWall_B",
+              "class": "/Script/Engine.StaticMesh"
+            },
+            {
+              "path": "/Game/ForgeAAA/R83/SM_Ceiling_B.SM_Ceiling_B",
+              "class": "/Script/Engine.StaticMesh"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "executionCounts": {
+    "inspect": 1,
+    "layout": 1
+  },
+  "predecessor": "director-live-evidence-first-truncated-1791746788457.json",
+  "adapterOperations": 1,
+  "qualification": {
+    "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+    "providerId": "kilo-free-direct",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "modelDisplayName": "CodeForge Free Model",
+    "accessClass": "FREE_NATIVE",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3733,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5070,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 53
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 400
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T06:12:56.066Z",
+        "completedAt": "2026-10-11T06:13:05.660Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3733,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5070,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 53
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 400
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 789,
+            "retries": 0,
+            "details": {
+              "textLength": 64,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T06:12:56.066Z",
+        "completedAt": "2026-10-11T06:13:05.660Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 789,
+            "retries": 0,
+            "details": {
+              "textLength": 64,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T06:12:56.066Z",
+        "completedAt": "2026-10-11T06:13:05.660Z"
+      }
+    },
+    "startedAt": "2026-10-11T06:12:56.066Z",
+    "completedAt": "2026-10-11T06:13:05.660Z",
+    "totalLatencyMs": 9594,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 3,
+      "transient": false,
+      "quotaExhausted": false
+    }
+  },
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T19:28:55.119Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T19:28:55.119Z",
+      "recheckAt": "2026-10-18T19:28:55.119Z",
+      "qualificationAt": "2026-10-11T19:28:55.119Z",
+      "termsVerifiedAt": "2026-10-11T19:28:55.119Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T19:28:55.119Z",
+      "privacyVerifiedAt": "2026-10-11T19:28:55.119Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T19:28:55.119Z",
+      "priceVerifiedAt": "2026-10-11T19:28:55.119Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T19:28:55.119Z",
+      "nextReverifyAt": "2026-10-12T01:28:55.119Z"
+    }
+  },
+  "catalog": [
+    {
+      "modelId": "kilo-auto/free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "isFree": true
+    },
+    {
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "isFree": true
+    },
+    {
+      "modelId": "poolside/laguna-s-2.1:free",
+      "isFree": true
+    },
+    {
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "isFree": true
+    },
+    {
+      "modelId": "thinkingmachines/inkling-small:free",
+      "isFree": true
+    },
+    {
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "isFree": true
+    },
+    {
+      "modelId": "cohere/north-mini-code:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-content-safety:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "isFree": true
+    }
+  ],
+  "admission": {
+    "ok": true,
+    "costProfile": {
+      "inputCostPerMillion": 0,
+      "outputCostPerMillion": 0,
+      "isFree": true,
+      "freeTierVerifiedAt": "2026-10-11T19:28:55.974Z",
+      "paidFallbackPossible": false,
+      "paidFallbackDisabled": true,
+      "source": "kilo-free-direct-live"
+    },
+    "privacyClass": "permissive"
+  },
+  "frames": [
+    {
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "startedAt": "2026-10-11T19:28:55.981Z",
+      "events": 143,
+      "raw": "{\"removedInstanceIds\":[\"wall-right\"],\"addedInstances\":[{\"instanceId\":\"floor-b\",\"moduleId\":\"forge/building/SM_PlankFloor/v1\",\"moduleVersion\":1,\"positionCm\":[580,260,-5],\"yawDeg\":0},{\"instanceId\":\"front-b\",\"moduleId\":\"forge/building/SM_FrontWall_B/v1\",\"moduleVersion\":1,\"positionCm\":[580,-10,130],\"yawDeg\":0},{\"instanceId\":\"back-b\",\"moduleId\":\"forge/building/SM_FrontWall_B/v1\",\"moduleVersion\":1,\"positionCm\":[580,530,130],\"yawDeg\":0},{\"instanceId\":\"wall-right-b\",\"moduleId\":\"forge/building/SM_SideWall/v1\",\"moduleVersion\":1,\"positionCm\":[860,260,130],\"yawDeg\":0},{\"instanceId\":\"ceiling-b\",\"moduleId\":\"forge/building/SM_Ceiling_B/v1\",\"moduleVersion\":1,\"positionCm\":[580,260,265],\"yawDeg\":0},{\"instanceId\":\"shared-wall-front\",\"moduleId\":\"forge/building/SM_SharedWall_Front/v1\",\"moduleVersion\":1,\"positionCm\":[290,92.5,130],\"yawDeg\":0},{\"instanceId\":\"shared-wall-back\",\"moduleId\":\"forge/building/SM_SharedWall_Back/v1\",\"moduleVersion\":1,\"positionCm\":[290,427.5,130],\"yawDeg\":0},{\"instanceId\":\"shared-wall-lintel\",\"moduleId\":\"forge/building/SM_SharedWall_Lintel/v1\",\"moduleVersion\":1,\"positionCm\":[290,260,130],\"yawDeg\":0},{\"instanceId\":\"threshold\",\"moduleId\":\"forge/building/SM_DoorThreshold/v1\",\"moduleVersion\":1,\"positionCm\":[290,260,-5],\"yawDeg\":0},{\"instanceId\":\"door-interior\",\"moduleId\":\"dtw/building/door-western/v1\",\"moduleVersion\":1,\"positionCm\":[290,260,0],\"yawDeg\":90,\"attachment\":{\"instanceId\":\"shared-wall-front\",\"socketId\":\"door-int\"}}]}",
+      "finishedAt": "2026-10-11T19:29:42.195Z"
+    }
+  ],
+  "modelArtifact": {
+    "path": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\model-connected-layout.json",
+    "sha256": "5a3d41ed77a81604cc3778234277122d17fbb2e742840ddb3194f02b6aa7aa5f",
+    "rawOrigin": "qualified CODER through current ForgeZero admission"
+  },
+  "director": {
+    "id": "aaa-3caa9027-78b2-462a-9ac9-fa2693a3f6b6",
+    "goal": "Expand the existing Western room into two connected rooms while preserving native gameplay identities and SaveGame state",
+    "projectPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83pilot\\DeadTrailsWest.uproject",
+    "engineTarget": "ue-4.27",
+    "leadPolicy": "auto",
+    "status": "done",
+    "tasks": [
+      {
+        "id": "inspect",
+        "title": "inspect",
+        "objective": "inspect",
+        "specialty": "forge-modeler",
+        "dependencies": [],
+        "status": "verified",
+        "attempts": 1,
+        "artifacts": [
+          "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+        ],
+        "evidence": [
+          {
+            "kind": "route",
+            "ref": "local-tool/UE4.27",
+            "detail": "ROUTE_SELECTED"
+          },
+          {
+            "kind": "check",
+            "ref": "report:0",
+            "detail": "1 passed/0 failed/0 blocked"
+          }
+        ],
+        "execution": {
+          "partial": false
+        }
+      },
+      {
+        "id": "layout",
+        "title": "layout",
+        "objective": "layout",
+        "specialty": "forge-modeler",
+        "dependencies": [
+          "inspect"
+        ],
+        "status": "failed",
+        "attempts": 1,
+        "artifacts": [],
+        "evidence": [
+          {
+            "kind": "route",
+            "ref": "kilo-free-direct/nvidia/nemotron-3-super-120b-a12b:free",
+            "detail": "ROUTE_SELECTED"
+          }
+        ],
+        "lastFailureSignature": "ForgeAaaError: structural overlap: ceiling/ceiling-b",
+        "detail": "ForgeAaaError: structural overlap: ceiling/ceiling-b"
+      },
+      {
+        "id": "validate",
+        "title": "validate",
+        "objective": "validate",
+        "specialty": "forge-modeler",
+        "dependencies": [
+          "layout"
+        ],
+        "status": "blocked",
+        "attempts": 0,
+        "artifacts": [],
+        "evidence": [],
+        "detail": "dependency unfinished: layout"
+      },
+      {
+        "id": "build-source-and-save",
+        "title": "build-source-and-save",
+        "objective": "build-source-and-save",
+        "specialty": "forge-modeler",
+        "dependencies": [
+          "validate"
+        ],
+        "status": "blocked",
+        "attempts": 0,
+        "artifacts": [],
+        "evidence": [],
+        "detail": "dependency unfinished: validate"
+      },
+      {
+        "id": "migrate",
+        "title": "migrate",
+        "objective": "migrate",
+        "specialty": "forge-modeler",
+        "dependencies": [
+          "build-source-and-save"
+        ],
+        "status": "blocked",
+        "attempts": 0,
+        "artifacts": [],
+        "evidence": [],
+        "detail": "dependency unfinished: build-source-and-save"
+      },
+      {
+        "id": "engine-verify",
+        "title": "engine-verify",
+        "objective": "engine-verify",
+        "specialty": "forge-modeler",
+        "dependencies": [
+          "migrate"
+        ],
+        "status": "blocked",
+        "attempts": 0,
+        "artifacts": [],
+        "evidence": [],
+        "detail": "dependency unfinished: migrate"
+      },
+      {
+        "id": "gameplay-verify",
+        "title": "gameplay-verify",
+        "objective": "gameplay-verify",
+        "specialty": "forge-modeler",
+        "dependencies": [
+          "engine-verify"
+        ],
+        "status": "blocked",
+        "attempts": 0,
+        "artifacts": [],
+        "evidence": [],
+        "detail": "dependency unfinished: engine-verify"
+      },
+      {
+        "id": "integrate",
+        "title": "integrate",
+        "objective": "integrate",
+        "specialty": "forge-modeler",
+        "dependencies": [
+          "gameplay-verify"
+        ],
+        "status": "blocked",
+        "attempts": 0,
+        "artifacts": [],
+        "evidence": [],
+        "detail": "dependency unfinished: gameplay-verify"
+      }
+    ],
+    "routeDecisions": [
+      {
+        "taskId": "inspect",
+        "specialty": "forge-modeler",
+        "role": "CODER",
+        "outcome": "selected",
+        "selected": {
+          "modelId": "UE4.27-deterministic-adapter",
+          "providerId": "local-tool",
+          "providerModelId": "UE4.27",
+          "domain": "local_tool",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        },
+        "ordered": [
+          {
+            "modelId": "UE4.27-deterministic-adapter",
+            "providerId": "local-tool",
+            "providerModelId": "UE4.27",
+            "domain": "local_tool",
+            "lifecycle": "QUALIFIED",
+            "available": true,
+            "qualifiedRoles": [
+              "CODER"
+            ],
+            "costClass": "free",
+            "privateCodeAllowed": true
+          }
+        ],
+        "reasonCodes": [
+          "ROUTE_SELECTED"
+        ],
+        "decidedAt": "2026-10-11T19:28:42.824Z"
+      },
+      {
+        "taskId": "layout",
+        "specialty": "forge-modeler",
+        "role": "CODER",
+        "outcome": "selected",
+        "selected": {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "providerId": "kilo-free-direct",
+          "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "domain": "managed_free",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": false
+        },
+        "ordered": [
+          {
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "providerId": "kilo-free-direct",
+            "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "domain": "managed_free",
+            "lifecycle": "QUALIFIED",
+            "available": true,
+            "qualifiedRoles": [
+              "CODER"
+            ],
+            "costClass": "free",
+            "privateCodeAllowed": false
+          }
+        ],
+        "reasonCodes": [
+          "ROUTE_SELECTED"
+        ],
+        "decidedAt": "2026-10-11T19:28:55.117Z"
+      }
+    ],
+    "verificationReports": [
+      {
+        "checks": [
+          {
+            "id": "inspect",
+            "kind": "custom",
+            "status": "passed",
+            "durationMs": 0,
+            "evidenceRef": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+          }
+        ],
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0,
+        "verified": true,
+        "ranAt": "2026-10-11T19:28:55.115Z"
+      }
+    ],
+    "manifests": [],
+    "counters": {
+      "taskAttempts": 2,
+      "retries": 0,
+      "modelCalls": 1,
+      "adapterOps": 1
+    },
+    "blockers": [],
+    "createdAt": "2026-10-11T19:28:42.818Z",
+    "updatedAt": "2026-10-11T19:29:42.215Z",
+    "maxAttemptsPerTask": 1,
+    "review": {
+      "approved": false,
+      "findings": [
+        "Error: ENOENT: no such file or directory, open 'G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\r83-review-packet.md'"
+      ],
+      "independent": false
+    },
+    "finalStatus": "FORGEAAA_FAILED",
+    "completedAt": "2026-10-11T19:29:42.215Z"
+  },
+  "status": "FORGEAAA_FAILED",
+  "updatedAt": "2026-10-11T19:29:42.222Z"
+}

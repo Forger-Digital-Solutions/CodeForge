@@ -1,0 +1,17 @@
+{
+  "startedAt": "2026-10-11T18:49:40.179Z",
+  "kind": "R83_ASSEMBLY_AND_MIGRATION",
+  "project": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83pilot\\DeadTrailsWest.uproject",
+  "engine": {
+    "root": "C:\\Program Files\\Epic Games\\UE_4.27",
+    "version": {
+      "major": 4,
+      "minor": 27,
+      "patch": 2,
+      "changelist": 18319896,
+      "branch": "++UE4+Release-4.27"
+    },
+    "editorCmdPath": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Binaries\\Win64\\UE4Editor-Cmd.exe",
+    "editorPath": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Binaries\\Win64\\UE4Editor.exe"
+  }
+}

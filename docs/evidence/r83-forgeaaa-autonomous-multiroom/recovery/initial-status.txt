@@ -1,0 +1,6 @@
+ M packages/forge-aaa/src/index.ts
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/
+?? packages/forge-aaa/src/building-revision.ts
+?? packages/forge-aaa/src/r83-building-spec.ts
+?? packages/forge-aaa/test/building-revision.test.ts
+?? packages/forge-aaa/test/r83-building-spec.test.ts

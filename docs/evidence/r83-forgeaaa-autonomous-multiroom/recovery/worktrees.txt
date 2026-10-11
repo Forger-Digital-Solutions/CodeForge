@@ -1,0 +1,136 @@
+worktree G:/CodeForge
+HEAD 6f8ad979fb9de0a17f69571d03358d7db5a35459
+branch refs/heads/codex/r29-release-closure
+
+worktree C:/temp/CodeForge Final Ship
+HEAD 283a307275c149b5c12559b8962ad6c40cdf87ca
+detached
+
+worktree C:/Users/Daddy_FDS/.codex/visualizations/2026/08/28/01a0465a-2343-7262-ac2e-6918a8144c48/CodeForge Certified e18cb8d
+HEAD e18cb8d260395b42dd5e2ed54ced44b41842e98c
+detached
+
+worktree C:/Users/Daddy_FDS/.codex/worktrees/r57-self-dogfood/CodeForge
+HEAD 3b8ffd3d9cb369fbff36897fe22d199de52403ba
+detached
+
+worktree C:/Users/Daddy_FDS/AppData/Local/Temp/cf-r56-worktrees-iXe9sE/CodeForge/wt-19a89b7d
+HEAD 3b8ffd3d9cb369fbff36897fe22d199de52403ba
+branch refs/heads/codeforge/worktree/run-d1066b39-4619-47ef-b43c-15753e857838-19a89b7d
+
+worktree C:/Users/Daddy_FDS/AppData/Local/Temp/cf-r56-worktrees-qTBUt5/CodeForge/wt-f03e2a6c
+HEAD 3b8ffd3d9cb369fbff36897fe22d199de52403ba
+branch refs/heads/codeforge/worktree/run-cc3313f1-b8aa-4c80-ae3a-039819338400-f03e2a6c
+
+worktree C:/Users/Daddy_FDS/AppData/Local/Temp/cf-r56-worktrees-WgeoXR/CodeForge/wt-19aaaa87
+HEAD 3b8ffd3d9cb369fbff36897fe22d199de52403ba
+branch refs/heads/codeforge/worktree/run-640ee8b8-767b-4dc9-984c-78550b90bca0-19aaaa87
+
+worktree C:/Users/Daddy_FDS/AppData/Local/Temp/wt-verify-repro/CodeForge/wt-repro01
+HEAD 3b8ffd3d9cb369fbff36897fe22d199de52403ba
+detached
+
+worktree C:/Users/Daddy_FDS/copilot-worktrees/CodeForge/forger-digital-solutions-didactic-fortnight
+HEAD 4904d2b1b9000ce3ff812dc119d844c6ab0206d2
+branch refs/heads/forger-digital-solutions-task-fix
+
+worktree C:/Users/Daddy_FDS/copilot-worktrees/CodeForge/forger-digital-solutions-fantastic-garbanzo
+HEAD 254ee4d03f8e1953e55e8d717240dcb2502d854e
+branch refs/heads/forger-digital-solutions-analyze-attached-request
+
+worktree C:/Users/Daddy_FDS/copilot-worktrees/CodeForge/forger-digital-solutions-miniature-garbanzo
+HEAD 4904d2b1b9000ce3ff812dc119d844c6ab0206d2
+branch refs/heads/forger-digital-solutions-fg10-shadow-evidence
+
+worktree G:/CodeForge/benchmarks/r58/tmp/codeforge-r58-packaged-dogfood-ucaCTS/localappdata/CodeForge/worktrees/workspace/wt-767d49e8
+HEAD 3b8ffd3d9cb369fbff36897fe22d199de52403ba
+branch refs/heads/codeforge/worktree/run-ee46c0f9-99f0-4d7d-b2fb-bf0b91a7ba04-767d49e8
+
+worktree G:/CodeForge/benchmarks/r59/tmp/workspace
+HEAD 3b8ffd3d9cb369fbff36897fe22d199de52403ba
+detached
+
+worktree G:/CodeForge/benchmarks/r68/tmp/source
+HEAD 6f8ad979fb9de0a17f69571d03358d7db5a35459
+branch refs/heads/codex/r68-daily-use
+
+worktree G:/CodeForge/benchmarks/r69/tmp/capacity-fixes
+HEAD 907d259f675ba1df108b0c10ccfb2ae31dd01dc2
+branch refs/heads/codex/r69-capacity-ux
+
+worktree G:/CodeForge/benchmarks/r69/tmp/integration
+HEAD c69ca15459d42d6d262d3875ebc088a10215d285
+branch refs/heads/codex/r69-completion-fixes
+
+worktree G:/CodeForge/benchmarks/r69/tmp/source
+HEAD 6f8ad979fb9de0a17f69571d03358d7db5a35459
+branch refs/heads/codex/r69-everyday-completion
+
+worktree G:/CodeForge/benchmarks/r70/tmp/source
+HEAD 2ac1ede001debf3c5e52f38e52b91d7d26832d12
+branch refs/heads/codex/r70-free-supply-independence
+
+worktree G:/CodeForge/benchmarks/r71/tmp/source
+HEAD 8ef7847019b49380ecf519463c6b527920770124
+branch refs/heads/codex/r71-packaged-free-supply-expansion
+
+worktree G:/CodeForge/worktrees/forge-aaa-auto
+HEAD cf483891d0ec66a8c77146415e3345fefd970c3c
+branch refs/heads/codex/r77-forge-aaa-auto
+
+worktree G:/CodeForge/worktrees/r72-free-supply-and-autonomy
+HEAD 220b365c553bff0b1ee952fb6b96498c8ddea325
+branch refs/heads/codex/r72-free-supply-and-autonomy
+
+worktree G:/CodeForge/worktrees/r73-free-supply-and-completion
+HEAD 6d4f98a7986d8bc43442a0254dea628da108e22e
+branch refs/heads/codex/r73-free-supply-and-completion
+
+worktree G:/CodeForge/worktrees/r74-autonomous-completion-and-free-reliability
+HEAD 230510131f40532ad8a402bdef131c3b8c637436
+branch refs/heads/codex/r74-autonomous-completion-and-free-reliability
+
+worktree G:/CodeForge/worktrees/r75-reliable-free-autonomous-coding
+HEAD f8cd589f57775bf24ee6636fcc907577ab170f4a
+branch refs/heads/codex/r75-reliable-free-autonomous-coding
+
+worktree G:/CodeForge/worktrees/r76-free-supply-recovery-and-reliability
+HEAD 47dfddf8e77c61277341f98470f8ecb5b2ca73f7
+branch refs/heads/codex/r76-free-supply-recovery-and-reliability
+
+worktree G:/CodeForge/worktrees/r78-forgeaaa-and-reliability
+HEAD 6e6c13b0e82af5c7690bfb0210476eaac6927eb2
+branch refs/heads/codex/r78-forgeaaa-and-reliability
+
+worktree G:/CodeForge/worktrees/r79-forgeaaa-functional-gameplay
+HEAD 7247e75728293f8632711cb3b7486c261d783324
+branch refs/heads/codex/r79-forgeaaa-functional-gameplay
+
+worktree G:/CodeForge/worktrees/r80-forgeaaa-autonomous-gameplay
+HEAD 083c674b8c49ecf870d73335c66c2924089922da
+branch refs/heads/codex/r80-forgeaaa-autonomous-gameplay
+
+worktree G:/CodeForge/worktrees/r81-forgeaaa-native-gameplay
+HEAD 6efc8b1832493ad494549302dcc81d6a09c23c06
+branch refs/heads/codex/r81-forgeaaa-native-gameplay
+
+worktree G:/CodeForge/worktrees/r82-forgeaaa-modular-western-interior
+HEAD f1b02e3f4ae5c522964743ccf04a33d004a91c33
+branch refs/heads/codex/r82-forgeaaa-modular-western-interior
+
+worktree G:/CodeForge/worktrees/r83-forgeaaa-autonomous-multiroom
+HEAD f1b02e3f4ae5c522964743ccf04a33d004a91c33
+branch refs/heads/codex/r83-forgeaaa-autonomous-multiroom
+
+worktree G:/CodeForge-BYOK-R1
+HEAD 73e48f35e79983860ebc8ed7d478f334788c8da8
+branch refs/heads/release/desktop-byok-beta-r1-rc2
+
+worktree G:/CodeForge-FreeCloud
+HEAD 42f29d7a83ae46b020ad1e761e4bec9254f409c2
+branch refs/heads/codeforge/adaptive-intelligence-r1
+
+worktree G:/CodeForge-UX-Lock
+HEAD 2a36fec67a123ffcf0b990c9b4083f0ff1af235c
+branch refs/heads/desktop-ux-lock
+

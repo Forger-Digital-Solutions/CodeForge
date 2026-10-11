@@ -846,10 +846,9 @@ export class UnrealAdapter {
 
   /**
    * Scripted asset import through the real `ImportAssets` commandlet — proven against
-   * UE 4.27.2 to write .uasset files under the destination path. Caveat recorded from
-   * live evidence: the launcher build counts the expected "Could not connect to source
-   * control" message in its error summary even when import succeeds, so callers must
-   * verify produced .uasset files themselves rather than trusting the exit code.
+   * UE 4.27.2. A source-control warning can accompany produced assets, but a nonzero
+   * exit remains a failed operation. Recovery requires independent registry, mesh,
+   * geometry, collision, material and socket readback; file existence is insufficient.
    */
   async importAssets(req: UnrealImportRequest): Promise<UnrealImportResult> {
     if (!/^\/Game(\/|$)/.test(req.destinationPath)) {

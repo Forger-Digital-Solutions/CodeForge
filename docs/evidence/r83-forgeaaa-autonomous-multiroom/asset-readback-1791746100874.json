@@ -1,0 +1,330 @@
+{
+  "startedAt": "2026-10-11T19:15:00.874Z",
+  "kind": "EXISTING_ASSET_READBACK",
+  "regenerated": false,
+  "sourceHashes": {
+    "SM_DoorThreshold": {
+      "fbx": "c4537b27c0217985fdc24ba134f9b0cc1277c24c0e637d01ac757e5b2e55f476",
+      "blend": "c056f495ef5b4f58bb58ac3617df95b87f99d3b5ec8d3e527968d2e77c0c6cf8"
+    },
+    "SM_SharedWall_Front": {
+      "fbx": "a46a7d4167135a8642d756a44515038e13ca9afd4c3a30d20dd5bfee60c95351",
+      "blend": "fbbe805898c451979345cad50baec4ede883cf02179f1c83cf3839c67ef4c345"
+    },
+    "SM_SharedWall_Back": {
+      "fbx": "4e5450afa8ed711f7be2b677080460e8482a35f577300c839b11f5cab9eefefc",
+      "blend": "1eff5a67308b3e19dc0e966546552a119d9251142b4e017ec2b43a4f5834f0aa"
+    },
+    "SM_SharedWall_Lintel": {
+      "fbx": "ca921021f3a14fd9983c92b501520339c93a8d460314162f93132e53fdef26d6",
+      "blend": "39803e2011f520a929c0e2e23ca2c02c175aeff434921bcb775ec6deecd2cc25"
+    },
+    "SM_FrontWall_B": {
+      "fbx": "1569fcd183f5c177f761a58085ff7139f423a1bb96276d5b9da1237de805d047",
+      "blend": "6f0611fc4583a931bdc990ddffae638b23d986eed85050434ef78d66174cfb87"
+    },
+    "SM_Ceiling_B": {
+      "fbx": "fe848a8b39c2e3743f3fcbe68eeaf3dc68d72ae75af5bd1a5fbd50a89bfac3b1",
+      "blend": "a4a4075c55257fc8cad180cb7ff38b8031bb7ce706e6b1bfd305ae20b4007a6e"
+    }
+  },
+  "blender": {
+    "ok": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "stdoutTail": "FORGEAAA_REPORT:{\"ok\": true, \"assets\": [{\"name\": \"SM_DoorThreshold\", \"dimensionsCm\": [20.0, 110.0, 10.0], \"pivotCm\": [0.0, 0.0, 0.0], \"materialSlots\": [\"Forge_wood\"], \"signedVolumeM3\": 0.022000001132488265, \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"sockets\": [{\"name\": \"SOCKET_AssemblyOrigin\", \"positionCm\": [0.0, 0.0, 0.0]}], \"collisionNames\": [\"UCX_SM_DoorThreshold_0\"]}, {\"name\": \"SM_SharedWall_Front\", \"dimensionsCm\": [20.0, 225.0, 260.0], \"pivotCm\": [0.0, 0.0, 0.0], \"materialSlots\": [\"Forge_plaster\"], \"signedVolumeM3\": 1.1699999745190137, \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"sockets\": [{\"name\": \"SOCKET_AssemblyOrigin\", \"positionCm\": [0.0, 0.0, 0.0]}], \"collisionNames\": [\"UCX_SM_SharedWall_Front_0\"]}, {\"name\": \"SM_SharedWall_Back\", \"dimensionsCm\": [20.0, 225.0, 260.0], \"pivotCm\": [0.0, 0.0, 0.0], \"materialSlots\": [\"Forge_plaster\"], \"signedVolumeM3\": 1.1699999745190137, \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"sockets\": [{\"name\": \"SOCKET_AssemblyOrigin\", \"positionCm\": [0.0, 0.0, 0.0]}], \"collisionNames\": [\"UCX_SM_SharedWall_Back_0\"]}, {\"name\": \"SM_SharedWall_Lintel\", \"dimensionsCm\": [20.0, 110.0, 45.0], \"pivotCm\": [0.0, 0.0, 0.0], \"materialSlots\": [\"Forge_plaster\"], \"signedVolumeM3\": 0.09900000099837772, \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"sockets\": [{\"name\": \"SOCKET_AssemblyOrigin\", \"positionCm\": [0.0, 0.0, 0.0]}], \"collisionNames\": [\"UCX_SM_SharedWall_Lintel_0\"]}, {\"name\": \"SM_FrontWall_B\", \"dimensionsCm\": [560.0, 20.0, 260.0], \"pivotCm\": [0.0, 0.0, 0.0], \"materialSlots\": [\"Forge_plaster\"], \"signedVolumeM3\": 2.911999886989593, \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"sockets\": [{\"name\": \"SOCKET_AssemblyOrigin\", \"positionCm\": [0.0, 0.0, 0.0]}], \"collisionNames\": [\"UCX_SM_FrontWall_B_0\"]}, {\"name\": \"SM_Ceiling_B\", \"dimensionsCm\": [580.0, 560.0, 10.0], \"pivotCm\": [0.0, 0.0, 0.0], \"materialSlots\": [\"Forge_wood\"], \"signedVolumeM3\": 3.248000099897383, \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"sockets\": [{\"name\": \"SOCKET_AssemblyOrigin\", \"positionCm\": [0.0, 0.0, 0.0]}], \"collisionNames\": [\"UCX_SM_Ceiling_B_0\"]}], \"errors\": [], \"version\": \"4.5.14 LTS\"}\r\nBlender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)\nRead blend: \"G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83architecture\\SM_DoorThreshold.blend\"\nRead blend: \"G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83architecture\\SM_SharedWall_Front.blend\"\nRead blend: \"G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83architecture\\SM_SharedWall_Back.blend\"\nRead blend: \"G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83architecture\\SM_SharedWall_Lintel.blend\"\nRead blend: \"G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83architecture\\SM_FrontWall_B.blend\"\nRead blend: \"G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83architecture\\SM_Ceiling_B.blend\"\n\nBlender quit\n",
+    "stderrTail": "",
+    "durationMs": 620,
+    "report": {
+      "ok": true,
+      "assets": [
+        {
+          "name": "SM_DoorThreshold",
+          "dimensionsCm": [
+            20,
+            110,
+            10
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "materialSlots": [
+            "Forge_wood"
+          ],
+          "signedVolumeM3": 0.022000001132488265,
+          "nonmanifoldEdges": 0,
+          "degenerateFaces": 0,
+          "sockets": [
+            {
+              "name": "SOCKET_AssemblyOrigin",
+              "positionCm": [
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "collisionNames": [
+            "UCX_SM_DoorThreshold_0"
+          ]
+        },
+        {
+          "name": "SM_SharedWall_Front",
+          "dimensionsCm": [
+            20,
+            225,
+            260
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "signedVolumeM3": 1.1699999745190137,
+          "nonmanifoldEdges": 0,
+          "degenerateFaces": 0,
+          "sockets": [
+            {
+              "name": "SOCKET_AssemblyOrigin",
+              "positionCm": [
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "collisionNames": [
+            "UCX_SM_SharedWall_Front_0"
+          ]
+        },
+        {
+          "name": "SM_SharedWall_Back",
+          "dimensionsCm": [
+            20,
+            225,
+            260
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "signedVolumeM3": 1.1699999745190137,
+          "nonmanifoldEdges": 0,
+          "degenerateFaces": 0,
+          "sockets": [
+            {
+              "name": "SOCKET_AssemblyOrigin",
+              "positionCm": [
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "collisionNames": [
+            "UCX_SM_SharedWall_Back_0"
+          ]
+        },
+        {
+          "name": "SM_SharedWall_Lintel",
+          "dimensionsCm": [
+            20,
+            110,
+            45
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "signedVolumeM3": 0.09900000099837772,
+          "nonmanifoldEdges": 0,
+          "degenerateFaces": 0,
+          "sockets": [
+            {
+              "name": "SOCKET_AssemblyOrigin",
+              "positionCm": [
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "collisionNames": [
+            "UCX_SM_SharedWall_Lintel_0"
+          ]
+        },
+        {
+          "name": "SM_FrontWall_B",
+          "dimensionsCm": [
+            560,
+            20,
+            260
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "signedVolumeM3": 2.911999886989593,
+          "nonmanifoldEdges": 0,
+          "degenerateFaces": 0,
+          "sockets": [
+            {
+              "name": "SOCKET_AssemblyOrigin",
+              "positionCm": [
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "collisionNames": [
+            "UCX_SM_FrontWall_B_0"
+          ]
+        },
+        {
+          "name": "SM_Ceiling_B",
+          "dimensionsCm": [
+            580,
+            560,
+            10
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "materialSlots": [
+            "Forge_wood"
+          ],
+          "signedVolumeM3": 3.248000099897383,
+          "nonmanifoldEdges": 0,
+          "degenerateFaces": 0,
+          "sockets": [
+            {
+              "name": "SOCKET_AssemblyOrigin",
+              "positionCm": [
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "collisionNames": [
+            "UCX_SM_Ceiling_B_0"
+          ]
+        }
+      ],
+      "errors": [],
+      "version": "4.5.14 LTS"
+    }
+  },
+  "unreal": {
+    "exitCode": 0,
+    "timedOut": false,
+    "ok": true,
+    "logPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83-assets-readback-1791746101510.log",
+    "report": {
+      "ok": false,
+      "assets": [
+        {
+          "path": "/Game/ForgeAAA/R83/SM_DoorThreshold.SM_DoorThreshold",
+          "registryClass": "StaticMesh",
+          "dimensionsCm": [
+            20.000009536743164,
+            110.00000762939453,
+            10
+          ],
+          "pivotOffsetCm": [
+            0,
+            0,
+            0
+          ],
+          "convexCollisionCount": 1,
+          "boxCollisionCount": 0,
+          "slots": [
+            {
+              "name": "Forge_wood",
+              "material": "/Game/ForgeAAA/R82/M_wood.M_wood"
+            }
+          ],
+          "sockets": [
+            {
+              "name": "AssemblyOrigin",
+              "positionCm": [
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "contractSockets": []
+        }
+      ],
+      "errors": [
+        "'positionCm'"
+      ]
+    },
+    "reports": [
+      {
+        "ok": false,
+        "assets": [
+          {
+            "path": "/Game/ForgeAAA/R83/SM_DoorThreshold.SM_DoorThreshold",
+            "registryClass": "StaticMesh",
+            "dimensionsCm": [
+              20.000009536743164,
+              110.00000762939453,
+              10
+            ],
+            "pivotOffsetCm": [
+              0,
+              0,
+              0
+            ],
+            "convexCollisionCount": 1,
+            "boxCollisionCount": 0,
+            "slots": [
+              {
+                "name": "Forge_wood",
+                "material": "/Game/ForgeAAA/R82/M_wood.M_wood"
+              }
+            ],
+            "sockets": [
+              {
+                "name": "AssemblyOrigin",
+                "positionCm": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "contractSockets": []
+          }
+        ],
+        "errors": [
+          "'positionCm'"
+        ]
+      }
+    ]
+  },
+  "ok": false,
+  "finishedAt": "2026-10-11T19:15:17.014Z"
+}

@@ -51,6 +51,8 @@ export interface MigrationScriptOptions {
   levelFilePath?: string;
   failAfterMutations?: number;
   readbackOnly?: "COMMITTED" | "ROLLED_BACK";
+  interruptAfterMutations?: number;
+  recoverInterrupted?: boolean;
 }
 const engineVerified = new WeakSet<SavedLevelVerification>();
 function invalid(message: string): never { throw new ForgeAaaError(FORGE_AAA_ERRORS.MANIFEST_INVALID, message); }
@@ -174,6 +176,7 @@ export function migrationAssemblyScript(migration: BuildingRevisionMigration, pr
   for (const key of ["buildingId", "previousRevision", "targetRevision", "preservedInstances", "addedInstances", "modifiedInstances", "removedInstances"] as const) if (JSON.stringify(checked[key]) !== JSON.stringify(migration[key])) invalid(`Migration script plan mismatch: ${key}`);
   if (!/^\/Game\/[A-Za-z0-9_/-]+$/.test(level)) invalid("Invalid level path");
   if (options?.failAfterMutations !== undefined && (!Number.isInteger(options.failAfterMutations) || options.failAfterMutations < 1 || options.failAfterMutations > 1024)) invalid("Fault injection count must be 1..1024");
+  if (options?.interruptAfterMutations !== undefined && (!Number.isInteger(options.interruptAfterMutations) || options.interruptAfterMutations < 1 || options.interruptAfterMutations > 1024)) invalid("Interruption count must be 1..1024");
   if (options && (![options.receiptPath, options.backupPath, ...(options.levelFilePath ? [options.levelFilePath] : [])].every((p) => /^(?:[A-Za-z]:[\\/]|\/)/.test(p)) || options.backupPath === options.receiptPath || options.backupPath === options.levelFilePath || options.receiptPath === options.levelFilePath)) invalid("Migration artifact paths must be distinct absolute paths");
   const spec = { ...checked, level, source: instanceSpecs(previous, checked.sourceModules), target: instanceSpecs(target, modules), options: options ?? null };
   return MIGRATION_PY.replace("__SPEC__", JSON.stringify(JSON.stringify(spec)));
@@ -185,6 +188,7 @@ ell, eal = unreal.EditorLevelLibrary, unreal.EditorAssetLibrary
 report = {"ok": False, "migrationId": spec["migrationId"], "buildingId": spec["buildingId"], "previousFingerprint": spec["previousRevision"]["fingerprint"], "targetFingerprint": spec["targetRevision"]["fingerprint"], "phase": "PREFLIGHT", "errors": [], "level_saved": False, "reloaded": False, "actors_verified": False, "mutation_started": False, "idempotent": False}
 options = spec["options"]
 backup_verified = False
+artifacts_safe = False
 level_file = None
 source_hash = None
 mutation_count = 0
@@ -195,8 +199,13 @@ def mutation():
     global mutation_count
     mutation_count += 1
     if options.get("failAfterMutations") == mutation_count: raise RuntimeError("injected failure after mutation " + str(mutation_count))
+    if options.get("interruptAfterMutations") == mutation_count:
+        if not ell.save_current_level(): raise RuntimeError("checkpoint save failed")
+        report.update({"phase": "INTERRUPTED", "mutationCount": mutation_count, "interruptedLevelSha256": sha(level_file)})
+        receipt()
+        os._exit(86)
 def receipt():
-    if not options: return
+    if not options or not artifacts_safe: return
     report["receiptPath"] = options["receiptPath"]
     path = options["receiptPath"]
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -256,6 +265,14 @@ def verify(instances, fingerprint, found):
             hr = hinge.get_editor_property("relative_rotation")
             leaf = actor.get_editor_property("LeafMesh").get_editor_property("relative_location")
             if max(abs(v-w) for v,w in zip((hp.x,hp.y,hp.z),(-48,0,0)))>0.1 or max(abs(v-w) for v,w in zip((leaf.x,leaf.y,leaf.z),(48,0,0)))>0.1 or max(abs(hr.pitch),abs(hr.yaw),abs(hr.roll))>0.1: raise RuntimeError("door hinge mismatch " + i["identity"])
+        if i.get("attachment"):
+            parent_spec = next(p for p in instances if p["instanceId"] == i["attachment"]["instanceId"])
+            parent = found[parent_spec["identity"]]
+            component = parent.get_editor_property("FrameMesh" if parent_spec["module"].get("nativeClass") else "static_mesh_component")
+            socket_id = i["attachment"]["socketId"]
+            if component.get_editor_property("static_mesh").find_socket(socket_id) is None: raise RuntimeError("attachment socket missing " + i["identity"])
+            socket_pos = component.get_socket_location(socket_id)
+            if max(abs(v-w) for v,w in zip((socket_pos.x,socket_pos.y,socket_pos.z),i["positionCm"]))>0.1: raise RuntimeError("attachment socket transform mismatch " + i["identity"])
         if not m.get("nativeClass"):
             origin, extent = actor.get_actor_bounds(False)
             d = m["dimensions"]
@@ -273,12 +290,25 @@ try:
     level_file = os.path.abspath(os.path.join(unreal.Paths.project_content_dir(), spec["level"][6:] + ".umap"))
     if options.get("levelFilePath") and os.path.normcase(os.path.realpath(options["levelFilePath"])) != os.path.normcase(os.path.realpath(level_file)): raise RuntimeError("level artifact does not match engine package")
     if not os.path.isfile(level_file): raise RuntimeError("saved source level file missing")
-    if len(set(os.path.normcase(os.path.abspath(p)) for p in [level_file, options["backupPath"], options["receiptPath"]])) != 3: raise RuntimeError("artifact path aliases source level")
+    if len(set(os.path.normcase(os.path.realpath(p)) for p in [level_file, options["backupPath"], options["receiptPath"], options["receiptPath"] + ".tmp"])) != 4: raise RuntimeError("artifact path aliases source level or another artifact")
+    artifacts_safe = True
     if os.path.isfile(options["receiptPath"]):
         with open(options["receiptPath"]) as f: old = json.load(f)
-        if old.get("phase") not in ["COMMITTED", "ROLLED_BACK", "PREFLIGHT", "BLOCKED"]: raise RuntimeError("interrupted migration requires backup recovery before another apply")
+        pending = old.get("phase") not in ["COMMITTED", "ROLLED_BACK", "PREFLIGHT"] and old.get("mutation_started")
+        if pending:
+            if not options.get("recoverInterrupted"): raise RuntimeError("interrupted migration requires backup recovery before another apply")
+            for key, value in [("migrationId",spec["migrationId"]),("buildingId",spec["buildingId"]),("previousFingerprint",report["previousFingerprint"]),("targetFingerprint",report["targetFingerprint"]),("levelFilePath",level_file),("backupPath",options["backupPath"])]:
+                if old.get(key) != value: raise RuntimeError("recovery ownership mismatch " + key)
+            source_hash = old.get("sourceLevelSha256")
+            if not source_hash or sha(options["backupPath"]) != source_hash: raise RuntimeError("durable recovery backup hash mismatch")
+            if old.get("interruptedLevelSha256") and sha(level_file) != old["interruptedLevelSha256"]: raise RuntimeError("interrupted level changed after checkpoint")
+            if unreal.EditorLoadingAndSavingUtils.new_blank_map(False) is None: raise RuntimeError("cannot unload interrupted world")
+            shutil.copy2(options["backupPath"], level_file)
+            if sha(level_file) != source_hash: raise RuntimeError("durable restore hash mismatch")
+            options["readbackOnly"] = "ROLLED_BACK"
+            report.update({"recoveredInterrupted": True, "sourceLevelSha256": source_hash, "backupPath": options["backupPath"], "interruptedPhase": old["phase"]})
     assets(spec["source"])
-    resolved = assets(spec["target"])
+    resolved = assets(spec["target"]) if options.get("readbackOnly") != "ROLLED_BACK" else {}
     if not eal.does_asset_exist(spec["level"]) or not ell.load_level(spec["level"]): raise RuntimeError("existing level load failed")
     found = actors()
     revisions = set(str(t) for a in found.values() for t in a.tags or [] if str(t).startswith("forge-revision:"))

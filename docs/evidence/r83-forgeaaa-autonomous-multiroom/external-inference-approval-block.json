@@ -1,0 +1,22 @@
+{
+  "recordedAt": "2026-10-11T19:24:37.834Z",
+  "status": "EXPLICIT_USER_APPROVAL_RECEIVED",
+  "rejectedAction": "node benchmarks/r83/director-live.mjs --prepare",
+  "destination": "https://api.kilo.ai/api/gateway",
+  "reason": "Automatic approval review rejected sending the source building definition, module metadata, constraints and project layout request to the external Kilo endpoint without explicit payload/destination authorization.",
+  "requestFile": "docs/evidence/r83-forgeaaa-autonomous-multiroom/model-layout-request.json",
+  "reviewPackets": [
+    "docs/evidence/r83-forgeaaa-autonomous-multiroom/r82-review-packet.md",
+    "docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-review-packet.md"
+  ],
+  "modelInferenceExecuted": false,
+  "currentAdmissionEvidence": "docs/evidence/r83-forgeaaa-autonomous-multiroom/model-eligibility.json",
+  "costUSD": 0,
+  "independentReviewsExecuted": false,
+  "approval": {
+    "receivedAt": "2026-10-11T19:25:34.753Z",
+    "answer": "Approve free model layout and reviews",
+    "destination": "https://api.kilo.ai/api/gateway",
+    "scope": "Prepared synthetic R83 layout and R82/R83 code-and-evidence review packets; current ForgeZero free admission required"
+  }
+}

@@ -1,0 +1,487 @@
+import { createHash } from "node:crypto";
+import {
+  validateBuildingDefinition,
+  buildingActorIdentity,
+  type BuildingDefinition,
+  type BuildingModuleDefinition,
+  type BuildingModuleInstance,
+} from "./building-definition.js";
+import { FORGE_AAA_ERRORS, ForgeAaaError } from "./types.js";
+
+export type MigrationStatus =
+  | "PLANNED"
+  | "VALIDATED"
+  | "APPLYING"
+  | "VERIFYING"
+  | "COMMITTED"
+  | "ROLLED_BACK"
+  | "BLOCKED";
+
+export interface BuildingRevisionMigration {
+  migrationId: string;
+  buildingId: string;
+  previousRevision: { fingerprint: string; instanceCount: number };
+  targetRevision: { fingerprint: string; instanceCount: number };
+  preservedInstances: string[];
+  addedInstances: string[];
+  modifiedInstances: string[];
+  removedInstances: string[];
+  status: MigrationStatus;
+  validatedAt?: string;
+  appliedAt?: string;
+  rolledBackAt?: string;
+}
+
+export function computeBuildingFingerprint(
+  building: BuildingDefinition,
+  modules: readonly BuildingModuleDefinition[]
+): string {
+  return createHash("sha256").update(JSON.stringify({ building, modules })).digest("hex");
+}
+
+function instancesMatch(a: BuildingModuleInstance, b: BuildingModuleInstance): boolean {
+  if (a.moduleId !== b.moduleId) return false;
+  if (a.yawDeg !== b.yawDeg) return false;
+  if (
+    a.positionCm[0] !== b.positionCm[0] ||
+    a.positionCm[1] !== b.positionCm[1] ||
+    a.positionCm[2] !== b.positionCm[2]
+  ) {
+    return false;
+  }
+  const aAtt = a.attachment;
+  const bAtt = b.attachment;
+  if (!aAtt && !bAtt) return true;
+  if (!aAtt || !bAtt) return false;
+  return aAtt.instanceId === bAtt.instanceId && aAtt.socketId === bAtt.socketId;
+}
+
+function computeInstanceDiffs(
+  previousBuilding: BuildingDefinition,
+  targetBuilding: BuildingDefinition
+): {
+  preservedInstances: string[];
+  addedInstances: string[];
+  modifiedInstances: string[];
+  removedInstances: string[];
+} {
+  const prevMap = new Map<string, BuildingModuleInstance>();
+  for (const inst of previousBuilding.instances) {
+    prevMap.set(inst.instanceId, inst);
+  }
+
+  const targetMap = new Map<string, BuildingModuleInstance>();
+  for (const inst of targetBuilding.instances) {
+    targetMap.set(inst.instanceId, inst);
+  }
+
+  const preservedInstances: string[] = [];
+  const addedInstances: string[] = [];
+  const modifiedInstances: string[] = [];
+  const removedInstances: string[] = [];
+
+  for (const targetInst of targetBuilding.instances) {
+    const prevInst = prevMap.get(targetInst.instanceId);
+    if (!prevInst) {
+      addedInstances.push(targetInst.instanceId);
+    } else if (instancesMatch(prevInst, targetInst)) {
+      preservedInstances.push(targetInst.instanceId);
+    } else {
+      modifiedInstances.push(targetInst.instanceId);
+    }
+  }
+
+  for (const prevInst of previousBuilding.instances) {
+    if (!targetMap.has(prevInst.instanceId)) {
+      removedInstances.push(prevInst.instanceId);
+    }
+  }
+
+  return { preservedInstances, addedInstances, modifiedInstances, removedInstances };
+}
+
+export function planMigration(
+  previousBuilding: BuildingDefinition,
+  targetBuilding: BuildingDefinition,
+  registry: readonly BuildingModuleDefinition[],
+  options?: { migrationId?: string }
+): BuildingRevisionMigration {
+  const validPrev = validateBuildingDefinition(previousBuilding, registry);
+  const validTarget = validateBuildingDefinition(targetBuilding, registry);
+
+  if (validPrev.buildingInstanceId !== validTarget.buildingInstanceId) {
+    throw new ForgeAaaError(
+      FORGE_AAA_ERRORS.MANIFEST_INVALID,
+      `Building identity mismatch: previous has ${validPrev.buildingInstanceId}, target has ${validTarget.buildingInstanceId}`
+    );
+  }
+
+  const prevFingerprint = computeBuildingFingerprint(validPrev, registry);
+  const targetFingerprint = computeBuildingFingerprint(validTarget, registry);
+  const diffs = computeInstanceDiffs(validPrev, validTarget);
+
+  const migrationId =
+    options?.migrationId ??
+    `migration:${validPrev.buildingInstanceId}:${prevFingerprint.slice(0, 8)}->${targetFingerprint.slice(0, 8)}`;
+
+  return {
+    migrationId,
+    buildingId: validPrev.buildingInstanceId,
+    previousRevision: {
+      fingerprint: prevFingerprint,
+      instanceCount: validPrev.instances.length,
+    },
+    targetRevision: {
+      fingerprint: targetFingerprint,
+      instanceCount: validTarget.instances.length,
+    },
+    ...diffs,
+    status: "PLANNED",
+  };
+}
+
+export function validateMigration(
+  previousBuildingOrPlan: BuildingDefinition | BuildingRevisionMigration,
+  targetBuilding: BuildingDefinition,
+  registry: readonly BuildingModuleDefinition[],
+  options?: { migrationId?: string; expectedPreviousFingerprint?: string }
+): BuildingRevisionMigration {
+  if ("status" in previousBuildingOrPlan && typeof previousBuildingOrPlan.status === "string") {
+    const plan = previousBuildingOrPlan as BuildingRevisionMigration;
+    if (plan.status !== "PLANNED") {
+      throw new ForgeAaaError(
+        FORGE_AAA_ERRORS.OPERATION_DENIED,
+        `Cannot validate migration in '${plan.status}' state; expected 'PLANNED'`
+      );
+    }
+
+    const validTarget = validateBuildingDefinition(targetBuilding, registry);
+    const targetFingerprint = computeBuildingFingerprint(validTarget, registry);
+
+    if (plan.targetRevision.fingerprint !== targetFingerprint) {
+      throw new ForgeAaaError(
+        FORGE_AAA_ERRORS.MANIFEST_INVALID,
+        `Target fingerprint mismatch: plan has ${plan.targetRevision.fingerprint}, computed ${targetFingerprint}`
+      );
+    }
+
+    return {
+      ...plan,
+      status: "VALIDATED",
+      validatedAt: new Date().toISOString(),
+    };
+  }
+
+  const previousBuilding = previousBuildingOrPlan as BuildingDefinition;
+  const validPrev = validateBuildingDefinition(previousBuilding, registry);
+  const validTarget = validateBuildingDefinition(targetBuilding, registry);
+
+  if (validPrev.buildingInstanceId !== validTarget.buildingInstanceId) {
+    throw new ForgeAaaError(
+      FORGE_AAA_ERRORS.MANIFEST_INVALID,
+      `Building identity mismatch: previous has ${validPrev.buildingInstanceId}, target has ${validTarget.buildingInstanceId}`
+    );
+  }
+
+  const prevFingerprint = computeBuildingFingerprint(validPrev, registry);
+  const targetFingerprint = computeBuildingFingerprint(validTarget, registry);
+
+  if (options?.expectedPreviousFingerprint && options.expectedPreviousFingerprint !== prevFingerprint) {
+    throw new ForgeAaaError(
+      FORGE_AAA_ERRORS.MANIFEST_INVALID,
+      `Fingerprint mismatch: expected previous ${options.expectedPreviousFingerprint}, computed ${prevFingerprint}`
+    );
+  }
+
+  const diffs = computeInstanceDiffs(validPrev, validTarget);
+  const migrationId =
+    options?.migrationId ??
+    `migration:${validPrev.buildingInstanceId}:${prevFingerprint.slice(0, 8)}->${targetFingerprint.slice(0, 8)}`;
+
+  return {
+    migrationId,
+    buildingId: validPrev.buildingInstanceId,
+    previousRevision: {
+      fingerprint: prevFingerprint,
+      instanceCount: validPrev.instances.length,
+    },
+    targetRevision: {
+      fingerprint: targetFingerprint,
+      instanceCount: validTarget.instances.length,
+    },
+    ...diffs,
+    status: "VALIDATED",
+    validatedAt: new Date().toISOString(),
+  };
+}
+
+export function applyMigration(
+  migration: BuildingRevisionMigration,
+  currentFingerprint: string
+): BuildingRevisionMigration {
+  if (migration.status !== "VALIDATED") {
+    throw new ForgeAaaError(
+      FORGE_AAA_ERRORS.OPERATION_DENIED,
+      `Cannot apply migration in '${migration.status}' state; expected 'VALIDATED'`
+    );
+  }
+  if (currentFingerprint !== migration.previousRevision.fingerprint) {
+    throw new ForgeAaaError(
+      FORGE_AAA_ERRORS.MANIFEST_INVALID,
+      `Fingerprint conflict: current level fingerprint '${currentFingerprint}' does not match expected previous revision '${migration.previousRevision.fingerprint}'`
+    );
+  }
+  return {
+    ...migration,
+    status: "APPLYING",
+    appliedAt: new Date().toISOString(),
+  };
+}
+
+export function verifyMigration(
+  migration: BuildingRevisionMigration
+): BuildingRevisionMigration {
+  if (migration.status !== "APPLYING") {
+    throw new ForgeAaaError(
+      FORGE_AAA_ERRORS.OPERATION_DENIED,
+      `Cannot verify migration in '${migration.status}' state; expected 'APPLYING'`
+    );
+  }
+  return {
+    ...migration,
+    status: "VERIFYING",
+  };
+}
+
+export function commitMigration(
+  migration: BuildingRevisionMigration,
+  verificationPassed: boolean
+): BuildingRevisionMigration {
+  if (migration.status !== "APPLYING" && migration.status !== "VERIFYING") {
+    throw new ForgeAaaError(
+      FORGE_AAA_ERRORS.OPERATION_DENIED,
+      `Cannot commit migration in '${migration.status}' state; expected 'APPLYING' or 'VERIFYING'`
+    );
+  }
+  if (!verificationPassed) {
+    return {
+      ...migration,
+      status: "ROLLED_BACK",
+      rolledBackAt: new Date().toISOString(),
+    };
+  }
+  return {
+    ...migration,
+    status: "COMMITTED",
+  };
+}
+
+export function isMigrationIdempotent(
+  migration: BuildingRevisionMigration,
+  currentFingerprint?: string
+): { idempotent: boolean; reason: string } {
+  if (currentFingerprint !== undefined && currentFingerprint === migration.targetRevision.fingerprint) {
+    return {
+      idempotent: true,
+      reason: "Current level already matches target revision fingerprint",
+    };
+  }
+  if (
+    migration.previousRevision.fingerprint === migration.targetRevision.fingerprint &&
+    migration.addedInstances.length === 0 &&
+    migration.modifiedInstances.length === 0 &&
+    migration.removedInstances.length === 0
+  ) {
+    return {
+      idempotent: true,
+      reason: "Migration has identical previous and target revisions with no instance changes",
+    };
+  }
+  return {
+    idempotent: false,
+    reason: `Migration requires changes: ${migration.addedInstances.length} added, ${migration.modifiedInstances.length} modified, ${migration.removedInstances.length} removed`,
+  };
+}
+
+export function migrationAssemblyScript(
+  migration: BuildingRevisionMigration,
+  previousOrTargetBuilding: BuildingDefinition,
+  targetBuildingOrModules: BuildingDefinition | readonly BuildingModuleDefinition[],
+  modulesOrLevel: readonly BuildingModuleDefinition[] | string,
+  levelOrNone?: string
+): string {
+  let targetBuilding: BuildingDefinition;
+  let modules: readonly BuildingModuleDefinition[];
+  let level: string;
+
+  if (typeof levelOrNone === "string") {
+    targetBuilding = targetBuildingOrModules as BuildingDefinition;
+    modules = modulesOrLevel as readonly BuildingModuleDefinition[];
+    level = levelOrNone;
+  } else {
+    targetBuilding = previousOrTargetBuilding;
+    modules = targetBuildingOrModules as readonly BuildingModuleDefinition[];
+    level = modulesOrLevel as string;
+  }
+
+  const spec = {
+    level,
+    migrationId: migration.migrationId,
+    buildingId: migration.buildingId,
+    previousFingerprint: migration.previousRevision.fingerprint,
+    targetFingerprint: migration.targetRevision.fingerprint,
+    preservedInstances: migration.preservedInstances,
+    addedInstances: migration.addedInstances,
+    modifiedInstances: migration.modifiedInstances,
+    removedInstances: migration.removedInstances,
+    instances: targetBuilding.instances.map((i) => ({
+      ...i,
+      module: modules.find((m) => m.moduleId === i.moduleId),
+      identity: buildingActorIdentity(migration.buildingId, i.instanceId),
+      persistentId: createHash("sha256")
+        .update(buildingActorIdentity(migration.buildingId, i.instanceId))
+        .digest("hex")
+        .slice(0, 32),
+    })),
+  };
+
+  return MIGRATION_PY.replace("__SPEC__", JSON.stringify(JSON.stringify(spec)));
+}
+
+const MIGRATION_PY = `import unreal, json
+spec = json.loads(__SPEC__)
+ell, eal = unreal.EditorLevelLibrary, unreal.EditorAssetLibrary
+report = {
+    "ok": False,
+    "migrationId": spec["migrationId"],
+    "buildingId": spec["buildingId"],
+    "previousFingerprint": spec["previousFingerprint"],
+    "targetFingerprint": spec["targetFingerprint"],
+    "preserved": [],
+    "added": [],
+    "modified": [],
+    "removed": [],
+    "errors": [],
+    "level_saved": False,
+}
+created = []
+try:
+    resolved = {}
+    for i in spec["instances"]:
+        m = i["module"]
+        if not m:
+            raise RuntimeError("missing module definition for instance: " + i["instanceId"])
+        mesh = eal.load_asset(m["engineAsset"])
+        leaf = eal.load_asset(m["leafAsset"]) if m.get("leafAsset") else None
+        cls = unreal.load_class(None, m["nativeClass"]) if m.get("nativeClass") else None
+        if mesh is None or (m.get("nativeClass") and (cls is None or leaf is None)):
+            raise RuntimeError("unresolved module asset: " + i["moduleId"])
+        resolved[i["instanceId"]] = (mesh, leaf, cls)
+
+    if not eal.does_asset_exist(spec["level"]) or not ell.load_level(spec["level"]):
+        raise RuntimeError("existing level load failed: " + spec["level"])
+
+    building_prefix = "forge-building:" + spec["buildingId"] + ":"
+    prev_revision_tag = "forge-revision:" + spec["previousFingerprint"]
+    target_revision_tag = "forge-revision:" + spec["targetFingerprint"]
+
+    existing = {}
+    for actor in ell.get_all_level_actors():
+        for tag in actor.tags or []:
+            t = str(tag)
+            if t.startswith(building_prefix):
+                if t in existing:
+                    raise RuntimeError("duplicate actor identity " + t)
+                existing[t] = actor
+
+    for identity, actor in existing.items():
+        actor_tags = [str(t) for t in (actor.tags or [])]
+        if prev_revision_tag not in actor_tags and target_revision_tag not in actor_tags:
+            raise RuntimeError("existing actor revision mismatch for " + identity)
+
+    for removed_id in spec["removedInstances"]:
+        identity = building_prefix + removed_id
+        actor = existing.get(identity)
+        if actor:
+            ell.destroy_actor(actor)
+            del existing[identity]
+            report["removed"].append(removed_id)
+
+    for mod_id in spec["modifiedInstances"]:
+        identity = building_prefix + mod_id
+        actor = existing.get(identity)
+        if actor:
+            ell.destroy_actor(actor)
+            del existing[identity]
+
+    for pres_id in spec["preservedInstances"]:
+        identity = building_prefix + pres_id
+        actor = existing.get(identity)
+        if actor is None:
+            raise RuntimeError("preserved actor missing: " + identity)
+        if identity not in [str(t) for t in (actor.tags or [])]:
+            raise RuntimeError("preserved actor identity tag missing: " + identity)
+        target_inst = next((x for x in spec["instances"] if x["instanceId"] == pres_id), None)
+        if target_inst:
+            pos = actor.get_actor_location()
+            rot = actor.get_actor_rotation()
+            scale = actor.get_actor_scale3d()
+            if max(abs(v - w) for v, w in zip((pos.x, pos.y, pos.z), target_inst["positionCm"])) > 0.1 or abs((rot.yaw - target_inst["yawDeg"] + 180) % 360 - 180) > 0.1 or abs(rot.pitch) > 0.1 or abs(rot.roll) > 0.1 or max(abs(v - 1) for v in (scale.x, scale.y, scale.z)) > 0.001:
+                raise RuntimeError("preserved actor transform mismatch: " + identity)
+        actor.tags = [unreal.Name(identity), unreal.Name(target_revision_tag)]
+        report["preserved"].append(pres_id)
+
+    spawn_needed = set(spec["addedInstances"] + spec["modifiedInstances"])
+    for i in spec["instances"]:
+        if i["instanceId"] not in spawn_needed:
+            continue
+        mesh, leaf, cls = resolved[i["instanceId"]]
+        pos, yaw = i["positionCm"], i["yawDeg"]
+        if cls:
+            actor = ell.spawn_actor_from_class(cls, unreal.Vector(*pos), unreal.Rotator(0, yaw, 0))
+        else:
+            actor = ell.spawn_actor_from_object(mesh, unreal.Vector(*pos), unreal.Rotator(0, yaw, 0))
+        if actor is None:
+            raise RuntimeError("spawn failed: " + i["identity"])
+        created.append(actor)
+        actor.tags = [unreal.Name(i["identity"]), unreal.Name(target_revision_tag)]
+        actor.set_actor_label(i["identity"].replace(":", "_"))
+        if cls:
+            is_window = i["module"]["moduleType"] == "window"
+            actor.set_editor_property("WindowInstanceId" if is_window else "DoorInstanceId", i["persistentId"])
+            actor.get_editor_property("FrameMesh").set_editor_property("static_mesh", mesh)
+            actor.get_editor_property("SashMesh" if is_window else "LeafMesh").set_editor_property("static_mesh", leaf)
+        existing[i["identity"]] = actor
+        if i["instanceId"] in spec["modifiedInstances"]:
+            report["modified"].append(i["instanceId"])
+        else:
+            report["added"].append(i["instanceId"])
+
+    for i in spec["instances"]:
+        actor = existing.get(i["identity"])
+        if actor is None:
+            raise RuntimeError("validation missing actor: " + i["identity"])
+        origin, extent = actor.get_actor_bounds(False)
+        if not i["module"].get("nativeClass"):
+            d = i["module"]["dimensions"]
+            want = [d["widthCm"], d["depthCm"], d["heightCm"]]
+            if abs(i["yawDeg"] % 180) == 90:
+                want[0], want[1] = want[1], want[0]
+            if max(abs(v * 2 - w) for v, w in zip((extent.x, extent.y, extent.z), want)) > 0.2:
+                raise RuntimeError("geometry dimension mismatch: " + i["identity"])
+
+    if not ell.save_current_level():
+        raise RuntimeError("level save failed")
+    report["level_saved"] = True
+    report["ok"] = True
+    report["actorCount"] = len(ell.get_all_level_actors())
+except Exception as e:
+    report["errors"].append(str(e))
+    for actor in created:
+        actor.destroy_actor()
+    report["rolledBackActors"] = len(created)
+
+print("FORGEAAA_MIGRATION_REPORT:" + json.dumps(report))
+import sys
+sys.exit(0 if report["ok"] else 2)
+`;

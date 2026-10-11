@@ -1,0 +1,696 @@
+{
+  "id": "aaa-b11045eb-6274-41b2-a123-ee2fb39898e7",
+  "goal": "Expand the existing Western room into two connected rooms while preserving native gameplay identities and SaveGame state",
+  "projectPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83pilot\\DeadTrailsWest.uproject",
+  "engineTarget": "ue-4.27",
+  "leadPolicy": "auto",
+  "status": "done",
+  "tasks": [
+    {
+      "id": "inspect",
+      "title": "inspect",
+      "objective": "inspect",
+      "specialty": "forge-modeler",
+      "dependencies": [],
+      "status": "verified",
+      "attempts": 1,
+      "artifacts": [
+        "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+      ],
+      "evidence": [
+        {
+          "kind": "route",
+          "ref": "local-tool/UE4.27",
+          "detail": "ROUTE_SELECTED"
+        },
+        {
+          "kind": "check",
+          "ref": "report:0",
+          "detail": "1 passed/0 failed/0 blocked"
+        }
+      ],
+      "execution": {
+        "partial": false
+      }
+    },
+    {
+      "id": "layout",
+      "title": "layout",
+      "objective": "layout",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "inspect"
+      ],
+      "status": "verified",
+      "attempts": 1,
+      "artifacts": [
+        "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\model-connected-layout.json"
+      ],
+      "evidence": [
+        {
+          "kind": "route",
+          "ref": "kilo-free-direct/nvidia/nemotron-3-super-120b-a12b:free",
+          "detail": "ROUTE_SELECTED"
+        },
+        {
+          "kind": "check",
+          "ref": "report:1",
+          "detail": "1 passed/0 failed/0 blocked"
+        }
+      ],
+      "execution": {
+        "partial": false
+      }
+    },
+    {
+      "id": "validate",
+      "title": "validate",
+      "objective": "validate",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "layout"
+      ],
+      "status": "verified",
+      "attempts": 1,
+      "artifacts": [
+        "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+      ],
+      "evidence": [
+        {
+          "kind": "route",
+          "ref": "local-tool/UE4.27",
+          "detail": "ROUTE_SELECTED"
+        },
+        {
+          "kind": "check",
+          "ref": "report:2",
+          "detail": "1 passed/0 failed/0 blocked"
+        }
+      ],
+      "execution": {
+        "partial": false
+      }
+    },
+    {
+      "id": "build-source-and-save",
+      "title": "build-source-and-save",
+      "objective": "build-source-and-save",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "validate"
+      ],
+      "status": "verified",
+      "attempts": 1,
+      "artifacts": [
+        "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+      ],
+      "evidence": [
+        {
+          "kind": "route",
+          "ref": "local-tool/UE4.27",
+          "detail": "ROUTE_SELECTED"
+        },
+        {
+          "kind": "check",
+          "ref": "report:3",
+          "detail": "1 passed/0 failed/0 blocked"
+        }
+      ],
+      "execution": {
+        "partial": false
+      }
+    },
+    {
+      "id": "migrate",
+      "title": "migrate",
+      "objective": "migrate",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "build-source-and-save"
+      ],
+      "status": "verified",
+      "attempts": 1,
+      "artifacts": [
+        "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+      ],
+      "evidence": [
+        {
+          "kind": "route",
+          "ref": "local-tool/UE4.27",
+          "detail": "ROUTE_SELECTED"
+        },
+        {
+          "kind": "check",
+          "ref": "report:4",
+          "detail": "1 passed/0 failed/0 blocked"
+        }
+      ],
+      "execution": {
+        "partial": false
+      }
+    },
+    {
+      "id": "engine-verify",
+      "title": "engine-verify",
+      "objective": "engine-verify",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "migrate"
+      ],
+      "status": "verified",
+      "attempts": 1,
+      "artifacts": [
+        "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+      ],
+      "evidence": [
+        {
+          "kind": "route",
+          "ref": "local-tool/UE4.27",
+          "detail": "ROUTE_SELECTED"
+        },
+        {
+          "kind": "check",
+          "ref": "report:5",
+          "detail": "1 passed/0 failed/0 blocked"
+        }
+      ],
+      "execution": {
+        "partial": false
+      }
+    },
+    {
+      "id": "gameplay-verify",
+      "title": "gameplay-verify",
+      "objective": "gameplay-verify",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "engine-verify"
+      ],
+      "status": "verified",
+      "attempts": 1,
+      "artifacts": [
+        "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+      ],
+      "evidence": [
+        {
+          "kind": "route",
+          "ref": "local-tool/UE4.27",
+          "detail": "ROUTE_SELECTED"
+        },
+        {
+          "kind": "check",
+          "ref": "report:6",
+          "detail": "1 passed/0 failed/0 blocked"
+        }
+      ],
+      "execution": {
+        "partial": false
+      }
+    },
+    {
+      "id": "integrate",
+      "title": "integrate",
+      "objective": "integrate",
+      "specialty": "forge-modeler",
+      "dependencies": [
+        "gameplay-verify"
+      ],
+      "status": "verified",
+      "attempts": 1,
+      "artifacts": [
+        "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+      ],
+      "evidence": [
+        {
+          "kind": "route",
+          "ref": "local-tool/UE4.27",
+          "detail": "ROUTE_SELECTED"
+        },
+        {
+          "kind": "check",
+          "ref": "report:7",
+          "detail": "1 passed/0 failed/0 blocked"
+        }
+      ],
+      "execution": {
+        "partial": false
+      }
+    }
+  ],
+  "routeDecisions": [
+    {
+      "taskId": "inspect",
+      "specialty": "forge-modeler",
+      "role": "CODER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "UE4.27-deterministic-adapter",
+        "providerId": "local-tool",
+        "providerModelId": "UE4.27",
+        "domain": "local_tool",
+        "lifecycle": "QUALIFIED",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": true
+      },
+      "ordered": [
+        {
+          "modelId": "UE4.27-deterministic-adapter",
+          "providerId": "local-tool",
+          "providerModelId": "UE4.27",
+          "domain": "local_tool",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        }
+      ],
+      "reasonCodes": [
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T19:32:15.085Z"
+    },
+    {
+      "taskId": "layout",
+      "specialty": "forge-modeler",
+      "role": "CODER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "providerId": "kilo-free-direct",
+        "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "domain": "managed_free",
+        "lifecycle": "QUALIFIED",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": false
+      },
+      "ordered": [
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "providerId": "kilo-free-direct",
+          "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "domain": "managed_free",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": false
+        }
+      ],
+      "reasonCodes": [
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T19:32:29.127Z"
+    },
+    {
+      "taskId": "validate",
+      "specialty": "forge-modeler",
+      "role": "CODER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "UE4.27-deterministic-adapter",
+        "providerId": "local-tool",
+        "providerModelId": "UE4.27",
+        "domain": "local_tool",
+        "lifecycle": "QUALIFIED",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": true
+      },
+      "ordered": [
+        {
+          "modelId": "UE4.27-deterministic-adapter",
+          "providerId": "local-tool",
+          "providerModelId": "UE4.27",
+          "domain": "local_tool",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        }
+      ],
+      "reasonCodes": [
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T19:33:31.386Z"
+    },
+    {
+      "taskId": "build-source-and-save",
+      "specialty": "forge-modeler",
+      "role": "CODER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "UE4.27-deterministic-adapter",
+        "providerId": "local-tool",
+        "providerModelId": "UE4.27",
+        "domain": "local_tool",
+        "lifecycle": "QUALIFIED",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": true
+      },
+      "ordered": [
+        {
+          "modelId": "UE4.27-deterministic-adapter",
+          "providerId": "local-tool",
+          "providerModelId": "UE4.27",
+          "domain": "local_tool",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        }
+      ],
+      "reasonCodes": [
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T19:33:31.401Z"
+    },
+    {
+      "taskId": "migrate",
+      "specialty": "forge-modeler",
+      "role": "CODER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "UE4.27-deterministic-adapter",
+        "providerId": "local-tool",
+        "providerModelId": "UE4.27",
+        "domain": "local_tool",
+        "lifecycle": "QUALIFIED",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": true
+      },
+      "ordered": [
+        {
+          "modelId": "UE4.27-deterministic-adapter",
+          "providerId": "local-tool",
+          "providerModelId": "UE4.27",
+          "domain": "local_tool",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        }
+      ],
+      "reasonCodes": [
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T19:34:12.978Z"
+    },
+    {
+      "taskId": "engine-verify",
+      "specialty": "forge-modeler",
+      "role": "CODER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "UE4.27-deterministic-adapter",
+        "providerId": "local-tool",
+        "providerModelId": "UE4.27",
+        "domain": "local_tool",
+        "lifecycle": "QUALIFIED",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": true
+      },
+      "ordered": [
+        {
+          "modelId": "UE4.27-deterministic-adapter",
+          "providerId": "local-tool",
+          "providerModelId": "UE4.27",
+          "domain": "local_tool",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        }
+      ],
+      "reasonCodes": [
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T19:34:29.748Z"
+    },
+    {
+      "taskId": "gameplay-verify",
+      "specialty": "forge-modeler",
+      "role": "CODER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "UE4.27-deterministic-adapter",
+        "providerId": "local-tool",
+        "providerModelId": "UE4.27",
+        "domain": "local_tool",
+        "lifecycle": "QUALIFIED",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": true
+      },
+      "ordered": [
+        {
+          "modelId": "UE4.27-deterministic-adapter",
+          "providerId": "local-tool",
+          "providerModelId": "UE4.27",
+          "domain": "local_tool",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        }
+      ],
+      "reasonCodes": [
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T19:34:44.294Z"
+    },
+    {
+      "taskId": "integrate",
+      "specialty": "forge-modeler",
+      "role": "CODER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "UE4.27-deterministic-adapter",
+        "providerId": "local-tool",
+        "providerModelId": "UE4.27",
+        "domain": "local_tool",
+        "lifecycle": "QUALIFIED",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": true
+      },
+      "ordered": [
+        {
+          "modelId": "UE4.27-deterministic-adapter",
+          "providerId": "local-tool",
+          "providerModelId": "UE4.27",
+          "domain": "local_tool",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        }
+      ],
+      "reasonCodes": [
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T19:35:12.907Z"
+    }
+  ],
+  "verificationReports": [
+    {
+      "checks": [
+        {
+          "id": "inspect",
+          "kind": "custom",
+          "status": "passed",
+          "durationMs": 0,
+          "evidenceRef": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "blocked": 0,
+      "verified": true,
+      "ranAt": "2026-10-11T19:32:29.124Z"
+    },
+    {
+      "checks": [
+        {
+          "id": "layout",
+          "kind": "custom",
+          "status": "passed",
+          "durationMs": 0,
+          "evidenceRef": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "blocked": 0,
+      "verified": true,
+      "ranAt": "2026-10-11T19:33:31.384Z"
+    },
+    {
+      "checks": [
+        {
+          "id": "validate",
+          "kind": "custom",
+          "status": "passed",
+          "durationMs": 0,
+          "evidenceRef": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "blocked": 0,
+      "verified": true,
+      "ranAt": "2026-10-11T19:33:31.399Z"
+    },
+    {
+      "checks": [
+        {
+          "id": "build-source-and-save",
+          "kind": "custom",
+          "status": "passed",
+          "durationMs": 0,
+          "evidenceRef": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "blocked": 0,
+      "verified": true,
+      "ranAt": "2026-10-11T19:34:12.975Z"
+    },
+    {
+      "checks": [
+        {
+          "id": "migrate",
+          "kind": "custom",
+          "status": "passed",
+          "durationMs": 0,
+          "evidenceRef": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "blocked": 0,
+      "verified": true,
+      "ranAt": "2026-10-11T19:34:29.745Z"
+    },
+    {
+      "checks": [
+        {
+          "id": "engine-verify",
+          "kind": "custom",
+          "status": "passed",
+          "durationMs": 0,
+          "evidenceRef": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "blocked": 0,
+      "verified": true,
+      "ranAt": "2026-10-11T19:34:44.291Z"
+    },
+    {
+      "checks": [
+        {
+          "id": "gameplay-verify",
+          "kind": "custom",
+          "status": "passed",
+          "durationMs": 0,
+          "evidenceRef": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "blocked": 0,
+      "verified": true,
+      "ranAt": "2026-10-11T19:35:12.905Z"
+    },
+    {
+      "checks": [
+        {
+          "id": "integrate",
+          "kind": "custom",
+          "status": "passed",
+          "durationMs": 0,
+          "evidenceRef": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\docs\\evidence\\r83-forgeaaa-autonomous-multiroom\\director-live-evidence.json"
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "blocked": 0,
+      "verified": true,
+      "ranAt": "2026-10-11T19:35:12.926Z"
+    }
+  ],
+  "manifests": [],
+  "counters": {
+    "taskAttempts": 8,
+    "retries": 0,
+    "modelCalls": 0,
+    "adapterOps": 8
+  },
+  "blockers": [],
+  "createdAt": "2026-10-11T19:32:15.079Z",
+  "updatedAt": "2026-10-11T19:35:12.934Z",
+  "maxAttemptsPerTask": 1,
+  "review": {
+    "approved": false,
+    "findings": [
+      "Error: Review packet exceeds bounded budget"
+    ],
+    "independent": false
+  },
+  "finalStatus": "FORGEAAA_PARTIAL",
+  "completedAt": "2026-10-11T19:35:12.934Z"
+}
