@@ -595,7 +595,7 @@ export class ModelExecutionAdapter {
             `[${event.code}] ${detail}`,
             event.code,
             event.retryable,
-            { status: event.status, retryAfter: event.retryAfter },
+            { status: event.status, retryAfter: event.retryAfter, rateLimitScope: event.rateLimitScope },
           );
         }
       }

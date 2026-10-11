@@ -1,0 +1,218 @@
+{
+  "startedAt": "2026-10-10T15:51:52.841Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "poolside/laguna-xs-2.1:free",
+  "requestBudget": 6,
+  "publicSyntheticCodeOnly": true,
+  "noCredentials": true,
+  "inferenceRequests": 4,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-10T15:51:52.843Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-10T15:51:52.843Z",
+      "recheckAt": "2026-10-17T15:51:52.843Z",
+      "qualificationAt": "2026-10-10T15:51:52.841Z",
+      "termsVerifiedAt": "2026-10-10T15:51:52.843Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-17T15:51:52.843Z",
+      "privacyVerifiedAt": "2026-10-10T15:51:52.843Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-17T15:51:52.843Z",
+      "priceVerifiedAt": "2026-10-10T15:51:52.843Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-17T15:51:52.843Z",
+      "nextReverifyAt": "2026-10-10T21:51:52.843Z"
+    }
+  },
+  "catalogModel": {
+    "modelId": "poolside/laguna-xs-2.1:free",
+    "displayName": "Poolside: Laguna XS 2.1 (free)",
+    "contextWindow": 262144,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "receipt": {
+    "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+    "providerId": "kilo-free-direct",
+    "modelId": "poolside/laguna-xs-2.1:free",
+    "modelDisplayName": "Poolside: Laguna XS 2.1 (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 756,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 9769,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 60
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 98
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-10T15:51:53.585Z",
+        "completedAt": "2026-10-10T15:52:05.062Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 756,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 9769,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 60
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 98
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 951,
+            "retries": 0,
+            "details": {
+              "textLength": 71,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-10T15:51:53.585Z",
+        "completedAt": "2026-10-10T15:52:05.062Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 951,
+            "retries": 0,
+            "details": {
+              "textLength": 71,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-10T15:51:53.585Z",
+        "completedAt": "2026-10-10T15:52:05.062Z"
+      }
+    },
+    "startedAt": "2026-10-10T15:51:53.585Z",
+    "completedAt": "2026-10-10T15:52:05.062Z",
+    "totalLatencyMs": 11477,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 3,
+      "transient": false,
+      "quotaExhausted": false
+    }
+  },
+  "observationFile": "kilo-poolside-laguna-xs-2-1-free-compact-observations-1791647512841.json",
+  "completedAt": "2026-10-10T15:52:05.062Z"
+}

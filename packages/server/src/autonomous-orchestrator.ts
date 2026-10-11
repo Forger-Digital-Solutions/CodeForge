@@ -1,7 +1,6 @@
 import crypto from "node:crypto";
 import path from "node:path";
 import { getSanitizedEnvForChild } from "./env-filter.js";
-import fs from "node:fs/promises";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import {
@@ -854,7 +853,7 @@ export class AutonomousRunOrchestrator {
           agentId: "planner",
           ...(explorerPoolId ? { preferIndependentFromPoolId: explorerPoolId } : {}),
           ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("PLANNER") } : {}),
-          task: `Produce the minimal task graph for goal: ${goal}. Include at least one coder task and an independent reviewer task depending on all implementation tasks. Preserve the user's constraints in the implementation objectives or planningIntent.constraints, and identify the real verification commands and completion evidence. Runtime-required verification commands: ${JSON.stringify(verificationCommands)}.`,
+          task: `Produce the minimal task graph for goal: ${goal}. Include at least one coder task and an independent reviewer task depending on all implementation tasks. Every coder must precede independent review; no coder may depend on a reviewer. ForgeVerify executes after review as a runtime stage: retain its commands in planningIntent.verification instead of adding a post-review coder task. Preserve the user's constraints in the implementation objectives or planningIntent.constraints, and identify the real verification commands and completion evidence. Runtime-required verification commands: ${JSON.stringify(verificationCommands)}.`,
           workspacePath: targetWs.rootPath,
           explorerEvidence,
           findings: explorerFindings,
@@ -873,7 +872,7 @@ export class AutonomousRunOrchestrator {
             parentRunId: runId, sessionId, agentId: "planner",
             ...(explorerPoolId ? { preferIndependentFromPoolId: explorerPoolId } : {}),
             ...(options.rosterContext ? { rosterAllowance: rosterAllowanceFor("PLANNER") } : {}),
-            task: `Correct the task graph for goal: ${goal}. The previous plan did not satisfy the autonomous planning contract. Include at least one coder task and an independent reviewer task depending on all implementation tasks. Retain the original scope and verification obligations. Runtime-required verification commands: ${JSON.stringify(verificationCommands)}.`,
+            task: `Correct the task graph for goal: ${goal}. The previous plan did not satisfy the autonomous planning contract. Include at least one coder task and an independent reviewer task depending on all implementation tasks. Every coder must precede independent review; no coder may depend on a reviewer. ForgeVerify executes after review as a runtime stage: retain its commands in planningIntent.verification instead of adding a post-review coder task. Retain the original scope and verification obligations. Runtime-required verification commands: ${JSON.stringify(verificationCommands)}.`,
             workspacePath: targetWs.rootPath, explorerEvidence, findings: explorerFindings,
             contextSummary: correctionContext, adapter, signal: controller.signal,
             structuredOutput: "planner",

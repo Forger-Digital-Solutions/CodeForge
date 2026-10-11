@@ -1,0 +1,77 @@
+{
+  "startedAt": "2026-10-11T02:47:16.149Z",
+  "evidenceClass": "LIVE_ANONYMOUS_FREE_PUBLIC_FIXTURES",
+  "sourceRevision": "b1510669bf5a918208192652f4096a9437734b5a",
+  "sourceDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "sourceDirty": false,
+  "status": "BLOCKED",
+  "tasks": [],
+  "supply": [
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "qualificationAt": "2026-10-11T02:46:52.109Z",
+      "qualificationSource": "docs/evidence/r76-free-supply-recovery-and-reliability/kilo-liquid-lfm-2-5-2-6b-free-compact-1791686803358.json",
+      "qualificationFreshness": "PRODUCTION_ROLE_QUALITY_AUTHORITY",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED"
+      }
+    }
+  ],
+  "inferenceFrames": [],
+  "costState": "UNKNOWN",
+  "sourceFilesSha256": "af446a8675ef5d582ccaa3dbeda241135e49befcd8423e3e9890b6e0f187ab13",
+  "sourceManifest": "R76-TASK-CAMPAIGN-LIQUID-R2-source.json",
+  "priorHealthEvidence": "docs/evidence/r76-free-supply-recovery-and-reliability/R76-TASK-CAMPAIGN-1791646434067.json",
+  "qualificationMode": "EXPLICIT_LIVE_RECEIPTS",
+  "policyReverification": [
+    {
+      "providerId": "kilo-free-direct",
+      "status": "VERIFIED",
+      "checkedAt": "2026-10-11T02:47:17.048Z"
+    }
+  ],
+  "error": "Error: CURRENT_QUALIFIED_EXPLORER_ROSTER_UNAVAILABLE",
+  "finishedAt": "2026-10-11T02:47:17.648Z",
+  "inferenceRequestSummary": {
+    "physicalProviderRequests": 0,
+    "failedRequests": 0,
+    "byProviderModel": [],
+    "byAgentModelTurns": []
+  },
+  "capacityGovernorFinal": {
+    "kilo": {
+      "providerId": "kilo-free-direct",
+      "tpmUsed": 0,
+      "tpmLimit": 60000,
+      "rpmUsed": 0,
+      "rpmLimit": 10,
+      "rphUsed": 0,
+      "rphLimit": 190,
+      "activeConcurrent": 0,
+      "maxConcurrent": 2,
+      "inFlightTokens": 0,
+      "queueDepth": 0,
+      "isCoolingDown": false,
+      "cooldownRemainingMs": 0
+    },
+    "blockrun": {
+      "providerId": "blockrun-free-direct",
+      "tpmUsed": 0,
+      "tpmLimit": 60000,
+      "rpmUsed": 0,
+      "rpmLimit": 28,
+      "rphUsed": 0,
+      "rphLimit": 285,
+      "activeConcurrent": 0,
+      "maxConcurrent": 2,
+      "inFlightTokens": 0,
+      "queueDepth": 0,
+      "isCoolingDown": false,
+      "cooldownRemainingMs": 0
+    },
+    "quotaDomains": []
+  }
+}

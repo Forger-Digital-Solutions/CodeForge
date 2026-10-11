@@ -1,0 +1,218 @@
+{
+  "startedAt": "2026-10-11T02:46:43.358Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "liquid/lfm-2.5-2.6b:free",
+  "requestBudget": 6,
+  "publicSyntheticCodeOnly": true,
+  "noCredentials": true,
+  "inferenceRequests": 4,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T02:46:43.360Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T02:46:43.360Z",
+      "recheckAt": "2026-10-18T02:46:43.360Z",
+      "qualificationAt": "2026-10-11T02:46:43.358Z",
+      "termsVerifiedAt": "2026-10-11T02:46:43.360Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T02:46:43.360Z",
+      "privacyVerifiedAt": "2026-10-11T02:46:43.360Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T02:46:43.360Z",
+      "priceVerifiedAt": "2026-10-11T02:46:43.360Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T02:46:43.360Z",
+      "nextReverifyAt": "2026-10-11T08:46:43.360Z"
+    }
+  },
+  "catalogModel": {
+    "modelId": "liquid/lfm-2.5-2.6b:free",
+    "displayName": "LiquidAI: LFM2.5-2.6B (free)",
+    "contextWindow": 65536,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": true,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "receipt": {
+    "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+    "providerId": "kilo-free-direct",
+    "modelId": "liquid/lfm-2.5-2.6b:free",
+    "modelDisplayName": "LiquidAI: LFM2.5-2.6B (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1493,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4025,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 80
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 151
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T02:46:44.169Z",
+        "completedAt": "2026-10-11T02:46:52.108Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1493,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4025,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 80
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 151
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 2421,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-11T02:46:44.169Z",
+        "completedAt": "2026-10-11T02:46:52.108Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 2421,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T02:46:44.169Z",
+        "completedAt": "2026-10-11T02:46:52.108Z"
+      }
+    },
+    "startedAt": "2026-10-11T02:46:44.169Z",
+    "completedAt": "2026-10-11T02:46:52.109Z",
+    "totalLatencyMs": 7940,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 3,
+      "transient": false,
+      "quotaExhausted": false
+    }
+  },
+  "observationFile": "kilo-liquid-lfm-2-5-2-6b-free-compact-observations-1791686803358.json",
+  "completedAt": "2026-10-11T02:46:52.109Z"
+}
