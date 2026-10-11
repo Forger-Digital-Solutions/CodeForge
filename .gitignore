@@ -46,3 +46,7 @@ docs/evidence/**/*.stderr.log
 benchmarks/r23/tasks/
 # R25 corpus delta — same deterministic-generate + frozen-manifest scheme
 benchmarks/r25/tasks/
+
+# Isolated ForgeAAA engine pilots and deterministic build caches
+.scratch/
+

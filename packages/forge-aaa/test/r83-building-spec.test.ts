@@ -1,0 +1,120 @@
+import { describe, it, expect } from "vitest";
+import { validateBuildingDefinition, buildingActorIdentity } from "../src/building-definition.js";
+import {
+  R82_ONE_ROOM_MODULES,
+  R83_NEW_MODULES,
+  R83_TWO_ROOM_MODULES,
+  R82_ONE_ROOM_BUILDING,
+  R83_TWO_ROOM_BUILDING,
+} from "../src/r83-building-spec.js";
+import { validateMigration, isMigrationIdempotent, applyMigration } from "../src/building-revision.js";
+import { validateConnectedBuilding } from "../src/connected-building.js";
+
+describe("R83 two-room building specification and layout", () => {
+  it("validates R82 single room baseline against R82 module registry", () => {
+    const validated = validateBuildingDefinition(R82_ONE_ROOM_BUILDING, R82_ONE_ROOM_MODULES);
+    expect(validated.buildingInstanceId).toBe("western-room-a");
+    expect(validated.instances.length).toBe(14);
+  });
+
+  it("validates R83 two-room connected building against R83 module registry", () => {
+    const validated = validateConnectedBuilding(R83_TWO_ROOM_BUILDING, R83_TWO_ROOM_MODULES);
+    expect(validated.buildingInstanceId).toBe("western-room-a");
+    expect(validated.instances.length).toBe(23);
+  });
+
+  it("enforces uniqueness across all module IDs in R83 registry", () => {
+    const ids = R83_TWO_ROOM_MODULES.map((m) => m.moduleId);
+    const unique = new Set(ids);
+    expect(unique.size).toBe(ids.length);
+  });
+
+  it("enforces uniqueness across all instance IDs in two-room building", () => {
+    const ids = R83_TWO_ROOM_BUILDING.instances.map((i) => i.instanceId);
+    const unique = new Set(ids);
+    expect(unique.size).toBe(ids.length);
+  });
+
+  it("keeps exterior door and interior door identities strictly distinct", () => {
+    const exterior = R83_TWO_ROOM_BUILDING.instances.find((i) => i.instanceId === "door");
+    const interior = R83_TWO_ROOM_BUILDING.instances.find((i) => i.instanceId === "door-interior");
+    expect(exterior).toBeDefined();
+    expect(interior).toBeDefined();
+    expect(exterior?.instanceId).not.toBe(interior?.instanceId);
+    expect(interior?.yawDeg).toBe(90);
+
+    const extTag = buildingActorIdentity("western-room-a", exterior!.instanceId);
+    const intTag = buildingActorIdentity("western-room-a", interior!.instanceId);
+    expect(extTag).not.toBe(intTag);
+    expect(extTag).toBe("forge-building:western-room-a:door");
+    expect(intTag).toBe("forge-building:western-room-a:door-interior");
+  });
+
+  it("physically connects Room A and Room B with shared wall doorway", () => {
+    // Room A center is at X=0; shared wall is at X=290; Room B center is at X=580
+    const floorA = R83_TWO_ROOM_BUILDING.instances.find((i) => i.instanceId === "floor")!;
+    const floorB = R83_TWO_ROOM_BUILDING.instances.find((i) => i.instanceId === "floor-b")!;
+    const lintel = R83_TWO_ROOM_BUILDING.instances.find((i) => i.instanceId === "shared-wall-lintel")!;
+    const doorInt = R83_TWO_ROOM_BUILDING.instances.find((i) => i.instanceId === "door-interior")!;
+
+    expect(floorA.positionCm[0]).toBe(0);
+    expect(floorB.positionCm[0]).toBe(580);
+    expect(lintel.positionCm[0]).toBe(290);
+    expect(doorInt.positionCm[0]).toBe(290);
+
+    // Doorway opening is at Y=260 (middle of the 520cm room)
+    expect(doorInt.positionCm[1]).toBe(260);
+    expect(lintel.positionCm[1]).toBe(260);
+  });
+
+  it("plans and validates migration from 1-room to 2-room structure", () => {
+    const migration = validateMigration(
+      R82_ONE_ROOM_BUILDING,
+      R83_TWO_ROOM_BUILDING,
+      R83_TWO_ROOM_MODULES
+    );
+
+    expect(migration.status).toBe("VALIDATED");
+    expect(migration.buildingId).toBe("western-room-a");
+    expect(migration.previousRevision.instanceCount).toBe(14);
+    expect(migration.targetRevision.instanceCount).toBe(23);
+
+    // Preserves 13 original instances
+    expect(migration.preservedInstances.length).toBe(13);
+    expect(migration.preservedInstances).toContain("floor");
+    expect(migration.preservedInstances).toContain("door");
+    expect(migration.preservedInstances).toContain("window");
+    expect(migration.preservedInstances).toContain("wall-left");
+
+    // Removes the solid wall-right
+    expect(migration.removedInstances).toEqual(["wall-right"]);
+
+    // Adds 9 new instances (3 shared wall parts, 5 Room B parts, 1 interior door)
+    expect(migration.addedInstances.length).toBe(10);
+    expect(migration.addedInstances).toContain("shared-wall-front");
+    expect(migration.addedInstances).toContain("shared-wall-lintel");
+    expect(migration.addedInstances).toContain("shared-wall-back");
+    expect(migration.addedInstances).toContain("floor-b");
+    expect(migration.addedInstances).toContain("front-b");
+    expect(migration.addedInstances).toContain("back-b");
+    expect(migration.addedInstances).toContain("wall-right-b");
+    expect(migration.addedInstances).toContain("ceiling-b");
+    expect(migration.addedInstances).toContain("door-interior");
+
+    // Can apply migration
+    const applying = applyMigration(migration, migration.previousRevision.fingerprint);
+    expect(applying.status).toBe("APPLYING");
+  });
+
+  it("confirms migration idempotency when building already at target revision", () => {
+    const migration = validateMigration(
+      R82_ONE_ROOM_BUILDING,
+      R83_TWO_ROOM_BUILDING,
+      R83_TWO_ROOM_MODULES
+    );
+
+    const check = isMigrationIdempotent(migration, migration.targetRevision.fingerprint);
+    expect(check.idempotent).toBe(true);
+    expect(check.reason).toContain("target revision fingerprint");
+  });
+});

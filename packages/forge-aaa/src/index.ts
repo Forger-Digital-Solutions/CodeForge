@@ -19,3 +19,6 @@ export * from "./architectural-template.js";
 export * from "./door-template.js";
 export * from "./project-discovery.js";
 export * from "./service.js";
+export * from "./building-revision.js";
+export * from "./r83-building-spec.js";
+export * from "./connected-building.js";

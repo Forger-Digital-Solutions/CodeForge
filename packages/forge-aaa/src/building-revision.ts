@@ -1,0 +1,308 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { buildingActorIdentity, validateBuildingDefinition, type BuildingDefinition, type BuildingModuleDefinition, type BuildingModuleInstance } from "./building-definition.js";
+import { FORGE_AAA_ERRORS, ForgeAaaError } from "./types.js";
+
+export type MigrationStatus = "PLANNED" | "VALIDATED" | "APPLYING" | "VERIFYING" | "COMMITTED" | "ROLLED_BACK" | "BLOCKED";
+export interface BuildingRevisionMigration {
+  migrationId: string;
+  buildingId: string;
+  previousRevision: { fingerprint: string; instanceCount: number };
+  targetRevision: { fingerprint: string; instanceCount: number };
+  preservedInstances: string[];
+  addedInstances: string[];
+  modifiedInstances: string[];
+  removedInstances: string[];
+  status: MigrationStatus;
+  validatedAt?: string;
+  appliedAt?: string;
+  rolledBackAt?: string;
+  sourceBuilding: BuildingDefinition;
+  sourceModules: BuildingModuleDefinition[];
+  targetBuilding: BuildingDefinition;
+  targetModules: BuildingModuleDefinition[];
+  verification?: SavedLevelVerification;
+}
+export interface MigrationOptions {
+  migrationId?: string;
+  expectedPreviousFingerprint?: string;
+  previousRegistry?: readonly BuildingModuleDefinition[];
+}
+export interface SavedLevelVerification {
+  migrationId: string;
+  buildingId: string;
+  fingerprint: string;
+  instanceCount: number;
+  levelPath: string;
+  levelFilePath: string;
+  levelFileSha256: string;
+  receiptPath: string;
+  phase: "COMMITTED" | "ROLLED_BACK";
+  level_saved: true;
+  reloaded: true;
+  actors_verified: true;
+}
+export interface MigrationScriptOptions {
+  previousRegistry?: readonly BuildingModuleDefinition[];
+  receiptPath: string;
+  backupPath: string;
+  levelFilePath?: string;
+  failAfterMutations?: number;
+}
+function invalid(message: string): never { throw new ForgeAaaError(FORGE_AAA_ERRORS.MANIFEST_INVALID, message); }
+function denied(message: string): never { throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, message); }
+export function computeBuildingFingerprint(building: BuildingDefinition, modules: readonly BuildingModuleDefinition[]): string {
+  // Preserve the R82 assembly serialization, including registry ordering and content hashes.
+  return createHash("sha256").update(JSON.stringify({ building, modules })).digest("hex");
+}
+function instancesMatch(a: BuildingModuleInstance, b: BuildingModuleInstance): boolean {
+  return a.moduleId === b.moduleId && a.moduleVersion === b.moduleVersion && a.yawDeg === b.yawDeg && a.positionCm.every((v, k) => v === b.positionCm[k]) && JSON.stringify(a.attachment) === JSON.stringify(b.attachment);
+}
+export function planMigration(previous: BuildingDefinition, target: BuildingDefinition, registry: readonly BuildingModuleDefinition[], options: MigrationOptions = {}): BuildingRevisionMigration {
+  const sourceModules = structuredClone([...(options.previousRegistry ?? registry)]);
+  const targetModules = structuredClone([...registry]);
+  const sourceBuilding = validateBuildingDefinition(previous, sourceModules);
+  const targetBuilding = validateBuildingDefinition(target, targetModules);
+  if (sourceBuilding.buildingInstanceId !== targetBuilding.buildingInstanceId) invalid("Building identity mismatch");
+  const previousFingerprint = computeBuildingFingerprint(sourceBuilding, sourceModules);
+  const targetFingerprint = computeBuildingFingerprint(targetBuilding, targetModules);
+  if (options.expectedPreviousFingerprint && options.expectedPreviousFingerprint !== previousFingerprint) invalid("Previous fingerprint mismatch");
+  const before = new Map(sourceBuilding.instances.map((i) => [i.instanceId, i]));
+  const after = new Map(targetBuilding.instances.map((i) => [i.instanceId, i]));
+  const preservedInstances: string[] = [], addedInstances: string[] = [], modifiedInstances: string[] = [];
+  for (const i of targetBuilding.instances) {
+    const old = before.get(i.instanceId);
+    if (!old) addedInstances.push(i.instanceId);
+    else if (instancesMatch(old, i) && JSON.stringify(sourceModules.find((m) => m.moduleId === old.moduleId)) === JSON.stringify(targetModules.find((m) => m.moduleId === i.moduleId))) preservedInstances.push(i.instanceId);
+    else modifiedInstances.push(i.instanceId);
+  }
+  return {
+    migrationId: options.migrationId ?? `migration:${sourceBuilding.buildingInstanceId}:${previousFingerprint.slice(0, 8)}->${targetFingerprint.slice(0, 8)}`,
+    buildingId: sourceBuilding.buildingInstanceId,
+    previousRevision: { fingerprint: previousFingerprint, instanceCount: sourceBuilding.instances.length },
+    targetRevision: { fingerprint: targetFingerprint, instanceCount: targetBuilding.instances.length },
+    preservedInstances, addedInstances, modifiedInstances,
+    removedInstances: sourceBuilding.instances.filter((i) => !after.has(i.instanceId)).map((i) => i.instanceId),
+    status: "PLANNED", sourceBuilding, sourceModules, targetBuilding, targetModules,
+  };
+}
+export function validateMigration(previous: BuildingDefinition | BuildingRevisionMigration, target: BuildingDefinition, registry: readonly BuildingModuleDefinition[], options: MigrationOptions = {}): BuildingRevisionMigration {
+  let plan: BuildingRevisionMigration;
+  if ("status" in previous) {
+    if (previous.status !== "PLANNED") denied(`Cannot validate migration in '${previous.status}' state`);
+    plan = planMigration(previous.sourceBuilding, target, registry, { ...options, migrationId: previous.migrationId, previousRegistry: options.previousRegistry ?? previous.sourceModules });
+    for (const key of ["buildingId", "previousRevision", "targetRevision", "preservedInstances", "addedInstances", "modifiedInstances", "removedInstances"] as const) {
+      if (JSON.stringify(plan[key]) !== JSON.stringify(previous[key])) invalid(`Migration plan mismatch: ${key}`);
+    }
+  } else plan = planMigration(previous, target, registry, options);
+  return { ...plan, status: "VALIDATED", validatedAt: new Date().toISOString() };
+}
+export function applyMigration(migration: BuildingRevisionMigration, currentFingerprint: string): BuildingRevisionMigration {
+  if (migration.status !== "VALIDATED") denied(`Cannot apply migration in '${migration.status}' state`);
+  if (currentFingerprint !== migration.previousRevision.fingerprint) invalid("Fingerprint conflict with previous revision");
+  return { ...migration, status: "APPLYING", appliedAt: new Date().toISOString() };
+}
+export function verifyMigration(migration: BuildingRevisionMigration): BuildingRevisionMigration {
+  if (migration.status !== "APPLYING") denied(`Cannot verify migration in '${migration.status}' state`);
+  return { ...migration, status: "VERIFYING" };
+}
+function receiptMatches(migration: BuildingRevisionMigration, evidence: SavedLevelVerification | boolean, phase: "COMMITTED" | "ROLLED_BACK"): evidence is SavedLevelVerification {
+  if (typeof evidence !== "object" || evidence === null) return false;
+  const revision = phase === "COMMITTED" ? migration.targetRevision : migration.previousRevision;
+  if (!(evidence.migrationId === migration.migrationId && evidence.buildingId === migration.buildingId && evidence.phase === phase && evidence.fingerprint === revision.fingerprint && evidence.instanceCount === revision.instanceCount && evidence.level_saved === true && evidence.reloaded === true && evidence.actors_verified === true && typeof evidence.levelPath === "string" && evidence.levelPath.startsWith("/Game/") && typeof evidence.receiptPath === "string" && /^(?:[A-Za-z]:[\\/]|\/)/.test(evidence.receiptPath) && typeof evidence.levelFilePath === "string" && /^(?:[A-Za-z]:[\\/]|\/)/.test(evidence.levelFilePath) && /^[a-f0-9]{64}$/.test(evidence.levelFileSha256))) return false;
+  try {
+    const durable = JSON.parse(readFileSync(evidence.receiptPath, "utf8")) as Record<string, unknown>;
+    for (const key of ["migrationId", "buildingId", "phase", "fingerprint", "instanceCount", "levelPath", "levelFilePath", "levelFileSha256", "receiptPath", "level_saved", "reloaded", "actors_verified"] as const) if (durable[key] !== evidence[key]) return false;
+    return createHash("sha256").update(readFileSync(evidence.levelFilePath)).digest("hex") === evidence.levelFileSha256;
+  } catch { return false; }
+}
+export function commitMigration(migration: BuildingRevisionMigration, evidence: SavedLevelVerification | boolean): BuildingRevisionMigration {
+  if (migration.status !== "VERIFYING") denied(`Cannot commit migration in '${migration.status}' state; expected VERIFYING`);
+  if (!receiptMatches(migration, evidence, "COMMITTED")) return { ...migration, status: "BLOCKED" };
+  return { ...migration, status: "COMMITTED", verification: structuredClone(evidence) };
+}
+export function rollbackMigration(migration: BuildingRevisionMigration, evidence: SavedLevelVerification | boolean): BuildingRevisionMigration {
+  if (!["APPLYING", "VERIFYING", "BLOCKED"].includes(migration.status)) denied(`Cannot roll back migration in '${migration.status}' state`);
+  if (!receiptMatches(migration, evidence, "ROLLED_BACK")) return { ...migration, status: "BLOCKED" };
+  return { ...migration, status: "ROLLED_BACK", rolledBackAt: new Date().toISOString(), verification: structuredClone(evidence) };
+}
+export function isMigrationIdempotent(migration: BuildingRevisionMigration, currentFingerprint?: string): { idempotent: boolean; reason: string } {
+  const idempotent = currentFingerprint === migration.targetRevision.fingerprint || (migration.previousRevision.fingerprint === migration.targetRevision.fingerprint && !migration.addedInstances.length && !migration.modifiedInstances.length && !migration.removedInstances.length);
+  return { idempotent, reason: idempotent ? "Building is already at target revision fingerprint; engine actor verification is still required" : "Migration requires instance changes" };
+}
+function instanceSpecs(building: BuildingDefinition, modules: readonly BuildingModuleDefinition[]) {
+  return building.instances.map((i) => {
+    const identity = buildingActorIdentity(building.buildingInstanceId, i.instanceId);
+    return { ...i, module: modules.find((m) => m.moduleId === i.moduleId), identity, persistentId: createHash("sha256").update(identity).digest("hex").slice(0, 32) };
+  });
+}
+export function migrationAssemblyScript(migration: BuildingRevisionMigration, previousOrTarget: BuildingDefinition, targetOrModules: BuildingDefinition | readonly BuildingModuleDefinition[], modulesOrLevel: readonly BuildingModuleDefinition[] | string, levelOrOptions?: string | MigrationScriptOptions, scriptOptions?: MigrationScriptOptions): string {
+  const explicitSource = typeof levelOrOptions === "string";
+  const previous = explicitSource ? previousOrTarget : migration.sourceBuilding;
+  const target = explicitSource ? targetOrModules as BuildingDefinition : previousOrTarget;
+  const modules = explicitSource ? modulesOrLevel as readonly BuildingModuleDefinition[] : targetOrModules as readonly BuildingModuleDefinition[];
+  const level = explicitSource ? levelOrOptions : modulesOrLevel as string;
+  const options = explicitSource ? scriptOptions : levelOrOptions as MigrationScriptOptions | undefined;
+  const checked = planMigration(previous, target, modules, { migrationId: migration.migrationId, previousRegistry: options?.previousRegistry ?? migration.sourceModules });
+  for (const key of ["buildingId", "previousRevision", "targetRevision", "preservedInstances", "addedInstances", "modifiedInstances", "removedInstances"] as const) if (JSON.stringify(checked[key]) !== JSON.stringify(migration[key])) invalid(`Migration script plan mismatch: ${key}`);
+  if (!/^\/Game\/[A-Za-z0-9_/-]+$/.test(level)) invalid("Invalid level path");
+  if (options?.failAfterMutations !== undefined && (!Number.isInteger(options.failAfterMutations) || options.failAfterMutations < 1 || options.failAfterMutations > 1024)) invalid("Fault injection count must be 1..1024");
+  if (options && (![options.receiptPath, options.backupPath, ...(options.levelFilePath ? [options.levelFilePath] : [])].every((p) => /^(?:[A-Za-z]:[\\/]|\/)/.test(p)) || options.backupPath === options.receiptPath || options.backupPath === options.levelFilePath || options.receiptPath === options.levelFilePath)) invalid("Migration artifact paths must be distinct absolute paths");
+  const spec = { ...checked, level, source: instanceSpecs(previous, checked.sourceModules), target: instanceSpecs(target, modules), options: options ?? null };
+  return MIGRATION_PY.replace("__SPEC__", JSON.stringify(JSON.stringify(spec)));
+}
+
+const MIGRATION_PY = `import unreal, json, os, shutil, hashlib, sys
+spec = json.loads(__SPEC__)
+ell, eal = unreal.EditorLevelLibrary, unreal.EditorAssetLibrary
+report = {"ok": False, "migrationId": spec["migrationId"], "buildingId": spec["buildingId"], "previousFingerprint": spec["previousRevision"]["fingerprint"], "targetFingerprint": spec["targetRevision"]["fingerprint"], "phase": "PREFLIGHT", "errors": [], "level_saved": False, "reloaded": False, "actors_verified": False, "mutation_started": False, "idempotent": False}
+options = spec["options"]
+backup_verified = False
+level_file = None
+source_hash = None
+mutation_count = 0
+prefix = "forge-building:" + spec["buildingId"] + ":"
+def sha(path):
+    with open(path, "rb") as f: return hashlib.sha256(f.read()).hexdigest()
+def mutation():
+    global mutation_count
+    mutation_count += 1
+    if options.get("failAfterMutations") == mutation_count: raise RuntimeError("injected failure after mutation " + str(mutation_count))
+def receipt():
+    if not options: return
+    report["receiptPath"] = options["receiptPath"]
+    path = options["receiptPath"]
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path + ".tmp", "w") as f:
+        json.dump(report, f, sort_keys=True)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(path + ".tmp", path)
+def actors():
+    result = {}
+    for actor in ell.get_all_level_actors():
+        ids = [str(t) for t in actor.tags or [] if str(t).startswith(prefix)]
+        if len(ids) > 1: raise RuntimeError("multiple building identities on actor")
+        for identity in ids:
+            if identity in result: raise RuntimeError("duplicate actor identity " + identity)
+            result[identity] = actor
+    return result
+def assets(instances):
+    result = {}
+    for i in instances:
+        m = i["module"]
+        mesh = eal.load_asset(m["engineAsset"])
+        leaf = eal.load_asset(m["leafAsset"]) if m.get("leafAsset") else None
+        cls = unreal.load_class(None, m["nativeClass"]) if m.get("nativeClass") else None
+        if mesh is None or (m.get("nativeClass") and (cls is None or leaf is None)): raise RuntimeError("unresolved module asset " + i["moduleId"])
+        result[i["instanceId"]] = (mesh, leaf, cls)
+    return result
+def verify(instances, fingerprint, found):
+    if set(found) != set(i["identity"] for i in instances): raise RuntimeError("building identity set mismatch")
+    revision = "forge-revision:" + fingerprint
+    for i in instances:
+        actor, m = found[i["identity"]], i["module"]
+        revisions = [str(t) for t in actor.tags or [] if str(t).startswith("forge-revision:")]
+        if revisions != [revision]: raise RuntimeError("mixed or stale revision " + i["identity"])
+        pos, rot, scale = actor.get_actor_location(), actor.get_actor_rotation(), actor.get_actor_scale3d()
+        if max(abs(v-w) for v,w in zip((pos.x,pos.y,pos.z), i["positionCm"])) > 0.1 or abs((rot.yaw-i["yawDeg"]+180)%360-180) > 0.1 or abs(rot.pitch) > 0.1 or abs(rot.roll) > 0.1 or max(abs(v-1) for v in (scale.x,scale.y,scale.z)) > 0.001: raise RuntimeError("actor transform mismatch " + i["identity"])
+        if m.get("nativeClass"):
+            if actor.get_class().get_path_name() != m["nativeClass"]: raise RuntimeError("native class mismatch " + i["identity"])
+            window = m["moduleType"] == "window"
+            if str(actor.get_editor_property("WindowInstanceId" if window else "DoorInstanceId")) != i["persistentId"]: raise RuntimeError("persistent identity mismatch " + i["identity"])
+            components = [("FrameMesh", m["engineAsset"]), ("SashMesh" if window else "LeafMesh", m["leafAsset"])]
+        else:
+            if not isinstance(actor, unreal.StaticMeshActor): raise RuntimeError("structural actor class mismatch " + i["identity"])
+            components = [("static_mesh_component", m["engineAsset"])]
+        for component, asset in components:
+            mesh = actor.get_editor_property(component).get_editor_property("static_mesh")
+            if mesh is None or mesh.get_path_name().split(".")[0] != asset: raise RuntimeError("actor asset mismatch " + i["identity"])
+        if not m.get("nativeClass"):
+            origin, extent = actor.get_actor_bounds(False)
+            d = m["dimensions"]
+            want = [d["widthCm"], d["depthCm"], d["heightCm"]]
+            if abs(i["yawDeg"] % 180) == 90: want[0], want[1] = want[1], want[0]
+            if max(abs(v*2-w) for v,w in zip((extent.x,extent.y,extent.z), want)) > 0.2: raise RuntimeError("geometry dimension mismatch " + i["identity"])
+def reload_verify(instances, fingerprint):
+    if not ell.load_level(spec["level"]): raise RuntimeError("saved level reload failed")
+    verify(instances, fingerprint, actors())
+    report.update({"fingerprint": fingerprint, "instanceCount": len(instances), "levelPath": spec["level"], "levelFilePath": level_file, "levelFileSha256": sha(level_file), "level_saved": True, "reloaded": True, "actors_verified": True})
+try:
+    if not options: raise RuntimeError("durable receiptPath and backupPath required before mutation")
+    level_file = options.get("levelFilePath") or os.path.abspath(os.path.join(unreal.Paths.project_content_dir(), spec["level"][6:] + ".umap"))
+    if not os.path.isfile(level_file): raise RuntimeError("saved source level file missing")
+    if len(set(os.path.normcase(os.path.abspath(p)) for p in [level_file, options["backupPath"], options["receiptPath"]])) != 3: raise RuntimeError("artifact path aliases source level")
+    if os.path.isfile(options["receiptPath"]):
+        with open(options["receiptPath"]) as f: old = json.load(f)
+        if old.get("phase") not in ["COMMITTED", "ROLLED_BACK", "PREFLIGHT", "BLOCKED"]: raise RuntimeError("interrupted migration requires backup recovery before another apply")
+    assets(spec["source"])
+    resolved = assets(spec["target"])
+    if not eal.does_asset_exist(spec["level"]) or not ell.load_level(spec["level"]): raise RuntimeError("existing level load failed")
+    found = actors()
+    revisions = set(str(t) for a in found.values() for t in a.tags or [] if str(t).startswith("forge-revision:"))
+    if revisions == {"forge-revision:" + report["targetFingerprint"]}:
+        verify(spec["target"], report["targetFingerprint"], found)
+        reload_verify(spec["target"], report["targetFingerprint"])
+        report.update({"ok": True, "phase": "COMMITTED", "idempotent": True, "preserved": spec["preservedInstances"], "added": [], "modified": [], "removed": []})
+        receipt()
+    else:
+        verify(spec["source"], report["previousFingerprint"], found)
+        source_hash = sha(level_file)
+        os.makedirs(os.path.dirname(options["backupPath"]), exist_ok=True)
+        shutil.copy2(level_file, options["backupPath"])
+        if sha(options["backupPath"]) != source_hash: raise RuntimeError("backup hash mismatch")
+        backup_verified = True
+        report.update({"phase": "BACKED_UP", "sourceLevelSha256": source_hash, "backupPath": options["backupPath"], "levelFilePath": level_file})
+        receipt()
+        report.update({"phase": "APPLYING", "mutation_started": True})
+        receipt()
+        staged = {}
+        # Stage replacements before destroying source actors so spawn/property failures are recoverable.
+        for i in spec["target"]:
+            if i["instanceId"] in spec["preservedInstances"]: continue
+            mesh, leaf, cls = resolved[i["instanceId"]]
+            actor = ell.spawn_actor_from_class(cls, unreal.Vector(*i["positionCm"]), unreal.Rotator(0,i["yawDeg"],0)) if cls else ell.spawn_actor_from_object(mesh, unreal.Vector(*i["positionCm"]), unreal.Rotator(0,i["yawDeg"],0))
+            if actor is None: raise RuntimeError("spawn failed " + i["identity"])
+            actor.tags = [unreal.Name(i["identity"]), unreal.Name("forge-revision:" + report["targetFingerprint"])]
+            actor.set_actor_label(i["identity"].replace(":", "_"))
+            if cls:
+                window = i["module"]["moduleType"] == "window"
+                actor.set_editor_property("WindowInstanceId" if window else "DoorInstanceId", i["persistentId"])
+                actor.get_editor_property("FrameMesh").set_editor_property("static_mesh", mesh)
+                actor.get_editor_property("SashMesh" if window else "LeafMesh").set_editor_property("static_mesh", leaf)
+            staged[i["identity"]] = actor
+            mutation()
+        for instance_id in spec["removedInstances"] + spec["modifiedInstances"]:
+            if not ell.destroy_actor(found[prefix + instance_id]): raise RuntimeError("destroy failed " + instance_id)
+            mutation()
+        for instance_id in spec["preservedInstances"]:
+            actor = found[prefix + instance_id]
+            actor.tags = [t for t in actor.tags or [] if not str(t).startswith("forge-revision:")] + [unreal.Name("forge-revision:" + report["targetFingerprint"])]
+            mutation()
+        verify(spec["target"], report["targetFingerprint"], actors())
+        report["phase"] = "SAVING"
+        receipt()
+        if not ell.save_current_level(): raise RuntimeError("level save failed")
+        report["phase"] = "VERIFYING"
+        receipt()
+        reload_verify(spec["target"], report["targetFingerprint"])
+        report.update({"ok": True, "phase": "COMMITTED", "preserved": spec["preservedInstances"], "added": spec["addedInstances"], "modified": spec["modifiedInstances"], "removed": spec["removedInstances"]})
+        receipt()
+except Exception as error:
+    report["errors"].append(str(error))
+    report.update({"ok": False, "phase": "BLOCKED", "level_saved": False, "reloaded": False, "actors_verified": False})
+    if report["mutation_started"] and backup_verified:
+        try:
+            # Unload the dirty world before restoring its durable package.
+            if not ell.new_level("/Game/ForgeAAA/R83/MigrationRecoveryTransient"): raise RuntimeError("cannot unload dirty migration world")
+            if sha(options["backupPath"]) != source_hash: raise RuntimeError("recovery backup changed")
+            shutil.copy2(options["backupPath"], level_file)
+            if sha(level_file) != source_hash: raise RuntimeError("restored map hash mismatch")
+            reload_verify(spec["source"], report["previousFingerprint"])
+            report["phase"] = "ROLLED_BACK"
+        except Exception as recovery_error: report["errors"].append("recovery failed: " + str(recovery_error))
+    try: receipt()
+    except Exception as receipt_error: report["errors"].append("receipt failed: " + str(receipt_error))
+print("FORGEAAA_MIGRATION_REPORT:" + json.dumps(report))
+sys.exit(0 if report["ok"] else 2)
+`;
