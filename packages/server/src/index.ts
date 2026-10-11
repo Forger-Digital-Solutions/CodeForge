@@ -2877,7 +2877,7 @@ export class CodeForgeServer {
    * server from demo to real without a restart. Test/mock providers never flip it.
    */
   private realRuntimeEnabled(): boolean {
-    return this.useRealRuntime || this.providerCatalog.all().some((a) => a.isTestProvider !== true && a.providerId !== PAID_AUTO_PROVIDER_ID);
+    return this.useRealRuntime || this.providerCatalog.all().some((a) => a.isTestProvider !== true && a.providerId !== PAID_AUTO_PROVIDER_ID && a.providerId !== FORGE_AAA_PROVIDER_ID);
   }
 
   private getOrCreateRuntime(sessionId: string, userId?: string, hostedWorker?: HostedWorkerOptions): AgentRuntime {

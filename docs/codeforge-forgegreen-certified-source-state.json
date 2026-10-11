@@ -1,6 +1,6 @@
 {
-  "sourceStateId": "ec08e481b4cb9073045c9516b3d320e278ad3d1be3fc224d441ae4f871f4ecdd",
-  "surfaceVersion": "r67-everyday-completion-reliability-v1",
+  "sourceStateId": "3d31749a85d15655d434c0f6b9406adf724ed078ffe55b188f2d0dcc4200911e",
+  "surfaceVersion": "r84-free-cloud-autonomy-v1",
   "schemaVersion": "forgegreen-source-state/v1",
   "baseBranch": "feat/codeforge-cloud",
   "baseCommit": "b415032cf1241a701ac2274a1559601a02721be6",
@@ -39,10 +39,12 @@
     "packages/benchmark/src/index.ts",
     "packages/benchmark/src/protected-acceptance.ts",
     "packages/cloud-gateway/src/provider-registry.ts",
+    "packages/cloud-gateway/test/first-party-worker-fleet.test.ts",
     "packages/cloud-usage/package.json",
     "packages/cloud-usage/src/index.ts",
     "packages/cloud-usage/src/managed-paid.ts",
     "packages/cloud-usage/src/shillings.ts",
+    "packages/cloud-usage/test/shillings.test.ts",
     "packages/context/src/budget.ts",
     "packages/context/src/index.ts",
     "packages/context/src/planner.ts",
@@ -66,6 +68,10 @@
     "packages/eight-bit/test/role-quality.test.ts",
     "packages/eight-bit/test/route-health-authority.test.ts",
     "packages/eight-bit/test/runtime.test.ts",
+    "packages/forge-aaa/src/model-review.ts",
+    "packages/forge-aaa/test/door.test.ts",
+    "packages/forge-aaa/test/model-review.test.ts",
+    "packages/forge-aaa/test/r83-building-spec.test.ts",
     "packages/forge-green/src/optimization-candidate-a.ts",
     "packages/forge-green/src/optimization-candidates-shadow.ts",
     "packages/forge-green/src/optimization-decision.ts",
@@ -92,12 +98,21 @@
     "packages/paid-auto/src/index.ts",
     "packages/paid-auto/src/registry.ts",
     "packages/paid-auto/src/service.ts",
+    "packages/paid-auto/test/budget-gated-adapter.test.ts",
+    "packages/paid-auto/test/expected-cost.test.ts",
+    "packages/plugins/test/marketplace.test.ts",
     "packages/protocol/src/subagent-runtime.ts",
     "packages/providers/src/capacity-governor.ts",
     "packages/providers/src/index.ts",
+    "packages/providers/src/openai-compatible.ts",
     "packages/providers/src/openrouter-entitlement.ts",
     "packages/providers/src/provider-factory.ts",
+    "packages/providers/test/ai-horde.test.ts",
+    "packages/providers/test/capacity-governor.test.ts",
+    "packages/providers/test/openai-compatible-stream-errors.test.ts",
+    "packages/providers/test/openai-compatible.test.ts",
     "packages/providers/test/openrouter-entitlement.test.ts",
+    "packages/repo-intelligence/src/engine.ts",
     "packages/router/package.json",
     "packages/router/src/index.ts",
     "packages/secrets/src/index.ts",
@@ -136,11 +151,16 @@
     "packages/server/test/forge-workspaces.test.ts",
     "packages/server/test/free-fabric-wiring.test.ts",
     "packages/server/test/free-routing-authority.test.ts",
+    "packages/server/test/paid-role-routing.test.ts",
     "packages/server/test/progress-watchdog.test.ts",
     "packages/server/test/r21-autonomous-command-gate.test.ts",
     "packages/server/test/r44-edit-discipline.test.ts",
+    "packages/server/test/r50-failover-budget.test.ts",
     "packages/server/test/r50-tool-safety.test.ts",
+    "packages/server/test/r52-retry-amplification.test.ts",
     "packages/server/test/r54-quality-handoff.test.ts",
+    "packages/server/test/r55-multi-user.test.ts",
+    "packages/server/test/release-status.test.ts",
     "packages/server/test/remote-control-pressure.test.ts",
     "packages/server/test/remote-direct-transport.test.ts",
     "packages/server/test/role-output-budget.test.ts",
@@ -176,137 +196,157 @@
     "apps/cloud-api/src/remote-direct-http.ts": "812c17a19f7900b46d425e9b5053c4bff73c3f97",
     "apps/cloud-api/src/server.ts": "d8218a805183c23d3d5cb0db646e860bb7c9bbfd",
     "apps/cloud-api/src/sponsor-operator-http.ts": "c34043c2ef493230b2446ec34474fb9e790c037b",
-    "apps/cloud-api/src/sponsor-operator-service.ts": "136c6d5764c5492be13b94963889b0414ef9da8d",
+    "apps/cloud-api/src/sponsor-operator-service.ts": "3b83d4d94ab465b9def8efd1bf03f1777026800a",
     "apps/cloud-api/test/deployment-identity.test.ts": "22dc3f791f6ee72d8e50822d4044cab39ee82f77",
-    "apps/cloud-api/test/remote-direct-dispatch.test.ts": "347dc3175189cb2f3cf2f72b2dcdea1b708abcd0",
+    "apps/cloud-api/test/remote-direct-dispatch.test.ts": "18a97afa479ad7c2ed9a8b3ae307314b0bc8527b",
     "apps/cloud-api/test/remote-direct-http.test.ts": "70a27c52a6d70e0af88c855ed9bffafc01fc3e30",
     "apps/cloud-api/test/sponsor-operator.test.ts": "7fadf44233b191e3fe915d432bb3498c3b9b03e9",
-    "apps/desktop/src/main.ts": "689fbb784b1e7c30352aa8e3526c72925239e31a",
-    "apps/desktop/src/openrouter-oauth-flow.ts": "440b944599b079119c91df72a4553cf940bd8e35",
-    "apps/desktop/src/preload.cjs": "fcf88ea298027fef8e504665879ca9e7b7ddfbb6",
-    "apps/desktop/src/preload.ts": "bbb0e6bb39db5abc8ee211c26165c385ed9216c7",
-    "apps/desktop/src/provider-connection-types.ts": "3d6a07df277fa69cc9c2785e2bb84123265aa558",
-    "apps/desktop/src/provider-connections.ts": "1f40619ce6ace554d7ae881ac1b7ca5fb18a7137",
+    "apps/desktop/src/main.ts": "ef791ac144fe4c596aa2966fb70f7bc52b82a06a",
+    "apps/desktop/src/openrouter-oauth-flow.ts": "c8962ff17068e014e8812b1f72d52c2d1bb869fd",
+    "apps/desktop/src/preload.cjs": "09e2de7eca986e2bf1e15e957a8013729ae76292",
+    "apps/desktop/src/preload.ts": "55443449441ef6623fe27d30a567674a0432dae7",
+    "apps/desktop/src/provider-connection-types.ts": "27cf19f85704b7277c53dc0d641d46a7ea5b6098",
+    "apps/desktop/src/provider-connections.ts": "d11b007ec804fb457531647b17d4859bb82fe238",
     "apps/desktop/src/renderer/provider-connections-client.ts": "a55183a92057dc80cd3ba89daf72cadfac646647",
-    "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx": "b0543328417950a3aadbd554a4f1d98166fab830",
-    "apps/desktop/src/renderer/settings/settings-registry.tsx": "9b92ae44af823b0fc25045a04b49403bce31de4f",
+    "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx": "1a9f3413dca2c34d1145a5d22eaee7d9182cfaa8",
+    "apps/desktop/src/renderer/settings/settings-registry.tsx": "2e85bf040c7f9fd42734dfc0f45e282fa76ae6a9",
     "apps/desktop/test/free-capacity-settings.test.tsx": "d5a9ca903e7090bbad6a47fbb6d95bf737623992",
-    "apps/desktop/test/provider-connections.test.ts": "bc461d63c560b3a21c762b71113524b1788868e8",
-    "apps/desktop/test/settings-registry.test.tsx": "55c1c61fcf282eac9f0372af83bfab06ae6af8c8",
+    "apps/desktop/test/provider-connections.test.ts": "93672807b0862c4be7fb0c9462d792e885defcea",
+    "apps/desktop/test/settings-registry.test.tsx": "a9d66b5603994c2781b27e5a369e74092fc3d323",
     "Dockerfile.cloud": "7d855b5403d6adb696a88f3a87595d2871d0ac1c",
-    "packages/agent/src/index.ts": "53a9c52f07659918b0f5f2f486c851a2d0a2f5cd",
+    "packages/agent/src/index.ts": "8269291df10dcbeb423562a2185bd55efd488085",
     "packages/agent/src/planning-contract.ts": "890806f3426c51b04508f8a6d4929f1d7cad2d78",
     "packages/benchmark/src/codeforge-bench-r2.ts": "26d36d62b703de2745f056b4a1af9d586b393072",
     "packages/benchmark/src/index.ts": "615c02c9d77491a17e8b6a80a82cb619efd6be02",
     "packages/benchmark/src/protected-acceptance.ts": "0c1538833083910b74c98e8261e02b212753721e",
     "packages/cloud-gateway/src/provider-registry.ts": "8d0049ec19201ca93669477cd83dc8d9feaf3512",
+    "packages/cloud-gateway/test/first-party-worker-fleet.test.ts": "2b728fbf023d4ca760ddec888b8173a25c6748ab",
     "packages/cloud-usage/package.json": "3a0e15953b516b975194bf298bea0fc905f2fdb6",
     "packages/cloud-usage/src/index.ts": "c58083bc61b29a52ae2f38b7259f9f87db1cfeba",
     "packages/cloud-usage/src/managed-paid.ts": "d249e00d7ed6ceeeffd6ea20bc3de9e838b24fc9",
     "packages/cloud-usage/src/shillings.ts": "c6452afd5da5ee2001bbadeca4a2e3b09a588999",
+    "packages/cloud-usage/test/shillings.test.ts": "5a0d0d72846f8cbafd8974c0a375fd08d9951eda",
     "packages/context/src/budget.ts": "cb805ff4471556031650680de30148d8508ac393",
     "packages/context/src/index.ts": "c1bbde5fc38d06704c10178899fcc56141444ed1",
     "packages/context/src/planner.ts": "5cab4794355d06008e044ddd80ac1b560ec0f793",
     "packages/context/test/cf14-context.test.ts": "aaf1dbdfabeaf6406e37c0fc258ba3a9fd89d7a5",
     "packages/context/test/fg3-budget.test.ts": "ee99da9a7bbc0438dbf62814bcf8940274f74375",
-    "packages/eight-bit/src/failover.ts": "0bad73e8a33699b275b2d4815147f9dff9b1bfa3",
+    "packages/eight-bit/src/failover.ts": "0519732d0bf7f06633b7ab4cf68f440b627844d3",
     "packages/eight-bit/src/free-fabric.ts": "786a394834674b1c4e6bef0d450d83113de4a468",
     "packages/eight-bit/src/health.ts": "4f67c963257dcb5c62597c7a2e72c8a7a06b9e36",
-    "packages/eight-bit/src/qualification/compact.ts": "0711a1576b144aa2aabb7eb19d6b8d35377c67e6",
-    "packages/eight-bit/src/qualification/role-protocols.ts": "57a4c4a5ee9cc0a5b9a4cdae4d768835f3c32bfb",
-    "packages/eight-bit/src/qualification/role-suite.ts": "4977f8b0b87cd527474ea22faad9347528edf831",
-    "packages/eight-bit/src/role-quality.ts": "d8992db15002f18d4ac1d7eed2246e3f73f26286",
-    "packages/eight-bit/src/route-health-authority.ts": "82879ded320c9dd4e89a898579ea80acd6214ec3",
+    "packages/eight-bit/src/qualification/compact.ts": "ffe17ea4597766d9026a8dbf1b3ca583c03d10ac",
+    "packages/eight-bit/src/qualification/role-protocols.ts": "6678dad8861287ef364c9eb40f10e779115d54a1",
+    "packages/eight-bit/src/qualification/role-suite.ts": "4eb942cd0c4558f0afca9bf1ec29ac828b4f2d33",
+    "packages/eight-bit/src/role-quality.ts": "0adee8b457875184acaa0fdc54de668dedcd8ce8",
+    "packages/eight-bit/src/route-health-authority.ts": "ce02a224c1a207f67c1af868770b1922f71e23ae",
     "packages/eight-bit/src/route-ledger.ts": "500cd8b1fefc4d5ae17d9e4d26f174517b97076b",
-    "packages/eight-bit/src/runtime.ts": "c1c2d0675fbf169ced244a5da1f360da90952eb5",
+    "packages/eight-bit/src/runtime.ts": "0f9ebc452d0e85c6f8aaa2840861b0f540c095a9",
     "packages/eight-bit/src/types.ts": "734479dcd0d544b8cb9579762df54aacc772f185",
     "packages/eight-bit/test/free-fabric.test.ts": "594f350dce0a49fcdbefd680d1f2ec5a22633afb",
     "packages/eight-bit/test/r24-multi-pool.test.ts": "9c7b12896e2e5e437408df4db565b7b90812272b",
     "packages/eight-bit/test/r56-model-scoped-health.test.ts": "a0bf3d123e153c530ea5d71c5c2f963ab7a02411",
-    "packages/eight-bit/test/role-qualification.test.ts": "c4eeb00edf813bba5e303c2db5d5cd1612e939d6",
-    "packages/eight-bit/test/role-quality.test.ts": "3cdca370a2a3a9aed84c7a89f7218092888f74eb",
+    "packages/eight-bit/test/role-qualification.test.ts": "1e869ccf03dd9239f372ab8991dc0d3be34081e9",
+    "packages/eight-bit/test/role-quality.test.ts": "8b230c7e1f4e93c657f4b3cb6b57762f6f57d18a",
     "packages/eight-bit/test/route-health-authority.test.ts": "eea0ca6c2281a6877a521b52168678ff3ba8247f",
-    "packages/eight-bit/test/runtime.test.ts": "0cde45a26a22076fa4b74f5554a1dcc3b9a42f77",
+    "packages/eight-bit/test/runtime.test.ts": "5763780df0d4612d59340f735bc7c979c8168914",
+    "packages/forge-aaa/src/model-review.ts": "a5b6ca22c95d01c2a4a0a98c68bfccaca249c0a6",
+    "packages/forge-aaa/test/door.test.ts": "70b9bb89dc0710f733fcb6aa15ebc6aeef2ff00d",
+    "packages/forge-aaa/test/model-review.test.ts": "002379ba455be741f466dec98a8402418ecb60d4",
+    "packages/forge-aaa/test/r83-building-spec.test.ts": "ab7b4ef563ef82fb074a1059cdfe71383817bd5d",
     "packages/forge-green/src/optimization-candidate-a.ts": "67af82aaf7b9d20aac76238752c0532798a975a4",
     "packages/forge-green/src/optimization-candidates-shadow.ts": "a3d1f7b3a5a28d46eb127ce83770d1c292053507",
     "packages/forge-green/src/optimization-decision.ts": "940ab41951d0cae123e82decb8f9d4b0c2e40e05",
     "packages/forge-green/src/optimization-policy.ts": "53dee55244eb1dc5d5ae03a4a30d96ecad0362aa",
     "packages/forge-green/src/optimization-types.ts": "1539abf45eaf618db3c2a68cf398b2320db5e7bd",
     "packages/forge-green/src/reuse-cost-policy.ts": "c8cbaaad48ae40fcdfa1058a596e9da7f470be98",
-    "packages/forge-zero/src/capacity-independence.ts": "9bcf9beb30fde3f49704b4017fe441f96b80c809",
+    "packages/forge-zero/src/capacity-independence.ts": "593aa2643f995ef0488d624fa8131e7890365de4",
     "packages/forge-zero/src/capacity-policy.ts": "f2ca813fecdd31620b85988e478361ef44f2d619",
-    "packages/forge-zero/src/capacity-reservations.ts": "74a549828f0b14fd468724c2d714a1e07cf3113d",
-    "packages/forge-zero/src/capacity-types.ts": "1325587360dc8901f09a41e0a7d52a7b787a7a31",
+    "packages/forge-zero/src/capacity-reservations.ts": "ac23689296af56ffa1f60f1f81b8fd36eb465362",
+    "packages/forge-zero/src/capacity-types.ts": "b606dea4cb62e618eecef558bcb3cd7cf3603b88",
     "packages/forge-zero/test/capacity-independence.test.ts": "641e3c12731da2d9a5f8141a510ed0f0a75d9ebc",
     "packages/forge-zero/test/capacity-transition-chaos.test.ts": "1c08ae0a53585d261944f31ed99b51fc74b86d9c",
     "packages/model-registry/src/catalog-refresh.ts": "ba9057e3c6bfc39bbc618e5c042ed4081e2cc306",
     "packages/model-registry/src/discovery.ts": "cc024b18cdb2ce8a74d19c00379216cbfb9fa1ae",
-    "packages/model-registry/src/free-cloud-registry.ts": "70331fab1ed05263dc2b7ef35813979a262149db",
-    "packages/model-registry/src/free-cloud-service.ts": "09c80391737e5b0668b83c8c17da13afc77d487e",
-    "packages/model-registry/src/index.ts": "3d6e7ad6361d22b02444ceec76729f99e4056006",
-    "packages/model-registry/src/provider-definitions.ts": "ce51dc9a32ba846eaa68ab94578fe85a8a8ff7e4",
+    "packages/model-registry/src/free-cloud-registry.ts": "071817c33a10db870c97d3c83f3a417662dbe49b",
+    "packages/model-registry/src/free-cloud-service.ts": "f8bc20a3d0bf6f3cde5f08bd203ecf7338e0afdd",
+    "packages/model-registry/src/index.ts": "6f0365c8e3e2ddcdbaf5ca1d6231d027133e8d46",
+    "packages/model-registry/src/provider-definitions.ts": "1d0ba0a4a5f887a4becaebaa300178da7f189480",
     "packages/model-registry/src/quota.ts": "dc393fd54d3a860aa15a16f5de4ba1c76c00dd11",
-    "packages/model-registry/test/free-cloud-registry.test.ts": "c8e469561d0ed235c3c5dc03050cba42eb5a6e22",
+    "packages/model-registry/test/free-cloud-registry.test.ts": "fc9266fd8e93c49b2d5e0304d9a88b6f78ab8eec",
     "packages/model-registry/test/r59-supply-recovery.test.ts": "7db749abea2172f2bcc06080cca9c20d495b2442",
     "packages/paid-auto/src/expected-cost.ts": "efe764f9fa537fa202f2d101b9f019225c3cf509",
     "packages/paid-auto/src/families.ts": "1ad554c31371a07edc475065bb3e042917d94c45",
     "packages/paid-auto/src/index.ts": "fbef7d85109e7e1bf54c2b2f6982a4b8181c0ecc",
     "packages/paid-auto/src/registry.ts": "96773c01b27182b62675b15cddfb8354f5257c52",
-    "packages/paid-auto/src/service.ts": "2f6ebdcbb71f8b2f9fbf00e949b19e274b2a111c",
-    "packages/protocol/src/subagent-runtime.ts": "299d254d6d5891a1f331039828c68f48267ac426",
-    "packages/providers/src/capacity-governor.ts": "6ce663b4f03303d91c1e54c2a8b6f3fd0c35e68f",
-    "packages/providers/src/index.ts": "86b0bcb15e10660c62bd9512adce31b07563ab02",
-    "packages/providers/src/openrouter-entitlement.ts": "a76d496122d0533f166006c4b548cae5ca340603",
-    "packages/providers/src/provider-factory.ts": "3d535a7acfcebc3d62f11235ed226786781cf413",
-    "packages/providers/test/openrouter-entitlement.test.ts": "445efcfd73aa5b25a2db14f51bf646e042df0f8d",
+    "packages/paid-auto/src/service.ts": "61035fee2c5a0d8cd36a221405aada5364d482dd",
+    "packages/paid-auto/test/budget-gated-adapter.test.ts": "b7d515c627ae7f8e81684e880c4b1e262d44c9e6",
+    "packages/paid-auto/test/expected-cost.test.ts": "0438b5866c504aada1eeb5c12aebd44e0a9e5e15",
+    "packages/plugins/test/marketplace.test.ts": "c163594e9a635c3629d4678f7dae61a552970d37",
+    "packages/protocol/src/subagent-runtime.ts": "9b2b5a411a15e10805c6d633beecff71b3045c5d",
+    "packages/providers/src/capacity-governor.ts": "a8839fd8d4bc14e1a5977a2a53aa7bf558a45b3a",
+    "packages/providers/src/index.ts": "3f5428b0d9c3444361b9497cf9728fa24555032b",
+    "packages/providers/src/openai-compatible.ts": "f8777f6c48444becba86a97764000ac6035c9fee",
+    "packages/providers/src/openrouter-entitlement.ts": "b8cda62f9ecd830b088b52bdc4d1fa7956d3c82a",
+    "packages/providers/src/provider-factory.ts": "7329690d3675727a79b34896ad5e509504836408",
+    "packages/providers/test/ai-horde.test.ts": "e7f46898ed9b7b9efe0982ca6845d64223d8ca0c",
+    "packages/providers/test/capacity-governor.test.ts": "8f50a90d653d9d31d8105e45523513323a7aba66",
+    "packages/providers/test/openai-compatible-stream-errors.test.ts": "55396cfc9c93dfe426c909840b77ebf3933fe2b1",
+    "packages/providers/test/openai-compatible.test.ts": "e2671b591d47724ce4a35d17e52f166be779be0d",
+    "packages/providers/test/openrouter-entitlement.test.ts": "17622278598c62ea086a8bd3059103198baef556",
+    "packages/repo-intelligence/src/engine.ts": "bfeb838026864e5f2470ff5bc31442205141951f",
     "packages/router/package.json": "4959f02bb64bba8fbf70502e03d1481b131573a2",
     "packages/router/src/index.ts": "d20619c955774292c844cac095f58cfd0b943acc",
     "packages/secrets/src/index.ts": "42a0b7ecc53205b4d1cdafb98bc77846780c0ab7",
-    "packages/server/package.json": "dd10d9ee09f1c7a97477415f49df44cad49b14e4",
-    "packages/server/src/agent-runtime.ts": "4014f88815c32357af5c0c831a8fbbcafd388c82",
-    "packages/server/src/autonomous-orchestrator.ts": "8823afb733cb910dccc870317768cb6ceb7d05e2",
+    "packages/server/package.json": "718a230b2343b4ff6c0cfa1a2eebd82a75d358e1",
+    "packages/server/src/agent-runtime.ts": "0a36c68304e2c7c27a4776412744fd58416a26b1",
+    "packages/server/src/autonomous-orchestrator.ts": "24a96224f3d69fa6442d02e39cf9b3eb14dd3077",
     "packages/server/src/checkpoint-service.ts": "667fe270d9c832b7c9bef217e6796a0bcbb82eb1",
     "packages/server/src/command-classifier.ts": "5c93d8433c1c542f12fca4ffbac2227c428604c6",
     "packages/server/src/duplicate-suppression.ts": "67d9e744d108a33cf9a6ba9f43ea71a9071d001a",
-    "packages/server/src/experience-learning.ts": "4b2412fac97695e1568fdef4c0490c0f26446723",
+    "packages/server/src/experience-learning.ts": "0ba945d98aa99c3322eaebc2bc1345572a624019",
     "packages/server/src/forge-verify-persistence.ts": "1332fd95e6ed3702bef11ad5e8ceac84b4bbd221",
-    "packages/server/src/forgeauto-roster.ts": "741bf73fe25e24bb1576af0ca2d778318a5f1e88",
-    "packages/server/src/forgegreen-run-policy.ts": "9054b47564ff9adce02ea88e0932778ca5f0c9c6",
+    "packages/server/src/forgeauto-roster.ts": "9e1c633d05a1982c8c9a1172d3fd697cec555e89",
+    "packages/server/src/forgegreen-run-policy.ts": "2441b5e9a7f7592fc052f37fb392aee88510d321",
     "packages/server/src/history-compaction.ts": "d1428eccf4ec1f5ec5a73ed361b93fbe19aa9928",
-    "packages/server/src/index.ts": "83ae41ebe91d6b4c102cdbd1c2bda09d7daf7521",
+    "packages/server/src/index.ts": "fad14771439659f52bdc1c3fba5dfdfe54eaa49a",
     "packages/server/src/integration-service.ts": "f72e3ffc8b3087c7f3acd861eba9eb859a008dfd",
-    "packages/server/src/model-execution-adapter.ts": "812f665abca771aa4dce7be18cfee121520dbf0e",
+    "packages/server/src/model-execution-adapter.ts": "975086b4af932146253b1406000a093f0613c367",
     "packages/server/src/remote-direct-admission.ts": "f81a024ce861999b4e7134e5bcee1e0dbfe21474",
     "packages/server/src/remote-direct-client.ts": "2cf6a7aa47bdde3f3d08c03cb4e8ebcfeb31155c",
-    "packages/server/src/remote-direct-cloud-provider.ts": "dd14da54bc4e13a35c83e47bd77a9a89c0aed321",
-    "packages/server/src/remote-direct-provider.ts": "77b80df75c90055bd24b0ced4a98af7c8bccd5b7",
+    "packages/server/src/remote-direct-cloud-provider.ts": "074fab138e6347faeb881939a0e62a60d1b8bbbc",
+    "packages/server/src/remote-direct-provider.ts": "a3ef6c1236221de26223d6204b67ffebe0b94d0c",
     "packages/server/src/remote-direct-transport.ts": "858f2eed159a314843152a31471cf0bb24dc781f",
-    "packages/server/src/role-output-budget.ts": "f2560f9ee66fe33d5cf9f0bb6b1d1f3bd7a441dc",
-    "packages/server/src/role-progress.ts": "4aa4c3e8f85ab55b9e315662363264614e1f1279",
-    "packages/server/src/run-failure.ts": "c3758e6b652cf2b8b6051425e6655095c7bef52e",
+    "packages/server/src/role-output-budget.ts": "0abbc8aaca1433ddec4aad771f307dfd01d6bca1",
+    "packages/server/src/role-progress.ts": "24dc9356360c217230395de51e01d455cd9dff22",
+    "packages/server/src/run-failure.ts": "ab811c79c16363a8aa432fdd8933e2d11f788f15",
     "packages/server/src/strategy-novelty.ts": "79af053d023fdbd6f67719377eefe05b583f22ba",
-    "packages/server/src/subagent-manager.ts": "34f7c2b60ed3f807dd946920c0e00b5f40cfc657",
-    "packages/server/src/turn-state-machine.ts": "bd79b984c832d8ad7020b58b2f4991c747abafd6",
-    "packages/server/src/user-intelligence.ts": "9324dc19fccea0eb945c07700c23a0966d759604",
-    "packages/server/src/workflow-service.ts": "a6fa8ae76d908fe503ba6050d8afdf9d2e239b23",
+    "packages/server/src/subagent-manager.ts": "b5eb57e14f8e5e7467b8041735cc431a81e20833",
+    "packages/server/src/turn-state-machine.ts": "8aa7ad7caf1be7115c2f48a5c3ccd24fade5cde3",
+    "packages/server/src/user-intelligence.ts": "7f47044d2f59d43aefbc5977b69f8a8ea5edfc9c",
+    "packages/server/src/workflow-service.ts": "54657ab91276bbd8824f6da77992b069ca5be211",
     "packages/server/src/workspace-service.ts": "814dc45e7865b2d6459089101e591caf00f2cb20",
     "packages/server/test/autonomous-new-file.test.ts": "78549c99ccecebdde9aab775a6ee96230b798d78",
     "packages/server/test/autonomous-parent-recovery.test.ts": "67259f886512de6f059b89d5a62f6ba6490e1a1a",
     "packages/server/test/checkpoint.test.ts": "17057d94868e0b2b9613fa12027c1023c77e2af9",
     "packages/server/test/context-efficiency.test.ts": "1d7c0c1cfbb18db237cbc999dfb83ac2f1959fb3",
     "packages/server/test/forge-workspaces.test.ts": "c330801734b71527ff521bddfec4e6fdc9f57ddf",
-    "packages/server/test/free-fabric-wiring.test.ts": "8006f2693fa252d38522350d78de49e814e672d8",
+    "packages/server/test/free-fabric-wiring.test.ts": "08c4c1d04244b63c35cec65af65720aee4b907ae",
     "packages/server/test/free-routing-authority.test.ts": "42742440525c739189baabb148c40d7d8b3e5e7c",
+    "packages/server/test/paid-role-routing.test.ts": "751da7e1698ba69d96974d7bc4f4a1e559eaffe8",
     "packages/server/test/progress-watchdog.test.ts": "322beb66368b2eccfdcbeb2724df01db4f2b93df",
     "packages/server/test/r21-autonomous-command-gate.test.ts": "ad92cf9dd98c0005ebb579fb4521b5c3a2e2739b",
     "packages/server/test/r44-edit-discipline.test.ts": "faefd6ee701730d2e681e2879aa9433a917e383f",
-    "packages/server/test/r50-tool-safety.test.ts": "2823cecac4269afa7da4d0d8634e3860168da830",
-    "packages/server/test/r54-quality-handoff.test.ts": "ea1bedca22b53ab2492f18f9fafd8baef0e6d5fb",
+    "packages/server/test/r50-failover-budget.test.ts": "e79647d1e420611d6b320c8d19471308ed19a48b",
+    "packages/server/test/r50-tool-safety.test.ts": "11872b87ff373c57b439591b1b0d5b457a68ee1d",
+    "packages/server/test/r52-retry-amplification.test.ts": "761fd2886192e94d79e3af2e7e6cc3092eda18b1",
+    "packages/server/test/r54-quality-handoff.test.ts": "671519c040c36d9761a922eaec862419aec49617",
+    "packages/server/test/r55-multi-user.test.ts": "72f4ab72be4743db6e1ab268a358875e5580e230",
+    "packages/server/test/release-status.test.ts": "f95ff8a972476c062edb48c08ea732b2bb5b74cb",
     "packages/server/test/remote-control-pressure.test.ts": "f8badda83b8a2cdbd14a2e1b73ff65a8940ad5f7",
     "packages/server/test/remote-direct-transport.test.ts": "186705cceeeae2b93e1ffe637af09c2442aee4ed",
-    "packages/server/test/role-output-budget.test.ts": "f16513d9c61fdf5e0a4b034ba52345be41886191",
-    "packages/server/test/role-routing.test.ts": "769f22b4c8e2279c7d91aeb1fd9717f72152644d",
-    "packages/server/tsconfig.json": "8081031e6c16125f3f17a1bf9c9827dd9e08ba93",
+    "packages/server/test/role-output-budget.test.ts": "7393a8e49b94e76e8d29c37653ce76a609579b69",
+    "packages/server/test/role-routing.test.ts": "d1ccc756026bf676560b4327636db9ced1f4d2a0",
+    "packages/server/tsconfig.json": "10374813cf709005cfa29d876f40ba1415e219a7",
     "packages/sessions/src/persistence.ts": "b14d0a25ecfca7a3813ea703e8e943a2cfc3db3c",
     "packages/sessions/src/postgres-persistence.ts": "92311d75e4a7f4c0c264096083d77786a3c7104a",
     "packages/sessions/src/session-state.ts": "5f3232ae12786a8256e4c7944bc29262aef94721",
@@ -317,10 +357,10 @@
     "packages/terminal/test/fixtures/conpty-close-worker.mjs": "1828022aa171a7a4c3cd20acecc23607ab0a2ac1",
     "packages/terminal/test/fixtures/conpty-reader-close.mjs": "e5a2b04ca9657a571ea5d51f20b9740c6b1b5397",
     "packages/tools/src/compress.ts": "78960ac43a09f2f4b855fda7ac5383aace791ddf",
-    "packages/tools/src/index.ts": "5e20c1c0b2a2d4797fe48d288f83a8055fa010f2",
-    "packages/tools/test/command-exit-status.test.ts": "fd529fadcdbdd45d23d1641eb02b675d483b9e8d",
-    "packages/workflow/src/diff-review.ts": "3cb34d3f7e6496781088b2ac7f0e5923fc1d3120",
-    "packages/workflow/src/forge-verify.ts": "d134438dfde57de85c756cdd8aaab192f1d801e8",
+    "packages/tools/src/index.ts": "69fabe808432190c220e324f180072d9d7d83b40",
+    "packages/tools/test/command-exit-status.test.ts": "e827455e0ab6b4cc0b1696b8875200d8375e259c",
+    "packages/workflow/src/diff-review.ts": "f5d1b808617c0553f59dc918763cf1b9be86e57d",
+    "packages/workflow/src/forge-verify.ts": "16a0805fa3bb46d50b31b650a62ef7d3e430366b",
     "packages/workflow/src/index.ts": "705235f2374092009b5b9ca0a6efde04441a224c",
     "packages/workflow/src/semantic-diff-review.ts": "ad4308afb2b899921677a9aeb99d124aa91a84ee",
     "packages/workflow/src/types.ts": "fc0886656007832fba84a8b394570b4bc9ada7f7",
@@ -3970,17 +4010,453 @@
         }
       ],
       "regressionEvidence": "docs/evidence/r67-everyday-completion-reliability/R67-REPOSITORY-TESTS.json"
+    },
+    {
+      "label": "R84 free-cloud autonomy certification",
+      "reason": "R84 free-cloud autonomy certification: provider terms now gate Kilo NVIDIA trial routes (DEVELOPMENT_ONLY) and opaque Auto Free routes (LEGAL_REVIEW_REQUIRED) so production routing admits only TERMS_ALLOWED models; workflow prompt construction redacts secrets from intent goals before persistence and SSE; the paid-auto meta-provider scopes capacity cooldowns to the canonical model instead of the whole fleet so one walled canonical cannot starve sibling routes; ForgeAAA reviewer schema validation and stream-error contracts harden model review; capacity governor preserves FIFO fairness across eligible tickets; the native exit traversal reverts to the proven single continuous crossing. Completion authority, ForgeZero fail-closed policy, privacy and qualification floors are unchanged. The hash refresh also absorbs material-surface drift accumulated since the R67 recertification.",
+      "priorSourceStateId": "ec08e481b4cb9073045c9516b3d320e278ad3d1be3fc224d441ae4f871f4ecdd",
+      "priorSurfaceVersion": "r67-everyday-completion-reliability-v1",
+      "resultingSourceStateId": "3d31749a85d15655d434c0f6b9406adf724ed078ffe55b188f2d0dcc4200911e",
+      "resultingSurfaceVersion": "r84-free-cloud-autonomy-v1",
+      "recertifiedAt": "2026-10-11",
+      "changedFiles": [
+        {
+          "file": "apps/cloud-api/src/sponsor-operator-service.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/cloud-api/test/remote-direct-dispatch.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/desktop/src/main.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "apps/desktop/src/openrouter-oauth-flow.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "apps/desktop/src/preload.cjs",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "apps/desktop/src/preload.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "apps/desktop/src/provider-connection-types.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "apps/desktop/src/provider-connections.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "apps/desktop/src/renderer/settings/settings-registry.tsx",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "apps/desktop/test/provider-connections.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "apps/desktop/test/settings-registry.test.tsx",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/agent/src/index.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/cloud-gateway/test/first-party-worker-fleet.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/cloud-usage/test/shillings.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/src/failover.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/eight-bit/src/qualification/compact.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/eight-bit/src/qualification/role-protocols.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/eight-bit/src/qualification/role-suite.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/eight-bit/src/role-quality.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/eight-bit/src/route-health-authority.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/eight-bit/src/runtime.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/eight-bit/test/role-qualification.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/eight-bit/test/role-quality.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/eight-bit/test/runtime.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/forge-aaa/src/model-review.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/forge-aaa/test/door.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/forge-aaa/test/model-review.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/forge-aaa/test/r83-building-spec.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/forge-zero/src/capacity-independence.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/forge-zero/src/capacity-reservations.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/forge-zero/src/capacity-types.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/model-registry/src/free-cloud-registry.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/src/free-cloud-service.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/model-registry/src/index.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/model-registry/src/provider-definitions.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/model-registry/test/free-cloud-registry.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/paid-auto/src/service.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/paid-auto/test/budget-gated-adapter.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/paid-auto/test/expected-cost.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/plugins/test/marketplace.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/protocol/src/subagent-runtime.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/providers/src/capacity-governor.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/providers/src/index.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/providers/src/openai-compatible.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/providers/src/openrouter-entitlement.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/providers/src/provider-factory.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/providers/test/ai-horde.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/providers/test/capacity-governor.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/providers/test/openai-compatible-stream-errors.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/providers/test/openai-compatible.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/providers/test/openrouter-entitlement.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/repo-intelligence/src/engine.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/package.json",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/agent-runtime.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/autonomous-orchestrator.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/experience-learning.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/forgeauto-roster.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/forgegreen-run-policy.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/index.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/model-execution-adapter.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/remote-direct-cloud-provider.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/remote-direct-provider.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/role-output-budget.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/role-progress.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/run-failure.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/subagent-manager.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/src/turn-state-machine.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/user-intelligence.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/src/workflow-service.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/free-fabric-wiring.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/paid-role-routing.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/r50-failover-budget.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/r50-tool-safety.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/r52-retry-amplification.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/r54-quality-handoff.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/test/r55-multi-user.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/release-status.test.ts",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/server/test/role-output-budget.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/test/role-routing.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/server/tsconfig.json",
+          "addedToMaterialFiles": true
+        },
+        {
+          "file": "packages/tools/src/index.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/tools/test/command-exit-status.test.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/diff-review.ts",
+          "addedToMaterialFiles": false
+        },
+        {
+          "file": "packages/workflow/src/forge-verify.ts",
+          "addedToMaterialFiles": false
+        }
+      ],
+      "regressionEvidence": "docs/evidence/r84-free-cloud-autonomy-certification/repository-tests-final.json"
     }
   ],
   "generationNote": "This source-state ID is deterministically derived from the material FG-8 through R63 implementation surface present on the recovered lineage, including the FG-11, FG-12D, FG-12F, R18, R37, R41, R42, R43, R44, R59, and R63 recertifications above. Computed by packages/forgegreen-campaign/src/source-state.ts using idAlgorithm.",
-  "recertifiedAt": "2026-10-03",
+  "recertifiedAt": "2026-10-11",
   "recertification": {
-    "phase": "R67 role-scoped quality and durable parent recovery",
-    "reason": "R67 distinguishes structured JSON quality from malformed tools, accepts fully validated structured JSON at the output cap, requires role requalification after independent live failures, preserves authoritative denial facts, and recovers parent stages through durable worker results and worktrees. Completion authority, privacy, call limits and qualification floors are unchanged.",
+    "phase": "R84 free-cloud autonomy certification",
+    "reason": "R84 free-cloud autonomy certification: provider terms now gate Kilo NVIDIA trial routes (DEVELOPMENT_ONLY) and opaque Auto Free routes (LEGAL_REVIEW_REQUIRED) so production routing admits only TERMS_ALLOWED models; workflow prompt construction redacts secrets from intent goals before persistence and SSE; the paid-auto meta-provider scopes capacity cooldowns to the canonical model instead of the whole fleet so one walled canonical cannot starve sibling routes; ForgeAAA reviewer schema validation and stream-error contracts harden model review; capacity governor preserves FIFO fairness across eligible tickets; the native exit traversal reverts to the proven single continuous crossing. Completion authority, ForgeZero fail-closed policy, privacy and qualification floors are unchanged. The hash refresh also absorbs material-surface drift accumulated since the R67 recertification.",
     "changedFiles": [
-      "packages/server/test/progress-watchdog.test.ts"
+      "apps/cloud-api/src/sponsor-operator-service.ts",
+      "apps/cloud-api/test/remote-direct-dispatch.test.ts",
+      "apps/desktop/src/main.ts",
+      "apps/desktop/src/openrouter-oauth-flow.ts",
+      "apps/desktop/src/preload.cjs",
+      "apps/desktop/src/preload.ts",
+      "apps/desktop/src/provider-connection-types.ts",
+      "apps/desktop/src/provider-connections.ts",
+      "apps/desktop/src/renderer/settings/sections/FreeCapacitySection.tsx",
+      "apps/desktop/src/renderer/settings/settings-registry.tsx",
+      "apps/desktop/test/provider-connections.test.ts",
+      "apps/desktop/test/settings-registry.test.tsx",
+      "packages/agent/src/index.ts",
+      "packages/cloud-gateway/test/first-party-worker-fleet.test.ts",
+      "packages/cloud-usage/test/shillings.test.ts",
+      "packages/eight-bit/src/failover.ts",
+      "packages/eight-bit/src/qualification/compact.ts",
+      "packages/eight-bit/src/qualification/role-protocols.ts",
+      "packages/eight-bit/src/qualification/role-suite.ts",
+      "packages/eight-bit/src/role-quality.ts",
+      "packages/eight-bit/src/route-health-authority.ts",
+      "packages/eight-bit/src/runtime.ts",
+      "packages/eight-bit/test/role-qualification.test.ts",
+      "packages/eight-bit/test/role-quality.test.ts",
+      "packages/eight-bit/test/runtime.test.ts",
+      "packages/forge-aaa/src/model-review.ts",
+      "packages/forge-aaa/test/door.test.ts",
+      "packages/forge-aaa/test/model-review.test.ts",
+      "packages/forge-aaa/test/r83-building-spec.test.ts",
+      "packages/forge-zero/src/capacity-independence.ts",
+      "packages/forge-zero/src/capacity-reservations.ts",
+      "packages/forge-zero/src/capacity-types.ts",
+      "packages/model-registry/src/free-cloud-registry.ts",
+      "packages/model-registry/src/free-cloud-service.ts",
+      "packages/model-registry/src/index.ts",
+      "packages/model-registry/src/provider-definitions.ts",
+      "packages/model-registry/test/free-cloud-registry.test.ts",
+      "packages/paid-auto/src/service.ts",
+      "packages/paid-auto/test/budget-gated-adapter.test.ts",
+      "packages/paid-auto/test/expected-cost.test.ts",
+      "packages/plugins/test/marketplace.test.ts",
+      "packages/protocol/src/subagent-runtime.ts",
+      "packages/providers/src/capacity-governor.ts",
+      "packages/providers/src/index.ts",
+      "packages/providers/src/openai-compatible.ts",
+      "packages/providers/src/openrouter-entitlement.ts",
+      "packages/providers/src/provider-factory.ts",
+      "packages/providers/test/ai-horde.test.ts",
+      "packages/providers/test/capacity-governor.test.ts",
+      "packages/providers/test/openai-compatible-stream-errors.test.ts",
+      "packages/providers/test/openai-compatible.test.ts",
+      "packages/providers/test/openrouter-entitlement.test.ts",
+      "packages/repo-intelligence/src/engine.ts",
+      "packages/server/package.json",
+      "packages/server/src/agent-runtime.ts",
+      "packages/server/src/autonomous-orchestrator.ts",
+      "packages/server/src/experience-learning.ts",
+      "packages/server/src/forgeauto-roster.ts",
+      "packages/server/src/forgegreen-run-policy.ts",
+      "packages/server/src/index.ts",
+      "packages/server/src/model-execution-adapter.ts",
+      "packages/server/src/remote-direct-cloud-provider.ts",
+      "packages/server/src/remote-direct-provider.ts",
+      "packages/server/src/role-output-budget.ts",
+      "packages/server/src/role-progress.ts",
+      "packages/server/src/run-failure.ts",
+      "packages/server/src/subagent-manager.ts",
+      "packages/server/src/turn-state-machine.ts",
+      "packages/server/src/user-intelligence.ts",
+      "packages/server/src/workflow-service.ts",
+      "packages/server/test/free-fabric-wiring.test.ts",
+      "packages/server/test/paid-role-routing.test.ts",
+      "packages/server/test/r50-failover-budget.test.ts",
+      "packages/server/test/r50-tool-safety.test.ts",
+      "packages/server/test/r52-retry-amplification.test.ts",
+      "packages/server/test/r54-quality-handoff.test.ts",
+      "packages/server/test/r55-multi-user.test.ts",
+      "packages/server/test/release-status.test.ts",
+      "packages/server/test/role-output-budget.test.ts",
+      "packages/server/test/role-routing.test.ts",
+      "packages/server/tsconfig.json",
+      "packages/tools/src/index.ts",
+      "packages/tools/test/command-exit-status.test.ts",
+      "packages/workflow/src/diff-review.ts",
+      "packages/workflow/src/forge-verify.ts"
     ],
-    "priorSourceStateId": "2f2da53ce8a981be70e4b046c69c1fa7f17695bfa8bcb78020fdd39536ee41ae",
+    "priorSourceStateId": "ec08e481b4cb9073045c9516b3d320e278ad3d1be3fc224d441ae4f871f4ecdd",
     "guarded": true
   },
   "recertificationReason": "Record the R35 backend-finalization surface: a canonical turn/task state machine (packages/server/src/turn-state-machine.ts) now owns the legal transition graph and phase-to-status mapping; cancelTurn captures the true previous status and never rewrites terminal turns; workflow phase emissions use task/session vocabulary correctly instead of raw phases; approval/question resolves complete durable writes before HTTP 200; a routable bind without a control-plane token fails closed; SQLite gained idx_work_items_kind for recovery queries; the completion-fallback wording no longer claims verification it did not perform. Completion-gate, ForgeVerify, ForgeZero, and free-only policy are unchanged. This is an interim source identity, not final release certification."

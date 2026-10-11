@@ -746,7 +746,7 @@ export class WorkflowService {
       const lines: string[] = [];
       lines.push(`You are CodeForge, an autonomous coding agent. Implement the following plan disciplinedly.`);
       lines.push(`Task: ${redactSecrets(intent.title)}`);
-      lines.push(`Type: ${intent.taskType}, Goals: ${intent.goals.join(" | ")}`);
+      lines.push(`Type: ${intent.taskType}, Goals: ${intent.goals.map((goal) => redactSecrets(goal)).join(" | ")}`);
       lines.push(`\nOriginal user request and scope:\n${redactSecrets(intent.rawMessage)}`);
       lines.push(`\nPlan ${plan.id}: ${redactSecrets(plan.title)}`);
       lines.push(`Steps:`);

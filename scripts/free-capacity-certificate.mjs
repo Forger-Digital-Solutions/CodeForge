@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const certificateCandidates = [
+  "docs/evidence/r84-free-cloud-autonomy-certification/source-certification.json",
   "docs/evidence/r67-everyday-completion-reliability/source-certification.json",
   "docs/evidence/r66-everyday-free-readiness/source-certification.json",
   "docs/evidence/free-capacity-fabric/source-certification.json",

@@ -8,7 +8,7 @@ import {
   type FirstPartyWorkerFleetConfig,
 } from "../src/first-party-worker-fleet.js";
 
-const now = new Date("2026-10-01T12:00:00.000Z");
+const now = new Date();
 
 function config(workerIds: string[] = ["qwen-a", "qwen-b"]): FirstPartyWorkerFleetConfig {
   return {
@@ -22,8 +22,8 @@ function config(workerIds: string[] = ["qwen-a", "qwen-b"]): FirstPartyWorkerFle
       multiUserAuthorized: true,
       qualificationState: "QUALIFIED",
       suiteVersion: "R41_ROLE_QUALIFICATION_V3",
-      completedAt: "2026-09-30T12:00:00.000Z",
-      expiresAt: "2026-10-30T12:00:00.000Z",
+      completedAt: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
+      expiresAt: new Date(now.getTime() + 29 * 24 * 60 * 60 * 1000).toISOString(),
       runtimeProfileId: "vllm-0.30-qwen3coder-fp8-v1",
       evidenceRef: "docs/evidence/r60/qualification/qwen-a.json",
       roleResults: { CODER: { status: "QUALIFIED" }, TOOL_AGENT: { status: "QUALIFIED" } },
@@ -183,7 +183,7 @@ describe("FirstPartyWorkerFleet", () => {
 
   it("fails closed on an expired multi-user qualification receipt without hiding the cloud service", async () => {
     const invalid = config(["qwen-a"]);
-    invalid.qualification.expiresAt = "2026-10-01T11:59:59.000Z";
+    invalid.qualification.expiresAt = new Date(now.getTime() - 60_000).toISOString();
     const fleet = new FirstPartyWorkerFleet({ firewallManager: new CloudFirewallManager(), config: invalid, now: () => now, fetchFn: fakeFetch().fetchFn });
     await fleet.start(60_000);
     expect(fleet.listWorkers()[0]?.error).toBe("qualification_unavailable");

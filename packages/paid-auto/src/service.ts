@@ -186,6 +186,10 @@ export class PaidAutoExecutionError extends Error {
   readonly executionCertainty: PaidAutoExecutionCertainty;
   readonly retryable: boolean;
   readonly routeId?: PaidAutoRouteId;
+  /** Upstream-declared retry horizon (epoch millis) forwarded from the route attempt. */
+  readonly retryAfter?: number;
+  /** Cooling bucket for the outer capacity governor. */
+  readonly rateLimitScope?: "model" | "provider";
 
   constructor(options: {
     code: string;
@@ -194,6 +198,8 @@ export class PaidAutoExecutionError extends Error {
     executionCertainty: PaidAutoExecutionCertainty;
     retryable?: boolean;
     routeId?: PaidAutoRouteId;
+    retryAfter?: number;
+    rateLimitScope?: "model" | "provider";
   }) {
     super(options.message);
     this.name = "PaidAutoExecutionError";
@@ -202,6 +208,8 @@ export class PaidAutoExecutionError extends Error {
     this.executionCertainty = options.executionCertainty;
     this.retryable = options.retryable ?? false;
     this.routeId = options.routeId;
+    this.retryAfter = options.retryAfter;
+    this.rateLimitScope = options.rateLimitScope;
   }
 }
 
@@ -559,6 +567,7 @@ export class PaidAutoService {
             executionCertainty: emittedOutput ? "partial_output" : "no_output",
             retryable: event.retryable,
             routeId: direct.routeId,
+            retryAfter: event.retryAfter,
           });
           if (emittedOutput) throw eventError;
           throw eventError;
@@ -619,7 +628,7 @@ export class PaidAutoService {
     try {
       for await (const event of this.callStream(route, req, signal)) {
         if (event.type === "error") {
-          throw new PaidAutoExecutionError({ code: event.code, message: event.message, failureClass: classifyPaidAutoFailure(new ProviderError(event.message, event.code, event.retryable)), executionCertainty: emittedOutput ? "partial_output" : "no_output", retryable: event.retryable, routeId: route.routeId });
+          throw new PaidAutoExecutionError({ code: event.code, message: event.message, failureClass: classifyPaidAutoFailure(new ProviderError(event.message, event.code, event.retryable)), executionCertainty: emittedOutput ? "partial_output" : "no_output", retryable: event.retryable, routeId: route.routeId, retryAfter: event.retryAfter });
         }
         if (event.type === "finish") {
           finished = true;
@@ -773,11 +782,15 @@ export class PaidAutoService {
 
   private executionError(error: unknown, routeId: PaidAutoRouteId, certainty: PaidAutoExecutionCertainty): PaidAutoExecutionError {
     if (error instanceof PaidAutoExecutionError) {
-      if (error.routeId === routeId && error.executionCertainty === certainty) return error;
-      return new PaidAutoExecutionError({ code: error.code, message: error.message, failureClass: error.failureClass, executionCertainty: certainty, retryable: error.retryable, routeId });
+      // A capacity wall is the canonical model's quota boundary, not the meta-provider's —
+      // the governor cools `paid-auto/<canonical>`, leaving sibling canonicals on independent
+      // upstream accounts free to dispatch.
+      if (error.routeId === routeId && error.executionCertainty === certainty && (error.failureClass !== "capacity" || error.rateLimitScope !== undefined)) return error;
+      return new PaidAutoExecutionError({ code: error.code, message: error.message, failureClass: error.failureClass, executionCertainty: certainty, retryable: error.retryable, routeId, retryAfter: error.retryAfter, rateLimitScope: error.rateLimitScope ?? (error.failureClass === "capacity" ? "model" : undefined) });
     }
     const failureClass = classifyPaidAutoFailure(error);
-    return new PaidAutoExecutionError({ code: error instanceof ProviderError ? error.code ?? "PROVIDER_ERROR" : "PROVIDER_ERROR", message: error instanceof Error ? error.message : "Paid Auto provider request failed.", failureClass, executionCertainty: failureClass === "cancelled" ? "ambiguous" : certainty, retryable: error instanceof ProviderError ? error.retryable : false, routeId });
+    const upstreamRetryAfter = error instanceof ProviderError ? error.retryAfter : undefined;
+    return new PaidAutoExecutionError({ code: error instanceof ProviderError ? error.code ?? "PROVIDER_ERROR" : "PROVIDER_ERROR", message: error instanceof Error ? error.message : "Paid Auto provider request failed.", failureClass, executionCertainty: failureClass === "cancelled" ? "ambiguous" : certainty, retryable: error instanceof ProviderError ? error.retryable : false, routeId, retryAfter: failureClass === "capacity" ? upstreamRetryAfter : undefined, rateLimitScope: failureClass === "capacity" ? "model" : undefined });
   }
 
   private recordSuccess(logicalRequestId: string, route: PaidAutoRoute): void {

@@ -10,8 +10,8 @@ import { createRemoteDirectHost } from "../src/remote-direct-host.js";
 import { mintSessionAccessToken } from "./helpers/session-token.js";
 
 const jwtSecret = "r65-dispatch-fixture-jwt-secret-32-chars";
-const request: ChatRequest = { model: "kilo-auto/free", messages: [{ role: "user", content: "Inspect a public fixture" }], maxTokens: 64, dispatchId: "fixture-dispatch" };
-const response: ChatResponse = { id: "fixture-response", model: "kilo-auto/free", choices: [{ index: 0, message: { role: "assistant", content: "Fixture inspected" }, finishReason: "stop" }], usage: { inputTokens: 4, outputTokens: 2, costUsd: 0 } };
+const request: ChatRequest = { model: "cohere/north-mini-code:free", messages: [{ role: "user", content: "Inspect a public fixture" }], maxTokens: 64, dispatchId: "fixture-dispatch" };
+const response: ChatResponse = { id: "fixture-response", model: "cohere/north-mini-code:free", choices: [{ index: 0, message: { role: "assistant", content: "Fixture inspected" }, finishReason: "stop" }], usage: { inputTokens: 4, outputTokens: 2, costUsd: 0 } };
 type Delivery = { jobId: string; signed: SignedRemoteDirectAssignment; request: ChatRequest };
 type Bootstrap = { identity: RemoteDirectSessionIdentity; secret: string };
 const cleanup: Array<() => Promise<void>> = [];
