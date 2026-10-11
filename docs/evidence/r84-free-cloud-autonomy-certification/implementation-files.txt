@@ -1,13 +1,33 @@
 apps/cloud-api/src/sponsor-operator-service.ts
+apps/cloud-api/test/remote-direct-dispatch.test.ts
 apps/desktop/src/openrouter-oauth-flow.ts
+benchmarks/r84/campaign-metrics.mjs
+benchmarks/r84/campaign-metrics.test.mjs
+benchmarks/r84/capacity-audit.mjs
+benchmarks/r84/independent-review.mjs
+benchmarks/r84/live-coding.mjs
+benchmarks/r84/measure.mjs
+benchmarks/r84/native-regression.mjs
+benchmarks/r84/native/configure-gameplay.mjs
+benchmarks/r84/native/live-utils.mjs
+benchmarks/r84/native/migration-fault-campaign.mjs
+benchmarks/r84/native/persistence-upgrade-live.mjs
+benchmarks/r84/prepare-current-review.mjs
+benchmarks/r84/project-specs.mjs
+benchmarks/r84/report.mjs
+benchmarks/r84/validate-fixtures.mjs
+docs/codeforge-forgegreen-certified-source-state.json
+packages/cloud-gateway/test/first-party-worker-fleet.test.ts
 packages/cloud-usage/test/shillings.test.ts
 packages/eight-bit/src/qualification/role-suite.ts
 packages/forge-aaa/src/model-review.ts
 packages/forge-aaa/test/door.test.ts
+packages/forge-aaa/test/model-review.test.ts
 packages/forge-aaa/test/r83-building-spec.test.ts
 packages/model-registry/src/free-cloud-registry.ts
 packages/model-registry/src/provider-definitions.ts
 packages/model-registry/test/free-cloud-registry.test.ts
+packages/paid-auto/src/service.ts
 packages/paid-auto/test/budget-gated-adapter.test.ts
 packages/paid-auto/test/expected-cost.test.ts
 packages/plugins/test/marketplace.test.ts
@@ -19,9 +39,11 @@ packages/providers/test/openai-compatible-stream-errors.test.ts
 packages/providers/test/openai-compatible.test.ts
 packages/repo-intelligence/src/engine.ts
 packages/server/src/forgegreen-run-policy.ts
+packages/server/src/index.ts
 packages/server/src/remote-direct-cloud-provider.ts
 packages/server/src/remote-direct-provider.ts
 packages/server/src/subagent-manager.ts
+packages/server/src/workflow-service.ts
 packages/server/test/free-fabric-wiring.test.ts
 packages/server/test/paid-role-routing.test.ts
 packages/server/test/r50-failover-budget.test.ts
@@ -30,6 +52,7 @@ packages/server/test/r52-retry-amplification.test.ts
 packages/server/test/r55-multi-user.test.ts
 packages/server/test/release-status.test.ts
 packages/server/tsconfig.json
+scripts/free-capacity-certificate.mjs
 scripts/r33-live-cross-pool-migration.mjs
 scripts/r41-role-scale-sim.mjs
 scripts/r42-stress-sim.mjs
@@ -47,6 +70,5 @@ scripts/r56-user-api-live.mjs
 scripts/r63-bounded-tests.mjs
 scripts/r64-bounded-tests.mjs
 scripts/r65-bounded-tests.mjs
-benchmarks/r84/ (new reusable evidence utilities and native campaigns)
-packages/forge-aaa/test/model-review.test.ts (new)
-docs/evidence/r84-free-cloud-autonomy-certification/ (new reports and raw receipts)
+scripts/r84-recertify-certificate.mjs
+scripts/r84-recertify-source-state.mjs

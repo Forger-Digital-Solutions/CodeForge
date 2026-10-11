@@ -27,7 +27,8 @@ async function evidenceTree(dir) {
   }
   return out;
 }
-const newEvidence = await evidenceTree(directory);
+// The certificate cannot bind its own bytes — exclude it from the evidence set.
+const newEvidence = (await evidenceTree(directory)).filter((file) => file !== certPath);
 
 let certificate;
 try {

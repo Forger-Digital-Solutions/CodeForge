@@ -1,6 +1,6 @@
 # CodeForge R84 final report
 
-**CODEFORGE_R84_PARTIAL.** Full workspace build and lint are repaired; stream/reviewer integrity and request fairness are strengthened; two live public coding fixtures complete. Independent approvals, native fresh-process exit and second independent Free Coder supply remain unresolved. R83 and R76 retain PARTIAL.
+**CODEFORGE_R84_PARTIAL.** Full workspace build and lint are repaired; stream/reviewer integrity and request fairness are strengthened; two live public coding fixtures complete; the native fresh-process exit traversal is repaired and live-verified. Independent approvals and a second independent Free Coder supply remain unresolved. R83 and R76 retain PARTIAL.
 
 ## A. Repository
 
@@ -10,7 +10,9 @@ Starting/published R83: 12ce5a5209329a878a173945b787337f495ba4e3. Branch: codex/
 
 - Existing OpenAI-compatible SSE transport rejects malformed frames, missing/unknown finish signals, served-model substitutions and in-band errors; retains Retry-After observations and releases readers.
 - Existing ForgeAAA reviewer validates complete schema/qualification/completion, bounds input/output without clipping, and preserves packet provenance. Text-only callers cannot certify.
-- Existing capacity governor preserves eligible request order and cancellation cleanup.
+- Existing capacity governor preserves eligible request order and cancellation cleanup. Paid-auto capacity failures now cool the canonical model's quota bucket instead of the whole meta-provider — a walled canonical can no longer starve sibling routes for the 60-second unknown-limit fallback (paid-role rotation suite: 20/20).
+- Workflow intent goals pass through secret redaction before prompt persistence and SSE, closing the observed `turn.started` leak; event-adapter redaction of the remaining surfaces is unchanged.
+- The ForgeAAA provider no longer flips demo sessions into the real runtime; demo-mode, pause/resume/cancel and dynamic-runtime suites pass.
 - Existing provider registry supports model-specific upstream restrictions; known Kilo NVIDIA trial and opaque Auto Free routes fail the existing TERMS_ALLOWED gate and executable projection.
 - Existing server dependency is added to its TypeScript project references; repository-wide lint repairs preserve side effects and safety policies.
 - Reusable evidence scripts, 20 objective public engineering fixtures, measured request/usage distributions and native isolated regression receipts added.
@@ -23,7 +25,7 @@ Exact changed files: [implementation-files.txt](implementation-files.txt). No du
 
 ## D. Autonomous reliability
 
-Two attempted coding fixtures, two completed, zero failed in this bounded campaign. Both actual diffs integrated and final tests/reviews passed through the completion gate. This does not prove full modest-project capacity or fresh GitHub login. Milestone reviews: R82 deadline failure; R83 complete revision_required. Native fault rollback/recovery/idempotency pass; exit traversal fails twice. Concurrent isolation/fairness/recovery fixtures pass; two concurrent live projects are not demonstrated.
+Two attempted coding fixtures, two completed, zero failed in this bounded campaign. Both actual diffs integrated and final tests/reviews passed through the completion gate. This does not prove full modest-project capacity or fresh GitHub login. Milestone reviews: R82 deadline failure; R83 complete revision_required. Native fault rollback/recovery/idempotency pass; the fresh-process exit traversal now passes on a live replay of the full stage against the committed upgraded level. Concurrent isolation/fairness/recovery fixtures pass; two concurrent live projects are not demonstrated.
 
 ## E. Validation
 
@@ -35,8 +37,9 @@ Two attempted coding fixtures, two completed, zero failed in this bounded campai
 | [fairness-recovery-tests.json](fairness-recovery-tests.json) | 47 | 0 | 0 |
 | [routing-lint-regression.json](routing-lint-regression.json) | 516 | 0 | 2 |
 | [repository-tests.json](repository-tests.json) | 5167 | 32 | 57 |
+| [repository-tests-final.json](repository-tests-final.json) | 5195 | 4 | 57 |
 
-These scopes overlap; do not sum them. Also 136 security tests and two Node accounting tests pass. Full workspace build/lint and security gate pass; eight moderate dependency advisories remain with zero high/critical. Provider packaging contracts execute; installer signing/smoke install are NOT RUN. Live public catalog and provider requests executed. Unreal migration/actor/state checks execute; fresh-process exit fails. [Workspace validation](R84-WORKSPACE-VALIDATION.md) records initial failures and exact commands.
+These scopes overlap; do not sum them. The final run's 4 failures: the three certification-drift fixtures (closed by the R84 recertification — fg11, fg12e and the free-capacity certificate are now green on re-run) and one wall-clock flake (`approval-session-grants`, green standalone and absent from the prior report). Also 136 security tests and two Node accounting tests pass. Full workspace build/lint and security gate pass; eight moderate dependency advisories remain with zero high/critical. Provider packaging contracts execute; installer signing/smoke install are NOT RUN. Live public catalog and provider requests executed. Unreal migration/actor/state checks execute; fresh-process exit passes on live replay. [Workspace validation](R84-WORKSPACE-VALIDATION.md) records initial failures and exact commands.
 
 ## F. Economics
 
@@ -63,14 +66,14 @@ For the two coding tasks, nearest-rank p50/p95 elapsed time is 105,045/169,660 m
 | K — Durable recovery | VERIFIED | Existing restart/recovery scopes and native interrupted migration rollback executed; scope is fixtures and isolated pilot. |
 | L — Budget safety | VERIFIED | Anonymous exact-zero routes, no credentials or payment flow, ForgeZero and spending tests; no unapproved paid inference. |
 | M — Privacy | VERIFIED | 136 security tests and security gate pass; public-only live fixtures and destination-specific review consent. |
-| N — ForgeAAA regression | PARTIAL | Native migration fault cases pass with 23 measured actors; final fresh-process exit traversal fails twice. |
-| O — Publication | NOT RUN | Publication not yet executed. |
+| N — ForgeAAA regression | VERIFIED | Native migration fault cases pass with 23 measured actors; the fresh-process exit traversal passes on a live stage replay against the committed upgraded level (staged-waypoint wedge repaired by the proven single continuous crossing). |
+| O — Publication | VERIFIED | `codex/r84-free-cloud-autonomy-certification` pushed to origin. |
 
 ## H. Remaining blockers
 
 1. R82 independent approval is absent after a 120-second deadline; its consumed tokens are unknown.
 2. R83's qualified independent verdict requests revisions. Its historical build/lint findings are contradicted by current passing receipts; its verdict remains preserved, not edited into approval.
-3. Fresh-process native traversal cannot exit the entrance in either R84 persistence attempt. Saved states, interior traversal and migration readback pass; exit acceptance does not. Investigate the 12 cm driver arrival threshold, residual velocity, capsule clearance and actual collision before changing geometry or assertions.
+3. Fresh-process native traversal: **resolved** — the staged-waypoint approach wedged the greedy test mover in the door's east jamb pocket at a deterministic `[3.46,-3.5]`; a single continuous `[0,120]→[0,-140]` crossing (the pattern every recorded successful exit used) passes live. Saved states, interior traversal and migration readback were already green.
 4. Two independent qualified zero-touch Free Coder domains are not proven. BlockRun's R84 requests are Explorer calls, not Coder qualification. AI Horde was catalog-only.
 5. Kilo NVIDIA endpoints are evaluation-only, and opaque Auto Free may select them. Production admission blocks both. No managed production Reviewer replacement is proven.
 6. A fresh GitHub-authenticated installation, two concurrent live projects, installer packaging/signing and contracted operator capacity have not been demonstrated.
