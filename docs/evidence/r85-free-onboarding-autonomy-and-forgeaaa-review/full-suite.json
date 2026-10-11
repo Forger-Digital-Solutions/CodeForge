@@ -1,0 +1,34 @@
+{
+  "command": "npm test",
+  "startedAt": "2026-10-11T18:51:09-07:00",
+  "durationS": 724.76,
+  "testFiles": {
+    "passed": 606,
+    "failed": 2,
+    "skipped": 13,
+    "total": 621
+  },
+  "tests": {
+    "passed": 5197,
+    "failed": 2,
+    "skipped": 57,
+    "total": 5256
+  },
+  "failures": [
+    {
+      "file": "tests/free-capacity-certificate.test.ts",
+      "cause": "ENOENT r84 build-after.log — R84 certificate referenced uncommitted evidence; resolved by committing the 37 hash-verified evidence files",
+      "resolution": "PASS on re-run"
+    },
+    {
+      "file": "packages/server/test/approval-session-grants.test.ts",
+      "cause": "EBUSY temp-dir cleanup race (Windows file lock)",
+      "resolution": "PASS on re-run"
+    }
+  ],
+  "effectiveResult": {
+    "testFilesPassed": 608,
+    "testsPassed": 5199,
+    "testsFailed": 0
+  }
+}

@@ -1,0 +1,1939 @@
+{
+  "startedAt": "2026-10-11T22:53:37.443Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "liquid/lfm-2.5-2.6b:free",
+  "evidenceClass": "LIVE_ROLE_QUALIFICATION_PUBLIC_CASES",
+  "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+  "frames": [
+    {
+      "at": "2026-10-11T22:53:38.105Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 200,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-894703f017d1c3d5",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-894703f017d1c3d5",
+          "delta": "{\"path\": \"src/calc"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-894703f017d1c3d5",
+          "delta": ".ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 223,
+            "outputTokens": 47,
+            "totalTokens": 270,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 32,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-894703f017d1c3d5",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:53:38.732Z"
+    },
+    {
+      "at": "2026-10-11T22:53:38.739Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-b78835e6ff1e660f",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-b78835e6ff1e660f",
+          "delta": "{\"path\": \"src"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-b78835e6ff1e660f",
+          "delta": "/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 246,
+            "outputTokens": 68,
+            "totalTokens": 314,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 53,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-b78835e6ff1e660f",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:53:39.276Z"
+    },
+    {
+      "at": "2026-10-11T22:53:39.280Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 4,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-8513c4ce79c6d1a8",
+          "toolName": "edit_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-8513c4ce79c6d1a8",
+          "delta": "{\"path\": \"src/calc"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-8513c4ce79c6d1a8",
+          "delta": ".ts\", \"oldText\": \"return a -"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-8513c4ce79c6d1a8",
+          "delta": " b;\", \"newText\": \"return"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-8513c4ce79c6d1a8",
+          "delta": " a + b;"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-8513c4ce79c6d1a8",
+          "delta": "\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 289,
+            "outputTokens": 146,
+            "totalTokens": 435,
+            "cachedInputTokens": 240,
+            "reasoningTokens": 113,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-8513c4ce79c6d1a8",
+          "toolName": "edit_file",
+          "arguments": "{\"path\": \"src/calc.ts\", \"oldText\": \"return a - b;\", \"newText\": \"return a + b;\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:53:39.959Z"
+    },
+    {
+      "at": "2026-10-11T22:53:39.963Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 120
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 65,
+            "outputTokens": 120,
+            "totalTokens": 185,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 120,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:53:42.534Z"
+    },
+    {
+      "at": "2026-10-11T22:53:42.538Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 24
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 527,
+            "outputTokens": 477,
+            "totalTokens": 1004,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 295,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:53:44.911Z"
+    },
+    {
+      "at": "2026-10-11T22:53:44.917Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 532,
+            "outputTokens": 900,
+            "totalTokens": 1432,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 899,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:53:47.502Z"
+    },
+    {
+      "at": "2026-10-11T22:53:47.505Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 1924
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 22
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 29
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 22
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 532,
+            "outputTokens": 371,
+            "totalTokens": 903,
+            "cachedInputTokens": 528,
+            "reasoningTokens": 294,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:53:49.218Z"
+    },
+    {
+      "at": "2026-10-11T22:53:49.223Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 26
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 33
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 33
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 22
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 558,
+            "outputTokens": 804,
+            "totalTokens": 1362,
+            "cachedInputTokens": 464,
+            "reasoningTokens": 705,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:53:51.736Z"
+    },
+    {
+      "at": "2026-10-11T22:53:51.742Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 533,
+            "outputTokens": 798,
+            "totalTokens": 1331,
+            "cachedInputTokens": 464,
+            "reasoningTokens": 782,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:53:53.886Z"
+    },
+    {
+      "at": "2026-10-11T22:53:53.889Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 548,
+            "outputTokens": 900,
+            "totalTokens": 1448,
+            "cachedInputTokens": 464,
+            "reasoningTokens": 900,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:53:57.202Z"
+    },
+    {
+      "at": "2026-10-11T22:53:57.206Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 1924
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 548,
+            "outputTokens": 1028,
+            "totalTokens": 1576,
+            "cachedInputTokens": 544,
+            "reasoningTokens": 1009,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:54:00.786Z"
+    },
+    {
+      "at": "2026-10-11T22:54:00.793Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 540,
+            "outputTokens": 900,
+            "totalTokens": 1440,
+            "cachedInputTokens": 464,
+            "reasoningTokens": 900,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:54:03.408Z"
+    },
+    {
+      "at": "2026-10-11T22:54:03.411Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 1924
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 29
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 57
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 27
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 540,
+            "outputTokens": 1698,
+            "totalTokens": 2238,
+            "cachedInputTokens": 528,
+            "reasoningTokens": 1493,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:54:07.766Z"
+    },
+    {
+      "at": "2026-10-11T22:54:07.777Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1247,
+            "outputTokens": 900,
+            "totalTokens": 2147,
+            "cachedInputTokens": 464,
+            "reasoningTokens": 900,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:54:10.075Z"
+    },
+    {
+      "at": "2026-10-11T22:54:10.078Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 1924
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1247,
+            "outputTokens": 1276,
+            "totalTokens": 2523,
+            "cachedInputTokens": 1232,
+            "reasoningTokens": 1247,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:54:12.380Z"
+    },
+    {
+      "at": "2026-10-11T22:54:12.383Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1246,
+            "outputTokens": 900,
+            "totalTokens": 2146,
+            "cachedInputTokens": 464,
+            "reasoningTokens": 900,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:54:14.374Z"
+    },
+    {
+      "at": "2026-10-11T22:54:14.380Z",
+      "request": {
+        "model": "liquid/lfm-2.5-2.6b:free",
+        "messageCount": 2,
+        "maxTokens": 1924
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1246,
+            "outputTokens": 1144,
+            "totalTokens": 2390,
+            "cachedInputTokens": 1232,
+            "reasoningTokens": 1092,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "liquid/lfm-2.5-2.6b:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:54:16.558Z"
+    }
+  ],
+  "maxRequests": 20,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T22:53:37.444Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T22:53:37.444Z",
+      "recheckAt": "2026-10-18T22:53:37.444Z",
+      "qualificationAt": "2026-10-11T22:53:37.443Z",
+      "termsVerifiedAt": "2026-10-11T22:53:37.444Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T22:53:37.444Z",
+      "privacyVerifiedAt": "2026-10-11T22:53:37.444Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T22:53:37.444Z",
+      "priceVerifiedAt": "2026-10-11T22:53:37.444Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T22:53:37.444Z",
+      "nextReverifyAt": "2026-10-12T04:53:37.444Z"
+    }
+  },
+  "catalog": {
+    "modelId": "liquid/lfm-2.5-2.6b:free",
+    "displayName": "LiquidAI: LFM2.5-2.6B (free)",
+    "contextWindow": 65536,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": true,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "roleScope": [
+    "REVIEWER"
+  ],
+  "qualification": {
+    "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+    "providerId": "kilo-free-direct",
+    "modelId": "liquid/lfm-2.5-2.6b:free",
+    "modelDisplayName": "LiquidAI: LFM2.5-2.6B (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 635,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1224,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 68
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 146
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T22:53:38.104Z",
+        "completedAt": "2026-10-11T22:53:42.537Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 635,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1224,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 68
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 146
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 2574,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-11T22:53:38.104Z",
+        "completedAt": "2026-10-11T22:53:42.537Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 2574,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:53:38.104Z",
+        "completedAt": "2026-10-11T22:53:42.537Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:53:42.538Z",
+        "completedAt": "2026-10-11T22:54:16.563Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:53:42.538Z",
+        "completedAt": "2026-10-11T22:54:16.563Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "HARD_FAILURE",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2379,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The add() function currently returns the product of its arguments (a * b) instead of their sum (a + b) as required by the intent."
+              ],
+              "repairedWith": [
+                "fenced_block"
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 295
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4306,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "repairedWith": [
+                "fenced_block"
+              ],
+              "reasoningRetried": true,
+              "reasoningTokens": 294
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 2519,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 705
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 2147,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": false,
+              "reasoningTokens": 782
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 6904,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true,
+              "reasoningTokens": 1009
+            }
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 6984,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The test change replaces a meaningful assertion (checking that run() returns \"ok\") with a trivial assertion (comparing the string \"ok\" to itself) that always passes. This breaks the test's ability to detect failures in the router functionality, creating a regression where the test passes even when the router fails."
+              ],
+              "reasoningRetried": true,
+              "reasoningTokens": 1493
+            }
+          },
+          {
+            "caseId": "reviewer.boundary_fix",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 4606,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": true,
+              "verdictCorrect": false,
+              "findingLocalized": true,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true,
+              "reasoningTokens": 1247
+            }
+          },
+          {
+            "caseId": "reviewer.boundary_regression",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 4180,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true,
+              "reasoningTokens": 1092
+            }
+          }
+        ],
+        "hardFailures": [
+          "reviewer.swallowed_failure",
+          "reviewer.reservation_leak",
+          "reviewer.boundary_fix",
+          "reviewer.boundary_regression"
+        ],
+        "overallScore": 0.5,
+        "startedAt": "2026-10-11T22:53:42.538Z",
+        "completedAt": "2026-10-11T22:54:16.564Z"
+      }
+    },
+    "startedAt": "2026-10-11T22:53:38.104Z",
+    "completedAt": "2026-10-11T22:53:42.537Z",
+    "totalLatencyMs": 4433,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [
+      "REVIEWER"
+    ],
+    "metadata": {
+      "compact": true,
+      "requests": 16,
+      "transient": false,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R74_ROLE_QUALIFICATION_V8",
+      "roleProtocolVersions": {
+        "EXPLORER": "EXPLORER_PROTOCOL_V2",
+        "PLANNER": "PLANNER_PROTOCOL_V4",
+        "REVIEWER": "REVIEWER_PROTOCOL_V4"
+      },
+      "roleTransientCases": 0
+    }
+  },
+  "status": "QUALIFIED",
+  "finishedAt": "2026-10-11T22:54:16.564Z"
+}

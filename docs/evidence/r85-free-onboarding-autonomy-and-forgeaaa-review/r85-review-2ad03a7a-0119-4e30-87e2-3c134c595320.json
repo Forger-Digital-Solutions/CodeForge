@@ -1,0 +1,163 @@
+{
+  "attemptId": "2ad03a7a-0119-4e30-87e2-3c134c595320",
+  "attempt": 1,
+  "scope": "r85",
+  "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "providerId": "kilo-free-direct",
+  "quotaDomain": "kilo:source-ip:shared-unverified",
+  "qualification": {
+    "providerId": "kilo-free-direct",
+    "status": "QUALIFIED",
+    "suiteVersion": "R73_ROLE_QUALIFICATION_V7",
+    "protocolVersion": "REVIEWER_PROTOCOL_V4",
+    "completedAt": "2026-10-10T10:35:30.841Z",
+    "score": 0.875
+  },
+  "startedAt": "2026-10-11T23:07:03.474Z",
+  "classification": "INTERNAL_PUBLIC_SOURCE_EVALUATION_ONLY_NVIDIA_TRIAL",
+  "maxPaidSpendUsd": 0,
+  "inferenceRequests": 1,
+  "rawResponse": "{\n  \"verdict\": \"pass\",\n  \"findings\": [\n    {\n      \"id\": \"native-persistence-history\",\n      \"severity\": \"advisory\",\n      \"category\": \"native-verification\",\n      \"message\": \"Two of four persistence-upgrade runs (1791758390641, 1791758595391) failed at upgrade-fresh-process stage with 'action[22] arrived=false != true'. The third run (1791758824636) passes after choreography hardening (door-centerline waypoint). Failed runs are retained as evidence history per requirement 6. This is transparent reporting, not a defect.\",\n      \"evidence\": \"native/persistence-upgrade-1791758390641.json, native/persistence-upgrade-1791758595391.json, native/persistence-upgrade-1791758824636.json, history.nativeStalls\"\n    },\n    {\n      \"id\": \"concurrent-single-quota-domain\",\n      \"severity\": \"advisory\",\n      \"category\": \"concurrency\",\n      \"message\": \"All three concurrent campaigns show domainSeparation: 'SINGLE_DOMAIN_FAIR_INTERLEAVING' under a shared kilo:source-ip domain that saturated at upstream 429. Requirement 4 explicitly states 'upstream quota domains are shared supply, not workspace state, and are assessed separately' — workspace isolation is demonstrated via per-project tasks in interleaved frames with independent receipts. A second independent quota domain is not required by the stated requirement.\",\n      \"evidence\": \"concurrent[0..2].domainSeparation, limitations[2]\"\n    },\n    {\n      \"id\": \"reviewer-supply-blocker\",\n      \"severity\": \"advisory\",\n      \"category\": \"qualification\",\n      \"message\": \"No production-eligible REVIEWER route exists (five CLEARED-model attempts hard-failed or quota-exhausted; only qualified reviewer is DEVELOPMENT_ONLY NVIDIA trial excluded at TERMS_ALLOWED). Autonomous runs fail closed at REVIEWER_FAILED per requirement 5 and 8. This is an external supply constraint, not an orchestrator defect.\",\n      \"evidence\": \"qualifications (REVIEWER: HARD_FAILURE/NOT_TESTED), limitations[0], limitations[1]\"\n    }\n  ],\n  \"summary\": \"All eight declared requirements are backed by actual evidence: R84 baseline preserved byte-for-byte (preservation.VERIFIED), live free-supply observations recorded without catalog-capacity claims (qualifications + capacity-audit.mjs), role-aware qualification gates enforced before campaign admission (10 qualification receipts), two-project concurrency demonstrated in isolated workspaces with per-run sessions/journals/ledgers (3 concurrent campaign receipts), fail-closed behavior on quota exhaustion/unqualified roles/failed verification (blocked statuses throughout), all receipts bounded/hashed/independently reviewable (sha256 on every file), native migration/persistence verified in real UE4.27 editor with source content preservation (migration-fault ok=true, persistence-upgrade latest ok=true, preservation.originalContentPreserved=true), and no approval reported from interrupted/substituted/schema-invalid reviewers (REVIEWER_FAILED fail-closed). Advisory findings document transparent failure history and supply constraints — no blocking defects.\"\n}",
+  "observations": [
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": 1791760025251
+    }
+  ],
+  "status": "INDEPENDENTLY_REVIEWED",
+  "packetChars": 17266,
+  "packetSha256": "68147cb787e22f30313a8f6b162721af3f8e35bdfb64c8ffee6589492fba5891",
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T23:07:03.480Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T23:07:03.480Z",
+      "recheckAt": "2026-10-18T23:07:03.480Z",
+      "qualificationAt": "2026-10-11T23:07:03.480Z",
+      "termsVerifiedAt": "2026-10-11T23:07:03.480Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T23:07:03.480Z",
+      "privacyVerifiedAt": "2026-10-11T23:07:03.480Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T23:07:03.480Z",
+      "priceVerifiedAt": "2026-10-11T23:07:03.480Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T23:07:03.480Z",
+      "nextReverifyAt": "2026-10-12T05:07:03.480Z"
+    }
+  },
+  "catalog": [
+    {
+      "modelId": "kilo-auto/free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "isFree": true
+    },
+    {
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "isFree": true
+    },
+    {
+      "modelId": "poolside/laguna-s-2.1:free",
+      "isFree": true
+    },
+    {
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "isFree": true
+    },
+    {
+      "modelId": "thinkingmachines/inkling-small:free",
+      "isFree": true
+    },
+    {
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "isFree": true
+    },
+    {
+      "modelId": "cohere/north-mini-code:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-content-safety:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "isFree": true
+    }
+  ],
+  "admission": {
+    "ok": true,
+    "costProfile": {
+      "inputCostPerMillion": 0,
+      "outputCostPerMillion": 0,
+      "isFree": true,
+      "freeTierVerifiedAt": "2026-10-11T23:07:04.239Z",
+      "paidFallbackPossible": false,
+      "paidFallbackDisabled": true,
+      "source": "kilo-free-direct-live"
+    },
+    "privacyClass": "permissive"
+  },
+  "outputMaxTokens": 6000,
+  "usage": {
+    "inputTokens": 7329,
+    "outputTokens": 3560,
+    "totalTokens": 10889,
+    "cachedInputTokens": 0,
+    "reasoningTokens": 3362,
+    "costUsd": 0
+  },
+  "finishReason": "stop",
+  "servedModel": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "review": {
+    "approved": true,
+    "findings": [
+      "reviewer: kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free (QUALIFIED, suite R73_ROLE_QUALIFICATION_V7, protocol REVIEWER_PROTOCOL_V4, qualified 2026-10-10T10:35:30.841Z)",
+      "[advisory] native-verification: Two of four persistence-upgrade runs (1791758390641, 1791758595391) failed at upgrade-fresh-process stage with 'action[22] arrived=false != true'. The third run (1791758824636) passes after choreography hardening (door-centerline waypoint). Failed runs are retained as evidence history per requirement 6. This is transparent reporting, not a defect. (native/persistence-upgrade-1791758390641.json, native/persistence-upgrade-1791758595391.json, native/persistence-upgrade-1791758824636.json, history.nativeStalls)",
+      "[advisory] concurrency: All three concurrent campaigns show domainSeparation: 'SINGLE_DOMAIN_FAIR_INTERLEAVING' under a shared kilo:source-ip domain that saturated at upstream 429. Requirement 4 explicitly states 'upstream quota domains are shared supply, not workspace state, and are assessed separately' — workspace isolation is demonstrated via per-project tasks in interleaved frames with independent receipts. A second independent quota domain is not required by the stated requirement. (concurrent[0..2].domainSeparation, limitations[2])",
+      "[advisory] qualification: No production-eligible REVIEWER route exists (five CLEARED-model attempts hard-failed or quota-exhausted; only qualified reviewer is DEVELOPMENT_ONLY NVIDIA trial excluded at TERMS_ALLOWED). Autonomous runs fail closed at REVIEWER_FAILED per requirement 5 and 8. This is an external supply constraint, not an orchestrator defect. (qualifications (REVIEWER: HARD_FAILURE/NOT_TESTED), limitations[0], limitations[1])"
+    ],
+    "independent": true,
+    "reviewer": {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free"
+    },
+    "verdict": "pass",
+    "rawResponse": "{\n  \"verdict\": \"pass\",\n  \"findings\": [\n    {\n      \"id\": \"native-persistence-history\",\n      \"severity\": \"advisory\",\n      \"category\": \"native-verification\",\n      \"message\": \"Two of four persistence-upgrade runs (1791758390641, 1791758595391) failed at upgrade-fresh-process stage with 'action[22] arrived=false != true'. The third run (1791758824636) passes after choreography hardening (door-centerline waypoint). Failed runs are retained as evidence history per requirement 6. This is transparent reporting, not a defect.\",\n      \"evidence\": \"native/persistence-upgrade-1791758390641.json, native/persistence-upgrade-1791758595391.json, native/persistence-upgrade-1791758824636.json, history.nativeStalls\"\n    },\n    {\n      \"id\": \"concurrent-single-quota-domain\",\n      \"severity\": \"advisory\",\n      \"category\": \"concurrency\",\n      \"message\": \"All three concurrent campaigns show domainSeparation: 'SINGLE_DOMAIN_FAIR_INTERLEAVING' under a shared kilo:source-ip domain that saturated at upstream 429. Requirement 4 explicitly states 'upstream quota domains are shared supply, not workspace state, and are assessed separately' — workspace isolation is demonstrated via per-project tasks in interleaved frames with independent receipts. A second independent quota domain is not required by the stated requirement.\",\n      \"evidence\": \"concurrent[0..2].domainSeparation, limitations[2]\"\n    },\n    {\n      \"id\": \"reviewer-supply-blocker\",\n      \"severity\": \"advisory\",\n      \"category\": \"qualification\",\n      \"message\": \"No production-eligible REVIEWER route exists (five CLEARED-model attempts hard-failed or quota-exhausted; only qualified reviewer is DEVELOPMENT_ONLY NVIDIA trial excluded at TERMS_ALLOWED). Autonomous runs fail closed at REVIEWER_FAILED per requirement 5 and 8. This is an external supply constraint, not an orchestrator defect.\",\n      \"evidence\": \"qualifications (REVIEWER: HARD_FAILURE/NOT_TESTED), limitations[0], limitations[1]\"\n    }\n  ],\n  \"summary\": \"All eight declared requirements are backed by actual evidence: R84 baseline preserved byte-for-byte (preservation.VERIFIED), live free-supply observations recorded without catalog-capacity claims (qualifications + capacity-audit.mjs), role-aware qualification gates enforced before campaign admission (10 qualification receipts), two-project concurrency demonstrated in isolated workspaces with per-run sessions/journals/ledgers (3 concurrent campaign receipts), fail-closed behavior on quota exhaustion/unqualified roles/failed verification (blocked statuses throughout), all receipts bounded/hashed/independently reviewable (sha256 on every file), native migration/persistence verified in real UE4.27 editor with source content preservation (migration-fault ok=true, persistence-upgrade latest ok=true, preservation.originalContentPreserved=true), and no approval reported from interrupted/substituted/schema-invalid reviewers (REVIEWER_FAILED fail-closed). Advisory findings document transparent failure history and supply constraints — no blocking defects.\"\n}",
+    "receipt": {
+      "packetSha256": "68147cb787e22f30313a8f6b162721af3f8e35bdfb64c8ffee6589492fba5891",
+      "packetChars": 17266,
+      "outputMaxTokens": 6000,
+      "completionSignal": "stop",
+      "schemaValid": true,
+      "quotaDomain": "kilo:source-ip:shared-unverified",
+      "usage": {
+        "inputTokens": 7329,
+        "outputTokens": 3560,
+        "totalTokens": 10889,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 3362,
+        "costUsd": 0
+      }
+    }
+  },
+  "finishedAt": "2026-10-11T23:07:54.080Z"
+}

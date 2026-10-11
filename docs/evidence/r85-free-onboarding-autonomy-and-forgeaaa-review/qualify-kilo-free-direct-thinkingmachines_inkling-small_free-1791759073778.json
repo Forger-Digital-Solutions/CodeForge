@@ -1,0 +1,175 @@
+{
+  "startedAt": "2026-10-11T22:51:13.778Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "thinkingmachines/inkling-small:free",
+  "evidenceClass": "LIVE_ROLE_QUALIFICATION_PUBLIC_CASES",
+  "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+  "frames": [
+    {
+      "at": "2026-10-11T22:51:14.555Z",
+      "request": {
+        "model": "thinkingmachines/inkling-small:free",
+        "messageCount": 2,
+        "maxTokens": 200,
+        "toolCount": 2
+      },
+      "events": [],
+      "error": {
+        "code": "RATE_LIMITED",
+        "status": 429,
+        "rateLimitScope": "provider",
+        "message": "kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: limit_rpd/thinkingmachines/inkling-small-20260730/e27a9a6d-1451-4be4-876e-292ffcbf1e71. Daily limit reached for thinkingmachines/inkling-small:free via Thinki"
+      },
+      "finishedAt": "2026-10-11T22:51:14.859Z"
+    }
+  ],
+  "maxRequests": 30,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T22:51:13.779Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T22:51:13.779Z",
+      "recheckAt": "2026-10-18T22:51:13.779Z",
+      "qualificationAt": "2026-10-11T22:51:13.778Z",
+      "termsVerifiedAt": "2026-10-11T22:51:13.779Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T22:51:13.779Z",
+      "privacyVerifiedAt": "2026-10-11T22:51:13.779Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T22:51:13.779Z",
+      "priceVerifiedAt": "2026-10-11T22:51:13.779Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T22:51:13.779Z",
+      "nextReverifyAt": "2026-10-12T04:51:13.779Z"
+    }
+  },
+  "catalog": {
+    "modelId": "thinkingmachines/inkling-small:free",
+    "displayName": "Thinking Machines: Inkling Small (free)",
+    "contextWindow": 1048576,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "roleScope": [
+    "REVIEWER"
+  ],
+  "qualification": {
+    "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+    "providerId": "kilo-free-direct",
+    "modelId": "thinkingmachines/inkling-small:free",
+    "modelDisplayName": "Thinking Machines: Inkling Small (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 306,
+            "retries": 0,
+            "error": "kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: limit_rpd/thinkingmachines/inkling-small-20260730/e27a9a6d-1451-4be4-876e-292ffcbf1e71. Daily limit reached for thinkingmachines"
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 0,
+            "retries": 0,
+            "error": "skipped: provider unavailable during qualification"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:51:14.555Z",
+        "completedAt": "2026-10-11T22:51:14.861Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 306,
+            "retries": 0,
+            "error": "kilo-free-direct error (429): {\"error\":{\"message\":\"Rate limit exceeded: limit_rpd/thinkingmachines/inkling-small-20260730/e27a9a6d-1451-4be4-876e-292ffcbf1e71. Daily limit reached for thinkingmachines"
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 0,
+            "retries": 0,
+            "error": "skipped: provider unavailable during qualification"
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 0,
+            "retries": 0,
+            "error": "skipped: provider unavailable during qualification"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:51:14.555Z",
+        "completedAt": "2026-10-11T22:51:14.861Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 0,
+            "retries": 0,
+            "error": "skipped: provider unavailable during qualification"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:51:14.555Z",
+        "completedAt": "2026-10-11T22:51:14.861Z"
+      }
+    },
+    "startedAt": "2026-10-11T22:51:14.555Z",
+    "completedAt": "2026-10-11T22:51:14.861Z",
+    "totalLatencyMs": 306,
+    "qualificationState": "NOT_QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 1,
+      "transient": true,
+      "quotaExhausted": false
+    }
+  },
+  "status": "NOT_QUALIFIED",
+  "finishedAt": "2026-10-11T22:51:14.862Z"
+}

@@ -1,0 +1,669 @@
+{
+  "startedAt": "2026-10-11T22:19:49.334Z",
+  "providerId": "blockrun-free-direct",
+  "modelId": "poolside/laguna-xs-2.1",
+  "evidenceClass": "LIVE_ROLE_QUALIFICATION_PUBLIC_CASES",
+  "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+  "frames": [
+    {
+      "at": "2026-10-11T22:19:50.042Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1",
+        "messageCount": 2,
+        "maxTokens": 200,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "51d9bc0f-a38f-4dcd-9d5c-8a9b94d38dc6",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "51d9bc0f-a38f-4dcd-9d5c-8a9b94d38dc6",
+          "delta": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 322,
+            "outputTokens": 25,
+            "totalTokens": 347
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "51d9bc0f-a38f-4dcd-9d5c-8a9b94d38dc6",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "poolside/laguna-xs-2.1"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:19:50.467Z"
+    },
+    {
+      "at": "2026-10-11T22:19:50.474Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1",
+        "messageCount": 2,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "7885bc46-994d-4619-8c1d-2d9beb3a264d",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "7885bc46-994d-4619-8c1d-2d9beb3a264d",
+          "delta": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 346,
+            "outputTokens": 25,
+            "totalTokens": 371,
+            "cachedInputTokens": 288
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "7885bc46-994d-4619-8c1d-2d9beb3a264d",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "poolside/laguna-xs-2.1"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:19:50.863Z"
+    },
+    {
+      "at": "2026-10-11T22:19:50.866Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1",
+        "messageCount": 4,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "0e009e40-5e7c-41c9-a7c1-ef2eb50d743b",
+          "toolName": "edit_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "0e009e40-5e7c-41c9-a7c1-ef2eb50d743b",
+          "delta": "{\"path\":\"src/calc.ts\",\"oldText\":\"export function add(a: number, b: number): number {\\n  return a - b;\\n}\",\"newText\":\"export function add(a: number, b: number): number {\\n  return a + b;\\n}\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 414,
+            "outputTokens": 98,
+            "totalTokens": 512,
+            "cachedInputTokens": 336
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "0e009e40-5e7c-41c9-a7c1-ef2eb50d743b",
+          "toolName": "edit_file",
+          "arguments": "{\"path\":\"src/calc.ts\",\"oldText\":\"export function add(a: number, b: number): number {\\n  return a - b;\\n}\",\"newText\":\"export function add(a: number, b: number): number {\\n  return a + b;\\n}\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "poolside/laguna-xs-2.1"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:19:51.618Z"
+    },
+    {
+      "at": "2026-10-11T22:19:51.621Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1",
+        "messageCount": 2,
+        "maxTokens": 120
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 70,
+            "outputTokens": 22,
+            "totalTokens": 92
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-xs-2.1"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:19:51.989Z"
+    },
+    {
+      "at": "2026-10-11T22:19:51.995Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1",
+        "messageCount": 2,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "346e3a5e-0cd5-4e60-a23b-81efc453874e",
+          "toolName": "list_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "346e3a5e-0cd5-4e60-a23b-81efc453874e",
+          "delta": "{\"path\":\"\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 481,
+            "outputTokens": 20,
+            "totalTokens": 501
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "346e3a5e-0cd5-4e60-a23b-81efc453874e",
+          "toolName": "list_files",
+          "arguments": "{\"path\":\"\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "poolside/laguna-xs-2.1"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:19:52.340Z"
+    },
+    {
+      "at": "2026-10-11T22:19:52.344Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1",
+        "messageCount": 4,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "59d592ff-10ac-4ea4-946c-e79439aca01d",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "59d592ff-10ac-4ea4-946c-e79439aca01d",
+          "delta": "{\"path\":\"src/router.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 575,
+            "outputTokens": 24,
+            "totalTokens": 599,
+            "cachedInputTokens": 480
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "59d592ff-10ac-4ea4-946c-e79439aca01d",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/router.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "poolside/laguna-xs-2.1"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:19:52.833Z"
+    },
+    {
+      "at": "2026-10-11T22:19:52.836Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1",
+        "messageCount": 6,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "fc9ecdf2-c2f6-415b-8ed9-bb0437b5acd7",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "fc9ecdf2-c2f6-415b-8ed9-bb0437b5acd7",
+          "delta": "{\"path\":\"src/provider/client.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 758,
+            "outputTokens": 25,
+            "totalTokens": 783
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "fc9ecdf2-c2f6-415b-8ed9-bb0437b5acd7",
+          "toolName": "read_file",
+          "arguments": "{\"path\":\"src/provider/client.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "poolside/laguna-xs-2.1"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:20:04.134Z"
+    },
+    {
+      "at": "2026-10-11T22:20:04.191Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1",
+        "messageCount": 8,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [],
+      "error": {
+        "code": "STREAM_INTERRUPTED",
+        "status": 200,
+        "message": "blockrun-free-direct stream trailer arrived without a terminal finish_reason"
+      },
+      "finishedAt": "2026-10-11T22:20:04.430Z"
+    },
+    {
+      "at": "2026-10-11T22:20:04.434Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1",
+        "messageCount": 2,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [],
+      "error": {
+        "code": "MODEL_SUBSTITUTED",
+        "message": "blockrun-free-direct substituted an unqualified stream model"
+      },
+      "finishedAt": "2026-10-11T22:20:04.758Z"
+    }
+  ],
+  "maxRequests": 40,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T22:19:49.335Z",
+    "receipt": {
+      "sourceDocumentation": "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl",
+      "termsEvidence": "https://blockrun.ai/terms",
+      "privacyEvidence": "https://blockrun.ai/privacy",
+      "priceEvidence": "https://blockrun.ai/docs/rate-limits",
+      "verifiedAt": "2026-10-11T22:19:49.335Z",
+      "recheckAt": "2026-10-18T22:19:49.335Z",
+      "qualificationAt": "2026-10-11T22:19:49.334Z",
+      "termsVerifiedAt": "2026-10-11T22:19:49.335Z",
+      "termsEvidenceHash": "73f2ef461e086bec3f80579ad7699ce819ab9fd78cef6763f8ff7a83bde3d649",
+      "termsExpiresAt": "2026-10-18T22:19:49.335Z",
+      "privacyVerifiedAt": "2026-10-11T22:19:49.335Z",
+      "privacyEvidenceHash": "21b97f5ca395e4b0ce3b434c8fca6f20cf63285ec57a93cbf88fe1628eb8e3b7",
+      "privacyExpiresAt": "2026-10-18T22:19:49.335Z",
+      "priceVerifiedAt": "2026-10-11T22:19:49.335Z",
+      "priceEvidenceHash": "4921f5b2f8c4b51559078915381fa0956ee12030bb4e09fe86e49ecd6ccdf27f",
+      "priceExpiresAt": "2026-10-18T22:19:49.335Z",
+      "nextReverifyAt": "2026-10-12T04:19:49.335Z"
+    }
+  },
+  "catalog": {
+    "modelId": "poolside/laguna-xs-2.1",
+    "displayName": "Poolside Laguna XS 2.1 (Free)",
+    "contextWindow": 131072,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "qualification": {
+    "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+    "providerId": "blockrun-free-direct",
+    "modelId": "poolside/laguna-xs-2.1",
+    "modelDisplayName": "Poolside Laguna XS 2.1 (Free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 433,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1147,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 25
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 98
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T22:19:50.041Z",
+        "completedAt": "2026-10-11T22:19:51.993Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 433,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1147,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 25
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 98
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 372,
+            "retries": 0,
+            "details": {
+              "textLength": 65,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T22:19:50.041Z",
+        "completedAt": "2026-10-11T22:19:51.993Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 372,
+            "retries": 0,
+            "details": {
+              "textLength": 65,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T22:19:50.041Z",
+        "completedAt": "2026-10-11T22:19:51.993Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "explorer.route_execution",
+            "category": "explore",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 12439,
+            "retries": 0,
+            "error": "blockrun-free-direct stream trailer arrived without a terminal finish_reason"
+          },
+          {
+            "caseId": "explorer.reservation_release",
+            "category": "explore",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 328,
+            "retries": 0,
+            "details": {
+              "providerErrorCode": "MODEL_SUBSTITUTED",
+              "providerFailureClass": "MODEL_IDENTITY"
+            },
+            "error": "blockrun-free-direct substituted an unqualified stream model"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:19:51.993Z",
+        "completedAt": "2026-10-11T22:20:04.762Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:19:51.993Z",
+        "completedAt": "2026-10-11T22:20:04.762Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:19:51.993Z",
+        "completedAt": "2026-10-11T22:20:04.762Z"
+      }
+    },
+    "startedAt": "2026-10-11T22:19:50.041Z",
+    "completedAt": "2026-10-11T22:19:51.993Z",
+    "totalLatencyMs": 1952,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 8,
+      "transient": true,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R74_ROLE_QUALIFICATION_V8",
+      "roleProtocolVersions": {
+        "EXPLORER": "EXPLORER_PROTOCOL_V2",
+        "PLANNER": "PLANNER_PROTOCOL_V4",
+        "REVIEWER": "REVIEWER_PROTOCOL_V4"
+      },
+      "roleTransientCases": 1,
+      "providerFailureClass": "MODEL_IDENTITY",
+      "providerErrorCodes": [
+        "MODEL_SUBSTITUTED"
+      ]
+    }
+  },
+  "status": "QUALIFIED",
+  "finishedAt": "2026-10-11T22:20:04.762Z"
+}

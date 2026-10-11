@@ -1,0 +1,8551 @@
+{
+  "startedAt": "2026-10-11T22:39:36.205Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "poolside/laguna-s-2.1:free",
+  "evidenceClass": "LIVE_ROLE_QUALIFICATION_PUBLIC_CASES",
+  "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+  "frames": [
+    {
+      "at": "2026-10-11T22:39:36.983Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 200,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-c1561bde45804ca5ad761724934ef6c9",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-c1561bde45804ca5ad761724934ef6c9",
+          "delta": "{\"path\": \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-c1561bde45804ca5ad761724934ef6c9",
+          "delta": "src"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-c1561bde45804ca5ad761724934ef6c9",
+          "delta": "/"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-c1561bde45804ca5ad761724934ef6c9",
+          "delta": "calc"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-c1561bde45804ca5ad761724934ef6c9",
+          "delta": ".ts"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-c1561bde45804ca5ad761724934ef6c9",
+          "delta": "\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-c1561bde45804ca5ad761724934ef6c9",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 25,
+            "totalTokens": 279,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 0,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-c1561bde45804ca5ad761724934ef6c9",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:39:38.589Z"
+    },
+    {
+      "at": "2026-10-11T22:39:38.596Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-fa0666864136484f9684b0d7ee5d0713",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-fa0666864136484f9684b0d7ee5d0713",
+          "delta": "{\"path\": \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-fa0666864136484f9684b0d7ee5d0713",
+          "delta": "src"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-fa0666864136484f9684b0d7ee5d0713",
+          "delta": "/"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-fa0666864136484f9684b0d7ee5d0713",
+          "delta": "calc"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-fa0666864136484f9684b0d7ee5d0713",
+          "delta": ".ts"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-fa0666864136484f9684b0d7ee5d0713",
+          "delta": "\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-fa0666864136484f9684b0d7ee5d0713",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 278,
+            "outputTokens": 37,
+            "totalTokens": 315,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 12,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-fa0666864136484f9684b0d7ee5d0713",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:39:41.848Z"
+    },
+    {
+      "at": "2026-10-11T22:39:41.851Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 4,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "toolName": "edit_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": "{\"path\": \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": "src"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": "/"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": "calc"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": ".ts"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": "\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": ", \"oldText\": \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": " "
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": " return"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": " a"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": " -"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": " b"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": ";"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": "\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": ", \"newText\": \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": " "
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": " return"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": " a"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": " +"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": " b"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": ";"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": "\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 339,
+            "outputTokens": 66,
+            "totalTokens": 405,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 0,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-41b8bdf0db554be68ea73e81d77245b9",
+          "toolName": "edit_file",
+          "arguments": "{\"path\": \"src/calc.ts\", \"oldText\": \"  return a - b;\", \"newText\": \"  return a + b;\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:39:45.647Z"
+    },
+    {
+      "at": "2026-10-11T22:39:45.650Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 120
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 64,
+            "outputTokens": 20,
+            "totalTokens": 84,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 0,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:39:46.892Z"
+    },
+    {
+      "at": "2026-10-11T22:39:46.897Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 1200
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 379,
+            "outputTokens": 159,
+            "totalTokens": 538,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 0,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:39:50.845Z"
+    },
+    {
+      "at": "2026-10-11T22:39:50.851Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 1200
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 379,
+            "outputTokens": 162,
+            "totalTokens": 541,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 0,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:39:56.189Z"
+    },
+    {
+      "at": "2026-10-11T22:39:56.193Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 1200
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 267,
+            "outputTokens": 159,
+            "totalTokens": 426,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 0,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:40:06.470Z"
+    },
+    {
+      "at": "2026-10-11T22:40:06.474Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 515,
+            "outputTokens": 136,
+            "totalTokens": 651,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 0,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:40:11.696Z"
+    },
+    {
+      "at": "2026-10-11T22:40:11.699Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 517,
+            "outputTokens": 188,
+            "totalTokens": 705,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 0,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:40:19.247Z"
+    },
+    {
+      "at": "2026-10-11T22:40:19.303Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 540,
+            "outputTokens": 80,
+            "totalTokens": 620,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 0,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:40:23.092Z"
+    },
+    {
+      "at": "2026-10-11T22:40:23.096Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 518,
+            "outputTokens": 319,
+            "totalTokens": 837,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 264,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:40:31.732Z"
+    },
+    {
+      "at": "2026-10-11T22:40:31.742Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 534,
+            "outputTokens": 900,
+            "totalTokens": 1434,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 900,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:40:50.586Z"
+    },
+    {
+      "at": "2026-10-11T22:40:50.590Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 1924
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 534,
+            "outputTokens": 1924,
+            "totalTokens": 2458,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1924,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:41:18.954Z"
+    },
+    {
+      "at": "2026-10-11T22:41:18.960Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 523,
+            "outputTokens": 575,
+            "totalTokens": 1098,
+            "cachedInputTokens": 448,
+            "reasoningTokens": 375,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:41:32.316Z"
+    },
+    {
+      "at": "2026-10-11T22:41:32.321Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1323,
+            "outputTokens": 900,
+            "totalTokens": 2223,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 871,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:41:48.668Z"
+    },
+    {
+      "at": "2026-10-11T22:41:48.673Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 1924
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1323,
+            "outputTokens": 1098,
+            "totalTokens": 2421,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 975,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:42:16.199Z"
+    },
+    {
+      "at": "2026-10-11T22:42:16.203Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1318,
+            "outputTokens": 900,
+            "totalTokens": 2218,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 670,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:42:32.846Z"
+    },
+    {
+      "at": "2026-10-11T22:42:32.850Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messageCount": 2,
+        "maxTokens": 1924
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1318,
+            "outputTokens": 804,
+            "totalTokens": 2122,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 508,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-s-2.1:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:42:51.514Z"
+    }
+  ],
+  "maxRequests": 30,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T22:39:36.206Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T22:39:36.206Z",
+      "recheckAt": "2026-10-18T22:39:36.206Z",
+      "qualificationAt": "2026-10-11T22:39:36.205Z",
+      "termsVerifiedAt": "2026-10-11T22:39:36.206Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T22:39:36.206Z",
+      "privacyVerifiedAt": "2026-10-11T22:39:36.206Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T22:39:36.206Z",
+      "priceVerifiedAt": "2026-10-11T22:39:36.206Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T22:39:36.206Z",
+      "nextReverifyAt": "2026-10-12T04:39:36.206Z"
+    }
+  },
+  "catalog": {
+    "modelId": "poolside/laguna-s-2.1:free",
+    "displayName": "Poolside: Laguna S 2.1 (free)",
+    "contextWindow": 262144,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "roleScope": [
+    "PLANNER",
+    "REVIEWER"
+  ],
+  "qualification": {
+    "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+    "providerId": "kilo-free-direct",
+    "modelId": "poolside/laguna-s-2.1:free",
+    "modelDisplayName": "Poolside: Laguna S 2.1 (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1614,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 7054,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 37
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 66
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T22:39:36.982Z",
+        "completedAt": "2026-10-11T22:39:46.896Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1614,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 7054,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 37
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 66
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1245,
+            "retries": 0,
+            "details": {
+              "textLength": 61,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T22:39:36.982Z",
+        "completedAt": "2026-10-11T22:39:46.896Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1245,
+            "retries": 0,
+            "details": {
+              "textLength": 61,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T22:39:36.982Z",
+        "completedAt": "2026-10-11T22:39:46.896Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:39:46.896Z",
+        "completedAt": "2026-10-11T22:42:51.521Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "planner.release_callsite",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5342,
+            "retries": 1,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 2,
+              "roles": [
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": false,
+              "reasoningTokens": 0,
+              "firstAttempt": {
+                "protocol": "task_graph_v1",
+                "tasks": 2,
+                "roles": [
+                  "coder",
+                  "reviewer"
+                ],
+                "requiredRolesPresent": true,
+                "dependencyOrderValid": true,
+                "inventedPaths": [
+                  "fabric/admission.ts"
+                ],
+                "verificationStepPresent": true,
+                "scopeWithinBudget": true,
+                "schemaValid": true,
+                "reasoningRetried": false,
+                "reasoningTokens": 0
+              }
+            }
+          },
+          {
+            "caseId": "planner.schema",
+            "category": "plan",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 10280,
+            "retries": 0,
+            "details": {
+              "protocol": "task_graph_v1",
+              "tasks": 2,
+              "roles": [
+                "coder",
+                "reviewer"
+              ],
+              "requiredRolesPresent": true,
+              "dependencyOrderValid": true,
+              "inventedPaths": [],
+              "verificationStepPresent": true,
+              "scopeWithinBudget": true,
+              "schemaValid": true,
+              "reasoningRetried": false,
+              "reasoningTokens": 0
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T22:39:46.896Z",
+        "completedAt": "2026-10-11T22:42:51.521Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "HARD_FAILURE",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 5225,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": false,
+              "reasoningTokens": 0
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 7604,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": true,
+              "verdictCorrect": false,
+              "findingLocalized": true,
+              "findings": [
+                "The exported symbol was renamed from 'log' to 'writeLog', but the task states behaviour should be unchanged. Renaming an exported identifier is a breaking API change for any consumer importing 'log' from this module, which is a functional regression rather than a pure internal rename."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 0
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3792,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 0
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 8647,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": false,
+              "reasoningTokens": 264
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 47218,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true,
+              "reasoningTokens": 1924
+            }
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 13361,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": false,
+              "reasoningTokens": 375
+            }
+          },
+          {
+            "caseId": "reviewer.boundary_fix",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 43882,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": true,
+              "reasoningTokens": 975
+            }
+          },
+          {
+            "caseId": "reviewer.boundary_regression",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 35318,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Expected non-empty string for summary",
+              "reasoningRetried": true,
+              "reasoningTokens": 508
+            }
+          }
+        ],
+        "hardFailures": [
+          "reviewer.one_bug",
+          "reviewer.swallowed_failure",
+          "reviewer.reservation_leak",
+          "reviewer.test_cheat",
+          "reviewer.boundary_regression"
+        ],
+        "overallScore": 0.25,
+        "startedAt": "2026-10-11T22:39:46.896Z",
+        "completedAt": "2026-10-11T22:42:51.521Z"
+      }
+    },
+    "startedAt": "2026-10-11T22:39:36.982Z",
+    "completedAt": "2026-10-11T22:39:46.896Z",
+    "totalLatencyMs": 9914,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [
+      "REVIEWER"
+    ],
+    "metadata": {
+      "compact": true,
+      "requests": 17,
+      "transient": false,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R74_ROLE_QUALIFICATION_V8",
+      "roleProtocolVersions": {
+        "EXPLORER": "EXPLORER_PROTOCOL_V2",
+        "PLANNER": "PLANNER_PROTOCOL_V4",
+        "REVIEWER": "REVIEWER_PROTOCOL_V4"
+      },
+      "roleTransientCases": 0
+    }
+  },
+  "status": "QUALIFIED",
+  "finishedAt": "2026-10-11T22:42:51.521Z"
+}

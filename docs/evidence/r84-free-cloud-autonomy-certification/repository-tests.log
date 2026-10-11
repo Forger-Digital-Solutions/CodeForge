@@ -1,0 +1,12 @@
+fatal: could not open 'missing.ts' for reading: No such file or directory
+Release packaging supports only the staging or production channel.
+The production Cloud URL must be HTTPS and must not be loopback.
+file:///G:/CodeForge/worktrees/r84-free-cloud-autonomy-certification/scripts/free-capacity-certificate.mjs:68
+    if (!checked.valid) throw new Error("FREE_CAPACITY_CERTIFICATE_MISMATCH");
+                              ^
+
+Error: FREE_CAPACITY_CERTIFICATE_MISMATCH
+    at file:///G:/CodeForge/worktrees/r84-free-cloud-autonomy-certification/scripts/free-capacity-certificate.mjs:68:31
+
+Node.js v24.19.0
+JSON report written to G:/CodeForge/worktrees/r84-free-cloud-autonomy-certification/docs/evidence/r84-free-cloud-autonomy-certification/repository-tests.json

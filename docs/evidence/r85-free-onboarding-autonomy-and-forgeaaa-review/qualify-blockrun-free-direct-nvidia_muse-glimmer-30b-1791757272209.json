@@ -1,0 +1,1112 @@
+{
+  "startedAt": "2026-10-11T22:21:12.209Z",
+  "providerId": "blockrun-free-direct",
+  "modelId": "nvidia/muse-glimmer-30b",
+  "evidenceClass": "LIVE_ROLE_QUALIFICATION_PUBLIC_CASES",
+  "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+  "frames": [
+    {
+      "at": "2026-10-11T22:21:12.734Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 2,
+        "maxTokens": 200,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-85e890e581897c80",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-85e890e581897c80",
+          "delta": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 522,
+            "outputTokens": 105,
+            "totalTokens": 627
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-85e890e581897c80",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:21:15.979Z"
+    },
+    {
+      "at": "2026-10-11T22:21:15.986Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 2,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-bc557f3d3583b4c3",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-bc557f3d3583b4c3",
+          "delta": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 546,
+            "outputTokens": 117,
+            "totalTokens": 663
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-bc557f3d3583b4c3",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:21:19.042Z"
+    },
+    {
+      "at": "2026-10-11T22:21:19.045Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 4,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 633,
+            "outputTokens": 400,
+            "totalTokens": 1033,
+            "cachedInputTokens": 320
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:21:35.040Z"
+    },
+    {
+      "at": "2026-10-11T22:21:35.047Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 2,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-89ddd542a2213737",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-89ddd542a2213737",
+          "delta": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 546,
+            "outputTokens": 117,
+            "totalTokens": 663,
+            "cachedInputTokens": 384
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-89ddd542a2213737",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:21:38.388Z"
+    },
+    {
+      "at": "2026-10-11T22:21:38.393Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 4,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-8a26079d634d25e5",
+          "toolName": "edit_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-8a26079d634d25e5",
+          "delta": "{\"path\": \"src/calc.ts\", \"oldText\": \"export function add(a: number, b: number): number {\\n  return a - b;\\n}\", \"newText\": \"export function add(a: number, b: number): number {\\n  return a + b;\\n}\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 633,
+            "outputTokens": 366,
+            "totalTokens": 999,
+            "cachedInputTokens": 448
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-8a26079d634d25e5",
+          "toolName": "edit_file",
+          "arguments": "{\"path\": \"src/calc.ts\", \"oldText\": \"export function add(a: number, b: number): number {\\n  return a - b;\\n}\", \"newText\": \"export function add(a: number, b: number): number {\\n  return a + b;\\n}\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:21:51.400Z"
+    },
+    {
+      "at": "2026-10-11T22:21:51.404Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 2,
+        "maxTokens": 120
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 75,
+            "outputTokens": 120,
+            "totalTokens": 195
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:21:57.420Z"
+    },
+    {
+      "at": "2026-10-11T22:21:57.426Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 2,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-88e3a468d6a1eef4",
+          "toolName": "list_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-88e3a468d6a1eef4",
+          "delta": "{}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 695,
+            "outputTokens": 85,
+            "totalTokens": 780
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-88e3a468d6a1eef4",
+          "toolName": "list_files",
+          "arguments": "{}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:22:00.188Z"
+    },
+    {
+      "at": "2026-10-11T22:22:00.192Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 4,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-84e66409fc2790d2",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-84e66409fc2790d2",
+          "delta": "{\"path\": \"src/router.ts\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-a50c5360d4359397",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-a50c5360d4359397",
+          "delta": "{\"path\": \"src/provider/client.ts\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-b4a8f98a84c2dd11",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-b4a8f98a84c2dd11",
+          "delta": "{\"path\": \"docs/flow.md\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 795,
+            "outputTokens": 197,
+            "totalTokens": 992
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-84e66409fc2790d2",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/router.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-a50c5360d4359397",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/provider/client.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-b4a8f98a84c2dd11",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"docs/flow.md\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:22:06.383Z"
+    },
+    {
+      "at": "2026-10-11T22:22:06.387Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 8,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-a784b865cdd1d176",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-a784b865cdd1d176",
+          "delta": "{\"query\": \"executeProviderCall\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-9948ce20a9620ef3",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-9948ce20a9620ef3",
+          "delta": "{\"query\": \"selectRoute\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1196,
+            "outputTokens": 251,
+            "totalTokens": 1447
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-a784b865cdd1d176",
+          "toolName": "search_files",
+          "arguments": "{\"query\": \"executeProviderCall\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-9948ce20a9620ef3",
+          "toolName": "search_files",
+          "arguments": "{\"query\": \"selectRoute\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:22:16.666Z"
+    },
+    {
+      "at": "2026-10-11T22:22:16.671Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 11,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-8b1c143ad51af024",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-8b1c143ad51af024",
+          "delta": "{\"path\": \"test/router.test.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1354,
+            "outputTokens": 180,
+            "totalTokens": 1534
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-8b1c143ad51af024",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"test/router.test.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:22:27.663Z"
+    },
+    {
+      "at": "2026-10-11T22:22:27.666Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 13,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-8a66b711acc32224",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-8a66b711acc32224",
+          "delta": "{\"path\": \"src/server.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1452,
+            "outputTokens": 276,
+            "totalTokens": 1728
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-8a66b711acc32224",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/server.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:22:40.614Z"
+    },
+    {
+      "at": "2026-10-11T22:22:40.620Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 16,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 22
+        },
+        {
+          "type": "text_delta",
+          "chars": 32
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1057,
+            "outputTokens": 394,
+            "totalTokens": 1451
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:22:58.754Z"
+    },
+    {
+      "at": "2026-10-11T22:22:58.757Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 2,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-8d61638ad0f42357",
+          "toolName": "list_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-8d61638ad0f42357",
+          "delta": "{}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 689,
+            "outputTokens": 83,
+            "totalTokens": 772,
+            "cachedInputTokens": 512
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-8d61638ad0f42357",
+          "toolName": "list_files",
+          "arguments": "{}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:23:04.540Z"
+    },
+    {
+      "at": "2026-10-11T22:23:04.543Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 4,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-a40821b7def05311",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-a40821b7def05311",
+          "delta": "{\"query\": \"release\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-844dbe5f75539793",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-844dbe5f75539793",
+          "delta": "{\"query\": \"reservation\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-a1b1860e44d5ec64",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-a1b1860e44d5ec64",
+          "delta": "{\"query\": \"capacity\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 789,
+            "outputTokens": 186,
+            "totalTokens": 975
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-a40821b7def05311",
+          "toolName": "search_files",
+          "arguments": "{\"query\": \"release\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-844dbe5f75539793",
+          "toolName": "search_files",
+          "arguments": "{\"query\": \"reservation\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-a1b1860e44d5ec64",
+          "toolName": "search_files",
+          "arguments": "{\"query\": \"capacity\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:23:10.714Z"
+    },
+    {
+      "at": "2026-10-11T22:23:10.717Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 8,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-9329eeebc7086871",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-9329eeebc7086871",
+          "delta": "{\"query\": \"reserve\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1004,
+            "outputTokens": 102,
+            "totalTokens": 1106
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-9329eeebc7086871",
+          "toolName": "search_files",
+          "arguments": "{\"query\": \"reserve\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:23:15.129Z"
+    },
+    {
+      "at": "2026-10-11T22:23:15.134Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 10,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-a392043053eb5eaf",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-a392043053eb5eaf",
+          "delta": "{\"path\": \"src/fabric/admission.ts\"}"
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-bee9203e785e50ef",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-bee9203e785e50ef",
+          "delta": "{\"path\": \"src/fabric/ledger.ts\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1077,
+            "outputTokens": 147,
+            "totalTokens": 1224,
+            "cachedInputTokens": 512
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-a392043053eb5eaf",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/fabric/admission.ts\"}"
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-bee9203e785e50ef",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/fabric/ledger.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:23:18.996Z"
+    },
+    {
+      "at": "2026-10-11T22:23:19.003Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 13,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-84c7996d571034b4",
+          "toolName": "search_files"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-84c7996d571034b4",
+          "delta": "{\"query\": \"release(\"}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1356,
+            "outputTokens": 101,
+            "totalTokens": 1457,
+            "cachedInputTokens": 512
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-84c7996d571034b4",
+          "toolName": "search_files",
+          "arguments": "{\"query\": \"release(\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "nvidia/muse-glimmer-30b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:23:23.020Z"
+    },
+    {
+      "at": "2026-10-11T22:23:23.025Z",
+      "request": {
+        "model": "nvidia/muse-glimmer-30b",
+        "messageCount": 16,
+        "maxTokens": 800,
+        "toolCount": 4
+      },
+      "events": [],
+      "finishedAt": "2026-10-11T22:24:08.029Z"
+    }
+  ],
+  "maxRequests": 40,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T22:21:12.210Z",
+    "receipt": {
+      "sourceDocumentation": "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl",
+      "termsEvidence": "https://blockrun.ai/terms",
+      "privacyEvidence": "https://blockrun.ai/privacy",
+      "priceEvidence": "https://blockrun.ai/docs/rate-limits",
+      "verifiedAt": "2026-10-11T22:21:12.210Z",
+      "recheckAt": "2026-10-18T22:21:12.210Z",
+      "qualificationAt": "2026-10-11T22:21:12.209Z",
+      "termsVerifiedAt": "2026-10-11T22:21:12.210Z",
+      "termsEvidenceHash": "73f2ef461e086bec3f80579ad7699ce819ab9fd78cef6763f8ff7a83bde3d649",
+      "termsExpiresAt": "2026-10-18T22:21:12.210Z",
+      "privacyVerifiedAt": "2026-10-11T22:21:12.210Z",
+      "privacyEvidenceHash": "21b97f5ca395e4b0ce3b434c8fca6f20cf63285ec57a93cbf88fe1628eb8e3b7",
+      "privacyExpiresAt": "2026-10-18T22:21:12.210Z",
+      "priceVerifiedAt": "2026-10-11T22:21:12.210Z",
+      "priceEvidenceHash": "4921f5b2f8c4b51559078915381fa0956ee12030bb4e09fe86e49ecd6ccdf27f",
+      "priceExpiresAt": "2026-10-18T22:21:12.210Z",
+      "nextReverifyAt": "2026-10-12T04:21:12.210Z"
+    }
+  },
+  "catalog": {
+    "modelId": "nvidia/muse-glimmer-30b",
+    "displayName": "Muse Glimmer 30B (Free)",
+    "contextWindow": 131072,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "qualification": {
+    "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+    "providerId": "blockrun-free-direct",
+    "modelId": "nvidia/muse-glimmer-30b",
+    "modelDisplayName": "Muse Glimmer 30B (Free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3253,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 16357,
+            "retries": 1,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 117
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 366
+                }
+              ],
+              "firstAttempt": {
+                "calls": 2,
+                "toolCalls": [],
+                "turns": [
+                  {
+                    "toolCalls": [
+                      "read_file"
+                    ],
+                    "finishReason": "tool_calls",
+                    "textLength": 0,
+                    "outputTokens": 117
+                  },
+                  {
+                    "toolCalls": [],
+                    "finishReason": "length",
+                    "textLength": 0,
+                    "outputTokens": 400
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T22:21:12.733Z",
+        "completedAt": "2026-10-11T22:21:57.425Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3253,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 16357,
+            "retries": 1,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 117
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 366
+                }
+              ],
+              "firstAttempt": {
+                "calls": 2,
+                "toolCalls": [],
+                "turns": [
+                  {
+                    "toolCalls": [
+                      "read_file"
+                    ],
+                    "finishReason": "tool_calls",
+                    "textLength": 0,
+                    "outputTokens": 117
+                  },
+                  {
+                    "toolCalls": [],
+                    "finishReason": "length",
+                    "textLength": 0,
+                    "outputTokens": 400
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 6020,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-11T22:21:12.733Z",
+        "completedAt": "2026-10-11T22:21:57.425Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 6020,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:21:12.733Z",
+        "completedAt": "2026-10-11T22:21:57.425Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "explorer.route_execution",
+            "category": "explore",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 61331,
+            "retries": 0,
+            "details": {
+              "modelCalls": 6,
+              "filesRead": [
+                "src/router.ts",
+                "src/provider/client.ts",
+                "docs/flow.md",
+                "test/router.test.ts",
+                "src/server.ts"
+              ],
+              "relevantFilesRead": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "searches": 2,
+              "totalToolCalls": 8,
+              "validCalls": 8,
+              "validToolCallRate": 1,
+              "readPrecision": 0.4,
+              "hallucinatedPaths": [],
+              "mutationAttempts": 0,
+              "reportedFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "answerFiles": [
+                "src/router.ts",
+                "src/provider/client.ts"
+              ],
+              "recall": 1,
+              "reasoningRetries": 0
+            }
+          },
+          {
+            "caseId": "explorer.reservation_release",
+            "category": "explore",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 69278,
+            "retries": 0,
+            "error": "qualification case timed out"
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T22:21:57.425Z",
+        "completedAt": "2026-10-11T22:24:08.036Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:21:57.425Z",
+        "completedAt": "2026-10-11T22:24:08.036Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:21:57.425Z",
+        "completedAt": "2026-10-11T22:24:08.036Z"
+      }
+    },
+    "startedAt": "2026-10-11T22:21:12.733Z",
+    "completedAt": "2026-10-11T22:21:57.425Z",
+    "totalLatencyMs": 44692,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 16,
+      "transient": true,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R74_ROLE_QUALIFICATION_V8",
+      "roleProtocolVersions": {
+        "EXPLORER": "EXPLORER_PROTOCOL_V2",
+        "PLANNER": "PLANNER_PROTOCOL_V4",
+        "REVIEWER": "REVIEWER_PROTOCOL_V4"
+      },
+      "roleTransientCases": 1
+    }
+  },
+  "status": "QUALIFIED",
+  "finishedAt": "2026-10-11T22:24:08.036Z"
+}

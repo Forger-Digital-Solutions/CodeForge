@@ -1,0 +1,10 @@
+✔ physical dispatches count once; cumulative usage is not double counted (2.8719ms)
+✔ missing usage, retries and completion evidence remain unknown or incomplete (0.4806ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 182.6953

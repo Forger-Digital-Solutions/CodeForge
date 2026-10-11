@@ -1,0 +1,52 @@
+
+> codeforge@0.4.0 security:gate
+> node scripts/security/secret-scan.mjs --self-test --scan && node scripts/security/audit-dependencies.mjs && node scripts/security/public-claims-scan.mjs && node scripts/security/validate-doc-links.mjs
+
+{"selfTest":"PASS"}
+{
+  "status": "PASS",
+  "filesScanned": 2317,
+  "totalFindings": 673,
+  "synthetic": 651,
+  "allowlisted": 22,
+  "ownerReviewRequired": 0,
+  "report": "docs/evidence/security-r1/secret-scan.json"
+}
+{
+  "status": "PASS",
+  "summary": {
+    "info": 0,
+    "low": 0,
+    "moderate": 8,
+    "high": 0,
+    "critical": 0,
+    "total": 8
+  },
+  "dependenciesAudited": 654,
+  "auditError": null,
+  "blocking": [],
+  "components": 600,
+  "installScriptPackages": [
+    "better-sqlite3@12.11.1",
+    "electron-winstaller@5.4.0",
+    "fsevents@2.3.3",
+    "node-pty@1.1.0"
+  ],
+  "report": "docs/evidence/security-r1/dependency-audit.json",
+  "sbom": "docs/evidence/security-r1/sbom.json"
+}
+{
+  "status": "PASS",
+  "filesScanned": 167,
+  "totalHits": 28,
+  "blocking": 0,
+  "report": "docs/evidence/security-r1/public-claims-scan.json"
+}
+{
+  "status": "PASS",
+  "filesScanned": 61,
+  "relativeLinksChecked": 166,
+  "externalLinks": 46,
+  "broken": 0,
+  "report": "docs/evidence/security-r1/doc-links.json"
+}

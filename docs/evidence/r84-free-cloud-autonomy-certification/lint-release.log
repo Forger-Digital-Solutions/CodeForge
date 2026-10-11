@@ -1,0 +1,4 @@
+
+> codeforge@0.4.0 lint
+> oxlint --deny-warnings --ignore-pattern tests/evidence/** packages apps tests scripts
+

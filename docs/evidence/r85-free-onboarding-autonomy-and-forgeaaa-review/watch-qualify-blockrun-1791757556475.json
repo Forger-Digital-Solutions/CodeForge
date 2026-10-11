@@ -1,0 +1,723 @@
+{
+  "startedAt": "2026-10-11T22:25:56.475Z",
+  "evidenceClass": "LIVE_CATALOG_WATCH_AND_COMPACT_QUALIFICATION",
+  "attempts": [
+    {
+      "at": "2026-10-11T22:25:56.882Z",
+      "phase": "catalog",
+      "availableCoding": [],
+      "note": "no coding model currently free+available"
+    },
+    {
+      "at": "2026-10-11T22:27:27.271Z",
+      "phase": "catalog",
+      "availableCoding": [],
+      "note": "no coding model currently free+available"
+    },
+    {
+      "at": "2026-10-11T22:28:57.760Z",
+      "phase": "catalog",
+      "availableCoding": [],
+      "note": "no coding model currently free+available"
+    },
+    {
+      "at": "2026-10-11T22:30:28.977Z",
+      "phase": "qualify",
+      "modelId": "poolside/laguna-xs-2.1",
+      "frames": [
+        {
+          "at": "2026-10-11T22:30:29.264Z",
+          "request": {
+            "model": "poolside/laguna-xs-2.1",
+            "maxTokens": 200
+          },
+          "events": [
+            "tool_call_started",
+            "tool_call_delta",
+            "usage",
+            "tool_call_completed",
+            "finish"
+          ]
+        },
+        {
+          "at": "2026-10-11T22:30:29.777Z",
+          "request": {
+            "model": "poolside/laguna-xs-2.1",
+            "maxTokens": 400
+          },
+          "events": [
+            "tool_call_started",
+            "tool_call_delta",
+            "usage",
+            "tool_call_completed",
+            "finish"
+          ]
+        },
+        {
+          "at": "2026-10-11T22:30:30.206Z",
+          "request": {
+            "model": "poolside/laguna-xs-2.1",
+            "maxTokens": 400
+          },
+          "events": []
+        }
+      ],
+      "qualification": {
+        "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+        "providerId": "blockrun-free-direct",
+        "modelId": "poolside/laguna-xs-2.1",
+        "modelDisplayName": "Poolside Laguna XS 2.1 (Free)",
+        "accessClass": "FREE_ROUTED",
+        "freeStatus": "verified_free",
+        "roleResults": {
+          "CODER": {
+            "role": "CODER",
+            "status": "PROBATION",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 513,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "edit",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 45438,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 25
+                    },
+                    {
+                      "toolCalls": [],
+                      "textLength": 0
+                    }
+                  ]
+                },
+                "error": "qualification case timed out"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0.5,
+            "startedAt": "2026-10-11T22:30:29.264Z",
+            "completedAt": "2026-10-11T22:31:15.216Z"
+          },
+          "TOOL_AGENT": {
+            "role": "TOOL_AGENT",
+            "status": "NOT_QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 513,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "edit",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 45438,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 25
+                    },
+                    {
+                      "toolCalls": [],
+                      "textLength": 0
+                    }
+                  ]
+                },
+                "error": "qualification case timed out"
+              },
+              {
+                "caseId": "compact.structured",
+                "category": "structured_output",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0.3333333333333333,
+            "startedAt": "2026-10-11T22:30:29.264Z",
+            "completedAt": "2026-10-11T22:31:15.216Z"
+          },
+          "ANALYST": {
+            "role": "ANALYST",
+            "status": "NOT_QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.structured",
+                "category": "structured_output",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0,
+            "startedAt": "2026-10-11T22:30:29.264Z",
+            "completedAt": "2026-10-11T22:31:15.216Z"
+          }
+        },
+        "startedAt": "2026-10-11T22:30:29.264Z",
+        "completedAt": "2026-10-11T22:31:15.216Z",
+        "totalLatencyMs": 45952,
+        "qualificationState": "NOT_QUALIFIED",
+        "hardFailureRoles": [],
+        "metadata": {
+          "compact": true,
+          "requests": 2,
+          "transient": true,
+          "quotaExhausted": false
+        }
+      },
+      "status": "NOT_QUALIFIED",
+      "transient": true
+    },
+    {
+      "at": "2026-10-11T22:32:15.366Z",
+      "phase": "qualify",
+      "modelId": "poolside/laguna-xs-2.1",
+      "frames": [
+        {
+          "at": "2026-10-11T22:32:15.369Z",
+          "request": {
+            "model": "poolside/laguna-xs-2.1",
+            "maxTokens": 200
+          },
+          "events": [
+            "tool_call_started",
+            "tool_call_delta",
+            "usage",
+            "tool_call_completed",
+            "finish"
+          ]
+        },
+        {
+          "at": "2026-10-11T22:32:18.356Z",
+          "request": {
+            "model": "poolside/laguna-xs-2.1",
+            "maxTokens": 400
+          },
+          "events": [
+            "tool_call_started",
+            "tool_call_delta",
+            "usage",
+            "tool_call_completed",
+            "finish"
+          ]
+        },
+        {
+          "at": "2026-10-11T22:32:37.403Z",
+          "request": {
+            "model": "poolside/laguna-xs-2.1",
+            "maxTokens": 400
+          },
+          "events": []
+        }
+      ],
+      "qualification": {
+        "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+        "providerId": "blockrun-free-direct",
+        "modelId": "poolside/laguna-xs-2.1",
+        "modelDisplayName": "Poolside Laguna XS 2.1 (Free)",
+        "accessClass": "FREE_ROUTED",
+        "freeStatus": "verified_free",
+        "roleResults": {
+          "CODER": {
+            "role": "CODER",
+            "status": "PROBATION",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 2987,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "edit",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 64058,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 25
+                    },
+                    {
+                      "toolCalls": [],
+                      "textLength": 0
+                    }
+                  ]
+                },
+                "error": "qualification case timed out"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0.5,
+            "startedAt": "2026-10-11T22:32:15.369Z",
+            "completedAt": "2026-10-11T22:33:22.414Z"
+          },
+          "TOOL_AGENT": {
+            "role": "TOOL_AGENT",
+            "status": "NOT_QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 2987,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "edit",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 64058,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 25
+                    },
+                    {
+                      "toolCalls": [],
+                      "textLength": 0
+                    }
+                  ]
+                },
+                "error": "qualification case timed out"
+              },
+              {
+                "caseId": "compact.structured",
+                "category": "structured_output",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0.3333333333333333,
+            "startedAt": "2026-10-11T22:32:15.369Z",
+            "completedAt": "2026-10-11T22:33:22.414Z"
+          },
+          "ANALYST": {
+            "role": "ANALYST",
+            "status": "NOT_QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.structured",
+                "category": "structured_output",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0,
+            "startedAt": "2026-10-11T22:32:15.369Z",
+            "completedAt": "2026-10-11T22:33:22.414Z"
+          }
+        },
+        "startedAt": "2026-10-11T22:32:15.369Z",
+        "completedAt": "2026-10-11T22:33:22.414Z",
+        "totalLatencyMs": 67045,
+        "qualificationState": "NOT_QUALIFIED",
+        "hardFailureRoles": [],
+        "metadata": {
+          "compact": true,
+          "requests": 2,
+          "transient": true,
+          "quotaExhausted": false
+        }
+      },
+      "status": "NOT_QUALIFIED",
+      "transient": true
+    },
+    {
+      "at": "2026-10-11T22:34:22.601Z",
+      "phase": "qualify",
+      "modelId": "poolside/laguna-xs-2.1",
+      "frames": [
+        {
+          "at": "2026-10-11T22:34:22.605Z",
+          "request": {
+            "model": "poolside/laguna-xs-2.1",
+            "maxTokens": 200
+          },
+          "events": [],
+          "error": {
+            "code": "STREAM_INTERRUPTED",
+            "status": 200,
+            "message": "blockrun-free-direct stream trailer arrived without a terminal finish_reason"
+          }
+        },
+        {
+          "at": "2026-10-11T22:34:22.771Z",
+          "request": {
+            "model": "poolside/laguna-xs-2.1",
+            "maxTokens": 400
+          },
+          "events": [],
+          "error": {
+            "code": "MODEL_SUBSTITUTED",
+            "message": "blockrun-free-direct substituted an unqualified stream model"
+          }
+        }
+      ],
+      "qualification": {
+        "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+        "providerId": "blockrun-free-direct",
+        "modelId": "poolside/laguna-xs-2.1",
+        "modelDisplayName": "Poolside Laguna XS 2.1 (Free)",
+        "accessClass": "FREE_ROUTED",
+        "freeStatus": "verified_free",
+        "roleResults": {
+          "CODER": {
+            "role": "CODER",
+            "status": "NOT_TESTED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "tool_call",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 166,
+                "retries": 0,
+                "error": "blockrun-free-direct stream trailer arrived without a terminal finish_reason"
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "edit",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 416,
+                "retries": 0,
+                "details": {
+                  "calls": 1,
+                  "turns": [
+                    {
+                      "toolCalls": [],
+                      "textLength": 0
+                    }
+                  ],
+                  "providerErrorCode": "MODEL_SUBSTITUTED",
+                  "providerFailureClass": "MODEL_IDENTITY"
+                },
+                "error": "blockrun-free-direct substituted an unqualified stream model"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0,
+            "startedAt": "2026-10-11T22:34:22.605Z",
+            "completedAt": "2026-10-11T22:34:23.187Z"
+          },
+          "TOOL_AGENT": {
+            "role": "TOOL_AGENT",
+            "status": "NOT_TESTED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "tool_call",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 166,
+                "retries": 0,
+                "error": "blockrun-free-direct stream trailer arrived without a terminal finish_reason"
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "edit",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 416,
+                "retries": 0,
+                "details": {
+                  "calls": 1,
+                  "turns": [
+                    {
+                      "toolCalls": [],
+                      "textLength": 0
+                    }
+                  ],
+                  "providerErrorCode": "MODEL_SUBSTITUTED",
+                  "providerFailureClass": "MODEL_IDENTITY"
+                },
+                "error": "blockrun-free-direct substituted an unqualified stream model"
+              },
+              {
+                "caseId": "compact.structured",
+                "category": "structured_output",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0,
+            "startedAt": "2026-10-11T22:34:22.605Z",
+            "completedAt": "2026-10-11T22:34:23.187Z"
+          },
+          "ANALYST": {
+            "role": "ANALYST",
+            "status": "NOT_TESTED",
+            "testCases": [
+              {
+                "caseId": "compact.structured",
+                "category": "structured_output",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0,
+            "startedAt": "2026-10-11T22:34:22.605Z",
+            "completedAt": "2026-10-11T22:34:23.187Z"
+          }
+        },
+        "startedAt": "2026-10-11T22:34:22.605Z",
+        "completedAt": "2026-10-11T22:34:23.188Z",
+        "totalLatencyMs": 583,
+        "qualificationState": "NOT_QUALIFIED",
+        "hardFailureRoles": [],
+        "metadata": {
+          "compact": true,
+          "requests": 2,
+          "transient": true,
+          "quotaExhausted": false,
+          "providerFailureClass": "MODEL_IDENTITY",
+          "providerErrorCodes": [
+            "MODEL_SUBSTITUTED"
+          ]
+        }
+      },
+      "status": "NOT_QUALIFIED",
+      "transient": true
+    },
+    {
+      "at": "2026-10-11T22:35:23.407Z",
+      "phase": "qualify",
+      "modelId": "poolside/laguna-xs-2.1",
+      "frames": [
+        {
+          "at": "2026-10-11T22:35:23.412Z",
+          "request": {
+            "model": "poolside/laguna-xs-2.1",
+            "maxTokens": 200
+          },
+          "events": [],
+          "error": {
+            "code": "MODEL_SUBSTITUTED",
+            "message": "blockrun-free-direct substituted an unqualified stream model"
+          }
+        }
+      ],
+      "qualification": {
+        "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+        "providerId": "blockrun-free-direct",
+        "modelId": "poolside/laguna-xs-2.1",
+        "modelDisplayName": "Poolside Laguna XS 2.1 (Free)",
+        "accessClass": "FREE_ROUTED",
+        "freeStatus": "verified_free",
+        "roleResults": {
+          "CODER": {
+            "role": "CODER",
+            "status": "NOT_TESTED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "tool_call",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 277,
+                "retries": 0,
+                "details": {
+                  "providerErrorCode": "MODEL_SUBSTITUTED",
+                  "providerFailureClass": "MODEL_IDENTITY"
+                },
+                "error": "blockrun-free-direct substituted an unqualified stream model"
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "edit",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0,
+            "startedAt": "2026-10-11T22:35:23.412Z",
+            "completedAt": "2026-10-11T22:35:23.689Z"
+          },
+          "TOOL_AGENT": {
+            "role": "TOOL_AGENT",
+            "status": "NOT_TESTED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "tool_call",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 277,
+                "retries": 0,
+                "details": {
+                  "providerErrorCode": "MODEL_SUBSTITUTED",
+                  "providerFailureClass": "MODEL_IDENTITY"
+                },
+                "error": "blockrun-free-direct substituted an unqualified stream model"
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "edit",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              },
+              {
+                "caseId": "compact.structured",
+                "category": "structured_output",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0,
+            "startedAt": "2026-10-11T22:35:23.412Z",
+            "completedAt": "2026-10-11T22:35:23.689Z"
+          },
+          "ANALYST": {
+            "role": "ANALYST",
+            "status": "NOT_TESTED",
+            "testCases": [
+              {
+                "caseId": "compact.structured",
+                "category": "structured_output",
+                "passed": false,
+                "hardFailure": false,
+                "latencyMs": 0,
+                "retries": 0,
+                "error": "skipped: provider unavailable during qualification"
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 0,
+            "startedAt": "2026-10-11T22:35:23.412Z",
+            "completedAt": "2026-10-11T22:35:23.689Z"
+          }
+        },
+        "startedAt": "2026-10-11T22:35:23.412Z",
+        "completedAt": "2026-10-11T22:35:23.689Z",
+        "totalLatencyMs": 277,
+        "qualificationState": "NOT_QUALIFIED",
+        "hardFailureRoles": [],
+        "metadata": {
+          "compact": true,
+          "requests": 1,
+          "transient": true,
+          "quotaExhausted": false,
+          "providerFailureClass": "MODEL_IDENTITY",
+          "providerErrorCodes": [
+            "MODEL_SUBSTITUTED"
+          ]
+        }
+      },
+      "status": "NOT_QUALIFIED",
+      "transient": true
+    },
+    {
+      "at": "2026-10-11T22:36:23.900Z",
+      "phase": "catalog",
+      "availableCoding": [],
+      "note": "no coding model currently free+available"
+    }
+  ],
+  "finishedAt": "2026-10-11T22:37:53.903Z",
+  "status": "NO_CONCLUSIVE_WINDOW"
+}

@@ -1,0 +1,83 @@
+{
+  "level": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391",
+  "exitCode": 0,
+  "timedOut": false,
+  "ok": true,
+  "logPath": "G:\\CodeForge\\worktrees\\r85-free-onboarding-autonomy-and-forgeaaa-review\\.scratch\\r83-configure-1791758609230.log",
+  "report": {
+    "ok": true,
+    "errors": [],
+    "materials": [
+      "/Game/ForgeAAA/R82/M_wood",
+      "/Game/ForgeAAA/R82/M_plaster",
+      "/Game/ForgeAAA/R82/M_glass"
+    ],
+    "actors": [
+      {
+        "role": "start",
+        "path": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391.FAAA_R83_PersistenceUpgrade_1791758595391:PersistentLevel.R83_start"
+      },
+      {
+        "role": "driver",
+        "path": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391.FAAA_R83_PersistenceUpgrade_1791758595391:PersistentLevel.R83_driver"
+      },
+      {
+        "role": "sun",
+        "path": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391.FAAA_R83_PersistenceUpgrade_1791758595391:PersistentLevel.R83_sun"
+      },
+      {
+        "role": "interior-light-0",
+        "path": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391.FAAA_R83_PersistenceUpgrade_1791758595391:PersistentLevel.R83_interior-light-0"
+      },
+      {
+        "role": "interior-light-580",
+        "path": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391.FAAA_R83_PersistenceUpgrade_1791758595391:PersistentLevel.R83_interior-light-580"
+      },
+      {
+        "role": "exterior-light",
+        "path": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391.FAAA_R83_PersistenceUpgrade_1791758595391:PersistentLevel.R83_exterior-light"
+      }
+    ],
+    "actorCount": 20,
+    "level_saved": true
+  },
+  "reports": [
+    {
+      "ok": true,
+      "errors": [],
+      "materials": [
+        "/Game/ForgeAAA/R82/M_wood",
+        "/Game/ForgeAAA/R82/M_plaster",
+        "/Game/ForgeAAA/R82/M_glass"
+      ],
+      "actors": [
+        {
+          "role": "start",
+          "path": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391.FAAA_R83_PersistenceUpgrade_1791758595391:PersistentLevel.R83_start"
+        },
+        {
+          "role": "driver",
+          "path": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391.FAAA_R83_PersistenceUpgrade_1791758595391:PersistentLevel.R83_driver"
+        },
+        {
+          "role": "sun",
+          "path": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391.FAAA_R83_PersistenceUpgrade_1791758595391:PersistentLevel.R83_sun"
+        },
+        {
+          "role": "interior-light-0",
+          "path": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391.FAAA_R83_PersistenceUpgrade_1791758595391:PersistentLevel.R83_interior-light-0"
+        },
+        {
+          "role": "interior-light-580",
+          "path": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391.FAAA_R83_PersistenceUpgrade_1791758595391:PersistentLevel.R83_interior-light-580"
+        },
+        {
+          "role": "exterior-light",
+          "path": "/Game/ForgeAAA/Maps/FAAA_R83_PersistenceUpgrade_1791758595391.FAAA_R83_PersistenceUpgrade_1791758595391:PersistentLevel.R83_exterior-light"
+        }
+      ],
+      "actorCount": 20,
+      "level_saved": true
+    }
+  ]
+}

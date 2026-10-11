@@ -1,0 +1,19 @@
+npm warn Unknown cli config "--reporter". This will stop working in the next major version of npm.
+npm warn Unknown cli config "--outputFile". This will stop working in the next major version of npm.
+
+> codeforge@0.4.0 security:tests
+> vitest run packages/crypto packages/secrets packages/cloud-auth packages/cloud-billing tests/security apps/desktop/test/electron-security-baseline.test.ts apps/desktop/test/secure-credential-codec.test.ts packages/server/test/network-exposure.test.ts
+
+
+ RUN  v5.0.1 G:/CodeForge/worktrees/r84-free-cloud-autonomy-certification
+
+
+ Test Files  12 passed (12)
+      Tests  136 passed (136)
+   Start at  16:07:08
+   Duration  11.49s (transform 43%, tests 35%, import 21%, setup 1%)
+
+  Transform  transforming modules took 12.60s · 43% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

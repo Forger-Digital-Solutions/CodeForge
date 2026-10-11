@@ -1,0 +1,380 @@
+{
+  "startedAt": "2026-10-11T22:47:08.593Z",
+  "providerId": "ai-horde",
+  "modelId": "google/gemma-4-31b",
+  "evidenceClass": "LIVE_ROLE_QUALIFICATION_PUBLIC_CASES",
+  "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+  "frames": [
+    {
+      "at": "2026-10-11T22:47:09.141Z",
+      "request": {
+        "model": "google/gemma-4-31b",
+        "messageCount": 2,
+        "maxTokens": 200,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 86
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:47:13.178Z"
+    },
+    {
+      "at": "2026-10-11T22:47:13.180Z",
+      "request": {
+        "model": "google/gemma-4-31b",
+        "messageCount": 2,
+        "maxTokens": 200,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:47:16.823Z"
+    },
+    {
+      "at": "2026-10-11T22:47:16.842Z",
+      "request": {
+        "model": "google/gemma-4-31b",
+        "messageCount": 2,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 904
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:47:23.362Z"
+    },
+    {
+      "at": "2026-10-11T22:47:23.449Z",
+      "request": {
+        "model": "google/gemma-4-31b",
+        "messageCount": 2,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 43
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:47:29.784Z"
+    },
+    {
+      "at": "2026-10-11T22:47:30.077Z",
+      "request": {
+        "model": "google/gemma-4-31b",
+        "messageCount": 2,
+        "maxTokens": 120
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 444
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "google/gemma-4-31b"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:47:35.331Z"
+    },
+    {
+      "at": "2026-10-11T22:47:35.335Z",
+      "request": {
+        "model": "google/gemma-4-31b",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [],
+      "error": {
+        "code": "AUTH_FAILED",
+        "status": 403,
+        "message": "ai-horde request failed: HTTP 403 Due to heavy demand, for requests over 512 tokens, the client needs to already have the required kudos. This request requires 42.86 kudos to fulfil."
+      },
+      "finishedAt": "2026-10-11T22:47:35.571Z"
+    }
+  ],
+  "maxRequests": 30,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T22:47:08.593Z",
+    "receipt": {
+      "sourceDocumentation": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/README.md",
+      "termsEvidence": "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/definitions.md",
+      "privacyEvidence": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/FAQ.md",
+      "priceEvidence": "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/kudos.md",
+      "verifiedAt": "2026-10-11T22:47:08.593Z",
+      "recheckAt": "2026-10-18T22:47:08.593Z",
+      "qualificationAt": "2026-10-11T22:47:08.593Z",
+      "termsVerifiedAt": "2026-10-11T22:47:08.593Z",
+      "termsEvidenceHash": "c187030e08f828054eb1ccfbc9f14fd45002d856d4f46a95e953d2c8420c86ac",
+      "termsExpiresAt": "2026-10-18T22:47:08.593Z",
+      "privacyVerifiedAt": "2026-10-11T22:47:08.593Z",
+      "privacyEvidenceHash": "15f0ea5ba9298a6f2100685eb79f66df8882105c87c8c461768f6498471884b2",
+      "privacyExpiresAt": "2026-10-18T22:47:08.593Z",
+      "priceVerifiedAt": "2026-10-11T22:47:08.593Z",
+      "priceEvidenceHash": "b50fb2ad2f38d414fc953a13f1f742c267c3a6aea82d9f643abb043070db819a",
+      "priceExpiresAt": "2026-10-18T22:47:08.593Z",
+      "nextReverifyAt": "2026-10-12T04:47:08.593Z"
+    }
+  },
+  "catalog": {
+    "modelId": "google/gemma-4-31b",
+    "displayName": "google/gemma-4-31b",
+    "contextWindow": 8192,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": true,
+      "longContext": false
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "roleScope": [
+    "REVIEWER"
+  ],
+  "qualification": {
+    "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+    "providerId": "ai-horde",
+    "modelId": "google/gemma-4-31b",
+    "modelDisplayName": "google/gemma-4-31b",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 3661,
+            "retries": 1,
+            "details": {
+              "toolCalls": [],
+              "path": "",
+              "firstAttempt": {
+                "toolCalls": [],
+                "path": ""
+              }
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 6628,
+            "retries": 1,
+            "details": {
+              "calls": 1,
+              "toolCalls": [],
+              "turns": [
+                {
+                  "toolCalls": [],
+                  "finishReason": "stop",
+                  "textLength": 43
+                }
+              ],
+              "firstAttempt": {
+                "calls": 1,
+                "toolCalls": [],
+                "turns": [
+                  {
+                    "toolCalls": [],
+                    "finishReason": "stop",
+                    "textLength": 904
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:47:09.141Z",
+        "completedAt": "2026-10-11T22:47:35.334Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 3661,
+            "retries": 1,
+            "details": {
+              "toolCalls": [],
+              "path": "",
+              "firstAttempt": {
+                "toolCalls": [],
+                "path": ""
+              }
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 6628,
+            "retries": 1,
+            "details": {
+              "calls": 1,
+              "toolCalls": [],
+              "turns": [
+                {
+                  "toolCalls": [],
+                  "finishReason": "stop",
+                  "textLength": 43
+                }
+              ],
+              "firstAttempt": {
+                "calls": 1,
+                "toolCalls": [],
+                "turns": [
+                  {
+                    "toolCalls": [],
+                    "finishReason": "stop",
+                    "textLength": 904
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 5257,
+            "retries": 0,
+            "details": {
+              "textLength": 444,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:47:09.141Z",
+        "completedAt": "2026-10-11T22:47:35.334Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 5257,
+            "retries": 0,
+            "details": {
+              "textLength": 444,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:47:09.141Z",
+        "completedAt": "2026-10-11T22:47:35.334Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:47:35.334Z",
+        "completedAt": "2026-10-11T22:47:35.784Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:47:35.334Z",
+        "completedAt": "2026-10-11T22:47:35.784Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "NOT_TESTED",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 448,
+            "retries": 0,
+            "error": "ai-horde request failed: HTTP 403 Due to heavy demand, for requests over 512 tokens, the client needs to already have the required kudos. This request requires 42.86 kudos to fulfil."
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:47:35.334Z",
+        "completedAt": "2026-10-11T22:47:35.784Z"
+      }
+    },
+    "startedAt": "2026-10-11T22:47:09.141Z",
+    "completedAt": "2026-10-11T22:47:35.334Z",
+    "totalLatencyMs": 26193,
+    "qualificationState": "NOT_QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 6,
+      "transient": true,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R74_ROLE_QUALIFICATION_V8",
+      "roleProtocolVersions": {
+        "EXPLORER": "EXPLORER_PROTOCOL_V2",
+        "PLANNER": "PLANNER_PROTOCOL_V4",
+        "REVIEWER": "REVIEWER_PROTOCOL_V4"
+      },
+      "roleTransientCases": 1
+    }
+  },
+  "status": "NOT_QUALIFIED",
+  "finishedAt": "2026-10-11T22:47:35.784Z"
+}

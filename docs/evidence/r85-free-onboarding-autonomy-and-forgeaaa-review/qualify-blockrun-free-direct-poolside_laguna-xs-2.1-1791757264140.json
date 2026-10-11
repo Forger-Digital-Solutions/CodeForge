@@ -1,0 +1,35 @@
+{
+  "startedAt": "2026-10-11T22:21:04.140Z",
+  "providerId": "blockrun-free-direct",
+  "modelId": "poolside/laguna-xs-2.1",
+  "evidenceClass": "LIVE_ROLE_QUALIFICATION_PUBLIC_CASES",
+  "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+  "frames": [],
+  "maxRequests": 40,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T22:21:04.141Z",
+    "receipt": {
+      "sourceDocumentation": "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl",
+      "termsEvidence": "https://blockrun.ai/terms",
+      "privacyEvidence": "https://blockrun.ai/privacy",
+      "priceEvidence": "https://blockrun.ai/docs/rate-limits",
+      "verifiedAt": "2026-10-11T22:21:04.141Z",
+      "recheckAt": "2026-10-18T22:21:04.141Z",
+      "qualificationAt": "2026-10-11T22:21:04.140Z",
+      "termsVerifiedAt": "2026-10-11T22:21:04.141Z",
+      "termsEvidenceHash": "73f2ef461e086bec3f80579ad7699ce819ab9fd78cef6763f8ff7a83bde3d649",
+      "termsExpiresAt": "2026-10-18T22:21:04.141Z",
+      "privacyVerifiedAt": "2026-10-11T22:21:04.141Z",
+      "privacyEvidenceHash": "21b97f5ca395e4b0ce3b434c8fca6f20cf63285ec57a93cbf88fe1628eb8e3b7",
+      "privacyExpiresAt": "2026-10-18T22:21:04.141Z",
+      "priceVerifiedAt": "2026-10-11T22:21:04.141Z",
+      "priceEvidenceHash": "4921f5b2f8c4b51559078915381fa0956ee12030bb4e09fe86e49ecd6ccdf27f",
+      "priceExpiresAt": "2026-10-18T22:21:04.141Z",
+      "nextReverifyAt": "2026-10-12T04:21:04.141Z"
+    }
+  },
+  "status": "BLOCKED",
+  "error": "CURRENT_EXACT_ZERO_MODEL_REQUIRED",
+  "finishedAt": "2026-10-11T22:21:04.685Z"
+}

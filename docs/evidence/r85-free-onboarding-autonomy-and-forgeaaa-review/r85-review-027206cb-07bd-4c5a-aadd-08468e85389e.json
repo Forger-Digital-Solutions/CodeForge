@@ -1,0 +1,163 @@
+{
+  "attemptId": "027206cb-07bd-4c5a-aadd-08468e85389e",
+  "attempt": 1,
+  "scope": "r85",
+  "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "providerId": "kilo-free-direct",
+  "quotaDomain": "kilo:source-ip:shared-unverified",
+  "qualification": {
+    "providerId": "kilo-free-direct",
+    "status": "QUALIFIED",
+    "suiteVersion": "R73_ROLE_QUALIFICATION_V7",
+    "protocolVersion": "REVIEWER_PROTOCOL_V4",
+    "completedAt": "2026-10-10T10:35:30.841Z",
+    "score": 0.875
+  },
+  "startedAt": "2026-10-11T23:05:00.474Z",
+  "classification": "INTERNAL_PUBLIC_SOURCE_EVALUATION_ONLY_NVIDIA_TRIAL",
+  "maxPaidSpendUsd": 0,
+  "inferenceRequests": 1,
+  "rawResponse": "{\n  \"verdict\": \"revision_required\",\n  \"findings\": [\n    {\n      \"id\": \"CONCURRENCY-001\",\n      \"severity\": \"blocking\",\n      \"category\": \"requirement_coverage\",\n      \"message\": \"Requirement 4 ('Run two projects concurrently in isolated workspaces with no shared session or ledger state') is not satisfied. All three concurrent campaign evidences show 'domainSeparation': 'SINGLE_DOMAIN_FAIR_INTERLEAVING', and limitations explicitly state 'A second independent quota domain was not proven.' A single shared domain means shared quota/session state, violating the isolation requirement.\",\n      \"evidence\": \"R85-CONCURRENT-CAMPAIGN-1791757743077.json, R85-CONCURRENT-CAMPAIGN-1791759304205.json, R85-CONCURRENT-CAMPAIGN-1791759512621.json all show domainSeparation: SINGLE_DOMAIN_FAIR_INTERLEAVING\"\n    },\n    {\n      \"id\": \"NATIVE-001\",\n      \"severity\": \"advisory\",\n      \"category\": \"test_reliability\",\n      \"message\": \"Native persistence-upgrade verification shows flaky behavior: two of three runs failed with 'action[22] arrived=false != true' (persistence-upgrade-1791758390641.json and persistence-upgrade-1791758595391.json), only the third run passed (persistence-upgrade-1791758824636.json). While the migration-fault-campaign passed consistently, the persistence upgrade test should be stable for a verified milestone. The evidence packet includes failed runs without resolution.\",\n      \"evidence\": \"native/persistence-upgrade-1791758390641.json (ok: false), native/persistence-upgrade-1791758595391.json (ok: false), native/persistence-upgrade-1791758824636.json (ok: true)\"\n    },\n    {\n      \"id\": \"REVIEWER-001\",\n      \"severity\": \"advisory\",\n      \"category\": \"external_dependency\",\n      \"message\": \"No production-eligible qualified REVIEWER route exists (five CLEARED-model attempts hard-failed or quota-exhausted; only qualified reviewer is DEVELOPMENT_ONLY NVIDIA trial correctly excluded at TERMS_ALLOWED). Autonomous runs fail closed at REVIEWER_FAILED. This is an external supply limitation, not an orchestrator defect, but it blocks end-to-end campaign completion.\",\n      \"evidence\": \"limitations section; qualification files show REVIEWER: HARD_FAILURE or NOT_TESTED for all models\"\n    }\n  ],\n  \"summary\": \"R85 evidence shows solid progress on preservation, qualification, fail-closed behavior, and native migration-fault verification. However, the concurrency requirement (isolated workspaces with no shared session/ledger state) is not met — all concurrent runs used a single shared domain. Native persistence-upgrade verification is flaky (2/3 runs failed). No production REVIEWER route exists (external blocker). Revision required to demonstrate true workspace isolation and stabilize native persistence tests.\"\n}",
+  "observations": [
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": 1791759902734
+    }
+  ],
+  "status": "INDEPENDENTLY_REVIEWED",
+  "packetChars": 16796,
+  "packetSha256": "bd359c9cc884b3abe51ea8a1bce9dd740bb186be22f8de882752fe205f3bd3f6",
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T23:05:00.480Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T23:05:00.480Z",
+      "recheckAt": "2026-10-18T23:05:00.480Z",
+      "qualificationAt": "2026-10-11T23:05:00.480Z",
+      "termsVerifiedAt": "2026-10-11T23:05:00.480Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T23:05:00.480Z",
+      "privacyVerifiedAt": "2026-10-11T23:05:00.480Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T23:05:00.480Z",
+      "priceVerifiedAt": "2026-10-11T23:05:00.480Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T23:05:00.480Z",
+      "nextReverifyAt": "2026-10-12T05:05:00.480Z"
+    }
+  },
+  "catalog": [
+    {
+      "modelId": "kilo-auto/free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "isFree": true
+    },
+    {
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "isFree": true
+    },
+    {
+      "modelId": "poolside/laguna-s-2.1:free",
+      "isFree": true
+    },
+    {
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "isFree": true
+    },
+    {
+      "modelId": "thinkingmachines/inkling-small:free",
+      "isFree": true
+    },
+    {
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "isFree": true
+    },
+    {
+      "modelId": "cohere/north-mini-code:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-content-safety:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "isFree": true
+    }
+  ],
+  "admission": {
+    "ok": true,
+    "costProfile": {
+      "inputCostPerMillion": 0,
+      "outputCostPerMillion": 0,
+      "isFree": true,
+      "freeTierVerifiedAt": "2026-10-11T23:05:01.349Z",
+      "paidFallbackPossible": false,
+      "paidFallbackDisabled": true,
+      "source": "kilo-free-direct-live"
+    },
+    "privacyClass": "permissive"
+  },
+  "outputMaxTokens": 6000,
+  "usage": {
+    "inputTokens": 7218,
+    "outputTokens": 2930,
+    "totalTokens": 10148,
+    "cachedInputTokens": 0,
+    "reasoningTokens": 2536,
+    "costUsd": 0
+  },
+  "finishReason": "stop",
+  "servedModel": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "review": {
+    "approved": false,
+    "findings": [
+      "reviewer: kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free (QUALIFIED, suite R73_ROLE_QUALIFICATION_V7, protocol REVIEWER_PROTOCOL_V4, qualified 2026-10-10T10:35:30.841Z)",
+      "[blocking] requirement_coverage: Requirement 4 ('Run two projects concurrently in isolated workspaces with no shared session or ledger state') is not satisfied. All three concurrent campaign evidences show 'domainSeparation': 'SINGLE_DOMAIN_FAIR_INTERLEAVING', and limitations explicitly state 'A second independent quota domain was not proven.' A single shared domain means shared quota/session state, violating the isolation requirement. (R85-CONCURRENT-CAMPAIGN-1791757743077.json, R85-CONCURRENT-CAMPAIGN-1791759304205.json, R85-CONCURRENT-CAMPAIGN-1791759512621.json all show domainSeparation: SINGLE_DOMAIN_FAIR_INTERLEAVING)",
+      "[advisory] test_reliability: Native persistence-upgrade verification shows flaky behavior: two of three runs failed with 'action[22] arrived=false != true' (persistence-upgrade-1791758390641.json and persistence-upgrade-1791758595391.json), only the third run passed (persistence-upgrade-1791758824636.json). While the migration-fault-campaign passed consistently, the persistence upgrade test should be stable for a verified milestone. The evidence packet includes failed runs without resolution. (native/persistence-upgrade-1791758390641.json (ok: false), native/persistence-upgrade-1791758595391.json (ok: false), native/persistence-upgrade-1791758824636.json (ok: true))",
+      "[advisory] external_dependency: No production-eligible qualified REVIEWER route exists (five CLEARED-model attempts hard-failed or quota-exhausted; only qualified reviewer is DEVELOPMENT_ONLY NVIDIA trial correctly excluded at TERMS_ALLOWED). Autonomous runs fail closed at REVIEWER_FAILED. This is an external supply limitation, not an orchestrator defect, but it blocks end-to-end campaign completion. (limitations section; qualification files show REVIEWER: HARD_FAILURE or NOT_TESTED for all models)"
+    ],
+    "independent": true,
+    "reviewer": {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free"
+    },
+    "verdict": "revision_required",
+    "rawResponse": "{\n  \"verdict\": \"revision_required\",\n  \"findings\": [\n    {\n      \"id\": \"CONCURRENCY-001\",\n      \"severity\": \"blocking\",\n      \"category\": \"requirement_coverage\",\n      \"message\": \"Requirement 4 ('Run two projects concurrently in isolated workspaces with no shared session or ledger state') is not satisfied. All three concurrent campaign evidences show 'domainSeparation': 'SINGLE_DOMAIN_FAIR_INTERLEAVING', and limitations explicitly state 'A second independent quota domain was not proven.' A single shared domain means shared quota/session state, violating the isolation requirement.\",\n      \"evidence\": \"R85-CONCURRENT-CAMPAIGN-1791757743077.json, R85-CONCURRENT-CAMPAIGN-1791759304205.json, R85-CONCURRENT-CAMPAIGN-1791759512621.json all show domainSeparation: SINGLE_DOMAIN_FAIR_INTERLEAVING\"\n    },\n    {\n      \"id\": \"NATIVE-001\",\n      \"severity\": \"advisory\",\n      \"category\": \"test_reliability\",\n      \"message\": \"Native persistence-upgrade verification shows flaky behavior: two of three runs failed with 'action[22] arrived=false != true' (persistence-upgrade-1791758390641.json and persistence-upgrade-1791758595391.json), only the third run passed (persistence-upgrade-1791758824636.json). While the migration-fault-campaign passed consistently, the persistence upgrade test should be stable for a verified milestone. The evidence packet includes failed runs without resolution.\",\n      \"evidence\": \"native/persistence-upgrade-1791758390641.json (ok: false), native/persistence-upgrade-1791758595391.json (ok: false), native/persistence-upgrade-1791758824636.json (ok: true)\"\n    },\n    {\n      \"id\": \"REVIEWER-001\",\n      \"severity\": \"advisory\",\n      \"category\": \"external_dependency\",\n      \"message\": \"No production-eligible qualified REVIEWER route exists (five CLEARED-model attempts hard-failed or quota-exhausted; only qualified reviewer is DEVELOPMENT_ONLY NVIDIA trial correctly excluded at TERMS_ALLOWED). Autonomous runs fail closed at REVIEWER_FAILED. This is an external supply limitation, not an orchestrator defect, but it blocks end-to-end campaign completion.\",\n      \"evidence\": \"limitations section; qualification files show REVIEWER: HARD_FAILURE or NOT_TESTED for all models\"\n    }\n  ],\n  \"summary\": \"R85 evidence shows solid progress on preservation, qualification, fail-closed behavior, and native migration-fault verification. However, the concurrency requirement (isolated workspaces with no shared session/ledger state) is not met — all concurrent runs used a single shared domain. Native persistence-upgrade verification is flaky (2/3 runs failed). No production REVIEWER route exists (external blocker). Revision required to demonstrate true workspace isolation and stabilize native persistence tests.\"\n}",
+    "receipt": {
+      "packetSha256": "bd359c9cc884b3abe51ea8a1bce9dd740bb186be22f8de882752fe205f3bd3f6",
+      "packetChars": 16796,
+      "outputMaxTokens": 6000,
+      "completionSignal": "stop",
+      "schemaValid": true,
+      "quotaDomain": "kilo:source-ip:shared-unverified",
+      "usage": {
+        "inputTokens": 7218,
+        "outputTokens": 2930,
+        "totalTokens": 10148,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 2536,
+        "costUsd": 0
+      }
+    }
+  },
+  "finishedAt": "2026-10-11T23:06:30.085Z"
+}

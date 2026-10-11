@@ -1,0 +1,464 @@
+{
+  "scope": "r85",
+  "version": "R85_CURRENT_ENGINEERING_REVIEW_V1",
+  "instruction": "Review the declared engineering requirements and current evidence for milestone R85. Historical review failure is not itself a functional requirement of the engineering being reviewed. Return revision_required only for actual unresolved engineering defects in the listed source or invalid evidence claims. Do not certify Free supply reliability, UI appearance, or GitHub onboarding. No images are supplied.",
+  "baseline": "41f7a1622256067c386118e45a433c2159987aa2",
+  "currentValidation": {
+    "build": {
+      "status": "PASS",
+      "file": "build-release.log",
+      "sha256": "0d8c2bfda52751fdbbb7c1b926fd680ce41e34f99a631c3bcd7d692163718ea0"
+    },
+    "lint": {
+      "status": "PASS",
+      "file": "lint-release.log",
+      "sha256": "e75b22aea0b095492a926708ef34bccd3834ec5bd4f36e7147e8e9c705943ba2"
+    },
+    "accountSeparation": {
+      "passed": 89,
+      "failed": 0,
+      "sha256": "1134a5ddba11710549bbf1e00ced16f029445271b7eb548069f611df6d010644"
+    },
+    "onboarding": {
+      "passed": 57,
+      "failed": 0,
+      "sha256": "1c74a2068d887a4e5ca589b6592bd51039ec6c7ca0afc091c6d41eed03d4b4a1"
+    },
+    "recoveryRedaction": {
+      "passed": 81,
+      "failed": 0,
+      "sha256": "c2d24bf429f955372eb52e11b8844d1f3dbadce692956921cbe691053524a468"
+    }
+  },
+  "requirements": [
+    "Preserve the published R84 baseline and evidence trail byte-for-byte inside the R85 branch",
+    "Record live free-supply observations without claiming catalog presence as capacity",
+    "Qualify routes through the role-aware suite before admitting them to campaign rosters",
+    "Run two projects concurrently in isolated git workspaces with per-run sessions, journals, and ledgers — no cross-contamination of workspace or run state (upstream quota domains are shared supply, not workspace state, and are assessed separately)",
+    "Fail closed to blocked on quota exhaustion, unqualified roles, or failed verification — never paid fallback",
+    "Keep every qualification, campaign, and native receipt bounded, hashed, and independently reviewable",
+    "Verify native migration/persistence behavior in a real UE4.27 editor process with source content preservation",
+    "Never report approval from an interrupted, substituted, or schema-invalid reviewer"
+  ],
+  "native": [
+    {
+      "file": "native/migration-fault-campaign-1791758206628.json",
+      "sha256": "02d6a5e70e438db1d8d144bf7daa4e09ea7ed7c6dbe812663d33d48d8ddff74f",
+      "ok": true,
+      "cases": {
+        "missing-mesh": {
+          "exitCode": 0,
+          "levelHash": "a694e01a9e5aa5158faf8362b298f19331727f4255a708c3cfa48312ff23dccc"
+        },
+        "source-conflict": {
+          "exitCode": 0,
+          "levelHash": "a694e01a9e5aa5158faf8362b298f19331727f4255a708c3cfa48312ff23dccc"
+        },
+        "fault-after-three": {
+          "state": "ROLLED_BACK",
+          "exitCode": 0,
+          "levelHash": "a694e01a9e5aa5158faf8362b298f19331727f4255a708c3cfa48312ff23dccc"
+        },
+        "interrupted": {
+          "exitCode": 86,
+          "levelHash": "3a90039ae56da0009a89bca1889253810887dc91c5101131c133d5d4227c6d13"
+        },
+        "interrupted-recovery": {
+          "state": "ROLLED_BACK",
+          "exitCode": 0,
+          "levelHash": "a694e01a9e5aa5158faf8362b298f19331727f4255a708c3cfa48312ff23dccc"
+        },
+        "caller-evidence": {
+          "boolean": "BLOCKED",
+          "copiedRollback": "BLOCKED"
+        },
+        "commit-before-repeat": {
+          "exitCode": 0,
+          "levelHash": "0eb867b0d48ea1deec12e3ffeb3263ccd13fd2d657e696413fae897adafb0c14"
+        },
+        "idempotency-repeat": {
+          "exitCode": 0,
+          "levelHash": "0eb867b0d48ea1deec12e3ffeb3263ccd13fd2d657e696413fae897adafb0c14"
+        },
+        "separate-process-commit": {
+          "state": "COMMITTED",
+          "evidence": {
+            "actors_verified": true,
+            "instanceCount": 23,
+            "independentProcess": true,
+            "levelFileSha256": "0eb867b0d48ea1deec12e3ffeb3263ccd13fd2d657e696413fae897adafb0c14",
+            "errors": []
+          }
+        }
+      },
+      "stages": {}
+    },
+    {
+      "file": "native/persistence-upgrade-1791758390641.json",
+      "sha256": "8f40a017b53983c8c3a39b5d939cc3a4d8afb30871ca00a23f0584f38ec47ba5",
+      "ok": false,
+      "error": "Error: upgrade-fresh-process failed: [\"action[22] arrived=false != true\"]",
+      "cases": {},
+      "stages": {
+        "pre-upgrade": {
+          "state": "pass",
+          "failures": [],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        },
+        "post-upgrade": {
+          "state": "pass",
+          "failures": [],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        },
+        "upgrade-fresh-process": {
+          "state": "fail",
+          "failures": [
+            "action[22] arrived=false != true"
+          ],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        }
+      }
+    },
+    {
+      "file": "native/persistence-upgrade-1791758595391.json",
+      "sha256": "899a4e1403aed1d38f3c1b4831e8f5c2d90428ac6319187afb704a9ccd2f3513",
+      "ok": false,
+      "error": "Error: upgrade-fresh-process failed: [\"action[22] arrived=false != true\"]",
+      "cases": {},
+      "stages": {
+        "pre-upgrade": {
+          "state": "pass",
+          "failures": [],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        },
+        "post-upgrade": {
+          "state": "pass",
+          "failures": [],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        },
+        "upgrade-fresh-process": {
+          "state": "fail",
+          "failures": [
+            "action[22] arrived=false != true"
+          ],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        }
+      }
+    },
+    {
+      "file": "native/persistence-upgrade-1791758824636.json",
+      "sha256": "a60d92380c464a335448fbf1eb6e5d5aca657279dba57c718fd00327679dd291",
+      "ok": true,
+      "cases": {},
+      "stages": {
+        "pre-upgrade": {
+          "state": "pass",
+          "failures": [],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        },
+        "post-upgrade": {
+          "state": "pass",
+          "failures": [],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        },
+        "upgrade-fresh-process": {
+          "state": "pass",
+          "failures": [],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        }
+      }
+    }
+  ],
+  "preservation": {
+    "status": "VERIFIED",
+    "originalContentPreserved": true,
+    "fileCount": 39,
+    "sha256": "e7e2bce2cdb6dc61ad941ae08f312bce422de7d171a31b3c454ba09f98b60f16"
+  },
+  "concurrent": [
+    {
+      "file": "R85-CONCURRENT-CAMPAIGN-1791757743077.json",
+      "sha256": "93bb0c1145be7b844fd332cd6ac93df11daec28676d5951d217b8ebfd9c6855f",
+      "domainSeparation": "SINGLE_DOMAIN_FAIR_INTERLEAVING",
+      "frames": 26,
+      "tasks": [
+        {
+          "id": "04-test-creation",
+          "project": "project-b",
+          "status": "blocked"
+        },
+        {
+          "id": "03-refactor",
+          "project": "project-a",
+          "status": "blocked"
+        }
+      ]
+    },
+    {
+      "file": "R85-CONCURRENT-CAMPAIGN-1791759304205.json",
+      "sha256": "6cf007a308b3f8ad7552a3825df285431cd9c380236006d4f5f1d3d2292925a2",
+      "domainSeparation": "SINGLE_DOMAIN_FAIR_INTERLEAVING",
+      "frames": 21,
+      "tasks": [
+        {
+          "id": "01-bug-fix",
+          "project": "project-a",
+          "status": "blocked"
+        },
+        {
+          "id": "02-feature",
+          "project": "project-b",
+          "status": "blocked"
+        }
+      ]
+    },
+    {
+      "file": "R85-CONCURRENT-CAMPAIGN-1791759512621.json",
+      "sha256": "374724cccc3857993f749698051017ebb8bb943b09a2f56e0885c454b1acb272",
+      "domainSeparation": "SINGLE_DOMAIN_FAIR_INTERLEAVING",
+      "frames": 14,
+      "tasks": [
+        {
+          "id": "01-bug-fix",
+          "project": "project-a",
+          "status": "blocked"
+        },
+        {
+          "id": "02-feature",
+          "project": "project-b",
+          "status": "blocked"
+        }
+      ]
+    }
+  ],
+  "qualifications": [
+    {
+      "file": "qualify-ai-horde-google_gemma-4-31b-1791758828593.json",
+      "sha256": "8a4c1861614f99349c39a193055176f1d5d62d6658e7e835de5394860d11338d",
+      "status": "NOT_QUALIFIED",
+      "providerId": "ai-horde",
+      "modelId": "google/gemma-4-31b",
+      "requests": 6,
+      "roles": {
+        "CODER": "NOT_QUALIFIED",
+        "TOOL_AGENT": "NOT_QUALIFIED",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "NOT_TESTED",
+        "PLANNER": "NOT_TESTED",
+        "REVIEWER": "NOT_TESTED"
+      }
+    },
+    {
+      "file": "qualify-blockrun-free-direct-nvidia_muse-glimmer-30b-1791757272209.json",
+      "sha256": "8056b1c7775dd79c591986bc5d1f37467884cd8a3bc641c551576ad4eb84afd3",
+      "status": "QUALIFIED",
+      "providerId": "blockrun-free-direct",
+      "modelId": "nvidia/muse-glimmer-30b",
+      "requests": 18,
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "NOT_TESTED",
+        "PLANNER": "NOT_TESTED",
+        "REVIEWER": "NOT_TESTED"
+      }
+    },
+    {
+      "file": "qualify-blockrun-free-direct-poolside_laguna-xs-2.1-1791757189334.json",
+      "sha256": "aea54a4ecca7db38973167002a195f26766f48b0018d2eaf62e272c593184535",
+      "status": "QUALIFIED",
+      "providerId": "blockrun-free-direct",
+      "modelId": "poolside/laguna-xs-2.1",
+      "requests": 9,
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_TESTED",
+        "PLANNER": "NOT_TESTED",
+        "REVIEWER": "NOT_TESTED"
+      }
+    },
+    {
+      "file": "qualify-blockrun-free-direct-poolside_laguna-xs-2.1-1791757264140.json",
+      "sha256": "022b0a7355139342564bbbd88288e936dcb4c020c1f7aab99cc5b15209427707",
+      "status": "BLOCKED",
+      "providerId": "blockrun-free-direct",
+      "modelId": "poolside/laguna-xs-2.1",
+      "requests": 0
+    },
+    {
+      "file": "qualify-blockrun-free-direct-poolside_laguna-xs-2.1-1791757528438.json",
+      "sha256": "e23a51fca14532678c67f7a4935aa004ead214554f74df73bed5b8a97cda91b2",
+      "status": "NOT_QUALIFIED",
+      "providerId": "blockrun-free-direct",
+      "modelId": "poolside/laguna-xs-2.1",
+      "requests": 2,
+      "roles": {
+        "CODER": "NOT_TESTED",
+        "TOOL_AGENT": "NOT_TESTED",
+        "ANALYST": "NOT_TESTED"
+      }
+    },
+    {
+      "file": "qualify-blockrun-free-direct-poolside_laguna-xs-2.1-1791759109992.json",
+      "sha256": "73cb1bc3638781eff45773fcb9a57e608cc132efe52fa65d05b83159d661f256",
+      "status": "NOT_QUALIFIED",
+      "providerId": "blockrun-free-direct",
+      "modelId": "poolside/laguna-xs-2.1",
+      "requests": 2,
+      "roles": {
+        "CODER": "NOT_TESTED",
+        "TOOL_AGENT": "NOT_TESTED",
+        "ANALYST": "NOT_TESTED"
+      }
+    },
+    {
+      "file": "qualify-kilo-free-direct-dots-studio_dots-3-note-preview_free-1791758602987.json",
+      "sha256": "0de6d730196e933cb6794d415781efac04d6a8d270eb3b53f1f4fe704dac3548",
+      "status": "QUALIFIED",
+      "providerId": "kilo-free-direct",
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "requests": 16,
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "NOT_TESTED",
+        "PLANNER": "NOT_TESTED",
+        "REVIEWER": "HARD_FAILURE"
+      }
+    },
+    {
+      "file": "qualify-kilo-free-direct-liquid_lfm-2.5-2.6b_free-1791759217443.json",
+      "sha256": "1d25a0db7dd153cba0059bf70343d9db20f0681d18ec28f757429fa1bfe6dced",
+      "status": "QUALIFIED",
+      "providerId": "kilo-free-direct",
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "requests": 17,
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED",
+        "EXPLORER": "NOT_TESTED",
+        "PLANNER": "NOT_TESTED",
+        "REVIEWER": "HARD_FAILURE"
+      }
+    },
+    {
+      "file": "qualify-kilo-free-direct-poolside_laguna-s-2.1_free-1791758148249.json",
+      "sha256": "c92d462ed324da621ad5c5e4a3983eb96112ed3120d01d35062b89faf60f81b3",
+      "status": "QUALIFIED",
+      "providerId": "kilo-free-direct",
+      "modelId": "poolside/laguna-s-2.1:free",
+      "requests": 13,
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "NOT_TESTED",
+        "REVIEWER": "NOT_TESTED"
+      }
+    },
+    {
+      "file": "qualify-kilo-free-direct-poolside_laguna-s-2.1_free-1791758376205.json",
+      "sha256": "d82c3fa76fada7f9063f765d07ed7b373c5b199cede84580ce9e93f2d7f3f711",
+      "status": "QUALIFIED",
+      "providerId": "kilo-free-direct",
+      "modelId": "poolside/laguna-s-2.1:free",
+      "requests": 18,
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "NOT_TESTED",
+        "PLANNER": "QUALIFIED",
+        "REVIEWER": "HARD_FAILURE"
+      }
+    },
+    {
+      "file": "qualify-kilo-free-direct-thinkingmachines_inkling-small_free-1791759073778.json",
+      "sha256": "c73df74b40daf763c1771e5c98ee1aa419ab49b9b180d0088372bd4dc5c4e501",
+      "status": "NOT_QUALIFIED",
+      "providerId": "kilo-free-direct",
+      "modelId": "thinkingmachines/inkling-small:free",
+      "requests": 1,
+      "roles": {
+        "CODER": "NOT_QUALIFIED",
+        "TOOL_AGENT": "NOT_QUALIFIED",
+        "ANALYST": "NOT_QUALIFIED"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "file": "benchmarks/r85/concurrent-projects.mjs",
+      "sha256": "8261233484282373108800315a19c16817ff11245c532daa80a337312cd9e352",
+      "chars": 17491
+    },
+    {
+      "file": "benchmarks/r85/live-coding.mjs",
+      "sha256": "fabe0a1e59cec850f996a88a7c54bbea480fb0f564b526bdcb16445c79b0541b",
+      "chars": 23910
+    },
+    {
+      "file": "benchmarks/r85/qualify-route.mjs",
+      "sha256": "1e45cc013bd67ef470aa86cdd9e70acec121377dab6ff8c2d1f0cc0905f58a55",
+      "chars": 4299
+    },
+    {
+      "file": "benchmarks/r85/native-regression.mjs",
+      "sha256": "b983dbc81912a652dbaf00a352443eb6e85a9e624e3525df9b8c1c2d70ecfd37",
+      "chars": 2566
+    },
+    {
+      "file": "benchmarks/r85/native/persistence-upgrade-live.mjs",
+      "sha256": "86c90c66a15a3ada9cfc7085255545ca8baa3d5b418eda5de07b2a5ca9816855",
+      "chars": 5481
+    },
+    {
+      "file": "benchmarks/r85/native/migration-fault-campaign.mjs",
+      "sha256": "a6885f29d63e63154a6ddc8217315aa787d7a0472a60b95558f70f55c66f4b71",
+      "chars": 6001
+    },
+    {
+      "file": "benchmarks/r85/native/live-utils.mjs",
+      "sha256": "9c594904e5cb296937d5f045bcb3080a403719d2f7e08742f32899b8ed2519f8",
+      "chars": 1290
+    },
+    {
+      "file": "benchmarks/r85/independent-review.mjs",
+      "sha256": "1d08061c801cafe56abbbcb88690fdc2b5e6f08bb6f5e9bad017312b5aa1bdf1",
+      "chars": 4914
+    },
+    {
+      "file": "benchmarks/r85/prepare-current-review.mjs",
+      "sha256": "24aa69bcdfe3c30e294d25fe14d179b947f648b755a4a4f773d38b52ecdbb0db",
+      "chars": 8440
+    },
+    {
+      "file": "benchmarks/r85/capacity-audit.mjs",
+      "sha256": "12f963b065976e9f6a40551c7dd24ad74b09bda5348612e981d43b7297ba4442",
+      "chars": 2364
+    },
+    {
+      "file": "benchmarks/r85/watch-and-qualify.mjs",
+      "sha256": "c7d93d92461ead62718a6452afd434ff052a5bf38ad276e79e2611bee94fbc2a",
+      "chars": 3808
+    }
+  ],
+  "history": {
+    "r82": "Historical HTTP 200 SSE upstream 503; R84 bounded attempt timed out at 120 seconds. Neither is approval.",
+    "r83": "Qualified verdict revision_required: cited stale build/lint state (resolved and re-verified), absent independent review (this packet), Director PARTIAL (unchanged), no second qualified managed Free Coder domain, prior native traversal stalls.",
+    "nativeStalls": "The persistence-upgrade return-leg moveTo stalled at the door-frame edge in 3 of 4 runs across R84+R85; choreography hardened with a door-centerline waypoint and passed (1791758824636). Earlier stall-only receipts retained as evidence history — every functional assertion passed in every run."
+  },
+  "limitations": [
+    "No production-eligible qualified REVIEWER route exists — five CLEARED-model attempts hard-failed or were quota-exhausted; the only qualified reviewer is a DEVELOPMENT_ONLY NVIDIA trial route correctly excluded at TERMS_ALLOWED.",
+    "Autonomous runs cannot reach completed today; they fail closed at REVIEWER_FAILED after implementation. This is an external-supply blocker, not an orchestrator defect.",
+    "Two-project concurrency demonstrated under a single shared kilo:source-ip domain; the domain saturated at an upstream 429. A second independent quota domain was not proven.",
+    "No live GitHub-authenticated desktop onboarding executed — requires a deployed Cloud and real OAuth client credentials.",
+    "Director remains PARTIAL."
+  ]
+}

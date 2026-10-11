@@ -1,0 +1,1394 @@
+{
+  "startedAt": "2026-10-11T22:19:04.640Z",
+  "inferenceRequests": 0,
+  "credentialsRead": false,
+  "providers": [
+    {
+      "providerId": "codeforge-cloud",
+      "implemented": true,
+      "authClasses": [
+        "ZERO_TOUCH",
+        "OAUTH_NATIVE"
+      ],
+      "freeAccess": {
+        "class": "FREE_ACCOUNT_ENTITLEMENT",
+        "quota": "CodeForge account entitlement (server-owned provider capacity)",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "apps/cloud-api CloudProviderRegistry (server-owned keys, $0 routes only)",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED",
+        "note": "First-party FDS gateway; upstream keys never leave the server."
+      },
+      "privacy": {
+        "class": "standard",
+        "note": "Requests relay through CodeForge Cloud to upstream free routes."
+      },
+      "zeroTouchCandidate": true,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "openrouter",
+      "implemented": true,
+      "authClasses": [
+        "OAUTH_PKCE",
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "`:free` variants: 20 RPM; 50 requests/day (<10 credits purchased) or 1,000/day (>=10 credits)",
+        "maxRequestsPerMinute": 20,
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://openrouter.ai/docs/api_reference/limits + live /api/v1/models pricing",
+          "checkedAt": "2026-09-15",
+          "note": "Free variants list prompt/completion price 0; a negative balance can 402 even free routes."
+        }
+      },
+      "terms": {
+        "status": "CLEARED",
+        "note": "OpenRouter documents PKCE for third-party desktop apps.",
+        "source": "https://openrouter.ai/docs/use-cases/oauth-pkce"
+      },
+      "privacy": {
+        "class": "standard",
+        "note": "Free variants may be served by providers that log/train; see OpenRouter model data policy."
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "zai",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "GLM-4.5-Flash / GLM-4.7-Flash / GLM-4.6V-Flash listed at $0",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://docs.z.ai/guides/overview/pricing",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "alibaba",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PAID_API",
+        "quota": "Model Studio API is pay-as-you-go; no free Paid Auto route is assumed",
+        "spillover": "SILENT_CHARGES",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://www.alibabacloud.com/help/en/model-studio/models",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED",
+        "note": "Account authorization is represented as a runtime gate; KYC is not bypassed."
+      },
+      "privacy": {
+        "class": "standard",
+        "note": "Paid Auto requires a separate privacy qualification before execution."
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "google",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "FREE_ACCOUNT_ENTITLEMENT",
+        "quota": "Gemini API Free Tier (per-project; limits shown in AI Studio)",
+        "spillover": "ACCOUNT_DEPENDENT",
+        "planDetection": "attestation",
+        "allowanceScope": "all_chat_models",
+        "evidence": {
+          "source": "https://ai.google.dev/gemini-api/docs/pricing",
+          "checkedAt": "2026-09-15",
+          "note": "Free tier exists for Flash/Flash-Lite/2.5 Pro; projects with billing enabled are charged."
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard",
+        "freeTierClass": "permissive",
+        "note": "Free tier: 'Content used to improve our products'."
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "groq",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "FREE_DAILY_ALLOCATION",
+        "quota": "Free plan: 30 RPM / 1K RPD / 8K TPM / 200K TPD (gpt-oss, qwen)",
+        "maxRequestsPerMinute": 30,
+        "spillover": "ACCOUNT_DEPENDENT",
+        "quotaDomain": "model",
+        "planDetection": "attestation",
+        "allowanceScope": "all_chat_models",
+        "evidence": {
+          "source": "https://console.groq.com/docs/rate-limits",
+          "checkedAt": "2026-09-15",
+          "note": "Developer plan (paid) shares the same key shape; plan is not exposed by the API."
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "cerebras",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PROMOTIONAL_CREDIT",
+        "quota": "Free Trial: $5 credits expiring 30 days after grant; access stops when exhausted",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://inference-docs.cerebras.ai/support/rate-limits",
+          "checkedAt": "2026-09-15",
+          "note": "Formerly a recurring free tier; now a time-boxed trial → not ForgeAuto/Free."
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "sambanova",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "FREE_ACCOUNT_ENTITLEMENT",
+        "quota": "Free Tier applies while no payment method is linked; Developer Tier bills",
+        "spillover": "ACCOUNT_DEPENDENT",
+        "planDetection": "attestation",
+        "allowanceScope": "allowlist",
+        "allowanceModels": [
+          "DeepSeek-V3.1",
+          "Meta-Llama-3.3-70B-Instruct",
+          "gpt-oss-120b"
+        ],
+        "evidence": {
+          "source": "https://docs.sambanova.ai/docs/en/models/rate-limits",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "mistral",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "FREE_MONTHLY_ALLOWANCE",
+        "quota": "Free mode includes monthly usage; current RPS, TPM, and monthly token limits are shown in the Admin Limits page; pay-as-you-go extends usage and bills",
+        "spillover": "ACCOUNT_DEPENDENT",
+        "quotaDomain": "model",
+        "planDetection": "attestation",
+        "allowanceScope": "all_chat_models",
+        "evidence": {
+          "source": "https://docs.mistral.ai/admin/billing-usage/usage-limits + https://docs.mistral.ai/admin/billing-usage/subscriptions",
+          "checkedAt": "2026-09-15",
+          "note": "Free mode is available, but account-level plan, monthly usage, and pay-as-you-go settings must be attested before managed routing; Preview/Beta/Labs routes are excluded from normal production discovery."
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard",
+        "freeTierClass": "permissive",
+        "note": "Experiment plan requires opting in to data training."
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "ollama-cloud",
+      "implemented": true,
+      "authClasses": [
+        "ASSISTED_KEY",
+        "ENVIRONMENT_CREDENTIAL"
+      ],
+      "freeAccess": {
+        "class": "PROMOTIONAL_CREDIT",
+        "quota": "Free plan includes a monthly starter usage-credit amount for starter models and one concurrent cloud request; all cloud models publish non-zero token prices",
+        "spillover": "ACCOUNT_DEPENDENT",
+        "planDetection": "attestation",
+        "evidence": {
+          "source": "https://ollama.com/pricing",
+          "checkedAt": "2026-09-15",
+          "note": "Included starter usage is credit-funded. Purchased credits are consumed after included usage, so it is not a managed $0 route without a verified hard stop."
+        }
+      },
+      "terms": {
+        "status": "LEGAL_REVIEW_REQUIRED",
+        "note": "Direct Cloud API exists, but its terms have not been cleared for a CodeForge-managed multi-user relay.",
+        "source": "https://ollama.com/terms"
+      },
+      "privacy": {
+        "class": "strict",
+        "note": "Ollama's published Cloud privacy statement says prompts and responses are not logged or trained on; managed-intermediary terms remain unreviewed."
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "cloudflare-workers-ai",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "FREE_DAILY_ALLOCATION",
+        "quota": "Workers Free: 10,000 Neurons/day, hard stop; Workers Paid bills beyond allocation",
+        "spillover": "ACCOUNT_DEPENDENT",
+        "planDetection": "attestation",
+        "allowanceScope": "allowlist",
+        "allowanceModels": [
+          "@cf/openai/gpt-oss-120b",
+          "@cf/openai/gpt-oss-20b",
+          "@cf/zai-org/glm-4.7-flash",
+          "@cf/nvidia/nemotron-3-120b-a12b",
+          "@cf/qwen/qwen3.8-27b",
+          "@cf/qwen/qwen3-30b-a3b-fp8",
+          "@cf/qwen/qwen2.5-coder-32b-instruct",
+          "@cf/google/gemma-4-26b-a4b-it",
+          "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+          "@cf/meta/llama-4-scout-17b-16e-instruct",
+          "@cf/mistralai/mistral-small-3.1-24b-instruct"
+        ],
+        "paidPlanModels": [
+          "@cf/moonshotai/kimi-k2.6",
+          "@cf/moonshotai/kimi-k2.7-code",
+          "@cf/zai-org/glm-5.2",
+          "@cf/zai-org/glm-5.3",
+          "@cf/zai-org/glm-5.3-flash",
+          "@cf/deepseek-ai/deepseek-v4-flash-0731",
+          "@cf/deepseek-ai/deepseek-v4-pro-0813"
+        ],
+        "evidence": {
+          "source": "https://developers.cloudflare.com/workers-ai/platform/pricing/",
+          "checkedAt": "2026-09-15",
+          "note": "Kimi/GLM 5.x/DeepSeek v4 require Workers Paid or AI Gateway credits."
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "nvidia",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "FREE_DEV_ENDPOINT",
+        "quota": "Trial API credits for prototyping (build.nvidia.com); not a production entitlement",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://docs.api.nvidia.com/nim/docs/faq",
+          "checkedAt": "2026-09-15",
+          "note": "Positioned for prototyping/evaluation; production expected on self-hosted NIM."
+        }
+      },
+      "terms": {
+        "status": "DEVELOPMENT_ONLY",
+        "note": "Evaluation endpoint; excluded from default production Free routing."
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "deepseek",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PAID_API",
+        "quota": "Direct API is pay-as-you-go (no recurring free tier)",
+        "spillover": "SILENT_CHARGES",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://api-docs.deepseek.com/quick_start/pricing",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "poolside",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "FREE_DEV_ENDPOINT",
+        "quota": "Laguna models free-in-preview via platform.poolside.ai (no public rate card)",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://platform.poolside.ai (preview) + Models.dev 0/0 listing",
+          "checkedAt": "2026-09-15",
+          "note": "Third-party/commercial terms unpublished → legal review before default routing."
+        }
+      },
+      "terms": {
+        "status": "LEGAL_REVIEW_REQUIRED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "huggingface",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PROMOTIONAL_CREDIT",
+        "quota": "Small monthly free credits; billed usage beyond credits on PAYG accounts",
+        "spillover": "ACCOUNT_DEPENDENT",
+        "planDetection": "attestation",
+        "evidence": {
+          "source": "https://huggingface.co/docs/inference-providers/pricing",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "togetherai",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PROMOTIONAL_CREDIT",
+        "quota": "Signup credit only",
+        "spillover": "SILENT_CHARGES",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://www.together.ai/pricing",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "fireworks-ai",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PROMOTIONAL_CREDIT",
+        "quota": "Signup credit only",
+        "spillover": "SILENT_CHARGES",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://fireworks.ai/pricing",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "siliconflow",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "LEGAL_REVIEW_REQUIRED",
+        "spillover": "ACCOUNT_DEPENDENT",
+        "planDetection": "attestation",
+        "evidence": {
+          "source": "Models.dev (no $0 listings); free-model program terms not reviewed",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "LEGAL_REVIEW_REQUIRED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "nebius",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PROMOTIONAL_CREDIT",
+        "spillover": "SILENT_CHARGES",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "Models.dev (no $0 listings)",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "novita-ai",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PROMOTIONAL_CREDIT",
+        "spillover": "SILENT_CHARGES",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "Models.dev (no $0 listings)",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "hyperbolic",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PROMOTIONAL_CREDIT",
+        "spillover": "SILENT_CHARGES",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "Not listed on Models.dev; signup credit model",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "friendli",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PROMOTIONAL_CREDIT",
+        "spillover": "SILENT_CHARGES",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "Models.dev (no $0 listings)",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "baseten",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PROMOTIONAL_CREDIT",
+        "spillover": "SILENT_CHARGES",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "Models.dev (no $0 listings)",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "moonshotai",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PAID_API",
+        "spillover": "SILENT_CHARGES",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "Models.dev (no $0 listings)",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "opencode",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "Zen `*-free` routes listed at $0 (many rotate/deprecate quickly)",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://opencode.ai/docs/zen + live catalog",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED",
+        "note": "Gateway documents API-key use by clients; free routes are promotional in nature and re-verified every 7 days."
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "kilo",
+      "implemented": false,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "LEGAL_REVIEW_REQUIRED",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "Models.dev lists 24 $0 routes; third-party client terms not published",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "LEGAL_REVIEW_REQUIRED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "implemented": true,
+      "authClasses": [
+        "ZERO_TOUCH"
+      ],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "200 free-model requests/hour per public IP; users behind one NAT share it",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://kilo.ai/docs/gateway/authentication",
+          "checkedAt": "2026-10-01"
+        }
+      },
+      "terms": {
+        "status": "CLEARED",
+        "source": "https://kilo.ai/terms",
+        "note": "Gateway API terms permit serving end users of a third-party application subject to Kilo terms."
+      },
+      "modelTerms": [
+        {
+          "modelIdPrefix": "nvidia/",
+          "terms": {
+            "status": "DEVELOPMENT_ONLY",
+            "checkedAt": "2026-10-11",
+            "source": "https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf",
+            "note": "Kilo documents NVIDIA routes as trial endpoints. Trial terms sections 1.2 and 1.4 permit internal evaluation, not production generated content or services without a separate subscription."
+          }
+        },
+        {
+          "modelIdPrefix": "kilo-auto/",
+          "terms": {
+            "status": "LEGAL_REVIEW_REQUIRED",
+            "checkedAt": "2026-10-11",
+            "source": "https://kilo.ai/docs/gateway/models-and-providers",
+            "note": "Opaque Auto Free selection may use NVIDIA trial endpoints; production eligibility cannot be established before dispatch."
+          }
+        }
+      ],
+      "privacy": {
+        "class": "permissive",
+        "freeTierClass": "permissive",
+        "note": "Auto Free may use providers that log and improve services with prompts; public code only, with workspace consent."
+      },
+      "zeroTouchCandidate": true,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "blockrun-free-direct",
+      "implemented": true,
+      "authClasses": [
+        "ZERO_TOUCH"
+      ],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "30 Free requests/minute and 300/hour per public IP, shared across Free models; upstream shared capacity also applies",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "maxRequestsPerMinute": 30,
+        "evidence": {
+          "source": "https://blockrun.ai/docs/rate-limits",
+          "checkedAt": "2026-10-08",
+          "note": "Only current available billing_mode=free models with exact-zero input/output/transaction fees; no wallet, key or payment header."
+        }
+      },
+      "terms": {
+        "status": "CLEARED",
+        "source": "https://blockrun.ai/terms",
+        "note": "Official no-key API permits light production and third-party integration with accurate origin attribution; upstream terms remain applicable."
+      },
+      "privacy": {
+        "class": "permissive",
+        "freeTierClass": "permissive",
+        "note": "BlockRun does not retain or train on prompts; upstream policy and shared routing remain provider-dependent. Public code only with workspace consent."
+      },
+      "zeroTouchCandidate": true,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "ai-horde",
+      "implemented": true,
+      "authClasses": [
+        "ZERO_TOUCH"
+      ],
+      "freeAccess": {
+        "class": "FREE_API",
+        "quota": "One global anonymous account (concurrency 500, lowest-priority queue); all anonymous callers share it — never a per-user pool",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "quotaDomain": "account",
+        "maxRequestsPerMinute": 10,
+        "evidence": {
+          "source": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/README.md + live GET https://aihorde.net/api/v2/find_user",
+          "checkedAt": "2026-10-10",
+          "note": "The native async text API accepts provider-documented anonymous key 0000000000; the adapter fixes model identity and uses no purchased kudos."
+        }
+      },
+      "terms": {
+        "status": "CLEARED",
+        "source": "https://aihorde.net/terms",
+        "note": "Anonymous and proxied-client use is documented; profiting from Horde access requires giving back at least as much as taken — CodeForge Free never monetizes this route."
+      },
+      "privacy": {
+        "class": "permissive",
+        "freeTierClass": "permissive",
+        "note": "Community workers can technically see prompts (open-source worker software); Horde itself stores requests in-memory transiently only. Public code only — consent cannot change what a worker host sees."
+      },
+      "zeroTouchCandidate": true,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "zenmux",
+      "implemented": false,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "LEGAL_REVIEW_REQUIRED",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "Models.dev lists `*-free` routes incl. proprietary models; redistribution terms unverified",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "LEGAL_REVIEW_REQUIRED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "github-copilot",
+      "implemented": false,
+      "authClasses": [
+        "OAUTH_NATIVE"
+      ],
+      "freeAccess": {
+        "class": "FREE_ACCOUNT_ENTITLEMENT",
+        "quota": "Per-user Copilot entitlement (Free/Pro/Pro+/student/org plan); premium_interactions/chat/completions quota via account.getQuota, per-model AI credit pricing via models.list",
+        "spillover": "ACCOUNT_DEPENDENT",
+        "planDetection": "api",
+        "evidence": {
+          "source": "https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/usage-and-billing",
+          "checkedAt": "2026-09-21",
+          "note": "Premium-request overage billing depends on the account's plan and settings; included-quota hard stop must be verified per account before Free routing."
+        }
+      },
+      "terms": {
+        "status": "LEGAL_REVIEW_REQUIRED",
+        "note": "@github/copilot-sdk officially supports third-party apps spending the authenticated user's own Copilot quota (github.com/github/copilot-sdk, docs/setup/github-oauth.md, multi-tenancy.md). Earlier NOT_ALLOWED referred to the private VS Code endpoint, not the SDK. Managed multi-user relay terms still unreviewed.",
+        "source": "https://github.com/github/copilot-sdk"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "github-models",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "FREE_DAILY_ALLOCATION",
+        "quota": "Per-model rate limits by catalog tier (low/medium/high) — e.g. ~50–150 requests/day per model; the API reports NO quota headers, so remaining capacity is unmeasurable at runtime and routes stay inadmissible until observed",
+        "spillover": "NONE",
+        "quotaDomain": "model",
+        "planDetection": "not_required",
+        "allowanceScope": "all_chat_models",
+        "evidence": {
+          "source": "https://docs.github.com/en/github-models/use-github-models/prototyping-with-ai-models#rate-limits",
+          "checkedAt": "2026-09-25",
+          "note": "R33 live proof used this endpoint with a PAT. No x-ratelimit-* headers are returned — capacity truth is documentation-only until upstream starts reporting."
+        }
+      },
+      "terms": {
+        "status": "LEGAL_REVIEW_REQUIRED",
+        "note": "Free inference endpoint documented for prototyping; production/multi-user terms unreviewed",
+        "source": "https://docs.github.com/en/github-models"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "anthropic",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PAID_API",
+        "quota": "No zero-cost API route; consumer subscriptions do not grant API use",
+        "spillover": "SILENT_CHARGES",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://www.anthropic.com/pricing",
+          "checkedAt": "2026-09-15",
+          "note": "NO_SUPPORTED_ZERO_COST_ANTHROPIC_ROUTE"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "strict"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "openai",
+      "implemented": true,
+      "authClasses": [
+        "ENVIRONMENT_CREDENTIAL",
+        "ASSISTED_KEY"
+      ],
+      "freeAccess": {
+        "class": "PAID_API",
+        "quota": "No free API tier; ChatGPT/Codex subscriptions are not API entitlements",
+        "spillover": "SILENT_CHARGES",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "https://openai.com/api/pricing",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "standard"
+      },
+      "zeroTouchCandidate": false,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    },
+    {
+      "providerId": "codeforge",
+      "implemented": true,
+      "authClasses": [
+        "ZERO_TOUCH"
+      ],
+      "freeAccess": {
+        "class": "FREE_PRODUCT_ONLY",
+        "spillover": "NONE",
+        "planDetection": "not_required",
+        "evidence": {
+          "source": "bundled placeholder/smoke records",
+          "checkedAt": "2026-09-15"
+        }
+      },
+      "terms": {
+        "status": "CLEARED"
+      },
+      "privacy": {
+        "class": "strict"
+      },
+      "zeroTouchCandidate": true,
+      "admissionStatus": "NOT_PROVEN_BY_REGISTRY_DEFINITION"
+    }
+  ],
+  "publicCatalogs": [
+    {
+      "providerId": "kilo-free-direct",
+      "checkedAt": "2026-10-11T22:19:04.642Z",
+      "status": "CATALOG_OBSERVED_NOT_INFERENCE_CAPACITY",
+      "models": [
+        {
+          "modelId": "kilo-auto/free",
+          "isFree": true,
+          "contextWindow": 256000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "terms": {
+            "status": "LEGAL_REVIEW_REQUIRED",
+            "checkedAt": "2026-10-11",
+            "source": "https://kilo.ai/docs/gateway/models-and-providers",
+            "note": "Opaque Auto Free selection may use NVIDIA trial endpoints; production eligibility cannot be established before dispatch."
+          },
+          "inferenceCapacityProven": false
+        },
+        {
+          "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "isFree": true,
+          "contextWindow": 1000000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "terms": {
+            "status": "DEVELOPMENT_ONLY",
+            "checkedAt": "2026-10-11",
+            "source": "https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf",
+            "note": "Kilo documents NVIDIA routes as trial endpoints. Trial terms sections 1.2 and 1.4 permit internal evaluation, not production generated content or services without a separate subscription."
+          },
+          "inferenceCapacityProven": false
+        },
+        {
+          "modelId": "dots-studio/dots-3-note-preview:free",
+          "isFree": true,
+          "contextWindow": 512000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": true,
+            "longContext": true
+          },
+          "terms": {
+            "status": "CLEARED",
+            "source": "https://kilo.ai/terms",
+            "note": "Gateway API terms permit serving end users of a third-party application subject to Kilo terms."
+          },
+          "inferenceCapacityProven": false
+        },
+        {
+          "modelId": "poolside/laguna-s-2.1:free",
+          "isFree": true,
+          "contextWindow": 262144,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "terms": {
+            "status": "CLEARED",
+            "source": "https://kilo.ai/terms",
+            "note": "Gateway API terms permit serving end users of a third-party application subject to Kilo terms."
+          },
+          "inferenceCapacityProven": false
+        },
+        {
+          "modelId": "liquid/lfm-2.5-2.6b:free",
+          "isFree": true,
+          "contextWindow": 65536,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": true,
+            "longContext": true
+          },
+          "terms": {
+            "status": "CLEARED",
+            "source": "https://kilo.ai/terms",
+            "note": "Gateway API terms permit serving end users of a third-party application subject to Kilo terms."
+          },
+          "inferenceCapacityProven": false
+        },
+        {
+          "modelId": "nvidia/nemotron-3.5-lightning:free",
+          "isFree": true,
+          "contextWindow": 1000000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "terms": {
+            "status": "DEVELOPMENT_ONLY",
+            "checkedAt": "2026-10-11",
+            "source": "https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf",
+            "note": "Kilo documents NVIDIA routes as trial endpoints. Trial terms sections 1.2 and 1.4 permit internal evaluation, not production generated content or services without a separate subscription."
+          },
+          "inferenceCapacityProven": false
+        },
+        {
+          "modelId": "thinkingmachines/inkling-small:free",
+          "isFree": true,
+          "contextWindow": 1048576,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "terms": {
+            "status": "CLEARED",
+            "source": "https://kilo.ai/terms",
+            "note": "Gateway API terms permit serving end users of a third-party application subject to Kilo terms."
+          },
+          "inferenceCapacityProven": false
+        },
+        {
+          "modelId": "poolside/laguna-xs-2.1:free",
+          "isFree": true,
+          "contextWindow": 262144,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "terms": {
+            "status": "CLEARED",
+            "source": "https://kilo.ai/terms",
+            "note": "Gateway API terms permit serving end users of a third-party application subject to Kilo terms."
+          },
+          "inferenceCapacityProven": false
+        },
+        {
+          "modelId": "cohere/north-mini-code:free",
+          "isFree": true,
+          "contextWindow": 256000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "terms": {
+            "status": "CLEARED",
+            "source": "https://kilo.ai/terms",
+            "note": "Gateway API terms permit serving end users of a third-party application subject to Kilo terms."
+          },
+          "inferenceCapacityProven": false
+        },
+        {
+          "modelId": "nvidia/nemotron-3.5-content-safety:free",
+          "isFree": true,
+          "contextWindow": 128000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": false,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "terms": {
+            "status": "DEVELOPMENT_ONLY",
+            "checkedAt": "2026-10-11",
+            "source": "https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf",
+            "note": "Kilo documents NVIDIA routes as trial endpoints. Trial terms sections 1.2 and 1.4 permit internal evaluation, not production generated content or services without a separate subscription."
+          },
+          "inferenceCapacityProven": false
+        },
+        {
+          "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "isFree": true,
+          "contextWindow": 256000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "terms": {
+            "status": "DEVELOPMENT_ONLY",
+            "checkedAt": "2026-10-11",
+            "source": "https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf",
+            "note": "Kilo documents NVIDIA routes as trial endpoints. Trial terms sections 1.2 and 1.4 permit internal evaluation, not production generated content or services without a separate subscription."
+          },
+          "inferenceCapacityProven": false
+        },
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "isFree": true,
+          "contextWindow": 262144,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": true,
+            "longContext": true
+          },
+          "terms": {
+            "status": "DEVELOPMENT_ONLY",
+            "checkedAt": "2026-10-11",
+            "source": "https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf",
+            "note": "Kilo documents NVIDIA routes as trial endpoints. Trial terms sections 1.2 and 1.4 permit internal evaluation, not production generated content or services without a separate subscription."
+          },
+          "inferenceCapacityProven": false
+        }
+      ],
+      "policy": {
+        "status": "VERIFIED",
+        "checkedAt": "2026-10-11T22:19:04.642Z",
+        "receipt": {
+          "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+          "termsEvidence": "https://kilo.ai/terms",
+          "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+          "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+          "verifiedAt": "2026-10-11T22:19:04.642Z",
+          "recheckAt": "2026-10-18T22:19:04.642Z",
+          "qualificationAt": "2026-10-11T22:19:04.642Z",
+          "termsVerifiedAt": "2026-10-11T22:19:04.642Z",
+          "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+          "termsExpiresAt": "2026-10-18T22:19:04.642Z",
+          "privacyVerifiedAt": "2026-10-11T22:19:04.642Z",
+          "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+          "privacyExpiresAt": "2026-10-18T22:19:04.642Z",
+          "priceVerifiedAt": "2026-10-11T22:19:04.642Z",
+          "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+          "priceExpiresAt": "2026-10-18T22:19:04.642Z",
+          "nextReverifyAt": "2026-10-12T04:19:04.642Z"
+        }
+      }
+    },
+    {
+      "providerId": "blockrun-free-direct",
+      "checkedAt": "2026-10-11T22:19:05.661Z",
+      "status": "CATALOG_OBSERVED_NOT_INFERENCE_CAPACITY",
+      "models": [
+        {
+          "modelId": "nvidia/llama-3.2-11b-vision",
+          "isFree": true,
+          "contextWindow": 128000,
+          "capabilities": {
+            "text": true,
+            "coding": false,
+            "toolCalling": true,
+            "vision": true,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "terms": {
+            "status": "CLEARED",
+            "source": "https://blockrun.ai/terms",
+            "note": "Official no-key API permits light production and third-party integration with accurate origin attribution; upstream terms remain applicable."
+          },
+          "inferenceCapacityProven": false
+        },
+        {
+          "modelId": "poolside/laguna-xs-2.1",
+          "isFree": true,
+          "contextWindow": 131072,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "terms": {
+            "status": "CLEARED",
+            "source": "https://blockrun.ai/terms",
+            "note": "Official no-key API permits light production and third-party integration with accurate origin attribution; upstream terms remain applicable."
+          },
+          "inferenceCapacityProven": false
+        }
+      ],
+      "policy": {
+        "status": "VERIFIED",
+        "checkedAt": "2026-10-11T22:19:05.661Z",
+        "receipt": {
+          "sourceDocumentation": "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl",
+          "termsEvidence": "https://blockrun.ai/terms",
+          "privacyEvidence": "https://blockrun.ai/privacy",
+          "priceEvidence": "https://blockrun.ai/docs/rate-limits",
+          "verifiedAt": "2026-10-11T22:19:05.661Z",
+          "recheckAt": "2026-10-18T22:19:05.661Z",
+          "qualificationAt": "2026-10-11T22:19:05.661Z",
+          "termsVerifiedAt": "2026-10-11T22:19:05.661Z",
+          "termsEvidenceHash": "73f2ef461e086bec3f80579ad7699ce819ab9fd78cef6763f8ff7a83bde3d649",
+          "termsExpiresAt": "2026-10-18T22:19:05.661Z",
+          "privacyVerifiedAt": "2026-10-11T22:19:05.661Z",
+          "privacyEvidenceHash": "21b97f5ca395e4b0ce3b434c8fca6f20cf63285ec57a93cbf88fe1628eb8e3b7",
+          "privacyExpiresAt": "2026-10-18T22:19:05.661Z",
+          "priceVerifiedAt": "2026-10-11T22:19:05.661Z",
+          "priceEvidenceHash": "4921f5b2f8c4b51559078915381fa0956ee12030bb4e09fe86e49ecd6ccdf27f",
+          "priceExpiresAt": "2026-10-18T22:19:05.661Z",
+          "nextReverifyAt": "2026-10-12T04:19:05.661Z"
+        }
+      }
+    },
+    {
+      "providerId": "ai-horde",
+      "checkedAt": "2026-10-11T22:19:06.606Z",
+      "status": "CATALOG_OBSERVED_NOT_INFERENCE_CAPACITY",
+      "models": [
+        {
+          "modelId": "google/gemma-4-31b",
+          "isFree": true,
+          "contextWindow": 8192,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": true,
+            "longContext": false
+          },
+          "terms": {
+            "status": "CLEARED",
+            "source": "https://aihorde.net/terms",
+            "note": "Anonymous and proxied-client use is documented; profiting from Horde access requires giving back at least as much as taken — CodeForge Free never monetizes this route."
+          },
+          "inferenceCapacityProven": false
+        }
+      ],
+      "policy": {
+        "status": "VERIFIED",
+        "checkedAt": "2026-10-11T22:19:06.606Z",
+        "receipt": {
+          "sourceDocumentation": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/README.md",
+          "termsEvidence": "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/definitions.md",
+          "privacyEvidence": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/FAQ.md",
+          "priceEvidence": "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/kudos.md",
+          "verifiedAt": "2026-10-11T22:19:06.606Z",
+          "recheckAt": "2026-10-18T22:19:06.606Z",
+          "qualificationAt": "2026-10-11T22:19:06.606Z",
+          "termsVerifiedAt": "2026-10-11T22:19:06.606Z",
+          "termsEvidenceHash": "c187030e08f828054eb1ccfbc9f14fd45002d856d4f46a95e953d2c8420c86ac",
+          "termsExpiresAt": "2026-10-18T22:19:06.606Z",
+          "privacyVerifiedAt": "2026-10-11T22:19:06.606Z",
+          "privacyEvidenceHash": "15f0ea5ba9298a6f2100685eb79f66df8882105c87c8c461768f6498471884b2",
+          "privacyExpiresAt": "2026-10-18T22:19:06.606Z",
+          "priceVerifiedAt": "2026-10-11T22:19:06.606Z",
+          "priceEvidenceHash": "b50fb2ad2f38d414fc953a13f1f742c267c3a6aea82d9f643abb043070db819a",
+          "priceExpiresAt": "2026-10-18T22:19:06.606Z",
+          "nextReverifyAt": "2026-10-12T04:19:06.606Z"
+        }
+      }
+    }
+  ],
+  "finishedAt": "2026-10-11T22:19:07.245Z"
+}

@@ -1,0 +1,337 @@
+{
+  "startedAt": "2026-10-11T22:36:36.411Z",
+  "original": "G:\\CodeForge\\worktrees\\r84-free-cloud-autonomy-certification\\.scratch\\r84pilot",
+  "pilot": "G:\\CodeForge\\worktrees\\r85-free-onboarding-autonomy-and-forgeaaa-review\\.scratch\\r85pilot",
+  "status": "VERIFIED",
+  "campaigns": [
+    {
+      "file": "migration-fault-campaign.mjs",
+      "result": "PASS",
+      "receipt": "migration-fault-campaign-1791758206628.json"
+    },
+    {
+      "file": "persistence-upgrade-live.mjs",
+      "result": "PASS",
+      "receipt": "persistence-upgrade-1791758824636.json",
+      "note": "waypoint choreography hardened at door centerline after 2 stall-only flakes; all functional assertions passed in every run"
+    }
+  ],
+  "before": [
+    {
+      "file": "ForgeAAA\\door_SM_DoorFrame.uasset",
+      "sha256": "0e9d96451f0eca905bfe140692ddb0d4aa07cad2f20c7d7e17bd4895d63b9d46"
+    },
+    {
+      "file": "ForgeAAA\\door_SM_DoorLeaf.uasset",
+      "sha256": "f0d2f24d2f78d63bacde97361750195ff0c5033c40547f869752f3a0be45facf"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_Director_1791747135078.umap",
+      "sha256": "d0423713f6c7596f700204098eba84bf488b180666b733a4307fb7395019a592"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_FaultCampaign_1791745087549.umap",
+      "sha256": "caad1bef47c49d0744101d60d404ef327d6c42190469cad10098d138816c21bd"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_FaultCampaign_1791746117112.umap",
+      "sha256": "cbd49893a7cf66c5cc75db4b0e7e7fac8b13dbe5d6b26d146c8289ad3d3a6666"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_FaultCampaign_1791746387783.umap",
+      "sha256": "99babe3bf9257f4f3540692c5dc3b47efd3b887336b02427aa89688f115afb01"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_FaultCampaign_1791748709103.umap",
+      "sha256": "acf22639d9c6aaf055486e370efa2f457863b16031531bc3f973e13dae8b5775"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_PathSafety_1791746602149.umap",
+      "sha256": "c2b81e09ed68b5014d5b8ebf79840831331a13e156690931c591c5b667e897b1"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_PersistenceUpgrade_1791745968706.umap",
+      "sha256": "1ea21b6e0a2afcc1f7290a7437094bfaf1e137add89c0eabe2a75c32b08ad42e"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_PersistenceUpgrade_1791746291414.umap",
+      "sha256": "6180dc981adbf2c047494ae3e8c1e2de3e723723a3851060748a5f31eb81eecd"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_PersistenceUpgrade_1791748900412.umap",
+      "sha256": "770179b40d3f91579da9654e1ed2c276bfca2f0a816713e3000de59794eb2c0c"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_PersistenceUpgrade_1791749355350.umap",
+      "sha256": "06234113ce87132abbcde6ea7e28d66a270bd118c50e2978f39765da846463d7"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_RollbackStrict_1791744588174.umap",
+      "sha256": "b2386dfc942c994d3dcc16c0df57f63011c21ffb845a2a86d1fb85eeea024714"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_RollbackTest.umap",
+      "sha256": "43f23df3e44984670057a537ce53d9a70b194130725da507c4cf4adaa12a1950"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_RoomA_Strict_1791744588174.umap",
+      "sha256": "37830b64332a1b6ec2c0f6477aaeb565cb193aef19141cf157624ecb8a8ab0a4"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_RoomA.umap",
+      "sha256": "9050010aa365d08f9b5e678cdf6e49b8e067e76096781eae03c43e3043ca9595"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\R83_NativeDiagnostic_dade7e42c329.umap",
+      "sha256": "6da8b19a2bf31242fe863cf6aec847e9dfb08da00e0e4f53b80f22ef30d60851"
+    },
+    {
+      "file": "ForgeAAA\\MigrationRecoveryTransient.umap",
+      "sha256": "6d70fd553ce5dcc4112fc06bf19f40b2e41fe4650f7aff843a66bcb4b0bfb59d"
+    },
+    {
+      "file": "ForgeAAA\\R82\\M_glass.uasset",
+      "sha256": "a1ad380ad6c46b9a1d8e942de7b80696cb191799fd2eb9bd68ac123136e7aceb"
+    },
+    {
+      "file": "ForgeAAA\\R82\\M_plaster.uasset",
+      "sha256": "ebf613369e6f0fdca00986ef2966d5758f0d1ab5e78f1777d6320b09b5540d92"
+    },
+    {
+      "file": "ForgeAAA\\R82\\M_wood.uasset",
+      "sha256": "a3e8cdf8bc1d9395ea2a1a4c3ec51396ecb7772a215413cc11f7ad48bc0b7610"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_BackWall.uasset",
+      "sha256": "c7afd9994a1dd817ed4e35f212ae86b8e0f62b7ca97d9c0941f1018109ea23f8"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_Ceiling.uasset",
+      "sha256": "2eaf1de1ecee214dc62169231b6426a5ea5884f6bd758232ac9b5fbadadb5c28"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_DoorLintel.uasset",
+      "sha256": "870b0026cdde763f1262c7f9662c181b8b3a020ef0fa3f9105eb6ca8dc7405e0"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_ExteriorFloor.uasset",
+      "sha256": "92a10bdf43762cab5bb3183e49aca138452eeb1723254e13920d828f92c3426d"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_FrontWall.uasset",
+      "sha256": "68b0477471ea7b36dddadd11e7e7bdd6d5d1d04bfb75ca2633bb2a6bb5872d63"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_PlankFloor.uasset",
+      "sha256": "6313c1a6d3d66fbac69864ae74750ed7f03b39f40b248030f10f1e71537fe3e4"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_SideWall.uasset",
+      "sha256": "afe5da7434558c797c58a9b7f302b1a24e26406771387e1236a2501e1a3eb7e9"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_WindowFrame.uasset",
+      "sha256": "b50731026568cb0c9ab69abffca1e42eec9d62d91d7af8a70e6ebb74d4bd8d1d"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_WindowHeader.uasset",
+      "sha256": "4a6b0de0e81b934675d7158e0c87f66e52fe13288c7bfe2126018cbc833e8d07"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_WindowSash.uasset",
+      "sha256": "c05794eadf49fe82bdb30794ea1edc35647e6d9bb4ef1a85e69b16206b0867ed"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_WindowSillWall.uasset",
+      "sha256": "17212c0883146e8e81f67e24be61ed9dd6f44c4eadeceda6fd4190248bbce885"
+    },
+    {
+      "file": "ForgeAAA\\R83\\MigrationRecoveryTransient.umap",
+      "sha256": "e46dbcac18555599415a2a436274cd6dc01e95255a9863ce5f283a9faec72a93"
+    },
+    {
+      "file": "ForgeAAA\\R83\\SM_Ceiling_B.uasset",
+      "sha256": "b991cb05b368839c747e57250e0ef5c395f05dbdd518ca58b20d0f4f75423fa5"
+    },
+    {
+      "file": "ForgeAAA\\R83\\SM_DoorThreshold.uasset",
+      "sha256": "ada440a35bfb822b704b3ec140e887e48028f56f864a964fb2ff82708d3f64cb"
+    },
+    {
+      "file": "ForgeAAA\\R83\\SM_FrontWall_B.uasset",
+      "sha256": "f44d7b4ccec46d9ce6d91405995e975d927ab07e73344ed9940500dc4ed20eba"
+    },
+    {
+      "file": "ForgeAAA\\R83\\SM_SharedWall_Back.uasset",
+      "sha256": "49faec1ca22fd1980035bab4350d3ef0ef6d18318ed03795de637518f9737b60"
+    },
+    {
+      "file": "ForgeAAA\\R83\\SM_SharedWall_Front.uasset",
+      "sha256": "b05f1416252d17b51af9b8eb80cac25a0b03877be8cfb681bd3f52a4a4b1c6fc"
+    },
+    {
+      "file": "ForgeAAA\\R83\\SM_SharedWall_Lintel.uasset",
+      "sha256": "dcc18b17ca374a53e51401c557090b5922fcb74a4642c6d5515dd2366d1129da"
+    }
+  ],
+  "after": [
+    {
+      "file": "ForgeAAA\\door_SM_DoorFrame.uasset",
+      "sha256": "0e9d96451f0eca905bfe140692ddb0d4aa07cad2f20c7d7e17bd4895d63b9d46"
+    },
+    {
+      "file": "ForgeAAA\\door_SM_DoorLeaf.uasset",
+      "sha256": "f0d2f24d2f78d63bacde97361750195ff0c5033c40547f869752f3a0be45facf"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_Director_1791747135078.umap",
+      "sha256": "d0423713f6c7596f700204098eba84bf488b180666b733a4307fb7395019a592"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_FaultCampaign_1791745087549.umap",
+      "sha256": "caad1bef47c49d0744101d60d404ef327d6c42190469cad10098d138816c21bd"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_FaultCampaign_1791746117112.umap",
+      "sha256": "cbd49893a7cf66c5cc75db4b0e7e7fac8b13dbe5d6b26d146c8289ad3d3a6666"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_FaultCampaign_1791746387783.umap",
+      "sha256": "99babe3bf9257f4f3540692c5dc3b47efd3b887336b02427aa89688f115afb01"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_FaultCampaign_1791748709103.umap",
+      "sha256": "acf22639d9c6aaf055486e370efa2f457863b16031531bc3f973e13dae8b5775"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_PathSafety_1791746602149.umap",
+      "sha256": "c2b81e09ed68b5014d5b8ebf79840831331a13e156690931c591c5b667e897b1"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_PersistenceUpgrade_1791745968706.umap",
+      "sha256": "1ea21b6e0a2afcc1f7290a7437094bfaf1e137add89c0eabe2a75c32b08ad42e"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_PersistenceUpgrade_1791746291414.umap",
+      "sha256": "6180dc981adbf2c047494ae3e8c1e2de3e723723a3851060748a5f31eb81eecd"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_PersistenceUpgrade_1791748900412.umap",
+      "sha256": "770179b40d3f91579da9654e1ed2c276bfca2f0a816713e3000de59794eb2c0c"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_PersistenceUpgrade_1791749355350.umap",
+      "sha256": "06234113ce87132abbcde6ea7e28d66a270bd118c50e2978f39765da846463d7"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_RollbackStrict_1791744588174.umap",
+      "sha256": "b2386dfc942c994d3dcc16c0df57f63011c21ffb845a2a86d1fb85eeea024714"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_RollbackTest.umap",
+      "sha256": "43f23df3e44984670057a537ce53d9a70b194130725da507c4cf4adaa12a1950"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_RoomA_Strict_1791744588174.umap",
+      "sha256": "37830b64332a1b6ec2c0f6477aaeb565cb193aef19141cf157624ecb8a8ab0a4"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\FAAA_R83_RoomA.umap",
+      "sha256": "9050010aa365d08f9b5e678cdf6e49b8e067e76096781eae03c43e3043ca9595"
+    },
+    {
+      "file": "ForgeAAA\\Maps\\R83_NativeDiagnostic_dade7e42c329.umap",
+      "sha256": "6da8b19a2bf31242fe863cf6aec847e9dfb08da00e0e4f53b80f22ef30d60851"
+    },
+    {
+      "file": "ForgeAAA\\MigrationRecoveryTransient.umap",
+      "sha256": "6d70fd553ce5dcc4112fc06bf19f40b2e41fe4650f7aff843a66bcb4b0bfb59d"
+    },
+    {
+      "file": "ForgeAAA\\R82\\M_glass.uasset",
+      "sha256": "a1ad380ad6c46b9a1d8e942de7b80696cb191799fd2eb9bd68ac123136e7aceb"
+    },
+    {
+      "file": "ForgeAAA\\R82\\M_plaster.uasset",
+      "sha256": "ebf613369e6f0fdca00986ef2966d5758f0d1ab5e78f1777d6320b09b5540d92"
+    },
+    {
+      "file": "ForgeAAA\\R82\\M_wood.uasset",
+      "sha256": "a3e8cdf8bc1d9395ea2a1a4c3ec51396ecb7772a215413cc11f7ad48bc0b7610"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_BackWall.uasset",
+      "sha256": "c7afd9994a1dd817ed4e35f212ae86b8e0f62b7ca97d9c0941f1018109ea23f8"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_Ceiling.uasset",
+      "sha256": "2eaf1de1ecee214dc62169231b6426a5ea5884f6bd758232ac9b5fbadadb5c28"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_DoorLintel.uasset",
+      "sha256": "870b0026cdde763f1262c7f9662c181b8b3a020ef0fa3f9105eb6ca8dc7405e0"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_ExteriorFloor.uasset",
+      "sha256": "92a10bdf43762cab5bb3183e49aca138452eeb1723254e13920d828f92c3426d"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_FrontWall.uasset",
+      "sha256": "68b0477471ea7b36dddadd11e7e7bdd6d5d1d04bfb75ca2633bb2a6bb5872d63"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_PlankFloor.uasset",
+      "sha256": "6313c1a6d3d66fbac69864ae74750ed7f03b39f40b248030f10f1e71537fe3e4"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_SideWall.uasset",
+      "sha256": "afe5da7434558c797c58a9b7f302b1a24e26406771387e1236a2501e1a3eb7e9"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_WindowFrame.uasset",
+      "sha256": "b50731026568cb0c9ab69abffca1e42eec9d62d91d7af8a70e6ebb74d4bd8d1d"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_WindowHeader.uasset",
+      "sha256": "4a6b0de0e81b934675d7158e0c87f66e52fe13288c7bfe2126018cbc833e8d07"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_WindowSash.uasset",
+      "sha256": "c05794eadf49fe82bdb30794ea1edc35647e6d9bb4ef1a85e69b16206b0867ed"
+    },
+    {
+      "file": "ForgeAAA\\R82\\SM_WindowSillWall.uasset",
+      "sha256": "17212c0883146e8e81f67e24be61ed9dd6f44c4eadeceda6fd4190248bbce885"
+    },
+    {
+      "file": "ForgeAAA\\R83\\MigrationRecoveryTransient.umap",
+      "sha256": "e46dbcac18555599415a2a436274cd6dc01e95255a9863ce5f283a9faec72a93"
+    },
+    {
+      "file": "ForgeAAA\\R83\\SM_Ceiling_B.uasset",
+      "sha256": "b991cb05b368839c747e57250e0ef5c395f05dbdd518ca58b20d0f4f75423fa5"
+    },
+    {
+      "file": "ForgeAAA\\R83\\SM_DoorThreshold.uasset",
+      "sha256": "ada440a35bfb822b704b3ec140e887e48028f56f864a964fb2ff82708d3f64cb"
+    },
+    {
+      "file": "ForgeAAA\\R83\\SM_FrontWall_B.uasset",
+      "sha256": "f44d7b4ccec46d9ce6d91405995e975d927ab07e73344ed9940500dc4ed20eba"
+    },
+    {
+      "file": "ForgeAAA\\R83\\SM_SharedWall_Back.uasset",
+      "sha256": "49faec1ca22fd1980035bab4350d3ef0ef6d18318ed03795de637518f9737b60"
+    },
+    {
+      "file": "ForgeAAA\\R83\\SM_SharedWall_Front.uasset",
+      "sha256": "b05f1416252d17b51af9b8eb80cac25a0b03877be8cfb681bd3f52a4a4b1c6fc"
+    },
+    {
+      "file": "ForgeAAA\\R83\\SM_SharedWall_Lintel.uasset",
+      "sha256": "dcc18b17ca374a53e51401c557090b5922fcb74a4642c6d5515dd2366d1129da"
+    }
+  ],
+  "originalContentPreserved": true,
+  "finishedAt": "2026-10-11T22:51:30.962Z"
+}

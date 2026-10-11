@@ -1,0 +1,2071 @@
+{
+  "startedAt": "2026-10-11T22:43:22.987Z",
+  "providerId": "kilo-free-direct",
+  "modelId": "dots-studio/dots-3-note-preview:free",
+  "evidenceClass": "LIVE_ROLE_QUALIFICATION_PUBLIC_CASES",
+  "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+  "frames": [
+    {
+      "at": "2026-10-11T22:43:23.683Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 200,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call_b44f1ca044da41069560dd89",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_b44f1ca044da41069560dd89",
+          "delta": "{\"path\": \"src/calc.ts\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_b44f1ca044da41069560dd89",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 305,
+            "outputTokens": 59,
+            "totalTokens": 364,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 29,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call_b44f1ca044da41069560dd89",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:43:25.269Z"
+    },
+    {
+      "at": "2026-10-11T22:43:25.272Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call_29878fa369024a0fb42481f4",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_29878fa369024a0fb42481f4",
+          "delta": "{\"path\": \"src/calc.ts\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_29878fa369024a0fb42481f4",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 329,
+            "outputTokens": 77,
+            "totalTokens": 406,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 50,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call_29878fa369024a0fb42481f4",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:43:27.119Z"
+    },
+    {
+      "at": "2026-10-11T22:43:27.122Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 4,
+        "maxTokens": 400,
+        "toolCount": 2
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "tool_call_started",
+          "toolCallId": "call_4dd72f2fc6ee44a89f3db95c",
+          "toolName": "edit_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_4dd72f2fc6ee44a89f3db95c",
+          "delta": "{\"path\": \"src/calc.ts\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_4dd72f2fc6ee44a89f3db95c",
+          "delta": ", \"oldText\": \"return a - b;\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_4dd72f2fc6ee44a89f3db95c",
+          "delta": ", \"newText\": \"return a + b;\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "call_4dd72f2fc6ee44a89f3db95c",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 385,
+            "outputTokens": 170,
+            "totalTokens": 555,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 98,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "call_4dd72f2fc6ee44a89f3db95c",
+          "toolName": "edit_file",
+          "arguments": "{\"path\": \"src/calc.ts\", \"oldText\": \"return a - b;\", \"newText\": \"return a + b;\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:43:29.752Z"
+    },
+    {
+      "at": "2026-10-11T22:43:29.755Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 120
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 55,
+            "outputTokens": 120,
+            "totalTokens": 175,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 124,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:43:32.351Z"
+    },
+    {
+      "at": "2026-10-11T22:43:32.355Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 24
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 22
+        },
+        {
+          "type": "text_delta",
+          "chars": 32
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 41
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 26
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 25
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 27
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 30
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 504,
+            "outputTokens": 305,
+            "totalTokens": 809,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 185,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:43:37.422Z"
+    },
+    {
+      "at": "2026-10-11T22:43:37.429Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 507,
+            "outputTokens": 900,
+            "totalTokens": 1407,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1011,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:43:49.673Z"
+    },
+    {
+      "at": "2026-10-11T22:43:49.676Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 1924
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 22
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 22
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 24
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 27
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 29
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 24
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "text_delta",
+          "chars": 27
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 507,
+            "outputTokens": 1705,
+            "totalTokens": 2212,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1772,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:44:11.939Z"
+    },
+    {
+      "at": "2026-10-11T22:44:11.942Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 529,
+            "outputTokens": 900,
+            "totalTokens": 1429,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1086,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:44:24.675Z"
+    },
+    {
+      "at": "2026-10-11T22:44:24.679Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 1986
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 33
+        },
+        {
+          "type": "text_delta",
+          "chars": 28
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 22
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 529,
+            "outputTokens": 529,
+            "totalTokens": 1058,
+            "cachedInputTokens": 512,
+            "reasoningTokens": 600,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:44:32.540Z"
+    },
+    {
+      "at": "2026-10-11T22:44:32.831Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 22
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 510,
+            "outputTokens": 900,
+            "totalTokens": 1410,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 997,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:44:45.872Z"
+    },
+    {
+      "at": "2026-10-11T22:44:45.993Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 1924
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 510,
+            "outputTokens": 1924,
+            "totalTokens": 2434,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 2255,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:45:09.789Z"
+    },
+    {
+      "at": "2026-10-11T22:45:09.885Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 522,
+            "outputTokens": 900,
+            "totalTokens": 1422,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 1005,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:45:22.412Z"
+    },
+    {
+      "at": "2026-10-11T22:45:22.414Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 1924
+      },
+      "events": [
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 522,
+            "outputTokens": 1924,
+            "totalTokens": 2446,
+            "cachedInputTokens": 512,
+            "reasoningTokens": 2204,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "length",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:45:47.054Z"
+    },
+    {
+      "at": "2026-10-11T22:45:47.058Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 26
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 25
+        },
+        {
+          "type": "text_delta",
+          "chars": 7
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 22
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 26
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 26
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 513,
+            "outputTokens": 405,
+            "totalTokens": 918,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 241,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:45:53.069Z"
+    },
+    {
+      "at": "2026-10-11T22:45:53.073Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 30
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 20
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1291,
+            "outputTokens": 801,
+            "totalTokens": 2092,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 805,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:46:04.066Z"
+    },
+    {
+      "at": "2026-10-11T22:46:04.073Z",
+      "request": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "messageCount": 2,
+        "maxTokens": 900
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "chars": 2
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 24
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 22
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 22
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 26
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 31
+        },
+        {
+          "type": "text_delta",
+          "chars": 24
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 9
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 14
+        },
+        {
+          "type": "text_delta",
+          "chars": 19
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 17
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 18
+        },
+        {
+          "type": "text_delta",
+          "chars": 12
+        },
+        {
+          "type": "text_delta",
+          "chars": 23
+        },
+        {
+          "type": "text_delta",
+          "chars": 5
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 1
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 6
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 8
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 3
+        },
+        {
+          "type": "text_delta",
+          "chars": 13
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "text_delta",
+          "chars": 10
+        },
+        {
+          "type": "text_delta",
+          "chars": 11
+        },
+        {
+          "type": "text_delta",
+          "chars": 16
+        },
+        {
+          "type": "text_delta",
+          "chars": 15
+        },
+        {
+          "type": "text_delta",
+          "chars": 21
+        },
+        {
+          "type": "text_delta",
+          "chars": 4
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 1285,
+            "outputTokens": 470,
+            "totalTokens": 1755,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 231,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "dots-studio/dots-3-note-preview:free"
+        }
+      ],
+      "finishedAt": "2026-10-11T22:46:10.271Z"
+    }
+  ],
+  "maxRequests": 30,
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T22:43:22.988Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T22:43:22.988Z",
+      "recheckAt": "2026-10-18T22:43:22.988Z",
+      "qualificationAt": "2026-10-11T22:43:22.987Z",
+      "termsVerifiedAt": "2026-10-11T22:43:22.988Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T22:43:22.988Z",
+      "privacyVerifiedAt": "2026-10-11T22:43:22.988Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T22:43:22.988Z",
+      "priceVerifiedAt": "2026-10-11T22:43:22.988Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T22:43:22.988Z",
+      "nextReverifyAt": "2026-10-12T04:43:22.988Z"
+    }
+  },
+  "catalog": {
+    "modelId": "dots-studio/dots-3-note-preview:free",
+    "displayName": "Dots Studio: Dots3-Note Preview (free)",
+    "contextWindow": 512000,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": true,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "roleScope": [
+    "REVIEWER"
+  ],
+  "qualification": {
+    "suiteVersion": "R74_ROLE_QUALIFICATION_V8",
+    "providerId": "kilo-free-direct",
+    "modelId": "dots-studio/dots-3-note-preview:free",
+    "modelDisplayName": "Dots Studio: Dots3-Note Preview (free)",
+    "accessClass": "FREE_ROUTED",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1590,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4483,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 3,
+                  "outputTokens": 77
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 3,
+                  "outputTokens": 170
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T22:43:23.682Z",
+        "completedAt": "2026-10-11T22:43:32.354Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "PROBATION",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 1590,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 4483,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 3,
+                  "outputTokens": 77
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 3,
+                  "outputTokens": 170
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 2599,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0.6666666666666666,
+        "startedAt": "2026-10-11T22:43:23.682Z",
+        "completedAt": "2026-10-11T22:43:32.354Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "NOT_QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 2599,
+            "retries": 0,
+            "details": {
+              "textLength": 0,
+              "parsed": false
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:43:23.682Z",
+        "completedAt": "2026-10-11T22:43:32.354Z"
+      },
+      "EXPLORER": {
+        "role": "EXPLORER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:43:32.354Z",
+        "completedAt": "2026-10-11T22:46:10.274Z"
+      },
+      "PLANNER": {
+        "role": "PLANNER",
+        "status": "NOT_TESTED",
+        "testCases": [],
+        "hardFailures": [],
+        "overallScore": 0,
+        "startedAt": "2026-10-11T22:43:32.354Z",
+        "completedAt": "2026-10-11T22:46:10.274Z"
+      },
+      "REVIEWER": {
+        "role": "REVIEWER",
+        "status": "HARD_FAILURE",
+        "testCases": [
+          {
+            "caseId": "reviewer.one_bug",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5074,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The change replaces subtraction with multiplication, but the function is named add and the intent is to return the sum of the arguments. The expression should be a + b, not a * b."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 185
+            }
+          },
+          {
+            "caseId": "reviewer.clean",
+            "category": "review",
+            "passed": false,
+            "hardFailure": false,
+            "latencyMs": 34513,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": true,
+              "verdictCorrect": false,
+              "findingLocalized": true,
+              "findings": [
+                "The exported function `log` is renamed to `writeLog` only in its declaration. No other files are updated to import the new name, and any internal references to `log` within the same file are also left unchanged. This will cause compilation errors and break existing consumers of the API."
+              ],
+              "reasoningRetried": true,
+              "reasoningTokens": 1772
+            }
+          },
+          {
+            "caseId": "reviewer.clean_comment",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 20889,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": true,
+              "reasoningTokens": 600
+            }
+          },
+          {
+            "caseId": "reviewer.swallowed_failure",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 37054,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true,
+              "reasoningTokens": 2255
+            }
+          },
+          {
+            "caseId": "reviewer.reservation_leak",
+            "category": "review",
+            "passed": false,
+            "hardFailure": true,
+            "latencyMs": 37173,
+            "retries": 0,
+            "details": {
+              "schemaValid": false,
+              "expectedApproved": false,
+              "verdictCorrect": false,
+              "findingLocalized": false,
+              "findings": [],
+              "schemaError": "Structured output is not valid JSON",
+              "reasoningRetried": true,
+              "reasoningTokens": 2204
+            }
+          },
+          {
+            "caseId": "reviewer.test_cheat",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 6015,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The test was rewritten to a tautology, removing the actual call to run(). It now asserts expect(\"ok\").toBe(\"ok\") which always passes and no longer exercises the router."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 241
+            }
+          },
+          {
+            "caseId": "reviewer.boundary_fix",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 11000,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "pass",
+              "expectedApproved": true,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [],
+              "reasoningRetried": false,
+              "reasoningTokens": 805
+            }
+          },
+          {
+            "caseId": "reviewer.boundary_regression",
+            "category": "review",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 6201,
+            "retries": 0,
+            "details": {
+              "schemaValid": true,
+              "verdict": "revision_required",
+              "expectedApproved": false,
+              "verdictCorrect": true,
+              "findingLocalized": true,
+              "findings": [
+                "The loop condition was changed from `attempt < maxAttempts` to `attempt <= maxAttempts`, causing retryDelays to return maxAttempts+1 delays instead of exactly maxAttempts. For maxAttempts=0 it returns [baseMs] instead of [], violating the requirement that zero attempts return an empty array."
+              ],
+              "reasoningRetried": false,
+              "reasoningTokens": 231
+            }
+          }
+        ],
+        "hardFailures": [
+          "reviewer.swallowed_failure",
+          "reviewer.reservation_leak"
+        ],
+        "overallScore": 0.625,
+        "startedAt": "2026-10-11T22:43:32.354Z",
+        "completedAt": "2026-10-11T22:46:10.274Z"
+      }
+    },
+    "startedAt": "2026-10-11T22:43:23.682Z",
+    "completedAt": "2026-10-11T22:43:32.354Z",
+    "totalLatencyMs": 8672,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [
+      "REVIEWER"
+    ],
+    "metadata": {
+      "compact": true,
+      "requests": 15,
+      "transient": false,
+      "quotaExhausted": false,
+      "compactSuiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+      "roleSuiteVersion": "R74_ROLE_QUALIFICATION_V8",
+      "roleProtocolVersions": {
+        "EXPLORER": "EXPLORER_PROTOCOL_V2",
+        "PLANNER": "PLANNER_PROTOCOL_V4",
+        "REVIEWER": "REVIEWER_PROTOCOL_V4"
+      },
+      "roleTransientCases": 0
+    }
+  },
+  "status": "QUALIFIED",
+  "finishedAt": "2026-10-11T22:46:10.274Z"
+}
