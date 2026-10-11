@@ -6,7 +6,7 @@ Updated 2026-10-11. Live engineering gates pass. The model-derived Director work
 
 ## 1. Repository and publication
 
-Work stayed in the existing worktree and branch codex/r83-forgeaaa-autonomous-multiroom. Starting local HEAD was a9db8ae8e8d3bb42e71b951c1c7383d48f10e8d5; starting remote was 18ae424942a1669ba91a34ccff74a8163635bfc7. Checkpoint 9ac8ae57 repaired native yaw and recovery. Publication of the continuation is pending at this report snapshot. The final delivery revision is resolved with git log -1 --format=%H -- docs/evidence/r83-forgeaaa-autonomous-multiroom/R83-FINAL-REPORT.md and independently checked with git ls-remote.
+Work stayed in the existing worktree and branch codex/r83-forgeaaa-autonomous-multiroom. Starting local HEAD was a9db8ae8e8d3bb42e71b951c1c7383d48f10e8d5; starting remote was 18ae424942a1669ba91a34ccff74a8163635bfc7. Checkpoint 9ac8ae57 repaired native yaw and recovery. Implementation/evidence commit 90e0e817b1e4116e5dd103347a05ccb94be8721d was pushed successfully and independently matched by git ls-remote; see [publication checkpoint](publication-checkpoint.json). This report closure is published afterward, with its final remote SHA recorded in the delivery result and local .scratch/r83-publication-final.json. The final delivery revision is resolved with git log -1 --format=%H -- docs/evidence/r83-forgeaaa-autonomous-multiroom/R83-FINAL-REPORT.md and independently checked with git ls-remote.
 
 R82 remains at f1b02e3f4ae5c522964743ccf04a33d004a91c33 with a clean working tree. There is no R82 benchmark/evidence diff against that baseline. The R83 pilot is .scratch/r83pilot; authored Dead Trails West content and the original R82 pilot were not edited.
 
@@ -128,9 +128,9 @@ Actual native screenshots [Room A](r83-room-a-1791745266807.png), [Room B](r83-r
 | M | R83 review | BLOCKED: truncated qualified response rejected |
 | N | Visual evidence | OBSERVED actual screenshots inspected |
 | O | Regression | Scoped checks pass; workspace build/lint fail |
-| P | Publication | Continuation push/remote alignment pending |
+| P | Publication | VERIFIED: implementation/evidence push and remote alignment |
 
-REPORTED, OBSERVED, ENGINE_VERIFIED, INDEPENDENTLY_REVIEWED and CERTIFIED are distinct. R83 certification is withheld while any declared requirement remains unsatisfied. Unreal log paths and generated scripts/receipts are retained; .scratch pilots, binary assets and raw logs remain local rather than being deleted.
+REPORTED, OBSERVED, ENGINE_VERIFIED, INDEPENDENTLY_REVIEWED and CERTIFIED are distinct. R83 certification is withheld while any declared requirement remains unsatisfied. Changed source passes lint. Raw preserved patches/review packets contain historical whitespace and diff context; they were kept verbatim rather than normalized after review. Unreal log paths and generated scripts/receipts are retained; .scratch pilots, binary assets and raw logs remain local rather than being deleted.
 
 ## 21. R84 recommendation
 
