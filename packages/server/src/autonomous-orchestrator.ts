@@ -952,7 +952,7 @@ export class AutonomousRunOrchestrator {
       counters.taskAttempts++;
       let reviewFeedback: string | undefined;
       const taskPlan = JSON.stringify(run.taskGraph.tasks.map(({ id, title, objective, dependencies, assignedRole }) => ({ id, title, objective, dependencies, assignedRole })));
-      const executionContext = `Execution constraints: this autonomous workspace lease has network:false. Use repository-local tools only; do not invoke package installers or network/external commands. Required verification commands: ${verificationCommands.length > 0 ? verificationCommands.map((command) => `\`${command}\``).join(", ") : "none supplied; inspect repository-local test configuration."}\n${leadHandoff}`;
+      const executionContext = `Execution constraints: the workspace root is "${targetWs.rootPath}" — address files relative to it; absolute paths outside it are denied. This autonomous workspace lease has network:false. Use repository-local tools only; do not invoke package installers or network/external commands. Required verification commands: ${verificationCommands.length > 0 ? verificationCommands.map((command) => `\`${command}\``).join(", ") : "none supplied; inspect repository-local test configuration."}\n${leadHandoff}`;
 
       // ==========================================
       // PHASE 4: REVIEW & BOUNDED REVISION LOOP
