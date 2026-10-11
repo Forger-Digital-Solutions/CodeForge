@@ -43,9 +43,30 @@ honestly; a second model in the same Kilo quota domain would be model-level fail
 | R2 (this session) | 0 | blocked | `CURRENT_QUALIFIED_EXPLORER_ROSTER_UNAVAILABLE` — liquid-only roster lacks an explorer |
 | R3 (this session) | 2 attempted | 0 completed | 01-bug-fix blocked by the planner post-review-coder defect (**repaired this session**); 02-feature blocked by a real `cohere/north-mini-code:free` 429. Cost: `CATALOG_VERIFIED_EXACT_ZERO_NO_CREDENTIALS_NO_PAID_FALLBACK`, 37 inference frames |
 | R4 (this session) | 3 attempted | **2 completed** / 1 blocked | 01-bug-fix + 03-refactor: source changed, independent review passed, durable integration — the post-review-coder repair unblocked the pipeline. 02-feature blocked on `TOOL_WORKSPACE_ESCAPE` (model emitted an absolute `/workspace/…` path; deny correct). Zero spend, 54 frames |
-| R5 (this session) | — | aborted at startup | `git diff` exceeded maxBuffer because uncommitted evidence JSON exceeded stdout cap — evidence committed, rerun queued |
+| R5 (this session) | 3 attempted | 2 completed / 1 blocked | 01 + 03 completed again; 02 blocked on the same real cohere 429 |
+| R6 (offset 3) | 2 attempted | 0 completed | 04-test-creation hit AGENT_MODEL_TURN_LIMIT (honest capability boundary); 05-debugging blocked on cohere 429 |
+| **R7 (this session)** | 3 attempted | **3/3 COMPLETED — PASS** | 01-bug-fix + 02-feature + 03-refactor: real source changes, independent review passed on all three, durable integration on all three. `CATALOG_VERIFIED_EXACT_ZERO_NO_CREDENTIALS_NO_PAID_FALLBACK`, 87 inference frames |
 
-Longest verified completion streak: **1** (consecutive within a single campaign; R4 produced 2 completions separated by a block). Required for R76 closure: 3 consecutive — not met.
+**Required streak MET: 3 consecutive genuine autonomous completions** (R7). The
+02-feature completion followed the planner demotion repair plus a workspace-root
+prompt fix (the writer had been guessing `/workspace/…` and hitting a correct
+TOOL_WORKSPACE_ESCAPE deny; it is now told the real root).
+
+## Repairs landed this session (additions)
+
+- `executionContext` now states the real workspace root and that out-of-root
+  absolute paths are denied — eliminates the model-guessed path class of block.
+
+## Remaining honest gaps
+
+- **True quota-independent Coder redundancy: not demonstrated.** One qualified
+  Coder route (kilo liquid); cohere is demand-saturated (15 req/min shared);
+  poolside removed from free catalogs. Completions succeeded despite this because
+  role-level routing picks healthy models — but "two independent providers" is
+  not evidenced and is not claimed.
+- Harder task classes (test-creation, debugging) currently exceed free-model
+  turn budgets — a real capability boundary, not hidden.
+- Remote publication not attempted.
 
 ## Regression
 
