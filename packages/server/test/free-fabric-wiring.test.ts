@@ -228,7 +228,7 @@ describe("R24 Mission C — Free Fabric is authoritative in the serving path", (
       routeHealth: authority,
       freeFabric: fabric,
       freeCloud,
-      ...(extra ?? {}),
+      ...extra,
       fabricContext: ({ userId: uid }) => {
         const resolved = uid ?? "anonymous";
         return { userId: resolved, userIdentities: uid ? [`hash-${resolved}`] : [] };

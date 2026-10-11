@@ -1,0 +1,368 @@
+{
+  "status": "SYNTAX_VALIDATED_NOT_MODEL_EXECUTED",
+  "count": 20,
+  "benchmarkLevel": "PUBLIC_ENGINEERING_FIXTURES_NOT_FULL_PROJECTS",
+  "root": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\r84-spec-validation-1ZA107",
+  "specifications": [
+    {
+      "id": "bug-fix",
+      "taskClass": "bug fix",
+      "goal": "Inspect the retry queue and repair its attempt-boundary bug. Preserve the tests and public API. Verify the retry sequence, exhaustion and zero-budget cases.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "13930d223676c902a768caca62eee8d92f899006eb300000958ad27f91147dea",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "feature",
+      "taskClass": "small feature",
+      "goal": "Add normalizeTags(values) to src/tags.mjs and re-export it from src/index.mjs. Trim and lowercase strings, remove empty entries and duplicates, and sort alphabetically. Use the existing normalization helper. Do not mutate input or modify tests.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "8def5c97dbbf88ae569418fba3dfb3c255809860d85e79b60609dbf234fe019c",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "refactor",
+      "taskClass": "refactor",
+      "goal": "Extract the duplicated nonempty-string validation from src/user.mjs and src/project.mjs into src/validate.mjs. Both modules should import and use that shared helper. Preserve the exported API, error messages and behavior. Preserve tests.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "c258511e0238a5d81289f74edfc5a7297cd75087987d484f9bf2397825a1a8f0",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "test-creation",
+      "taskClass": "test creation",
+      "goal": "Inspect parsePort in src/port.mjs and create meaningful Node tests in test/port.test.mjs covering valid boundaries, invalid syntax, and out-of-range values. Assert outputs and thrown errors. Do not change the implementation; no dependencies are needed.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "93ebfe9e0e15136b0f40cb5fb99416ad4098ddfb186c62ddcd4b7b0eb1295454",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "debugging",
+      "taskClass": "debugging",
+      "goal": "Diagnose why the cache tests fail. Inspect the implementation and failure output, then repair the contained bug while preserving the API and all existing tests. Explain the cause in the result.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "74ce637b10ec7ef581f3eeae980247441d8e44f27dbd3bc07c5e9a1e94aa77a3",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "configuration",
+      "taskClass": "configuration/build issue",
+      "goal": "Repair the package exports configuration so the named package subpath r66-public-package/helpers resolves to the existing src/helpers.mjs. Preserve implementation and tests and verify package self-reference works.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "7ce8bb178ae1407dcda9060174a89d64f12c80a5e2e6597b3bc8c1878330c5c2",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "multi-file",
+      "taskClass": "multi-file change",
+      "goal": "Add encodeKey(prefix, value) and decodeKey(key) to the two existing source modules and re-export both from src/index.mjs. Encode each part with encodeURIComponent and join using a colon. Decode the two encoded parts into an array. Preserve all acceptance tests.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "3089402455e6a30a9697a4ec80a93f811fac80c6bf37efe9113142c057fa60cb",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "multi-package",
+      "taskClass": "multi-package change",
+      "goal": "Repair the common clamp helper to honor both inclusive bounds, then update the client package to import it rather than duplicating clamping. Preserve package public exports and all acceptance tests. No dependency installation is required.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "dde73c69ef809eedc3aa641207efe3391edd5cd5ef3c6b8ebb9a9bdb0d1c6a2a",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "rest-api",
+      "taskClass": "REST API",
+      "goal": "Export createServer() returning a Node HTTP server. GET /health returns JSON {ok:true} with status 200; unknown paths return 404; POST /health returns 405. Preserve acceptance tests. Use Node built-ins only.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "1d2521ab64e1d0a59518d9c5fa85d28b6df89f79ca4b837f4aeec63910e518be",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "auth-token",
+      "taskClass": "authentication integration",
+      "goal": "Export issueToken(user, secret) and verifyToken(token, secret). Use HMAC SHA-256 signatures; verification returns the original user object or null for tampered tokens or wrong secrets. This is an isolated protocol fixture, not production authentication. Preserve acceptance tests. Use Node built-ins only.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "37926444af319ff9dd5414b8580a71466567b5144cf033409def755035f23ed0",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "migration",
+      "taskClass": "database migration",
+      "goal": "Export migrate(state). Upgrade schemaVersion 1 records {name} to schemaVersion 2 records {displayName}; preserve ids and unknown fields without input mutation. Version 2 is idempotent. Reject future schemas with RangeError. Preserve acceptance tests. Use Node built-ins only.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "ccbcccb292448b488d09250ae186c23924b99efccdfa992175644fec4e2aa67d",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "inventory",
+      "taskClass": "inventory application",
+      "goal": "Export createInventory(). It exposes add(sku, quantity), remove(sku, quantity), and quantity(sku). Start at zero; reject nonpositive/noninteger amounts and removals exceeding stock with RangeError; failed operations preserve stock. Preserve acceptance tests. Use Node built-ins only.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "913870a787878e7a9b27e2b224aa12f22757aee614747e23e737936abd8d36c4",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "task-manager",
+      "taskClass": "task manager",
+      "goal": "Export createTasks(). It exposes add(id,title), complete(id), and list(). Reject duplicate ids and unknown completion ids. list returns copies with {id,title,done}, preserving insertion order. Preserve acceptance tests. Use Node built-ins only.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "518d592221e60a792f46051c6972fe6136998c73934a8d6843b8e941dc9cea00",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "component-renderer",
+      "taskClass": "frontend component library",
+      "goal": "Export button(label, disabled=false) producing <button type=\"button\">LABEL</button>, with disabled attribute when true. Escape &, <, >, double quotes and apostrophes. No browser layout claim is part of this fixture. Preserve acceptance tests. Use Node built-ins only.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "d70e4c7e057b6730685f9a55ae5fb193887669e1b55dcf5cd9b0a43ac1a2203f",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "cli",
+      "taskClass": "CLI utility",
+      "goal": "Create src/cli.mjs. Read UTF-8 text on stdin and emit one JSON line {lines,words}. Count nonempty lines and whitespace-delimited words; empty input gives zeros. Exit 0. Preserve acceptance tests. Use Node built-ins only.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "44c0435b7bf6656b78e9f39cf5ff3fcdd84b3127af2794f2d816ef55ec9526d9",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "file-processing",
+      "taskClass": "file-processing application",
+      "goal": "Export parseCSV(text). Parse comma-delimited rows, quoted commas, doubled quote escapes, LF and CRLF, without trailing empty row. Empty input returns []. Preserve acceptance tests. Use Node built-ins only.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "b1396305defcf58fad5ab98485cb50beb1bcc89f08356377f4f6d4e5c4481754",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "pagination",
+      "taskClass": "API integration",
+      "goal": "Export async collectPages(fetchPage). Start at cursor null, append each response.items and follow response.nextCursor until null. Reject repeated cursor cycles instead of unbounded calls. Preserve acceptance tests. Use Node built-ins only.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "a74411918f411a93090a1e62ad53299b3a1bcf96db064e9513779d556f85c04a",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "persistence",
+      "taskClass": "state-persistence feature",
+      "goal": "Export async saveState(path,value) and loadState(path). Write JSON using a temporary file and atomic rename. Missing files return null; malformed files reject; repeated saves replace state. Preserve acceptance tests. Use Node built-ins only.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "a420fa8427d860dcb7db217ddfb51cee7f279280e9b3c1a8a41abe98a3624176",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "bounded-errors",
+      "taskClass": "error-handling hardening",
+      "goal": "Export async retry(operation,maxAttempts). Invoke at most maxAttempts; return the first successful value; propagate the last error on exhaustion. Zero attempts rejects without invoking operation. Preserve acceptance tests. Use Node built-ins only.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "11c5aa133f3ad5eba55f267bcc5996a0ae69c2de60fc37b46cf97d891dc3904f",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    },
+    {
+      "id": "crud-store",
+      "taskClass": "small CRUD application",
+      "goal": "Export createStore(). Expose create(id,value), read(id), update(id,value), delete(id). Enforce duplicate and missing-id errors. Defensively copy values on both input and output. Instances remain isolated. Preserve acceptance tests. Use Node built-ins only.",
+      "verificationCommands": [
+        "node --test"
+      ],
+      "acceptance": [
+        "Declared behavioral assertions pass",
+        "Verification commands run successfully",
+        "Tests remain unchanged",
+        "Required source changes exist",
+        "Independent review and completion gate pass"
+      ],
+      "fixtureSha256": "3381365875da3bc8b44844d9295e06c09c94b757261f2917f3cb3a12be43168d",
+      "syntax": "VALID",
+      "execution": "NOT_RUN"
+    }
+  ]
+}

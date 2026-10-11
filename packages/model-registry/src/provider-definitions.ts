@@ -63,6 +63,13 @@ export const ZERO_CASH_FREE_ACCESS: readonly FreeAccessClass[] = [
 
 export type TermsStatus = "CLEARED" | "RESTRICTED" | "DEVELOPMENT_ONLY" | "LEGAL_REVIEW_REQUIRED" | "NOT_ALLOWED";
 
+export interface RouteTerms {
+  status: TermsStatus;
+  note?: string;
+  source?: string;
+  checkedAt?: string;
+}
+
 /**
  * Can exhausting the free allowance silently create charges?
  * - NONE: provider hard-stops (or the route is listed at $0 unit price).
@@ -163,7 +170,8 @@ export interface ProviderDefinition {
   discoverySources: Array<"models.dev" | "live-catalog" | "hosted-catalog">;
   freeAccess: FreeAccessProfile;
   privacy: { class: PrivacyClass; freeTierClass?: PrivacyClass; note?: string };
-  terms: { status: TermsStatus; note?: string; source?: string };
+  terms: RouteTerms;
+  modelTerms?: ReadonlyArray<{ modelIdPrefix: string; terms: RouteTerms }>;
   /** Reporting metadata for 8-Bit; this never grants route eligibility or consent. */
   policyMetadata?: ProviderPolicyMetadata;
   /** Whether CodeForge recommends this provider in the default free-connection offer. */
@@ -826,6 +834,10 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
     },
     privacy: { class: "permissive", freeTierClass: "permissive", note: "Auto Free may use providers that log and improve services with prompts; public code only, with workspace consent." },
     terms: { status: "CLEARED", source: "https://kilo.ai/terms", note: "Gateway API terms permit serving end users of a third-party application subject to Kilo terms." },
+    modelTerms: [
+      { modelIdPrefix: "nvidia/", terms: { status: "DEVELOPMENT_ONLY", checkedAt: "2026-10-11", source: "https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf", note: "Kilo documents NVIDIA routes as trial endpoints. Trial terms sections 1.2 and 1.4 permit internal evaluation, not production generated content or services without a separate subscription." } },
+      { modelIdPrefix: "kilo-auto/", terms: { status: "LEGAL_REVIEW_REQUIRED", checkedAt: "2026-10-11", source: "https://kilo.ai/docs/gateway/models-and-providers", note: "Opaque Auto Free selection may use NVIDIA trial endpoints; production eligibility cannot be established before dispatch." } },
+    ],
     recommendedForFreeDefault: false,
     implemented: true,
     docsUrl: "https://kilo.ai/docs/gateway/models-and-providers",
@@ -1030,6 +1042,13 @@ export function getProviderDefinition(providerId: string): ProviderDefinition | 
 
 export function allProviderDefinitions(): ProviderDefinition[] {
   return Object.values(PROVIDER_DEFINITIONS);
+}
+
+export function termsForModel(def: ProviderDefinition, modelId: string): RouteTerms {
+  const severity: Record<TermsStatus, number> = { CLEARED: 0, RESTRICTED: 1, DEVELOPMENT_ONLY: 2, LEGAL_REVIEW_REQUIRED: 3, NOT_ALLOWED: 4 };
+  return (def.modelTerms ?? []).reduce((current, rule) =>
+    modelId.startsWith(rule.modelIdPrefix) && severity[rule.terms.status] > severity[current.status]
+      ? rule.terms : current, def.terms);
 }
 
 /** Every environment-variable name a definition may read (secret and non-secret fields). */

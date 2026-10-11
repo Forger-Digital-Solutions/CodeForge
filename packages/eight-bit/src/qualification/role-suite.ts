@@ -386,7 +386,7 @@ async function runPlannerCase(adapter: CompactQualificationAdapter, modelId: str
     const content = EXPLORER_REPO.files[file] ?? "";
     for (const match of content.matchAll(/\bfrom\s+["'](\.[^"']+)["']/g)) {
       const imported = match[1]!;
-      const parts = [...file.split("/").slice(0, -1)];
+      const parts = file.split("/").slice(0, -1);
       for (const part of imported.split("/")) {
         if (part === "..") parts.pop();
         else if (part !== ".") parts.push(part);

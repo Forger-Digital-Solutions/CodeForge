@@ -343,7 +343,7 @@ for (const [i, task] of TASKS.entries()) {
       errorKinds: calls.filter((c) => !c.ok).map((c) => c.error),
       // §4: separate system failure from provider failure — supplyBlocked means the arm never
       // reached real work (no calls, or only rate-limit/unavailability errors).
-      supplyBlocked: calls.length === 0 || calls.every((c) => !c.ok),
+      supplyBlocked: calls.every((c) => !c.ok),
       green,
     };
     pair.arms[arm] = armRec;

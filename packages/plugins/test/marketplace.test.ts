@@ -7,7 +7,6 @@ import {
   canonicalize,
   MARKETPLACE_ERRORS,
   MarketplaceClient,
-  MarketplaceError,
   signMarketplaceIndex,
   type FetchLike,
   type MarketplaceCatalogEntry,
@@ -118,7 +117,7 @@ describe("marketplace index trust", () => {
   });
 
   it("rejects an unsigned index", async () => {
-    const { signature, ...unsigned } = index;
+    const { signature: _signature, ...unsigned } = index;
     const c = client(fakeFetch({ [INDEX_URL]: Buffer.from(JSON.stringify(unsigned)) }));
     await expect(c.fetchIndex(INDEX_URL)).rejects.toMatchObject({ code: MARKETPLACE_ERRORS.MARKETPLACE_INVALID_INDEX });
   });

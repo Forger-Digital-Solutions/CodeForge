@@ -1,4 +1,6 @@
 import type { ForgeAaaRun } from "./orchestrator.js";
+import { createHash } from "node:crypto";
+import type { Usage } from "@codeforge/providers";
 
 /**
  * Model-backed independent review for ForgeAAA runs.
@@ -29,11 +31,21 @@ export interface ModelReviewerQualification {
 export interface ModelReviewer {
   modelId: string;
   qualification: ModelReviewerQualification;
-  /** Executes one bounded inference call and returns raw text. */
-  chat: (req: ModelChatRequest) => Promise<string>;
+  /** Text-only callbacks remain callable, but cannot prove completion for certification. */
+  chat: (req: ModelChatRequest) => Promise<string | ModelReviewResponse>;
   /** Bounded evidence packet builder — must not exceed packetMaxChars. */
   packetOf: (run: ForgeAaaRun) => string;
   packetMaxChars?: number;
+  outputMaxTokens?: number;
+}
+
+export interface ModelReviewResponse {
+  text: string;
+  finishReason?: string;
+  modelId?: string;
+  requestId?: string;
+  quotaDomain?: string;
+  usage?: Usage;
 }
 
 export interface ModelReviewOutcome {
@@ -43,6 +55,16 @@ export interface ModelReviewOutcome {
   reviewer?: { providerId: string; modelId: string };
   verdict?: "pass" | "revision_required";
   rawResponse?: string;
+  receipt?: {
+    packetSha256: string;
+    packetChars: number;
+    outputMaxTokens: number;
+    completionSignal: string;
+    schemaValid: boolean;
+    requestId?: string;
+    quotaDomain?: string;
+    usage?: Usage;
+  };
 }
 
 const REVIEWER_SCHEMA = `{"verdict":"pass"|"revision_required","findings":[{"id":string,"severity":"blocking"|"advisory","category":string,"message":string,"evidence"?:string}],"summary":string}`;
@@ -54,28 +76,30 @@ const SYSTEM_PROMPT = [
   `Respond with only one JSON object: ${REVIEWER_SCHEMA}`,
 ].join("\n");
 
-interface ReviewResultShape {
-  verdict?: string;
-  findings?: { id?: string; severity?: string; category?: string; message?: string; evidence?: string }[];
-  summary?: string;
-}
+const nonempty = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0;
+const object = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
 /** Extracts the reviewer JSON from raw model text (tolerates fences/preamble). */
 export function parseReviewResult(raw: string): { ok: boolean; verdict?: "pass" | "revision_required"; findings: string[]; error?: string } {
   const match = raw.match(/\{[\s\S]*\}/);
   if (!match) return { ok: false, findings: [], error: "no JSON object in reviewer response" };
-  let parsed: ReviewResultShape;
+  let parsed: unknown;
   try {
-    parsed = JSON.parse(match[0]) as ReviewResultShape;
+    parsed = JSON.parse(match[0]) as unknown;
   } catch {
     return { ok: false, findings: [], error: "reviewer response is not valid JSON" };
   }
-  if (parsed.verdict !== "pass" && parsed.verdict !== "revision_required") {
-    return { ok: false, findings: [], error: `invalid verdict "${String(parsed.verdict)}"` };
+  if (!object(parsed) || (parsed.verdict !== "pass" && parsed.verdict !== "revision_required")) {
+    return { ok: false, findings: [], error: "invalid reviewer verdict" };
   }
-  const findings = Array.isArray(parsed.findings)
-    ? parsed.findings.map((f) => `[${f.severity ?? "?"}] ${f.category ?? "general"}: ${f.message ?? "unspecified"}${f.evidence ? ` (${f.evidence})` : ""}`)
-    : [];
+  if (!nonempty(parsed.summary) || !Array.isArray(parsed.findings) || parsed.findings.some((f: unknown) => !object(f)
+    || !nonempty(f.id) || (f.severity !== "blocking" && f.severity !== "advisory")
+    || !nonempty(f.category) || !nonempty(f.message) || (f.evidence !== undefined && !nonempty(f.evidence)))) {
+    return { ok: false, findings: [], error: "incomplete reviewer schema" };
+  }
+  const entries = parsed.findings as Record<string, unknown>[];
+  if (new Set(entries.map((f) => f.id)).size !== entries.length) return { ok: false, findings: [], error: "duplicate finding identity" };
+  const findings = entries.map((f) => `[${String(f.severity)}] ${String(f.category)}: ${String(f.message)}${f.evidence ? ` (${String(f.evidence)})` : ""}`);
   if (parsed.verdict === "pass" && findings.some((f) => f.startsWith("[blocking]"))) {
     return { ok: false, findings, error: "pass verdict carried blocking findings" };
   }
@@ -93,29 +117,52 @@ export function parseReviewResult(raw: string): { ok: boolean; verdict?: "pass" 
  */
 export function createModelReviewer(opts: ModelReviewer) {
   const maxChars = opts.packetMaxChars ?? 48_000;
+  const outputMaxTokens = opts.outputMaxTokens ?? 2_000;
+  if (!Number.isSafeInteger(maxChars) || maxChars < 1 || maxChars > 84_000
+    || !Number.isSafeInteger(outputMaxTokens) || outputMaxTokens < 1 || outputMaxTokens > 8_000) throw new Error("Invalid review budget");
   return async (run: ForgeAaaRun): Promise<ModelReviewOutcome> => {
     const identity = `reviewer: ${opts.qualification.providerId}/${opts.modelId} (${opts.qualification.status}, suite ${opts.qualification.suiteVersion}, protocol ${opts.qualification.protocolVersion}, qualified ${opts.qualification.completedAt})`;
-    let packet = opts.packetOf(run);
-    if (packet.length > maxChars) packet = `${packet.slice(0, maxChars)}\n…[packet truncated at ${maxChars} chars]`;
+    const reviewer = { providerId: opts.qualification.providerId, modelId: opts.modelId };
+    const blocked = (reason: string): ModelReviewOutcome => ({ approved: false, independent: false, reviewer, findings: [`${identity} — ${reason}`] });
+    if (opts.qualification.status !== "QUALIFIED" || !nonempty(opts.modelId)
+      || !nonempty(opts.qualification.providerId) || !nonempty(opts.qualification.suiteVersion)
+      || !nonempty(opts.qualification.protocolVersion) || !Number.isFinite(Date.parse(opts.qualification.completedAt))) return blocked("reviewer qualification unavailable");
+    let packet: string;
+    try { packet = opts.packetOf(run); } catch (error) { return blocked(`packet construction failed: ${String(error)}`); }
+    if (typeof packet !== "string" || !packet.trim() || packet.length > maxChars) return blocked("review packet empty or exceeds bounded budget; evidence was not clipped or dispatched");
+    const receipt: NonNullable<ModelReviewOutcome["receipt"]> = {
+      packetSha256: createHash("sha256").update(packet).digest("hex"), packetChars: packet.length,
+      outputMaxTokens, completionSignal: "call-failed", schemaValid: false,
+    };
     let raw: string;
+    let response: ModelReviewResponse | undefined;
     try {
-      raw = await opts.chat({
+      const result = await opts.chat({
         model: opts.modelId,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: packet },
         ],
         temperature: 0,
-        maxTokens: 2_000,
+        maxTokens: outputMaxTokens,
       });
+      response = typeof result === "string" ? undefined : result;
+      raw = typeof result === "string" ? result : result.text;
     } catch (err) {
       return {
         approved: false,
         findings: [`${identity} — review call failed: ${err instanceof Error ? err.message : String(err)}`],
         independent: false,
         reviewer: { providerId: opts.qualification.providerId, modelId: opts.modelId },
+        receipt,
       };
     }
+    Object.assign(receipt, { completionSignal: response?.finishReason ?? "legacy-text-unreported",
+      requestId: response?.requestId, quotaDomain: response?.quotaDomain, usage: response?.usage });
+    if (!response || response.finishReason !== "stop" || response.modelId !== opts.modelId) {
+      return { ...blocked("review response incomplete or served model unverified"), rawResponse: raw, receipt };
+    }
+    if (raw.length > outputMaxTokens * 16) return { ...blocked("review response exceeds bounded output budget"), rawResponse: raw, receipt };
     const parsed = parseReviewResult(raw);
     if (!parsed.ok) {
       return {
@@ -124,6 +171,7 @@ export function createModelReviewer(opts: ModelReviewer) {
         independent: false,
         reviewer: { providerId: opts.qualification.providerId, modelId: opts.modelId },
         rawResponse: raw,
+        receipt,
       };
     }
     return {
@@ -133,6 +181,7 @@ export function createModelReviewer(opts: ModelReviewer) {
       reviewer: { providerId: opts.qualification.providerId, modelId: opts.modelId },
       verdict: parsed.verdict,
       rawResponse: raw,
+      receipt: { ...receipt, schemaValid: true },
     };
   };
 }

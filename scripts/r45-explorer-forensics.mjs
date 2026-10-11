@@ -104,7 +104,7 @@ const FIXTURES = [
 // ---------- behavior arms ----------
 const readSeq = (paths) => paths.map((p, i) => toolCall(`t${i}`, "read_file", { path: p }));
 const ARMS = [
-  { id: "packet", responses: (f) => [textTurn(EXPLORER_JSON)], note: "answers from the orientation packet on turn 1" },
+  { id: "packet", responses: () => [textTurn(EXPLORER_JSON)], note: "answers from the orientation packet on turn 1" },
   { id: "serial", responses: (f) => [...readSeq(f.relevant), textTurn(EXPLORER_JSON)], note: "R44 pattern: one read per turn" },
   { id: "batch", responses: (f) => [batchCall(f.relevant.map((p, i) => ({ id: `t${i}`, name: "read_file", args: { path: p } }))), textTurn(EXPLORER_JSON)], note: "all reads in one turn" },
   { id: "wander", responses: (f) => [toolCall("w", "list_files", { path: "." }), ...readSeq(["README.md", ...f.relevant]), textTurn(EXPLORER_JSON)], note: "navigates before reading" },
@@ -117,7 +117,6 @@ function classify(trace, relevant) {
   const rel = new Set(relevant);
   const seen = new Map();
   const classes = [];
-  const readCalls = trace.flatMap((t) => t.calls.filter((c) => READ_ONLY.has(c.tool)).map((c) => ({ ...c, turn: t.turn, batchSize: t.batchSize })));
   for (const turn of trace) {
     for (const call of turn.calls) {
       const key = `${call.tool}:${call.target ?? ""}`;

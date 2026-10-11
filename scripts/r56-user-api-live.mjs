@@ -59,7 +59,7 @@ function safeJson(text) {
 }
 function classifyBody(text) {
   if (/no credits|insufficient|quota|rate.?limit/i.test(text)) return "QUOTA_OR_RATE_LIMITED";
-  if (/\"choices\"/.test(text)) return "COMPLETION_RETURNED";
+  if (/"choices"/.test(text)) return "COMPLETION_RETURNED";
   if (/invalid|unauthor|forbidden/i.test(text)) return "AUTH_OR_INVALID";
   return "OTHER";
 }

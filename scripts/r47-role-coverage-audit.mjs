@@ -27,7 +27,6 @@ console.log(`receipts loaded: ${receipts.length} from ${QUAL_DB}`);
 const managedPoolId = (providerId, modelId) => `managed:${providerId}:live-acct-${providerId}:model:${modelId}`;
 
 const pools = new Map(); // poolId -> { providerId, models: Map<modelId, {state, roles:{role:status}, ageDays}> }
-const stateRank = { QUALIFIED: 4, PROBATION: 3, NOT_QUALIFIED: 2, HARD_FAILURE: 1, QUOTA_EXHAUSTED: 0 };
 const roleRank = { QUALIFIED: 3, PROBATION: 2, NOT_TESTED: 1, NOT_QUALIFIED: 0, HARD_FAILURE: 0 };
 
 for (const r of receipts) {

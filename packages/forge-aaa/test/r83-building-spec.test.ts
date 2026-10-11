@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { validateBuildingDefinition, buildingActorIdentity } from "../src/building-definition.js";
 import {
   R82_ONE_ROOM_MODULES,
-  R83_NEW_MODULES,
   R83_TWO_ROOM_MODULES,
   R82_ONE_ROOM_BUILDING,
   R83_TWO_ROOM_BUILDING,

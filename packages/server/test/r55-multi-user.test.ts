@@ -211,7 +211,7 @@ describe("R55 multi-user isolation", () => {
     credentials.set(`alice${userApiCredentialRef("alice", "alice-src")}`, ALICE_KEY);
     credentials.set(`bob${userApiCredentialRef("bob", "bob-src")}`, BOB_KEY);
     const aliceStored = await registry.put("alice", userSource("alice", "alice-src", "https://alice-endpoint.example/v1", "alice-model-1"));
-    const bobStored = await registry.put("bob", userSource("bob", "bob-src", "https://bob-endpoint.example/v1", "bob-model-1"));
+    await registry.put("bob", userSource("bob", "bob-src", "https://bob-endpoint.example/v1", "bob-model-1"));
 
     // Read/projection isolation: Alice's record is invisible under Bob's owner scope, and
     // Bob's candidate projection contains only his own source.

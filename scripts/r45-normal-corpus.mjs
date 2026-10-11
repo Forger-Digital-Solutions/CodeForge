@@ -156,7 +156,6 @@ const makeRepo = (task) => {
 const GREENISH = /forgegreen|forge-green/i;
 const harvest = async (eventStore, persistence, sessionId) => {
   const all = eventStore.getAll();
-  const summaries = all.filter((e) => e.type === "forgegreen.optimization_summary").map((e) => e.payload);
   const suppressed = all.filter((e) => e.type === "tool.execution_blocked" && GREENISH.test(e.payload?.reason ?? ""));
   const turnFailures = all.filter((e) => e.type === "turn.failed").map((e) => ({ turnId: e.payload?.turnId, error: String(e.payload?.error ?? "").slice(0, 160) }));
   let journals = [];
@@ -253,7 +252,7 @@ for (const task of TASKS) {
   sawRateLimits = calls.length === 0
     || calls.some((c) => !c.ok)
     || harvested.turnFailures.some((f) => /RATE_LIMIT|UNAVAILABLE|429/i.test(f.error ?? ""));
-  const supplyBlocked = calls.length === 0 || calls.every((c) => !c.ok);
+  const supplyBlocked = calls.every((c) => !c.ok);
   consecutiveSupplyBlocked = supplyBlocked ? consecutiveSupplyBlocked + 1 : 0;
   const rec = {
     task: task.id, kind: task.kind,

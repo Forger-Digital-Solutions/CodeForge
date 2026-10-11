@@ -1,0 +1,8 @@
+{
+  "status": "PREPARED_NOT_SENT",
+  "packetChars": 47792,
+  "packetSha256": "20261b48ca6032756dc2a213756bc9426842a094b39ab93a8b0ca695a9af03c7",
+  "outputBudgetTokens": 6000,
+  "maxDurationMs": 120000,
+  "inferenceRequests": 0
+}

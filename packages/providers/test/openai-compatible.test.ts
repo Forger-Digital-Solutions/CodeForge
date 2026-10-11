@@ -61,6 +61,7 @@ describe("OpenAICompatibleAdapter transport", () => {
     const fetchFn = (async () => sseResponse([
       'data: {"choices":[{"delta":{"content":"Hel"}}]}',
       'data: {"choices":[{"delta":{"content":"lo"}}]}',
+      'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}',
       "data: [DONE]",
     ])) as unknown as typeof fetch;
     const events = await collect(cfg(fetchFn).streamChat({ model: "m", messages: [{ role: "user", content: "hi" }] }));
@@ -77,6 +78,7 @@ describe("OpenAICompatibleAdapter transport", () => {
       if (body.stream === true) {
         return sseResponse([
           'data: {"choices":[{"delta":{"content":"ok"}}]}',
+          'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}',
           'data: {"choices":[],"usage":{"prompt_tokens":3,"completion_tokens":2,"total_tokens":5}}',
           "data: [DONE]",
         ]);
@@ -96,6 +98,7 @@ describe("OpenAICompatibleAdapter transport", () => {
       'data: {"choices":[{"delta":{"tool_calls":[{"id":"c1","function":{"name":"read_file"}}]}}]}',
       'data: {"choices":[{"delta":{"tool_calls":[{"function":{"arguments":"{\\"path\\":"}}]}}]}',
       'data: {"choices":[{"delta":{"tool_calls":[{"function":{"arguments":"\\"a.ts\\"}"}}]}}]}',
+      'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}',
       "data: [DONE]",
     ])) as unknown as typeof fetch;
     const events = await collect(cfg(fetchFn).streamChat({ model: "m", messages: [{ role: "user", content: "hi" }] }));

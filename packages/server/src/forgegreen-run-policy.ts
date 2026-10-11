@@ -53,8 +53,6 @@ export interface ForgeGreenPolicySnapshot {
   preventedReplays: number;
 }
 
-const LEVEL_RANK: Record<ForgeGreenLevel, number> = { OFF: 0, CONSERVATIVE: 1, FULL: 2 };
-
 /**
  * Runs that inherit evidence or share mutable state get CONSERVATIVE: a replayed read or a
  * replayed completed response is the one optimization that can serve semantically stale

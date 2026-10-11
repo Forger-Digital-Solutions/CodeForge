@@ -9,6 +9,7 @@ import {
   PROVIDER_DEFINITIONS,
   AUTH_CLASS_FRICTION,
   isZeroCashFreeAccess,
+  termsForModel,
   type AuthClass,
   type FreeAccessClass,
   type ProviderDefinition,
@@ -421,9 +422,10 @@ export function evaluateAdmission(input: {
   const { def, conn, model } = input;
 
   if (!def) return fail("TERMS_ALLOWED", "No CodeForge provider definition — unreviewed provider");
-  if (def.terms.status === "NOT_ALLOWED") return fail("TERMS_ALLOWED", "Provider terms do not allow third-party client use");
-  if (def.terms.status === "LEGAL_REVIEW_REQUIRED") return fail("TERMS_ALLOWED", "Provider terms require legal review before default routing");
-  if (def.terms.status === "DEVELOPMENT_ONLY") return fail("TERMS_ALLOWED", "Development/evaluation endpoint — not production free routing");
+  const terms = termsForModel(def, model?.modelId ?? "");
+  if (terms.status === "NOT_ALLOWED") return fail("TERMS_ALLOWED", terms.note ?? "Provider terms do not allow third-party client use");
+  if (terms.status === "LEGAL_REVIEW_REQUIRED") return fail("TERMS_ALLOWED", terms.note ?? "Provider terms require legal review before default routing");
+  if (terms.status === "DEVELOPMENT_ONLY") return fail("TERMS_ALLOWED", terms.note ?? "Development/evaluation endpoint — not production free routing");
   if (!isZeroCashFreeAccess(def.freeAccess.class)) {
     return fail("TERMS_ALLOWED", `Free-access class ${def.freeAccess.class} is not zero-cash`);
   }
@@ -576,7 +578,7 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
     const verifiedFree = seed.model?.freeStatus === "verified_free";
     const executionBlockedHealth: readonly RouteHealth[] = ["COOLDOWN", "UNAVAILABLE", "AUTH_REQUIRED", "QUOTA_EXHAUSTED", "INELIGIBLE"];
     const freePolicyBlocked = def?.id === "google" && conn?.freePolicyState !== "ALLOW";
-    const executable = !!seed.model && !!conn?.connected && conn.authState !== "auth_required" && !freePolicyBlocked && inputs.firewall.canRouteTo(seed.providerId, seed.modelId) && !executionBlockedHealth.includes(h.health);
+    const executable = admission.passed.includes("TERMS_ALLOWED") && !!seed.model && !!conn?.connected && conn.authState !== "auth_required" && !freePolicyBlocked && inputs.firewall.canRouteTo(seed.providerId, seed.modelId) && !executionBlockedHealth.includes(h.health);
     routes.push({
       routeId: routeKey(seed.providerId, seed.modelId),
       modelIdentity: {
@@ -609,7 +611,7 @@ export function buildFreeCloudSnapshot(inputs: FreeCloudInputs): FreeCloudSnapsh
       vision: seed.vision,
       contextWindow: seed.contextWindow,
       privacyClass: seed.privacyClass,
-      termsStatus: def?.terms.status ?? "LEGAL_REVIEW_REQUIRED",
+      termsStatus: def ? termsForModel(def, seed.modelId).status : "LEGAL_REVIEW_REQUIRED",
       health: h.health,
       capacityState: operationalStateFor(h.health, q.state),
       cooldownUntil: h.cooldownUntil,

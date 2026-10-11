@@ -1,0 +1,89 @@
+{
+  "source": "docs/evidence/r84-free-cloud-autonomy-certification/R84-TASK-CAMPAIGN-1791749092431.json",
+  "evidenceClass": "OBSERVED_INTERNAL_PUBLIC_ENGINEERING_FIXTURES_NOT_PROJECT_CAPACITY_GUARANTEE",
+  "quantileMethod": "nearest rank; tiny sample, no population inference",
+  "retryDefinition": "Durable parent taskAttempts minus one; provider-level retries are not inferred from model turns.",
+  "attempted": 2,
+  "completed": 2,
+  "completionRate": 1,
+  "physicalRequests": 45,
+  "toolCalls": 39,
+  "inputTokens": 140277,
+  "outputTokens": 11238,
+  "tokensPerAttempt": {
+    "samples": 2,
+    "p50": 57990,
+    "p95": 93525
+  },
+  "tokensPerCompletion": {
+    "samples": 2,
+    "p50": 57990,
+    "p95": 93525
+  },
+  "completionTimeMs": {
+    "samples": 2,
+    "p50": 105045,
+    "p95": 169660
+  },
+  "retryCounts": {
+    "samples": 2,
+    "p50": 0,
+    "p95": 0
+  },
+  "retryTelemetryUnavailableTasks": 0,
+  "providerReportedCostUsd": null,
+  "costPerAttemptUsd": null,
+  "costPerCompletedProjectUsd": null,
+  "costPerCompletedProjectReason": "Engineering fixtures are not complete modest projects.",
+  "reviewerAcceptanceRate": 1,
+  "rows": [
+    {
+      "id": "01-bug-fix",
+      "status": "completed",
+      "wallTimeMs": 105045,
+      "completed": true,
+      "physicalRequests": 17,
+      "missingUsageRequests": 0,
+      "inputTokens": 50825,
+      "outputTokens": 7165,
+      "cachedInputTokens": null,
+      "providerReportedCostUsd": null,
+      "toolCalls": 12,
+      "retries": 0,
+      "verificationRetries": 0,
+      "reviewRepairRounds": 0,
+      "providerErrors": [],
+      "capacityExhaustions": 0,
+      "reviewAccepted": true,
+      "identities": [
+        "kilo-free-direct/cohere/north-mini-code:free::kilo-free-direct:user:localconn:kilo-free-direct",
+        "blockrun-free-direct/nvidia/llama-3.2-11b-vision::blockrun-free-direct:user:localconn:blockrun-free-direct",
+        "kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free::kilo-free-direct:user:localconn:kilo-free-direct"
+      ]
+    },
+    {
+      "id": "02-feature",
+      "status": "completed",
+      "wallTimeMs": 169660,
+      "completed": true,
+      "physicalRequests": 28,
+      "missingUsageRequests": 0,
+      "inputTokens": 89452,
+      "outputTokens": 4073,
+      "cachedInputTokens": null,
+      "providerReportedCostUsd": null,
+      "toolCalls": 27,
+      "retries": 0,
+      "verificationRetries": 0,
+      "reviewRepairRounds": 0,
+      "providerErrors": [],
+      "capacityExhaustions": 0,
+      "reviewAccepted": true,
+      "identities": [
+        "kilo-free-direct/cohere/north-mini-code:free::kilo-free-direct:user:localconn:kilo-free-direct",
+        "blockrun-free-direct/nvidia/llama-3.2-11b-vision::blockrun-free-direct:user:localconn:blockrun-free-direct",
+        "kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free::kilo-free-direct:user:localconn:kilo-free-direct"
+      ]
+    }
+  ]
+}

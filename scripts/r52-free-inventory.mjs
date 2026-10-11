@@ -149,7 +149,7 @@ async function main() {
     return [role, {
       qualifiedRoutes: qualified.length,
       probationRoutes: probation.length,
-      independentPools: [...new Set([...qualified, ...probation].map((r) => r.pool))].length,
+      independentPools: new Set([...qualified, ...probation].map((r) => r.pool)).size,
       measuredNow: [...qualified, ...probation].filter((r) => r.capacityState === "CAPACITY_MEASURED").length,
     }];
   }));
@@ -170,7 +170,7 @@ async function main() {
       measuredRoutes: routeRows.filter((r) => r.capacityState === "CAPACITY_MEASURED").length,
       unmeasuredRoutes: routeRows.filter((r) => r.capacityState === "CAPACITY_UNMEASURED").length,
       exhaustedRoutes: routeRows.filter((r) => r.capacityState === "CAPACITY_EXHAUSTED").length,
-      independentPools: [...new Set(routeRows.filter((r) => r.eligible).map((r) => r.pool))].length,
+      independentPools: new Set(routeRows.filter((r) => r.eligible).map((r) => r.pool)).size,
     },
     providerMatrix,
     excludedProviders,

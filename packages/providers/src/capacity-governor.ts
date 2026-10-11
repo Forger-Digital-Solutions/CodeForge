@@ -120,6 +120,7 @@ interface ProviderState {
   inFlightTokens: number;
   cooldownUntil: number;
   waitingQueue: number;
+  waitingTickets: Array<{ id: symbol; eligible: boolean }>;
   observedQuota?: ObservedQuota;
   customLimits?: Partial<ProviderCapacityLimit>;
   /**
@@ -277,6 +278,7 @@ export class ProviderCapacityGovernor {
         inFlightTokens: 0,
         cooldownUntil: 0,
         waitingQueue: 0,
+        waitingTickets: [],
         customLimits: this.defaultLimits[providerId],
         dispatchTelemetry: [],
       };
@@ -425,6 +427,13 @@ export class ProviderCapacityGovernor {
   ): Promise<Reservation> {
     const state = this.getState(providerId);
     let enqueued = false;
+    const ticket = { id: Symbol("capacity-request"), eligible: false };
+    const leaveQueue = () => {
+      if (!enqueued) return;
+      state.waitingTickets = state.waitingTickets.filter((entry) => entry.id !== ticket.id);
+      state.waitingQueue = state.waitingTickets.length;
+      enqueued = false;
+    };
     const promptEstimate = options.promptTokens;
 
     try {
@@ -457,13 +466,19 @@ export class ProviderCapacityGovernor {
         // wait is the exact refill time rather than a full minute.
         const bucket = promptEstimate !== undefined ? this.tokenBucketDecision(providerId, state, promptEstimate, now) : undefined;
         const isTpmFull = bucket ? !bucket.admit : windowTpmFull;
+        ticket.eligible = !isCooldown && !isRpmFull && !isRphFull && !isTpmFull;
+        // Requests waiting for a slot precede a busy project's next turn. A cooled model
+        // does not hold up eligible siblings sharing the provider's concurrency limit.
+        const olderEligible = state.waitingTickets.some((entry) => entry.id !== ticket.id && entry.eligible
+          && (!enqueued || state.waitingTickets.indexOf(entry) < state.waitingTickets.indexOf(ticket)));
 
-        if (isCooldown || isConcurrencyFull || isRpmFull || isRphFull || isTpmFull) {
+        if (isCooldown || isConcurrencyFull || isRpmFull || isRphFull || isTpmFull || olderEligible) {
           if (!enqueued) {
             if (this.maxQueueDepth !== undefined && state.waitingQueue >= this.maxQueueDepth) {
               throw new Error(`[PROVIDER_CAPACITY_EXCEEDED] Provider '${providerId}' queue depth limit (${this.maxQueueDepth}) exceeded`);
             }
-            state.waitingQueue++;
+            state.waitingTickets.push(ticket);
+            state.waitingQueue = state.waitingTickets.length;
             enqueued = true;
           }
 
@@ -479,7 +494,7 @@ export class ProviderCapacityGovernor {
             continue;
           }
 
-          if (isConcurrencyFull) {
+          if (isConcurrencyFull || olderEligible) {
             // Wait for an active request to finish (check back in 50ms)
             await this.sleep(50, signal);
             continue;
@@ -519,10 +534,7 @@ export class ProviderCapacityGovernor {
         }
 
         // Admitted: remove from queue if previously enqueued
-        if (enqueued) {
-          state.waitingQueue = Math.max(0, state.waitingQueue - 1);
-          enqueued = false;
-        }
+        leaveQueue();
 
         // Reserve slot and estimated tokens
         state.activeConcurrent++;
@@ -581,9 +593,7 @@ export class ProviderCapacityGovernor {
         };
       }
     } finally {
-      if (enqueued) {
-        state.waitingQueue = Math.max(0, state.waitingQueue - 1);
-      }
+      leaveQueue();
     }
   }
 

@@ -4,7 +4,6 @@ import { createSessionPersistence } from "@codeforge/sessions";
 import {
   BudgetGatedProviderAdapter,
   DurablePaidEvaluationBudgetLedger,
-  PaidEvaluationBudgetError,
   PaidEvaluationBudgetLedger,
   formatUsd,
   type PaidEvaluationReceipt,

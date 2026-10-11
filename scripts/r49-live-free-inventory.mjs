@@ -224,7 +224,7 @@ const roleCoverage = Object.fromEntries(roles.map((role) => {
   return [role, {
     qualifiedRoutes: qualified.length,
     probationRoutes: probation.length,
-    independentCredentialDomains: [...new Set([...qualified, ...probation].map((route) => `${route.providerId}:${route.accountId}`))].length,
+    independentCredentialDomains: new Set([...qualified, ...probation].map((route) => `${route.providerId}:${route.accountId}`)).size,
     availableNow: [...qualified, ...probation].filter((route) => route.health.status === "HEALTHY").length,
   }];
 }));
@@ -249,7 +249,7 @@ const inventory = {
     explicitZeroUnitOpenRouterModels: routes.filter((route) => route.providerId === "openrouter").length,
     currentlyProvenZeroCostCandidates: routes.filter((route) => route.zeroCost.proven).length,
     productionQualifiedRoutes: productionRoutes.length,
-    productionProviders: [...new Set(productionRoutes.map((route) => route.providerId))].length,
+    productionProviders: new Set(productionRoutes.map((route) => route.providerId)).size,
     independentCredentialDomains: credentialDomains.length,
     physicalCapacityPools: pools.length,
     healthyProductionRoutes: productionRoutes.filter((route) => route.health.status === "HEALTHY").length,

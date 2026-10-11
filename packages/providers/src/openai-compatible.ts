@@ -229,6 +229,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     const key = this.getApiKey();
     const reservation = await this.reserveCloudflare(req);
     let usage: ChatResponse["usage"];
+    let streamReader: ReadableStreamDefaultReader<Uint8Array> | undefined;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     const onExternalAbort = () => controller.abort();
@@ -249,6 +250,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       if (!res.body) throw new ProviderError(`${this.providerId} returned no body`, "NO_BODY", true);
 
       const reader = res.body.getReader();
+      streamReader = reader;
       const decoder = new TextDecoder();
       let buffer = "";
       let receivedDone = false;
@@ -272,6 +274,7 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
       // distinguish what was requested from what actually served. Absent stays unverified.
       let servedModel: string | undefined;
       const finishEvent = (): StreamEvent => {
+        if (terminalFinish === undefined) throw new ProviderError(`${this.providerId} stream trailer arrived without a terminal finish_reason`, "STREAM_INTERRUPTED", true, { status: res.status });
         if (this.requiresExactServedModel(req.model) && servedModel !== req.model) throw new ProviderError(`${this.providerId} stream did not verify the requested model`, "SERVED_MODEL_UNVERIFIED", true);
         return { type: "finish", finishReason: normalizeStreamFinish(terminalFinish), ...(servedModel ? { model: servedModel } : {}) };
       };
@@ -297,12 +300,15 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
         try {
           parsed = JSON.parse(payload) as OaiStreamChunk;
         } catch {
-          return "continue";
+          throw new ProviderError(`${this.providerId} returned a malformed SSE data frame`, "MALFORMED_STREAM", true, { status: res.status });
         }
         frames += 1;
         const inBand = parsed.error ?? parsed.x_groq?.error;
         if (inBand) {
-          yield this.inBandStreamError(inBand, res.status, req.model);
+          const error = this.inBandStreamError(inBand, res.status, req.model);
+          error.retryAfter = parseRetryAfter(res);
+          this.observe(res, req.model, error.rateLimitScope, error.status);
+          yield error;
           return "error";
         }
         if (typeof parsed.model === "string" && parsed.model.length > 0) {
@@ -425,6 +431,10 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
     } finally {
       clearTimeout(timeout);
       if (signal) signal.removeEventListener("abort", onExternalAbort);
+      if (streamReader) {
+        await streamReader.cancel().catch(() => {});
+        streamReader.releaseLock();
+      }
       await this.settleCloudflare(reservation, usage);
     }
   }
@@ -640,14 +650,15 @@ interface OaiStreamChunk {
   x_groq?: { error?: OaiStreamError; usage?: OaiUsage };
 }
 
-function normalizeStreamFinish(reason: string | undefined): "stop" | "tool_calls" | "length" | "content_filter" {
+function normalizeStreamFinish(reason: string | undefined): "stop" | "tool_calls" | "length" | "content_filter" | "error" {
   switch (reason) {
     case "tool_calls":
     case "length":
     case "content_filter":
+    case "stop":
       return reason;
     default:
-      return "stop";
+      return "error";
   }
 }
 

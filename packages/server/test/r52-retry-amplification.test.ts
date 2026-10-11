@@ -126,7 +126,7 @@ describe("R52 Phase N — retry amplification / provider hammering", () => {
     catalog.register(providerA);
     catalog.register(providerB);
 
-    const result = await spawnExplorer(catalog, "run-amp-1", 4);
+    await spawnExplorer(catalog, "run-amp-1", 4);
 
     // The 429 route is tried, observed failing, and rotated — not retried turn after turn.
     expect(providerA.requests).toBeLessThanOrEqual(2);

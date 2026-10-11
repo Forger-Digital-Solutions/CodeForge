@@ -882,7 +882,7 @@ export class SubagentManager {
           ...(item.agentId === "reviewer" && item.routingHints?.reviewEvidence ? { diff: item.capsule?.context } : {}),
           structuredOutput: ["reviewer", "explorer", "planner"].includes(item.agentId) ? item.agentId as StructuredOutputKind : undefined,
           roleRouting: this.r1Enabled || item.rosterAllowance !== undefined,
-          ...(item.routingHints ?? {}),
+          ...item.routingHints,
           ...(options?.parentRunId === item.parentRunId && options.authorizationWorkspacePath ? { authorizationWorkspacePath: options.authorizationWorkspacePath } : {}),
           // R55: recovery re-decides from the exact persisted allowance — userRoutes must
           // round-trip verbatim so the recovered run keeps the same class boundary.

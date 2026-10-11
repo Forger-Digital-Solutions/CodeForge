@@ -54,7 +54,7 @@ describe("doorBlenderScript", () => {
 
 describe("parseReviewResult", () => {
   it("maps a clean pass verdict", () => {
-    const r = parseReviewResult('{"verdict":"pass","findings":[{"severity":"advisory","category":"scope","message":"x"}],"summary":"ok"}');
+    const r = parseReviewResult('{"verdict":"pass","findings":[{"id":"scope","severity":"advisory","category":"scope","message":"x"}],"summary":"ok"}');
     expect(r.ok).toBe(true);
     expect(r.verdict).toBe("pass");
     expect(r.findings).toHaveLength(1);

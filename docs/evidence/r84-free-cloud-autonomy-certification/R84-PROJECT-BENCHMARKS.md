@@ -1,0 +1,7 @@
+# R84 project benchmarks
+
+Twenty reusable public engineering fixtures are defined in benchmarks/r84/project-specs.mjs, extending the existing R67/R71 corpus. [Specification manifest](project-specifications.json) records exact goals, behavioral test acceptance, commands and fixture hashes. All fixture ESM sources/tests passed syntax checking. This is not a twenty-project completion run or a browser/UI certification. The fixture scope is smaller than complete modest applications; responsive layouts, external OAuth and full-stack deployment are not proved.
+
+The first two were model executed using the existing real runtime, FreeFabric, EightBit, session persistence, autonomous orchestrator and completion gate. [Raw campaign](R84-TASK-CAMPAIGN-1791749092431.json) preserves source snapshot, requests, failures, durable turns, reviews, verification, integration and diffs. Bug fix: 17 requests, 57,990 tokens, 105,045 ms. Feature: 28 requests, 93,525 tokens, 169,660 ms. Both completed with passing final tests and review. These are isolated public fixtures, not a live new-user GitHub login.
+
+Routed specialist configuration was measured. Economical single-model and paid/stronger reference comparisons are NOT RUN. No paid reference was authorized. [Metrics](R84-TASK-CAMPAIGN-1791749092431-metrics.json) use physical dispatches once, final cumulative usage per stream, durable parent retry counters and explicit unknown fields. p50/p95 use nearest rank and only two samples. No token-to-project conversion or remaining-task estimate is offered.

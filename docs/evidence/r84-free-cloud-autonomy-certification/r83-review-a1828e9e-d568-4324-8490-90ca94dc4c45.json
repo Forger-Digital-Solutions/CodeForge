@@ -1,0 +1,26 @@
+{
+  "attemptId": "a1828e9e-d568-4324-8490-90ca94dc4c45",
+  "attempt": 1,
+  "scope": "r83",
+  "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "providerId": "kilo-free-direct",
+  "quotaDomain": "kilo:source-ip:shared-unverified",
+  "qualification": {
+    "providerId": "kilo-free-direct",
+    "status": "QUALIFIED",
+    "suiteVersion": "R73_ROLE_QUALIFICATION_V7",
+    "protocolVersion": "REVIEWER_PROTOCOL_V4",
+    "completedAt": "2026-10-10T10:35:30.841Z",
+    "score": 0.875
+  },
+  "startedAt": "2026-10-11T19:57:16.787Z",
+  "classification": "INTERNAL_PUBLIC_SOURCE_EVALUATION_ONLY_NVIDIA_TRIAL",
+  "maxPaidSpendUsd": 0,
+  "inferenceRequests": 0,
+  "rawResponse": "",
+  "observations": [],
+  "status": "PREPARED_NOT_SENT",
+  "packetChars": 77413,
+  "packetSha256": "8378a7bb5dcd2fba58c30c06e942fcd907c75d2247a60dd67919ff183bb3089b",
+  "finishedAt": "2026-10-11T19:57:16.822Z"
+}

@@ -379,7 +379,7 @@ describe("R48 C2 — paid per-role routing in executeAgentRun", () => {
     expect(alibaba.requests).toBe(0);
     const selection = eventStore.getAll().find((event) => event.type === "router.selection");
     expect(selection?.payload).toMatchObject({ providerId: PAID_AUTO_PROVIDER_ID, modelId: "glm-5.3-flash" });
-    expect((selection?.payload as { reasons?: string[] }).reasons).toContain("INDEPENDENT_POOL_PREFERRED");
+    expect((selection?.payload as { reasons?: string[] } | undefined)?.reasons).toContain("INDEPENDENT_POOL_PREFERRED");
     // The same-pool candidate stayed reachable (demoted, not excluded) and says so.
     expect(result.routePoolId).toBe("glm-5.3-flash:direct");
   });
@@ -423,7 +423,7 @@ describe("R48 C2 — paid per-role routing in executeAgentRun", () => {
     expect(result.status).toBe("completed");
     expect(alibaba.requests).toBeGreaterThan(0);
     const selection = eventStore.getAll().find((event) => event.type === "router.selection");
-    expect((selection?.payload as { reasons?: string[] }).reasons).toContain("SAME_POOL_FALLBACK");
+    expect((selection?.payload as { reasons?: string[] } | undefined)?.reasons).toContain("SAME_POOL_FALLBACK");
   });
 
   it("paid-auto/auto without a Paid Auto service fails closed instead of guessing", async () => {

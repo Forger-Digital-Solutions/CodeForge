@@ -18,7 +18,6 @@ import { mkdir, writeFile, readFile } from "node:fs/promises";
 import { mkdtemp } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import os from "node:os";
-import { fileURLToPath } from "node:url";
 
 const args = process.argv.slice(2);
 const option = (name, fallback) => {

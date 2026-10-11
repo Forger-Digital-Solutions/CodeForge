@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { SqliteSessionPersistence } from "@codeforge/sessions";
 import { createShillingEntry, ShillingLedger, summarizeShillings, type ShillingEntry } from "../src/shillings.js";
 

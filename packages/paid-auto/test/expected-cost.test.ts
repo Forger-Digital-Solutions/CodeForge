@@ -43,7 +43,7 @@ describe("16-Bit expected-cost ranking (R37 Missions Y/AA/AB)", () => {
 
   it("the roster is exactly the four registered models — no model can be added or dropped", () => {
     const ranking = rank16Bit(task);
-    expect(ranking.candidates.map((c) => c.canonicalModelId).sort()).toEqual([...PAID_AUTO_MODELS.map((m) => m.canonicalModelId)].sort());
+    expect(ranking.candidates.map((c) => c.canonicalModelId).sort()).toEqual(PAID_AUTO_MODELS.map((m) => m.canonicalModelId).sort());
   });
 
   it("unmeasured evidence is labeled — defaults are never silent", () => {

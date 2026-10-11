@@ -41,7 +41,7 @@ for (const phase of phases) {
   const onOutput = (chunk) => {
     log.write(chunk);
     lines = (lines + String(chunk)).slice(-6000);
-    entry.latestProgress = lines.split(/\r?\n/).filter((line) => /\.(test|spec)\.|Test Files|Tests\s/.test(line)).slice(-1)[0]?.replace(/\u001b\[[0-9;]*m/g, "") ?? entry.latestProgress;
+    entry.latestProgress = lines.split(/\r?\n/).filter((line) => /\.(test|spec)\.|Test Files|Tests\s/.test(line)).slice(-1)[0]?.replace(/\p{Cc}\[[0-9;]*m/gu, "") ?? entry.latestProgress;
     entry.completedFileLines += (String(chunk).match(/[✓×]\s.*\.test\./g) ?? []).length;
   };
   child.stdout.on("data", onOutput);
@@ -51,7 +51,7 @@ for (const phase of phases) {
     if (sampling) return;
     sampling = true;
     try {
-      const command = `$taskRootPid=${child.pid}; $taskProcesses=Get-CimInstance Win32_Process -Filter \"Name='node.exe'\"; $taskIds=@($taskRootPid); do { $taskNew=@($taskProcesses | Where-Object { $taskIds -contains $_.ParentProcessId -and $taskIds -notcontains $_.ProcessId } | Select-Object -ExpandProperty ProcessId); $taskIds += $taskNew } while ($taskNew.Count -gt 0); $taskMemory=@(Get-Process -Id $taskIds -ErrorAction SilentlyContinue); @{total=($taskMemory | Measure-Object WorkingSet64 -Sum).Sum;peak=($taskMemory | Measure-Object PeakWorkingSet64 -Maximum).Maximum} | ConvertTo-Json -Compress`;
+      const command = `$taskRootPid=${child.pid}; $taskProcesses=Get-CimInstance Win32_Process -Filter "Name='node.exe'"; $taskIds=@($taskRootPid); do { $taskNew=@($taskProcesses | Where-Object { $taskIds -contains $_.ParentProcessId -and $taskIds -notcontains $_.ProcessId } | Select-Object -ExpandProperty ProcessId); $taskIds += $taskNew } while ($taskNew.Count -gt 0); $taskMemory=@(Get-Process -Id $taskIds -ErrorAction SilentlyContinue); @{total=($taskMemory | Measure-Object WorkingSet64 -Sum).Sum;peak=($taskMemory | Measure-Object PeakWorkingSet64 -Maximum).Maximum} | ConvertTo-Json -Compress`;
       const { stdout } = await runFile("pwsh", ["-NoProfile", "-Command", command], { windowsHide: true, timeout: 10_000 });
       const memory = JSON.parse(stdout);
       state.peakProcessTreeWorkingSetBytes = Math.max(state.peakProcessTreeWorkingSetBytes, memory.total ?? 0);

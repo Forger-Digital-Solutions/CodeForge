@@ -10,7 +10,7 @@ export class RemoteDirectProviderAdapter implements ProviderAdapter {
   async listModels() { return []; }
   async healthCheck() { return { providerId: this.providerId, status: "degraded" as const, latencyMs: 0, checkedAt: new Date().toISOString(), message: "Availability depends on an authenticated client and admitted quota domain" }; }
   async chat(_request: ChatRequest): Promise<ChatResponse> { throw new Error("REMOTE_RUNTIME_CONTEXT_REQUIRED"); }
-  async *streamChat(_request: ChatRequest): AsyncIterable<StreamEvent> { throw new Error("REMOTE_RUNTIME_CONTEXT_REQUIRED"); }
+  streamChat(_request: ChatRequest): AsyncIterable<StreamEvent> { return { [Symbol.asyncIterator]: () => ({ next: async () => { throw new Error("REMOTE_RUNTIME_CONTEXT_REQUIRED"); } }) }; }
 
   async *streamChatWithContext(request: ChatRequest, context: ProviderExecutionContext, signal?: AbortSignal): AsyncIterable<StreamEvent> {
     const binding = await this.resolveBinding(context, request);

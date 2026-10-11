@@ -13,6 +13,7 @@
     { "path": "../sessions" },
     { "path": "../router" },
     { "path": "../forge-zero" },
+    { "path": "../forge-aaa" },
     { "path": "../providers" },
     { "path": "../paid-auto" },
     { "path": "../tools" },

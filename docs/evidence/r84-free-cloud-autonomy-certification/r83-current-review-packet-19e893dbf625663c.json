@@ -1,0 +1,171 @@
+{
+  "scope": "r83",
+  "version": "R84_CURRENT_ENGINEERING_REVIEW_V2",
+  "instruction": "Review the declared engineering requirements and current evidence. Historical review failure is not itself a functional requirement of the engineering being reviewed. Return revision_required for actual unresolved engineering defects. Do not certify Free supply, UI appearance or GitHub onboarding. No images are supplied.",
+  "baseline": "12ce5a5209329a878a173945b787337f495ba4e3",
+  "currentValidation": {
+    "build": {
+      "status": "PASS",
+      "file": "build-release.log",
+      "sha256": "68030b7c3db19a3db240763a384d04c1b68b661f5ad8b380d85f980cbeb3d324"
+    },
+    "lint": {
+      "status": "PASS",
+      "file": "lint-release.log",
+      "sha256": "37e6eb4864c3310d241d8439903c638a11addffe99f3c0b61e344bf8bb3b587f"
+    },
+    "core": {
+      "passed": 924,
+      "failed": 0,
+      "skipped": 6,
+      "sha256": "4c55761c801cbd52ae983056a2aa5260888817a47db1caa5a0eef0a9fc9ba916"
+    },
+    "modelTerms": {
+      "passed": 81,
+      "failed": 0,
+      "sha256": "f86ab903eea1cae0e101887959a03291c133325e03cf893dfa9d66c722fcddaf"
+    }
+  },
+  "requirements": [
+    "Reject unresolved assets before mutation",
+    "Reject stale source revisions",
+    "Rollback injected and interrupted mutation",
+    "Reject caller-forged readback evidence",
+    "Verify exact saved actor identities and transforms in another engine process",
+    "Preserve door and window SaveGame through migration",
+    "Traverse both rooms and exit after fresh-process restoration",
+    "Never report approval from an interrupted, substituted or schema-invalid reviewer"
+  ],
+  "native": [
+    {
+      "file": "native/migration-fault-campaign-1791748709103.json",
+      "sha256": "b248bf971313a986815d5af5507395e958f4247d0b8839b867f403a3243f77ec",
+      "ok": true,
+      "cases": {
+        "missing-mesh": {
+          "exitCode": 0,
+          "levelHash": "e796d7335c92c78f3601e0d48c05f45d7a97dcc77edc93853486d1bfd0843723"
+        },
+        "source-conflict": {
+          "exitCode": 0,
+          "levelHash": "e796d7335c92c78f3601e0d48c05f45d7a97dcc77edc93853486d1bfd0843723"
+        },
+        "fault-after-three": {
+          "state": "ROLLED_BACK",
+          "exitCode": 0,
+          "levelHash": "e796d7335c92c78f3601e0d48c05f45d7a97dcc77edc93853486d1bfd0843723"
+        },
+        "interrupted": {
+          "exitCode": 86,
+          "levelHash": "00c77017f6c2d97005776da8688f5377003304306b76859bc78c06ab7f6bbcee"
+        },
+        "interrupted-recovery": {
+          "state": "ROLLED_BACK",
+          "exitCode": 0,
+          "levelHash": "e796d7335c92c78f3601e0d48c05f45d7a97dcc77edc93853486d1bfd0843723"
+        },
+        "caller-evidence": {
+          "boolean": "BLOCKED",
+          "copiedRollback": "BLOCKED"
+        },
+        "commit-before-repeat": {
+          "exitCode": 0,
+          "levelHash": "acf22639d9c6aaf055486e370efa2f457863b16031531bc3f973e13dae8b5775"
+        },
+        "idempotency-repeat": {
+          "exitCode": 0,
+          "levelHash": "acf22639d9c6aaf055486e370efa2f457863b16031531bc3f973e13dae8b5775"
+        },
+        "separate-process-commit": {
+          "state": "COMMITTED",
+          "evidence": {
+            "actors_verified": true,
+            "instanceCount": 23,
+            "independentProcess": true,
+            "levelFileSha256": "acf22639d9c6aaf055486e370efa2f457863b16031531bc3f973e13dae8b5775",
+            "errors": []
+          }
+        }
+      },
+      "stages": {}
+    },
+    {
+      "file": "native/persistence-upgrade-1791748900412.json",
+      "sha256": "8c7a83e6bf2c56dce0500950414e3f8fd6cecdacec01bdbdb864fd9ee7e51bf9",
+      "ok": false,
+      "error": "Error: upgrade-fresh-process failed: [\"action[22] arrived=false != true\"]",
+      "cases": {},
+      "stages": {
+        "pre-upgrade": {
+          "state": "pass",
+          "failures": [],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        },
+        "post-upgrade": {
+          "state": "pass",
+          "failures": [],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        },
+        "upgrade-fresh-process": {
+          "state": "fail",
+          "failures": [
+            "action[22] arrived=false != true"
+          ],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        }
+      }
+    },
+    {
+      "file": "native/persistence-upgrade-1791749355350.json",
+      "sha256": "b415f38c9242aca4d1dcc68543306b7dbabd164753300c211ca5f4335c292903",
+      "ok": false,
+      "error": "Error: upgrade-fresh-process failed: [\"action[24] arrived=false != true\",\"action[25] arrived=false != true\"]",
+      "cases": {},
+      "stages": {
+        "pre-upgrade": {
+          "state": "pass",
+          "failures": [],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        },
+        "post-upgrade": {
+          "state": "pass",
+          "failures": [],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        },
+        "upgrade-fresh-process": {
+          "state": "fail",
+          "failures": [
+            "action[24] arrived=false != true",
+            "action[25] arrived=false != true"
+          ],
+          "engineVersion": "4.27.2-18319896+++UE4+Release-4.27"
+        }
+      }
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/forge-aaa/src/model-review.ts",
+      "sha256": "b9f02c008a96a603a974bf20a34a994045e6e4628c9358673eed335a589cd945",
+      "selection": "Full module",
+      "source": "import type { ForgeAaaRun } from \"./orchestrator.js\";\nimport { createHash } from \"node:crypto\";\nimport type { Usage } from \"@codeforge/providers\";\n\n/**\n * Model-backed independent review for ForgeAAA runs.\n *\n * `reviewRun` in the Director only records what it is given — the honesty contract lives\n * here: `independent: true` is reported only when the review actually went to an\n * inference model that took no part in the implementation (R79's staircase was built by\n * deterministic adapters, so any qualified reviewer model is independent of it), and the\n * caller must supply the qualification receipt fields so the run evidence can carry the\n * reviewer's real identity rather than a logical agent name.\n */\n\nexport interface ModelChatRequest {\n  model: string;\n  messages: { role: \"system\" | \"user\"; content: string }[];\n  temperature?: number;\n  maxTokens?: number;\n}\n\nexport interface ModelReviewerQualification {\n  providerId: string;\n  suiteVersion: string;\n  protocolVersion: string;\n  status: string;\n  completedAt: string;\n}\n\nexport interface ModelReviewer {\n  modelId: string;\n  qualification: ModelReviewerQualification;\n  /** Text-only callbacks remain callable, but cannot prove completion for certification. */\n  chat: (req: ModelChatRequest) => Promise<string | ModelReviewResponse>;\n  /** Bounded evidence packet builder — must not exceed packetMaxChars. */\n  packetOf: (run: ForgeAaaRun) => string;\n  packetMaxChars?: number;\n  outputMaxTokens?: number;\n}\n\nexport interface ModelReviewResponse {\n  text: string;\n  finishReason?: string;\n  modelId?: string;\n  requestId?: string;\n  quotaDomain?: string;\n  usage?: Usage;\n}\n\nexport interface ModelReviewOutcome {\n  approved: boolean;\n  findings: string[];\n  independent: boolean;\n  reviewer?: { providerId: string; modelId: string };\n  verdict?: \"pass\" | \"revision_required\";\n  rawResponse?: string;\n  receipt?: {\n    packetSha256: string;\n    packetChars: number;\n    outputMaxTokens: number;\n    completionSignal: string;\n    schemaValid: boolean;\n    requestId?: string;\n    quotaDomain?: string;\n    usage?: Usage;\n  };\n}\n\nconst REVIEWER_SCHEMA = `{\"verdict\":\"pass\"|\"revision_required\",\"findings\":[{\"id\":string,\"severity\":\"blocking\"|\"advisory\",\"category\":string,\"message\":string,\"evidence\"?:string}],\"summary\":string}`;\n\nconst SYSTEM_PROMPT = [\n  \"You are an independent evidence reviewer for a game-development milestone. You did not implement, run, or author any of the work under review — judge only the supplied evidence packet.\",\n  \"Review the evidence against the declared functional requirements. Check for false-positive paths: tests that cannot fail, thresholds that ignore the measured data, missing evidence replaced by executor claims, and unsupported capabilities presented as supported.\",\n  \"A pass verdict requires that every declared requirement is backed by actual evidence; advisory findings are permitted. revision_required requires at least one blocking finding.\",\n  `Respond with only one JSON object: ${REVIEWER_SCHEMA}`,\n].join(\"\\n\");\n\nconst nonempty = (value: unknown): value is string => typeof value === \"string\" && value.trim().length > 0;\nconst object = (value: unknown): value is Record<string, unknown> => typeof value === \"object\" && value !== null && !Array.isArray(value);\n\n/** Extracts the reviewer JSON from raw model text (tolerates fences/preamble). */\nexport function parseReviewResult(raw: string): { ok: boolean; verdict?: \"pass\" | \"revision_required\"; findings: string[]; error?: string } {\n  const match = raw.match(/\\{[\\s\\S]*\\}/);\n  if (!match) return { ok: false, findings: [], error: \"no JSON object in reviewer response\" };\n  let parsed: unknown;\n  try {\n    parsed = JSON.parse(match[0]) as unknown;\n  } catch {\n    return { ok: false, findings: [], error: \"reviewer response is not valid JSON\" };\n  }\n  if (!object(parsed) || (parsed.verdict !== \"pass\" && parsed.verdict !== \"revision_required\")) {\n    return { ok: false, findings: [], error: \"invalid reviewer verdict\" };\n  }\n  if (!nonempty(parsed.summary) || !Array.isArray(parsed.findings) || parsed.findings.some((f: unknown) => !object(f)\n    || !nonempty(f.id) || (f.severity !== \"blocking\" && f.severity !== \"advisory\")\n    || !nonempty(f.category) || !nonempty(f.message) || (f.evidence !== undefined && !nonempty(f.evidence)))) {\n    return { ok: false, findings: [], error: \"incomplete reviewer schema\" };\n  }\n  const entries = parsed.findings as Record<string, unknown>[];\n  if (new Set(entries.map((f) => f.id)).size !== entries.length) return { ok: false, findings: [], error: \"duplicate finding identity\" };\n  const findings = entries.map((f) => `[${String(f.severity)}] ${String(f.category)}: ${String(f.message)}${f.evidence ? ` (${String(f.evidence)})` : \"\"}`);\n  if (parsed.verdict === \"pass\" && findings.some((f) => f.startsWith(\"[blocking]\"))) {\n    return { ok: false, findings, error: \"pass verdict carried blocking findings\" };\n  }\n  if (parsed.verdict === \"revision_required\" && !findings.some((f) => f.startsWith(\"[blocking]\"))) {\n    return { ok: false, findings, error: \"revision_required without a blocking finding\" };\n  }\n  return { ok: true, verdict: parsed.verdict, findings };\n}\n\n/**\n * Builds the Director's `reviewRun` dep for a genuinely independent reviewer. Returns\n * `independent: true` only when the model call completed and produced a schema-valid\n * verdict — unreachable or malformed reviewers degrade to independent:false, never to a\n * fabricated approval.\n */\nexport function createModelReviewer(opts: ModelReviewer) {\n  const maxChars = opts.packetMaxChars ?? 48_000;\n  const outputMaxTokens = opts.outputMaxTokens ?? 2_000;\n  if (!Number.isSafeInteger(maxChars) || maxChars < 1 || maxChars > 84_000\n    || !Number.isSafeInteger(outputMaxTokens) || outputMaxTokens < 1 || outputMaxTokens > 8_000) throw new Error(\"Invalid review budget\");\n  return async (run: ForgeAaaRun): Promise<ModelReviewOutcome> => {\n    const identity = `reviewer: ${opts.qualification.providerId}/${opts.modelId} (${opts.qualification.status}, suite ${opts.qualification.suiteVersion}, protocol ${opts.qualification.protocolVersion}, qualified ${opts.qualification.completedAt})`;\n    const reviewer = { providerId: opts.qualification.providerId, modelId: opts.modelId };\n    const blocked = (reason: string): ModelReviewOutcome => ({ approved: false, independent: false, reviewer, findings: [`${identity} — ${reason}`] });\n    if (opts.qualification.status !== \"QUALIFIED\" || !nonempty(opts.modelId)\n      || !nonempty(opts.qualification.providerId) || !nonempty(opts.qualification.suiteVersion)\n      || !nonempty(opts.qualification.protocolVersion) || !Number.isFinite(Date.parse(opts.qualification.completedAt))) return blocked(\"reviewer qualification unavailable\");\n    let packet: string;\n    try { packet = opts.packetOf(run); } catch (error) { return blocked(`packet construction failed: ${String(error)}`); }\n    if (typeof packet !== \"string\" || !packet.trim() || packet.length > maxChars) return blocked(\"review packet empty or exceeds bounded budget; evidence was not clipped or dispatched\");\n    const receipt: NonNullable<ModelReviewOutcome[\"receipt\"]> = {\n      packetSha256: createHash(\"sha256\").update(packet).digest(\"hex\"), packetChars: packet.length,\n      outputMaxTokens, completionSignal: \"call-failed\", schemaValid: false,\n    };\n    let raw: string;\n    let response: ModelReviewResponse | undefined;\n    try {\n      const result = await opts.chat({\n        model: opts.modelId,\n        messages: [\n          { role: \"system\", content: SYSTEM_PROMPT },\n          { role: \"user\", content: packet },\n        ],\n        temperature: 0,\n        maxTokens: outputMaxTokens,\n      });\n      response = typeof result === \"string\" ? undefined : result;\n      raw = typeof result === \"string\" ? result : result.text;\n    } catch (err) {\n      return {\n        approved: false,\n        findings: [`${identity} — review call failed: ${err instanceof Error ? err.message : String(err)}`],\n        independent: false,\n        reviewer: { providerId: opts.qualification.providerId, modelId: opts.modelId },\n        receipt,\n      };\n    }\n    Object.assign(receipt, { completionSignal: response?.finishReason ?? \"legacy-text-unreported\",\n      requestId: response?.requestId, quotaDomain: response?.quotaDomain, usage: response?.usage });\n    if (!response || response.finishReason !== \"stop\" || response.modelId !== opts.modelId) {\n      return { ...blocked(\"review response incomplete or served model unverified\"), rawResponse: raw, receipt };\n    }\n    if (raw.length > outputMaxTokens * 16) return { ...blocked(\"review response exceeds bounded output budget\"), rawResponse: raw, receipt };\n    const parsed = parseReviewResult(raw);\n    if (!parsed.ok) {\n      return {\n        approved: false,\n        findings: [`${identity} — malformed review: ${parsed.error ?? \"unknown\"}`, ...parsed.findings],\n        independent: false,\n        reviewer: { providerId: opts.qualification.providerId, modelId: opts.modelId },\n        rawResponse: raw,\n        receipt,\n      };\n    }\n    return {\n      approved: parsed.verdict === \"pass\",\n      findings: [identity, ...parsed.findings],\n      independent: true,\n      reviewer: { providerId: opts.qualification.providerId, modelId: opts.modelId },\n      verdict: parsed.verdict,\n      rawResponse: raw,\n      receipt: { ...receipt, schemaValid: true },\n    };\n  };\n}\n"
+    },
+    {
+      "file": "packages/forge-aaa/src/building-revision.ts",
+      "sha256": "09b5c50fdefdfe9a072fa5d7cb797f1db67179b16712230aa1bb3e5bc9593510",
+      "selection": "TypeScript migration authority; native Python implementation retained in full source and exercised by referenced receipts",
+      "source": "import { createHash, randomUUID } from \"node:crypto\";\nimport { readFileSync } from \"node:fs\";\nimport { mkdir, readFile, writeFile } from \"node:fs/promises\";\nimport path from \"node:path\";\nimport { buildingActorIdentity, validateBuildingDefinition, type BuildingDefinition, type BuildingModuleDefinition, type BuildingModuleInstance } from \"./building-definition.js\";\nimport { FORGE_AAA_ERRORS, ForgeAaaError } from \"./types.js\";\n\nexport type MigrationStatus = \"PLANNED\" | \"VALIDATED\" | \"APPLYING\" | \"VERIFYING\" | \"COMMITTED\" | \"ROLLED_BACK\" | \"BLOCKED\";\nexport interface BuildingRevisionMigration {\n  migrationId: string;\n  buildingId: string;\n  previousRevision: { fingerprint: string; instanceCount: number };\n  targetRevision: { fingerprint: string; instanceCount: number };\n  preservedInstances: string[];\n  addedInstances: string[];\n  modifiedInstances: string[];\n  removedInstances: string[];\n  status: MigrationStatus;\n  validatedAt?: string;\n  appliedAt?: string;\n  rolledBackAt?: string;\n  sourceBuilding: BuildingDefinition;\n  sourceModules: BuildingModuleDefinition[];\n  targetBuilding: BuildingDefinition;\n  targetModules: BuildingModuleDefinition[];\n  verification?: SavedLevelVerification;\n}\nexport interface MigrationOptions {\n  migrationId?: string;\n  expectedPreviousFingerprint?: string;\n  previousRegistry?: readonly BuildingModuleDefinition[];\n}\nexport interface SavedLevelVerification {\n  migrationId: string;\n  buildingId: string;\n  fingerprint: string;\n  instanceCount: number;\n  levelPath: string;\n  levelFilePath: string;\n  levelFileSha256: string;\n  receiptPath: string;\n  phase: \"COMMITTED\" | \"ROLLED_BACK\";\n  level_saved: true;\n  reloaded: true;\n  actors_verified: true;\n}\nexport interface MigrationScriptOptions {\n  previousRegistry?: readonly BuildingModuleDefinition[];\n  receiptPath: string;\n  backupPath: string;\n  levelFilePath?: string;\n  failAfterMutations?: number;\n  readbackOnly?: \"COMMITTED\" | \"ROLLED_BACK\";\n  interruptAfterMutations?: number;\n  recoverInterrupted?: boolean;\n}\nconst engineVerified = new WeakSet<SavedLevelVerification>();\nfunction invalid(message: string): never { throw new ForgeAaaError(FORGE_AAA_ERRORS.MANIFEST_INVALID, message); }\nfunction denied(message: string): never { throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, message); }\nexport function computeBuildingFingerprint(building: BuildingDefinition, modules: readonly BuildingModuleDefinition[]): string {\n  // Preserve the R82 assembly serialization, including registry ordering and content hashes.\n  return createHash(\"sha256\").update(JSON.stringify({ building, modules })).digest(\"hex\");\n}\nfunction instancesMatch(a: BuildingModuleInstance, b: BuildingModuleInstance): boolean {\n  return a.moduleId === b.moduleId && a.moduleVersion === b.moduleVersion && a.yawDeg === b.yawDeg && a.positionCm.every((v, k) => v === b.positionCm[k]) && JSON.stringify(a.attachment) === JSON.stringify(b.attachment);\n}\nexport function planMigration(previous: BuildingDefinition, target: BuildingDefinition, registry: readonly BuildingModuleDefinition[], options: MigrationOptions = {}): BuildingRevisionMigration {\n  const sourceModules = structuredClone([...(options.previousRegistry ?? registry)]);\n  const targetModules = structuredClone([...registry]);\n  const sourceBuilding = validateBuildingDefinition(previous, sourceModules);\n  const targetBuilding = validateBuildingDefinition(target, targetModules);\n  if (sourceBuilding.buildingInstanceId !== targetBuilding.buildingInstanceId) invalid(\"Building identity mismatch\");\n  const previousFingerprint = computeBuildingFingerprint(sourceBuilding, sourceModules);\n  const targetFingerprint = computeBuildingFingerprint(targetBuilding, targetModules);\n  if (options.expectedPreviousFingerprint && options.expectedPreviousFingerprint !== previousFingerprint) invalid(\"Previous fingerprint mismatch\");\n  const before = new Map(sourceBuilding.instances.map((i) => [i.instanceId, i]));\n  const after = new Map(targetBuilding.instances.map((i) => [i.instanceId, i]));\n  const preservedInstances: string[] = [], addedInstances: string[] = [], modifiedInstances: string[] = [];\n  for (const i of targetBuilding.instances) {\n    const old = before.get(i.instanceId);\n    if (!old) addedInstances.push(i.instanceId);\n    else if (instancesMatch(old, i) && JSON.stringify(sourceModules.find((m) => m.moduleId === old.moduleId)) === JSON.stringify(targetModules.find((m) => m.moduleId === i.moduleId))) preservedInstances.push(i.instanceId);\n    else modifiedInstances.push(i.instanceId);\n  }\n  return {\n    migrationId: options.migrationId ?? `migration:${sourceBuilding.buildingInstanceId}:${previousFingerprint.slice(0, 8)}->${targetFingerprint.slice(0, 8)}`,\n    buildingId: sourceBuilding.buildingInstanceId,\n    previousRevision: { fingerprint: previousFingerprint, instanceCount: sourceBuilding.instances.length },\n    targetRevision: { fingerprint: targetFingerprint, instanceCount: targetBuilding.instances.length },\n    preservedInstances, addedInstances, modifiedInstances,\n    removedInstances: sourceBuilding.instances.filter((i) => !after.has(i.instanceId)).map((i) => i.instanceId),\n    status: \"PLANNED\", sourceBuilding, sourceModules, targetBuilding, targetModules,\n  };\n}\nexport function validateMigration(previous: BuildingDefinition | BuildingRevisionMigration, target: BuildingDefinition, registry: readonly BuildingModuleDefinition[], options: MigrationOptions = {}): BuildingRevisionMigration {\n  let plan: BuildingRevisionMigration;\n  if (\"status\" in previous) {\n    if (previous.status !== \"PLANNED\") denied(`Cannot validate migration in '${previous.status}' state`);\n    plan = planMigration(previous.sourceBuilding, target, registry, { ...options, migrationId: previous.migrationId, previousRegistry: options.previousRegistry ?? previous.sourceModules });\n    for (const key of [\"buildingId\", \"previousRevision\", \"targetRevision\", \"preservedInstances\", \"addedInstances\", \"modifiedInstances\", \"removedInstances\"] as const) {\n      if (JSON.stringify(plan[key]) !== JSON.stringify(previous[key])) invalid(`Migration plan mismatch: ${key}`);\n    }\n  } else plan = planMigration(previous, target, registry, options);\n  return { ...plan, status: \"VALIDATED\", validatedAt: new Date().toISOString() };\n}\nexport function applyMigration(migration: BuildingRevisionMigration, currentFingerprint: string): BuildingRevisionMigration {\n  if (migration.status !== \"VALIDATED\") denied(`Cannot apply migration in '${migration.status}' state`);\n  if (currentFingerprint !== migration.previousRevision.fingerprint) invalid(\"Fingerprint conflict with previous revision\");\n  return { ...migration, status: \"APPLYING\", appliedAt: new Date().toISOString() };\n}\nexport function verifyMigration(migration: BuildingRevisionMigration): BuildingRevisionMigration {\n  if (migration.status !== \"APPLYING\") denied(`Cannot verify migration in '${migration.status}' state`);\n  return { ...migration, status: \"VERIFYING\" };\n}\nfunction receiptMatches(migration: BuildingRevisionMigration, evidence: SavedLevelVerification | boolean, phase: \"COMMITTED\" | \"ROLLED_BACK\"): evidence is SavedLevelVerification {\n  if (typeof evidence !== \"object\" || evidence === null || !engineVerified.has(evidence)) return false;\n  const revision = phase === \"COMMITTED\" ? migration.targetRevision : migration.previousRevision;\n  if (!(evidence.migrationId === migration.migrationId && evidence.buildingId === migration.buildingId && evidence.phase === phase && evidence.fingerprint === revision.fingerprint && evidence.instanceCount === revision.instanceCount && evidence.level_saved === true && evidence.reloaded === true && evidence.actors_verified === true && typeof evidence.levelPath === \"string\" && evidence.levelPath.startsWith(\"/Game/\") && typeof evidence.receiptPath === \"string\" && /^(?:[A-Za-z]:[\\\\/]|\\/)/.test(evidence.receiptPath) && typeof evidence.levelFilePath === \"string\" && /^(?:[A-Za-z]:[\\\\/]|\\/)/.test(evidence.levelFilePath) && /^[a-f0-9]{64}$/.test(evidence.levelFileSha256))) return false;\n  try {\n    const durable = JSON.parse(readFileSync(evidence.receiptPath, \"utf8\")) as Record<string, unknown>;\n    for (const key of [\"migrationId\", \"buildingId\", \"phase\", \"fingerprint\", \"instanceCount\", \"levelPath\", \"levelFilePath\", \"levelFileSha256\", \"receiptPath\", \"level_saved\", \"reloaded\", \"actors_verified\"] as const) if (durable[key] !== evidence[key]) return false;\n    return createHash(\"sha256\").update(readFileSync(evidence.levelFilePath)).digest(\"hex\") === evidence.levelFileSha256;\n  } catch { return false; }\n}\nexport function commitMigration(migration: BuildingRevisionMigration, evidence: SavedLevelVerification | boolean): BuildingRevisionMigration {\n  if (migration.status !== \"VERIFYING\") denied(`Cannot commit migration in '${migration.status}' state; expected VERIFYING`);\n  if (!receiptMatches(migration, evidence, \"COMMITTED\")) return { ...migration, status: \"BLOCKED\" };\n  return { ...migration, status: \"COMMITTED\", verification: structuredClone(evidence) };\n}\nexport function rollbackMigration(migration: BuildingRevisionMigration, evidence: SavedLevelVerification | boolean): BuildingRevisionMigration {\n  if (![\"APPLYING\", \"VERIFYING\", \"BLOCKED\"].includes(migration.status)) denied(`Cannot roll back migration in '${migration.status}' state`);\n  if (!receiptMatches(migration, evidence, \"ROLLED_BACK\")) return { ...migration, status: \"BLOCKED\" };\n  return { ...migration, status: \"ROLLED_BACK\", rolledBackAt: new Date().toISOString(), verification: structuredClone(evidence) };\n}\nexport function isMigrationIdempotent(migration: BuildingRevisionMigration, currentFingerprint?: string): { idempotent: boolean; reason: string } {\n  const idempotent = currentFingerprint === migration.targetRevision.fingerprint || (migration.previousRevision.fingerprint === migration.targetRevision.fingerprint && !migration.addedInstances.length && !migration.modifiedInstances.length && !migration.removedInstances.length);\n  return { idempotent, reason: idempotent ? \"Building is already at target revision fingerprint; engine actor verification is still required\" : \"Migration requires instance changes\" };\n}\nexport async function verifySavedMigration(migration: BuildingRevisionMigration, request: {\n  projectPath: string; levelPath: string; evidenceDirectory: string; phase: \"COMMITTED\" | \"ROLLED_BACK\";\n}): Promise<SavedLevelVerification> {\n  const { UnrealAdapter } = await import(\"./adapters/unreal.js\");\n  const directory = path.resolve(request.evidenceDirectory);\n  await mkdir(directory, { recursive: true });\n  const stem = path.join(directory, `migration-readback-${randomUUID()}`);\n  const receiptPath = stem + \".json\";\n  const scriptPath = stem + \".py\";\n  const logPath = stem + \".log\";\n  const script = migrationAssemblyScript(migration, migration.targetBuilding, migration.targetModules, request.levelPath, {\n    receiptPath, backupPath: stem + \".unused-backup\", readbackOnly: request.phase,\n  });\n  await writeFile(scriptPath, script, \"utf8\");\n  const result = await new UnrealAdapter().runPythonScript({ projectPath: request.projectPath, scriptPath, logPath, host: \"editor\", timeoutMs: 180_000 });\n  if (!result.ok || result.exitCode !== 0 || result.timedOut) denied(\"Independent saved migration readback failed; inspect \" + logPath);\n  const evidence = JSON.parse(await readFile(receiptPath, \"utf8\")) as SavedLevelVerification & { ok?: boolean };\n  if (evidence.ok !== true || evidence.phase !== request.phase) denied(\"Independent saved migration assertions failed\");\n  Object.freeze(evidence);\n  engineVerified.add(evidence);\n  if (!receiptMatches(migration, evidence, request.phase)) denied(\"Independent migration receipt or level hash mismatch\");\n  return evidence;\n}\nfunction instanceSpecs(building: BuildingDefinition, modules: readonly BuildingModuleDefinition[]) {\n  return building.instances.map((i) => {\n    const identity = buildingActorIdentity(building.buildingInstanceId, i.instanceId);\n    return { ...i, module: modules.find((m) => m.moduleId === i.moduleId), identity, persistentId: createHash(\"sha256\").update(identity).digest(\"hex\").slice(0, 32) };\n  });\n}\nexport function migrationAssemblyScript(migration: BuildingRevisionMigration, previousOrTarget: BuildingDefinition, targetOrModules: BuildingDefinition | readonly BuildingModuleDefinition[], modulesOrLevel: readonly BuildingModuleDefinition[] | string, levelOrOptions?: string | MigrationScriptOptions, scriptOptions?: MigrationScriptOptions): string {\n  const explicitSource = typeof levelOrOptions === \"string\";\n  const previous = explicitSource ? previousOrTarget : migration.sourceBuilding;\n  const target = explicitSource ? targetOrModules as BuildingDefinition : previousOrTarget;\n  const modules = explicitSource ? modulesOrLevel as readonly BuildingModuleDefinition[] : targetOrModules as readonly BuildingModuleDefinition[];\n  const level = explicitSource ? levelOrOptions : modulesOrLevel as string;\n  const options = explicitSource ? scriptOptions : levelOrOptions as MigrationScriptOptions | undefined;\n  const checked = planMigration(previous, target, modules, { migrationId: migration.migrationId, previousRegistry: options?.previousRegistry ?? migration.sourceModules });\n  for (const key of [\"buildingId\", \"previousRevision\", \"targetRevision\", \"preservedInstances\", \"addedInstances\", \"modifiedInstances\", \"removedInstances\"] as const) if (JSON.stringify(checked[key]) !== JSON.stringify(migration[key])) invalid(`Migration script plan mismatch: ${key}`);\n  if (!/^\\/Game\\/[A-Za-z0-9_/-]+$/.test(level)) invalid(\"Invalid level path\");\n  if (options?.failAfterMutations !== undefined && (!Number.isInteger(options.failAfterMutations) || options.failAfterMutations < 1 || options.failAfterMutations > 1024)) invalid(\"Fault injection count must be 1..1024\");\n  if (options?.interruptAfterMutations !== undefined && (!Number.isInteger(options.interruptAfterMutations) || options.interruptAfterMutations < 1 || options.interruptAfterMutations > 1024)) invalid(\"Interruption count must be 1..1024\");\n  if (options && (![options.receiptPath, options.backupPath, ...(options.levelFilePath ? [options.levelFilePath] : [])].every((p) => /^(?:[A-Za-z]:[\\\\/]|\\/)/.test(p)) || options.backupPath === options.receiptPath || options.backupPath === options.levelFilePath || options.receiptPath === options.levelFilePath)) invalid(\"Migration artifact paths must be distinct absolute paths\");\n  const spec = { ...checked, level, source: instanceSpecs(previous, checked.sourceModules), target: instanceSpecs(target, modules), options: options ?? null };\n  return MIGRATION_PY.replace(\"__SPEC__\", JSON.stringify(JSON.stringify(spec)));\n}\n\n"
+    }
+  ],
+  "history": {
+    "r82": "Historical HTTP 200 SSE upstream 503; R84 bounded attempt timed out at 120 seconds. Neither is approval.",
+    "r83": "Historical truncated JSON; R84 complete qualified verdict requested revisions, citing historical build/lint and prior review absence. Current build/lint are passing; fresh-process exit traversal currently fails in two R84 receipts."
+  },
+  "limitations": [
+    "Native exit traversal is unresolved; it must remain blocking.",
+    "Director remains PARTIAL.",
+    "No second independent qualified managed Free Coder domain demonstrated.",
+    "No fresh GitHub login executed.",
+    "Legacy text-only reviewer callbacks cannot establish stream completion."
+  ]
+}

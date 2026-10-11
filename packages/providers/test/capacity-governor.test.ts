@@ -48,6 +48,41 @@ function createMockClock(initialTime = 1_000_000) {
 }
 
 describe("ProviderCapacityGovernor — evidence-driven capacity control", () => {
+  it("serves a waiting second project before the first project's next request", async () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep, limits: { shared: { maxConcurrent: 1 } } });
+    const first = await governor.acquire("shared", 10);
+    const order: string[] = [];
+    const second = governor.acquire("shared", 10).then((hold) => { order.push("project-b"); return hold; });
+    first.release(10);
+    const next = governor.acquire("shared", 10).then((hold) => { order.push("project-a"); return hold; });
+    expect(governor.getCapacityReport("shared").queueDepth).toBe(2);
+    await clock.advanceTime(50);
+    const secondHold = await second;
+    expect(order).toEqual(["project-b"]);
+    secondHold.release(10);
+    await clock.advanceTime(50);
+    (await next).release(10);
+    expect(order).toEqual(["project-b", "project-a"]);
+    expect(governor.getCapacityReport("shared").queueDepth).toBe(0);
+  });
+
+  it("removes a cancelled project's queue ticket without blocking its sibling", async () => {
+    const clock = createMockClock();
+    const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep, limits: { shared: { maxConcurrent: 1 } } });
+    const first = await governor.acquire("shared", 10);
+    const controller = new AbortController();
+    const cancelled = governor.acquire("shared", 10, controller.signal);
+    const rejected = expect(cancelled).rejects.toThrow();
+    const sibling = governor.acquire("shared", 10);
+    controller.abort(new Error("project-a stopped"));
+    await rejected;
+    first.release(10);
+    await clock.advanceTime(50);
+    (await sibling).release(10);
+    expect(governor.getCapacityReport("shared").queueDepth).toBe(0);
+  });
+
   it("paces packaged Kilo roles against one conservative shared request window", async () => {
     const clock = createMockClock();
     const governor = new ProviderCapacityGovernor({ now: clock.now, sleep: clock.sleep });

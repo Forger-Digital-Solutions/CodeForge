@@ -68,7 +68,6 @@ class BenchmarkProvider {
     (this.requestsByRole[role] ??= []).push(req.messages.map((m) => String(m.content)).join("\n"));
     const f = this.fixture;
     const toolMsgs = req.messages.filter((m) => m.role === "tool");
-    const sawRead = new Set(toolMsgs.filter((m) => /\[hash:[0-9a-f]{64}\]/.test(String(m.content))).map(() => true).size ? [] : []);
     const readsDone = toolMsgs.filter((m) => /\[hash:[0-9a-f]{64}\]/.test(String(m.content))).length;
     const writesDone = toolMsgs.filter((m) => String(m.content).includes("Successfully wrote")).length;
     if (role === "explorer") {
@@ -198,7 +197,6 @@ for (const fixture of FIXTURES) {
       const packetDelivered = coderContext.includes("Repository Orientation");
       const explorerContext = provider.requestsByRole.explorer?.[0] ?? "";
       const explorerGotPacket = explorerContext.includes("Pre-gathered Repository Orientation") || explorerContext.includes("Candidate files");
-      const coderReadsBeforeWrite = undefined; // trace-level detail is in the journal; call counts suffice here
       const verify = result.verification?.[0];
       const entry = {
         fixture: fixture.id, topology, status: result.status, wallMs,

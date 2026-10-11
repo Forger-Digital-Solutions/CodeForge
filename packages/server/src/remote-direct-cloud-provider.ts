@@ -17,7 +17,7 @@ export class RemoteDirectCloudProviderAdapter implements ProviderAdapter {
   async listModels() { return []; }
   async healthCheck() { return { status: "degraded" as const }; }
   async chat(_request: ChatRequest): Promise<ChatResponse> { throw new Error("REMOTE_RUNTIME_CONTEXT_REQUIRED"); }
-  async *streamChat(_request: ChatRequest): AsyncIterable<StreamEvent> { throw new Error("REMOTE_RUNTIME_CONTEXT_REQUIRED"); }
+  streamChat(_request: ChatRequest): AsyncIterable<StreamEvent> { return { [Symbol.asyncIterator]: () => ({ next: async () => { throw new Error("REMOTE_RUNTIME_CONTEXT_REQUIRED"); } }) }; }
   async *streamChatWithContext(request: ChatRequest, context: ProviderExecutionContext, signal?: AbortSignal): AsyncIterable<StreamEvent> {
     if (context.userId !== this.options.ownerUserId) throw new Error("REMOTE_RUNTIME_OWNER_REQUIRED");
     const prefix = `/v1/workflows/${encodeURIComponent(this.options.workflowId)}/remote-direct`;

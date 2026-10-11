@@ -94,7 +94,7 @@ describe("OpenAICompatibleAdapter in-band stream errors", () => {
   });
 
   it("reads a final frame that has no trailing newline", async () => {
-    const fetchFn = (async () => sseResponse(['data: {"choices":[{"delta":{"content":"hi"}}]}', "data: [DONE]"], 200, false)) as unknown as typeof fetch;
+    const fetchFn = (async () => sseResponse(['data: {"choices":[{"delta":{"content":"hi"},"finish_reason":"stop"}]}', "data: [DONE]"], 200, false)) as unknown as typeof fetch;
     const events = await collect(adapter(fetchFn).streamChat(req));
     expect(events.at(-1)!.type).toBe("finish");
   });
@@ -155,6 +155,34 @@ describe("OpenAICompatibleAdapter in-band stream errors", () => {
     const fetchFn = (async () => sseResponse(['data: {"error":{"message":"Internal Server Error","type":"internal_server_error"}}'])) as unknown as typeof fetch;
     const events = await collect(createGroqAdapter({ apiKey: "g", fetchFn }).streamChat(req));
     expect((events.at(-1) as Extract<StreamEvent, { type: "error" }>).code).toBe("PROVIDER_ERROR");
+  });
+});
+
+describe("R84 stream integrity", () => {
+  it("does not promote a trailer without a finish reason to successful completion", async () => {
+    const fetchFn = (async () => sseResponse(['data: {"choices":[{"delta":{"content":"partial"}}]}', 'data: [DONE]'])) as typeof fetch;
+    await expect(collect(adapter(fetchFn).streamChat(req))).rejects.toMatchObject({ code: "STREAM_INTERRUPTED" });
+  });
+
+  it("rejects a malformed frame even after a terminal chunk", async () => {
+    const fetchFn = (async () => sseResponse(['data: {"choices":[{"delta":{},"finish_reason":"stop"}]}', 'data: {"error":'])) as typeof fetch;
+    await expect(collect(adapter(fetchFn).streamChat(req))).rejects.toMatchObject({ code: "MALFORMED_STREAM" });
+  });
+
+  it("does not normalize unknown finish reasons to stop", async () => {
+    const fetchFn = (async () => sseResponse(['data: {"choices":[{"delta":{},"finish_reason":"unknown"}]}', 'data: [DONE]'])) as typeof fetch;
+    expect((await collect(adapter(fetchFn).streamChat(req))).at(-1)).toMatchObject({ type: "finish", finishReason: "error" });
+  });
+
+  it("reports in-band quota exhaustion to the capacity observer with retry-after", async () => {
+    const observations: unknown[] = [];
+    const fetchFn = (async () => new Response('data: {"error":{"code":429,"message":"rate limit"}}\n', { headers: { "retry-after": "20" } })) as typeof fetch;
+    const transport = new OpenAICompatibleAdapter({ providerId: "groq", baseUrl: "https://example/v1", apiKey: "test", fetchFn, onResponse: (event) => { observations.push(event); } });
+    const before = Date.now();
+    const result = await collect(transport.streamChat(req));
+    expect(result.at(-1)).toMatchObject({ type: "error", status: 429, retryAfter: expect.any(Number) });
+    expect((result.at(-1) as Extract<StreamEvent, { type: "error" }>).retryAfter).toBeGreaterThanOrEqual(before + 20_000);
+    expect(observations.at(-1)).toMatchObject({ status: 429 });
   });
 });
 

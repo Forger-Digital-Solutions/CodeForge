@@ -1,0 +1,165 @@
+{
+  "attemptId": "620d8e2f-d5f7-415d-9839-3a5091a46974",
+  "attempt": 1,
+  "scope": "r83",
+  "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "providerId": "kilo-free-direct",
+  "quotaDomain": "kilo:source-ip:shared-unverified",
+  "qualification": {
+    "providerId": "kilo-free-direct",
+    "status": "QUALIFIED",
+    "suiteVersion": "R73_ROLE_QUALIFICATION_V7",
+    "protocolVersion": "REVIEWER_PROTOCOL_V4",
+    "completedAt": "2026-10-10T10:35:30.841Z",
+    "score": 0.875
+  },
+  "startedAt": "2026-10-11T20:00:17.370Z",
+  "classification": "INTERNAL_PUBLIC_SOURCE_EVALUATION_ONLY_NVIDIA_TRIAL",
+  "maxPaidSpendUsd": 0,
+  "inferenceRequests": 1,
+  "rawResponse": "{\"verdict\":\"revision_required\",\"findings\":[{\"id\":\"R83-001\",\"severity\":\"blocking\",\"category\":\"independent_review\",\"message\":\"Independent qualified review not completed; all review addenda BLOCKED (R82: 503 upstream error, R83: missing review packet files, budget exceeded)\",\"evidence\":\"reviewAddenda[0].status=BLOCKED, reviewAddenda[1].error=ENOENT, reviewAddenda[2].error=ENOENT, reviewAddenda[3].error=exceeds bounded budget\"},{\"id\":\"R83-002\",\"severity\":\"blocking\",\"category\":\"workspace_validation\",\"message\":\"Full workspace build and repository lint fail outside changed ForgeAAA scope\",\"evidence\":\"knownFailures: 'Workspace build and full repository lint fail outside the changed ForgeAAA scope', R84 addendum confirms\"},{\"id\":\"R83-003\",\"severity\":\"advisory\",\"category\":\"director_status\",\"message\":\"Director status explicitly PARTIAL; milestone admits qualified review and full workspace validation unsatisfied\",\"evidence\":\"director.status=FORGEAAA_PARTIAL, classification.certified=Withheld, R84 addendum: 'Current Director status remains PARTIAL until a complete qualified review'\"},{\"id\":\"R83-004\",\"severity\":\"advisory\",\"category\":\"historical_review\",\"message\":\"R82 historical reviewer timeout retained; no independent zero-touch free quota redundancy (R76)\",\"evidence\":\"knownFailures: 'R82 historical reviewer timeout is retained', 'R76 lacks independent zero-touch free quota redundancy'\"},{\"id\":\"R83-005\",\"severity\":\"advisory\",\"category\":\"gameplay_persistence\",\"message\":\"Gameplay and persistence stages pass but with prior known failures (interaction through solid wall, exit movement hit opened leaf) now repaired\",\"evidence\":\"knownFailures: 'Gameplay 1791744880028 stage 2 interaction targeted through solid wall; repaired approach, passing 1791745266807', 'Persistence 1791745968706 restored states but final direct exit movement hit opened leaf; centered waypoint route passes 1791746291414'\"}],\"summary\":\"R83 milestone evidence shows functional gameplay, persistence, migration fault tolerance, and asset verification passing. However, independent qualified review is BLOCKED across all attempts, full workspace validation fails, and Director status remains PARTIAL per explicit admission. Revision required to complete independent review and resolve workspace validation.\"}",
+  "observations": [
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "status": 200,
+      "headers": [],
+      "observedAt": 1791748819702
+    }
+  ],
+  "status": "INDEPENDENTLY_REVIEWED",
+  "packetChars": 77413,
+  "packetSha256": "8378a7bb5dcd2fba58c30c06e942fcd907c75d2247a60dd67919ff183bb3089b",
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T20:00:17.374Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T20:00:17.374Z",
+      "recheckAt": "2026-10-18T20:00:17.374Z",
+      "qualificationAt": "2026-10-11T20:00:17.374Z",
+      "termsVerifiedAt": "2026-10-11T20:00:17.374Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T20:00:17.374Z",
+      "privacyVerifiedAt": "2026-10-11T20:00:17.374Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T20:00:17.374Z",
+      "priceVerifiedAt": "2026-10-11T20:00:17.374Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T20:00:17.374Z",
+      "nextReverifyAt": "2026-10-12T02:00:17.374Z"
+    }
+  },
+  "catalog": [
+    {
+      "modelId": "kilo-auto/free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "isFree": true
+    },
+    {
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "isFree": true
+    },
+    {
+      "modelId": "poolside/laguna-s-2.1:free",
+      "isFree": true
+    },
+    {
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "isFree": true
+    },
+    {
+      "modelId": "thinkingmachines/inkling-small:free",
+      "isFree": true
+    },
+    {
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "isFree": true
+    },
+    {
+      "modelId": "cohere/north-mini-code:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-content-safety:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "isFree": true
+    }
+  ],
+  "admission": {
+    "ok": true,
+    "costProfile": {
+      "inputCostPerMillion": 0,
+      "outputCostPerMillion": 0,
+      "isFree": true,
+      "freeTierVerifiedAt": "2026-10-11T20:00:18.102Z",
+      "paidFallbackPossible": false,
+      "paidFallbackDisabled": true,
+      "source": "kilo-free-direct-live"
+    },
+    "privacyClass": "permissive"
+  },
+  "outputMaxTokens": 6000,
+  "usage": {
+    "inputTokens": 23362,
+    "outputTokens": 1444,
+    "totalTokens": 24806,
+    "cachedInputTokens": 0,
+    "reasoningTokens": 996,
+    "costUsd": 0
+  },
+  "finishReason": "stop",
+  "servedModel": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "review": {
+    "approved": false,
+    "findings": [
+      "reviewer: kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free (QUALIFIED, suite R73_ROLE_QUALIFICATION_V7, protocol REVIEWER_PROTOCOL_V4, qualified 2026-10-10T10:35:30.841Z)",
+      "[blocking] independent_review: Independent qualified review not completed; all review addenda BLOCKED (R82: 503 upstream error, R83: missing review packet files, budget exceeded) (reviewAddenda[0].status=BLOCKED, reviewAddenda[1].error=ENOENT, reviewAddenda[2].error=ENOENT, reviewAddenda[3].error=exceeds bounded budget)",
+      "[blocking] workspace_validation: Full workspace build and repository lint fail outside changed ForgeAAA scope (knownFailures: 'Workspace build and full repository lint fail outside the changed ForgeAAA scope', R84 addendum confirms)",
+      "[advisory] director_status: Director status explicitly PARTIAL; milestone admits qualified review and full workspace validation unsatisfied (director.status=FORGEAAA_PARTIAL, classification.certified=Withheld, R84 addendum: 'Current Director status remains PARTIAL until a complete qualified review')",
+      "[advisory] historical_review: R82 historical reviewer timeout retained; no independent zero-touch free quota redundancy (R76) (knownFailures: 'R82 historical reviewer timeout is retained', 'R76 lacks independent zero-touch free quota redundancy')",
+      "[advisory] gameplay_persistence: Gameplay and persistence stages pass but with prior known failures (interaction through solid wall, exit movement hit opened leaf) now repaired (knownFailures: 'Gameplay 1791744880028 stage 2 interaction targeted through solid wall; repaired approach, passing 1791745266807', 'Persistence 1791745968706 restored states but final direct exit movement hit opened leaf; centered waypoint route passes 1791746291414')"
+    ],
+    "independent": true,
+    "reviewer": {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free"
+    },
+    "verdict": "revision_required",
+    "rawResponse": "{\"verdict\":\"revision_required\",\"findings\":[{\"id\":\"R83-001\",\"severity\":\"blocking\",\"category\":\"independent_review\",\"message\":\"Independent qualified review not completed; all review addenda BLOCKED (R82: 503 upstream error, R83: missing review packet files, budget exceeded)\",\"evidence\":\"reviewAddenda[0].status=BLOCKED, reviewAddenda[1].error=ENOENT, reviewAddenda[2].error=ENOENT, reviewAddenda[3].error=exceeds bounded budget\"},{\"id\":\"R83-002\",\"severity\":\"blocking\",\"category\":\"workspace_validation\",\"message\":\"Full workspace build and repository lint fail outside changed ForgeAAA scope\",\"evidence\":\"knownFailures: 'Workspace build and full repository lint fail outside the changed ForgeAAA scope', R84 addendum confirms\"},{\"id\":\"R83-003\",\"severity\":\"advisory\",\"category\":\"director_status\",\"message\":\"Director status explicitly PARTIAL; milestone admits qualified review and full workspace validation unsatisfied\",\"evidence\":\"director.status=FORGEAAA_PARTIAL, classification.certified=Withheld, R84 addendum: 'Current Director status remains PARTIAL until a complete qualified review'\"},{\"id\":\"R83-004\",\"severity\":\"advisory\",\"category\":\"historical_review\",\"message\":\"R82 historical reviewer timeout retained; no independent zero-touch free quota redundancy (R76)\",\"evidence\":\"knownFailures: 'R82 historical reviewer timeout is retained', 'R76 lacks independent zero-touch free quota redundancy'\"},{\"id\":\"R83-005\",\"severity\":\"advisory\",\"category\":\"gameplay_persistence\",\"message\":\"Gameplay and persistence stages pass but with prior known failures (interaction through solid wall, exit movement hit opened leaf) now repaired\",\"evidence\":\"knownFailures: 'Gameplay 1791744880028 stage 2 interaction targeted through solid wall; repaired approach, passing 1791745266807', 'Persistence 1791745968706 restored states but final direct exit movement hit opened leaf; centered waypoint route passes 1791746291414'\"}],\"summary\":\"R83 milestone evidence shows functional gameplay, persistence, migration fault tolerance, and asset verification passing. However, independent qualified review is BLOCKED across all attempts, full workspace validation fails, and Director status remains PARTIAL per explicit admission. Revision required to complete independent review and resolve workspace validation.\"}",
+    "receipt": {
+      "packetSha256": "8378a7bb5dcd2fba58c30c06e942fcd907c75d2247a60dd67919ff183bb3089b",
+      "packetChars": 77413,
+      "outputMaxTokens": 6000,
+      "completionSignal": "stop",
+      "schemaValid": true,
+      "quotaDomain": "kilo:source-ip:shared-unverified",
+      "usage": {
+        "inputTokens": 23362,
+        "outputTokens": 1444,
+        "totalTokens": 24806,
+        "cachedInputTokens": 0,
+        "reasoningTokens": 996,
+        "costUsd": 0
+      }
+    }
+  },
+  "finishedAt": "2026-10-11T20:01:19.988Z"
+}

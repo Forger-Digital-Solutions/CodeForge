@@ -1,7 +1,7 @@
 import { createHash, createPublicKey, randomUUID } from "node:crypto";
 import type { ISessionPersistence, SessionPersistenceTx } from "@codeforge/sessions";
 import type { SecretEnvelopeService } from "@codeforge/crypto";
-import { ChatRequestSchema, ChatResponseSchema, ToolCallSchema, type ChatRequest, type ChatResponse, type ProviderAdapter, type ProviderModel, type StreamEvent } from "@codeforge/providers";
+import { ChatRequestSchema, ChatResponseSchema, ToolCallSchema, type ChatRequest, type ChatResponse, type ProviderAdapter, type ProviderExecutionContext, type ProviderModel, type StreamEvent } from "@codeforge/providers";
 import { createGenericFreeRecord, freeRouteExclusionReason, materializeSponsoredRoute, verifySponsorManifest, type CapacityRoute, type FreeModelRecord, type ProviderCapacityPool, type SignedSponsorManifest, type SponsoredRouteOffer, type SponsorTrustedKey } from "@codeforge/forge-zero";
 
 export interface SponsorOfferScope { providerId: string; models: readonly string[]; maxConcurrency: number }
@@ -248,47 +248,47 @@ export class SponsorOperatorService {
     });
   }
   providerAdapters(): ProviderAdapter[] {
-    const service = this;
     return [...new Set(this.capacityRoutes().map((route) => route.providerId))].map((providerId): ProviderAdapter => ({
       providerId,
-      isTestProvider: service.policy.isTestProvider === true,
-      listModels: async () => service.snapshot.offers.filter((offer) => service.route(offer)?.providerId === providerId).map((offer) => offer.verification!.model),
-      canRoute: (modelId) => service.capacityRoutes().some((route) => route.providerId === providerId && route.modelId === modelId),
-      healthCheck: async () => ({ status: service.capacityRoutes().some((route) => route.providerId === providerId) ? "available" : "offline" }),
+      isTestProvider: this.policy.isTestProvider === true,
+      listModels: async () => this.snapshot.offers.filter((offer) => this.route(offer)?.providerId === providerId).map((offer) => offer.verification!.model),
+      canRoute: (modelId) => this.capacityRoutes().some((route) => route.providerId === providerId && route.modelId === modelId),
+      healthCheck: async () => ({ status: this.capacityRoutes().some((route) => route.providerId === providerId) ? "available" : "offline" }),
       chat: async () => { throw new Error("SPONSOR_AUTHENTICATED_CONTEXT_REQUIRED"); },
-      async *streamChat(): AsyncIterable<StreamEvent> { throw new Error("SPONSOR_AUTHENTICATED_CONTEXT_REQUIRED"); },
-      async *streamChatWithContext(request, context, signal): AsyncIterable<StreamEvent> {
-        if (!context.userId || !context.userId.trim() || context.userId === "anonymous") throw new Error("SPONSOR_AUTHENTICATED_CONTEXT_REQUIRED");
-        const role = typeof context.metadata?.role === "string" ? context.metadata.role : "CODER";
-        const offer = service.snapshot.offers.find((entry) => { const route = service.route(entry); return route?.providerId === providerId && route.modelId === request.model && route.roles.includes(role); });
-        if (!offer) throw new Error("SPONSOR_ROUTE_NOT_ADMITTED");
-        const requestId = request.dispatchId ?? randomUUID();
-        const { metadata: _metadata, dispatchId: _dispatchId, fallbackModels: _fallbackModels, ...boundedRequest } = request;
-        if (request.fallbackModels?.some((model) => model !== request.model)) throw new Error("SPONSOR_PAID_FALLBACK_DENIED");
-        await service.enqueue(context.userId, offer.id, requestId, role, boundedRequest);
-        for (;;) {
-          if (signal?.aborted) { await service.cancelJob(context.userId, requestId); throw new Error("SPONSOR_CANCELLED"); }
-          const status = await service.jobStatus(context.userId, requestId) as { state: string; error?: string; result?: ChatResponse };
-          if (status.state === "BLOCKED") {
-            if (status.error === "SPONSOR_RATE_LIMITED_429" || status.error === "SPONSOR_ALLOWANCE_EXHAUSTED") throw new Error("[PROVIDER_RATE_LIMITED] Sponsor quota capacity exhausted (429)");
-            if (status.error === "SPONSOR_AUTH_REVOKED") throw new Error("[PROVIDER_AUTH_FAILED] Sponsor grant credential revoked (401)");
-            throw new Error(status.error ?? "SPONSOR_DISPATCH_BLOCKED");
-          }
-          if (status.state === "FINISHED" && status.result) {
-            const choice = status.result.choices[0];
-            if (choice?.message.content) yield { type: "text_delta", delta: choice.message.content };
-            for (const raw of choice?.message.toolCalls ?? []) {
-              const call = ToolCallSchema.parse(raw);
-              yield { type: "tool_call_completed", toolCallId: call.id, toolName: call.function.name, arguments: call.function.arguments };
-            }
-            if (status.result.usage) yield { type: "usage", usage: status.result.usage };
-            yield { type: "finish", finishReason: choice?.finishReason ?? "stop", model: status.result.model };
-            return;
-          }
-          await new Promise<void>((resolve) => setTimeout(resolve, 25));
-        }
-      },
+      streamChat: () => ({ [Symbol.asyncIterator]: () => ({ next: async () => { throw new Error("SPONSOR_AUTHENTICATED_CONTEXT_REQUIRED"); } }) }),
+      streamChatWithContext: (request, context, signal) => this.streamSponsored(providerId, request, context, signal),
     }));
+  }
+  private async *streamSponsored(providerId: string, request: ChatRequest, context: ProviderExecutionContext, signal?: AbortSignal): AsyncIterable<StreamEvent> {
+    if (!context.userId || !context.userId.trim() || context.userId === "anonymous") throw new Error("SPONSOR_AUTHENTICATED_CONTEXT_REQUIRED");
+    const role = typeof context.metadata?.role === "string" ? context.metadata.role : "CODER";
+    const offer = this.snapshot.offers.find((entry) => { const route = this.route(entry); return route?.providerId === providerId && route.modelId === request.model && route.roles.includes(role); });
+    if (!offer) throw new Error("SPONSOR_ROUTE_NOT_ADMITTED");
+    const requestId = request.dispatchId ?? randomUUID();
+    const { metadata: _metadata, dispatchId: _dispatchId, fallbackModels: _fallbackModels, ...boundedRequest } = request;
+    if (request.fallbackModels?.some((model) => model !== request.model)) throw new Error("SPONSOR_PAID_FALLBACK_DENIED");
+    await this.enqueue(context.userId, offer.id, requestId, role, boundedRequest);
+    for (;;) {
+      if (signal?.aborted) { await this.cancelJob(context.userId, requestId); throw new Error("SPONSOR_CANCELLED"); }
+      const status = await this.jobStatus(context.userId, requestId) as { state: string; error?: string; result?: ChatResponse };
+      if (status.state === "BLOCKED") {
+        if (status.error === "SPONSOR_RATE_LIMITED_429" || status.error === "SPONSOR_ALLOWANCE_EXHAUSTED") throw new Error("[PROVIDER_RATE_LIMITED] Sponsor quota capacity exhausted (429)");
+        if (status.error === "SPONSOR_AUTH_REVOKED") throw new Error("[PROVIDER_AUTH_FAILED] Sponsor grant credential revoked (401)");
+        throw new Error(status.error ?? "SPONSOR_DISPATCH_BLOCKED");
+      }
+      if (status.state === "FINISHED" && status.result) {
+        const choice = status.result.choices[0];
+        if (choice?.message.content) yield { type: "text_delta", delta: choice.message.content };
+        for (const raw of choice?.message.toolCalls ?? []) {
+          const call = ToolCallSchema.parse(raw);
+          yield { type: "tool_call_completed", toolCallId: call.id, toolName: call.function.name, arguments: call.function.arguments };
+        }
+        if (status.result.usage) yield { type: "usage", usage: status.result.usage };
+        yield { type: "finish", finishReason: choice?.finishReason ?? "stop", model: status.result.model };
+        return;
+      }
+      await new Promise<void>((resolve) => setTimeout(resolve, 25));
+    }
   }
   private async cancelJob(userId: string, requestId: string): Promise<void> {
     await this.mutate("USAGE_CANCELLED", userId, (state) => { const job = state.jobs.find((entry) => entry.id === hash(`${userId}\0${requestId}`)); if (job && (job.state === "QUEUED" || job.state === "DISPATCHED")) { job.state = "BLOCKED"; job.error = "CANCELLED"; job.payload = ""; } });

@@ -95,7 +95,7 @@ describe("R50 tool-safety feedback (§9, §26)", () => {
       sessionId: "sess-r50-safe", eventStore, persistence, firewall, providerCatalog: catalog,
       workspacePath: ws, routeHealth: authority,
     });
-    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-r50-safe", eventStore, persistence });
+    createWorkspaceEventAdapter({ sessionId: "sess-r50-safe", eventStore, persistence });
     const manager = createSubagentManager({ persistence, agentRuntime: runtime, r1Enabled: true });
     return manager.spawnChildAgent({
       parentRunId, sessionId: "sess-r50-safe", agentId: "explorer",
@@ -111,7 +111,7 @@ describe("R50 tool-safety feedback (§9, §26)", () => {
 
     // Fail-closed: the escape proposal never executes and the run cannot complete.
     expect(result.status).toBe("blocked");
-    expect(result.summary + (result as { error?: string }).error ?? "").toContain("WORKSPACE_ESCAPE");
+    expect(result.summary + ((result as { error?: string }).error ?? "")).toContain("WORKSPACE_ESCAPE");
 
     // Tool lane: a boundary_violation landed on the served route.
     const assessment = authority.assess("fleet-esc", "model-esc", { role: "EXPLORER" });

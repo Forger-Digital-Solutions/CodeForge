@@ -1,0 +1,112 @@
+{
+  "milestone": "CODEFORGE_R84_PARTIAL",
+  "statuses": {
+    "A": "VERIFIED",
+    "B": "VERIFIED",
+    "C": "BLOCKED",
+    "D": "VERIFIED",
+    "E": "VERIFIED",
+    "F": "PARTIAL",
+    "G": "BLOCKED",
+    "H": "PARTIAL",
+    "I": "PARTIAL",
+    "J": "PARTIAL",
+    "K": "VERIFIED",
+    "L": "VERIFIED",
+    "M": "VERIFIED",
+    "N": "PARTIAL",
+    "O": "NOT RUN"
+  },
+  "gates": [
+    {
+      "gate": "A",
+      "name": "Repository preservation",
+      "status": "VERIFIED",
+      "evidence": "Original R82/R83 HEADs and clean status checked again; original pilot Content hashes unchanged."
+    },
+    {
+      "gate": "B",
+      "name": "Review-stream integrity",
+      "status": "VERIFIED",
+      "evidence": "Incomplete trailer, malformed SSE, unknown finish, substitution, invalid JSON/schema and upstream errors fail closed."
+    },
+    {
+      "gate": "C",
+      "name": "Independent reviewer",
+      "status": "BLOCKED",
+      "evidence": "R82 deadline exceeded; complete qualified R83 verdict is revision_required, not approval."
+    },
+    {
+      "gate": "D",
+      "name": "Workspace build",
+      "status": "VERIFIED",
+      "evidence": "Full npm run build passes with isolated locked dependencies and the missing server project reference."
+    },
+    {
+      "gate": "E",
+      "name": "Repository lint",
+      "status": "VERIFIED",
+      "evidence": "Full npm run lint passes; no lint rules or completion policies disabled."
+    },
+    {
+      "gate": "F",
+      "name": "Free route eligibility",
+      "status": "PARTIAL",
+      "evidence": "Known Kilo trial/opaque routes excluded. Remaining upstream permissions and managed operator capacity are not all established."
+    },
+    {
+      "gate": "G",
+      "name": "Independent Free supply",
+      "status": "BLOCKED",
+      "evidence": "One observed qualified Coder gateway; no second qualified independent zero-touch Coder domain demonstrated."
+    },
+    {
+      "gate": "H",
+      "name": "Quota accuracy",
+      "status": "PARTIAL",
+      "evidence": "Shared-domain tests pass; source-IP and cross-gateway upstream ownership remain partly unobserved. Logical user ids are not independent supply."
+    },
+    {
+      "gate": "I",
+      "name": "Autonomous completion",
+      "status": "PARTIAL",
+      "evidence": "Two isolated public fixture tasks complete through the gate. No actual fresh GitHub login or installed new-user workflow."
+    },
+    {
+      "gate": "J",
+      "name": "Two-project isolation",
+      "status": "PARTIAL",
+      "evidence": "FIFO starvation prevention, separate sessions, cancellation and recovery fixtures pass. No two concurrent live Free projects."
+    },
+    {
+      "gate": "K",
+      "name": "Durable recovery",
+      "status": "VERIFIED",
+      "evidence": "Existing restart/recovery scopes and native interrupted migration rollback executed; scope is fixtures and isolated pilot."
+    },
+    {
+      "gate": "L",
+      "name": "Budget safety",
+      "status": "VERIFIED",
+      "evidence": "Anonymous exact-zero routes, no credentials or payment flow, ForgeZero and spending tests; no unapproved paid inference."
+    },
+    {
+      "gate": "M",
+      "name": "Privacy",
+      "status": "VERIFIED",
+      "evidence": "136 security tests and security gate pass; public-only live fixtures and destination-specific review consent."
+    },
+    {
+      "gate": "N",
+      "name": "ForgeAAA regression",
+      "status": "PARTIAL",
+      "evidence": "Native migration fault cases pass with 23 measured actors; final fresh-process exit traversal fails twice."
+    },
+    {
+      "gate": "O",
+      "name": "Publication",
+      "status": "NOT RUN",
+      "evidence": "Publication not yet executed."
+    }
+  ]
+}

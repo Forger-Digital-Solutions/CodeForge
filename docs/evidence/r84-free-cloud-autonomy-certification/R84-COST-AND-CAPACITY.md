@@ -1,0 +1,9 @@
+# R84 cost and capacity
+
+Observed R84 inference: **47 physical dispatches** — 45 coding-fixture calls and two milestone review calls. Prepared packets and two catalog audits send no inference. Coding calls: 41 Kilo Cohere, two Kilo NVIDIA reviews, two BlockRun NVIDIA Explorer calls. The two milestone reviews add two Kilo NVIDIA requests. Thus 45 R84 dispatches used Kilo and two used BlockRun; their models do not multiply their gateway allowance.
+
+The coding fixtures consumed **140,277 input + 11,238 output = 151,515 tokens**, with 39 tool calls. The completed R83 milestone review reports 23,362 input + 1,444 output = 24,806 tokens and costUsd 0. Total known usage is **176,321 tokens**, excluding the timed-out R82 call, whose usage is unknown. Cached-token reporting is incomplete. No unapproved paid inference was dispatched: both gateways are anonymous exact-zero routes with no credentials, wallet, payment headers or paid fallback. Some provider costUsd fields are absent, so a complete provider-reported billing sum remains unknown.
+
+For the two coding tasks, nearest-rank p50/p95 elapsed time is 105,045/169,660 ms; p50/p95 tokens are 57,990/93,525; parent task retries are 0/0. All two parent task attempts and two reviews succeeded. Provider retries are not inferred from model turns. These tiny samples are not population estimates or project promises. Cost per completed modest project is **not measured**. Available remaining source-IP quota is unknown, because other clients/NAT users may share it. No infrastructure purchase, paid reference run, sponsorship or capacity commitment was made.
+
+Machine measurements: [task metrics](R84-TASK-CAMPAIGN-1791749092431-metrics.json), [R83 review](r83-review-620d8e2f-d5f7-415d-9839-3a5091a46974.json), [R82 deadline](r82-review-0e681d9b-bafb-4400-b022-603225f58cec.json).

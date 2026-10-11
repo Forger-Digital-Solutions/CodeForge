@@ -338,7 +338,7 @@ async function scenarioStampede() {
   check("stampede: zero false waits", falseWaits === 0, `${falseWaits} of ${waits} waits`);
   check("stampede: zero leaked reservations", h.reservations.snapshot().activeReservations === 0);
   check("stampede: no provider exceeded its concurrency ceiling",
-    Object.entries(servedByProvider).every(([p]) => true) && peakHolds <= 3 * cap, `peakHolds=${peakHolds}`);
+    peakHolds <= 3 * cap, `peakHolds=${peakHolds}`);
   check("stampede: quality-steered spread — every healthy eligible route served some work",
     Object.values(servedByRoute).every((n) => n > 0), JSON.stringify(servedByRoute));
   return { name: "stampede", users: USERS, servedByRoute, servedByProvider,
@@ -385,7 +385,6 @@ async function scenarioRecovery() {
   ];
   const h = mkHarness({ routeSpecs: specs, pools });
   const primary = h.routes.find((r) => r.providerId === "mistral");
-  const alt = h.routes.find((r) => r.providerId === "openrouter");
   const phases = [];
   const admit = (id) => {
     const d = h.decide({ id, userId: `u-${id}`, role: "CODER" });
@@ -450,7 +449,7 @@ async function scenarioEndurance() {
     }
     const HARD_EXCLUDE = new Set(["MODEL_RETIRED", "ACCESS_RESTRICTED", "BILLING_VERIFICATION_REQUIRED",
       "AUTH_REQUIRED", "USER_CONNECTION_REQUIRED", "QUARANTINED", "DAILY_QUOTA_EXHAUSTED", "RATE_LIMITED"]);
-    for (const [routeId, untilEpoch] of [...parkedUntil]) {
+    for (const [routeId, untilEpoch] of parkedUntil) {
       if (epoch >= untilEpoch) {
         const r = h.routes.find((x) => x.routeId === routeId);
         now += 301_000;
@@ -592,7 +591,7 @@ async function scenarioScale() {
         }
       }
       now += 1_000;
-      for (const key of [...awaitingRecovery]) {
+      for (const key of awaitingRecovery) {
         const r = h.routes.find((x) => `${x.providerId}/${x.modelId}` === key);
         if (r && h.health.assess(r.providerId, r.modelId).state !== "RATE_LIMITED") {
           recovered++; awaitingRecovery.delete(key);
@@ -607,7 +606,7 @@ async function scenarioScale() {
   let drain = 0;
   while (awaitingRecovery.size && drain++ < 20) {
     now += 3_000;
-    for (const key of [...awaitingRecovery]) {
+    for (const key of awaitingRecovery) {
       const r = h.routes.find((x) => `${x.providerId}/${x.modelId}` === key);
       if (r && h.health.assess(r.providerId, r.modelId).state !== "RATE_LIMITED") {
         recovered++; awaitingRecovery.delete(key);

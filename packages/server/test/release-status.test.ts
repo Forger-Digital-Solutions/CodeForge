@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { createServer, type CodeForgeServer } from "../src/index.js";
 import { ForgeZero } from "@codeforge/forge-zero";
 import { InMemoryProviderCatalog } from "@codeforge/providers";
@@ -11,7 +11,6 @@ import { NormalizedModelRegistry, createFreeCloudService } from "@codeforge/mode
  */
 describe("GET /api/free-cloud/release-status (R35-AQ)", () => {
   let server: CodeForgeServer;
-  let base: string;
 
   afterEach(async () => {
     await server?.stop();

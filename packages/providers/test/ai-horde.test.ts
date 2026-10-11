@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AiHordeCommunityAdapter, createAiHordeCommunityAdapter } from "../src/ai-horde.js";
+import { AiHordeCommunityAdapter } from "../src/ai-horde.js";
 import { createProviderAdapterById } from "../src/provider-factory.js";
 import type { ChatRequest, StreamEvent } from "../src/index.js";
 
@@ -95,7 +95,7 @@ describe("AI Horde documented native community transport", () => {
       return generationFetch("ok")(target, init);
     }) as typeof fetch });
     await adapter.chat({ ...request, maxTokens: 1 });
-    expect((body?.params as { max_length: number }).max_length).toBe(16);
+    expect((body?.params as { max_length: number } | undefined)?.max_length).toBe(16);
   });
 
   it("returns completed text and native tool events through streamChat", async () => {

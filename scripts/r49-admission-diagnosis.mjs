@@ -10,7 +10,7 @@ import {
   createOpenRouterAdapter,
   defaultCapacityGovernor,
 } from "@codeforge/providers";
-import { EventStore, createSessionPersistence } from "@codeforge/sessions";
+import { createSessionPersistence } from "@codeforge/sessions";
 import {
   createEightBitRouteHealthAuthority,
   FreeFabric,
@@ -30,7 +30,6 @@ const ENV_KEY = { groq: "GROQ_API_KEY", mistral: "MISTRAL_API_KEY", openrouter: 
 
 const present = PROVIDERS.filter((id) => (process.env[ENV_KEY[id]] ?? "").trim().length > 0);
 const persistence = createSessionPersistence({ dbPath: ":memory:" });
-const eventStore = new EventStore();
 const firewall = new ForgeZero();
 const routeHealth = createEightBitRouteHealthAuthority();
 const registry = new NormalizedModelRegistry();

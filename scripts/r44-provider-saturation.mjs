@@ -14,7 +14,6 @@ import { CapacityReservationLedger } from "../packages/forge-zero/dist/index.js"
 import {
   createFreeFabric,
   createEightBitRouteHealthAuthority,
-  receiptSuiteSupported,
   roleAdmissionAllowed,
   roleQualityAdvice,
   roleQualificationStatusFor,

@@ -114,7 +114,7 @@ for (const phase of [pending, second]) {
       }
     }
     now += 1_000;
-    for (const key of [...awaitingRecovery]) {
+    for (const key of awaitingRecovery) {
       const r = routes.find((route) => `${route.providerId}/${route.modelId}` === key);
       if (r && health.assess(r.providerId, r.modelId).state !== "RATE_LIMITED") {
         recovered++;

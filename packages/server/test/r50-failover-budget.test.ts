@@ -107,7 +107,7 @@ describe("R50 failover productive-turn budget", () => {
       providerCatalog: catalog,
       workspacePath: ws,
     });
-    const adapter = createWorkspaceEventAdapter({ sessionId: "sess-r50", eventStore, persistence });
+    createWorkspaceEventAdapter({ sessionId: "sess-r50", eventStore, persistence });
     return createSubagentManager({ persistence, agentRuntime: runtime, r1Enabled: true });
   }
 
