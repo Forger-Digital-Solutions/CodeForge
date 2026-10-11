@@ -1,0 +1,562 @@
+{
+  "startedAt": "2026-10-11T06:12:54.859Z",
+  "evidenceClass": "R80_PHASE_G_FREE_CODER_CAPACITY",
+  "catalogs": {
+    "kilo-free-direct": [
+      {
+        "modelId": "kilo-auto/free",
+        "isFree": true,
+        "freeStatus": "verified_free",
+        "tools": true,
+        "structured": false,
+        "contextWindow": 256000,
+        "coding": true
+      },
+      {
+        "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "isFree": true,
+        "freeStatus": "verified_free",
+        "tools": true,
+        "structured": false,
+        "contextWindow": 1000000,
+        "coding": true
+      },
+      {
+        "modelId": "dots-studio/dots-3-note-preview:free",
+        "isFree": true,
+        "freeStatus": "verified_free",
+        "tools": true,
+        "structured": true,
+        "contextWindow": 512000,
+        "coding": true
+      },
+      {
+        "modelId": "poolside/laguna-s-2.1:free",
+        "isFree": true,
+        "freeStatus": "verified_free",
+        "tools": true,
+        "structured": false,
+        "contextWindow": 262144,
+        "coding": true
+      },
+      {
+        "modelId": "liquid/lfm-2.5-2.6b:free",
+        "isFree": true,
+        "freeStatus": "verified_free",
+        "tools": true,
+        "structured": true,
+        "contextWindow": 65536,
+        "coding": true
+      },
+      {
+        "modelId": "nvidia/nemotron-3.5-lightning:free",
+        "isFree": true,
+        "freeStatus": "verified_free",
+        "tools": true,
+        "structured": false,
+        "contextWindow": 1000000,
+        "coding": true
+      },
+      {
+        "modelId": "thinkingmachines/inkling-small:free",
+        "isFree": true,
+        "freeStatus": "verified_free",
+        "tools": true,
+        "structured": false,
+        "contextWindow": 1048576,
+        "coding": true
+      },
+      {
+        "modelId": "poolside/laguna-xs-2.1:free",
+        "isFree": true,
+        "freeStatus": "verified_free",
+        "tools": true,
+        "structured": false,
+        "contextWindow": 262144,
+        "coding": true
+      },
+      {
+        "modelId": "cohere/north-mini-code:free",
+        "isFree": true,
+        "freeStatus": "verified_free",
+        "tools": true,
+        "structured": false,
+        "contextWindow": 256000,
+        "coding": true
+      },
+      {
+        "modelId": "nvidia/nemotron-3.5-content-safety:free",
+        "isFree": true,
+        "freeStatus": "verified_free",
+        "tools": false,
+        "structured": false,
+        "contextWindow": 128000,
+        "coding": true
+      },
+      {
+        "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "isFree": true,
+        "freeStatus": "verified_free",
+        "tools": true,
+        "structured": false,
+        "contextWindow": 256000,
+        "coding": true
+      },
+      {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "isFree": true,
+        "freeStatus": "verified_free",
+        "tools": true,
+        "structured": true,
+        "contextWindow": 262144,
+        "coding": true
+      }
+    ],
+    "blockrun-free-direct": {
+      "ok": true,
+      "freeCount": 2,
+      "models": [
+        "nvidia/llama-3.2-11b-vision",
+        "poolside/laguna-xs-2.1"
+      ]
+    }
+  },
+  "qualifications": {
+    "nemotron-3-super": {
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "frames": [
+        {
+          "at": "2026-10-11T06:12:56.067Z",
+          "events": 5,
+          "chars": 0,
+          "finishedAt": "2026-10-11T06:12:59.796Z"
+        },
+        {
+          "at": "2026-10-11T06:12:59.800Z",
+          "events": 5,
+          "chars": 0,
+          "finishedAt": "2026-10-11T06:13:00.680Z"
+        },
+        {
+          "at": "2026-10-11T06:13:00.682Z",
+          "events": 5,
+          "chars": 0,
+          "finishedAt": "2026-10-11T06:13:04.866Z"
+        },
+        {
+          "at": "2026-10-11T06:13:04.870Z",
+          "events": 7,
+          "chars": 64,
+          "finishedAt": "2026-10-11T06:13:05.657Z"
+        }
+      ],
+      "receipt": {
+        "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+        "providerId": "kilo-free-direct",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "modelDisplayName": "CodeForge Free Model",
+        "accessClass": "FREE_NATIVE",
+        "freeStatus": "verified_free",
+        "roleResults": {
+          "CODER": {
+            "role": "CODER",
+            "status": "QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 3733,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "edit",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 5070,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 53
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 400
+                    }
+                  ]
+                }
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 1,
+            "startedAt": "2026-10-11T06:12:56.066Z",
+            "completedAt": "2026-10-11T06:13:05.660Z"
+          },
+          "TOOL_AGENT": {
+            "role": "TOOL_AGENT",
+            "status": "QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 3733,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "edit",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 5070,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 53
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 400
+                    }
+                  ]
+                }
+              },
+              {
+                "caseId": "compact.structured",
+                "category": "structured_output",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 789,
+                "retries": 0,
+                "details": {
+                  "textLength": 64,
+                  "parsed": true
+                }
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 1,
+            "startedAt": "2026-10-11T06:12:56.066Z",
+            "completedAt": "2026-10-11T06:13:05.660Z"
+          },
+          "ANALYST": {
+            "role": "ANALYST",
+            "status": "QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.structured",
+                "category": "structured_output",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 789,
+                "retries": 0,
+                "details": {
+                  "textLength": 64,
+                  "parsed": true
+                }
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 1,
+            "startedAt": "2026-10-11T06:12:56.066Z",
+            "completedAt": "2026-10-11T06:13:05.660Z"
+          }
+        },
+        "startedAt": "2026-10-11T06:12:56.066Z",
+        "completedAt": "2026-10-11T06:13:05.660Z",
+        "totalLatencyMs": 9594,
+        "qualificationState": "QUALIFIED",
+        "hardFailureRoles": [],
+        "metadata": {
+          "compact": true,
+          "requests": 3,
+          "transient": false,
+          "quotaExhausted": false
+        }
+      },
+      "state": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED"
+      }
+    },
+    "north-mini-code": {
+      "modelId": "cohere/north-mini-code:free",
+      "frames": [
+        {
+          "at": "2026-10-11T06:13:05.663Z",
+          "events": 13,
+          "chars": 0,
+          "finishedAt": "2026-10-11T06:13:07.078Z"
+        },
+        {
+          "at": "2026-10-11T06:13:07.080Z",
+          "events": 13,
+          "chars": 0,
+          "finishedAt": "2026-10-11T06:13:08.664Z"
+        },
+        {
+          "at": "2026-10-11T06:13:08.667Z",
+          "events": 64,
+          "chars": 0,
+          "finishedAt": "2026-10-11T06:13:09.473Z"
+        },
+        {
+          "at": "2026-10-11T06:13:09.475Z",
+          "events": 20,
+          "chars": 61,
+          "finishedAt": "2026-10-11T06:13:12.005Z"
+        }
+      ],
+      "receipt": {
+        "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+        "providerId": "kilo-free-direct",
+        "modelId": "cohere/north-mini-code:free",
+        "modelDisplayName": "CodeForge Free Model",
+        "accessClass": "FREE_NATIVE",
+        "freeStatus": "verified_free",
+        "roleResults": {
+          "CODER": {
+            "role": "CODER",
+            "status": "QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1418,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "edit",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 2395,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 87
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 105
+                    }
+                  ]
+                }
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 1,
+            "startedAt": "2026-10-11T06:13:05.662Z",
+            "completedAt": "2026-10-11T06:13:12.006Z"
+          },
+          "TOOL_AGENT": {
+            "role": "TOOL_AGENT",
+            "status": "QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.tool_call",
+                "category": "tool_call",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 1418,
+                "retries": 0,
+                "details": {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "path": "src/calc.ts"
+                }
+              },
+              {
+                "caseId": "compact.edit",
+                "category": "edit",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 2395,
+                "retries": 0,
+                "details": {
+                  "calls": 2,
+                  "path": "src/calc.ts",
+                  "oldTextMatches": true,
+                  "oldTextHasBug": true,
+                  "newTextOk": true,
+                  "turns": [
+                    {
+                      "toolCalls": [
+                        "read_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 87
+                    },
+                    {
+                      "toolCalls": [
+                        "edit_file"
+                      ],
+                      "finishReason": "tool_calls",
+                      "textLength": 0,
+                      "outputTokens": 105
+                    }
+                  ]
+                }
+              },
+              {
+                "caseId": "compact.structured",
+                "category": "structured_output",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 2531,
+                "retries": 0,
+                "details": {
+                  "textLength": 61,
+                  "parsed": true
+                }
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 1,
+            "startedAt": "2026-10-11T06:13:05.662Z",
+            "completedAt": "2026-10-11T06:13:12.006Z"
+          },
+          "ANALYST": {
+            "role": "ANALYST",
+            "status": "QUALIFIED",
+            "testCases": [
+              {
+                "caseId": "compact.structured",
+                "category": "structured_output",
+                "passed": true,
+                "hardFailure": false,
+                "latencyMs": 2531,
+                "retries": 0,
+                "details": {
+                  "textLength": 61,
+                  "parsed": true
+                }
+              }
+            ],
+            "hardFailures": [],
+            "overallScore": 1,
+            "startedAt": "2026-10-11T06:13:05.662Z",
+            "completedAt": "2026-10-11T06:13:12.006Z"
+          }
+        },
+        "startedAt": "2026-10-11T06:13:05.662Z",
+        "completedAt": "2026-10-11T06:13:12.006Z",
+        "totalLatencyMs": 6344,
+        "qualificationState": "QUALIFIED",
+        "hardFailureRoles": [],
+        "metadata": {
+          "compact": true,
+          "requests": 3,
+          "transient": false,
+          "quotaExhausted": false
+        }
+      },
+      "state": "QUALIFIED",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED"
+      }
+    }
+  },
+  "quotaDomains": {
+    "kilo-free-direct": "SINGLE_ANONYMOUS_DOMAIN — every :free model on the kilo gateway shares one quota; model count is not provider redundancy",
+    "blockrun-free-direct": "catalog reachable — see freeCount"
+  },
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T06:12:54.860Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T06:12:54.860Z",
+      "recheckAt": "2026-10-18T06:12:54.860Z",
+      "qualificationAt": "2026-10-11T06:12:54.859Z",
+      "termsVerifiedAt": "2026-10-11T06:12:54.860Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T06:12:54.860Z",
+      "privacyVerifiedAt": "2026-10-11T06:12:54.860Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T06:12:54.860Z",
+      "priceVerifiedAt": "2026-10-11T06:12:54.860Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T06:12:54.860Z",
+      "nextReverifyAt": "2026-10-11T12:12:54.860Z"
+    }
+  },
+  "finishedAt": "2026-10-11T06:13:12.008Z"
+}
