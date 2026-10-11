@@ -1,0 +1,28 @@
+import {readFile,writeFile} from 'node:fs/promises';
+const file='packages/forge-aaa/src/r83-building-spec.ts';
+let text=await readFile(file,'utf8');
+const registry=JSON.parse(await readFile('benchmarks/r82/module-registry.json','utf8'));
+text=text.replace(/\/\/ R82 baseline modules[\s\S]*?(?=\/\/ R83 additional modules)/,'// Exact published R82 contracts retain their asset hashes and provenance.\nexport const R82_ONE_ROOM_MODULES: BuildingModuleDefinition[] = '+JSON.stringify(registry,null,2)+';\n\n');
+text=text.replace('import type { BuildingDefinition, BuildingModuleDefinition } from "./building-definition.js";','import type { BuildingDefinition, BuildingModuleDefinition } from "./building-definition.js";\nimport type { ConnectedBuildingDefinition } from "./connected-building.js";');
+text=text.replace('sockets: [],\n    collision: { profile: "block-all" },\n    provenance: { authoredBy: "deterministic" },\n    engines: { unreal: ["4.27"] },\n    sourceAsset: "architecture/SM_SharedWall_Front.fbx",','sockets: [{ id: "door-int", localPosCm: [0, 167.5, -130], accepts: ["door"] }],\n    collision: { profile: "block-all" },\n    provenance: { authoredBy: "deterministic" },\n    engines: { unreal: ["4.27"] },\n    sourceAsset: "architecture/SM_SharedWall_Front.fbx",');
+text=text.replace('export const R83_TWO_ROOM_BUILDING: BuildingDefinition = {','export const R83_TWO_ROOM_BUILDING: ConnectedBuildingDefinition = {');
+text=text.replace('positionCm: [290, 260, 0], yawDeg: 0, attachment: { instanceId: "floor-b", socketId: "door-int" }','positionCm: [290, 260, 0], yawDeg: 90, attachment: { instanceId: "shared-wall-front", socketId: "door-int" }');
+text=text.replace('instanceId: "floor-b", moduleId: "forge/building/SM_PlankFloor_B/v1"','instanceId: "floor-b", moduleId: "forge/building/SM_PlankFloor/v1"');
+text=text.replace('instanceId: "wall-right-b", moduleId: "forge/building/SM_SideWall_B/v1"','instanceId: "wall-right-b", moduleId: "forge/building/SM_SideWall/v1"');
+text=text.replace('instanceId: "door-interior", moduleId: "forge/building/door-interior/v1"','instanceId: "door-interior", moduleId: "dtw/building/door-western/v1"');
+// Unfinished duplicate module variants are replaced with references to certified assets.
+for (const name of ['SM_PlankFloor_B','door-interior','SM_SideWall_B','SM_BackWall_B']) {
+  const start=text.indexOf('  {\n    contractVersion: 1,\n    moduleVersion: 1,\n    moduleId: "forge/building/'+name+'/v1"');
+  if(start<0) throw new Error('not found '+name);
+  const end=text.indexOf('\n  },',start)+6;
+  text=text.slice(0,start)+text.slice(end);
+}
+text=text.replace('instanceId: "back-b", moduleId: "forge/building/SM_BackWall_B/v1"','instanceId: "back-b", moduleId: "forge/building/SM_FrontWall_B/v1"');
+const newModule={contractVersion:1,moduleVersion:1,moduleId:'forge/building/SM_DoorThreshold/v1',moduleType:'floor',displayName:'Shared doorway threshold',dimensions:{widthCm:20,depthCm:110,heightCm:10},pivot:{kind:'center'},sockets:[],collision:{profile:'block-all'},provenance:{authoredBy:'deterministic'},engines:{unreal:['4.27'],blender:['4.5']},sourceAsset:'architecture/SM_DoorThreshold.fbx',engineAsset:'/Game/ForgeAAA/R83/SM_DoorThreshold',coordinateSystem:'unreal-cm-z-up',materials:['Forge_wood'],dependencies:[],validationStatus:'geometry-verified'};
+text=text.replace('export const R83_NEW_MODULES: BuildingModuleDefinition[] = [','export const R83_NEW_MODULES: BuildingModuleDefinition[] = [\n'+JSON.stringify(newModule,null,2)+',');
+const marker='    // Interior connecting door between Room A and Room B';
+text=text.replace(marker,'    { instanceId: "threshold", moduleId: "forge/building/SM_DoorThreshold/v1", moduleVersion: 1, positionCm: [290, 260, -5], yawDeg: 0 },\n\n'+marker);
+text=text.replace('export const R83_TWO_ROOM_BUILDING: ConnectedBuildingDefinition = {\n  schemaVersion: 1,','export const R83_TWO_ROOM_BUILDING: ConnectedBuildingDefinition = {\n  schemaVersion: 1,\n  revision: 2,\n  migration: { sourceRevision: 1, preservedInstanceIds: R82_ONE_ROOM_BUILDING.instances.filter(i => i.instanceId !== "wall-right").map(i => i.instanceId), removedInstanceIds: ["wall-right"] },\n  rooms: [\n    { roomId: "living-room", purpose: "living", floorInstanceId: "floor", ceilingInstanceId: "ceiling", centerCm: [0,260,0], interiorCm: [560,520,260], instanceIds: R82_ONE_ROOM_BUILDING.instances.filter(i => i.instanceId !== "wall-right").map(i => i.instanceId) },\n    { roomId: "workroom", purpose: "workroom", floorInstanceId: "floor-b", ceilingInstanceId: "ceiling-b", centerCm: [580,260,0], interiorCm: [560,520,260], instanceIds: ["floor-b","front-b","back-b","wall-right-b","ceiling-b","door-interior"] },\n  ],\n  connections: [{ connectionId: "living-workroom", rooms: ["living-room","workroom"], walls: ["east","west"], normalAxis: "x", centerCm: [290,260,0], openingWidthCm: 110, openingHeightCm: 215, wallThicknessCm: 20, doorInstanceId: "door-interior", thresholdInstanceId: "threshold", wallInstanceIds: ["shared-wall-front","shared-wall-back","shared-wall-lintel"], supersededInstanceId: "wall-right", swingClearanceCm: 110 }],');
+text=text.replace(/\/\/ R83 connected two-room building definition \(22 instances\)[\s\S]*?(?=export const R83_TWO_ROOM_BUILDING)/,'// The east wall becomes an explicit traversable connection; original actor identities remain.\n');
+text=text.replace(/    \/\/ Preserved Room A instances\n|    \/\/ Shared wall with interior doorway connecting Room A and Room B\n|    \/\/ Room B structural modules\n|    \/\/ Interior connecting door between Room A and Room B\n/g,'');
+await writeFile(file,text);
