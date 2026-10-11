@@ -1,0 +1,25 @@
+ M benchmarks/r83/r83-assemble-live.mjs
+ M benchmarks/r83/r83-assets-live.mjs
+ M packages/forge-aaa/src/building-revision.ts
+?? benchmarks/r83/native-placement-diagnostic.py
+?? benchmarks/r83/run-diagnostic.mjs
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791741386916.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791741449761.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791741573376.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791741957843.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791742101407.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791742689322.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791742750471.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791743055777.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791743136175.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791743145744.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791743302948.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791743306367.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791743703641.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791743706894.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791743894692.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assemble-1791743898558.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assets-1791741220083.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/r83-assets-1791741911811.json
+?? docs/evidence/r83-forgeaaa-autonomous-multiroom/recovery/
+a9db8ae8e8d3bb42e71b951c1c7383d48f10e8d5

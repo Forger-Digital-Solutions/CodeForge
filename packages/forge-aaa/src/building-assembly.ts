@@ -65,9 +65,9 @@ try:
             mesh, leaf, cls = resolved[i["instanceId"]]
             pos, yaw = i["positionCm"], i["yawDeg"]
             if cls:
-                actor = ell.spawn_actor_from_class(cls, unreal.Vector(*pos), unreal.Rotator(0,yaw,0))
+                actor = ell.spawn_actor_from_class(cls, unreal.Vector(*pos), unreal.Rotator(pitch=0,yaw=yaw,roll=0))
             else:
-                actor = ell.spawn_actor_from_object(mesh, unreal.Vector(*pos), unreal.Rotator(0,yaw,0))
+                actor = ell.spawn_actor_from_object(mesh, unreal.Vector(*pos), unreal.Rotator(pitch=0,yaw=yaw,roll=0))
             if actor is None: raise RuntimeError("spawn failed " + i["identity"])
             created.append(actor)
             actor.tags = [unreal.Name(i["identity"]), unreal.Name(revision)]
@@ -78,6 +78,9 @@ try:
                 actor.get_editor_property("FrameMesh").set_editor_property("static_mesh", mesh)
                 actor.get_editor_property("SashMesh" if is_window else "LeafMesh").set_editor_property("static_mesh", leaf)
             action = "spawned"
+        pos, rot, scale = actor.get_actor_location(), actor.get_actor_rotation(), actor.get_actor_scale3d()
+        if max(abs(v-w) for v,w in zip((pos.x,pos.y,pos.z),i["positionCm"])) > 0.1 or abs((rot.yaw-i["yawDeg"]+180)%360-180) > 0.1 or abs(rot.pitch)>0.1 or abs(rot.roll)>0.1 or max(abs(v-1) for v in (scale.x,scale.y,scale.z))>0.001:
+            raise RuntimeError("spawned actor placement differs " + i["identity"])
         origin, extent = actor.get_actor_bounds(False)
         if not i["module"].get("nativeClass"):
             d = i["module"]["dimensions"]

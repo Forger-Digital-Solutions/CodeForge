@@ -1,0 +1,62 @@
+{
+  "exitCode": 0,
+  "timedOut": false,
+  "ok": true,
+  "logPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\r83-diagnostic-reload.log",
+  "report": {
+    "ok": true,
+    "level": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329",
+    "identity": "r83-diagnostic:6ad688c776574051a9a24723ca32c988",
+    "actors": [
+      {
+        "actor": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0",
+        "positionCm": [
+          290,
+          260,
+          0
+        ],
+        "rotation": {
+          "pitch": 0,
+          "yaw": 89.99998474121094,
+          "roll": 0
+        },
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    ],
+    "newBlankMapBinding": "X.new_blank_map(save_existing_map) -> World\r\nNew Blank Map\r\n\r\nArgs:\r\n    save_existing_map (bool): \r\n\r\nReturns:\r\n    World:",
+    "unloadedWorld": "/Temp/Untitled_2.Untitled"
+  },
+  "reports": [
+    {
+      "ok": true,
+      "level": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329",
+      "identity": "r83-diagnostic:6ad688c776574051a9a24723ca32c988",
+      "actors": [
+        {
+          "actor": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0",
+          "positionCm": [
+            290,
+            260,
+            0
+          ],
+          "rotation": {
+            "pitch": 0,
+            "yaw": 89.99998474121094,
+            "roll": 0
+          },
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "newBlankMapBinding": "X.new_blank_map(save_existing_map) -> World\r\nNew Blank Map\r\n\r\nArgs:\r\n    save_existing_map (bool): \r\n\r\nReturns:\r\n    World:",
+      "unloadedWorld": "/Temp/Untitled_2.Untitled"
+    }
+  ]
+}

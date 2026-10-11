@@ -1,5 +1,7 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { buildingActorIdentity, validateBuildingDefinition, type BuildingDefinition, type BuildingModuleDefinition, type BuildingModuleInstance } from "./building-definition.js";
 import { FORGE_AAA_ERRORS, ForgeAaaError } from "./types.js";
 
@@ -48,7 +50,9 @@ export interface MigrationScriptOptions {
   backupPath: string;
   levelFilePath?: string;
   failAfterMutations?: number;
+  readbackOnly?: "COMMITTED" | "ROLLED_BACK";
 }
+const engineVerified = new WeakSet<SavedLevelVerification>();
 function invalid(message: string): never { throw new ForgeAaaError(FORGE_AAA_ERRORS.MANIFEST_INVALID, message); }
 function denied(message: string): never { throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, message); }
 export function computeBuildingFingerprint(building: BuildingDefinition, modules: readonly BuildingModuleDefinition[]): string {
@@ -107,7 +111,7 @@ export function verifyMigration(migration: BuildingRevisionMigration): BuildingR
   return { ...migration, status: "VERIFYING" };
 }
 function receiptMatches(migration: BuildingRevisionMigration, evidence: SavedLevelVerification | boolean, phase: "COMMITTED" | "ROLLED_BACK"): evidence is SavedLevelVerification {
-  if (typeof evidence !== "object" || evidence === null) return false;
+  if (typeof evidence !== "object" || evidence === null || !engineVerified.has(evidence)) return false;
   const revision = phase === "COMMITTED" ? migration.targetRevision : migration.previousRevision;
   if (!(evidence.migrationId === migration.migrationId && evidence.buildingId === migration.buildingId && evidence.phase === phase && evidence.fingerprint === revision.fingerprint && evidence.instanceCount === revision.instanceCount && evidence.level_saved === true && evidence.reloaded === true && evidence.actors_verified === true && typeof evidence.levelPath === "string" && evidence.levelPath.startsWith("/Game/") && typeof evidence.receiptPath === "string" && /^(?:[A-Za-z]:[\\/]|\/)/.test(evidence.receiptPath) && typeof evidence.levelFilePath === "string" && /^(?:[A-Za-z]:[\\/]|\/)/.test(evidence.levelFilePath) && /^[a-f0-9]{64}$/.test(evidence.levelFileSha256))) return false;
   try {
@@ -129,6 +133,29 @@ export function rollbackMigration(migration: BuildingRevisionMigration, evidence
 export function isMigrationIdempotent(migration: BuildingRevisionMigration, currentFingerprint?: string): { idempotent: boolean; reason: string } {
   const idempotent = currentFingerprint === migration.targetRevision.fingerprint || (migration.previousRevision.fingerprint === migration.targetRevision.fingerprint && !migration.addedInstances.length && !migration.modifiedInstances.length && !migration.removedInstances.length);
   return { idempotent, reason: idempotent ? "Building is already at target revision fingerprint; engine actor verification is still required" : "Migration requires instance changes" };
+}
+export async function verifySavedMigration(migration: BuildingRevisionMigration, request: {
+  projectPath: string; levelPath: string; evidenceDirectory: string; phase: "COMMITTED" | "ROLLED_BACK";
+}): Promise<SavedLevelVerification> {
+  const { UnrealAdapter } = await import("./adapters/unreal.js");
+  const directory = path.resolve(request.evidenceDirectory);
+  await mkdir(directory, { recursive: true });
+  const stem = path.join(directory, `migration-readback-${randomUUID()}`);
+  const receiptPath = stem + ".json";
+  const scriptPath = stem + ".py";
+  const logPath = stem + ".log";
+  const script = migrationAssemblyScript(migration, migration.targetBuilding, migration.targetModules, request.levelPath, {
+    receiptPath, backupPath: stem + ".unused-backup", readbackOnly: request.phase,
+  });
+  await writeFile(scriptPath, script, "utf8");
+  const result = await new UnrealAdapter().runPythonScript({ projectPath: request.projectPath, scriptPath, logPath, host: "editor", timeoutMs: 180_000 });
+  if (!result.ok || result.exitCode !== 0 || result.timedOut) denied("Independent saved migration readback failed; inspect " + logPath);
+  const evidence = JSON.parse(await readFile(receiptPath, "utf8")) as SavedLevelVerification & { ok?: boolean };
+  if (evidence.ok !== true || evidence.phase !== request.phase) denied("Independent saved migration assertions failed");
+  Object.freeze(evidence);
+  engineVerified.add(evidence);
+  if (!receiptMatches(migration, evidence, request.phase)) denied("Independent migration receipt or level hash mismatch");
+  return evidence;
 }
 function instanceSpecs(building: BuildingDefinition, modules: readonly BuildingModuleDefinition[]) {
   return building.instances.map((i) => {
@@ -200,12 +227,13 @@ def assets(instances):
 def verify(instances, fingerprint, found):
     if set(found) != set(i["identity"] for i in instances): raise RuntimeError("building identity set mismatch")
     revision = "forge-revision:" + fingerprint
+    measurements = []
     for i in instances:
         actor, m = found[i["identity"]], i["module"]
         revisions = [str(t) for t in actor.tags or [] if str(t).startswith("forge-revision:")]
         if revisions != [revision]: raise RuntimeError("mixed or stale revision " + i["identity"])
         pos, rot, scale = actor.get_actor_location(), actor.get_actor_rotation(), actor.get_actor_scale3d()
-        if max(abs(v-w) for v,w in zip((pos.x,pos.y,pos.z), i["positionCm"])) > 0.1 or abs((rot.yaw-i["yawDeg"]+180)%360-180) > 0.1 or abs(rot.pitch) > 0.1 or abs(rot.roll) > 0.1 or max(abs(v-1) for v in (scale.x,scale.y,scale.z)) > 0.001: raise RuntimeError("actor transform mismatch " + i["identity"])
+        if max(abs(v-w) for v,w in zip((pos.x,pos.y,pos.z), i["positionCm"])) > 0.1 or abs((rot.yaw-i["yawDeg"]+180)%360-180) > 0.1 or abs(rot.pitch)>0.1 or abs(rot.roll)>0.1 or max(abs(v-1) for v in (scale.x,scale.y,scale.z))>0.001: raise RuntimeError("actor transform mismatch " + i["identity"] + " observed=" + str([pos.x,pos.y,pos.z,rot.pitch,rot.yaw,rot.roll,scale.x,scale.y,scale.z]))
         if m.get("nativeClass"):
             if actor.get_class().get_path_name() != m["nativeClass"]: raise RuntimeError("native class mismatch " + i["identity"])
             window = m["moduleType"] == "window"
@@ -215,21 +243,35 @@ def verify(instances, fingerprint, found):
             if not isinstance(actor, unreal.StaticMeshActor): raise RuntimeError("structural actor class mismatch " + i["identity"])
             components = [("static_mesh_component", m["engineAsset"])]
         for component, asset in components:
-            mesh = actor.get_editor_property(component).get_editor_property("static_mesh")
+            comp = actor.get_editor_property(component)
+            mesh = comp.get_editor_property("static_mesh")
             if mesh is None or mesh.get_path_name().split(".")[0] != asset: raise RuntimeError("actor asset mismatch " + i["identity"])
+            if comp.get_collision_enabled() == unreal.CollisionEnabled.NO_COLLISION: raise RuntimeError("actor collision disabled " + i["identity"])
+            body = mesh.get_editor_property("body_setup")
+            agg = body.get_editor_property("agg_geom") if body else None
+            if agg is None or sum(len(agg.get_editor_property(k)) for k in ["box_elems","convex_elems","sphere_elems","sphyl_elems"]) == 0: raise RuntimeError("simple collision missing " + i["identity"])
+        if m.get("nativeClass") and m["moduleType"] == "door":
+            hinge = actor.get_editor_property("HingePivot")
+            hp = hinge.get_editor_property("relative_location")
+            hr = hinge.get_editor_property("relative_rotation")
+            leaf = actor.get_editor_property("LeafMesh").get_editor_property("relative_location")
+            if max(abs(v-w) for v,w in zip((hp.x,hp.y,hp.z),(-48,0,0)))>0.1 or max(abs(v-w) for v,w in zip((leaf.x,leaf.y,leaf.z),(48,0,0)))>0.1 or max(abs(hr.pitch),abs(hr.yaw),abs(hr.roll))>0.1: raise RuntimeError("door hinge mismatch " + i["identity"])
         if not m.get("nativeClass"):
             origin, extent = actor.get_actor_bounds(False)
             d = m["dimensions"]
             want = [d["widthCm"], d["depthCm"], d["heightCm"]]
             if abs(i["yawDeg"] % 180) == 90: want[0], want[1] = want[1], want[0]
             if max(abs(v*2-w) for v,w in zip((extent.x,extent.y,extent.z), want)) > 0.2: raise RuntimeError("geometry dimension mismatch " + i["identity"])
+        measurements.append({"identity": i["identity"], "actor": actor.get_path_name(), "class": actor.get_class().get_path_name(), "requestedPositionCm": i["positionCm"], "positionCm": [pos.x,pos.y,pos.z], "requestedYawDeg": i["yawDeg"], "rotationDeg": [rot.pitch,rot.yaw,rot.roll], "scale": [scale.x,scale.y,scale.z]})
+    report["actorMeasurements"] = measurements
 def reload_verify(instances, fingerprint):
     if not ell.load_level(spec["level"]): raise RuntimeError("saved level reload failed")
     verify(instances, fingerprint, actors())
     report.update({"fingerprint": fingerprint, "instanceCount": len(instances), "levelPath": spec["level"], "levelFilePath": level_file, "levelFileSha256": sha(level_file), "level_saved": True, "reloaded": True, "actors_verified": True})
 try:
     if not options: raise RuntimeError("durable receiptPath and backupPath required before mutation")
-    level_file = options.get("levelFilePath") or os.path.abspath(os.path.join(unreal.Paths.project_content_dir(), spec["level"][6:] + ".umap"))
+    level_file = os.path.abspath(os.path.join(unreal.Paths.project_content_dir(), spec["level"][6:] + ".umap"))
+    if options.get("levelFilePath") and os.path.normcase(os.path.realpath(options["levelFilePath"])) != os.path.normcase(os.path.realpath(level_file)): raise RuntimeError("level artifact does not match engine package")
     if not os.path.isfile(level_file): raise RuntimeError("saved source level file missing")
     if len(set(os.path.normcase(os.path.abspath(p)) for p in [level_file, options["backupPath"], options["receiptPath"]])) != 3: raise RuntimeError("artifact path aliases source level")
     if os.path.isfile(options["receiptPath"]):
@@ -240,7 +282,15 @@ try:
     if not eal.does_asset_exist(spec["level"]) or not ell.load_level(spec["level"]): raise RuntimeError("existing level load failed")
     found = actors()
     revisions = set(str(t) for a in found.values() for t in a.tags or [] if str(t).startswith("forge-revision:"))
-    if revisions == {"forge-revision:" + report["targetFingerprint"]}:
+    if options.get("readbackOnly"):
+        source = options["readbackOnly"] == "ROLLED_BACK"
+        instances = spec["source"] if source else spec["target"]
+        fingerprint = report["previousFingerprint"] if source else report["targetFingerprint"]
+        verify(instances, fingerprint, found)
+        reload_verify(instances, fingerprint)
+        report.update({"ok": True, "phase": options["readbackOnly"], "independentProcess": True})
+        receipt()
+    elif revisions == {"forge-revision:" + report["targetFingerprint"]}:
         verify(spec["target"], report["targetFingerprint"], found)
         reload_verify(spec["target"], report["targetFingerprint"])
         report.update({"ok": True, "phase": "COMMITTED", "idempotent": True, "preserved": spec["preservedInstances"], "added": [], "modified": [], "removed": []})
@@ -261,7 +311,8 @@ try:
         for i in spec["target"]:
             if i["instanceId"] in spec["preservedInstances"]: continue
             mesh, leaf, cls = resolved[i["instanceId"]]
-            actor = ell.spawn_actor_from_class(cls, unreal.Vector(*i["positionCm"]), unreal.Rotator(0,i["yawDeg"],0)) if cls else ell.spawn_actor_from_object(mesh, unreal.Vector(*i["positionCm"]), unreal.Rotator(0,i["yawDeg"],0))
+            rotation = unreal.Rotator(pitch=0, yaw=i["yawDeg"], roll=0)
+            actor = ell.spawn_actor_from_class(cls, unreal.Vector(*i["positionCm"]), rotation) if cls else ell.spawn_actor_from_object(mesh, unreal.Vector(*i["positionCm"]), rotation)
             if actor is None: raise RuntimeError("spawn failed " + i["identity"])
             actor.tags = [unreal.Name(i["identity"]), unreal.Name("forge-revision:" + report["targetFingerprint"])]
             actor.set_actor_label(i["identity"].replace(":", "_"))
@@ -279,6 +330,10 @@ try:
             actor = found[prefix + instance_id]
             actor.tags = [t for t in actor.tags or [] if not str(t).startswith("forge-revision:")] + [unreal.Name("forge-revision:" + report["targetFingerprint"])]
             mutation()
+        for i in spec["target"]:
+            if i["identity"] in staged:
+                staged[i["identity"]].set_actor_location(unreal.Vector(*i["positionCm"]), False, True)
+                staged[i["identity"]].set_actor_rotation(unreal.Rotator(pitch=0, yaw=i["yawDeg"], roll=0), True)
         verify(spec["target"], report["targetFingerprint"], actors())
         report["phase"] = "SAVING"
         receipt()
@@ -294,7 +349,8 @@ except Exception as error:
     if report["mutation_started"] and backup_verified:
         try:
             # Unload the dirty world before restoring its durable package.
-            if not ell.new_level("/Game/ForgeAAA/R83/MigrationRecoveryTransient"): raise RuntimeError("cannot unload dirty migration world")
+            world = unreal.EditorLoadingAndSavingUtils.new_blank_map(False)
+            if world is None: raise RuntimeError("cannot unload dirty migration world")
             if sha(options["backupPath"]) != source_hash: raise RuntimeError("recovery backup changed")
             shutil.copy2(options["backupPath"], level_file)
             if sha(level_file) != source_hash: raise RuntimeError("restored map hash mismatch")
@@ -306,3 +362,4 @@ except Exception as error:
 print("FORGEAAA_MIGRATION_REPORT:" + json.dumps(report))
 sys.exit(0 if report["ok"] else 2)
 `;
+

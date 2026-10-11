@@ -2,15 +2,12 @@
  * R83-E1/E2: Assemble the two-room connected building in UE4.27 and verify
  * live migration from one-room to two-room.
  *
- * Steps:
- *  1. Assemble R82 one-room building at /Game/ForgeAAA/Maps/FAAA_R83_RoomA
- *  2. Compute source fingerprint and save level
- *  3. Run migration plan/validate/apply/verify/commit pipeline
- *  4. Verify idempotency (second migration application)
- *  5. Test conflict protection (fingerprint mismatch)
- *  6. Test migration rollback on deliberate failure
+ * Key insight: migrationAssemblyScript works IN-PLACE on the source level.
+ * The source level (FAAA_R83_RoomA) is loaded, mutated to the two-room spec,
+ * then saved. The level path passed to migrationAssemblyScript is the SOURCE
+ * level — not a new target level.
  */
-import { mkdir, readFile, writeFile, rm } from "node:fs/promises";
+import { mkdir, readFile, writeFile, access } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import {
@@ -24,13 +21,13 @@ import {
   isMigrationIdempotent,
   computeBuildingFingerprint,
   migrationAssemblyScript,
+  verifySavedMigration,
 } from "../../packages/forge-aaa/dist/index.js";
 import {
   R82_ONE_ROOM_BUILDING,
   R82_ONE_ROOM_MODULES,
   R83_TWO_ROOM_BUILDING,
   R83_TWO_ROOM_MODULES,
-  R83_NEW_MODULES,
 } from "../../packages/forge-aaa/dist/r83-building-spec.js";
 
 const root = path.resolve(".scratch");
@@ -39,33 +36,32 @@ const project = path.join(pilot, "DeadTrailsWest.uproject");
 const evidenceDir = "docs/evidence/r83-forgeaaa-autonomous-multiroom";
 await mkdir(evidenceDir, { recursive: true });
 
-const report = {
-  startedAt: new Date().toISOString(),
-  kind: "R83_ASSEMBLY_AND_MIGRATION",
-  project,
-};
+const report = { startedAt: new Date().toISOString(), kind: "R83_ASSEMBLY_AND_MIGRATION", project };
 const evidenceFile = `${evidenceDir}/r83-assemble-${Date.now()}.json`;
 const persist = () => writeFile(evidenceFile, JSON.stringify(report, null, 2));
 
 const unreal = new UnrealAdapter();
-const install = (await unreal.detect()).installs.find(
-  (i) => i.version.major === 4 && i.version.minor === 27
-);
+const install = (await unreal.detect()).installs.find((i) => i.version.major === 4 && i.version.minor === 27);
 if (!install) throw new Error("UE4.27 not found");
 report.engine = install;
 await persist();
 
-const R82_LEVEL = "/Game/ForgeAAA/Maps/FAAA_R83_RoomA";
-const R83_LEVEL = "/Game/ForgeAAA/Maps/FAAA_R83_TwoRoom";
+// The source (one-room) level — this is the level that gets migrated in-place.
+// The migration script loads this level, removes the old wall-right, and adds
+// all R83 instances (Room B, shared wall, threshold, interior door).
+const runStamp = Date.now();
+const SOURCE_LEVEL = `/Game/ForgeAAA/Maps/FAAA_R83_RoomA_Strict_${runStamp}`;
+const contentDir = path.join(pilot, "Content");
+const sourceLevelFilePath = path.join(contentDir, SOURCE_LEVEL.slice(6) + ".umap");
 
 // ──────────────────────────────────────────────────────────────────────
-// Step 1: Assemble R82 one-room building (source state for migration)
+// Step 1: Assemble R82 one-room building (creates the source level file)
 // ──────────────────────────────────────────────────────────────────────
 console.log("Step 1: Assembling R82 one-room building...");
 report.assembleOneRoom = await unreal.assembleBuilding({
   projectPath: project,
   authorizedProjectPath: project,
-  levelPath: R82_LEVEL,
+  levelPath: SOURCE_LEVEL,
   building: R82_ONE_ROOM_BUILDING,
   modules: R82_ONE_ROOM_MODULES,
   approved: true,
@@ -78,312 +74,280 @@ await persist();
 if (!report.assembleOneRoom.ok) {
   throw new Error("One-room assembly failed: " + JSON.stringify(report.assembleOneRoom));
 }
-console.log(
-  `One-room assembled: ${report.assembleOneRoom.report.placed.length} actors placed`
-);
+console.log(`One-room assembled: ${report.assembleOneRoom.report.placed.length} actors placed`);
+
+// Verify source level file exists after save
+try {
+  await access(sourceLevelFilePath);
+  console.log("Source level file verified at:", sourceLevelFilePath);
+} catch {
+  throw new Error("Source level file not found after assembly: " + sourceLevelFilePath);
+}
 
 // ──────────────────────────────────────────────────────────────────────
 // Step 2: Compute fingerprints and plan migration
 // ──────────────────────────────────────────────────────────────────────
-const sourceFingerprint = computeBuildingFingerprint(
-  R82_ONE_ROOM_BUILDING,
-  R82_ONE_ROOM_MODULES
-);
-const targetFingerprint = computeBuildingFingerprint(
-  R83_TWO_ROOM_BUILDING,
-  R83_TWO_ROOM_MODULES
-);
-
+const sourceFingerprint = computeBuildingFingerprint(R82_ONE_ROOM_BUILDING, R82_ONE_ROOM_MODULES);
+const targetFingerprint = computeBuildingFingerprint(R83_TWO_ROOM_BUILDING, R83_TWO_ROOM_MODULES);
+report.fingerprints = { source: sourceFingerprint, target: targetFingerprint };
+await persist();
 console.log("Source fingerprint:", sourceFingerprint.slice(0, 16));
 console.log("Target fingerprint:", targetFingerprint.slice(0, 16));
 
-report.fingerprints = { source: sourceFingerprint, target: targetFingerprint };
+const migration = planMigration(
+  R82_ONE_ROOM_BUILDING,
+  R83_TWO_ROOM_BUILDING,
+  R83_TWO_ROOM_MODULES,
+  { previousRegistry: R82_ONE_ROOM_MODULES }
+);
+report.migrationPlanned = {
+  id: migration.migrationId,
+  state: migration.status,
+  preserved: migration.preservedInstances.length,
+  added: migration.addedInstances.length,
+  removed: migration.removedInstances.length,
+};
 await persist();
+console.log(`Migration planned: ${migration.migrationId} (+${migration.addedInstances.length} added, -${migration.removedInstances.length} removed, ${migration.preservedInstances.length} preserved)`);
 
-const migration = planMigration({
-  buildingId: "western-room-a",
-  migrationId: `r82-to-r83-${Date.now()}`,
-  sourceBuilding: R82_ONE_ROOM_BUILDING,
-  sourceModules: R82_ONE_ROOM_MODULES,
-  targetBuilding: R83_TWO_ROOM_BUILDING,
-  targetModules: R83_TWO_ROOM_MODULES,
-});
-report.migrationPlanned = { id: migration.migrationId, state: migration.state };
-await persist();
-console.log("Migration planned:", migration.migrationId);
-
-const validated = validateMigration(migration, {
-  sourceBuilding: R82_ONE_ROOM_BUILDING,
-  sourceModules: R82_ONE_ROOM_MODULES,
-  targetBuilding: R83_TWO_ROOM_BUILDING,
-  targetModules: R83_TWO_ROOM_MODULES,
-});
-if (validated.state !== "VALIDATED") {
-  throw new Error("Migration validation failed: " + JSON.stringify(validated));
-}
-report.migrationValidated = { state: validated.state };
+const validated = validateMigration(
+  R82_ONE_ROOM_BUILDING,
+  R83_TWO_ROOM_BUILDING,
+  R83_TWO_ROOM_MODULES,
+  { migrationId: migration.migrationId, previousRegistry: R82_ONE_ROOM_MODULES }
+);
+if (validated.status !== "VALIDATED") throw new Error("Migration validation failed: " + JSON.stringify(validated));
+report.migrationValidated = { state: validated.status };
 await persist();
 console.log("Migration validated");
 
 // ──────────────────────────────────────────────────────────────────────
-// Step 3: Apply the migration — assemble the two-room level
+// Step 3: Apply migration in-place on the source level
 // ──────────────────────────────────────────────────────────────────────
-const applying = applyMigration(validated);
-report.migrationApplying = { state: applying.state };
+const applying = applyMigration(validated, sourceFingerprint);
+report.migrationApplying = { state: applying.status };
 await persist();
-console.log("Migration applying...");
 
-// Write the assembly script for the two-room building
-const assemblyScript = migrationAssemblyScript(applying, R83_TWO_ROOM_MODULES);
+const receiptPath = path.join(root, `r83-migration-receipt-${runStamp}.json`);
+const backupPath = path.join(root, `r83-source-level-backup-${runStamp}.umap`);
+
+// migrationAssemblyScript(migration, previous, target, modules, level, options)
+// level = SOURCE_LEVEL (the existing level that will be mutated in-place)
+const assemblyScript = migrationAssemblyScript(
+  applying,
+  R82_ONE_ROOM_BUILDING,
+  R83_TWO_ROOM_BUILDING,
+  R83_TWO_ROOM_MODULES,
+  SOURCE_LEVEL,
+  {
+    receiptPath,
+    backupPath,
+    levelFilePath: sourceLevelFilePath,
+  }
+);
 const assemblyScriptPath = path.join(root, "r83-assemble-tworoom.py");
 await writeFile(assemblyScriptPath, assemblyScript, "utf8");
 
-// Run the assembly in UE4.27
+console.log("Executing two-room migration assembly...");
 report.assembleTwoRoom = await unreal.runPythonScript({
   projectPath: project,
   scriptPath: assemblyScriptPath,
   install,
   host: "editor",
   logPath: path.join(root, "r83-assemble-tworoom.log"),
-  timeoutMs: 360_000,
+  timeoutMs: 420_000,
 });
 await persist();
-if (!report.assembleTwoRoom.ok || report.assembleTwoRoom.report?.ok !== true) {
-  throw new Error("Two-room assembly failed: " + JSON.stringify(report.assembleTwoRoom));
+
+// The migration script uses FORGEAAA_MIGRATION_REPORT marker, not FORGEAAA_REPORT
+// The UnrealAdapter's runPythonScript parses FORGEAAA_REPORT, but migration uses a different
+// marker. Check the log directly for the migration report.
+const migLog = path.join(root, "r83-assemble-tworoom.log");
+let migrationReport = null;
+try {
+  const logContent = await readFile(migLog, "utf8");
+  const match = logContent.match(/FORGEAAA_MIGRATION_REPORT:(\{.*?\})\r?\n/);
+  if (match) {
+    migrationReport = JSON.parse(match[1]);
+  }
+} catch { /* log may not have migration report if script crashed early */ }
+report.migrationReport = migrationReport;
+await persist();
+
+if (!migrationReport || migrationReport.ok !== true) {
+  throw new Error("Two-room migration failed: phase=" + (migrationReport?.phase ?? "unknown") + " errors=" + JSON.stringify(migrationReport?.errors ?? []));
 }
 console.log(
-  `Two-room assembled: ${report.assembleTwoRoom.report.placed?.length ?? "?"} actors placed`
+  `Migration complete: phase=${migrationReport.phase}, level_saved=${migrationReport.level_saved}, reloaded=${migrationReport.reloaded}, instances=${migrationReport.instanceCount}`
 );
 
 // ──────────────────────────────────────────────────────────────────────
-// Step 4: Verify — save level and read back level hash
+// Step 4: Read the receipt and commit via the TypeScript state machine
 // ──────────────────────────────────────────────────────────────────────
-console.log("Verifying migration result...");
-
-// Read the saved level file to compute its SHA-256
-// UE4 saves levels as .umap files inside Content/
-const levelName = R83_LEVEL.split("/").pop();
-const levelFilePath = path.join(pilot, "Content/ForgeAAA/Maps", `${levelName}.umap`);
-
-let levelFileSha256;
+console.log("Reading migration receipt...");
+let receiptData;
 try {
-  levelFileSha256 = await (async () => {
-    const data = await readFile(levelFilePath);
-    return createHash("sha256").update(data).digest("hex");
-  })();
-  console.log("Level file SHA-256:", levelFileSha256.slice(0, 16));
+  receiptData = JSON.parse(await readFile(receiptPath, "utf8"));
 } catch (e) {
-  throw new Error(`Could not read level file at ${levelFilePath}: ${e.message}`);
+  throw new Error(`Could not read receipt at ${receiptPath}: ${e.message}`);
 }
+report.receiptData = receiptData;
+await persist();
 
-// Write the SavedLevelVerification receipt as required by commitMigration
-const receiptPath = path.join(root, `r83-migration-receipt-${applying.migrationId}.json`);
-const levelVerification = {
-  migrationId: applying.migrationId,
-  buildingId: "western-room-a",
-  phase: "COMMITTED",
-  fingerprint: targetFingerprint,
-  instanceCount: R83_TWO_ROOM_BUILDING.instances.length,
-  receiptPath,
-  levelFileSha256,
-  level_saved: true,
-  reloaded: false, // will update after reload verification
-  actors_verified: true,
-};
+// Build the SavedLevelVerification for commitMigration
+// The Python receipt has all the fields; populate SavedLevelVerification from it.
+const levelVerification = await verifySavedMigration(applying, {
+  projectPath: project, levelPath: SOURCE_LEVEL, evidenceDirectory: evidenceDir, phase: "COMMITTED",
+});
 
-// We'll do a re-open verification
-const reloadVerifyScript = `import unreal, json
-report = {"ok": True, "actors": [], "errors": [], "level_reloaded": False}
-try:
-    ell = unreal.EditorLevelLibrary
-    eal = unreal.EditorAssetLibrary
-    level_path = ${JSON.stringify(R83_LEVEL)}
-    if not eal.does_asset_exist(level_path):
-        report["errors"].append("level asset not found: " + level_path)
-        report["ok"] = False
-    else:
-        if not ell.load_level(level_path):
-            report["errors"].append("level reload failed")
-            report["ok"] = False
-        else:
-            report["level_reloaded"] = True
-            actors = ell.get_all_level_actors()
-            forge_actors = []
-            for actor in actors:
-                for tag in (actor.tags or []):
-                    t = str(tag)
-                    if t.startswith("forge-building:"):
-                        forge_actors.append({"tag": t, "class": actor.get_class().get_name(),
-                            "label": actor.get_actor_label()})
-            report["actors"] = forge_actors
-            report["actorCount"] = len(actors)
-            report["forgeActorCount"] = len(forge_actors)
-except Exception as e:
-    report["ok"] = False
-    report["errors"].append(str(e))
-print("FORGEAAA_REPORT:" + json.dumps(report))
-import sys
-sys.exit(0 if report["ok"] else 2)
-`;
+const verifying = verifyMigration(applying);
+const committed = commitMigration(verifying, levelVerification);
+report.migrationCommitted = { state: committed.status, receiptPath };
+await persist();
 
-const reloadScriptPath = path.join(root, "r83-reload-verify.py");
-await writeFile(reloadScriptPath, reloadVerifyScript, "utf8");
-report.reloadVerify = await unreal.runPythonScript({
+if (committed.status !== "COMMITTED") {
+  throw new Error("TypeScript commit failed: state=" + committed.status);
+}
+console.log("Migration COMMITTED (TypeScript state machine)");
+
+// ──────────────────────────────────────────────────────────────────────
+// Step 5: Idempotency — run assembly script again on already-committed level
+// ──────────────────────────────────────────────────────────────────────
+console.log("Testing idempotency...");
+report.idempotencyRun = await unreal.runPythonScript({
   projectPath: project,
-  scriptPath: reloadScriptPath,
+  scriptPath: assemblyScriptPath,
   install,
   host: "editor",
-  logPath: path.join(root, "r83-reload-verify.log"),
+  logPath: path.join(root, "r83-assemble-tworoom-idempotent.log"),
   timeoutMs: 300_000,
 });
 await persist();
 
-if (!report.reloadVerify.ok || report.reloadVerify.report?.level_reloaded !== true) {
-  throw new Error("Level reload verification failed: " + JSON.stringify(report.reloadVerify));
-}
-console.log(
-  `Reload verified: ${report.reloadVerify.report.forgeActorCount} forge actors found in level`
-);
-
-levelVerification.reloaded = true;
-await writeFile(receiptPath, JSON.stringify(levelVerification, null, 2), "utf8");
-
-// ──────────────────────────────────────────────────────────────────────
-// Step 5: Commit the migration with real evidence
-// ──────────────────────────────────────────────────────────────────────
-const verifying = verifyMigration(applying);
-const committed = commitMigration(verifying, levelVerification);
-report.migrationCommitted = { state: committed.state, receiptPath };
-await persist();
-
-if (committed.state !== "COMMITTED") {
-  throw new Error("Migration did not commit: state=" + committed.state);
-}
-console.log("Migration COMMITTED with receipt:", receiptPath);
-
-// ──────────────────────────────────────────────────────────────────────
-// Step 6: Idempotency — reapply migration, expect already-applied detection
-// ──────────────────────────────────────────────────────────────────────
-console.log("Testing migration idempotency...");
-const idempotencyCheck = isMigrationIdempotent(
-  { building: R83_TWO_ROOM_BUILDING, modules: R83_TWO_ROOM_MODULES },
-  { building: R83_TWO_ROOM_BUILDING, modules: R83_TWO_ROOM_MODULES }
-);
-report.idempotency = idempotencyCheck;
-await persist();
-if (!idempotencyCheck.isIdempotent) {
-  throw new Error("Idempotency check failed: " + idempotencyCheck.reason);
-}
-console.log("Idempotency: PASS —", idempotencyCheck.reason);
-
-// ──────────────────────────────────────────────────────────────────────
-// Step 7: Conflict protection — modified source fingerprint should block
-// ──────────────────────────────────────────────────────────────────────
-console.log("Testing conflict protection...");
-// Simulate a different source fingerprint by using a slightly modified building
-const tamperedBuilding = {
-  ...R82_ONE_ROOM_BUILDING,
-  attachmentToleranceCm: 1.0, // different from original 0.5
+let idempotentReport = null;
+try {
+  const idempotentLog = await readFile(path.join(root, "r83-assemble-tworoom-idempotent.log"), "utf8");
+  const m = idempotentLog.match(/FORGEAAA_MIGRATION_REPORT:(\{.*?\})\r?\n/);
+  if (m) idempotentReport = JSON.parse(m[1]);
+} catch { /* ignore */ }
+report.idempotency = {
+  idempotent: idempotentReport?.idempotent === true,
+  phase: idempotentReport?.phase,
+  ok: idempotentReport?.ok,
 };
-const tamperedMigration = planMigration({
-  buildingId: "western-room-a",
-  migrationId: `tampered-${Date.now()}`,
-  sourceBuilding: tamperedBuilding,
-  sourceModules: R82_ONE_ROOM_MODULES,
-  targetBuilding: R83_TWO_ROOM_BUILDING,
-  targetModules: R83_TWO_ROOM_MODULES,
-});
-const tamperedValidated = validateMigration(tamperedMigration, {
-  sourceBuilding: tamperedBuilding,
-  sourceModules: R82_ONE_ROOM_MODULES,
-  targetBuilding: R83_TWO_ROOM_BUILDING,
-  targetModules: R83_TWO_ROOM_MODULES,
-});
-// The actual live building has the original fingerprint; a migration plan
-// with a different source fingerprint must be rejected when applied to the
-// existing actors in the level. The assembly script raises RuntimeError on
-// revision mismatch. We verify this stays in VALIDATED (not committable).
+await persist();
+console.log(`Idempotency: ${report.idempotency.idempotent ? "PASS (flag=true)" : "RUN OK=" + report.idempotencyRun.ok}`);
+
+// ──────────────────────────────────────────────────────────────────────
+// Step 6: Conflict protection
+// ──────────────────────────────────────────────────────────────────────
+const tamperedBuilding = { ...R82_ONE_ROOM_BUILDING, attachmentToleranceCm: 1.0 };
+const tamperedFingerprint = computeBuildingFingerprint(tamperedBuilding, R82_ONE_ROOM_MODULES);
 report.conflictProtection = {
-  tamperedFingerprint: computeBuildingFingerprint(tamperedBuilding, R82_ONE_ROOM_MODULES).slice(0, 16),
-  originalFingerprint: sourceFingerprint.slice(0, 16),
-  fingerprintsDiffer: computeBuildingFingerprint(tamperedBuilding, R82_ONE_ROOM_MODULES) !== sourceFingerprint,
-  state: tamperedValidated.state,
+  differ: tamperedFingerprint !== sourceFingerprint,
+  tamperedFingerprint: tamperedFingerprint.slice(0, 16),
 };
 await persist();
-if (!report.conflictProtection.fingerprintsDiffer) {
-  throw new Error("Conflict test: tampered fingerprint should differ");
-}
-console.log("Conflict protection: PASS — tampered fingerprint produces different migration");
+if (!report.conflictProtection.differ) throw new Error("Conflict test: tampered fingerprint should differ");
+console.log("Conflict protection: PASS");
 
 // ──────────────────────────────────────────────────────────────────────
-// Step 8: Rollback test — simulate a failed migration on a deliberately
-// missing module asset, verify rollback state is preserved
+// Step 7: Rollback test with fault injection (failAfterMutations=3)
+// on the ALREADY-COMMITTED level → should detect idempotent OR fail safely
+// We need to test rollback on a fresh one-room level.
+// Assemble a fresh one-room level at a different path for the rollback test.
 // ──────────────────────────────────────────────────────────────────────
 console.log("Testing migration rollback...");
-const failMigration = planMigration({
-  buildingId: "western-room-a",
-  migrationId: `rollback-test-${Date.now()}`,
-  sourceBuilding: R82_ONE_ROOM_BUILDING,
-  sourceModules: R82_ONE_ROOM_MODULES,
-  targetBuilding: R83_TWO_ROOM_BUILDING,
-  targetModules: R83_TWO_ROOM_MODULES,
-});
-const failValidated = validateMigration(failMigration, {
-  sourceBuilding: R82_ONE_ROOM_BUILDING,
-  sourceModules: R82_ONE_ROOM_MODULES,
-  targetBuilding: R83_TWO_ROOM_BUILDING,
-  targetModules: R83_TWO_ROOM_MODULES,
-});
-const failApplying = applyMigration(failValidated);
-const failVerifying = verifyMigration(failApplying);
+const ROLLBACK_TEST_LEVEL = `/Game/ForgeAAA/Maps/FAAA_R83_RollbackStrict_${runStamp}`;
+const rollbackLevelFile = path.join(contentDir, ROLLBACK_TEST_LEVEL.slice(6) + ".umap");
 
-// Write rollback receipt using the source (R82) fingerprint — the one-room
-// state is still preserved since we never destructively removed actors
-const rollbackReceiptPath = path.join(root, `r83-rollback-receipt-${failMigration.migrationId}.json`);
-const rollbackVerification = {
-  migrationId: failMigration.migrationId,
-  buildingId: "western-room-a",
-  phase: "ROLLED_BACK",
-  fingerprint: sourceFingerprint,
-  instanceCount: R82_ONE_ROOM_BUILDING.instances.length,
-  receiptPath: rollbackReceiptPath,
-  levelFileSha256: await (async () => {
-    const levelFileR82Path = path.join(pilot, "Content/ForgeAAA/Maps/FAAA_R83_RoomA.umap");
-    try {
-      const data = await readFile(levelFileR82Path);
-      return createHash("sha256").update(data).digest("hex");
-    } catch {
-      return "not-available";
-    }
-  })(),
-  level_saved: true,
-  reloaded: false,
-  actors_verified: true,
-};
-await writeFile(rollbackReceiptPath, JSON.stringify(rollbackVerification, null, 2));
-const rolledBack = rollbackMigration(failVerifying, rollbackVerification);
-report.rollback = { state: rolledBack.state, receiptPath: rollbackReceiptPath };
+report.rollbackOneRoom = await unreal.assembleBuilding({
+  projectPath: project,
+  authorizedProjectPath: project,
+  levelPath: ROLLBACK_TEST_LEVEL,
+  building: R82_ONE_ROOM_BUILDING,
+  modules: R82_ONE_ROOM_MODULES,
+  approved: true,
+  install,
+  scriptPath: path.join(root, "r83-assemble-rollback-oneroom.py"),
+  logPath: path.join(root, "r83-assemble-rollback-oneroom.log"),
+  timeoutMs: 300_000,
+});
 await persist();
+if (!report.rollbackOneRoom.ok) {
+  console.warn("Rollback test one-room assembly failed — skipping rollback test");
+  report.rollbackResult = { skipped: true };
+} else {
+  console.log("Rollback test one-room level assembled");
+  const rollbackReceiptPath = path.join(root, `r83-rollback-receipt-${runStamp}.json`);
+  const rollbackBackupPath = path.join(root, `r83-rollback-backup-${runStamp}.umap`);
+  const rollbackMig = planMigration(
+    R82_ONE_ROOM_BUILDING, R83_TWO_ROOM_BUILDING, R83_TWO_ROOM_MODULES,
+    { previousRegistry: R82_ONE_ROOM_MODULES, migrationId: `rollback-test-${Date.now()}` }
+  );
+  const rollbackValidated = validateMigration(
+    R82_ONE_ROOM_BUILDING, R83_TWO_ROOM_BUILDING, R83_TWO_ROOM_MODULES,
+    { migrationId: rollbackMig.migrationId, previousRegistry: R82_ONE_ROOM_MODULES }
+  );
+  const rollbackApplying = applyMigration(rollbackValidated, sourceFingerprint);
+  const rollbackScript = migrationAssemblyScript(
+    rollbackApplying,
+    R82_ONE_ROOM_BUILDING, R83_TWO_ROOM_BUILDING, R83_TWO_ROOM_MODULES,
+    ROLLBACK_TEST_LEVEL,
+    {
+      receiptPath: rollbackReceiptPath,
+      backupPath: rollbackBackupPath,
+      levelFilePath: rollbackLevelFile,
+      failAfterMutations: 3,
+    }
+  );
+  const rollbackScriptPath = path.join(root, "r83-rollback-test.py");
+  await writeFile(rollbackScriptPath, rollbackScript, "utf8");
+  report.rollbackRun = await unreal.runPythonScript({
+    projectPath: project,
+    scriptPath: rollbackScriptPath,
+    install,
+    host: "editor",
+    logPath: path.join(root, "r83-rollback-test.log"),
+    timeoutMs: 300_000,
+  });
+  await persist();
 
-if (rolledBack.state !== "ROLLED_BACK") {
-  throw new Error("Rollback failed: state=" + rolledBack.state);
+  let rollbackMigReport = null;
+  try {
+    const rLog = await readFile(path.join(root, "r83-rollback-test.log"), "utf8");
+    const m = rLog.match(/FORGEAAA_MIGRATION_REPORT:(\{.*?\})\r?\n/);
+    if (m) rollbackMigReport = JSON.parse(m[1]);
+  } catch { /* ignore */ }
+  report.rollbackResult = {
+    phase: rollbackMigReport?.phase ?? "unknown",
+    errors: rollbackMigReport?.errors,
+  };
+  if (rollbackMigReport?.phase === "ROLLED_BACK") {
+    const rollbackEvidence = await verifySavedMigration(rollbackApplying, {
+      projectPath: project, levelPath: ROLLBACK_TEST_LEVEL, evidenceDirectory: evidenceDir, phase: "ROLLED_BACK",
+    });
+    report.rollbackResult.state = rollbackMigration(rollbackApplying, rollbackEvidence).status;
+    report.rollbackResult.independentEvidence = rollbackEvidence;
+  }
+  await persist();
+  console.log(`Rollback test: phase=${report.rollbackResult.phase}`);
 }
-console.log("Rollback: PASS — state=ROLLED_BACK");
 
 // ──────────────────────────────────────────────────────────────────────
 // Summary
 // ──────────────────────────────────────────────────────────────────────
 report.summary = {
-  oneRoomAssembled: true,
-  twoRoomAssembled: true,
-  migrationCommitted: true,
-  idempotencyVerified: true,
-  conflictProtected: true,
-  rollbackVerified: true,
+  oneRoomAssembled: report.assembleOneRoom.ok,
+  twoRoomMigrated: migrationReport?.ok === true,
+  migrationCommitted: committed.status === "COMMITTED",
+  idempotencyVerified: report.idempotency?.idempotent === true && report.idempotency?.ok === true && report.idempotencyRun?.exitCode === 0,
+  conflictProtected: report.conflictProtection.differ,
+  rollbackPhase: report.rollbackResult?.phase ?? "skipped",
   sourceFingerprint: sourceFingerprint.slice(0, 16),
   targetFingerprint: targetFingerprint.slice(0, 16),
-  level: R83_LEVEL,
-  forgeActors: report.reloadVerify.report.forgeActorCount,
+  level: SOURCE_LEVEL,
+  migratedLevel: `${SOURCE_LEVEL} (in-place, now 23 instances)`,
 };
 report.finishedAt = new Date().toISOString();
 await persist();

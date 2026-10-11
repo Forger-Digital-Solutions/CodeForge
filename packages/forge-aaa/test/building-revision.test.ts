@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -14,10 +14,12 @@ import {
   isMigrationIdempotent,
   migrationAssemblyScript,
   computeBuildingFingerprint,
+  verifySavedMigration,
   type BuildingRevisionMigration,
   type SavedLevelVerification,
 } from "../src/building-revision.js";
 import { FORGE_AAA_ERRORS, ForgeAaaError } from "../src/types.js";
+import { UnrealAdapter } from "../src/adapters/unreal.js";
 
 function makeLevelEvidence(migration: BuildingRevisionMigration, phase: "COMMITTED" | "ROLLED_BACK", dir: string): SavedLevelVerification {
   const revision = phase === "COMMITTED" ? migration.targetRevision : migration.previousRevision;
@@ -42,6 +44,18 @@ function makeLevelEvidence(migration: BuildingRevisionMigration, phase: "COMMITT
   };
   writeFileSync(receiptPath, JSON.stringify(evidence, null, 2));
   return evidence;
+}
+
+async function engineReadbackFixture(migration: BuildingRevisionMigration, phase: "COMMITTED" | "ROLLED_BACK", dir: string): Promise<SavedLevelVerification> {
+  const fixture = makeLevelEvidence(migration, phase, dir);
+  const mock = vi.spyOn(UnrealAdapter.prototype, "runPythonScript").mockImplementation(async request => {
+    const receiptPath = request.scriptPath.replace(/\.py$/, ".json");
+    writeFileSync(receiptPath, JSON.stringify({ ...fixture, receiptPath, ok: true }));
+    return { ok: true, exitCode: 0, timedOut: false, durationMs: 1, logTail: "" };
+  });
+  try {
+    return await verifySavedMigration(migration, { projectPath: join(dir,"fixture.uproject"), levelPath: fixture.levelPath, evidenceDirectory: dir, phase });
+  } finally { mock.mockRestore(); }
 }
 
 const floorModule: BuildingModuleDefinition = {
@@ -232,7 +246,7 @@ describe("building revision migration system", () => {
     expect(isMigrationIdempotent(identicalMigration).idempotent).toBe(true);
   });
 
-  it("4. rejects invalid state transitions (e.g. applying already-committed migration)", () => {
+  it("4. rejects invalid state transitions (e.g. applying already-committed migration)", async () => {
     const singleRoom = createSingleRoom();
     const twoRoom = createTwoRoom();
     const dir = mkdtempSync(join(tmpdir(), "forge-migration-test-"));
@@ -240,7 +254,7 @@ describe("building revision migration system", () => {
       const migration = validateMigration(singleRoom, twoRoom, registry);
       const applying = applyMigration(migration, migration.previousRevision.fingerprint);
       const verifying = verifyMigration(applying);
-      const evidence = makeLevelEvidence(migration, "COMMITTED", dir);
+      const evidence = await engineReadbackFixture(migration, "COMMITTED", dir);
       const committed = commitMigration(verifying, evidence);
 
       expect(committed.status).toBe("COMMITTED");
@@ -329,7 +343,7 @@ describe("building revision migration system", () => {
     }
   });
 
-  it("8. advances to ROLLED_BACK with valid rollback evidence; blocks without it", () => {
+  it("8. advances to ROLLED_BACK with valid rollback evidence; blocks without it", async () => {
     const singleRoom = createSingleRoom();
     const twoRoom = createTwoRoom();
     const dir = mkdtempSync(join(tmpdir(), "forge-migration-test-"));
@@ -341,7 +355,7 @@ describe("building revision migration system", () => {
       const blocked = commitMigration(verifying, false as unknown as SavedLevelVerification);
       expect(blocked.status).toBe("BLOCKED");
 
-      const rollbackEvidence = makeLevelEvidence(migration, "ROLLED_BACK", dir);
+      const rollbackEvidence = await engineReadbackFixture(migration, "ROLLED_BACK", dir);
       const rolledBack = rollbackMigration(verifying, rollbackEvidence);
       expect(rolledBack.status).toBe("ROLLED_BACK");
       expect(rolledBack.rolledBackAt).toBeDefined();
@@ -350,7 +364,7 @@ describe("building revision migration system", () => {
     }
   });
 
-  it("9. executes status transitions: PLANNED -> VALIDATED -> APPLYING -> VERIFYING -> COMMITTED", () => {
+  it("9. executes status transitions: PLANNED -> VALIDATED -> APPLYING -> VERIFYING -> COMMITTED", async () => {
     const singleRoom = createSingleRoom();
     const twoRoom = createTwoRoom();
     const dir = mkdtempSync(join(tmpdir(), "forge-migration-test-"));
@@ -369,7 +383,7 @@ describe("building revision migration system", () => {
       const verifying = verifyMigration(applying);
       expect(verifying.status).toBe("VERIFYING");
 
-      const evidence = makeLevelEvidence(validated, "COMMITTED", dir);
+      const evidence = await engineReadbackFixture(validated, "COMMITTED", dir);
       const committed = commitMigration(verifying, evidence);
       expect(committed.status).toBe("COMMITTED");
     } finally {
@@ -377,7 +391,7 @@ describe("building revision migration system", () => {
     }
   });
 
-  it("10. executes status transitions: PLANNED -> VALIDATED -> APPLYING -> VERIFYING -> ROLLED_BACK", () => {
+  it("10. executes status transitions: PLANNED -> VALIDATED -> APPLYING -> VERIFYING -> ROLLED_BACK", async () => {
     const singleRoom = createSingleRoom();
     const twoRoom = createTwoRoom();
     const dir = mkdtempSync(join(tmpdir(), "forge-migration-test-"));
@@ -394,11 +408,28 @@ describe("building revision migration system", () => {
       const verifying = verifyMigration(applying);
       expect(verifying.status).toBe("VERIFYING");
 
-      const rollbackEvidence = makeLevelEvidence(validated, "ROLLED_BACK", dir);
+      const rollbackEvidence = await engineReadbackFixture(validated, "ROLLED_BACK", dir);
       const rolledBack = rollbackMigration(verifying, rollbackEvidence);
       expect(rolledBack.status).toBe("ROLLED_BACK");
       expect(rolledBack.rolledBackAt).toBeDefined();
     } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  it("rejects caller-created receipts and copies of issued evidence", async () => {
+    const migration = validateMigration(createSingleRoom(), createTwoRoom(), registry);
+    const applying = applyMigration(migration, migration.previousRevision.fingerprint);
+    const verifying = verifyMigration(applying);
+    const dir = mkdtempSync(join(tmpdir(), "forge-migration-forgery-"));
+    try {
+      expect(commitMigration(verifying, makeLevelEvidence(migration,"COMMITTED",dir)).status).toBe("BLOCKED");
+      expect(rollbackMigration(applying, makeLevelEvidence(migration,"ROLLED_BACK",dir)).status).toBe("BLOCKED");
+      const issued = await engineReadbackFixture(migration,"COMMITTED",dir);
+      expect(commitMigration(verifying, { ...issued }).status).toBe("BLOCKED");
+      writeFileSync(issued.levelFilePath,"changed after verification");
+      expect(commitMigration(verifying, issued).status).toBe("BLOCKED");
+    } finally {
+      if (!dir.startsWith(join(tmpdir(),"forge-migration-forgery-"))) throw new Error("unexpected test directory");
       rmSync(dir, { recursive: true, force: true });
     }
   });

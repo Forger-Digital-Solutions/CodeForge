@@ -1,0 +1,236 @@
+{
+  "exitCode": 3,
+  "timedOut": false,
+  "logPath": "G:\\CodeForge\\worktrees\\r83-forgeaaa-autonomous-multiroom\\.scratch\\native-diagnostic-1791744295774.log",
+  "reports": [
+    {
+      "ok": true,
+      "level": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329",
+      "identity": "r83-diagnostic:6ad688c776574051a9a24723ca32c988",
+      "requested": {
+        "positionCm": [
+          290,
+          260,
+          0
+        ],
+        "yawDeg": 90
+      },
+      "steps": [
+        {
+          "step": "spawn positional Rotator(0,90,0)",
+          "result": "<Object '/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0' (0x000001D3BDD08480) Class 'ForgeInteractableDoor'>",
+          "actor": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0",
+          "class": "/Script/ForgeGameplay.ForgeInteractableDoor",
+          "root": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0.DoorRoot",
+          "mobility": "<ComponentMobility.MOVABLE: 2>",
+          "tags": [
+            "r83-diagnostic:6ad688c776574051a9a24723ca32c988"
+          ],
+          "positionCm": [
+            290,
+            260,
+            0
+          ],
+          "rotation": {
+            "pitch": 90,
+            "yaw": 0,
+            "roll": 0
+          },
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "step": "set_actor_location",
+          "result": "<Struct 'HitResult' (0x000001D3D67EE340) {}>",
+          "actor": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0",
+          "class": "/Script/ForgeGameplay.ForgeInteractableDoor",
+          "root": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0.DoorRoot",
+          "mobility": "<ComponentMobility.MOVABLE: 2>",
+          "tags": [
+            "r83-diagnostic:6ad688c776574051a9a24723ca32c988"
+          ],
+          "positionCm": [
+            290,
+            260,
+            0
+          ],
+          "rotation": {
+            "pitch": 90,
+            "yaw": 0,
+            "roll": 0
+          },
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "step": "set_actor_rotation positional",
+          "result": "True",
+          "actor": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0",
+          "class": "/Script/ForgeGameplay.ForgeInteractableDoor",
+          "root": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0.DoorRoot",
+          "mobility": "<ComponentMobility.MOVABLE: 2>",
+          "tags": [
+            "r83-diagnostic:6ad688c776574051a9a24723ca32c988"
+          ],
+          "positionCm": [
+            290,
+            260,
+            0
+          ],
+          "rotation": {
+            "pitch": 90,
+            "yaw": 0,
+            "roll": 0
+          },
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "step": "set_actor_rotation named",
+          "result": "True",
+          "actor": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0",
+          "class": "/Script/ForgeGameplay.ForgeInteractableDoor",
+          "root": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0.DoorRoot",
+          "mobility": "<ComponentMobility.MOVABLE: 2>",
+          "tags": [
+            "r83-diagnostic:6ad688c776574051a9a24723ca32c988"
+          ],
+          "positionCm": [
+            290,
+            260,
+            0
+          ],
+          "rotation": {
+            "pitch": 0,
+            "yaw": 89.99998474121094,
+            "roll": 0
+          },
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "step": "set_actor_transform named",
+          "result": "<Struct 'HitResult' (0x000001D3D67EE2A0) {}>",
+          "actor": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0",
+          "class": "/Script/ForgeGameplay.ForgeInteractableDoor",
+          "root": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0.DoorRoot",
+          "mobility": "<ComponentMobility.MOVABLE: 2>",
+          "tags": [
+            "r83-diagnostic:6ad688c776574051a9a24723ca32c988"
+          ],
+          "positionCm": [
+            290,
+            260,
+            0
+          ],
+          "rotation": {
+            "pitch": 0,
+            "yaw": 89.99998474121094,
+            "roll": 0
+          },
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "step": "mesh properties",
+          "result": "None",
+          "actor": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0",
+          "class": "/Script/ForgeGameplay.ForgeInteractableDoor",
+          "root": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0.DoorRoot",
+          "mobility": "<ComponentMobility.MOVABLE: 2>",
+          "tags": [
+            "r83-diagnostic:6ad688c776574051a9a24723ca32c988"
+          ],
+          "positionCm": [
+            290,
+            260,
+            0
+          ],
+          "rotation": {
+            "pitch": 0,
+            "yaw": 89.99998474121094,
+            "roll": 0
+          },
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "step": "after save",
+          "result": "None",
+          "actor": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0",
+          "class": "/Script/ForgeGameplay.ForgeInteractableDoor",
+          "root": "/Game/ForgeAAA/Maps/R83_NativeDiagnostic_dade7e42c329.R83_NativeDiagnostic_dade7e42c329:PersistentLevel.ForgeInteractableDoor_0.DoorRoot",
+          "mobility": "<ComponentMobility.MOVABLE: 2>",
+          "tags": [
+            "r83-diagnostic:6ad688c776574051a9a24723ca32c988"
+          ],
+          "positionCm": [
+            290,
+            260,
+            0
+          ],
+          "rotation": {
+            "pitch": 0,
+            "yaw": 89.99998474121094,
+            "roll": 0
+          },
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bindings": {
+        "Rotator": "An orthogonal rotation in 3d space.\r\nnote: The full C++ class is located here: Engine\\Source\\Runtime\\Core\\Public\\Math\\Rotator.h\r\n\r\n**C++ Source:**\r\n\r\n- **Module**: CoreUObject\r\n- **File**: NoExportTypes.h\r\n\r\n**Editor Properties:** (see get_editor_property/set_editor_property)\r\n\r\n- ``pitch`` (float):  [Read-Write] Pitch (degrees) around Y axis\r\n- ``roll`` (float):  [Read-Write] Roll (degrees) around X axis\r\n- ``yaw`` (float):  [Read-Write] Yaw (degrees) around Z axis",
+        "Transform": "Transform composed of Quat/Translation/Scale.\r\nnote: This is implemented in either TransformVectorized.h or TransformNonVectorized.h depending on the platform.\r\n\r\n**C++ Source:**\r\n\r\n- **Module**: CoreUObject\r\n- **File**: NoExportTypes.h\r\n\r\n**Editor Properties:** (see get_editor_property/set_editor_property)\r\n\r\n- ``rotation`` (Quat):  [Read-Write] Rotation of this transformation, as a quaternion.\r\n- ``scale3d`` (Vector):  [Read-Write] 3D scale (always applied in local space) as a vector.\r\n- ``translation`` (Vector):  [Read-Write] Translation of this transformation, as a vector.",
+        "spawn_actor_from_class": "X.spawn_actor_from_class(actor_class, location, rotation=[0.000000, 0.000000, 0.000000], transient=False) -> Actor\r\nCreate an actor and place it in the world editor. Can be created from a Blueprint or a Class.\nThe actor will be created in the current level and will be selected.\r\n\r\nArgs:\r\n    actor_class (type(Class)): Asset to attempt to use for an actor to place.\r\n    location (Vector): Location of the new actor.\r\n    rotation (Rotator): \r\n    transient (bool): \r\n\r\nReturns:\r\n    Actor: The created actor.",
+        "set_actor_location": "x.set_actor_location(new_location, sweep, teleport) -> HitResult or None\r\nMove the Actor to the specified location.\r\n\r\nArgs:\r\n    new_location (Vector): The new location to move the Actor to.\r\n    sweep (bool): Whether we sweep to the destination location, triggering overlaps along the way and stopping short of the target if blocked by something. Only the root component is swept and checked for blocking collision, child components move without sweeping. If collision is off, this has no effect.\r\n    teleport (bool): Whether we teleport the physics state (if physics collision is enabled for this object). If true, physics velocity for this object is unchanged (so ragdoll parts are not affected by change in location). If false, physics velocity is updated based on the change in position (affecting ragdoll parts). If CCD is on and not teleporting, this will affect objects along the entire swept volume.\r\n\r\nReturns:\r\n    HitResult or None: Whether the location was successfully set (if not swept), or whether movement occurred at all (if swept).\r\n\r\n    sweep_hit_result (HitResult): The hit result from the move if swept.",
+        "set_actor_rotation": "x.set_actor_rotation(new_rotation, teleport_physics) -> bool\r\nSet the Actor's rotation instantly to the specified rotation.\r\n\r\nArgs:\r\n    new_rotation (Rotator): The new rotation for the Actor.\r\n    teleport_physics (bool): Whether we teleport the physics state (if physics collision is enabled for this object). If true, physics velocity for this object is unchanged (so ragdoll parts are not affected by change in location). If false, physics velocity is updated based on the change in position (affecting ragdoll parts).\r\n\r\nReturns:\r\n    bool: Whether the rotation was successfully set.",
+        "set_actor_transform": "x.set_actor_transform(new_transform, sweep, teleport) -> HitResult or None\r\nSet the Actors transform to the specified one.\r\n\r\nArgs:\r\n    new_transform (Transform): The new transform.\r\n    sweep (bool): Whether we sweep to the destination location, triggering overlaps along the way and stopping short of the target if blocked by something. Only the root component is swept and checked for blocking collision, child components move without sweeping. If collision is off, this has no effect.\r\n    teleport (bool): Whether we teleport the physics state (if physics collision is enabled for this object). If true, physics velocity for this object is unchanged (so ragdoll parts are not affected by change in location). If false, physics velocity is updated based on the change in position (affecting ragdoll parts). If CCD is on and not teleporting, this will affect objects along the entire swept volume.\r\n\r\nReturns:\r\n    HitResult or None: \r\n\r\n    sweep_hit_result (HitResult):"
+      },
+      "historical": [
+        {
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R83_RoomA.FAAA_R83_RoomA:PersistentLevel.forge-building_western-room-a_door-interior",
+          "class": "/Script/ForgeGameplay.ForgeInteractableDoor",
+          "tags": [
+            "forge-building:western-room-a:door-interior",
+            "forge-revision:f39dc7bdad42e3b2617b6d06a4f07826653af82596bd83eb42ac7b0fb5e649ab"
+          ],
+          "positionCm": [
+            290,
+            260,
+            0
+          ],
+          "rotation": {
+            "pitch": 90,
+            "yaw": 0,
+            "roll": 0
+          }
+        }
+      ],
+      "recoveryPath": {
+        "exists": true,
+        "diskExists": true
+      }
+    }
+  ]
+}
