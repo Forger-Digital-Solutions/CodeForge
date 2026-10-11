@@ -226,8 +226,8 @@ export default function WorkspaceShell({ project, onClose, onSignedOut, onOpenPr
         ...visible.map((m) => ({
           id: m.id,
           displayName: m.displayName,
-          tier: m.tier === "gems_paid" ? ("gems_paid" as const) : m.tier === "paid-auto" ? ("paid-auto" as const) : ("free" as const),
-          description: m.tier === "paid-auto" ? `Direct-first · same-model OpenRouter fallback · ${m.paidAutoState ?? "unverified"}` : m.eligible === false ? `${accessBadge(m)} · Unavailable` : canDriveAgent(m) ? accessBadge(m) : `${accessBadge(m)} · No tools`,
+          tier: m.tier === "gems_paid" ? ("gems_paid" as const) : m.tier === "paid-auto" ? ("paid-auto" as const) : m.tier === "forge-aaa" ? ("forge-aaa" as const) : ("free" as const),
+          description: m.tier === "paid-auto" ? `Direct-first · same-model OpenRouter fallback · ${m.paidAutoState ?? "unverified"}` : m.tier === "forge-aaa" ? `ForgeAAA · ${m.forgeAaaState ?? "unresolved"}` : m.eligible === false ? `${accessBadge(m)} · Unavailable` : canDriveAgent(m) ? accessBadge(m) : `${accessBadge(m)} · No tools`,
           ...selectorAvailability(m),
         })),
       ];

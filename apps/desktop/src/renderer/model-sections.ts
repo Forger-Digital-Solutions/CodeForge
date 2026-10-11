@@ -14,7 +14,7 @@ export interface ApiModel {
   id: string;
   providerId: string;
   displayName: string;
-  tier: "free" | "gems_paid" | "paid" | "paid-auto";
+  tier: "free" | "gems_paid" | "paid" | "paid-auto" | "forge-aaa";
   freeStatus: string;
   accessClass?: string;
   contextWindow?: number;
@@ -43,6 +43,8 @@ export interface ApiModel {
   paidAutoDirectProviderId?: string;
   paidAutoDirectModelId?: string;
   paidAutoOpenRouterSlug?: string;
+  forgeAaaState?: string;
+  unavailableReason?: string;
   verification?: { verifiedAt: string; sources: string[] };
 }
 
@@ -59,6 +61,14 @@ export function canDriveAgent(m: Pick<ApiModel, "capabilities">): boolean {
 }
 
 export function selectorAvailability(m: ApiModel): { available: boolean; unavailableReason?: string } {
+  if (m.tier === "forge-aaa") {
+    if (m.eligible === true) return { available: true };
+    const reason = m.forgeAaaState === "NAMED_LEAD_UNAVAILABLE" ? "Named lead unverified — no silent substitute"
+      : m.forgeAaaState === "DUAL_LEAD_INCOMPLETE" ? "Dual Lead needs two distinct eligible leads"
+      : m.forgeAaaState === "DISABLED" ? "ForgeAAA mode disabled"
+      : "No eligible lead route in an authorized domain";
+    return { available: false, unavailableReason: reason };
+  }
   if (m.eligible !== true) {
     if (m.tier === "paid-auto") return { available: false, unavailableReason: `Paid Auto ${m.paidAutoState ?? "is not ready"}; no paid request will be sent` };
     return { available: false, unavailableReason: "Provider or entitlement is unavailable" };
@@ -116,6 +126,7 @@ export const PROVIDER_SECTION: Record<string, string> = {
 export const SECTION_ORDER = [
   "RECOMMENDED",
   "CODEFORGE FREE",
+  "FORGE AAA",
   "PAID AUTO",
   "GEMS",
   "Z.AI",
@@ -137,6 +148,9 @@ export function getSectionOrder(sectionLabel: string): number {
 
 // Honest access-status badge from the CodeForge access class — never derived from name matching.
 export function accessBadge(m: ApiModel): string {
+  if (m.tier === "forge-aaa") {
+    return m.accessClass === "FREE_NATIVE" ? "Free route" : m.accessClass === "PAID" ? "Paid-capable route" : "Unresolved";
+  }
   switch (m.accessClass) {
     case "FREE_NATIVE":
       return "Free";
@@ -170,6 +184,7 @@ export function buildModelSections(apiModels: ApiModel[], models: ModelSelectorI
   const sectionMap = new Map<string, ModelSelectorItem[]>();
   const gemsModels: ModelSelectorItem[] = [];
   const paidAutoModels: ModelSelectorItem[] = [];
+  const forgeAaaModels: ModelSelectorItem[] = [];
   const codeforgeFreeModels: ModelSelectorItem[] = [];
 
   const autoAvailable = apiModels.some(
@@ -196,13 +211,17 @@ export function buildModelSections(apiModels: ApiModel[], models: ModelSelectorI
     const selectorItem: ModelSelectorItem = {
       id: m.id,
       displayName: m.displayName,
-      tier: m.tier === "gems_paid" ? "gems_paid" : m.tier === "paid-auto" ? "paid-auto" : "free",
-      description: m.tier === "paid-auto" ? `Direct-first · same-model OpenRouter fallback · ${m.paidAutoState ?? "unverified"}` : canDriveAgent(m) ? accessBadge(m) : `${accessBadge(m)} · No tools`,
+      tier: m.tier === "gems_paid" ? "gems_paid" : m.tier === "paid-auto" ? "paid-auto" : m.tier === "forge-aaa" ? "forge-aaa" : "free",
+      description: m.tier === "paid-auto" ? `Direct-first · same-model OpenRouter fallback · ${m.paidAutoState ?? "unverified"}` : m.tier === "forge-aaa" ? "Game-dev orchestration · routes inside authorized domains only" : canDriveAgent(m) ? accessBadge(m) : `${accessBadge(m)} · No tools`,
       ...availability,
     };
 
     if (m.tier === "gems_paid") {
       gemsModels.push(selectorItem);
+      continue;
+    }
+    if (m.tier === "forge-aaa") {
+      forgeAaaModels.push(selectorItem);
       continue;
     }
     if (m.tier === "paid-auto") {
@@ -224,6 +243,7 @@ export function buildModelSections(apiModels: ApiModel[], models: ModelSelectorI
   }
 
   if (codeforgeFreeModels.length > 0) sectionMap.set("CODEFORGE FREE", codeforgeFreeModels);
+  if (forgeAaaModels.length > 0) sectionMap.set("FORGE AAA", forgeAaaModels);
   if (paidAutoModels.length > 0) sectionMap.set("PAID AUTO", paidAutoModels);
   if (gemsModels.length > 0) sectionMap.set("GEMS", gemsModels);
 
@@ -267,6 +287,12 @@ export function resolveForgeZeroTrust(selectedModelId: string | null, selected: 
   if (selected.tier === "gems_paid") {
     return { verifiedFree: false, label: "ForgeAuto/Free · Paid (GEMS)", detail: `${selected.displayName} is a first-party paid model` };
   }
+  if (selected.tier === "forge-aaa") {
+    const resolved = selected.forgeAaaState === "READY" || selected.eligible === true;
+    return resolved
+      ? { verifiedFree: selected.accessClass === "FREE_NATIVE", label: `ForgeAAA · ${selected.accessClass === "FREE_NATIVE" ? "Free Route" : "Authorized Route"}`, detail: `${selected.displayName} resolves inside authorized domains only` }
+      : { verifiedFree: false, label: "ForgeAAA · No Eligible Lead", detail: selected.unavailableReason ?? "No verified lead route" };
+  }
   if (selected.tier === "paid-auto") {
     return { verifiedFree: false, label: "ForgeAuto/Free · Paid Auto", detail: `${selected.displayName} is commercial; Paid Auto state: ${selected.paidAutoState ?? "unknown"}` };
   }
@@ -297,6 +323,9 @@ export function resolveRuntimeLabel(selectedModelId: string | null, selected: Ap
   }
   if (selected.providerId === "codeforge-cloud" || selected.providerId === "codeforge" || selected.tier === "gems_paid") {
     return { label: "Hosted", detail: `${selected.displayName} runs on CodeForge's hosted infrastructure` };
+  }
+  if (selected.tier === "forge-aaa") {
+    return { label: "ForgeAAA", detail: `${selected.displayName} orchestrates across authorized domains per task` };
   }
   if (selected.tier === "paid-auto") {
     return { label: "Paid Auto", detail: `${selected.displayName} uses its direct provider first, with same-model OpenRouter fallback` };
@@ -393,6 +422,10 @@ export function buildCanonicalModelSections(snapshot: FreeCloudView, apiModels: 
   const gems = apiModels
     .filter((m) => m.tier === "gems_paid" && !isHiddenModel(m.id))
     .map((m) => ({ id: m.id, displayName: m.displayName, tier: "gems_paid" as const, description: accessBadge(m), ...selectorAvailability(m) }));
+  const forgeAaa = apiModels
+    .filter((m) => m.tier === "forge-aaa" && !isHiddenModel(m.id))
+    .map((m) => ({ id: m.id, displayName: m.displayName, tier: "forge-aaa" as const, description: m.forgeAaaState === "READY" ? "Game-dev orchestration · lead resolved" : "Game-dev orchestration · no verified lead", ...selectorAvailability(m) }));
+  if (forgeAaa.length > 0) sections.push({ sectionId: "forge-aaa", sectionLabel: "FORGE AAA", models: forgeAaa });
   for (const m of apiModels.filter((candidate) => candidate.tier === "paid-auto" && !isHiddenModel(candidate.id))) {
     paidAuto.push({ id: m.id, displayName: m.displayName, tier: "paid-auto", description: `Direct-first · same-model OpenRouter fallback · ${m.paidAutoState ?? "unverified"}`, ...selectorAvailability(m) });
   }

@@ -1,0 +1,13 @@
+{
+  "backgroundMode": true,
+  "python": true,
+  "factoryStartup": true,
+  "exportFormats": [
+    "fbx",
+    "gltf",
+    "obj",
+    "stl"
+  ],
+  "targetSatisfied": true,
+  "notes": []
+}

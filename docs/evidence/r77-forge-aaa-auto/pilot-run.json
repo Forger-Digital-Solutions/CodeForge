@@ -1,0 +1,249 @@
+{
+  "id": "aaa-cc2420e7-e2c1-4895-9a36-0c70a72822b3",
+  "goal": "Dead Trails West farmhouse: provision and validate the stair module against 1882 residential dimensions",
+  "finalStatus": "FORGEAAA_VERIFIED",
+  "tasks": [
+    {
+      "id": "pilot-inspect",
+      "specialty": "forge-architect",
+      "status": "verified",
+      "attempts": 1
+    },
+    {
+      "id": "pilot-build",
+      "specialty": "forge-modeler",
+      "status": "verified",
+      "attempts": 1
+    },
+    {
+      "id": "pilot-verify",
+      "specialty": "forge-verify",
+      "status": "verified",
+      "attempts": 1
+    }
+  ],
+  "routeDecisions": [
+    {
+      "taskId": "pilot-inspect",
+      "specialty": "forge-architect",
+      "role": "PLANNER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "tool/unreal-adapter",
+        "providerId": "unreal",
+        "providerModelId": "UE4Editor-Cmd",
+        "domain": "local_tool",
+        "lifecycle": "ACTIVE",
+        "available": true,
+        "qualifiedRoles": [
+          "PLANNER",
+          "REVIEWER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": true
+      },
+      "ordered": [
+        {
+          "modelId": "tool/unreal-adapter",
+          "providerId": "unreal",
+          "providerModelId": "UE4Editor-Cmd",
+          "domain": "local_tool",
+          "lifecycle": "ACTIVE",
+          "available": true,
+          "qualifiedRoles": [
+            "PLANNER",
+            "REVIEWER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        }
+      ],
+      "reasonCodes": [
+        "EXCLUDED_ROLE:tool/blender-adapter",
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T02:08:02.212Z"
+    },
+    {
+      "taskId": "pilot-build",
+      "specialty": "forge-modeler",
+      "role": "CODER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "tool/blender-adapter",
+        "providerId": "blender",
+        "providerModelId": "blender-headless",
+        "domain": "local_tool",
+        "lifecycle": "ACTIVE",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER",
+          "REVIEWER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": true
+      },
+      "ordered": [
+        {
+          "modelId": "tool/blender-adapter",
+          "providerId": "blender",
+          "providerModelId": "blender-headless",
+          "domain": "local_tool",
+          "lifecycle": "ACTIVE",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER",
+            "REVIEWER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        }
+      ],
+      "reasonCodes": [
+        "EXCLUDED_ROLE:tool/unreal-adapter",
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T02:08:02.217Z"
+    },
+    {
+      "taskId": "pilot-verify",
+      "specialty": "forge-verify",
+      "role": "REVIEWER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "tool/blender-adapter",
+        "providerId": "blender",
+        "providerModelId": "blender-headless",
+        "domain": "local_tool",
+        "lifecycle": "ACTIVE",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER",
+          "REVIEWER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": true
+      },
+      "ordered": [
+        {
+          "modelId": "tool/blender-adapter",
+          "providerId": "blender",
+          "providerModelId": "blender-headless",
+          "domain": "local_tool",
+          "lifecycle": "ACTIVE",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER",
+            "REVIEWER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        },
+        {
+          "modelId": "tool/unreal-adapter",
+          "providerId": "unreal",
+          "providerModelId": "UE4Editor-Cmd",
+          "domain": "local_tool",
+          "lifecycle": "ACTIVE",
+          "available": true,
+          "qualifiedRoles": [
+            "PLANNER",
+            "REVIEWER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": true
+        }
+      ],
+      "reasonCodes": [
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T02:08:03.689Z"
+    }
+  ],
+  "review": {
+    "approved": true,
+    "findings": [],
+    "independent": true
+  },
+  "manifests": [
+    {
+      "manifestVersion": 1,
+      "assetId": "dtw/farmhouse/stair-module",
+      "taskId": "pilot-build",
+      "provenance": {
+        "generator": "forge-aaa-pilot",
+        "generatorVersion": "Blender 4.5.14 LTS",
+        "tool": "blender"
+      },
+      "license": {
+        "commercialUse": "yes",
+        "detail": "procedurally generated"
+      },
+      "files": [
+        {
+          "path": "farmhouse-stair-module.glb",
+          "role": "output",
+          "sha256": "91e2360fba73f0094cf74eacfbef85820159ea525416446531ea0baaf6dc3bd1",
+          "bytes": 9300
+        }
+      ],
+      "units": {
+        "system": "metric",
+        "scale": 1,
+        "upAxis": "Z"
+      },
+      "stats": {
+        "vertices": 48,
+        "triangles": 36,
+        "boundsCm": [
+          162,
+          90,
+          108
+        ],
+        "nonmanifoldEdges": 0
+      },
+      "engines": {
+        "blender": [
+          "Blender 4.5.14 LTS"
+        ],
+        "unreal": [
+          "4.27"
+        ]
+      },
+      "validation": {
+        "checks": [
+          {
+            "id": "manifold",
+            "kind": "blender-scene",
+            "status": "passed"
+          }
+        ],
+        "validatedAt": "2026-10-11T02:08:03.687Z"
+      },
+      "revision": 1,
+      "createdAt": "2026-10-11T02:08:03.687Z"
+    }
+  ],
+  "blockers": [],
+  "counters": {
+    "taskAttempts": 3,
+    "retries": 0,
+    "modelCalls": 3,
+    "adapterOps": 0
+  },
+  "engines": {
+    "blender": {
+      "major": 4,
+      "minor": 5,
+      "patch": 14,
+      "raw": "Blender 4.5.14 LTS"
+    },
+    "unreal": {
+      "major": 4,
+      "minor": 27,
+      "patch": 2,
+      "changelist": 18319896,
+      "branch": "++UE4+Release-4.27"
+    }
+  }
+}

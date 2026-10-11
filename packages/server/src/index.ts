@@ -28,6 +28,7 @@ import { ForgeRouter } from "@codeforge/router";
 import type { ChatRequest, ProviderExecutionContext, ProviderAdapter, ProviderCatalog } from "@codeforge/providers";
 import { InMemoryProviderCatalog, EnvironmentCredentialStore, defaultCapacityGovernor } from "@codeforge/providers";
 import { createPaidAutoService, PAID_AUTO_PROVIDER_ID, PaidFamilyCatalog, PaidFamilyCatalogStore, type ApprovedPaidSuccessor, type PaidAutoModel, type PaidAutoService, type PaidPromotionEvidence } from "@codeforge/paid-auto";
+import { createForgeAaaService, forgeAaaModelId, forgeAaaUpstreamResolver, FORGE_AAA_PROVIDER_ID, FORGE_AAA_MODEL_IDS, type ForgeAaaLeadRoute, type ForgeAaaModelId, type ForgeAaaRouteCandidate, type ForgeAaaService } from "@codeforge/forge-aaa";
 import {
   createTaskAuthority,
   createLease,
@@ -211,6 +212,14 @@ export interface ServerOptions {
   paidAuto?: PaidAutoService;
   paidExecutionEnabled?: boolean;
   openRouterFallbackEnabled?: boolean;
+  /**
+   * ForgeAAA game-development orchestration mode. Its lead policies delegate to routes inside
+   * already-authorized domains (managed-free via ForgeZero re-authorization, managed-paid via
+   * the paid-auto adapter, USER_API under roster admission) — it is never itself permission
+   * to spend money. Test seam: inject a constructed service.
+   */
+  forgeAaa?: ForgeAaaService;
+  forgeAaaEnabled?: boolean;
   /** Production subagent path. Tests may explicitly disable it for legacy compatibility. */
   subagentsR1Enabled?: boolean;
   remoteDirect?: {
@@ -286,6 +295,7 @@ export class CodeForgeServer {
   private readonly managedPaidLedger: ManagedPaidAllowanceLedger;
   private readonly routeHealthLedger: EightBitRouteHealthLedger;
   private readonly paidAuto: PaidAutoService;
+  private readonly forgeAaa: ForgeAaaService;
   private readonly paidFamilyCatalog?: PaidFamilyCatalog;
   private readonly paidFamilyCatalogStore?: PaidFamilyCatalogStore;
   private paidFamilyUpdateQueue: Promise<void> = Promise.resolve();
@@ -439,6 +449,22 @@ export class CodeForgeServer {
       openRouterFallbackEnabled: options.openRouterFallbackEnabled ?? process.env.CODEFORGE_OPENROUTER_FALLBACK_ENABLED === "true",
     });
     this.providerCatalog.register(this.paidAuto.asProviderAdapter());
+    this.forgeAaa = options.forgeAaa ?? createForgeAaaService({
+      routes: {
+        leadRoutes: () => this.forgeAaaLeadRoutes(),
+        routeCandidates: () => this.forgeAaaRouteCandidates(),
+      },
+      authorizeRoute: (route) => {
+        // Free upstreams re-clear ForgeZero at dispatch time — a route that was eligible when
+        // the lead resolved may have since exhausted quota or failed re-verification.
+        if (!this.firewall.canRouteTo(route.providerId, route.modelId)) {
+          throw new Error(`FORGE_ZERO_REJECTED: ${route.providerId}/${route.modelId} is not an eligible free route`);
+        }
+      },
+      persistence: this.persistence,
+      enabled: options.forgeAaaEnabled ?? true,
+    });
+    this.providerCatalog.register(this.forgeAaa.asProviderAdapter(() => this.providerCatalog));
     this.subagentsR1Enabled = options.subagentsR1Enabled ?? process.env.CODEFORGE_SUBAGENTS_R1 !== "false";
     this.useRealRuntime = options.useRealRuntime ?? process.env.CODEFORGE_REAL_RUNTIME === "true";
 
@@ -1177,6 +1203,21 @@ export class CodeForgeServer {
 
     if (url.pathname === "/api/forgeauto/roster" && req.method === "PUT") {
       void this.handleForgeAutoRosterPut(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/forge-aaa/status" && req.method === "GET") {
+      void this.handleForgeAaaStatus(res);
+      return;
+    }
+
+    if (url.pathname === "/api/forge-aaa/policy" && req.method === "PUT") {
+      void this.handleForgeAaaPolicyPut(req, res);
+      return;
+    }
+
+    if (url.pathname === "/api/forge-aaa/registry" && req.method === "GET") {
+      this.sendJson(res, 200, { specialists: this.forgeAaa.specialistRoster(), candidates: this.forgeAaa.registry.entries() });
       return;
     }
 
@@ -2271,6 +2312,82 @@ export class CodeForgeServer {
     return candidates;
   }
 
+  /**
+   * ForgeAAA specialty routing pool — the roster catalog verbatim, projected onto the forge-aaa
+   * domain taxonomy. Qualified roles come from real qualification receipts inside
+   * rosterCatalog(); ForgeAAA adds no eligibility of its own, only task-specialty routing.
+   */
+  private forgeAaaRouteCandidates(): ForgeAaaRouteCandidate[] {
+    return this.rosterCatalog().map((c) => ({
+      modelId: c.modelId,
+      providerId: c.providerId,
+      providerModelId: c.providerModelId,
+      domain: c.sourceClass === "MANAGED_PAID" ? "managed_paid" : c.sourceClass === "USER_API" ? "user_api" : "managed_free",
+      lifecycle: c.lifecycle,
+      available: c.available && c.approved,
+      qualifiedRoles: c.qualifiedRoles,
+      costClass: c.sourceClass === "MANAGED_PAID" ? "paid" : c.sourceClass === "USER_API" && c.personalAdmission === "PAID_AUTHORIZED" ? "user" : "free",
+      privateCodeAllowed: c.dataPolicy.privateCode,
+      requiresConsent: c.dataPolicy.userConsentRequired === true,
+    }));
+  }
+
+  /**
+   * Lead routes for ForgeAAA policies: roster-qualified candidates first (each physical
+   * route becomes an upstream), then verified-free tool-calling models that are ForgeZero-
+   * eligible but not yet roster-qualified — those claim only CODER/EXPLORER, because the
+   * full admission pipeline is the evidence for LEAD/PLANNER/REVIEWER. Managed-paid
+   * candidates dispatch through the paid-auto adapter so its kill switch and budget gate
+   * apply unmodified.
+   */
+  private forgeAaaLeadRoutes(): ForgeAaaLeadRoute[] {
+    const routes: ForgeAaaLeadRoute[] = [];
+    const seen = new Set<string>();
+    for (const c of this.rosterCatalog()) {
+      const upstreams = c.sourceClass === "MANAGED_PAID"
+        ? [{ providerId: PAID_AUTO_PROVIDER_ID, modelId: c.modelId }]
+        : c.sourceClass === "USER_API"
+          ? [{ providerId: c.providerId, modelId: c.providerModelId }]
+          : [...(c.routes ?? [{ providerId: c.providerId, modelId: c.providerModelId }])];
+      for (const up of upstreams) {
+        const key = `${up.providerId}/${up.modelId}`;
+        if (seen.has(key) || !this.providerCatalog.get(up.providerId)) continue;
+        seen.add(key);
+        routes.push({
+          domain: c.sourceClass === "MANAGED_PAID" ? "managed_paid" : c.sourceClass === "USER_API" ? "user_api" : "managed_free",
+          upstreamProviderId: up.providerId,
+          upstreamModelId: up.modelId,
+          canonicalId: c.modelId,
+          displayName: c.modelId,
+          costClass: c.sourceClass === "MANAGED_PAID" ? "paid" : c.sourceClass === "USER_API" && c.personalAdmission === "PAID_AUTHORIZED" ? "user" : "free",
+          qualifiedRoles: c.qualifiedRoles,
+          available: c.available && c.approved,
+          reasonCodes: ["ROSTER_QUALIFIED"],
+        });
+      }
+    }
+    for (const m of this.firewall.allModels()) {
+      if (m.tier !== "free" || m.capabilities?.toolCalling === false) continue;
+      const key = `${m.providerId}/${m.modelId}`;
+      if (seen.has(key) || !this.providerCatalog.get(m.providerId)) continue;
+      seen.add(key);
+      const admitted = this.freeCloud?.isForgeAutoEligible(m.providerId, m.modelId) === true;
+      routes.push({
+        domain: "managed_free",
+        upstreamProviderId: m.providerId,
+        upstreamModelId: m.modelId,
+        ...(this.freeCloud?.canonicalIdOf(m.providerId, m.modelId) ? { canonicalId: this.freeCloud.canonicalIdOf(m.providerId, m.modelId) } : {}),
+        displayName: m.displayName,
+        costClass: "free",
+        qualifiedRoles: admitted ? ["LEAD", "PLANNER", "CODER", "TESTER", "REVIEWER", "EXPLORER"] : ["CODER", "EXPLORER"],
+        contextWindow: m.contextWindow,
+        available: this.firewall.canRouteTo(m.providerId, m.modelId),
+        reasonCodes: admitted ? ["FORGE_AUTO_ADMITTED"] : ["FORGE_ZERO_ELIGIBLE_ONLY"],
+      });
+    }
+    return routes;
+  }
+
   /** R55 trusted programmatic management — owner-only, no unauthenticated HTTP surface. */
   async putUserIntelligenceSource(ownerUserId: string, source: UserIntelligenceSource): Promise<UserIntelligenceSource> {
     this.assertLocalOwner(ownerUserId);
@@ -2367,6 +2484,32 @@ export class CodeForgeServer {
       this.sendJson(res, 200, { roster: saved });
     } catch (error) {
       this.sendJson(res, 400, { error: error instanceof Error ? error.message : "ROSTER_INVALID" });
+    }
+  }
+
+  private async handleForgeAaaStatus(res: http.ServerResponse): Promise<void> {
+    const engines = await this.forgeAaa.engineStatus().catch((err: unknown) => ({ error: err instanceof Error ? err.message : String(err) }));
+    this.sendJson(res, 200, {
+      leadPolicy: this.forgeAaa.getLeadPolicy(),
+      models: this.forgeAaa.modelViews(),
+      specialists: this.forgeAaa.specialistRoster(),
+      leadResolution: this.forgeAaa.resolveLead(),
+      engines,
+    });
+  }
+
+  private async handleForgeAaaPolicyPut(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+    try {
+      const data = await this.readJsonBody(req);
+      const policy = data.leadPolicy;
+      if (typeof policy !== "string" || !FORGE_AAA_MODEL_IDS.includes(policy as ForgeAaaModelId)) {
+        this.sendJson(res, 400, { error: "FORGE_AAA_POLICY_INVALID", allowed: [...FORGE_AAA_MODEL_IDS] });
+        return;
+      }
+      await this.forgeAaa.savePolicy(policy as ForgeAaaModelId);
+      this.sendJson(res, 200, { leadPolicy: this.forgeAaa.getLeadPolicy() });
+    } catch (error) {
+      this.sendJson(res, 400, { error: error instanceof Error ? error.message : "FORGE_AAA_POLICY_INVALID" });
     }
   }
 
@@ -2762,6 +2905,7 @@ export class CodeForgeServer {
         freeFabric: this.freeFabric,
         fabricContext: this.fabricContext,
         paidAuto: this.paidAuto,
+        forgeAaaResolver: forgeAaaUpstreamResolver(this.forgeAaa),
         managedPaidPolicy: this.managedPaidPolicy,
         managedPaidLedger: this.managedPaidLedger,
         hostedWorker,
@@ -2791,6 +2935,7 @@ export class CodeForgeServer {
         freeFabric: this.freeFabric,
         fabricContext: this.fabricContext,
         paidAuto: this.paidAuto,
+        forgeAaaResolver: forgeAaaUpstreamResolver(this.forgeAaa),
         managedPaidPolicy: this.managedPaidPolicy,
         managedPaidLedger: this.managedPaidLedger,
         routeHealth: this.routeHealth,
@@ -2963,6 +3108,29 @@ export class CodeForgeServer {
           return;
         }
 
+        if (data.providerId === FORGE_AAA_PROVIDER_ID) {
+          // Picker ids are namespaced (`forge-aaa:auto`); the stored selection keeps the
+          // namespaced id so the runtime re-resolves the policy per admission.
+          const policy = typeof modelId === "string" ? forgeAaaModelId(modelId) : undefined;
+          const view = policy ? this.forgeAaa.modelViews().find((v) => v.id === policy) : undefined;
+          if (!policy || !view) {
+            respond(400, { error: "MODEL_NOT_FOUND", message: `Unknown ForgeAAA policy ${modelId}` });
+            return;
+          }
+          if (!view.available) {
+            respond(409, {
+              error: "FORGE_AAA_ROUTE_UNAVAILABLE",
+              message: view.unavailableReason ?? "No eligible lead route",
+              state: view.state,
+            });
+            return;
+          }
+          runtime.setModelSelection({ providerId: FORGE_AAA_PROVIDER_ID, modelId, lock: "route" });
+          void this.forgeAaa.savePolicy(policy);
+          respond(200, { ok: true, selection: { providerId: FORGE_AAA_PROVIDER_ID, modelId, tier: "forge-aaa", lock: "route" } });
+          return;
+        }
+
         // Fail closed: reject selections for unregistered models instead of
         // storing them and letting the turn path discover the miss.
         const model = this.firewall.getModel(data.providerId, modelId);
@@ -3054,8 +3222,24 @@ export class CodeForgeServer {
       paidAutoOpenRouterSlug: m.openRouterSlug,
       verification: m.verification,
     }));
+    // ForgeAAA policies surface as real selectable rows — `eligible` mirrors the live lead
+    // resolution, so a policy with no verified route is visible but not selectable.
+    const forgeAaaModels = this.forgeAaa.modelViews().map((v) => ({
+      id: `forge-aaa:${v.id}`,
+      providerId: v.providerId,
+      displayName: v.displayName,
+      tier: v.tier,
+      freeStatus: v.freeStatus,
+      accessClass: v.accessClass,
+      verifiedFree: false,
+      eligible: v.available,
+      forgeAaaState: v.state,
+      unavailableReason: v.unavailableReason,
+      contextWindow: 128000,
+      capabilities: { text: true, coding: true, toolCalling: true, vision: true, structuredOutput: true, longContext: true },
+    }));
     res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-    res.end(JSON.stringify([...models, ...paidModels]));
+    res.end(JSON.stringify([...models, ...paidModels, ...forgeAaaModels]));
   }
 
   /**

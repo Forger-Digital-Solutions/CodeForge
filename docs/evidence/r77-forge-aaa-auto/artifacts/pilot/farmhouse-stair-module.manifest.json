@@ -1,0 +1,57 @@
+{
+  "manifestVersion": 1,
+  "assetId": "dtw/farmhouse/stair-module",
+  "taskId": "pilot-build",
+  "provenance": {
+    "generator": "forge-aaa-pilot",
+    "generatorVersion": "Blender 4.5.14 LTS",
+    "tool": "blender"
+  },
+  "license": {
+    "commercialUse": "yes",
+    "detail": "procedurally generated"
+  },
+  "files": [
+    {
+      "path": "farmhouse-stair-module.glb",
+      "role": "output",
+      "sha256": "91e2360fba73f0094cf74eacfbef85820159ea525416446531ea0baaf6dc3bd1",
+      "bytes": 9300
+    }
+  ],
+  "units": {
+    "system": "metric",
+    "scale": 1,
+    "upAxis": "Z"
+  },
+  "stats": {
+    "vertices": 48,
+    "triangles": 36,
+    "boundsCm": [
+      162,
+      90,
+      108
+    ],
+    "nonmanifoldEdges": 0
+  },
+  "engines": {
+    "blender": [
+      "Blender 4.5.14 LTS"
+    ],
+    "unreal": [
+      "4.27"
+    ]
+  },
+  "validation": {
+    "checks": [
+      {
+        "id": "manifold",
+        "kind": "blender-scene",
+        "status": "passed"
+      }
+    ],
+    "validatedAt": "2026-10-11T02:08:03.687Z"
+  },
+  "revision": 1,
+  "createdAt": "2026-10-11T02:08:03.687Z"
+}

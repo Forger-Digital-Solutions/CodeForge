@@ -1,0 +1,13 @@
+{
+  "version": "4.27",
+  "pythonScripting": "plugin_required",
+  "remoteControl": "plugin_required",
+  "commandlets": true,
+  "automationTests": true,
+  "fbxImport": true,
+  "editorUtilityWidgets": true,
+  "supported": true,
+  "notes": [
+    "UE 4.27 contract: Python Editor Script Plugin and Remote Control are plugin-gated; commandlets are always available."
+  ]
+}

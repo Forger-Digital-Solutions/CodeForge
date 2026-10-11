@@ -5,7 +5,7 @@ interface ModelDetailsProps {
     id: string;
     providerId: string;
     displayName: string;
-    tier: "free" | "gems_paid" | "paid" | "paid-auto";
+    tier: "free" | "gems_paid" | "paid" | "paid-auto" | "forge-aaa";
     freeStatus: string;
     contextWindow?: number;
     capabilities?: {

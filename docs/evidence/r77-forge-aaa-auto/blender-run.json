@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "stdoutTail": "INFO Draco mesh compression is available, use library at C:\\Program Files\\Blender Foundation\\Blender 4.5\\4.5\\scripts\\addons_core\\io_scene_gltf2\\extern_draco.dll\r\n22:06:42 | INFO: Starting glTF 2.0 export\r\n22:06:42 | INFO: Extracting primitive: Cube\r\n22:06:42 | INFO: Primitives created: 1\r\n22:06:42 | INFO: Extracting primitive: Cube.001\r\n22:06:42 | INFO: Primitives created: 1\r\n22:06:42 | INFO: Extracting primitive: Cube.002\r\n22:06:42 | INFO: Primitives created: 1\r\n22:06:42 | INFO: Extracting primitive: Cube.003\r\n22:06:42 | INFO: Primitives created: 1\r\n22:06:42 | INFO: Extracting primitive: Cube.004\r\n22:06:42 | INFO: Primitives created: 1\r\n22:06:42 | INFO: Extracting primitive: Cube.005\r\n22:06:42 | INFO: Primitives created: 1\r\n22:06:42 | INFO: Finished glTF 2.0 export in 0.01290273666381836 s\r\n\r\nFORGEAAA_REPORT:{\"ok\": true, \"objects\": 6, \"meshes\": 6, \"vertices\": 48, \"faces\": 36, \"nonmanifold_objects\": [], \"bounds_cm\": [162.0, 90.0, 108.0], \"step_count\": 6, \"rise_cm\": 18.0, \"tread_cm\": 27.0, \"width_cm\": 90.0, \"errors\": [], \"exported_to\": \"G:\\\\CodeForge\\\\worktrees\\\\forge-aaa-auto\\\\packages\\\\docs\\\\evidence\\\\r77-forge-aaa-auto\\\\artifacts\\\\farmhouse-stair-module.glb\"}\r\nBlender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)\n\nBlender quit\n",
+  "stderrTail": "",
+  "durationMs": 1668,
+  "report": {
+    "ok": true,
+    "objects": 6,
+    "meshes": 6,
+    "vertices": 48,
+    "faces": 36,
+    "nonmanifold_objects": [],
+    "bounds_cm": [
+      162,
+      90,
+      108
+    ],
+    "step_count": 6,
+    "rise_cm": 18,
+    "tread_cm": 27,
+    "width_cm": 90,
+    "errors": [],
+    "exported_to": "G:\\CodeForge\\worktrees\\forge-aaa-auto\\packages\\docs\\evidence\\r77-forge-aaa-auto\\artifacts\\farmhouse-stair-module.glb"
+  }
+}

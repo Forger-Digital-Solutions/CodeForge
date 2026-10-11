@@ -1,0 +1,133 @@
+{
+  "at": "2026-10-11T02:09:12.855Z",
+  "projectDir": "C:\\Users\\Daddy_FDS\\Documents\\ChatGPT\\Dead Trails West",
+  "gates": [
+    {
+      "gate": "blender",
+      "status": "VERIFIED",
+      "detail": "6-step stair module built, manifold-validated, exported (9300 bytes)",
+      "evidence": {
+        "report": {
+          "ok": true,
+          "objects": 6,
+          "meshes": 6,
+          "vertices": 48,
+          "faces": 36,
+          "nonmanifold_objects": [],
+          "bounds_cm": [
+            162,
+            90,
+            108
+          ],
+          "step_count": 6,
+          "rise_cm": 18,
+          "tread_cm": 27,
+          "width_cm": 90,
+          "errors": [],
+          "exported_to": "docs/evidence/r77-forge-aaa-auto/artifacts/farmhouse-stair-module.glb"
+        },
+        "artifactSha256": "91e2360fba73f0094cf74eacfbef85820159ea525416446531ea0baaf6dc3bd1",
+        "artifactBytes": 9300,
+        "detection": {
+          "installed": true,
+          "executablePath": "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+          "version": {
+            "major": 4,
+            "minor": 5,
+            "patch": 14,
+            "raw": "Blender 4.5.14 LTS"
+          },
+          "candidatesProbed": [
+            "C:\\Program Files\\Blender Foundation\\blender.exe",
+            "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+            "C:\\Program Files (x86)\\Blender Foundation\\blender.exe",
+            "C:\\Program Files\\Git\\mingw64\\bin\\blender.exe",
+            "C:\\Program Files\\Git\\usr\\bin\\blender.exe",
+            "C:\\Users\\Daddy_FDS\\bin\\blender.exe",
+            "G:\\CodeForge\\worktrees\\forge-aaa-auto\\node_modules\\.bin\\blender.exe",
+            "G:\\CodeForge\\worktrees\\node_modules\\.bin\\blender.exe",
+            "G:\\CodeForge\\node_modules\\.bin\\blender.exe",
+            "G:\\node_modules\\.bin\\blender.exe",
+            "C:\\Users\\Daddy_FDS\\AppData\\Roaming\\npm\\node_modules\\npm\\node_modules\\@npmcli\\run-script\\lib\\node-gyp-bin\\blender.exe",
+            "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin\\blender.exe",
+            "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.19.10-hotspot\\bin\\blender.exe",
+            "C:\\WINDOWS\\system32\\blender.exe",
+            "C:\\WINDOWS\\blender.exe",
+            "C:\\WINDOWS\\System32\\Wbem\\blender.exe",
+            "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\blender.exe",
+            "C:\\WINDOWS\\System32\\OpenSSH\\blender.exe",
+            "C:\\Program Files\\dotnet\\blender.exe",
+            "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR\\blender.exe",
+            "C:\\Program Files\\Microsoft SQL Server\\170\\Tools\\Binn\\blender.exe",
+            "C:\\Program Files\\Microsoft SQL Server\\Client SDK\\ODBC\\170\\Tools\\Binn\\blender.exe",
+            "C:\\Program Files\\Microsoft SQL Server\\150\\Tools\\Binn\\blender.exe",
+            "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\blender.exe",
+            "C:\\Program Files\\usbipd-win\\blender.exe",
+            "C:\\Program Files\\GitHub CLI\\blender.exe",
+            "C:\\Program Files\\Git\\cmd\\blender.exe",
+            "C:\\Program Files\\Amazon\\AWSCLIV2\\blender.exe",
+            "C:\\Program Files\\Docker\\Docker\\resources\\bin\\blender.exe",
+            "C:\\Program Files\\nodejs\\blender.exe",
+            "C:\\Program Files\\PowerShell\\7\\blender.exe",
+            "C:\\Users\\Daddy_FDS\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\blender.exe",
+            "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\Devin\\bin\\blender.exe",
+            "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\Microsoft VS Code\\bin\\blender.exe",
+            "C:\\Users\\Daddy_FDS\\AppData\\Local\\Programs\\Kiro\\bin\\blender.exe",
+            "C:\\Users\\Daddy_FDS\\.dotnet\\tools\\blender.exe",
+            "C:\\Users\\Daddy_FDS\\AppData\\Local\\Temp\\codex-dotnet-home-cleanup-20261010\\.dotnet\\tools\\blender.exe"
+          ],
+          "detectedAt": "2026-10-11T02:06:41.176Z"
+        }
+      }
+    },
+    {
+      "gate": "unreal",
+      "status": "VERIFIED",
+      "detail": "Cook commandlet executed under UE4Editor-Cmd",
+      "evidence": {
+        "exitCode": 0,
+        "timedOut": false,
+        "durationMs": 11699,
+        "detection": {
+          "installed": true,
+          "installs": [
+            {
+              "root": "C:\\Program Files\\Epic Games\\UE_4.27",
+              "version": {
+                "major": 4,
+                "minor": 27,
+                "patch": 2,
+                "changelist": 18319896,
+                "branch": "++UE4+Release-4.27"
+              },
+              "editorCmdPath": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Binaries\\Win64\\UE4Editor-Cmd.exe",
+              "editorPath": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Binaries\\Win64\\UE4Editor.exe"
+            }
+          ],
+          "probedRoots": [
+            "C:\\Program Files\\Epic Games"
+          ],
+          "detectedAt": "2026-10-11T02:06:43.034Z"
+        }
+      }
+    },
+    {
+      "gate": "pilot",
+      "status": "VERIFIED",
+      "detail": "Director run: plan→route→Blender+UE adapter execution→manifest→checks→independent review = FORGEAAA_VERIFIED",
+      "evidence": {
+        "file": "pilot-run.json",
+        "tasks": [
+          "pilot-inspect",
+          "pilot-build",
+          "pilot-verify"
+        ],
+        "review": {
+          "approved": true,
+          "independent": true
+        }
+      }
+    }
+  ],
+  "finalStatus": "FORGEAAA_VERIFIED"
+}

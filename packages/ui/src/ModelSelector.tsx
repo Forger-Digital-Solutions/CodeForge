@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { getUpgradeUrl } from "./upgrade-url.js";
 import { loadModelFavorites, saveModelFavorites } from "./model-favorites.js";
 
-export type ModelTier = "free" | "gems_paid" | "paid-auto";
+export type ModelTier = "free" | "gems_paid" | "paid-auto" | "forge-aaa";
 
 export type ModelEntitlementStatus =
   | "included"
@@ -187,6 +187,11 @@ export function ModelSelector({
           sectionId: "free",
           sectionLabel: "Free / Verified",
           models: models.filter((m) => m.tier === "free"),
+        },
+        {
+          sectionId: "forge-aaa",
+          sectionLabel: "ForgeAAA",
+          models: models.filter((m) => m.tier === "forge-aaa"),
         },
         {
           sectionId: "paid-auto",

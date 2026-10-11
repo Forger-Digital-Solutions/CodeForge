@@ -654,6 +654,14 @@ export interface AgentRuntimeOptions {
   fabricContext?: FabricContextProvider;
   paidAuto?: PaidAutoService;
   /**
+   * ForgeAAA: resolves a `forge-aaa:*` lead policy to its current concrete upstream
+   * `{providerId, modelId}` in an already-authorized domain. Called fresh on each fabric
+   * admission so lead failover re-resolves per turn; when it returns undefined the
+   * selection fails closed. Dispatch and quota still run on the resolved upstream — the
+   * forge-aaa provider adapter is presentation/policy only.
+   */
+  forgeAaaResolver?: (modelId: string) => { providerId: string; modelId: string } | undefined;
+  /**
    * R55 wave 2: the owner's managed-paid policy + ledger. When both are present, every
    * roster-authorized paid attempt reserves a conservative estimate before the wire and
    * settles or releases honestly afterward. Absent = paid calls run unaccounted exactly
@@ -1074,6 +1082,7 @@ export class AgentRuntime {
   private readonly additionalFreeRoleAdmission?: (providerId: string, modelId: string) => boolean;
   private readonly personalRoleAllowance?: AgentRuntimeOptions["personalRoleAllowance"];
   private readonly paidAuto?: PaidAutoService;
+  private readonly forgeAaaResolver?: (modelId: string) => { providerId: string; modelId: string } | undefined;
   private readonly managedPaidPolicy?: ManagedPaidPolicy;
   private readonly managedPaidLedger?: ManagedPaidAllowanceLedger;
   private readonly capacityGovernor: ProviderCapacityGovernor;
@@ -1122,6 +1131,7 @@ export class AgentRuntime {
     this.additionalFreeRoleAdmission = options.additionalFreeRoleAdmission;
     this.personalRoleAllowance = options.personalRoleAllowance;
     this.paidAuto = options.paidAuto;
+    this.forgeAaaResolver = options.forgeAaaResolver;
     this.managedPaidPolicy = options.managedPaidPolicy;
     this.managedPaidLedger = options.managedPaidLedger;
     this.capacityGovernor = options.capacityGovernor ?? defaultCapacityGovernor;
@@ -5560,6 +5570,13 @@ export class AgentRuntime {
     const selection = this.modelSelection;
     const selectionAllows = (providerId: string, modelId: string): boolean => {
       if (!selection || selection.providerId === "paid-auto") return true;
+      // ForgeAAA: the admission gate is the policy's freshly resolved upstream route —
+      // re-resolved per admission so lead failover lands on a route the fabric actually
+      // admitted, never on a stale selection-time pin.
+      if (selection.providerId === "forge-aaa") {
+        const upstream = this.forgeAaaResolver?.(selection.modelId);
+        return upstream !== undefined && providerId === upstream.providerId && modelId === upstream.modelId;
+      }
       if (selection.lock === "route") return providerId === selection.providerId && modelId === selection.modelId;
       if (providerId === selection.providerId && modelId === selection.modelId) return true;
       if (!selection.canonicalModelId) return false;
@@ -5749,6 +5766,33 @@ export class AgentRuntime {
           throw new Error(`Exact Paid Auto model ${modelId} is not registered. Exact model execution failed closed.`);
         }
         return paidModel as unknown as FreeModelRecord;
+      }
+      if (providerId === "forge-aaa") {
+        // The fabric path admits the policy's resolved upstream through normal authority —
+        // selectModel returns that upstream's real record, quota and health attach to the
+        // true route, and nothing forge-aaa claims bypasses ForgeZero.
+        if (this.eightBit.hasFreeFabric) return this.selectModel(turnId);
+        const upstream = this.forgeAaaResolver?.(modelId);
+        if (!upstream) {
+          throw new Error(`ForgeAAA policy ${modelId} has no eligible lead route right now — selection failed closed, no substitute dispatched.`);
+        }
+        if (upstream.providerId === "paid-auto") {
+          const paidModel = this.paidAuto?.runtimeModel(upstream.modelId);
+          if (!paidModel) throw new Error(`ForgeAAA resolved paid lead ${upstream.modelId} which Paid Auto does not serve — failed closed.`);
+          return paidModel as unknown as FreeModelRecord;
+        }
+        const record = this.firewall.getModel(upstream.providerId, upstream.modelId);
+        if (!record) {
+          throw new Error(`ForgeAAA resolved ${upstream.providerId}::${upstream.modelId} which is not a registered model — failed closed.`);
+        }
+        const v = this.firewall.verify(upstream.providerId, upstream.modelId);
+        if (!v.ok) {
+          throw new Error(`ForgeAAA upstream ${upstream.providerId}::${upstream.modelId} is ineligible: ${v.error.message}. Failed closed.`);
+        }
+        if (!record.capabilities.toolCalling) {
+          throw new Error(`ForgeAAA upstream ${upstream.providerId}::${upstream.modelId} lacks tool calling and cannot run agent tasks.`);
+        }
+        return record;
       }
       // Capacity wake-up and execution must admit the same selected model. Resolving a
       // canonical route outside the fabric can repeatedly wake on unrelated free supply.
