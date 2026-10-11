@@ -1,0 +1,140 @@
+{
+  "ok": true,
+  "level": "/Game/ForgeAAA/Maps/FAAA_StairTest",
+  "placed": [
+    {
+      "name": "FAAA_StairV2_Step_00",
+      "actor": "FAAA_StairV2_Step_00",
+      "action": "updated",
+      "bounds_cm": [
+        0,
+        0,
+        9,
+        13.5,
+        45,
+        9
+      ]
+    },
+    {
+      "name": "FAAA_StairV2_Step_01",
+      "actor": "FAAA_StairV2_Step_01",
+      "action": "updated",
+      "bounds_cm": [
+        27,
+        0,
+        27,
+        13.5,
+        45,
+        9
+      ]
+    },
+    {
+      "name": "FAAA_StairV2_Step_02",
+      "actor": "FAAA_StairV2_Step_02",
+      "action": "updated",
+      "bounds_cm": [
+        54,
+        0,
+        45,
+        13.5,
+        45,
+        9
+      ]
+    },
+    {
+      "name": "FAAA_StairV2_Step_03",
+      "actor": "FAAA_StairV2_Step_03",
+      "action": "updated",
+      "bounds_cm": [
+        81,
+        0,
+        63,
+        13.5,
+        45,
+        9
+      ]
+    },
+    {
+      "name": "FAAA_StairV2_Step_04",
+      "actor": "FAAA_StairV2_Step_04",
+      "action": "updated",
+      "bounds_cm": [
+        108,
+        0,
+        81,
+        13.5,
+        45,
+        9
+      ]
+    },
+    {
+      "name": "FAAA_StairV2_Step_05",
+      "actor": "FAAA_StairV2_Step_05",
+      "action": "updated",
+      "bounds_cm": [
+        135,
+        0,
+        99,
+        13.5,
+        45,
+        9
+      ]
+    },
+    {
+      "name": "FAAA_StairV2_RailPost_00",
+      "actor": "FAAA_StairV2_RailPost_00",
+      "action": "updated",
+      "bounds_cm": [
+        13.5,
+        -40,
+        63,
+        3,
+        3,
+        45
+      ]
+    },
+    {
+      "name": "FAAA_StairV2_RailPost_03",
+      "actor": "FAAA_StairV2_RailPost_03",
+      "action": "updated",
+      "bounds_cm": [
+        94.5,
+        -40,
+        117,
+        3,
+        3,
+        45
+      ]
+    },
+    {
+      "name": "FAAA_StairV2_RailPost_05",
+      "actor": "FAAA_StairV2_RailPost_05",
+      "action": "updated",
+      "bounds_cm": [
+        148.5,
+        -40,
+        153,
+        3,
+        3,
+        45
+      ]
+    },
+    {
+      "name": "FAAA_StairV2_Handrail",
+      "actor": "FAAA_StairV2_Handrail",
+      "action": "updated",
+      "bounds_cm": [
+        81,
+        -40,
+        153,
+        69.72,
+        4,
+        48.33
+      ]
+    }
+  ],
+  "actors_in_level": 10,
+  "errors": [],
+  "level_action": "loaded",
+  "level_saved": true
+}

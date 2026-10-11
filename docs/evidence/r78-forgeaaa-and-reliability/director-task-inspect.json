@@ -1,0 +1,76 @@
+{
+  "ok": true,
+  "assets": [
+    {
+      "path": "/Game/ForgeAAA/stair-module-v2_Step_00",
+      "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_DEFAULT: 0>",
+      "convex_elems": 1,
+      "box_elems": 0,
+      "sockets": []
+    },
+    {
+      "path": "/Game/ForgeAAA/stair-module-v2_Step_01",
+      "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_DEFAULT: 0>",
+      "convex_elems": 1,
+      "box_elems": 0,
+      "sockets": []
+    },
+    {
+      "path": "/Game/ForgeAAA/stair-module-v2_Step_02",
+      "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_DEFAULT: 0>",
+      "convex_elems": 1,
+      "box_elems": 0,
+      "sockets": []
+    },
+    {
+      "path": "/Game/ForgeAAA/stair-module-v2_Step_03",
+      "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_DEFAULT: 0>",
+      "convex_elems": 1,
+      "box_elems": 0,
+      "sockets": []
+    },
+    {
+      "path": "/Game/ForgeAAA/stair-module-v2_Step_04",
+      "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_DEFAULT: 0>",
+      "convex_elems": 1,
+      "box_elems": 0,
+      "sockets": []
+    },
+    {
+      "path": "/Game/ForgeAAA/stair-module-v2_Step_05",
+      "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_DEFAULT: 0>",
+      "convex_elems": 1,
+      "box_elems": 0,
+      "sockets": []
+    },
+    {
+      "path": "/Game/ForgeAAA/stair-module-v2_RailPost_00",
+      "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_DEFAULT: 0>",
+      "convex_elems": 1,
+      "box_elems": 0,
+      "sockets": []
+    },
+    {
+      "path": "/Game/ForgeAAA/stair-module-v2_RailPost_03",
+      "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_DEFAULT: 0>",
+      "convex_elems": 1,
+      "box_elems": 0,
+      "sockets": []
+    },
+    {
+      "path": "/Game/ForgeAAA/stair-module-v2_RailPost_05",
+      "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_DEFAULT: 0>",
+      "convex_elems": 1,
+      "box_elems": 0,
+      "sockets": []
+    },
+    {
+      "path": "/Game/ForgeAAA/stair-module-v2_Handrail",
+      "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_DEFAULT: 0>",
+      "convex_elems": 1,
+      "box_elems": 0,
+      "sockets": []
+    }
+  ],
+  "errors": []
+}

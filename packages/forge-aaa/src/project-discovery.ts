@@ -20,6 +20,8 @@ export interface ForgeAaaProjectInspection {
   generated: { forgeAaaArtifacts: boolean };
   contentSignals: {
     authoredAssetCount: number;
+    /** Files under ForgeAAA-owned generation paths — produced, not authored. */
+    generatedAssetCount: number;
     totalFiles: number;
   };
 }
@@ -35,6 +37,8 @@ export interface ForgeAaaProjectClassification {
 
 const IGNORED_DIRS = new Set([".git", "DerivedDataCache", "Intermediate", "Saved", "Binaries", "node_modules", ".vs"]);
 const AUTHORED_EXTENSIONS = new Set([".uasset", ".umap", ".blend", ".fbx", ".obj", ".png", ".tga", ".wav", ".cpp", ".h", ".cs", ".usf"]);
+/** Paths ForgeAAA owns — content here is generated output, never evidence of authorship. */
+const GENERATED_PATH_MARKERS = [".forge-aaa", path.join("Content", "ForgeAAA")];
 
 async function exists(p: string): Promise<boolean> {
   try { await fs.access(p); return true; } catch { return false; }
@@ -96,11 +100,14 @@ export async function inspectForgeAaaProject(dir: string): Promise<ForgeAaaProje
       unreal: { uprojectFiles: [], engineAssociations: [], hasContent: false, hasPlugins: false, hasSource: false },
       blender: { blendFiles: [] },
       generated: { forgeAaaArtifacts: false },
-      contentSignals: { authoredAssetCount: 0, totalFiles: 0 },
+      contentSignals: { authoredAssetCount: 0, generatedAssetCount: 0, totalFiles: 0 },
     };
   }
   const files = (await walk(resolved)).map((f) => path.resolve(f));
-  const authored = files.filter((f) => AUTHORED_EXTENSIONS.has(path.extname(f).toLowerCase()));
+  const isGenerated = (f: string) => GENERATED_PATH_MARKERS.some((m) => f.includes(m));
+  const assets = files.filter((f) => AUTHORED_EXTENSIONS.has(path.extname(f).toLowerCase()));
+  const generated = assets.filter(isGenerated);
+  const authored = assets.filter((f) => !isGenerated(f));
   return {
     path: resolved,
     exists: true,
@@ -108,7 +115,7 @@ export async function inspectForgeAaaProject(dir: string): Promise<ForgeAaaProje
     unreal: await uprojectInfo(resolved, files),
     blender: { blendFiles: authored.filter((f) => f.toLowerCase().endsWith(".blend")) },
     generated: { forgeAaaArtifacts: await exists(path.join(resolved, ".forge-aaa")) },
-    contentSignals: { authoredAssetCount: authored.length, totalFiles: files.length },
+    contentSignals: { authoredAssetCount: authored.length, generatedAssetCount: generated.length, totalFiles: files.length },
   };
 }
 
@@ -142,6 +149,10 @@ export function classifyForgeAaaProject(
   if (opts.migrationTarget) {
     rationale.push("no authored content; migration target requested");
     return { mode: "MIGRATION_PROJECT", engineTarget: opts.migrationTarget, hasAuthoredContent: false, rationale, protections: ["source state snapshotted before any migration step"] };
+  }
+  if (inspection.contentSignals.generatedAssetCount > 0) {
+    rationale.push(`${inspection.contentSignals.generatedAssetCount} ForgeAAA-generated asset(s) present — generated output is not authorship`);
+    protections.push("generated assets remain replaceable by newer verified revisions", "no deletion of files outside ForgeAAA-owned generation paths");
   }
   rationale.push(inspection.unreal.uprojectFiles.length > 0 ? "descriptor present but no authored content — generated scaffolding only" : "empty or scaffold-only directory");
   protections.push("label generated artifacts as pilot output", "do not present pilot content as the user's authored project");

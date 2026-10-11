@@ -1,0 +1,60 @@
+{
+  "capturedAt": "2026-10-11T04:01:28.608Z",
+  "uassets": [
+    {
+      "file": "stair-module-v2_Handrail.uasset",
+      "bytes": 11348,
+      "sha256": "fd01a8749931e5ecf14b8f7df3996b8ccb22d90c9c9018f703ac0013aef16e3b"
+    },
+    {
+      "file": "stair-module-v2_RailPost_00.uasset",
+      "bytes": 11002,
+      "sha256": "137e7354f2d03ffe6219fc33d1fd7d2f9709b49311f811e707848e989aa8e28b"
+    },
+    {
+      "file": "stair-module-v2_RailPost_03.uasset",
+      "bytes": 10996,
+      "sha256": "a928c83d1ac844ba9d6010119a1be942a96e1cfca4717a6c15082c5afc01e6a8"
+    },
+    {
+      "file": "stair-module-v2_RailPost_05.uasset",
+      "bytes": 10992,
+      "sha256": "ba96bb850f1e922a3af2a8a485e9451e7dd4d826653ceab2fd00d671fcb0a031"
+    },
+    {
+      "file": "stair-module-v2_Step_00.uasset",
+      "bytes": 10906,
+      "sha256": "5ce141fe102dc5776d73f763e579d24e04191c377b78228ecc78c8ce43b4f2a6"
+    },
+    {
+      "file": "stair-module-v2_Step_01.uasset",
+      "bytes": 10906,
+      "sha256": "119a00072854f647652fd9f28c93274c47101d90fb0f4e1b2b0292073280d4dc"
+    },
+    {
+      "file": "stair-module-v2_Step_02.uasset",
+      "bytes": 10898,
+      "sha256": "a730757b63da05e04060e1c6bc690d8358dbe3d485cdbaa418fb337cad640ba7"
+    },
+    {
+      "file": "stair-module-v2_Step_03.uasset",
+      "bytes": 10903,
+      "sha256": "675a50b1edfed3876200dad180533760bc999695aaebc70960b48f8c0967a86c"
+    },
+    {
+      "file": "stair-module-v2_Step_04.uasset",
+      "bytes": 10900,
+      "sha256": "cf1493275905a058ed6ed3c42bb7e787ce8b495e253b05324b56e62607162591"
+    },
+    {
+      "file": "stair-module-v2_Step_05.uasset",
+      "bytes": 10905,
+      "sha256": "0e76587e832b492bc5ef8bb2dc5f5f888e3ec11cc5f48ce47f1999233104ec99"
+    }
+  ],
+  "level": {
+    "file": "Content/ForgeAAA/Maps/FAAA_StairTest.umap",
+    "bytes": 19545,
+    "sha256": "5c9a205b7fc635cf3a9fa19f6ebbc830b3d5572f81791db211b34339adb369fe"
+  }
+}

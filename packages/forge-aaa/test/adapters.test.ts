@@ -128,4 +128,64 @@ describe("UnrealAdapter", () => {
       install: { root: "/x", version: { major: 4, minor: 27, patch: 2 }, editorCmdPath: "/x/bin" },
     })).rejects.toThrowError(/OPERATION_DENIED|safe token/i);
   });
+
+  it("ensurePlugins adds missing plugins additively and preserves existing entries", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-aaa-plug-"));
+    const up = path.join(dir, "Pilot.uproject");
+    await fs.writeFile(up, JSON.stringify({
+      FileVersion: 3, EngineAssociation: "4.27",
+      Plugins: [{ Name: "RemoteControl", Enabled: true }],
+    }));
+    const r = await new UnrealAdapter().ensurePlugins(up, ["PythonScriptPlugin", "EditorScriptingUtilities"]);
+    expect(r.added.sort()).toEqual(["EditorScriptingUtilities", "PythonScriptPlugin"]);
+    expect(r.plugins).toContainEqual({ name: "RemoteControl", enabled: true });
+    const saved = JSON.parse(await fs.readFile(up, "utf8")) as { Plugins: { Name: string; Enabled: boolean }[] };
+    expect(saved.Plugins.map((p) => p.Name)).toEqual(["RemoteControl", "PythonScriptPlugin", "EditorScriptingUtilities"]);
+    const again = await new UnrealAdapter().ensurePlugins(up, ["PythonScriptPlugin"]);
+    expect(again.added).toEqual([]);
+  });
+
+  it("runPythonScript rejects missing scripts and non-.py files before spawning", async () => {
+    const adapter = new UnrealAdapter();
+    await expect(adapter.runPythonScript({ projectPath: "p.uproject", scriptPath: "C:\\nope.py" }))
+      .rejects.toThrowError(/MANIFEST_INVALID|missing/);
+    await expect(adapter.runPythonScript({ projectPath: "p.uproject", scriptPath: "C:\\real.txt" }))
+      .rejects.toThrowError();
+  });
+
+  it("placeAssets enforces /Game paths and safe actor names before spawning", async () => {
+    const adapter = new UnrealAdapter({ fileExists: () => true });
+    const base = { projectPath: "p.uproject", scriptPath: "C:\\s.py" };
+    await expect(adapter.placeAssets({ ...base, levelPath: "/Engine/Bad", placements: [] }))
+      .rejects.toThrowError(/under \/Game/);
+    await expect(adapter.placeAssets({ ...base, levelPath: "/Game/L", placements: [{ assetPath: "C:\\evil.fbx", name: "A", location: [0, 0, 0] }] }))
+      .rejects.toThrowError(/under \/Game/);
+    await expect(adapter.placeAssets({ ...base, levelPath: "/Game/L", placements: [{ assetPath: "/Game/A", name: "bad name!", location: [0, 0, 0] }] }))
+      .rejects.toThrowError(/invalid placement name/);
+  });
+
+  it("placeAssets writes a reviewed script, invokes PythonScript commandlet, and parses the report", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-aaa-place-"));
+    const scriptPath = path.join(dir, "placement.py");
+    const report = JSON.stringify({ ok: true, level: "/Game/ForgeAAA/Maps/L_Test", placed: [{ name: "Stair", actor: "Stair", action: "spawned" }] });
+    const adapter = new UnrealAdapter({
+      platform: "win32",
+      fileExists: () => true,
+      spawnProcess: fakeSpawn(`log lines\nFORGEAAA_REPORT:${report}\n`) as never,
+      env: { PATH: "" },
+    });
+    const result = await adapter.placeAssets({
+      projectPath: "p.uproject",
+      levelPath: "/Game/ForgeAAA/Maps/L_Test",
+      placements: [{ assetPath: "/Game/ForgeAAA/SM_Stair", name: "Stair", location: [0, 0, 0], rotation: [0, 0, 90] }],
+      scriptPath,
+      install: { root: "/x", version: { major: 4, minor: 27, patch: 2 }, editorCmdPath: "/x/bin" },
+    });
+    const script = await fs.readFile(scriptPath, "utf8");
+    expect(script).toContain("unreal");
+    expect(script).toContain("/Game/ForgeAAA/Maps/L_Test");
+    expect(script).toContain("SM_Stair");
+    expect(result.placed).toEqual([{ name: "Stair", actor: "Stair", action: "spawned" }]);
+    expect(result.report?.ok).toBe(true);
+  });
 });

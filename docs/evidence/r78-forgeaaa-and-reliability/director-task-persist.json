@@ -1,0 +1,168 @@
+{
+  "ok": true,
+  "level": "/Game/ForgeAAA/Maps/FAAA_StairTest",
+  "actors": [
+    {
+      "label": "FAAA_StairV2_Step_00",
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "mesh_ref": "/Game/ForgeAAA/stair-module-v2_Step_00.stair-module-v2_Step_00",
+      "collision_enabled": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+      "mobility": "<ComponentMobility.STATIC: 0>"
+    },
+    {
+      "label": "FAAA_StairV2_Step_01",
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "mesh_ref": "/Game/ForgeAAA/stair-module-v2_Step_01.stair-module-v2_Step_01",
+      "collision_enabled": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+      "mobility": "<ComponentMobility.STATIC: 0>"
+    },
+    {
+      "label": "FAAA_StairV2_Step_02",
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "mesh_ref": "/Game/ForgeAAA/stair-module-v2_Step_02.stair-module-v2_Step_02",
+      "collision_enabled": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+      "mobility": "<ComponentMobility.STATIC: 0>"
+    },
+    {
+      "label": "FAAA_StairV2_Step_03",
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "mesh_ref": "/Game/ForgeAAA/stair-module-v2_Step_03.stair-module-v2_Step_03",
+      "collision_enabled": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+      "mobility": "<ComponentMobility.STATIC: 0>"
+    },
+    {
+      "label": "FAAA_StairV2_Step_04",
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "mesh_ref": "/Game/ForgeAAA/stair-module-v2_Step_04.stair-module-v2_Step_04",
+      "collision_enabled": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+      "mobility": "<ComponentMobility.STATIC: 0>"
+    },
+    {
+      "label": "FAAA_StairV2_Step_05",
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "mesh_ref": "/Game/ForgeAAA/stair-module-v2_Step_05.stair-module-v2_Step_05",
+      "collision_enabled": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+      "mobility": "<ComponentMobility.STATIC: 0>"
+    },
+    {
+      "label": "FAAA_StairV2_RailPost_00",
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "mesh_ref": "/Game/ForgeAAA/stair-module-v2_RailPost_00.stair-module-v2_RailPost_00",
+      "collision_enabled": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+      "mobility": "<ComponentMobility.STATIC: 0>"
+    },
+    {
+      "label": "FAAA_StairV2_RailPost_03",
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "mesh_ref": "/Game/ForgeAAA/stair-module-v2_RailPost_03.stair-module-v2_RailPost_03",
+      "collision_enabled": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+      "mobility": "<ComponentMobility.STATIC: 0>"
+    },
+    {
+      "label": "FAAA_StairV2_RailPost_05",
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "mesh_ref": "/Game/ForgeAAA/stair-module-v2_RailPost_05.stair-module-v2_RailPost_05",
+      "collision_enabled": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+      "mobility": "<ComponentMobility.STATIC: 0>"
+    },
+    {
+      "label": "FAAA_StairV2_Handrail",
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "mesh_ref": "/Game/ForgeAAA/stair-module-v2_Handrail.stair-module-v2_Handrail",
+      "collision_enabled": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+      "mobility": "<ComponentMobility.STATIC: 0>"
+    }
+  ],
+  "errors": [],
+  "matched": 10
+}

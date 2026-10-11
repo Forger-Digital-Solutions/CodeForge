@@ -46,6 +46,29 @@ describe("ForgeAAA project discovery", () => {
     expect(c.protections.some((p) => p.includes("pilot"))).toBe(true);
   });
 
+  it("keeps a generated-asset pilot as PILOT_PROJECT — produced output is not authorship", async () => {
+    const dir = await fixture({
+      "Game.uproject": JSON.stringify({ EngineAssociation: "4.27" }),
+      "Content/ForgeAAA/SM_Stair.uasset": "generated-by-forgeaaa",
+      ".forge-aaa/manifest.json": "{}",
+    });
+    const inspection = await inspectForgeAaaProject(dir);
+    expect(inspection.contentSignals.generatedAssetCount).toBe(1);
+    expect(inspection.contentSignals.authoredAssetCount).toBe(0);
+    const c = classifyForgeAaaProject(inspection);
+    expect(c.mode).toBe("PILOT_PROJECT");
+    expect(c.rationale.some((r) => r.includes("ForgeAAA-generated"))).toBe(true);
+    // But a real authored asset alongside generated ones still promotes correctly.
+    const authored = await fixture({
+      "Game.uproject": JSON.stringify({ EngineAssociation: "4.27" }),
+      "Content/ForgeAAA/SM_Stair.uasset": "generated-by-forgeaaa",
+      "Content/House/SM_Wall.uasset": "human-authored",
+    });
+    const c2 = classifyForgeAaaProject(await inspectForgeAaaProject(authored));
+    expect(c2.mode).toBe("EXISTING_PROJECT");
+    expect(c2.hasAuthoredContent).toBe(true);
+  });
+
   it("refuses mutating modes against authored content and vice versa", async () => {
     const authored = await inspectForgeAaaProject(await fixture({ "Content/a.uasset": "x" }));
     expect(() => assertProjectMode(authored, "PILOT_PROJECT")).toThrowError(/forbidden|denied/i);

@@ -1,0 +1,175 @@
+{
+  "id": "aaa-493f0575-f86e-4c39-bb35-7d3faf4686ef",
+  "goal": "Place the imported modular staircase into an isolated UE4.27 level, validate persistence and collision in a fresh process",
+  "projectPath": "C:/Users/Daddy_FDS/Documents/ChatGPT/Dead Trails West/DeadTrailsWest.uproject",
+  "engineTarget": "ue-4.27",
+  "leadPolicy": "auto",
+  "status": "done",
+  "tasks": [
+    {
+      "id": "inspect",
+      "title": "Verify 10 imported static meshes load",
+      "objective": "Load every stair-module-v2 mesh and confirm collision setup",
+      "specialty": "unreal-integration",
+      "dependencies": [],
+      "status": "verified",
+      "attempts": 1,
+      "artifacts": [
+        "G:\\CodeForge\\worktrees\\r78-forgeaaa-and-reliability\\.scratch\\report-inspect.json"
+      ],
+      "evidence": [
+        {
+          "kind": "log",
+          "ref": "G:\\CodeForge\\worktrees\\r78-forgeaaa-and-reliability\\.scratch\\director-inspect.log",
+          "detail": "asset load inspection"
+        },
+        {
+          "kind": "check",
+          "ref": "report:0",
+          "detail": "2 passed/0 failed/0 blocked"
+        }
+      ]
+    },
+    {
+      "id": "place",
+      "title": "Place staircase into FAAA_StairTest",
+      "objective": "Spawn/update all 10 labeled actors at canonical transform and save the level",
+      "specialty": "unreal-integration",
+      "dependencies": [
+        "inspect"
+      ],
+      "status": "verified",
+      "attempts": 1,
+      "artifacts": [
+        "G:\\CodeForge\\worktrees\\r78-forgeaaa-and-reliability\\.scratch\\director-place.py",
+        "G:\\CodeForge\\worktrees\\r78-forgeaaa-and-reliability\\.scratch\\report-place.json"
+      ],
+      "evidence": [
+        {
+          "kind": "log",
+          "ref": "G:\\CodeForge\\worktrees\\r78-forgeaaa-and-reliability\\.scratch\\director-place.log",
+          "detail": "level_action=loaded"
+        },
+        {
+          "kind": "check",
+          "ref": "report:1",
+          "detail": "2 passed/0 failed/0 blocked"
+        }
+      ]
+    },
+    {
+      "id": "persist",
+      "title": "Reopen level and validate persistence",
+      "objective": "Fresh process: load level, confirm 10 actors, transforms, mesh refs, collision",
+      "specialty": "forge-verify",
+      "dependencies": [
+        "place"
+      ],
+      "status": "verified",
+      "attempts": 1,
+      "artifacts": [
+        "G:\\CodeForge\\worktrees\\r78-forgeaaa-and-reliability\\.scratch\\report-persist.json"
+      ],
+      "evidence": [
+        {
+          "kind": "log",
+          "ref": "G:\\CodeForge\\worktrees\\r78-forgeaaa-and-reliability\\.scratch\\director-persist.log"
+        },
+        {
+          "kind": "check",
+          "ref": "report:2",
+          "detail": "2 passed/0 failed/0 blocked"
+        }
+      ]
+    }
+  ],
+  "routeDecisions": [],
+  "verificationReports": [
+    {
+      "checks": [
+        {
+          "id": "report-ok",
+          "kind": "file-exists",
+          "status": "passed",
+          "detail": "ok=true errors=0",
+          "durationMs": 0
+        },
+        {
+          "id": "assets",
+          "kind": "file-exists",
+          "status": "passed",
+          "detail": "assets=10",
+          "durationMs": 0
+        }
+      ],
+      "passed": 2,
+      "failed": 0,
+      "blocked": 0,
+      "verified": true,
+      "ranAt": "2026-10-11T04:00:57.447Z"
+    },
+    {
+      "checks": [
+        {
+          "id": "report-ok",
+          "kind": "file-exists",
+          "status": "passed",
+          "detail": "ok=true errors=0",
+          "durationMs": 0
+        },
+        {
+          "id": "saved",
+          "kind": "file-exists",
+          "status": "passed",
+          "detail": "placed=10",
+          "durationMs": 0
+        }
+      ],
+      "passed": 2,
+      "failed": 0,
+      "blocked": 0,
+      "verified": true,
+      "ranAt": "2026-10-11T04:01:10.186Z"
+    },
+    {
+      "checks": [
+        {
+          "id": "report-ok",
+          "kind": "file-exists",
+          "status": "passed",
+          "detail": "ok=true errors=0",
+          "durationMs": 0
+        },
+        {
+          "id": "matched",
+          "kind": "file-exists",
+          "status": "passed",
+          "detail": "matched=10",
+          "durationMs": 0
+        }
+      ],
+      "passed": 2,
+      "failed": 0,
+      "blocked": 0,
+      "verified": true,
+      "ranAt": "2026-10-11T04:01:22.830Z"
+    }
+  ],
+  "manifests": [],
+  "counters": {
+    "taskAttempts": 3,
+    "retries": 0,
+    "modelCalls": 3,
+    "adapterOps": 0
+  },
+  "blockers": [],
+  "createdAt": "2026-10-11T04:00:44.824Z",
+  "updatedAt": "2026-10-11T04:01:22.833Z",
+  "review": {
+    "approved": true,
+    "findings": [],
+    "independent": false
+  },
+  "finalStatus": "FORGEAAA_VERIFIED",
+  "completedAt": "2026-10-11T04:01:22.833Z"
+}
