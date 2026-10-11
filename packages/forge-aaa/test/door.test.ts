@@ -124,6 +124,7 @@ describe("runInteractionTest validation", () => {
       ],
     });
     expect(r.state).toBe("blocked");
-    expect((r.metrics?.failures as string[])[0]).toContain("scenario incomplete");
+    const failures = (r.metrics?.failures ?? []) as string[];
+    expect(failures[0]).toContain("scenario incomplete");
   });
 });

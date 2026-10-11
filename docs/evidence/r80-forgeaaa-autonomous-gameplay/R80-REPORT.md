@@ -2,7 +2,9 @@
 
 **Branch:** `codex/r80-forgeaaa-autonomous-gameplay`
 **Base:** `7247e757` (published R79 head, `FORGEAAA_LEVEL7_VERIFIED`)
-**Final commit:** `b4113cf4` (plus this report's commit)
+**Final commits:** `b4113cf4` (implementation + evidence), `ffb388fb` (Phase G +
+this report), plus a report-precision pass correcting request/finding counts
+against the raw evidence.
 **Worktree:** `G:\CodeForge\worktrees\r80-forgeaaa-autonomous-gameplay`
 **Engine under test:** Unreal Engine 4.27.2 launcher build, Dead Trails West
 (`C:\Users\Daddy_FDS\Documents\ChatGPT\Dead Trails West`), Python 3.7.7, Blender 4.5.
@@ -30,9 +32,10 @@ From `independent-review-r79-1791695921893.json`:
 - Provider policy re-verified `VERIFIED` at review time (`2026-10-11T05:18:41.894Z`)
 - Result: `status: INDEPENDENT_REVIEW_COMPLETED`, `verdict: pass`,
   `independent: true`, `approved: true`, one live request (146 events)
-- 4 advisory findings preserved: summoned `Engine.Character` without controller;
-  `/Engine/BasicShapes/Cube` validation floors; prior Director `independent: false`;
-  scope notes. None block the Level 7→8 claim within advisory bounds.
+- 3 advisory findings preserved (all severity `advisory`): F1 summoned
+  `Engine.Character` without controller; F2 `/Engine/BasicShapes/Cube` validation
+  floors; F3 prior Director `independent: false` (the gap this review closes).
+  None block the Level 7→8 claim.
 - The review covers the **staircase** only — it does not review the door feature.
 
 ## Door evidence (test-harness interaction, precisely scoped)
@@ -74,11 +77,12 @@ persistence `pass`, `configRestored: true` every run.
   model count is capacity within the domain, never provider redundancy.
 - `runCompactQualification` (bounded 3-probe suite: tool call, edit, structured):
   - `nvidia/nemotron-3-super-120b-a12b:free` → **QUALIFIED** (CODER/TOOL_AGENT/ANALYST),
-    3 requests, non-transient. Earlier summary records claiming existing Coder
-    qualification were wrong — its prior receipts were REVIEWER-role failures
+    4 requests across the 3-probe suite (the edit probe is a two-turn exchange),
+    non-transient. Earlier summary records claiming existing Coder qualification
+    were wrong — its prior receipts were REVIEWER-role failures
     (NOT_QUALIFIED/HARD_FAILURE). It now holds a real Coder receipt.
-  - `cohere/north-mini-code:free` → **QUALIFIED** (all three roles); the R76-era
-    429 health exclusion has cleared.
+  - `cohere/north-mini-code:free` → **QUALIFIED** (all three roles, 4 requests);
+    the R76-era 429 health exclusion has cleared.
 - `blockrun-free-direct` catalog reachable but lists only
   `nvidia/llama-3.2-11b-vision` + `poolside/laguna-xs-2.1` free — no coding-capable
   model; no probe wasted.
@@ -106,7 +110,9 @@ evidence). No runtime change justified; turn budgets untouched.
 
 ## Model vs deterministic work (precise)
 
-- **Model-generated**: the `doorSpec` JSON (nemotron-3-super, one request, schema-validated).
+- **Model-generated**: the `doorSpec` JSON (nemotron-3-super, one request,
+  schema-validated; two earlier `dots-3-note-preview` attempts — 4 requests —
+  returned no JSON and were discarded).
 - **Deterministically executed**: Blender template generation, UE4 FBX import,
   actor placement, interaction/persistence drivers, all gates.
 - **Engine-verified**: physical rotation, collision, traversal, persistence.
@@ -142,7 +148,13 @@ evidence). No runtime change justified; turn budgets untouched.
     workflow-gate failure exists.
 - `packages/forge-aaa` focused suite: **87 passed / 5 skipped** (13 files).
 - `npm run build`: clean — all workspaces typecheck, desktop + web bundles built.
-- Live engine tests: blender generate ✓, UE4.27 FBX import ✓ (2 assets on disk),
+- `npm run lint` (oxlint --deny-warnings): red on **pre-existing baseline** issues in
+  files untouched by R80 (`packages/server/test/r50-*.test.ts`,
+  `packages/cloud-usage/test/shillings.test.ts`, `scripts/r65-bounded-tests.mjs`,
+  et al.); `packages/forge-aaa` itself lints clean (0 warnings, 0 errors).
+- Live engine tests: blender generate ✓, UE4.27 FBX import produced both assets on
+  disk (`door_SM_DoorFrame.uasset`, `door_SM_DoorLeaf.uasset`; the editor process
+  itself exited 1 on commandlet shutdown — recorded in the raw phase output),
   level placement ✓ (6 actors), interaction `pass`, persistence `pass` —
   all file-backed, runId-fresh, engine-measured.
 - No production inference tests were run as "tests"; live free inference was used
@@ -150,8 +162,9 @@ evidence). No runtime change justified; turn budgets untouched.
 
 ## Inference spend
 
-**$0** — anonymous free routes only: 1 doorSpec request, 1 review request,
-6 qualification requests (3 per model), catalog listings. No paid or keyed calls.
+**$0** — anonymous free routes only: 5 doorSpec requests (4 unproductive
+dots-3-note-preview attempts + 1 nemotron-3-super success), 1 review request,
+8 qualification requests (4 per model), catalog listings. No paid or keyed calls.
 
 ## Files changed
 

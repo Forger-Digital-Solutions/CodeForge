@@ -220,7 +220,7 @@ describe("UnrealAdapter", () => {
       const adapter = new UnrealAdapter({
         platform: "win32",
         fileExists: () => true,
-        spawnProcess: ((_cmd: string, args?: readonly string[]) => {
+        spawnProcess: ((_cmd: string, _args?: readonly string[]) => {
           const child = new EventEmitter() as unknown as ChildProcess;
           Object.assign(child, { stdout: new EventEmitter(), stderr: new EventEmitter(), kill: () => true });
           setImmediate(async () => {
