@@ -1,0 +1,2341 @@
+{
+  "at": "2026-10-10T15:31:28.974Z",
+  "trees": [
+    {
+      "root": "G:/CodeForge",
+      "head": "6f8ad979fb9de0a17f69571d03358d7db5a35459",
+      "status": " M apps/desktop/scripts/packaged-endurance.mjs\n M benchmarks/r57/extract-packaged-repeat.mjs\n M docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json\n M docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md\n M docs/evidence/r60-usable-free-inference/postgres-parity.json\n M packages/server/test/fixtures/run-recovery-worker.mjs\n?? .playwright-mcp/page-2026-09-30T14-12-25-645Z.yml\n?? .playwright-mcp/page-2026-09-30T14-12-42-896Z.png\n?? .playwright-mcp/page-2026-09-30T14-15-00-716Z.png\n?? .playwright-mcp/page-2026-09-30T14-15-34-155Z.png\n?? .playwright-mcp/page-2026-09-30T14-15-58-443Z.png\n?? .playwright-mcp/page-2026-09-30T14-16-43-820Z.yml\n?? .playwright-mcp/page-2026-09-30T14-16-56-910Z.png\n?? .playwright-mcp/page-2026-09-30T14-17-19-365Z.png\n?? .playwright-mcp/page-2026-09-30T14-17-39-765Z.png\n?? .playwright-mcp/page-2026-09-30T14-34-08-934Z.yml\n?? .playwright-mcp/page-2026-09-30T14-34-21-922Z.png\n?? .playwright-mcp/page-2026-09-30T20-28-46-481Z.yml\n?? atom-v41-default.png\n?? benchmarks/r57/accounting-fault-campaign.mjs\n?? benchmarks/r57/audit-evidence.mjs\n?? benchmarks/r57/kill-resume-campaign.mjs\n?? benchmarks/r57/live-task-campaign.mjs\n?? benchmarks/r57/packaged-selfdogfood.mjs\n?? benchmarks/r57/selfdogfood-acceptance.mjs\n?? benchmarks/r57/selfdogfood-goal.json\n?? benchmarks/r57/summarize-continuation.mjs\n?? benchmarks/r58/tmp/\n?? benchmarks/r59/tmp/asarcheck.mjs\n?? benchmarks/r59/tmp/asarcheck2.mjs\n?? benchmarks/r59/tmp/asarcheck3.mjs\n?? benchmarks/r59/tmp/chk-asar.cjs\n?? benchmarks/r59/tmp/dbg.mjs\n?? benchmarks/r59/tmp/dogfood-profile-v10/\n?? benchmarks/r59/tmp/dogfood-run.err\n?? benchmarks/r59/tmp/dogfood-run10.err\n?? benchmarks/r59/tmp/dogfood-run11.err\n?? benchmarks/r59/tmp/dogfood-run12.err\n?? benchmarks/r59/tmp/dogfood-run13.err\n?? benchmarks/r59/tmp/dogfood-run2.err\n?? benchmarks/r59/tmp/dogfood-run4.err\n?? benchmarks/r59/tmp/dogfood-run5.err\n?? benchmarks/r59/tmp/dogfood-run6.err\n?? benchmarks/r59/tmp/dogfood-run7.err\n?? benchmarks/r59/tmp/dogfood-run8.err\n?? benchmarks/r59/tmp/dogfood-run9.err\n?? benchmarks/r59/tmp/dogfood.pid\n?? benchmarks/r59/tmp/measure-context.mjs\n?? benchmarks/r59/tmp/measure-context2.mjs\n?? benchmarks/r59/tmp/measure-demand.mjs\n?? benchmarks/r59/tmp/measure-ratio.mjs\n?? benchmarks/r59/tmp/monitor.mjs\n?? benchmarks/r59/tmp/repro-demand.mjs\n?? benchmarks/r59/tmp/repro-demand2.mjs\n?? benchmarks/r59/tmp/runcheck.mjs\n?? benchmarks/r59/tmp/workspace/\n?? benchmarks/r60/\n?? benchmarks/r62/\n?? benchmarks/r63/\n?? benchmarks/r64/\n?? benchmarks/r65/tmp/\n?? benchmarks/r67/add-routing-tests.mjs\n?? benchmarks/r67/edit-recovery.mjs\n?? benchmarks/r67/pagination-audit.mjs\n?? benchmarks/r67/preserve-recovery-telemetry.mjs\n?? benchmarks/r67/wire-parent-recovery.mjs\n?? benchmarks/r68/\n?? benchmarks/r69/\n?? benchmarks/r70/\n?? benchmarks/r71/\n?? deploy/inference/qwen-coder-free/Dockerfile.modal\n?? deploy/inference/qwen-coder-free/__pycache__/\n?? deploy/inference/qwen-coder-free/modal_app.py\n?? docs/evidence/r57-autonomous-endurance-learning/R57-FINAL-REPORT.md\n?? docs/evidence/r57-autonomous-endurance-learning/accounting-fault-campaign.json\n?? docs/evidence/r57-autonomous-endurance-learning/adaptive-learning-runtime-proof.json\n?? docs/evidence/r57-autonomous-endurance-learning/anti-loop-runtime-proof.json\n?? docs/evidence/r57-autonomous-endurance-learning/endurance-campaign.json\n?? docs/evidence/r57-autonomous-endurance-learning/fairness-report.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-dependency-audit.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-doc-links.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-evidence-privacy-scan.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-public-claims.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-sbom.json\n?? docs/evidence/r57-autonomous-endurance-learning/final-secret-scan.json\n?? docs/evidence/r57-autonomous-endurance-learning/kill-resume-campaign.json\n?? docs/evidence/r57-autonomous-endurance-learning/live-concurrent-bugfix.json\n?? docs/evidence/r57-autonomous-endurance-learning/live-feature.json\n?? docs/evidence/r57-autonomous-endurance-learning/live-regression.json\n?? docs/evidence/r57-autonomous-endurance-learning/live-task-matrix.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-live-alt-qwen-diagnostic.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-diagnostic.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-longpath-failure.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-checkpoint-restored-verification-blocked.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-cohere-watchdog-ceiling.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-groq-catalog-empty.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-groq-model-not-found.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-lfm25-killed.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-lightning-stalled.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-ling-watchdog-ceiling.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-nanoomni-502.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-openrouter-auto-ceiling.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-openrouter-gptoss-not-registered.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-poolside-429.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-qwen-429.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-stub-coder-path-blocked.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood-v6-watchdog-ceiling-openrouter-120b.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-self-dogfood.json\n?? docs/evidence/r57-autonomous-endurance-learning/packaged-soak-10min.json\n?? docs/evidence/r57-autonomous-endurance-learning/real-concurrency.json\n?? docs/evidence/r57-autonomous-endurance-learning/self-dogfood-live-groq.json\n?? docs/evidence/r57-autonomous-endurance-learning/self-dogfood-live-retry.json\n?? docs/evidence/r57-autonomous-endurance-learning/self-dogfood-live.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory-roles.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory-v10-profile.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory-v10.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory.json\n?? docs/evidence/r59-supply-recovery/live-supply-inventory.pre-dedupe-fix.json\n?? docs/evidence/r59-supply-recovery/packaged-self-dogfood-v12.json\n?? docs/evidence/r59-supply-recovery/packaged-self-dogfood-v8-capacity-denied-evidence.json\n?? docs/evidence/r59-supply-recovery/packaged-self-dogfood.json\n?? docs/evidence/r60-usable-free-inference/gpu-infrastructure.json\n?? docs/evidence/r69-everyday-completion-closure/\n?? docs/evidence/r70-free-supply-independence/\n?? shots/\n?? verify-homepage-default.png\n?? worktrees/",
+      "modified": [
+        {
+          "file": "apps/desktop/scripts/packaged-endurance.mjs",
+          "sha256": "c2c14203139e1fe0eb4d0e8b60bb7be4320e0a7c93652aefaa00f7190013715c"
+        },
+        {
+          "file": "benchmarks/r57/extract-packaged-repeat.mjs",
+          "sha256": "4c1db82349bc3980de36b6b0df5b9575f517c648f601841967148fd392fa56f7"
+        },
+        {
+          "file": "docs/evidence/r34-capacity-efficiency/context-efficiency-benchmark.json",
+          "sha256": "62b45594929df71a845547ce25728c1dbf15bcd93b3c9ea1247b113ac7123d0b"
+        },
+        {
+          "file": "docs/evidence/r60-usable-free-inference/R60-FINAL-REPORT.md",
+          "sha256": "ce305de2e5038382ccc65590b8ba5d6c76b93e7efc8fa65c60bc9dbbd82a2497"
+        },
+        {
+          "file": "docs/evidence/r60-usable-free-inference/postgres-parity.json",
+          "sha256": "9802b1c6cdc22e38f258d5b23fa3b1e099c3e1abefb356d4891410034f3e9243"
+        },
+        {
+          "file": "packages/server/test/fixtures/run-recovery-worker.mjs",
+          "sha256": "3ceecc5221aab29fd63fda8aac06ed3e286677b0eaa491a434be1cbfe861ebcd"
+        }
+      ],
+      "protectedArtifacts": [
+        {
+          "file": "G:\\CodeForge\\apps\\desktop\\release\\builder-debug.yml",
+          "bytes": 6915,
+          "sha256": "2e6c47e3d5fa2d096f694c8830d25dc176fa0673f3f3cdd2004234f09faef07a"
+        },
+        {
+          "file": "G:\\CodeForge\\apps\\desktop\\release\\CodeForge-Portable.exe",
+          "bytes": 120726788,
+          "sha256": "a594d49873179a42a026858e08dffa8cfe301d0538a0f34ec4852ddc0b6366c5"
+        },
+        {
+          "file": "G:\\CodeForge\\apps\\desktop\\release\\CodeForge-Setup-0.4.0.exe",
+          "bytes": 121062237,
+          "sha256": "9e4d50b8b94b14efcceaf1e7e7acb2090a08b94bee84e522a7a360b444559abf"
+        },
+        {
+          "file": "G:\\CodeForge\\apps\\desktop\\release\\CodeForge-Setup-0.4.0.exe.blockmap",
+          "bytes": 126683,
+          "sha256": "592da087529c9f8f07e8bf86ef34c1f245ee89b9aadf2ab6fe67a6bec5c2f5bf"
+        }
+      ],
+      "evidence": []
+    },
+    {
+      "root": "G:/CodeForge/worktrees/r75-reliable-free-autonomous-coding",
+      "head": "f8cd589f57775bf24ee6636fcc907577ab170f4a",
+      "status": "",
+      "modified": [],
+      "protectedArtifacts": [
+        {
+          "file": "G:\\CodeForge\\worktrees\\r75-reliable-free-autonomous-coding\\apps\\desktop\\release\\builder-debug.yml",
+          "bytes": 6915,
+          "sha256": "d9e12f30c7d62ad5db26905f900bb7162eb9d365b8d37a1ad43290059e9dcdbb"
+        },
+        {
+          "file": "G:\\CodeForge\\worktrees\\r75-reliable-free-autonomous-coding\\apps\\desktop\\release\\CodeForge-Portable.exe",
+          "bytes": 120628063,
+          "sha256": "d3891af3bfc792ce03bd7d4e14ebd1cc62854626f1cb56507822387a75059e37"
+        },
+        {
+          "file": "G:\\CodeForge\\worktrees\\r75-reliable-free-autonomous-coding\\apps\\desktop\\release\\CodeForge-Setup-0.4.0.exe",
+          "bytes": 120963462,
+          "sha256": "a6976396c723100ebcffe71d4f20a36e4110d1bff514af1091137105c9de867d"
+        },
+        {
+          "file": "G:\\CodeForge\\worktrees\\r75-reliable-free-autonomous-coding\\apps\\desktop\\release\\CodeForge-Setup-0.4.0.exe.blockmap",
+          "bytes": 126858,
+          "sha256": "c1e23abefb55562714bee56c9776045b410732301f140a99427c54be0819b0e9"
+        }
+      ],
+      "evidence": [
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\affected-tests.json",
+          "sha256": "717f591c4563c5b21238568475dd2cb4a7b2537bf58c5767b4968ae5e87fc11d"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\candidate-b119\\frozen-desktop-build.log",
+          "sha256": "373bd56983788a3a1e8555d665066427b5e956f539d4c1a546f7dd3adc4ec628"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\candidate-b119\\windows-artifact-manifest.json",
+          "sha256": "3f5ecb31d1db5de2efec69db52fca4fb8e409f183319991a7783fc632c306f1c"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\candidate-b119\\windows-auth-endpoint.log",
+          "sha256": "767f919ac3d2ee437190faa7db7a3eea6de40c33d56285001a33f612ec78f50d"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\candidate-b119\\windows-browser-security.log",
+          "sha256": "7a17feac1cea8a5398d00dd192f3c0d20b33034eda3586f2b8c24a023b2cd516"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\candidate-b119\\windows-build-identity.log",
+          "sha256": "61f3639b85c02fd84a27f33933041601fc54cb3e46c1fc9ef4aa2889238d1e86"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\candidate-b119\\windows-internal-dependencies.log",
+          "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\candidate-b119\\windows-package-build.log",
+          "sha256": "8dc764801910e2b071348fb1856c8e9ee4a48772a7eac38e62d7983c10b828a0"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\candidate-b119\\windows-runtime-dependencies.log",
+          "sha256": "6de73aa9c193e0bf5f6ae1faa62896d8dfd9eb4f7f1d459046c8014ee0430cf4"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\candidate-b119\\windows-signature.json",
+          "sha256": "5401ceb7ac51e1c6931355301df6cdb05a2af98558f8bbf9f848b52043b055c1"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\child-coding-proof.json",
+          "sha256": "da0ff4b30b55d31d3cf7aa03dadff5b0d206c4b04c169fb791b3eddf8423e5e6"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\delivery-publication.json",
+          "sha256": "758ebf257f8bf04e2b867fea412420b10c7c34939ebf645b807f4439f23044e3"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\evidence-manifest.json",
+          "sha256": "5363dbdfd195a7af5526a61652fe889595860161086385033941bcf2dbccc355"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\final-audit.json",
+          "sha256": "c1a00cb3c1611bc62495365b6614c391420f15420073007933f86fa49c253896"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\final-boundary-tests.json",
+          "sha256": "bee3cfa3e4cf75025dca8b0a3d8758ca2d3d6815786bbeb3e3ab5df5881bf658"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\final-focus-tests.json",
+          "sha256": "536fb46a672c7026ed93c345436f7e4548a4a6da41e96c9cb584f049e641b23e"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\final-verification-suite.json",
+          "sha256": "cdb88a7ee2f39c736d3c498389a2ae55200317f36f11613c4f37eda2f6161d92"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\final-workspace-build.log",
+          "sha256": "289676cb4eef64886f816bee9e9ab1ded103e63ade6d471dd83ae7396b7bfc14"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\focused-tests.json",
+          "sha256": "a044b827ed23def242362ba7efca8abeec48ce8056c789874cbd02d3a5be01db"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\frozen-desktop-build.log",
+          "sha256": "373bd56983788a3a1e8555d665066427b5e956f539d4c1a546f7dd3adc4ec628"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\isolated-autonomous-orchestrator.json",
+          "sha256": "d2c9cc05f73421dee5dc2e412cd1bef05de4bcfef3bd20343a3f0d3f670e27c0"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\isolated-diff-review.json",
+          "sha256": "1a6202efd534b72e979be58095b3b693f020a573822d98b0bb29f980b00bf490"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\isolated-fg12f-production-reuse.json",
+          "sha256": "45b72ac57f977e2204fe0ee1651a672e9378e90b61145f02fe47fd4b55b7bbf0"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\isolated-forge-verify-evidence.json",
+          "sha256": "30e9fc81af8dbe7b4a4017de27f40962e86aa4126124132b9ef3b893f9a835d9"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\isolated-forge-verify.json",
+          "sha256": "2364bd3af3b31465ddb987efcbb405737cebe8886a8fcfe28fc7fea59ea55134"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\isolated-forge-workspaces.json",
+          "sha256": "159bfab96a823369fd51f692bda62a1a23e1f435efc5280e2367eff3a7793487"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\isolated-rechecks.json",
+          "sha256": "da3769b4e7781d7687d3ade817214cb81f0079df06abb8429761cae266713fe4"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\isolated-remote-publication.json",
+          "sha256": "a8c98c18ed5a0814a49d72818a1f6744016b028fef761c335e101e6eacf71d6e"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\isolated-workflow-goal-review.json",
+          "sha256": "f82aeeffb2728b70ba91d632837621ab4da6535e1b3c18db48f848166c181a89"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\native-diff-review.json",
+          "sha256": "5720d32c8031580342834a07960ce1c5fa292991e55cbde4e55784abb432c8d7"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\native-fg12f-production-reuse.json",
+          "sha256": "a289d29785ff2949ef1e5713d0332e637cf4ef94be9652ec7a7cd2ff4b29f207"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\native-forge-verify-evidence.json",
+          "sha256": "66e67505248ca0a2b0b6c8381824ba0b811efc2815ac707edf15792746fce434"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\native-rechecks.json",
+          "sha256": "3af3cb12090a381cee164740f2e641ea3be0176ab2a1dde06ba8337f8f9561c9"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\native-workflow-goal-review.json",
+          "sha256": "30390c0df1b5c412a49028dc904033ac12018c3b4d001fa000d85d00c8763d3b"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\nested-workspace-hardening-tests.json",
+          "sha256": "97083fc46bc845f2ac81cde83a172a4e1b47ba229e0187f7a9981e4a9f9c762e"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\opencode-inference.html",
+          "sha256": "779d2986667b7b4f425f36a6ed9f5f2ca89d8e0a59fbc0e5754fe2ca338fd163"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\opencode-terms.html",
+          "sha256": "2467ad66c3dae92744344845db45ad725493e61bee302c16014c462363e5aba1"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\ovh-free-api.html",
+          "sha256": "dfe031763d1b3b14f609a51b283778a6d8e577b73429cc13d72bbfb1b18c351d"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\ovh-getting-started.html",
+          "sha256": "ec34e316dd3560918929512812f35fffbcd83ec607a925b7a83c660cb5a339b3"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\provenance.json",
+          "sha256": "67b7600a82135484da1cb182ff6f68b27a17477b144393ecd3206b468688e76d"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\puter-quotas.html",
+          "sha256": "d5362cf7690d07b2c7d7d93669ffe90bb6380214e5b449a1257fa5340b507ad0"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\puter-signin.html",
+          "sha256": "9356b09958755091ef681e268a50fc1ce111792577e492a7be900f5d71710692"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\qualification-dots-studio_dots-3-note-preview_free-1791464849592.json",
+          "sha256": "eb9c8de807f0750c1a538b7de8ecffa1845f0c9941e82cb019877a936160336d"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\qualification-liquid_lfm-2.5-2.6b_free-1791466230688.json",
+          "sha256": "84444860d23703ac1455126f7083f27d93d9177a0de1be783115650e07250214"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\qualification-nvidia_nemotron-3.5-lightning_free-1791465864045.json",
+          "sha256": "59a8fcb3f5c44a07a75c54765158076c6a7552ec7ea58e685411e4893d2827a2"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\qualification-poolside_laguna-s-2.1_free-1791464804626.json",
+          "sha256": "01f90d88899a7c10cb93aa7355aad71c3ef9be9fddd5858447c9600190f62798"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\qualification-summary.json",
+          "sha256": "ff9cfde1f11a8da74b5d3bf421fd95fe00712fe56f26156b709cac18c14b1145"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\qualification-thinkingmachines_inkling-small_free-1791466536425.json",
+          "sha256": "3bd3a80fc25c8b7aa3804d29271241e0482f638b38aa7d1f59661fcb3c166929"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\r71-diagnosis.json",
+          "sha256": "7ca48d735ef46f7888125bad3cddbed09dbcd6f6e5c3e45a05bff012c8854b68"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\R72-AUTONOMOUS-RELIABILITY.md",
+          "sha256": "468120af3167760f7240b48377e51061cb8e0d786ade160c5bf49c44ce3239e8"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\R72-ECONOMICS.md",
+          "sha256": "67258afba3f32986a96587a68b6d9db60fb65799de965c11a582a7aae76486c0"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\R72-FAILOVER.md",
+          "sha256": "97a729e119722695078382e78586d251ed8c15bac7f96e154228365225a307d9"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\R72-FINAL-REPORT.md",
+          "sha256": "244f16a18d1a883147fb07d5bc19ad1a9bf7c8fb31142473dbe347657ea8c9a1"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\R72-LIVE-QUALIFICATION.md",
+          "sha256": "c483d1a7e09722bcfb906cf03fb0818003fe8fe78b9242cf44758a30ba85570b"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\R72-PACKAGED-ANONYMOUS.md",
+          "sha256": "ac1caff6105d56ca518ece4e51cbcce8da6441eb3797f50dc89ff34d5e2e2811"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\R72-QUOTA-OWNERSHIP.md",
+          "sha256": "f61eb324b6eef506c8b16aec54be02a564c86d97bd1e32d0082dc2b6dbcec270"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\R72-SUPPLY-MATRIX.md",
+          "sha256": "2087c55116badb79184fee1bdde4343772ddbc0f58ec149380e3e23a1ea9e592"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\R72-TASK-CAMPAIGN.json",
+          "sha256": "98ff7087a44528ab568a020ddec00e12d08bf076fac51a007130a32a2b5cd6ce"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\R72-USER-ENTITLEMENTS.md",
+          "sha256": "d0b6e5c1ed08d2065a8e63523971abfbb147dd1cd11f113b7ba45f0812b57836"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\R72-VALIDATION.md",
+          "sha256": "1573730d61f801727f0e4c46313af1e0ae135b15930b1eb9db9f75cd0bb50446"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\R72-WINDOWS-PACKAGE.md",
+          "sha256": "e80c3df7a612d6ca44ec0f3b7fd7c13cbf1a64c699a17ca04802f6bc84870044"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\reviewer-dots-studio_dots-3-note-preview_free-1791465616770.json",
+          "sha256": "308e2ece1488ac53aae582676e180d533ab2c335caf2e0c554928e94307ba6bf"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\supply-preflight.json",
+          "sha256": "7043eecfa7279c9487dad856d73887e2d6a56ab0af7cdf4a0a616b8afeb527c7"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\verification-hardening-tests.json",
+          "sha256": "e5be882c07840a0e005c00338a26b228d1500e8f6a2b8bd0913b951c18af7976"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\windows-artifact-manifest.json",
+          "sha256": "bd0d898539be354f12729af5bce2b787360160e44be9cb1bf55831a058af00b5"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\windows-auth-endpoint.log",
+          "sha256": "880c3e396778948a52c3f2db5810720ac97f67a8a0c5b06b2c480b9200377b60"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\windows-browser-security.log",
+          "sha256": "fe5ececa25f558e6c6f560bc2aaad767b1ff9756fe3286b8dbb371cf86c7e4fc"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\windows-build-identity.log",
+          "sha256": "6fc6c620b4f5c3b5818a01343a9ec5a022b3dd972dca63a7c890b652ef9a4286"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\windows-internal-dependencies.log",
+          "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\windows-package-build.log",
+          "sha256": "3e1974929ca72a6f64680af2c00f160d6d8a81e531926380c78ad0bbe6f92bdf"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\windows-runtime-dependencies.log",
+          "sha256": "7f934a6e984e2a67ce9e479e58404f71e1b2528c1d005badbb3702560298e895"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\windows-signature.json",
+          "sha256": "d9fa529a35246f962188aa4db3948cd8bbeb68bc8ac8df7fa963ac7f4f885ab5"
+        },
+        {
+          "file": "docs\\evidence\\r72-free-supply-and-autonomy\\workspace-build.log",
+          "sha256": "ee23f8071feefb5c1efdc6d7d53681dcc695dbf8c67763f5efb4e97d64e64446"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\account-addendum-baseline-tests.json",
+          "sha256": "58693e2931683e6cb23a3588b48b78f5eeb3dc1bd9df83edcd627e9006d34541"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\account-lifecycle-affected-tests.json",
+          "sha256": "40f1caec2b280bba786e0619437814bbdb80a113bd5cbb91181172b43d932117"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\account-lifecycle-connected-tests.json",
+          "sha256": "b25add4e3851c605f25c6912ea483b4ca30b4d30b6b728d101df957e3a1c5196"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\account-lifecycle-final-tests.json",
+          "sha256": "637d18a30727bd7e9ff7de408986b3ea0746e24b62a993d7778a2b87a1a8b3da"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-estimate-billing-regressions-retry-tests.json",
+          "sha256": "a87341636f489eed9ddd8ac3b10ca4a69350ead65fc0249934bac4403e4d3f56"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-estimate-billing-regressions-tests.json",
+          "sha256": "b391d12b7d864dcc43dc14c1146a0fc60eb01f37dbe83fc838825355f063076f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-estimate-focused-localtemp-tests.json",
+          "sha256": "39a0d7930b62f86615d07768db31d5202b23c87ebc3116db81570be61d8916d6"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-estimate-focused-tests.json",
+          "sha256": "a6303e9738a0219f53feacda56608f04f6402158580f6221520ae9f4e593f35b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-estimate-paid-qualification-tests.json",
+          "sha256": "7d7d80e52560e846de327792dbe338027b46233cbfc1010e69aa22afc481a04d"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-affected-interrupted.json",
+          "sha256": "f07907e65f82722aa34f199b4d5074ea586221349a230b481213decc1db76fc6"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-affected-retry-tests.json",
+          "sha256": "7a60f63d1c66471ced7b31c94c8465328ee7b5574cd058cafc1dda72c3e8c303"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-affected-retry-tests.log",
+          "sha256": "e0bd002b0985376cc484cb17f666a9150447f8e4f1b1765dea15f5b03ad45d00"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-affected-tests.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-billing-auth-transport-tests.json",
+          "sha256": "4008398534db01abfed8cc9363fab83735cf19144e5006deb7ed3b3a841c0a80"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-billing-auth-transport-tests.log",
+          "sha256": "4b734880df23347b074646a7701585428c53067f121c67ae1a985645ff77154b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-frozen-typecheck.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-heavy-orchestrator-retry-tests.json",
+          "sha256": "862e5c2c978f39e587aa9743e6348a876cbe2b1c3895aaeaca4b1730101bdf67"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-heavy-orchestrator-retry-tests.log",
+          "sha256": "e0601a44a68c71212d904e9357d18edacfa65b4d0e3791cda53a4a961c43a649"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-ledger-build.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-secret-scan-report.json",
+          "sha256": "a019242fdec20cc5b36376812c6b873087e2b189a198233ceb144174b5e27542"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-secret-scan.log",
+          "sha256": "6a5ba2fe026aba4e767a4a2794df4f610d12a15fe04c1793c698ebc92deb31de"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-server-build.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-typecheck-2.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-typecheck.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-validation.json",
+          "sha256": "a268b06ee50abed31ef5afb34e45b3c87fc246fdd1eaf60bb7b3c0b0fccb827e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-workspace-billing-routing-tests.json",
+          "sha256": "9bfb2833d16d83891bc683711d633de3dc868295b412dd6ee8d7cd8b2edb9ac9"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-workspace-billing-routing-tests.log",
+          "sha256": "52fba10f108b2ef4f3634e31d6a96a6a8f0f951fd50ee2f608b45e3196bc37a9"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-final-workspace-build.log",
+          "sha256": "3ff738e0185645ad7a55cd2565d5a22e14d5a16835c2ca06a473ee19e00d9224"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-personal-parent-recovery-final-tests.json",
+          "sha256": "ac45b45bb06dbc63fabe13671010c706d7b0ec9af4aca17254fb1f4b78290f73"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-personal-parent-recovery-fix-check.json",
+          "sha256": "c7a9c037dc7d1cf56ad2048a746159bc21771a6eae9f6551b0fefa0e236bb6f4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-personal-parent-recovery-host-tests.json",
+          "sha256": "ee8cf1813b8323d01ba2148c0955289c8cf44569ef1648c94f88323a6aae2861"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-personal-parent-recovery-tests.json",
+          "sha256": "a10c5b7684f233c2719ddc5cb19ab5b582f480bb14e568f6ab1d2c3e103ab1af"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-billing-authority-final-tests.json",
+          "sha256": "c755c0d1cec4213243907cd14da67df50cddf0c0d1a4a65bc6f06f5acfea4be0"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-current-secret-scan.json",
+          "sha256": "357d64c2aaf99b572839d222634001f962efa848dfc98cc533795cae83c42898"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-current-secret-scan.log",
+          "sha256": "f644fdcb461cf3cd50960922215292682d16a50eca40ed6f8487e567ad9befe2"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-current-validation.json",
+          "sha256": "78aa5dd47c799a9cfee3802ae1ddece8bc686b95f921a962e951edeace98b4ab"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-evidence-credential-scan.json",
+          "sha256": "20b9638eb69104487f4c4827882a21330f5f24749f458f8e72deeeea10451d2b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-final-typecheck.log",
+          "sha256": "c59691c2c7c50b9622e03032db61e9f762c908a44185bc972d83288538f197c4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-final-workspace-build.log",
+          "sha256": "50c4938f5d5b831ebf9eda751862093a25fc56f3138c7cb98af5451db4c15333"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-openrouter-oauth-official-state-local-tests.json",
+          "sha256": "79f3f1462e0bc681e40ca80ac3222c331ee150128b5dd321f029463f69a0b591"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-openrouter-oauth-official-state-tests.json",
+          "sha256": "c1c4715ea84aff2c69a874482d0f0c9ef70545bf31ca03cc11e1c1ed1be58e3e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-package-evidence-credential-scan.json",
+          "sha256": "82ae4cd3c45f5789f3d3402151a16297e13c0c0557e9fc86413d7b94c0270c68"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-parent-recovery-final-tests.json",
+          "sha256": "370ef4ef15622cc3b6d076cefc8e35070605bbc9e4e50caf404677a8a39c4bf2"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-parent-recovery-final-tests.log",
+          "sha256": "389ddd3d20880056f604b83f65dca097c46734297e75fa4bfcbe11e80a5b8d31"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-r73-reviewer-lifecycle-routing-final-tests.json",
+          "sha256": "5de5dbdd30081196d2d89b734d5834705dc46889b7b1e804c5b7cf3b09d5ffc9"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-reviewer-v4-final-tests.json",
+          "sha256": "7d92bd8d092564bf6f1448f0190f5ec504e88cdbc69190ff02b8acc9fbaf4197"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-secret-scan-report.json",
+          "sha256": "76d60883e2aea40664e44fd0c49aec01ce42fbafda3ce517a11a772b92e4ecae"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-secret-scan.log",
+          "sha256": "627ebf205ead4e778a2313375ed3ed6f39d3f796b439e2c576addbe4b072c8b4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-worker-role-recovery-regression-tests.json",
+          "sha256": "b854faf8e4977fa3f26b95a2c674fd26e24d5b77553e2cd577a4d2108bc7331b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-workspace-build-cmd.log",
+          "sha256": "ea92764e43f00dd79c85e945673fced95ed0d916590b9106bbf6cf74c763ec1c"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-workspace-build.log",
+          "sha256": "bd93fc80dc514b055af63805bc7422823c58f2b5cddea9b01d66f53620a98d20"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\accounts-workspace-typecheck.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\additional-supply-research.json",
+          "sha256": "01405a442afdb0d336ac08e0c68b21a46404b142f4151b9fec836fae7d58716e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\affected-tests.json",
+          "sha256": "d9a424126716b50e49e7cbf3a0077084c24b21bef7eb508e3a2326c761dd6dea"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\affected-tests.log",
+          "sha256": "94a17c4693c8b7ca2d437da59032f2a11c2d035bd0164dfd419983f251b0a251"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\apifreellm-access.html",
+          "sha256": "0cfd0fc359f156706d17387cc108762c846a27a774a13adcbd8e65062f0c6c7e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\apifreellm-docs.html",
+          "sha256": "d614bf0f0660661215ad84e91e1a4832b7b22b013a17a3bf22e57a2f4929f177"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\baseline-provenance.json",
+          "sha256": "d4d21003846f0eadc75765611bc856eecae60b25f96fa5eb27a5a69c22417541"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-catalog-1791480406804.json",
+          "sha256": "68ad209c894275c63abbb1f4038b3d4ca0cc9f7f829819f9579ab3c43f804963"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-catalog-1791538292195.json",
+          "sha256": "579c26b46a9b996f568c19b27c60f0edbbc39b37d3047641550b218902af92e4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-chat-reference.html",
+          "sha256": "0aeecef28db11e34cc4acab979171c35915349332afa5508c583350230da9328"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-compact-1791538496172.json",
+          "sha256": "6a819c99dc07196b0d449347d853359ca75eccc2af23d2e3174503e73c9a25ab"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-compact-observations-1791538496172.json",
+          "sha256": "cf6ce422bc1ea74c85ebd70d11244f5b6bdb5170eda83ce8684eaa64172eef08"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-final-review-tests.json",
+          "sha256": "3de3c473c8fc6cc7e0f35cfbbb2e34ef0ea48851fec051b463ea6d9f78b03a28"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-free.html",
+          "sha256": "a99aaa71cd859d31c31cdb0598a717ef9f348b7dee150628b6e51400e9e9cc4b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-laguna-identity-interpretation-1791538943472.json",
+          "sha256": "b58e3f6e119bb8022be91de367c63bc1cf064dbbe3dc978a937e1f05b1723b6f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-live-observations-1791479241875.json",
+          "sha256": "40b041122c2612aab076a30597995a10112bfebea8607cc29caea6a7ed78f6c0"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-live-observations-1791479624335.json",
+          "sha256": "a765718da2055de4a7c209e9b465cefc412ea6b9c28a9d4a5e614deeb728ae7e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-live-observations-1791479664564.json",
+          "sha256": "25b74492c00f85cde430dfc6c7610c91ffadc5f516d903558c1d64034df880b8"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-live-observations-1791479681280.json",
+          "sha256": "0489592f821c39b52819d63bdf0f938aa1a699c51e575de478631ab4bed52db6"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-live-observations-1791479794100.json",
+          "sha256": "d03dce2b61fb9a0b6f84303130f80db95f1feec9e9da0ca308b4f30808b74c70"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-live-observations-1791479995772.json",
+          "sha256": "1eb044b136bb5b298cdf8089dd42b326f6d516b5b5b01c9b58b2d654f4c2bd92"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-live-observations.json",
+          "sha256": "8baa64ca948b1abb6a45f0645606990c92a826561c1f36c5d1e718c2342ee12e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-models.json",
+          "sha256": "275058c3ea51c6146209db3e1745165a23908ec205b37638d960832e5bfe1da5"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-preflight-1791479153269.json",
+          "sha256": "a3f74e5f0a17ef0be7f74b2fa36728b1677453212411f06d8677349dcb5e6597"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-preflight-1791479257815.json",
+          "sha256": "fd244cae7b2a97aa5d80b292a13e075fcab116c9f65d094097306b6febe38a90"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-preflight-1791479594536.json",
+          "sha256": "12aec836ff6f7cde1cdc35bd7155e332b133f2751776a7ece30e66e72d08bc94"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-preflight-1791479627402.json",
+          "sha256": "a390b7dcdc20ad4d67fa874564dada860833d87b6082c47f9d372656e88abbe8"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-preflight-1791479669545.json",
+          "sha256": "00455a74abae5513ced47d2db6d8d20e98fffac91248af5277bbf58005264a11"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-preflight-1791480001257.json",
+          "sha256": "586b678f796c2ef2a4a818f444b1690f5c46e990e9125c88a0f86c97a8db8897"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-privacy.html",
+          "sha256": "8d07207a8f14a6b7fc51c19a8662d07805b25f0366fa988dfa0e561b4814e443"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-production-authorization.html",
+          "sha256": "0251810d5eceedd25a814f8dda3af19033212e335d1da5f90e986791def8f83f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-rate-limits.html",
+          "sha256": "e655e5d56d0da6768234133c2cfb88f096634b1f408160bce0a9a03a76ad768d"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-reviewer-1791479682062.json",
+          "sha256": "ddadb34279109986130a446180f86900cc4434bd7bc9ed5f93718227243f502f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-reviewer-1791479821776.json",
+          "sha256": "2edb8dd856cb407f5866fcd0f688bc1bffad992a1a57a074d3c0eb03d264176e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-reviewer-qualified-v3.json",
+          "sha256": "7944046799304cb9e838f52abe028f275b7555e026d44a5768bb696cc298d487"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-reviewer-qualified.json",
+          "sha256": "acd8708e794d07b83d06f0a34ed2088556914943dd75da471e54c7591f78e101"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-terms.html",
+          "sha256": "64f9623a93dd668394a2d9f0a30202ea882f389c3b7f72143310c9d4de7b0c22"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\blockrun-tool-fixture\\src\\retry.mjs",
+          "sha256": "9f172f4a338f9dc21e4ad5b9ac2444ac4903205e41c2883268c36bc17f588c40"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\boundless-quickstart.html",
+          "sha256": "7e9e631d199830965e1aac39a2f68ec97bdca26ef554338e5265804af487a734"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\coder-free-class-handoff-tests.json",
+          "sha256": "57b5544a439d2d51ba093d9441ba903d2def8cc3efb72f14467cd4c59d73a81e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\coder-headless-continuation-tests.json",
+          "sha256": "2daecfafd8184ad91ddc4359a2371be94e9f0565e728b5ddc3af76dc35a4e48e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\connected-account-backend-current-tests.json",
+          "sha256": "7564ea9471d2ce814750c20b29635fb9e6e70b89f53cd91e9069460759e9d305"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\connected-account-backend-final-tests.json",
+          "sha256": "52ca1680b922c56f078e77c85c807e8f2ef3f55db4552cb1ae749f9f315cc976"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\connected-account-backend-tests.json",
+          "sha256": "19f537657b60297358b7b9ae1796dc320862e3f93a6873ad3d37941f5720e9d0"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\connected-account-oauth-native-tests.json",
+          "sha256": "cead93e010f88ea97af5f53c22e70da41b58d992909ed3e8160d6ecb3635c4ad"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\connected-accounts-ui-bridge-final-localtemp-tests.json",
+          "sha256": "1932b79533f8b0ca6a9f359674757a4070acb14b33a3b89d7fe8bdd323287e72"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\connected-accounts-ui-bridge-final-tests.json",
+          "sha256": "df408b71898729032f4d1027753035d9a403d29523f6e0de07dcd2c9fa076bff"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\connected-accounts-ui-bridge-tests.json",
+          "sha256": "b63e6a8d275821d04ef71f32919eb88c325b2a0642fad2de4ad5fb0acd722937"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\connected-accounts-ui-tests-2.json",
+          "sha256": "74cdc0ed0c6746ae135a45ad11950b1fec50ff606746bd1f764a9077e889abf9"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\connected-accounts-ui-tests-3.json",
+          "sha256": "748d5fa324bb1f47d27ff15df2286c7bf559b7d1af581905b8eb89aca2feaf4f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\connected-accounts-ui-tests-4.json",
+          "sha256": "9dbb18c89d457a11cc2e78d1034b8b45e3d5596841efe46a39b84e860c2be19f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\connected-accounts-ui-tests.json",
+          "sha256": "33f326516678416c7491157f46b11e3592ad9e46cc89ac94b0a06f085a940579"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\delivery-publication-2f4e932c.json",
+          "sha256": "d1b512de43b0df0e171d0dfd2e39cfce7e1ce4a14108c24b7e53b044c6d5a40d"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\delivery-publication-2f4e932c.log",
+          "sha256": "ca8fec3ba77f8d5e61d5d6c9080bcd97a016ec7bfbb672cbc37c11f21362bbf3"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\final-preservation.json",
+          "sha256": "b882ddeef907a74e40bfcd96a595efef900cf4f165bdb8bd131147b7ad99a588"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\final-typecheck.json",
+          "sha256": "87bb3f5830dedce570d8b5d92e579236503b93a61019554ba99b8c173ba0ab7b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\final-typecheck.log",
+          "sha256": "c59691c2c7c50b9622e03032db61e9f762c908a44185bc972d83288538f197c4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\final-workspace-build.json",
+          "sha256": "15543975d073387bb4546d1e028f559a1b5c7ccc6e940a8a484a3aad3e1860fe"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\final-workspace-build.log",
+          "sha256": "d07c5e732cd5cea45b50537f22acd9b81526a71cb6a0c80a2931d07c19ac2f02"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\hetzner-experiments.html",
+          "sha256": "d02547320d49ade1154c858e8658e5bfd98bc9f4c703a7ae235b59094567ce21"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\hetzner-inference.html",
+          "sha256": "1ffb7092a7f8ba783997435d28ad4645054dfb48f68ff1bb231a00b7b02ab506"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\independent-supply-review.json",
+          "sha256": "db3e6daf40e6e05d5ffbc674e2754335d74040b4bdf9c952b156cbb28af173ba"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\kilo-upstream-scope-tests.json",
+          "sha256": "9178dfb7aa373e4a88f329c920150885df9f606ff0201d42184ee4a6c9eda981"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\legacy-user-allowance-recovery-tests.json",
+          "sha256": "dbd89ffaed117686392304de00b932571174882d6ae42fc7a05e064fb5f9567e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\lightning-models.html",
+          "sha256": "26866b0fdc01d64175b7f3a8ebf9447fd1030434ba5ad8fc21e5fa852903a31f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\main-account-ipc-initial-tests.json",
+          "sha256": "f9bb9ee563809f405652281cc4afccf5b83ee707c5b18250089454ec78bb03a9"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\main-account-lifecycle-pricing-tests-retry.json",
+          "sha256": "bf43efb7a36f32a0584256e2db67fa0490c644633a00a87257c23efb3f194ac5"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\main-account-lifecycle-pricing-tests.json",
+          "sha256": "e3229262a74b9ff8089669379eaa85a225ef4d088cbba7c725b1edc6dd37fe0b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\main-account-owner-lifecycle-tests.json",
+          "sha256": "0ea5e4463c9b9f04c6b112e56205b217b73e51244636eb8a20de86039c3a245c"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\mlvoca-api.html",
+          "sha256": "181d801a3f76a0f5bbe4bf7076c11b18802e08c26aacd8494c62a7c68cc99f63"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\murakumo-docs.html",
+          "sha256": "afc3ab5b4148a344c61cec8952d5a2c66dec428de4546996458a718687af2777"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\murakumo-free.html",
+          "sha256": "e499d5b59c18ec77d5cbf82e32ba82f3cf32f375ce33f99d896c6ba2f0302c2c"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\murakumo-privacy.html",
+          "sha256": "cfd244674fd5f0411467b3de35663a4b94dccefa1566bd1fd97e6df386c09149"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\murakumo-terms.html",
+          "sha256": "8f950fef12182852f4d758332e1b4d3753581af641bc45312f787cb5ad1ff039"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\native-cwd-recovery-tests.json",
+          "sha256": "f6542736071857aacf021fad971c39135cb6ecaaf1e6cb6776088bd8f9d5ccbb"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\native-cwd-recovery-tests.log",
+          "sha256": "96a6106968a2735612f7dd12c79465a560bc8852ed07708a83816a3debb8f63e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\opencode-console.html",
+          "sha256": "779d2986667b7b4f425f36a6ed9f5f2ca89d8e0a59fbc0e5754fe2ca338fd163"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\opencode-terms.html",
+          "sha256": "028c0abc211275b6811e82cb4a549611a1bbdefa8ad7045807b9ed993f27c3e0"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\openrouter-connected-account-metadata-1791559090559.json",
+          "sha256": "4ef58946ec835a7e172fbd3add1d7c98a34f5b770ac7b42b93723547a3221d09"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\openrouter-connected-account-metadata-1791559118027.json",
+          "sha256": "b4466c58e67d0f3722d5b44c81a39a6a290423ab37d91d350355098d7d3625f9"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\ovh-free-api.html",
+          "sha256": "dfe031763d1b3b14f609a51b283778a6d8e577b73429cc13d72bbfb1b18c351d"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\ovh-getting-started.html",
+          "sha256": "ec34e316dd3560918929512812f35fffbcd83ec607a925b7a83c660cb5a339b3"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\paid-qualification-backend-final-tests.json",
+          "sha256": "4939a0fc7c8999013e071a8746e2db0ff696b426de2557c4dc2eab78614ca436"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\paid-qualification-backend-focused-tests.json",
+          "sha256": "4d45a2a114920c2a9207f86b91ede060a941a7009ce12fdf4b216bcc61039800"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\paid-qualification-backend-initial-tests.json",
+          "sha256": "dd77a562294764c357b27727d9f0c776a7901f498c40e26a4a5d51c69099ed74"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\parent-authorization-recovery-tests.json",
+          "sha256": "418dacffad999d387f6c9d413b0aaf043f7ddfb1089346e72709ce02ad6acbc4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-core-regressions.json",
+          "sha256": "53ca5f3ea54785c3aef94f2ebfffdb19d7bed210638a295a3291a7a467138b22"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-cost-transport-regression.json",
+          "sha256": "f9c874a5738fef2302386263c02727d9397bc2bcf39ee5b61882c84132e7c4d0"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-execution-final-tests.json",
+          "sha256": "40adbb4c11800e570123127ab5b567e43929fa8cbf59ef4be9769855c2ed64db"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-existing-cost-transport-regression.json",
+          "sha256": "e60ac24d1d8fbb588d172de4aeb3df8d492529856ee08889175ff9534c40b9c7"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-legacy-regressions.json",
+          "sha256": "2686df3be84a011119651492758f22ba042b2bfb083726a28b9c6d8ae57aff89"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-local-policy-tests.json",
+          "sha256": "bd035ba54d8bb8cc557861d5c8bd5e699a3538d6e9111c84c030999e3405c514"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-production-path-tests-2.json",
+          "sha256": "f1c38d51f2f87f4075937063ce55e17cf934eb9ee8e4e3e8b6f809d2500962d8"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-production-path-tests-3.json",
+          "sha256": "2c3020801ece9a4e79ce2a498f7b67c534df97e2de3ecd85dc4767442a686d88"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-production-path-tests-4.json",
+          "sha256": "4d82a386430834cb34c25d795d6778ebf7441e4db58bddbe0326d443f7e61efd"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-production-path-tests-5.json",
+          "sha256": "d7b61ff9ba43bad97c8a48c9bf44e4313bb299a440600e173d5bf2c5ecc7209a"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-production-path-tests-6.json",
+          "sha256": "eeb4c47a8f6f3bb35bfa36fb2e103842baf8bd61981c25ad2aa1ac500a2ee767"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-production-path-tests.json",
+          "sha256": "fd77fd5b602d4c6051306f52423714275b274aa0f301a5f84566f3869da47ec3"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-production-runtime-final-tests.json",
+          "sha256": "9b9fcdcb8f754095861a45acc609f7531d8b72d929a591c69ba2a1ae8fa02cd1"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-role-runtime-final-tests.json",
+          "sha256": "e30cc8c89554e4ea1b1baff238056463a6322ab1b9e2ab04574a4b6a012e9345"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-role-runtime-tests.json",
+          "sha256": "92d100d951dc074a60cb54bb37675e8d1134990afc8ef94909ff5175e61e49bd"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-account-workspace-runtime-final-tests.json",
+          "sha256": "7f9ef3da2d7cb3a969e9fe1b5ce14f755a3439391e1534d6834cff7d877025dd"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\personal-routing-policy-tests.json",
+          "sha256": "02e39de8e1e73d5515a80811f8399fd76bbbcb1a2c1d5857353b3ba9ce9aa17d"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\provider-failure-telemetry-tests.json",
+          "sha256": "0f6908a149afbc63b9b1692e2878d73e2d05994533ee827c8d1fd333d07fce06"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\qualification-history-tests.json",
+          "sha256": "c3f019007d93581bdeac0844cf21543cb3e3b72c4ae01c48e66b973f6d0d7a28"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\qualification-provider-identity-tests-2.json",
+          "sha256": "883a745879298562b213c00dbf11233f8b44d09fb8143c07f4684be5149aba2d"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\qualification-provider-identity-tests.json",
+          "sha256": "1f83f397d5d837918d4bcddd6ba60f59b5c76851f1adfa2dd18806dc992d4abc"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\quota-isolation-cache-error.json",
+          "sha256": "e946aa6cc1b8cb32caf66b1175d309483f5aec71fc40653dc4c50f78e3c08d23"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\quota-isolation-tests.json",
+          "sha256": "2bb693e597a718b581844f6514dfdec8a5ef7c07b0e50e2519b89776daabc96a"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-AUTONOMOUS-COMPLETION.md",
+          "sha256": "9bde877d02b9fb34c9a917d5e749fada7f84ee57bd87f9d47b88231a3cff8d95"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-BOUND-REVIEW-PROOF-1791539210052.json",
+          "sha256": "0fcc3b4400836ae0de6365de4b8604875923e4400bad92d778e73c6f7b4614a7"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-COMPLETION-RECOVERY-1791538224699.json",
+          "sha256": "da2f6b3a569baf8fbde625283aba97db1a3f9e5171a72bd5899fa0bdfa4a1872"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-CONNECTED-ACCOUNTS.md",
+          "sha256": "cec90e9cf435ebe12d25e4e3e715e5defcf812f633dd83762831a987030aa228"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-DELIVERY.md",
+          "sha256": "950d88fc8a26b2daa33d59d44fbab4e31aeff9c2997406ef8c73c66b8ea6a2c8"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-ECONOMICS.md",
+          "sha256": "9cac1b8fe3fbfffcbc8f6422035d1aa57233a94ed9477d9fb59a0c744302475b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-FAILOVER.md",
+          "sha256": "13f7e3925ed9892898ffff2774bd2079444b096d33a674f0131516503b8848a3"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-FINAL-REPORT.md",
+          "sha256": "bb4cbe7d79b948d3cb491b1b93bd873c26e78116c42ae24c5974353827b13f77"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-FIRST-COMPLETION.json",
+          "sha256": "7057dc239d61ba956d3a4c025f430e78a162d100d7cad3cec676420b3a226136"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-FROZEN-COMPLETION-1791540147216-source.json",
+          "sha256": "cfe2de363d1f7868f064981805a41498566007d1a7cd7e170ccd3383dbba6519"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-FROZEN-COMPLETION-1791540147216.json",
+          "sha256": "e13b518eb50cffbae596c429cfd730540d4a747624bff5abb0d4a58c03303dd4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-LIVE-QUALIFICATION.md",
+          "sha256": "bf685b54c4e1694d46e595a2182fe57b60f61d506bb2af808eee53d69c737de6"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-PERSONAL-ACCOUNT-POLICY.md",
+          "sha256": "57aa3a9049ca0da261a3014ad775c34c00fbe0efbca7e9be72c13f29f8147d34"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-PERSONAL-ACCOUNT-VALIDATION.md",
+          "sha256": "34ad0fea064d10ee83402c7d4754ffa8b8091b8faa701274f1175729e29899f4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-PROTOCOL-ALIGNED-COMPLETION-1791541166828-source.json",
+          "sha256": "b904f407d2399dbdcc24b60a18d4e23007d6de258ef364881ef662297fa81496"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-PROTOCOL-ALIGNED-COMPLETION-1791541166828.json",
+          "sha256": "bb5f44fda37611cbaaf97d17994934d0bec77c9c8472793d8b88234773db4371"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-QUOTA-ISOLATION.md",
+          "sha256": "2ef3e6acf02ba6fcfb6c1b39317e4400517138b264347cc0cff225580cbd192d"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-READABLE-REVIEW-COMPLETION-1791557269712-source.json",
+          "sha256": "3b942af31196a911f299e48a22ad12dbeb6aa57554154e4503feff3248720ea1"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-READABLE-REVIEW-COMPLETION-1791557269712.json",
+          "sha256": "8b7deb6de59d2192484514bd58bdbf813e986ace402406cb5a0bf0e7da7e2d6f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-RELIABILITY.md",
+          "sha256": "56653f179c90ff657312cfc41787505dd01964967997e83d012455014ed4fe9d"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-REVIEWER-RECOVERY.md",
+          "sha256": "421408a75a1ed7916e57ed857222a566612449ab618bd556cbcbca81ef656006"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-SUPPLY-INDEPENDENT-REVIEW.md",
+          "sha256": "932573f44100d49bc0fbf503a225ac5a356c31bd9dd14263d8b83dba988dc301"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-SUPPLY-MATRIX.md",
+          "sha256": "3e18752f1396b914effa4a71cc6bb4edfd71657155f90a2c19c61f094d73dd58"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-USER-ENTITLEMENTS.md",
+          "sha256": "43784c5a2d551277d6d1113cf7ab09001a9780cf0f8422cec6768b9b09981491"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-VALIDATION.md",
+          "sha256": "aa02082fbd598df1069c0bf2ad702994672b441d966047511b900b9b2688a2ef"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\R73-WINDOWS-PACKAGE.md",
+          "sha256": "af7f6181b16d9716af3bb32029ad1b4398180a8f9a74a455a97e68814914b7c4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\readable-reviewer-packet-tests.json",
+          "sha256": "106caf7f26c36c7cae9f72a52cfd6bed8e65d6aa0aec4bd9f64275c3005c2b4c"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\readable-reviewer-parent-regressions.json",
+          "sha256": "1172e81f58fc67401ee7df9217ed59f7e00b3ed77855351e0a2bd7a58bf08f3b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\receipt-immutability-final-tests.json",
+          "sha256": "a860a5a1f9bc99c06f3d0eda77459dfc9694da561893d030f8f4e3ae127f0eba"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\regression-recheck-summary.json",
+          "sha256": "3512f05308450a739d4d72e501f638b224feaca8c2ba97f66394a82d7dcf4542"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reliability-summary.json",
+          "sha256": "b0c36bd616b53f0885db53f80af979ece296c67a3d1c1bce2d117dc28a9972fe"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-autonomous-orchestrator.test.json",
+          "sha256": "73d7c5541469a0477a326981561da4da01663808fcbecc22ecc43ca4c3fc6270"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-autonomous-orchestrator.test.log",
+          "sha256": "0e40498e53a9f8377568488dfc6d394fa3e5253c7bf4d993ca613f8b146f520f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-blockrun-free-supply.test.json",
+          "sha256": "1bf9529754d0efc37feb2be834cc784e38e762085fb25811a9e849b9f8c1bba6"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-blockrun-free-supply.test.log",
+          "sha256": "c31f738246f385fc6c6c7166686de584c2f0b602994295b58f198bb3a34ad538"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-blockrun-free.test.json",
+          "sha256": "5fd41e9155c5af4d453ca10f06bd97ae995d7abba25de5a447d1f37a0cf1180f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-blockrun-free.test.log",
+          "sha256": "c0982d833795d265b2d848fcb4f03f19439384402d168aa8de14da6bc7218e25"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-dataset.test.json",
+          "sha256": "7cfbe1e3920915e7f3b19ac19770a35d782e9046131b3d5d2b9694abfc81d056"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-dataset.test.log",
+          "sha256": "a91f4257cecab846f930ef068186835b468c966c9bb568021ccba7f921a6e0b7"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-free-cloud-registry.test.json",
+          "sha256": "0da7fbca83c1c848b44aa66d5aab733ca895cefe0d488955885c8345e0923a08"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-free-cloud-registry.test.log",
+          "sha256": "ef9deb1827d8716f26895f06b3fb692e130355309883923b6c362a3ced2f9b29"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-plan-gate-authority.test.json",
+          "sha256": "635f5d1b58a535a06c4ea84f7eaf5135f0cff8042528512db01af6b144795981"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-plan-gate-authority.test.log",
+          "sha256": "c9cf9e7fde3aebfeb5022a0064f4e29455c7fd40db44fdb13fdbe546e19af714"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-r54-quality-handoff.test.json",
+          "sha256": "d9c4602b70a9ba30f9f7b0eca842852fa7a57ccf9ce76e4de5038dc5259efd99"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-r54-quality-handoff.test.log",
+          "sha256": "e227fae7d8c4935deb625c3cc5751816334adbd009052f5e139dca5c6aa12d35"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-r54-role-progress.test.json",
+          "sha256": "1598c642791daaab0dd1843a325a03c42b60a46eea71ed1a80dbc678f82a2790"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-r54-role-progress.test.log",
+          "sha256": "0050e5e241138546bcb974ca74755dc0be9d48f56728be899b3c4a9359116ba6"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-role-qualification.test.json",
+          "sha256": "37ebca17041196087271b3961992c81a98cfca9d51d203c0618eefeaacb86524"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-role-qualification.test.log",
+          "sha256": "d6e8061b2cdf0bc5c3b3956258ccaec00a46cc5b338b031fd07303df7db0e975"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-role-quality.test.json",
+          "sha256": "c292d6b978a5843cdcaad45a1960d1656add2210e7a24fab1c6c6f3f594aa0f2"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-role-quality.test.log",
+          "sha256": "ba6c5974564762e1199635f598062ce5ff838683a8bce49fe20024784d919716"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-workflow-inspection.test.json",
+          "sha256": "8cbee95703486892897d7b0982ac207e2e557de67a528f77604cc5db8417152f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\rerun-workflow-inspection.test.log",
+          "sha256": "9dd38597d8f2df263b26bfc75671ed3b79afb32ad4535f9f905e264116bb7a14"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-boundary-v4-tests.json",
+          "sha256": "cc8f7ca9273007e6b025ed10a5e16e901eb8ed8209b4ae92d7c87c22b06d9b68"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-classification-current-tests.log",
+          "sha256": "8b7333041454b83e9a0e61762c6090300cfd430649c0412529bbe9abdc96ddb8"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-cohere_north-mini-code_free-1791479086989.json",
+          "sha256": "7e7e58884796f711bf7f82e5bb5c00f13fa99baa330b6d28edddb38aeefb519e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-contract-tests-2.json",
+          "sha256": "e2952cd519e736476e9f0f77a29d03220c9223c59e3a0f6e4bf8e6457cf21fa6"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-contract-tests.json",
+          "sha256": "eb845003504b7136cd12d9bb95aa06888811d716c150aa781f2f43795945959e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-dispatch-history-final-tests.json",
+          "sha256": "4fe05d20956173e9f2e9e02db3584dc855dc832ef7a2c626d7faaff81cef751e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-dispatch-history-tests.json",
+          "sha256": "8d092116c7c2bada9087d7886fb9ba6ba926470365a2bd3277fd12f0ce433736"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-dots-studio_dots-3-note-preview_free-1791469937409.json",
+          "sha256": "caf0850df014098896d9a38b207c5169d911de1bcf43c09889f3c808ed5f7d93"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-dots-studio_dots-3-note-preview_free-1791469967716.json",
+          "sha256": "563679b1b48bca9342abc75ca738dafc1ef3df31153b05ea797f8d0a430d3182"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-dots-studio_dots-3-note-preview_free-1791479228680.json",
+          "sha256": "2936eeba4f4a1cbd10a9526534b42c6eb26d86c0b96e4343753b570e99d41aac"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-dots-studio_dots-3-note-preview_free-1791540558093.json",
+          "sha256": "965da8bad3b9b2dea5361c2e906e0c4be2a9a05576ea9e93f97f85ede4d499de"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-dots-studio_dots-3-note-preview_free-1791540616465.json",
+          "sha256": "3a73d8c3bbb3c39ad26729d903bb2d17dbfed23da532af02fa909f1b1bb6c22e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-durable-constraints-tests.json",
+          "sha256": "edfd55b62b4bb3ddafb728d51a0c7c366c5cf4d47fc133699a707577c3005694"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-evidence-tests.json",
+          "sha256": "f4404868574e35cb279f7255566a1ad0617fd7fe9c71b693317f3a299a009b29"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-evidence-tests.log",
+          "sha256": "889c2f9e134c30a5a4de406d3f8e57b5204dd446d46188dc90b3fa96af850493"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-final-focused-tests.json",
+          "sha256": "4ac9d9fc6d05dd7cecb690b8978eb13e2b576d6275673fe1fc956a92f9fb5528"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-liquid_lfm-2.5-2.6b_free-1791478991059.json",
+          "sha256": "4336dabad8dcff6e7254b70da59e177e4d33e05757316997d8e7a212843d2ec7"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-nvidia_llama-3.2-11b-vision-1791605434027.json",
+          "sha256": "af3b21cb1087f8932663ce20e11dc5d59845c717a10bee1f58e24c9cab9c59ec"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-nvidia_nemotron-3-super-120b-a12b_free-1791479328096.json",
+          "sha256": "a2b6f68ed18650edbf08f9411859e0dae7abfbd7a59e397e95138518d1d8ae59"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-nvidia_nemotron-3-super-120b-a12b_free-1791479717487.json",
+          "sha256": "5b0361342132677cc58efde5a17b0413ebde0f42d25d844b5d76b1e2ce48aeb6"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-nvidia_nemotron-3-super-120b-a12b_free-1791605572020.json",
+          "sha256": "2bfa52ecce444bf6e0284f27c0d240dd142a1cffbcb0395faa4fcc8179d7b4e2"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-nvidia_nemotron-3-ultra-550b-a55b_free-1791479634287.json",
+          "sha256": "290ac5fc440714e0567df3fa187171f2d819a2d51a808c4a84092f8bb07c47d0"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-nvidia_nemotron-3.5-lightning_free-1791478615107.json",
+          "sha256": "7345993c7397ec48084f3339853f7de512cb8d1b9c95315a164689c9b334d064"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-packet-regressions.json",
+          "sha256": "875f7ca71cb5375abb2340abaf66e6268de8b1558be8428eea17ef20814074b2"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-packet-regressions.log",
+          "sha256": "229d671df680d840cedb00dee34b69d56f67dd681d3af0a42077136a6532471f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-parent-regression-tests.json",
+          "sha256": "ac342cbc769eb733daa04008accfb829af8a273b3f3899e771b929b1f09f7bbf"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-poolside_laguna-s-2.1_free-1791480508273.json",
+          "sha256": "487228a7fab659e46f2319e2439a1a42a550b8ad71b770a704d258eea4e6a714"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-protocol-freshness-tests.json",
+          "sha256": "fc1a813ea2ec6f25306ee42485fd4e3ca3c5f3699e595e1a357683d797dc602a"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-recovery-tests.json",
+          "sha256": "9f7d2b9a910df422c9d8bccd74b3b52edec091548534f87c70945ed865aaaf89"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-timeout-tests-2.json",
+          "sha256": "807a83eaeed043a499116061dac6708a2eeebc2d13b89cd625b1723898215f3e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-timeout-tests.json",
+          "sha256": "0c139e152a73dcf0971710ab210bcca7c942f2ed53b0e753badac5b86d677555"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\reviewer-v4-live-adjudication.json",
+          "sha256": "9f32cea10cdf3806765e879d9e69c20b8e20428ebb81e91b2d0056fb5f9db74d"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\roster-worktree-authorization-tests-debug.json",
+          "sha256": "f0e705b445219d5665f189c84430b38e019a9f014a45221f99c9ef5083b3c4e2"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\roster-worktree-authorization-tests-final.json",
+          "sha256": "e0b0e5a1847962acf831cf1a8c1ed7aa3714d4b44e5bdcf4b2520b111d63e310"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\roster-worktree-authorization-tests.json",
+          "sha256": "f1cd6c660ad473b849c3089ab3b36af29e5345a4701ab367e822ae59c23e083f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\secret-scan.json",
+          "sha256": "69dbbb3939cf127b94502d21cbe010779f5340fdd9734e929398c7d472b1da8b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\source-publication.json",
+          "sha256": "3d277539f5257add0576b6908225f336fc162422d4c7178b1e003b7e852ed2b4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\subagent-authorization-regression-tests.json",
+          "sha256": "e0d87c34c8143ac86559860b450c9bf70526f93eea40d52413cee96333e57ef4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\subagent-authorization-tests-final.json",
+          "sha256": "be598103ee9deefc9db7d0e2fa7b1eb7c0ad1ae72d6cda367bf62693cb63e005"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\subagent-authorization-tests.json",
+          "sha256": "baa22c605f2cf42b2df22d9eda08d2bd7629c050602e4580baf27afbc02a979f"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\supply-research.json",
+          "sha256": "7e4e95f6152852aa9709b4b7c70b44dc73152c2bada3b3bac0a76a2ce846b177"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\tools-agent-protocol-final-tests.json",
+          "sha256": "ad075d919e0aba89f41e8682e4a302b3a2c0c302283d5a29858ad5a1df8e13f8"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\typecheck-e66a9d52f49b.json",
+          "sha256": "87bb3f5830dedce570d8b5d92e579236503b93a61019554ba99b8c173ba0ab7b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\typecheck-e66a9d52f49b.log",
+          "sha256": "c59691c2c7c50b9622e03032db61e9f762c908a44185bc972d83288538f197c4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\typecheck-eade8b0d7f77.json",
+          "sha256": "1c219ccc6c1484770ae0f201c232021b1b179d9728588be1434503ea4cf7aa2c"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\typecheck-eade8b0d7f77.log",
+          "sha256": "c59691c2c7c50b9622e03032db61e9f762c908a44185bc972d83288538f197c4"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\user-entitlements-validation.json",
+          "sha256": "11461adc8f8f1a4c1c74ce251de3e9c27b8c60c3e9c69b5b5124ac2a7157eb26"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-artifact-manifest-0e364fac.json",
+          "sha256": "7a47f09d30d606b7c23ca26614ebfd4d0678c3ec1113cf1506beb472f7ae4a9a"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-artifact-manifest-eade-harness.json",
+          "sha256": "2d961e827e77c614f46ddfc53bd7847d243591da104e9a6cc78149ad8306589a"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-artifact-manifest-eade8b0d7f77.json",
+          "sha256": "8a585c66d02add8953a0639ded03404c346c49128cec874d4483bec25959910c"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-artifact-manifest.json",
+          "sha256": "8a585c66d02add8953a0639ded03404c346c49128cec874d4483bec25959910c"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-auth-endpoint-0e364fac.log",
+          "sha256": "d62c8e404f7972898afa039581d2e9ff35ccc427663481caddcadde056ed78ac"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-auth-endpoint.log",
+          "sha256": "fd52b1f505be4af1b8769587729983d88683699b7f5f8b3a29b4a101bbd543a6"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-browser-security-0e364fac.log",
+          "sha256": "2cfef06576ef193115176bac83d282fef00c1856cf5c8ff7c05bf040e31d2a22"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-browser-security.log",
+          "sha256": "a2cbafa9faea46c7f67f9c74d59509efffa08eb2ae590dab6a1d98918d1f0797"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-build-identity-0e364fac.log",
+          "sha256": "3da3cee33aeb63fcbab5e48ee6898d6411de97d5d0e03486e488cfe393012488"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-build-identity.log",
+          "sha256": "6ae397e30d44c19c7dc3425ca001f72a2b4da77da2732f853256cddec5ff2235"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-internal-dependencies-0e364fac.log",
+          "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-internal-dependencies.log",
+          "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-package-build-0e364fac.json",
+          "sha256": "93c414241622f026d95d1303a2700e7eefcaa9498ac429efd0eb7647e8181e87"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-package-build-0e364fac.log",
+          "sha256": "2b3e0ff7fea6015927cf5246df11f86fd1538565f4b183efc0b366265bd87f4e"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-package-build-e66-cli-failure.json",
+          "sha256": "2f911fba2506597296ac3d133c8b268359b0cc0050bfb3943497cde826e6c5c7"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-package-build-e66-cli-failure.log",
+          "sha256": "5a90cbc81fc98731b699b053c8be7d49699b8542a0c20b2f80a8c51f51ebcffd"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-package-build-eade8b0d7f77.json",
+          "sha256": "b5973299e28b7f8b1fb0773bbc21c7093f5354e6510101794119d703cb6c217c"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-package-build-eade8b0d7f77.log",
+          "sha256": "10f5665f511abc4b85ebf7c3d3178464d132a05d40630fa12f152502f7d7f69b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-package-build.json",
+          "sha256": "2f911fba2506597296ac3d133c8b268359b0cc0050bfb3943497cde826e6c5c7"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-package-build.log",
+          "sha256": "5a90cbc81fc98731b699b053c8be7d49699b8542a0c20b2f80a8c51f51ebcffd"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-runtime-dependencies-0e364fac.log",
+          "sha256": "091037d4f5125620d473a91448804b4ad2f1ae9489923764c67f779ca8dcce55"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-runtime-dependencies.log",
+          "sha256": "1dec09fa2301f14dd87eae1c135742846d51c4f7be566c580585e4827f33b05b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-signature-0e364fac.json",
+          "sha256": "53cb9554d0552815924239cb6867ac22796814cb29d2979cdc7ed9d855937d3a"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-signature-direct-0e364fac.json",
+          "sha256": "f08766c7b24d0b720a8abe08e267a7a56291af49de0fc7362d92a9bc4a79c669"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-signature-eade-harness-unavailable.json",
+          "sha256": "8e67b8edac31a39e5e4f16c88bc11f601640c7ce8f0f17de2198011938ab4d01"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-signature-eade-node-subprocess-debug.json",
+          "sha256": "f3d8cd5e40ffc544e5d2d537c1cf9728bd67eb2ed47269e4e1053123b20e0399"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-signature-eade-subprocess-debug.log",
+          "sha256": "d9fc8d7323b8fe6e2bbbc33b8f5956d250857f5a804476bda5a08bea193118bb"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-signature-eade8b0d7f77.json",
+          "sha256": "14e7fbc98839d5df14453c5ff1b212dfb554a1c842be05228764a4f8689251d3"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-signature.json",
+          "sha256": "14e7fbc98839d5df14453c5ff1b212dfb554a1c842be05228764a4f8689251d3"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-workspace-build-0e364fac.json",
+          "sha256": "e42ffea761cad2efffd546ccb20971553db2b4e65a5b199b832e42515293c9ce"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\windows-workspace-build-0e364fac.log",
+          "sha256": "0062748cbfe451c4ecc6cd01ecba9cbe5d777eb734ff8d59a5c50dcf1ead7a67"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\workspace-build-e66a9d52f49b.json",
+          "sha256": "15543975d073387bb4546d1e028f559a1b5c7ccc6e940a8a484a3aad3e1860fe"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\workspace-build-e66a9d52f49b.log",
+          "sha256": "d07c5e732cd5cea45b50537f22acd9b81526a71cb6a0c80a2931d07c19ac2f02"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\workspace-build-eade8b0d7f77.json",
+          "sha256": "557b7f1f4d4d47791513aeb8ab636bc047b9f84bec43ac4a78c832add9df61a2"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\workspace-build-eade8b0d7f77.log",
+          "sha256": "747b1bbfb0b9bd3ff8feb10696f7903b51a92ec85416df26de9d1584c41da49b"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\yolo-auto-docs.html",
+          "sha256": "ceab989005df900eee3c385a6c98426bd9344204831d7b72c34bfbc5496a8ebc"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\yolo-auto-privacy.html",
+          "sha256": "15331d11bff30a50ec179c02abf13e46e71659da80f873c49ad84821ec6024e5"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\yolo-auto-terms.html",
+          "sha256": "69b5737ce044aad0da65034647b90faf22fe6dd3f4d0487cf946031ca9b5c4ad"
+        },
+        {
+          "file": "docs\\evidence\\r73-free-supply-and-completion\\yolo-auto.html",
+          "sha256": "36f919b05b168ab7c875615d7be5a2d72d5a1117ede889270984278d6b28c342"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\accounts-routing-regressions.json",
+          "sha256": "631e97f6df6d60fad496bb168eacf46137e10fa109230836db73b188e75ed423"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\accounts-routing-regressions.log",
+          "sha256": "1ca1c59c4abc103cb52657b9f496dd63d2db81c704e348b6f79b341a6232b4f1"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\baseline-build.log",
+          "sha256": "55590a87b9cef4bebb61c4738a98e83255282578ea675224edef392879b37c61"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\baseline-provenance.json",
+          "sha256": "3e58fc74847a5095caf63abf3ce3c3a4976e04071c57cca9f0ea53fc62e57704"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\capacity-pacing-tests.json",
+          "sha256": "255029148f04d0d7f66e2e44da6ef982511ee7d1eff3d6d55ff7fbd7f8ed0f59"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\capacity-pacing-tests.log",
+          "sha256": "1617460ffe490054d49cabb3ab143089a44f1e31d07ed0bd40d22ea657dd3d23"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\contract-negative-build.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\critical-sqlite-restart-tests.json",
+          "sha256": "aa1dd844d5db28b220947282e7c9468ffb00ab57ee1c413d9b56326d5292c777"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\critical-sqlite-restart-tests.log",
+          "sha256": "d46faf8a6addee61ca1f18e1c1b7d30ca112ef2d2cd04755b555139652174cff"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\current-catalog-authorized.json",
+          "sha256": "faa4c368c1655a06324247a8ca35e6460ac36af4e8765bf9fb4299746ca192db"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\current-catalog.json",
+          "sha256": "3f3035dddbae544d7266a6695e259c58b93975a305e08499e759f15029236086"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\current-forced-typecheck.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\current-workspace-build.log",
+          "sha256": "f6b1638de01de976938b9e1a2197a08a8a0bb08dbb0b8306c3dbf8248f8b4dbb"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-audit.json",
+          "sha256": "3bda1730585a68f5330ab6b66a47ac59e48eb57e38275dc22d4aeff96c3cb29b"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-audit.log",
+          "sha256": "0cd3f461707c46cad234fd211431934968809ae749130a8d0d9b3815831d8202"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-candidate-brace-update.log",
+          "sha256": "5c679edd5e796b1479ce513236751c30a41462656c2c107489d8052933dd7234"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-candidate-fix.log",
+          "sha256": "d299185524675539f25542020cf40b1c0635c60e2996cb53268d563442fd3b50"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-candidate-forced-typecheck-complete-copy.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-candidate-forced-typecheck.log",
+          "sha256": "83f2a9e09b6444923506d5a5777fa6e13e1346f4b3abd84248fc341cefb782a0"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-candidate-install.log",
+          "sha256": "fe3f1836db1dc21c9b52e9b0c5c004832fb54184dd752edb98b2df72997f3c61"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-candidate-minimal.log",
+          "sha256": "d3b9c00b47a94347d9e8e1c1c1fa5d85e36c207ff96631e77551e39d6fddf2a5"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-candidate-overrides.log",
+          "sha256": "abb7be5f31a5b849918a90a486994a2990bb16935698b066b7b9069766b4305b"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-candidate-tests.json",
+          "sha256": "9a59f0aa01c87290c1f3fe66db9f2f0c09808b42b6a7a5cd28bfcd7eeb4e542d"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-candidate-tests.log",
+          "sha256": "8ac7bd4a093110664ecba81581ac083c0dbe960597be6610d5c2c0623c30a873"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-fix-preview.json",
+          "sha256": "937e56b7217b554852e77b1dd9af7922a1c5c3e1d93b1c1bf754a07829c9431b"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\dependency-refresh.json",
+          "sha256": "0e3358a0bac5664425eeda2812315ff29226ba573363f459827e2d0339343195"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\doc-links.json",
+          "sha256": "42528e5c3302e749310feb78a94a5143b2a47572694788da9c4fa396338640be"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\expanded-roster-tests.json",
+          "sha256": "1d597eb9578be807bba99628590ae049bf6794c586dc46dbd8148a9b5161d874"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\expanded-roster-tests.log",
+          "sha256": "e722e8bc4fcb77b950f11ce78cdfdc2fdb5dd5b77922d0f0d80bc914406374f6"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-accounts-sdk-security-tests.json",
+          "sha256": "3389649e596e03ad528da1a2682e327260fd29daca3232cd55c6e1da99d35049"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-accounts-sdk-security-tests.log",
+          "sha256": "e9aa0fd6e0d9b8a6cf5b594638d2a6adf1159f7544d593f704918101d2c14918"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-dependency-audit.json",
+          "sha256": "0018fd07155fac38484bf69a57d9887fcccb524e3e1d1153219037af8d0e755d"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-dependency-audit.log",
+          "sha256": "15835b9b2d856dd0aaa4ea6fd205822b59afb5ec36d65f120b88a9a61805b2b7"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-forced-typecheck.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-parent-orchestrator-standalone-tests.json",
+          "sha256": "9a5da9624454acc460bab9a33ca371f159ec007f3795543c793db5a0a4e09ec1"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-parent-orchestrator-standalone-tests.log",
+          "sha256": "ab047eaa3d418e14fa87313298a2f92f4bf7639db5d3660e5ada23c3b690a1fc"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-preservation.json",
+          "sha256": "8be2af84a1e43033741781c1c6f5c029d626003473b735ee6d2a02a1a420d64e"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-remaining-regression-command.json",
+          "sha256": "ba2536afe7a04d347b7810a8d1190ee4c75bd57dcb54dd0af1c6673a3a68fe04"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-remaining-regression-tests.json",
+          "sha256": "a68a21360a080124befcc101d3435e884443cdea86d8c9e157be407faa1cb20c"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-remaining-regression-tests.log",
+          "sha256": "49a5ef7c11498d0269ab37af625815918a2d351a2444e5cff5d2ab717fef2251"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-sbom.json",
+          "sha256": "4d23af6042ecf4f4b189d4eda17394200f85d79ba4ac603d8f67f04fd075d70a"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-secret-scan.json",
+          "sha256": "688053284bee12e54c066bd666a4ceb6e536a1dd39b8f503bb448748f073d1f8"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-secret-scan.log",
+          "sha256": "ad0d4a32c730f79a9ef158abee4b6e3bd9c1c8c08a0ce37708054bec6dc72a99"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-security-refresh-doc-links.json",
+          "sha256": "8caedd9785d1c8d10811da0756445864b012aa111bc719d18cd45750177dbd54"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-security-refresh-public-claims.json",
+          "sha256": "213217e408c5a95b87de401b564a9e54f819fe3638b4e208feaedee4fb7ad5aa"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-security-refresh-secret-scan.json",
+          "sha256": "1a85bc8925031a6c68c8369e11b69d8f3017497dc9e2fafba05bd37593cdbf6a"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-validation.json",
+          "sha256": "e6d443e41e36b1729075157c5f4cde5938ffedb8d54d6c08320fb204b0e189b9"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\final-workspace-build.log",
+          "sha256": "ac86202a28fd899c724cf74e6a4dc2a27ebf9e0d1d8d0de7277b70b5362c0924"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\held-out-review-1791628701674.json",
+          "sha256": "fd0d3c47fca31a1c551ad86599ffb44374f08e87c4c0db514e38cbcf21bf16a1"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\negative-evidence-tests.json",
+          "sha256": "23614801827700db4ec9ce9ee3437a0f5b6b8f4558cc8127953db5ddfd87ad19"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\negative-evidence-tests.log",
+          "sha256": "1a05e4fcfaba129308a0cb31d163dc64ce8808ce056bcb5cb3389285157d71e3"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\parent-completion-recovery-tests.json",
+          "sha256": "84bd50457e9bba5b2314485e5b10e675d5086fe58211cd192b8d6c2f5279bc9f"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\parent-completion-recovery-tests.log",
+          "sha256": "2086a6a2005d60227a281a5f029a28f95d503762feabf2026550c679266a0e59"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-bootstrap-build.log",
+          "sha256": "70dfdae874a39269a6ac4bae28c8b1e9ad9cc06914193a4e6a6d432bdabbfc2f"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-bootstrap-tests.json",
+          "sha256": "5ec64cbd825899407f113ff9ca7f4a49297448e31942326e9401a10af91e4610"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-bootstrap-tests.log",
+          "sha256": "08654a8ce137756131af03a4c78ececee93905f39360d917dae21edbf6178a06"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-contract-tests-corrected.json",
+          "sha256": "78634bbbce2ec77b310962df42005f9b1318cf54bbebd7c795688ced74c4626b"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-contract-tests-corrected.log",
+          "sha256": "d074e1f96029aa3a21fc52aaeebee73dc94d6e523d635e8464f036662286be28"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-contract-tests.json",
+          "sha256": "cbc5e38ac03d9e12731a5bfd738741223e021079e78e63c8633f027d199abef6"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-contract-tests.log",
+          "sha256": "fd5435c5f64692cb096726c0b040c8124dd989cf33b825d66fc4c781567e69e6"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-graph-repair-tests.json",
+          "sha256": "5333615abb89107e9d269a27653cec3dbd27c1b6ef9e2837052ef214b6e7cf3d"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-graph-repair-tests.log",
+          "sha256": "4d7e7895c9e89886ad7146ce65ae6256a88c885b1b68cc632040f717893c98ce"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-nvidia_llama-3.2-11b-vision-1791629583054.json",
+          "sha256": "54422b9c3eb13a66c4b2b97c128c8f7eda07774c1562c0a5d4a69fce9541a827"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-nvidia_nemotron-3-super-120b-a12b_free-1791629043713.json",
+          "sha256": "171616f9104ed72ebd0cdcd1804ad0885e7623c9687278ac8ff9e0e07a374a3e"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-nvidia_nemotron-3-ultra-550b-a55b_free-1791628788267.json",
+          "sha256": "14a5178e386d71a8a79ba973d3230bac4ee7782cfc7b74832d0497ad5a43765b"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-nvidia_nemotron-3-ultra-550b-a55b_free-1791628907912.json",
+          "sha256": "f3a30f5a478e8f7f91d0136c68dbc43d7b988ee8eb8728faab3ebf1e0f0cb4d1"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\planner-protocol-alignment-build.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\pre-retry-build.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\protocol-package-alignment-tests.json",
+          "sha256": "5ff715f597e22cc0d41afa95d93bc7b348d37a7876dda6563a44967df944441d"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\protocol-package-alignment-tests.log",
+          "sha256": "c815ebcb26b91dc271b97c7be137c4ca03dbc7fd3bec5c63c3a1086ceaf25cdc"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\public-claims-scan.json",
+          "sha256": "0c3e033c59b3c75db1e3c2a127e995478649acbca41807ca75833413d845dc3f"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\publication.json",
+          "sha256": "aabd1961b5e71e039a39ad3acbf9cd4b61305ef141fdb62bcd77777e194b8e90"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-CONFIGURATION-COMPLETION-source.json",
+          "sha256": "0a47592c31a51bd9cb89ac9076b03256f10748eb6e0ca27a5f917a634cd22d62"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-CONFIGURATION-COMPLETION.json",
+          "sha256": "ee05eb5282b5bc9cb3eb6a2f1d669dcff0b2314356f2859494611b792d3bb091"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-CONFIGURATION-COMPLETION.log",
+          "sha256": "ca92da01be280ddd4d96e0c349d4e792785f85aa5e33c7f2f283f380a15839d9"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-CORRECTED-CATEGORY-CAMPAIGN-source.json",
+          "sha256": "9c3cb95d061ee8b87219978ef2b86c849bb540d09732f3c42a747ed27a2ae88a"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-CORRECTED-CATEGORY-CAMPAIGN.json",
+          "sha256": "673a5d4cb3e8ea6fe988084a46feb5ca004d08b0e87d0fe1d065298adf5fdd11"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-CORRECTED-CATEGORY-CAMPAIGN.log",
+          "sha256": "a572ba260b7aa186d797fd01068f9e2d136ce2d895a8a76b4aeed0648a7f5fe3"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-FEATURE-REPAIR-source.json",
+          "sha256": "d92473f75286d9f87a8e825c9b66d7304a72c92942b752a61b60e1bdc936ef9e"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-FEATURE-REPAIR.json",
+          "sha256": "60a80f3b0d65e8c816111790f9299ec32ea8ac858e6fcb9fde9ec90f0106a6b1"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-FEATURE-REPAIR.log",
+          "sha256": "d11d8b0bc63843e4a0401e37538e05db00e2447c415bb01e2d38d97e3994671e"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-FINAL-REPORT.md",
+          "sha256": "ffc39fb6d3794a97e9acaf74267aaa320954b200218b52ca4ab430aec5cba397"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-FIRST-COMPLETION-source.json",
+          "sha256": "fba7aabea305adcf189ee6095cba2009dd54f1827c720c50b41d87e03fd7a11a"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-FIRST-COMPLETION.json",
+          "sha256": "6b59a94c88c1a03c503d9ae184d1d89644bacba5b788f42dfe5c8b918a69ee5d"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-LIVE-STATISTICS.json",
+          "sha256": "06688266d10f205f10da935a71d737bd94166003ab9b96394080d827b1c4eb67"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-PARENT-RECOVERY-LIVE-source.json",
+          "sha256": "0741ae3c4621e721705bea1a0cad30716f1e0c63b97997138df5f61f009caa44"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-PARENT-RECOVERY-LIVE.json",
+          "sha256": "09adb4c2118262f9fa755c81892977803e4b618f0822a3d770ca5644edc88eac"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-PARENT-RECOVERY-LIVE.log",
+          "sha256": "a620982d9015147bdedb84ec8f052e586a98a08d460baa87e1074666e622922f"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-STREAK-CONTINUATION-source.json",
+          "sha256": "12d5f76215573ebf77ee2b21b5b3adb1c57318fbcc340311cde9d2cdbb873cda"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\R74-STREAK-CONTINUATION.json",
+          "sha256": "3c261b6451536240b78fbd75f9d6cfb98bc83aa1088cb6bf176ce57a1aebfa7a"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\reviewer-nvidia_nemotron-3-ultra-550b-a55b_free-1791628393855.json",
+          "sha256": "f5f9af6d93047ac14a729a2c13b3e0948904c6100ee0653d67c5595248abc082"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\reviewer-packet-host-tests.json",
+          "sha256": "fce2b273db689ab0023314d77c7e78fc9d425fa1f5330e8ecc34e0cfdef3bbc8"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\reviewer-runtime-regressions.json",
+          "sha256": "b0d88481926fa3864588228ad4c4d4a030681a4a36c70e3ca4bafa4c8f163b8a"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\reviewer-thinkingmachines_inkling-small_free-1791628373184.json",
+          "sha256": "d94aa3fba8756aacd405b70fcec9a5f28b80d26425d146a9c7ea8c8814eeb856"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\root-cause-build.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\root-cause-tests-localtemp.json",
+          "sha256": "7136a1fb6a47bf9d6de21a72a021c4b81df85a8844104961ba03a0987e24b8d4"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\root-cause-tests.json",
+          "sha256": "e2086b659a9821002eb5f01df449d992f4d39f4321a20cb5bb113259242d9c6f"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\sbom.json",
+          "sha256": "5c8533f34ec7af16eb081afd05e24dc60c6013f66a5e2deb8d7d21bbc190be3c"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\secret-scan.json",
+          "sha256": "643c7712d96ad885a3d53cb48ce0cc6e53a7d8c1b8ae969d1c4de6021f80942e"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\secret-scan.log",
+          "sha256": "2f9d6132f102f461cbf973be87efd626ce9b14de222ea1c832db0e09bf4f689e"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\security-refresh-forced-typecheck.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\security-refresh-workspace-build.log",
+          "sha256": "7710cddb19b56e6a67e28418d7a37321bc53a771dd83bb1610525f56e328f324"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\security-tests.json",
+          "sha256": "5d5715555e9f980ce3ee93d1e85105dba30d05868b28c89eaf7966561efed1ca"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\security-tests.log",
+          "sha256": "0a138b5dedf886994f55bfabaaad298ce642d31890fad6e905ba1a7655290718"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-artifact-manifest-0f03e53d-final.json",
+          "sha256": "0d02c7aab934f6f78f325042e0f9f66285593b2a4eadcfca045aacef3c47cbd6"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-artifact-manifest-0f03e53d.json",
+          "sha256": "b54bb2fd886af478ce67c61612da38a797ed2b70c489d89d1364610406121c62"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-auth-endpoint-0f03e53d-final.log",
+          "sha256": "f61eca0ea1ff2047d38d29b6e12768df94d59a2327fc95336d59b04ca923aaa2"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-auth-endpoint-0f03e53d.log",
+          "sha256": "1f0fcbf40bc058e05a5ed5b5dba9ae82106ebbecc38aeade6de1a8f6ad162d4a"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-auth-endpoint-9728ea95.log",
+          "sha256": "6b35a73ed3548bfe0ba1fee0b859076709eeb1add455cf654be2017048df68ae"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-browser-security-0f03e53d-final.log",
+          "sha256": "cca1ac144231df632bd352569b7076eee1c0f6bf117c69d581762f28b583aedd"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-browser-security-0f03e53d.log",
+          "sha256": "0c28fe34c244066427962b94149eedc04e2269f73c06104802393dcc047a2b3e"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-browser-security-9728ea95.log",
+          "sha256": "2ebe6ee45fc81cdf0d2f95eac8bccab4f64cf07138bb4e034cb169fb0b5630ec"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-build-identity-0f03e53d-final.log",
+          "sha256": "3198813b0b1762bad74e542cf4e23a03ddacfa74c749654676e424cae1811af5"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-build-identity-0f03e53d.log",
+          "sha256": "6db09fcbabf8ff3e464b85e9fc70be88f9f9c01bde152a6f14e5cd04125c25aa"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-build-identity-9728ea95.log",
+          "sha256": "e0bc9ba006344124f84242fce43d16d8c841a6608fef9394b7e02c65a9ae48a5"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-host-signature-0f03e53d-final.json",
+          "sha256": "751e00d2e065522c20e98294a7c79343409c84490548178d4e50d83f0926b4bd"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-internal-dependencies-0f03e53d-final.log",
+          "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-internal-dependencies-0f03e53d.log",
+          "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-internal-dependencies-9728ea95.log",
+          "sha256": "ad3052f1e93c39af5fa70ba51b61755e056facda604a9a8f35115b2103dc6c6d"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-json-asset-negative-check.json",
+          "sha256": "d41dc852adc422dbe44cd4565c68e1d4ed5b34cf54cad6f089f8c9d380a40091"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-json-asset-negative-check.log",
+          "sha256": "c3fca77dcaca76bbd1205dc2b4cecc1fa48ebb0f235779162056913aef98f41b"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-main-build-0f03e53d.log",
+          "sha256": "2bf90fa697b0c643e1448ab39c04fd48e274baeec02f912584534683652127b7"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-main-build-9728ea95.log",
+          "sha256": "b1ae73836e26b06f4a984515513d95bce7f0f1f35d3c0b368c28fe7e2cfce8b2"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-package-build-0f03e53d-final.log",
+          "sha256": "95bda7d5990ff672dcc27a2bc3fc54a6f2a051312bcf7ea7762eb7fb7f39f27c"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-package-build-0f03e53d.log",
+          "sha256": "ac088cf69d04999312f9a156d8065d907514ba3a38036064ebfcd2cc088c9b70"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-package-build-9728ea95.log",
+          "sha256": "26cc12a121dd361ff9768f9f3715b11309dc599e46afd24d105ab25d24c6d5fd"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-package-build-corrected-9728ea95.log",
+          "sha256": "ae7246d2d2763a2b62b889c4d8fa554d7f9b0b2cd8b2f8c38cd7de3110036f7f"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-renderer-build-0f03e53d-final.log",
+          "sha256": "87bb565a4145e97deb717cb1a8305f1bb4296cc6fdc84d76a4623b3b6e57c942"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-runtime-dependencies-0f03e53d-final.log",
+          "sha256": "8b90cd7e7054f507fb077add1d26a7b6bf6b8766f8a4c0e33a666b59e2166617"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-runtime-dependencies-0f03e53d.log",
+          "sha256": "8b90cd7e7054f507fb077add1d26a7b6bf6b8766f8a4c0e33a666b59e2166617"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-runtime-dependencies-9728ea95.log",
+          "sha256": "b54fe5ff5bc1dcb88414d3bad17f8bec99fb51bcf23ec8ae373cd4fd608a86f7"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-signature-0f03e53d-final.json",
+          "sha256": "b691353272068bbaa019217c82e1e7be49f64bd43dd793a1fc11a97067fe612d"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-signature-0f03e53d.json",
+          "sha256": "b691353272068bbaa019217c82e1e7be49f64bd43dd793a1fc11a97067fe612d"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-static-audits-0f03e53d-final.log",
+          "sha256": "e0410abdc8db9355d766462085c8cfa374e4404503cbaad563c782502a1a4759"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-static-audits-0f03e53d.log",
+          "sha256": "de6d2eae13732be10fd5bc36aae40e9273e2a2fe492614ec284cd23d0b23ecdb"
+        },
+        {
+          "file": "docs\\evidence\\r74-autonomous-completion-and-free-reliability\\windows-static-audits-9728ea95.log",
+          "sha256": "87115cc3a80565677126d6f9e764ebc685fb1d1195cca2225bb242da650f0107"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\ai-horde-adapter-tests.json",
+          "sha256": "c9d3f928078cf766bc57a6b79e6de3bd395dc9bb0188796e9cea55199bd92f36"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\ai-horde-compact-1791639848993.json",
+          "sha256": "05b77b67bdc1a0ff3d0c8f0e974209e0787dfd9a73f90bc1023893458fba50f8"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\ai-horde-compact-1791640441393.json",
+          "sha256": "2e0154444ececca55c5c66fbf4bd187245b7d3b7d0a00b9fbf53cbc4d22c286c"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\ai-horde-compact-1791640483076.json",
+          "sha256": "f8c7f6a3b42cf7a86eacd3da1a435c9cf27752c55dd2119af924362638b716ee"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\ai-horde-compact-1791640571274.json",
+          "sha256": "02681434723c4cdfcb3db6d9c93e47f3cc2942331d0b715b7d6d7d6914fcf8a0"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\ai-horde-compact-1791642389524.json",
+          "sha256": "52e1fb552cbb0b2c1ab437b890dd1f569d32fe591220c6a5be10fd57df0d3e78"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\ai-horde-compact-observations-1791639848993.json",
+          "sha256": "d1a77469ffc589e81ca503c28fd5b5a0184229a4aa582c12ec0456d614808da1"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\ai-horde-compact-observations-1791640441393.json",
+          "sha256": "4245c6d8b62d7b5aeea9cde5cde1ece59e25858ec52700fbd2af4b90e573d568"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\ai-horde-compact-observations-1791640483076.json",
+          "sha256": "4245c6d8b62d7b5aeea9cde5cde1ece59e25858ec52700fbd2af4b90e573d568"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\ai-horde-compact-observations-1791640571274.json",
+          "sha256": "ba0818c7c8d73601bd281b778e8fc17c3ca3e24056b06b71242742ff2310677e"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\ai-horde-compact-observations-1791642389524.json",
+          "sha256": "87113a9c96840b5529354b288ea3d07f5cf35ab8fcb9860bca6590101cd1f704"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\blockrun-compact-1791638141240.json",
+          "sha256": "1d8e698624ee2b8e301bbf33e21d9c9a04dfc602c1671e55e78538de740ba75c"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\blockrun-compact-1791638168218.json",
+          "sha256": "9201f8239ed487d3abe49bdbe95607c4524c9b0ca570b62c718c4e3034eab42f"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\blockrun-compact-1791642692191.json",
+          "sha256": "583d0218681866edd95524fdcf6cbe96ad6dc9eda865b6e4218b8dff1769ba44"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\blockrun-compact-observations-1791638141240.json",
+          "sha256": "66f528f5dfa3c92436f145cc987c49f9f2659a49afde7c32d1a45b5a83c0e6b5"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\blockrun-compact-observations-1791638168218.json",
+          "sha256": "a00c28a00ba23658b0c7958fda5fb47c6768a547d9fe890fed30df58f09e9a13"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\blockrun-compact-observations-1791642692191.json",
+          "sha256": "b00413c47284ae29e4e9943ef37fcb430ca2c5a93378083d124b76a2496e125f"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\blockrun-free-tests.json",
+          "sha256": "b721e260e8187349bfad4fb38c8088ba6d26ce875b8d764bb3a8eabebfb0e3de"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\capacity-governor-headroom-tests.json",
+          "sha256": "e7fc4d80dc1d1a53f13e8e1472a2153b0cec281a558b9ecea5d7e37d734bfa05"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\capacity-governor-tests.json",
+          "sha256": "aedd69786ac4cbef01004983391029ef73f6849c66fe9600dc74f1bda0bf4879"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\experience-advice-isolated.json",
+          "sha256": "c25bd9b9056f632c8f8093a5f83e9757d068e7a2316d16c8494d4fc3831161f8"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\kilo-liquid-lfm-2-5-2-6b-free-compact-1791645074030.json",
+          "sha256": "b29e98bd8d7be4475adb81e93f14f33a26d2a2a621cea7bb2d1136eb5a22f34b"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\kilo-liquid-lfm-2-5-2-6b-free-compact-1791645223751.json",
+          "sha256": "2b29c58c777b96aba9eba783e1a2fe1b54a75c2b8e7c5c0187a439b5c6ebda79"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\kilo-liquid-lfm-2-5-2-6b-free-compact-1791645403043.json",
+          "sha256": "26950ecc5993d1dc27ca911a16c6b848eb736d72a18dfabd69b1901988429b7e"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\kilo-liquid-lfm-2-5-2-6b-free-compact-observations-1791645074030.json",
+          "sha256": "668f7df5d64cb32a0a86e46ae14cfe0cf3cb08373f0edf5ad416a2ba63cc3296"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\kilo-liquid-lfm-2-5-2-6b-free-compact-observations-1791645223751.json",
+          "sha256": "668f7df5d64cb32a0a86e46ae14cfe0cf3cb08373f0edf5ad416a2ba63cc3296"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\kilo-liquid-lfm-2-5-2-6b-free-compact-observations-1791645403043.json",
+          "sha256": "668f7df5d64cb32a0a86e46ae14cfe0cf3cb08373f0edf5ad416a2ba63cc3296"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\kilo-ultra-compact-1791642584336.json",
+          "sha256": "587b0560cdd3a04a9abffefed63a83e0d37274d34a26cc2898f9ab5141f5e419"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\kilo-ultra-compact-1791643754347.json",
+          "sha256": "b608c0ae0788d064c908cc42f530b658b6571faecaac7c3fae8793b4ab4ac753"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\kilo-ultra-compact-observations-1791642584336.json",
+          "sha256": "f7faf9ff815a37ee858ef58055576acd85831c2422bea6c88a80ea39b387e200"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\kilo-ultra-compact-observations-1791643754347.json",
+          "sha256": "21d22e299f255e280cd2ad3911cb053c6ead5ae3c69ea54b08d1be88cbf286ec"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\planner-contract-tests.json",
+          "sha256": "4dd98e3c6ef10c010fb6145af02a713da7a6545d94cd9a56e259a1110049a6a9"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\planner-repair-integration.json",
+          "sha256": "7fc00f08444680ea718fb8b413d5cf489a91b5ab200acba7c4b779f6227ecf32"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-CAPACITY-RECONCILIATION-1791642500000.json",
+          "sha256": "42c499b4d0425648b320e9292b57179b19d5a5feb015af728fbc957f993498ab"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-FINAL-REPORT.md",
+          "sha256": "46437261f81143d3a4a629371df9cfab85eac2991a8525960011fbec42af0c6b"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-LIVE-CATALOG-CHECK.json",
+          "sha256": "5972bd8af88b7e8cd9b0e1e86ee304ca394cb83726b98aa9c11cedac934c4b4b"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-R74-ROOT-CAUSE-CLASSIFICATION.json",
+          "sha256": "65e1a4b23c3ab67a42362eaa1875470a83c05b689f19ff7b7cf2c62dbd3836a7"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\r75-reviewer-evidence-tests.json",
+          "sha256": "5e3d78d2d7dd0e22b2f4bc34dde74054a55ed77436e5a150a027d504c4c7d3f5"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-REVIEWER-PATH-ROOT-CAUSE.json",
+          "sha256": "f39a07f5c9fd31b9fc47d1c38f86785f872326155ba21879f0cc0bd5e2a4f846"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-1791640869690-source.json",
+          "sha256": "a045b0b9b2088cdad42e9016d7c6bdcc771454ccc2d8c6ac6419e82a15677493"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-1791640869690.json",
+          "sha256": "9d1fa91379d6327d8ed8feb19007e473f9bd285d75e0b2c5b9e673dd8b773ba6"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-1791641287647-source.json",
+          "sha256": "6da4c1372d8c542c91b648e0967aea4d9706c785cc1ece5fde8fccd79d5c3435"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-1791641287647.json",
+          "sha256": "6bae5c844419d3979022134e75321d9a3af2c5e9e2eb6c896271d8082a1f6a59"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-1791641410733-source.json",
+          "sha256": "782879a041027e24fd847e5e618b11f6bbf2d18eb4bf1f413ebbe1aae5076080"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-1791641410733.json",
+          "sha256": "068ea1a525532a4a976fbb7e07c12603df27bff58981220fe0691ffa0553045d"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-1791642188305-source.json",
+          "sha256": "5eb6876152e193cf656ac08ca716bcff07b934855de22bf09b8c5d3f648e3b64"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-1791642188305.json",
+          "sha256": "1aa2b95a80c93400496feaf5c5d625e3a6a99e20b8fa637c2c99699cf1bd6e4d"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-1791644721464-source.json",
+          "sha256": "57ff8c2d6cd7544c898382086b71a5e419c01808a74aa581297a718f821c2a8c"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-1791644721464.json",
+          "sha256": "9d511c4d575409e699e4449eeb5a4d47de56a33de0123eea75688f4fc9b55127"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-1791645422063-source.json",
+          "sha256": "2c686bda2576a15645f6563dcc2dae74e8f348893a57ba996c94ae4640ad8bad"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-1791645422063.json",
+          "sha256": "54373a4d5fdde016bb51276b22d2c8c7304831b7e6b2cf4e2010faf79b5d2c0e"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-POST-REVIEWER-FIX-1791642500000-source.json",
+          "sha256": "4ecd7bbb5bb77f710634e2a9acad0f9400f6bb7f7c2cd44123b29eddd3030d49"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-TASK-CAMPAIGN-POST-REVIEWER-FIX-1791642500000.json",
+          "sha256": "67faa2e29292808c7eff002d91ff7e7fb1afae323142eb0d088a62b82d1e2799"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-VALIDATION.json",
+          "sha256": "2bab3d31c106e672302f10b4676c56c57eee08e2352e1728912cfa828e0c9adf"
+        },
+        {
+          "file": "docs\\evidence\\r75-reliable-free-autonomous-coding\\R75-WINDOWS-PACKAGING.json",
+          "sha256": "170d299087f5ccfec53a577b6202dd676ba43481e0c2f26a35b715da99090f3a"
+        }
+      ]
+    }
+  ]
+}

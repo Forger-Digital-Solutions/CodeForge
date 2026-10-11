@@ -1,0 +1,393 @@
+{
+  "startedAt": "2026-10-10T15:31:47.465Z",
+  "finishedAt": "2026-10-10T15:31:49.174Z",
+  "evidenceClass": "CURRENT_OFFICIAL_POLICY_AND_CATALOG_NO_INFERENCE",
+  "supply": [
+    {
+      "providerId": "kilo-free-direct",
+      "policy": {
+        "status": "VERIFIED",
+        "checkedAt": "2026-10-10T15:31:47.465Z",
+        "receipt": {
+          "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+          "termsEvidence": "https://kilo.ai/terms",
+          "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+          "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+          "verifiedAt": "2026-10-10T15:31:47.465Z",
+          "recheckAt": "2026-10-17T15:31:47.465Z",
+          "qualificationAt": "2026-10-10T15:31:47.465Z",
+          "termsVerifiedAt": "2026-10-10T15:31:47.465Z",
+          "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+          "termsExpiresAt": "2026-10-17T15:31:47.465Z",
+          "privacyVerifiedAt": "2026-10-10T15:31:47.465Z",
+          "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+          "privacyExpiresAt": "2026-10-17T15:31:47.465Z",
+          "priceVerifiedAt": "2026-10-10T15:31:47.465Z",
+          "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+          "priceExpiresAt": "2026-10-17T15:31:47.465Z",
+          "nextReverifyAt": "2026-10-10T21:31:47.465Z"
+        }
+      },
+      "inferenceRequests": 0,
+      "models": [
+        {
+          "modelId": "kilo-auto/free",
+          "displayName": "Auto Free",
+          "contextWindow": 256000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "displayName": "NVIDIA: Nemotron 3 Ultra (free)",
+          "contextWindow": 1000000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "dots-studio/dots-3-note-preview:free",
+          "displayName": "Dots Studio: Dots3-Note Preview (free)",
+          "contextWindow": 512000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": true,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "poolside/laguna-s-2.1:free",
+          "displayName": "Poolside: Laguna S 2.1 (free)",
+          "contextWindow": 262144,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "liquid/lfm-2.5-2.6b:free",
+          "displayName": "LiquidAI: LFM2.5-2.6B (free)",
+          "contextWindow": 65536,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": true,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "nvidia/nemotron-3.5-lightning:free",
+          "displayName": "NVIDIA: Nemotron 3.5 Lightning (free)",
+          "contextWindow": 1000000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "thinkingmachines/inkling-small:free",
+          "displayName": "Thinking Machines: Inkling Small (free)",
+          "contextWindow": 1048576,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "poolside/laguna-xs-2.1:free",
+          "displayName": "Poolside: Laguna XS 2.1 (free)",
+          "contextWindow": 262144,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "cohere/north-mini-code:free",
+          "displayName": "Cohere: North Mini Code (free)",
+          "contextWindow": 256000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "nvidia/nemotron-3.5-content-safety:free",
+          "displayName": "NVIDIA: Nemotron 3.5 Content Safety (free)",
+          "contextWindow": 128000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": false,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "displayName": "NVIDIA: Nemotron 3 Nano Omni (free)",
+          "contextWindow": 256000,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "displayName": "NVIDIA: Nemotron 3 Super (free)",
+          "contextWindow": 262144,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": true,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        }
+      ]
+    },
+    {
+      "providerId": "blockrun-free-direct",
+      "policy": {
+        "status": "VERIFIED",
+        "checkedAt": "2026-10-10T15:31:48.342Z",
+        "receipt": {
+          "sourceDocumentation": "https://blockrun.ai/signal/free-llm-api-no-key-models-you-can-curl",
+          "termsEvidence": "https://blockrun.ai/terms",
+          "privacyEvidence": "https://blockrun.ai/privacy",
+          "priceEvidence": "https://blockrun.ai/docs/rate-limits",
+          "verifiedAt": "2026-10-10T15:31:48.342Z",
+          "recheckAt": "2026-10-17T15:31:48.342Z",
+          "qualificationAt": "2026-10-10T15:31:47.465Z",
+          "termsVerifiedAt": "2026-10-10T15:31:48.342Z",
+          "termsEvidenceHash": "73f2ef461e086bec3f80579ad7699ce819ab9fd78cef6763f8ff7a83bde3d649",
+          "termsExpiresAt": "2026-10-17T15:31:48.342Z",
+          "privacyVerifiedAt": "2026-10-10T15:31:48.342Z",
+          "privacyEvidenceHash": "21b97f5ca395e4b0ce3b434c8fca6f20cf63285ec57a93cbf88fe1628eb8e3b7",
+          "privacyExpiresAt": "2026-10-17T15:31:48.342Z",
+          "priceVerifiedAt": "2026-10-10T15:31:48.342Z",
+          "priceEvidenceHash": "4921f5b2f8c4b51559078915381fa0956ee12030bb4e09fe86e49ecd6ccdf27f",
+          "priceExpiresAt": "2026-10-17T15:31:48.342Z",
+          "nextReverifyAt": "2026-10-10T21:31:48.342Z"
+        }
+      },
+      "inferenceRequests": 0,
+      "models": [
+        {
+          "modelId": "nvidia/llama-3.2-11b-vision",
+          "displayName": "Llama 3.2 11B Vision (Free)",
+          "contextWindow": 128000,
+          "capabilities": {
+            "text": true,
+            "coding": false,
+            "toolCalling": true,
+            "vision": true,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        },
+        {
+          "modelId": "poolside/laguna-xs-2.1",
+          "displayName": "Poolside Laguna XS 2.1 (Free)",
+          "contextWindow": 131072,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": false,
+            "longContext": true
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        }
+      ]
+    },
+    {
+      "providerId": "ai-horde",
+      "policy": {
+        "status": "VERIFIED",
+        "checkedAt": "2026-10-10T15:31:48.790Z",
+        "receipt": {
+          "sourceDocumentation": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/README.md",
+          "termsEvidence": "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/definitions.md",
+          "privacyEvidence": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/FAQ.md",
+          "priceEvidence": "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/kudos.md",
+          "verifiedAt": "2026-10-10T15:31:48.790Z",
+          "recheckAt": "2026-10-17T15:31:48.790Z",
+          "qualificationAt": "2026-10-10T15:31:47.465Z",
+          "termsVerifiedAt": "2026-10-10T15:31:48.790Z",
+          "termsEvidenceHash": "c187030e08f828054eb1ccfbc9f14fd45002d856d4f46a95e953d2c8420c86ac",
+          "termsExpiresAt": "2026-10-17T15:31:48.790Z",
+          "privacyVerifiedAt": "2026-10-10T15:31:48.790Z",
+          "privacyEvidenceHash": "15f0ea5ba9298a6f2100685eb79f66df8882105c87c8c461768f6498471884b2",
+          "privacyExpiresAt": "2026-10-17T15:31:48.790Z",
+          "priceVerifiedAt": "2026-10-10T15:31:48.790Z",
+          "priceEvidenceHash": "b50fb2ad2f38d414fc953a13f1f742c267c3a6aea82d9f643abb043070db819a",
+          "priceExpiresAt": "2026-10-17T15:31:48.790Z",
+          "nextReverifyAt": "2026-10-10T21:31:48.790Z"
+        }
+      },
+      "inferenceRequests": 0,
+      "models": [
+        {
+          "modelId": "google/gemma-4-31b",
+          "displayName": "google/gemma-4-31b",
+          "contextWindow": 8192,
+          "capabilities": {
+            "text": true,
+            "coding": true,
+            "toolCalling": true,
+            "vision": false,
+            "structuredOutput": true,
+            "longContext": false
+          },
+          "isFree": true,
+          "freeStatus": "verified_free"
+        }
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "url": "https://kilo.ai/terms",
+      "method": "GET",
+      "httpStatus": 200,
+      "file": "supply-http-0.txt"
+    },
+    {
+      "url": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "method": "GET",
+      "httpStatus": 200,
+      "file": "supply-http-1.txt"
+    },
+    {
+      "url": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "method": "GET",
+      "httpStatus": 200,
+      "file": "supply-http-2.txt"
+    },
+    {
+      "url": "https://api.kilo.ai/api/gateway/models",
+      "method": "GET",
+      "httpStatus": 200,
+      "file": "supply-http-3.txt"
+    },
+    {
+      "url": "https://blockrun.ai/terms",
+      "method": "GET",
+      "httpStatus": 200,
+      "file": "supply-http-4.txt"
+    },
+    {
+      "url": "https://blockrun.ai/privacy",
+      "method": "GET",
+      "httpStatus": 200,
+      "file": "supply-http-5.txt"
+    },
+    {
+      "url": "https://blockrun.ai/docs/rate-limits",
+      "method": "GET",
+      "httpStatus": 200,
+      "file": "supply-http-6.txt"
+    },
+    {
+      "url": "https://blockrun.ai/api/v1/models",
+      "method": "GET",
+      "httpStatus": 200,
+      "file": "supply-http-7.txt"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/definitions.md",
+      "method": "GET",
+      "httpStatus": 200,
+      "file": "supply-http-8.txt"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/FAQ.md",
+      "method": "GET",
+      "httpStatus": 200,
+      "file": "supply-http-9.txt"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/kudos.md",
+      "method": "GET",
+      "httpStatus": 200,
+      "file": "supply-http-10.txt"
+    },
+    {
+      "url": "https://aihorde.net/api/v2/status/models?type=text",
+      "method": "GET",
+      "httpStatus": 200,
+      "file": "supply-http-11.txt"
+    }
+  ]
+}

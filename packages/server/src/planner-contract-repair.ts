@@ -112,10 +112,12 @@ export function repairPlannerContract(
   }
 
   const implementationIds = coderTasks.map((task) => task.id);
-  const missingReviewerDependencies = implementationIds.filter((id) => !reviewer!.dependencies.includes(id));
-  if (missingReviewerDependencies.length > 0) {
-    reviewer.dependencies = [...reviewer.dependencies, ...missingReviewerDependencies];
-    repairs.push("linked the Reviewer to every implementation task");
+  for (const reviewTask of tasks.filter((task) => task.assignedRole === "reviewer")) {
+    const missingReviewerDependencies = implementationIds.filter((id) => !reviewTask.dependencies.includes(id));
+    if (missingReviewerDependencies.length > 0) {
+      reviewTask.dependencies = [...reviewTask.dependencies, ...missingReviewerDependencies];
+      if (!repairs.includes("linked the Reviewer to every implementation task")) repairs.push("linked the Reviewer to every implementation task");
+    }
   }
 
   const constraints = mergeUnique(plan.planningIntent?.constraints, explicitConstraints);

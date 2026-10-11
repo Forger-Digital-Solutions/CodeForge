@@ -1,10 +1,45 @@
 import { describe, it, expect } from "vitest";
 import { normalizeProviderError, ModelExecutionAdapter } from "../src/model-execution-adapter.js";
 import { ERROR_CODES } from "@codeforge/agent";
-import { InMemoryProviderCatalog, type ProviderAdapter } from "@codeforge/providers";
+import { InMemoryProviderCatalog, ProviderError, type ProviderAdapter } from "@codeforge/providers";
 import { ForgeZero, createGenericFreeRecord } from "@codeforge/forge-zero";
+import { createEightBitRuntime, createEightBitRouteHealthAuthority, createEightBitRouteHealthLedger } from "@codeforge/eight-bit";
+import { createSessionPersistence } from "@codeforge/sessions";
 
 describe("Model Execution Adapter & Provider Contract (CF-07)", () => {
+  it.each(["model", "provider", undefined] as const)("retains rate-limit scope through execution and durable route health: %s", async scope => {
+    const catalog = new InMemoryProviderCatalog();
+    const providerId = "rate-limit-fixture";
+    const modelId = "coder";
+    const retryAfter = Date.now() + 60_000;
+    catalog.register({
+      providerId, isTestProvider: true, listModels: async () => [], chat: async () => { throw new Error("stream only"); }, healthCheck: async () => ({ status: "available" }),
+      streamChat: async function* () { throw new ProviderError("limited", "RATE_LIMITED", true, { status: 429, retryAfter, rateLimitScope: scope }); },
+    });
+    const firewall = new ForgeZero();
+    firewall.register(createGenericFreeRecord({ providerId, modelId }));
+    const execution = new ModelExecutionAdapter(catalog, firewall);
+    const error = await execution.execute({ modelSelection: { providerId, modelId }, messages: [{ role: "user", content: "synthetic fixture" }] }).catch((failure: unknown) => failure);
+    expect(error).toBeInstanceOf(ProviderError);
+    expect(error).toMatchObject({ status: 429, retryAfter, rateLimitScope: scope });
+    const persistence = createSessionPersistence({ dbPath: ":memory:" });
+    await persistence.init();
+    const authority = createEightBitRouteHealthAuthority();
+    const ledger = createEightBitRouteHealthLedger(persistence);
+    ledger.attach(authority);
+    const runtime = createEightBitRuntime({ firewall, persistence, routeHealth: authority });
+    const domain = `${providerId}:account:fixture-owner`;
+    try {
+      runtime.recordFailure(providerId, modelId, error, { role: "CODER", quotaDomainId: domain, retryAfterMs: 60_000 });
+      await ledger.flush();
+      const restored = createEightBitRouteHealthAuthority();
+      await ledger.hydrate(restored);
+      expect(restored.assess(providerId, modelId, { quotaDomainId: domain }).hardExclude).toBe(true);
+      expect(restored.assess(providerId, "healthy-reviewer", { quotaDomainId: domain }).hardExclude).toBe(scope !== "model");
+      expect(restored.assess(providerId, modelId, { quotaDomainId: `${providerId}:account:other-owner` }).hardExclude).toBe(false);
+    } finally { ledger.detach(); await persistence.close(); }
+  });
+
   it("normalizes provider errors into deterministic CodeForge error codes", () => {
     expect(normalizeProviderError(new Error("401 Unauthorized: invalid api key")).code).toBe(ERROR_CODES.PROVIDER_AUTH_FAILED);
     expect(normalizeProviderError(new Error("429 Too Many Requests: quota exceeded")).code).toBe(ERROR_CODES.PROVIDER_RATE_LIMITED);

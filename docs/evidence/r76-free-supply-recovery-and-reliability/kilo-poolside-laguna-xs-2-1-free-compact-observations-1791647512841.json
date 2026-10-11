@@ -1,0 +1,858 @@
+{
+  "providerId": "kilo-free-direct",
+  "modelId": "poolside/laguna-xs-2.1:free",
+  "requestBudget": 6,
+  "inferenceRequests": 4,
+  "publicSyntheticCodeOnly": true,
+  "observations": [
+    {
+      "requestedAt": "2026-10-10T15:51:53.188Z",
+      "url": "https://api.kilo.ai/api/gateway/models",
+      "method": "GET",
+      "status": 200,
+      "headers": []
+    },
+    {
+      "requestedAt": "2026-10-10T15:51:53.587Z",
+      "url": "https://api.kilo.ai/api/gateway/chat/completions",
+      "method": "POST",
+      "status": 200,
+      "headers": []
+    },
+    {
+      "requestedAt": "2026-10-10T15:51:54.341Z",
+      "url": "https://api.kilo.ai/api/gateway/chat/completions",
+      "method": "POST",
+      "status": 200,
+      "headers": []
+    },
+    {
+      "requestedAt": "2026-10-10T15:51:55.463Z",
+      "url": "https://api.kilo.ai/api/gateway/chat/completions",
+      "method": "POST",
+      "status": 200,
+      "headers": []
+    },
+    {
+      "requestedAt": "2026-10-10T15:52:04.111Z",
+      "url": "https://api.kilo.ai/api/gateway/chat/completions",
+      "method": "POST",
+      "status": 200,
+      "headers": []
+    }
+  ],
+  "frames": [
+    {
+      "requestedAt": "2026-10-10T15:51:53.586Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+          },
+          {
+            "role": "user",
+            "content": "Open src/calc.ts and report what it exports. Use the read_file tool."
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "read_file",
+              "description": "Read a file from the repository. Returns its full contents.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Repository-relative path"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "edit_file",
+              "description": "Replace an exact text span in a file. oldText must match the file exactly.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "oldText": {
+                    "type": "string"
+                  },
+                  "newText": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "oldText",
+                  "newText"
+                ]
+              }
+            }
+          }
+        ],
+        "toolChoice": "auto",
+        "temperature": 0,
+        "maxTokens": 200
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-493f14183fae4a2db2a3f951e7272d49",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-493f14183fae4a2db2a3f951e7272d49",
+          "delta": "{\"path\": \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-493f14183fae4a2db2a3f951e7272d49",
+          "delta": "src"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-493f14183fae4a2db2a3f951e7272d49",
+          "delta": "/"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-493f14183fae4a2db2a3f951e7272d49",
+          "delta": "calc"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-493f14183fae4a2db2a3f951e7272d49",
+          "delta": ".ts"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-493f14183fae4a2db2a3f951e7272d49",
+          "delta": "\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-493f14183fae4a2db2a3f951e7272d49",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 25,
+            "totalTokens": 279,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 0,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-493f14183fae4a2db2a3f951e7272d49",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "poolside/laguna-xs-2.1:free"
+        }
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T15:51:54.341Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+          },
+          {
+            "role": "user",
+            "content": "src/calc.ts has a bug: the add function subtracts. Fix it so it returns a + b. Read the file if you need to, then use edit_file with an exact oldText."
+          },
+          {
+            "role": "assistant",
+            "content": "",
+            "toolCalls": [
+              {
+                "id": "call_1",
+                "type": "function",
+                "function": {
+                  "name": "read_file",
+                  "arguments": "{\"path\":\"src/calc.ts\"}"
+                }
+              }
+            ]
+          },
+          {
+            "role": "tool",
+            "content": "export function add(a: number, b: number): number {\n  return a - b;\n}\n",
+            "toolCallId": "call_1"
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "read_file",
+              "description": "Read a file from the repository. Returns its full contents.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Repository-relative path"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "edit_file",
+              "description": "Replace an exact text span in a file. oldText must match the file exactly.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "oldText": {
+                    "type": "string"
+                  },
+                  "newText": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "oldText",
+                  "newText"
+                ]
+              }
+            }
+          }
+        ],
+        "toolChoice": "auto",
+        "temperature": 0,
+        "maxTokens": 400
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-ae8e99ead04f407090a0cfc491091059",
+          "toolName": "read_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-ae8e99ead04f407090a0cfc491091059",
+          "delta": "{\"path\": \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-ae8e99ead04f407090a0cfc491091059",
+          "delta": "src"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-ae8e99ead04f407090a0cfc491091059",
+          "delta": "/"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-ae8e99ead04f407090a0cfc491091059",
+          "delta": "calc"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-ae8e99ead04f407090a0cfc491091059",
+          "delta": ".ts"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-ae8e99ead04f407090a0cfc491091059",
+          "delta": "\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-ae8e99ead04f407090a0cfc491091059",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 278,
+            "outputTokens": 60,
+            "totalTokens": 338,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 35,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-ae8e99ead04f407090a0cfc491091059",
+          "toolName": "read_file",
+          "arguments": "{\"path\": \"src/calc.ts\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "poolside/laguna-xs-2.1:free"
+        }
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T15:51:55.463Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+          },
+          {
+            "role": "user",
+            "content": "src/calc.ts has a bug: the add function subtracts. Fix it so it returns a + b. Read the file if you need to, then use edit_file with an exact oldText."
+          },
+          {
+            "role": "assistant",
+            "content": "",
+            "toolCalls": [
+              {
+                "id": "call_1",
+                "type": "function",
+                "function": {
+                  "name": "read_file",
+                  "arguments": "{\"path\":\"src/calc.ts\"}"
+                }
+              }
+            ]
+          },
+          {
+            "role": "tool",
+            "content": "export function add(a: number, b: number): number {\n  return a - b;\n}\n",
+            "toolCallId": "call_1"
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "read_file",
+              "description": "Read a file from the repository. Returns its full contents.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Repository-relative path"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "edit_file",
+              "description": "Replace an exact text span in a file. oldText must match the file exactly.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "oldText": {
+                    "type": "string"
+                  },
+                  "newText": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "oldText",
+                  "newText"
+                ]
+              }
+            }
+          }
+        ],
+        "toolChoice": "auto",
+        "temperature": 0,
+        "maxTokens": 400
+      },
+      "events": [
+        {
+          "type": "tool_call_started",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "toolName": "edit_file"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "{\"path\": \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "src"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "/"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "calc"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": ".ts"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": ", \"oldText\": \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "export"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " function"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " add"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "(a"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": ":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " number"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": ","
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " b"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": ":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " number"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "):"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " number"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " {"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "\\n"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " "
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " return"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " a"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " -"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " b"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": ";"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "\\n"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "}"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": ", \"newText\": \""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "export"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " function"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " add"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "(a"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": ":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " number"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": ","
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " b"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": ":"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " number"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "):"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " number"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " {"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "\\n"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " "
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " return"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " a"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " +"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": " b"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": ";"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "\\n"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "}"
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "\""
+        },
+        {
+          "type": "tool_call_delta",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 339,
+            "outputTokens": 98,
+            "totalTokens": 437,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 0,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "tool_call_completed",
+          "toolCallId": "chatcmpl-tool-f44e02a0595e4aa5a36202d7e52b3ebe",
+          "toolName": "edit_file",
+          "arguments": "{\"path\": \"src/calc.ts\", \"oldText\": \"export function add(a: number, b: number): number {\\n  return a - b;\\n}\", \"newText\": \"export function add(a: number, b: number): number {\\n  return a + b;\\n}\"}"
+        },
+        {
+          "type": "finish",
+          "finishReason": "tool_calls",
+          "model": "poolside/laguna-xs-2.1:free"
+        }
+      ]
+    },
+    {
+      "requestedAt": "2026-10-10T15:52:04.111Z",
+      "request": {
+        "model": "poolside/laguna-xs-2.1:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Respond with JSON only. No prose, no code fences."
+          },
+          {
+            "role": "user",
+            "content": "Return a JSON object with keys \"files\" (array of strings) listing exactly [\"src/calc.ts\",\"test/calc.test.ts\"] and \"verified\" (boolean true)."
+          }
+        ],
+        "temperature": 0,
+        "maxTokens": 120
+      },
+      "events": [
+        {
+          "type": "text_delta",
+          "delta": "{"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": " "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "files"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " [\""
+        },
+        {
+          "type": "text_delta",
+          "delta": "src"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/"
+        },
+        {
+          "type": "text_delta",
+          "delta": "calc"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\","
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "test"
+        },
+        {
+          "type": "text_delta",
+          "delta": "/"
+        },
+        {
+          "type": "text_delta",
+          "delta": "calc"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".test"
+        },
+        {
+          "type": "text_delta",
+          "delta": ".ts"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\"],"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": " "
+        },
+        {
+          "type": "text_delta",
+          "delta": " \""
+        },
+        {
+          "type": "text_delta",
+          "delta": "verified"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\":"
+        },
+        {
+          "type": "text_delta",
+          "delta": " true"
+        },
+        {
+          "type": "text_delta",
+          "delta": "\n"
+        },
+        {
+          "type": "text_delta",
+          "delta": "}"
+        },
+        {
+          "type": "usage",
+          "usage": {
+            "inputTokens": 64,
+            "outputTokens": 28,
+            "totalTokens": 92,
+            "cachedInputTokens": 0,
+            "reasoningTokens": 0,
+            "costUsd": 0
+          }
+        },
+        {
+          "type": "finish",
+          "finishReason": "stop",
+          "model": "poolside/laguna-xs-2.1:free"
+        }
+      ]
+    }
+  ]
+}

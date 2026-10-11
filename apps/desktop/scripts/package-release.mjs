@@ -10,6 +10,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertPackagingIsolation } from "./packaging-isolation.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const desktopDirectory = resolve(here, "..");
@@ -96,6 +97,8 @@ function main() {
     console.log(JSON.stringify({ channel: stamped.channel, endpoint: stamped.endpoints[stamped.channel] }));
     return;
   }
+
+  assertPackagingIsolation({ repositoryRoot, desktopDirectory, outputDirectory: resolve(desktopDirectory, "release") });
 
   if (channel === "production") {
     run(process.execPath, [productionCloudGatePath, "--url", stamped.endpoints.production, "--minimum-server-version", "0.4.0"]);

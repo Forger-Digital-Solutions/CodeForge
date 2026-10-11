@@ -1,0 +1,317 @@
+{
+  "startedAt": "2026-10-10T15:27:22.215Z",
+  "finishedAt": "2026-10-10T15:27:22.857Z",
+  "evidenceClass": "HOST_CONNECTIVITY_READ_ONLY_NO_INFERENCE",
+  "sources": [
+    {
+      "file": "packages/model-registry/src/kilo-policy-reverification.ts",
+      "sha256": "63bea9b5f193b7f5d90124f16ecbbac243c213b2d7245c41d29f9a36c5f4beed",
+      "urls": [
+        "https://kilo.ai/terms",
+        "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+        "https://kilo.ai/docs/gateway/usage-and-billing"
+      ]
+    },
+    {
+      "file": "packages/model-registry/src/blockrun-policy-reverification.ts",
+      "sha256": "ff6828698b504a9b2a3e63f65ade8e44b48d6caf3a043c1b4381eafba464dbe9",
+      "urls": [
+        "https://blockrun.ai/terms",
+        "https://blockrun.ai/privacy",
+        "https://blockrun.ai/docs/rate-limits"
+      ]
+    },
+    {
+      "file": "packages/model-registry/src/horde-policy-reverification.ts",
+      "sha256": "fc0fd857338a15708b748384b4a7cc38681149dae155518b0429131c939aa721",
+      "urls": [
+        "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/definitions.md",
+        "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/FAQ.md",
+        "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/kudos.md"
+      ]
+    }
+  ],
+  "dns": [
+    {
+      "host": "kilo.ai",
+      "status": "RESOLVED",
+      "addresses": [
+        {
+          "address": "216.150.1.1",
+          "family": 4
+        }
+      ]
+    },
+    {
+      "host": "blockrun.ai",
+      "status": "RESOLVED",
+      "addresses": [
+        {
+          "address": "172.67.157.108",
+          "family": 4
+        },
+        {
+          "address": "104.21.82.117",
+          "family": 4
+        }
+      ]
+    },
+    {
+      "host": "raw.githubusercontent.com",
+      "status": "RESOLVED",
+      "addresses": [
+        {
+          "address": "185.199.110.133",
+          "family": 4
+        },
+        {
+          "address": "185.199.111.133",
+          "family": 4
+        },
+        {
+          "address": "185.199.109.133",
+          "family": 4
+        },
+        {
+          "address": "185.199.108.133",
+          "family": 4
+        }
+      ]
+    },
+    {
+      "host": "api.kilo.ai",
+      "status": "RESOLVED",
+      "addresses": [
+        {
+          "address": "64.239.123.193",
+          "family": 4
+        },
+        {
+          "address": "64.239.109.193",
+          "family": 4
+        }
+      ]
+    },
+    {
+      "host": "free.blockrun.ai",
+      "status": "UNAVAILABLE",
+      "failureCode": "ENOTFOUND"
+    },
+    {
+      "host": "aihorde.net",
+      "status": "RESOLVED",
+      "addresses": [
+        {
+          "address": "104.21.95.185",
+          "family": 4
+        },
+        {
+          "address": "172.67.146.248",
+          "family": 4
+        }
+      ]
+    },
+    {
+      "host": "integrate.api.nvidia.com",
+      "status": "RESOLVED",
+      "addresses": [
+        {
+          "address": "99.83.136.103",
+          "family": 4
+        },
+        {
+          "address": "75.2.113.119",
+          "family": 4
+        }
+      ]
+    },
+    {
+      "host": "openrouter.ai",
+      "status": "RESOLVED",
+      "addresses": [
+        {
+          "address": "104.18.3.115",
+          "family": 4
+        },
+        {
+          "address": "104.18.2.115",
+          "family": 4
+        }
+      ]
+    },
+    {
+      "host": "console.groq.com",
+      "status": "RESOLVED",
+      "addresses": [
+        {
+          "address": "104.18.38.236",
+          "family": 4
+        },
+        {
+          "address": "172.64.149.20",
+          "family": 4
+        }
+      ]
+    },
+    {
+      "host": "github.com",
+      "status": "RESOLVED",
+      "addresses": [
+        {
+          "address": "140.82.113.4",
+          "family": 4
+        }
+      ]
+    },
+    {
+      "host": "example.com",
+      "status": "RESOLVED",
+      "addresses": [
+        {
+          "address": "172.66.147.243",
+          "family": 4
+        },
+        {
+          "address": "104.20.23.154",
+          "family": 4
+        }
+      ]
+    },
+    {
+      "host": "www.microsoft.com",
+      "status": "RESOLVED",
+      "addresses": [
+        {
+          "address": "23.48.10.36",
+          "family": 4
+        }
+      ]
+    }
+  ],
+  "http": [
+    {
+      "url": "https://kilo.ai/terms",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 361156,
+      "bodySha256": "b1254ad87f823519f6361ae77ed0095c4510a503b6a07bc5a4eb2867e324bec6"
+    },
+    {
+      "url": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 63776,
+      "bodySha256": "66a8fa378474aa5fccd07d5aafbfb383fdf124c1f396a03612accd515ecd0ea8"
+    },
+    {
+      "url": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 68070,
+      "bodySha256": "6e755ca929ec0a84433c8f5428a3cbb140f6ede06c0a481ff03c6df2e63fc9f5"
+    },
+    {
+      "url": "https://blockrun.ai/terms",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 92430,
+      "bodySha256": "1d023af6e6e86f74603cf0a7460a7c297fd85dd81edf77a7ab243f5eb8260d92"
+    },
+    {
+      "url": "https://blockrun.ai/privacy",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 87153,
+      "bodySha256": "e409c5b663c7edee569cff136b76c36482768aa4d1448089a1156681e97b8b2f"
+    },
+    {
+      "url": "https://blockrun.ai/docs/rate-limits",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 227614,
+      "bodySha256": "2dffaf09ab20380470eddbc1ae01263e2dca84a4f68c572aab9add7b0fd36b33"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/definitions.md",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 22556,
+      "bodySha256": "c187030e08f828054eb1ccfbc9f14fd45002d856d4f46a95e953d2c8420c86ac"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/FAQ.md",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 14972,
+      "bodySha256": "15f0ea5ba9298a6f2100685eb79f66df8882105c87c8c461768f6498471884b2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Haidra-Org/haidra-assets/main/docs/kudos.md",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 7887,
+      "bodySha256": "b50fb2ad2f38d414fc953a13f1f742c267c3a6aea82d9f643abb043070db819a"
+    },
+    {
+      "url": "https://api.kilo.ai/api/gateway/models",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 485628,
+      "bodySha256": "3bc35439853c1852fa909cde9d77c55cfd55267a54798e826ef220596df8bc96"
+    },
+    {
+      "url": "https://free.blockrun.ai/v1/models",
+      "status": "NOT_ATTEMPTED_DNS_UNAVAILABLE"
+    },
+    {
+      "url": "https://aihorde.net/api/v2/status/models?type=text",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 3677,
+      "bodySha256": "3d5ee0904510b9ccb9b6be9ccf340d22e654191b6beb3986566567a24cd1a337"
+    },
+    {
+      "url": "https://integrate.api.nvidia.com/v1/models",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 7639,
+      "bodySha256": "2e7d19e2a7d4d8602a2b039de78b4af3e8b45920d34f50393947e53457d6849d"
+    },
+    {
+      "url": "https://openrouter.ai/api/v1/models",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 765929,
+      "bodySha256": "47337c55f42cff8d2492f825479e5fc161fa9bdaaddc9c9deaa9101837b96347"
+    },
+    {
+      "url": "https://console.groq.com/docs/rate-limits",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 321036,
+      "bodySha256": "20ccf49d418c3588ae00feada727837fc4575e02cbcb3d8af6281bc93c6746a2"
+    },
+    {
+      "url": "https://github.com",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 577318,
+      "bodySha256": "1e6bcc315e7630cfe54ae0edb50142f3de5a3efcf73c168e0cc6482dbf53106b"
+    },
+    {
+      "url": "https://example.com",
+      "status": "HTTP_RESPONSE",
+      "httpStatus": 200,
+      "bytes": 577,
+      "bodySha256": "25ddf2c883e0d1958ea971d279a7e4f0fd446724ee3db7db19dadabd4a62e484"
+    },
+    {
+      "url": "https://www.microsoft.com",
+      "status": "TRANSPORT_UNAVAILABLE",
+      "failureCode": "TypeError"
+    }
+  ],
+  "inferenceRequests": 0,
+  "inferenceAvailability": "NOT_PROVEN",
+  "policyAdmission": "UNCHANGED_FAIL_CLOSED"
+}

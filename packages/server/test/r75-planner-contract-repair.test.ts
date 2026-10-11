@@ -25,6 +25,9 @@ describe("repairPlannerContract", () => {
     expect(repaired!.plan.tasks[0]).toEqual(plan.tasks[0]);
     expect(repaired!.plan.tasks[1]).toEqual(plan.tasks[1]);
     expect(repaired!.plan.tasks[2]?.dependencies).toEqual(["task_1", "task_2"]);
+    for (const task of repaired!.plan.tasks.filter((task) => task.assignedRole === "reviewer")) {
+      expect(task.dependencies).toEqual(expect.arrayContaining(["task_1", "task_2"]));
+    }
     expect(repaired!.plan.planningIntent?.constraints).toContain("Do not mutate input or modify tests.");
     expect(repaired!.plan.planningIntent?.constraints).toContain("This is a public synthetic fixture with no user source, credentials, or confidential data.");
     expect(repaired!.plan.planningIntent?.verification).toContain("node --test test/tags.test.mjs");
@@ -90,5 +93,19 @@ describe("repairPlannerContract", () => {
     };
 
     expect(repairPlannerContract({ plan, goal: "Implement a change.", verificationCommands: ["npm test"] })).toBeUndefined();
+  });
+
+  it("refuses a cycle introduced by completing a later Reviewer's implementation dependencies", () => {
+    const plan: PlannerResult = {
+      protocol: "task_graph_v1", summary: "Implement and review in two rounds.",
+      tasks: [
+        { id: "first-code", title: "Implement", objective: "Implement", dependencies: [], assignedRole: "coder" },
+        { id: "first-review", title: "Review", objective: "Review", dependencies: ["first-code", "second-code"], assignedRole: "reviewer" },
+        { id: "second-review", title: "Review", objective: "Review", dependencies: ["first-code"], assignedRole: "reviewer" },
+        { id: "second-code", title: "Implement", objective: "Implement", dependencies: ["second-review"], assignedRole: "coder" },
+      ],
+    };
+    expect(repairPlannerContract({ plan, goal: "Implement a change.", verificationCommands: ["node --test"] })).toBeUndefined();
+    expect(plan.tasks[2]?.dependencies).toEqual(["first-code"]);
   });
 });

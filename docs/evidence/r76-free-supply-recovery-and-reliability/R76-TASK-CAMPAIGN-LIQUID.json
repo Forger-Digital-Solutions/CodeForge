@@ -1,0 +1,827 @@
+{
+  "startedAt": "2026-10-10T15:45:38.173Z",
+  "evidenceClass": "LIVE_ANONYMOUS_FREE_PUBLIC_FIXTURES",
+  "sourceRevision": "f8cd589f57775bf24ee6636fcc907577ab170f4a",
+  "sourceDiffSha256": "ec6b57aa803c5f35e2bbfdd8cf08f6d7e8fc669e77141c8f0d6fa417f33c7fea",
+  "sourceDirty": true,
+  "status": "PARTIAL",
+  "tasks": [
+    {
+      "id": "02-feature",
+      "taskClass": "small feature",
+      "startedAt": "2026-10-10T15:45:40.961Z",
+      "workspacePath": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\codeforge-r76-campaign-XwnMVW\\public-task-Kux4wb",
+      "inferenceFramesStart": 0,
+      "status": "failed",
+      "testsBefore": {
+        "exitCode": 1,
+        "output": "✖ normalizes and deduplicates (1.0026ms)\n✖ empty (0.1462ms)\n✖ input preserved (0.1351ms)\nℹ tests 3\nℹ suites 0\nℹ pass 0\nℹ fail 3\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 120.5706\n\n✖ failing tests:\n\ntest at test\\tags.test.mjs:4:1\n✖ normalizes and deduplicates (1.0026ms)\n  TypeError: api.normalizeTags is not a function\n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r76-campaign-XwnMVW/public-task-Kux4wb/test/tags.test.mjs:4:64)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n\ntest at test\\tags.test.mjs:5:1\n✖ empty (0.1462ms)\n  TypeError: api.normalizeTags is not a function\n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r76-campaign-XwnMVW/public-task-Kux4wb/test/tags.test.mjs:5:42)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n      at Test.postRun (node:internal/test_runner/test:1522:19)\n      at Test.run (node:internal/test_runner/test:1447:12)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n\ntest at test\\tags.test.mjs:6:1\n✖ input preserved (0.1351ms)\n  TypeError: api.normalizeTags is not a function\n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r76-campaign-XwnMVW/public-task-Kux4wb/test/tags.test.mjs:6:65)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n      at Test.postRun (node:internal/test_runner/test:1522:19)\n      at Test.run (node:internal/test_runner/test:1447:12)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)\n"
+      },
+      "result": {
+        "runId": "run-df414719-0e11-4cd8-a249-d275e6d877db",
+        "status": "failed",
+        "summary": "Autonomous run failed: ROSTER_NO_ELIGIBLE_ROLE_MODEL:EXPLORER",
+        "workspaceId": "ws-7b33abc4",
+        "baseRevision": "1afa300cdb5d4a121f6f2ef632a856f682de8524",
+        "changedFiles": [],
+        "review": {
+          "passed": false,
+          "findings": []
+        },
+        "verification": [],
+        "integration": {
+          "status": "not_attempted",
+          "reason": "ROSTER_NO_ELIGIBLE_ROLE_MODEL:EXPLORER"
+        },
+        "evidence": [],
+        "counters": {
+          "childrenSpawned": 2,
+          "reviewRounds": 0,
+          "taskAttempts": 0,
+          "verificationAttempts": 0
+        }
+      },
+      "journals": [],
+      "testsAfter": {
+        "exitCode": 1,
+        "output": "✖ normalizes and deduplicates (0.9445ms)\n✖ empty (0.1328ms)\n✖ input preserved (0.1323ms)\nℹ tests 3\nℹ suites 0\nℹ pass 0\nℹ fail 3\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 123.0502\n\n✖ failing tests:\n\ntest at test\\tags.test.mjs:4:1\n✖ normalizes and deduplicates (0.9445ms)\n  TypeError: api.normalizeTags is not a function\n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r76-campaign-XwnMVW/public-task-Kux4wb/test/tags.test.mjs:4:64)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n\ntest at test\\tags.test.mjs:5:1\n✖ empty (0.1328ms)\n  TypeError: api.normalizeTags is not a function\n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r76-campaign-XwnMVW/public-task-Kux4wb/test/tags.test.mjs:5:42)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n      at Test.postRun (node:internal/test_runner/test:1522:19)\n      at Test.run (node:internal/test_runner/test:1447:12)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n\ntest at test\\tags.test.mjs:6:1\n✖ input preserved (0.1323ms)\n  TypeError: api.normalizeTags is not a function\n      at TestContext.<anonymous> (file:///C:/Users/DADDY_%7E1/AppData/Local/Temp/codeforge-r76-campaign-XwnMVW/public-task-Kux4wb/test/tags.test.mjs:6:65)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n      at Test.postRun (node:internal/test_runner/test:1522:19)\n      at Test.run (node:internal/test_runner/test:1447:12)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)\n"
+      },
+      "workers": [],
+      "decisions": [],
+      "turns": [],
+      "inferenceRequestSummary": {
+        "physicalProviderRequests": 0,
+        "failedRequests": 0,
+        "byProviderModel": [],
+        "byAgentModelTurns": []
+      },
+      "verificationRecords": [],
+      "parentRecords": [
+        {
+          "kind": "autonomous_run",
+          "id": "run-df414719-0e11-4cd8-a249-d275e6d877db",
+          "sessionId": "r74-02-feature-1791647141866",
+          "workspaceId": "ws-7b33abc4",
+          "goal": "Add normalizeTags(values) to src/tags.mjs and re-export it from src/index.mjs. Trim and lowercase strings, remove empty entries and duplicates, and sort alphabetically. Use the existing normalization helper. Do not mutate input or modify tests. This is a public synthetic fixture with no user source, credentials, or confidential data.",
+          "status": "failed",
+          "baseRevision": "1afa300cdb5d4a121f6f2ef632a856f682de8524",
+          "startedAt": "2026-10-10T15:45:42.272Z",
+          "completedAt": "2026-10-10T15:45:42.278Z",
+          "reviewRounds": 0,
+          "taskGraphJson": "{\"tasks\":[{\"id\":\"task-explore\",\"title\":\"Explore repository\",\"objective\":\"Identify architectural components and file boundaries\",\"dependencies\":[],\"assignedRole\":\"explorer\",\"status\":\"pending\"},{\"id\":\"task-code\",\"title\":\"Implement changes\",\"objective\":\"Add normalizeTags(values) to src/tags.mjs and re-export it from src/index.mjs. Trim and lowercase strings, remove empty entries and duplicates, and sort alphabetically. Use the existing normalization helper. Do not mutate input or modify tests. This is a public synthetic fixture with no user source, credentials, or confidential data.\",\"dependencies\":[\"task-explore\"],\"assignedRole\":\"coder\",\"status\":\"pending\"},{\"id\":\"task-review\",\"title\":\"Review implementation\",\"objective\":\"Adversarial code review\",\"dependencies\":[\"task-code\"],\"assignedRole\":\"reviewer\",\"status\":\"pending\"}]}",
+          "resultJson": "{\"runId\":\"run-df414719-0e11-4cd8-a249-d275e6d877db\",\"status\":\"failed\",\"summary\":\"Autonomous run failed: ROSTER_NO_ELIGIBLE_ROLE_MODEL:EXPLORER\",\"workspaceId\":\"ws-7b33abc4\",\"baseRevision\":\"1afa300cdb5d4a121f6f2ef632a856f682de8524\",\"changedFiles\":[],\"review\":{\"passed\":false,\"findings\":[]},\"verification\":[],\"integration\":{\"status\":\"not_attempted\",\"reason\":\"ROSTER_NO_ELIGIBLE_ROLE_MODEL:EXPLORER\"},\"evidence\":[],\"counters\":{\"childrenSpawned\":2,\"reviewRounds\":0,\"taskAttempts\":0,\"verificationAttempts\":0}}",
+          "error": "ROSTER_NO_ELIGIBLE_ROLE_MODEL:EXPLORER",
+          "createdAt": "2026-10-10T15:45:42.272Z",
+          "updatedAt": "2026-10-10T15:45:42.278Z"
+        }
+      ],
+      "parentStates": [
+        {
+          "kind": "autonomous_parent_state",
+          "id": "parent-state-run-df414719-0e11-4cd8-a249-d275e6d877db",
+          "runId": "run-df414719-0e11-4cd8-a249-d275e6d877db",
+          "sessionId": "r74-02-feature-1791647141866",
+          "workspacePath": "C:\\Users\\DADDY_~1\\AppData\\Local\\Temp\\codeforge-r76-campaign-XwnMVW\\public-task-Kux4wb",
+          "goal": "Add normalizeTags(values) to src/tags.mjs and re-export it from src/index.mjs. Trim and lowercase strings, remove empty entries and duplicates, and sort alphabetically. Use the existing normalization helper. Do not mutate input or modify tests. This is a public synthetic fixture with no user source, credentials, or confidential data.",
+          "baseRevision": "1afa300cdb5d4a121f6f2ef632a856f682de8524",
+          "topology": "fixed_r1",
+          "verificationCommands": [
+            "node --test"
+          ],
+          "phase": "created",
+          "reviewRounds": 0,
+          "createdAt": "2026-10-10T15:45:42.272Z",
+          "updatedAt": "2026-10-10T15:45:42.273Z",
+          "rosterRecovery": {
+            "ownerUserId": "r76-public-user",
+            "rosterFingerprint": "bdfdef6f06004ac4fdcc6d69d05c941ff3a7aedc1906e614097715a781e3986a"
+          }
+        }
+      ],
+      "experience": [
+        {
+          "kind": "generalized_experience_signal",
+          "id": "experience-signal:run-df414719-0e11-4cd8-a249-d275e6d877db",
+          "sessionId": "r74-02-feature-1791647141866",
+          "signal": {
+            "schemaVersion": "r57-experience-signal/v1",
+            "label": "INFRA_FAILURE",
+            "taskClass": "normal",
+            "repositorySizeBucket": "1-10",
+            "changeSizeBucket": "0",
+            "reviewRounds": 0,
+            "verificationAttempts": 0,
+            "verificationPassed": false,
+            "modelRequests": 0,
+            "toolCalls": 0,
+            "retries": 0,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "providerFailures": 0,
+            "providerFailureUnknownWorkers": 0,
+            "workerCount": 0,
+            "roles": []
+          },
+          "createdAt": "2026-10-10T15:45:42.291Z",
+          "updatedAt": "2026-10-10T15:45:42.291Z"
+        }
+      ],
+      "diff": "",
+      "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "routeHealth": [
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "conditions": [
+            {
+              "state": "CAPABILITY_LIMITED",
+              "since": "2026-10-10T15:34:12.337Z",
+              "expiresAt": 1791653652337,
+              "confidence": 0.5,
+              "sampleSize": 1,
+              "reasonCode": "ROLE_NON_CONVERGENCE",
+              "source": "hydrate",
+              "roles": [
+                "EXPLORER"
+              ]
+            }
+          ],
+          "roleEvidence": [
+            {
+              "at": "2026-10-10T15:34:12.337Z",
+              "role": "EXPLORER",
+              "outcome": "budget_exhausted",
+              "failureClass": "NON_CONVERGENCE",
+              "weight": -0.75,
+              "correlationId": "child-2fe42e00102291acbe460a72ac942e7d"
+            },
+            {
+              "at": "2026-10-10T15:36:18.152Z",
+              "role": "CODER",
+              "outcome": "converged",
+              "weight": 0.5,
+              "correlationId": "child-657505991f59ab94de7d4e75687486ca"
+            },
+            {
+              "at": "2026-10-10T15:36:50.568Z",
+              "role": "CODER",
+              "outcome": "verified_complete",
+              "weight": 1,
+              "correlationId": "run-ca82801e-abbd-4f1d-9c0d-523a162872b5"
+            }
+          ],
+          "window": {
+            "calls": 0,
+            "successes": 0,
+            "failures": 0,
+            "rateLimits": 0,
+            "capacityErrors": 0,
+            "malformedToolCalls": 0,
+            "toolCalls": 0,
+            "latencyP50Ms": null,
+            "latencyP95Ms": null
+          },
+          "consecutiveFailures": 0,
+          "consecutiveAuthFailures": 0,
+          "consecutiveMalformed": 0,
+          "lastObservedAt": "2026-10-10T15:38:02.579Z",
+          "quota": {},
+          "governor": {
+            "pacingWaitMs": 0,
+            "inFlight": 0,
+            "observedAt": "2026-10-10T15:38:02.579Z"
+          },
+          "state": "CAPABILITY_LIMITED"
+        },
+        {
+          "providerId": "blockrun-free-direct",
+          "modelId": "nvidia/llama-3.2-11b-vision",
+          "conditions": [],
+          "roleEvidence": [
+            {
+              "at": "2026-10-10T15:34:25.252Z",
+              "role": "PLANNER",
+              "outcome": "converged",
+              "weight": 0.5,
+              "correlationId": "child-4ca68b5dd44c4bf83155358430cf7df3"
+            },
+            {
+              "at": "2026-10-10T15:37:16.295Z",
+              "role": "PLANNER",
+              "outcome": "converged",
+              "weight": 0.5,
+              "correlationId": "child-805039b7d848f5de4141fc9b6115b9cf"
+            },
+            {
+              "at": "2026-10-10T15:38:15.610Z",
+              "role": "PLANNER",
+              "outcome": "converged",
+              "weight": 0.5,
+              "correlationId": "child-9e6c1a4c3e4347ac97fe993c8896d964"
+            },
+            {
+              "at": "2026-10-10T15:38:30.556Z",
+              "role": "PLANNER",
+              "outcome": "converged",
+              "weight": 0.5,
+              "correlationId": "child-e4eac4a15c0dae02e6ccec27685d8ed9"
+            }
+          ],
+          "window": {
+            "calls": 0,
+            "successes": 0,
+            "failures": 0,
+            "rateLimits": 0,
+            "capacityErrors": 0,
+            "malformedToolCalls": 0,
+            "toolCalls": 0,
+            "latencyP50Ms": null,
+            "latencyP95Ms": null
+          },
+          "consecutiveFailures": 0,
+          "consecutiveAuthFailures": 0,
+          "consecutiveMalformed": 0,
+          "lastObservedAt": "2026-10-10T15:38:30.556Z",
+          "quota": {},
+          "governor": {
+            "pacingWaitMs": 0,
+            "inFlight": 0,
+            "observedAt": "2026-10-10T15:38:30.543Z"
+          },
+          "state": "UNKNOWN"
+        },
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "conditions": [],
+          "roleEvidence": [
+            {
+              "at": "2026-10-10T15:36:45.556Z",
+              "role": "REVIEWER",
+              "outcome": "converged",
+              "weight": 0.5,
+              "correlationId": "child-f9a78a5dbc9c4a8ddcb43f8d4c9a0ba8"
+            }
+          ],
+          "window": {
+            "calls": 0,
+            "successes": 0,
+            "failures": 0,
+            "rateLimits": 0,
+            "capacityErrors": 0,
+            "malformedToolCalls": 0,
+            "toolCalls": 0,
+            "latencyP50Ms": null,
+            "latencyP95Ms": null
+          },
+          "consecutiveFailures": 0,
+          "consecutiveAuthFailures": 0,
+          "consecutiveMalformed": 0,
+          "lastObservedAt": "2026-10-10T15:36:45.556Z",
+          "quota": {},
+          "governor": {
+            "pacingWaitMs": 0,
+            "inFlight": 0,
+            "observedAt": "2026-10-10T15:36:45.027Z"
+          },
+          "state": "UNKNOWN"
+        },
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "cohere/north-mini-code:free",
+          "conditions": [
+            {
+              "state": "HEALTHY",
+              "since": "2026-10-10T15:34:02.119Z",
+              "expiresAt": 1791648419233,
+              "confidence": 1,
+              "sampleSize": 29,
+              "reasonCode": "SERVED_PRODUCTION_SHAPE",
+              "source": "hydrate"
+            }
+          ],
+          "roleEvidence": [],
+          "window": {
+            "calls": 0,
+            "successes": 0,
+            "failures": 0,
+            "rateLimits": 0,
+            "capacityErrors": 0,
+            "malformedToolCalls": 0,
+            "toolCalls": 0,
+            "latencyP50Ms": null,
+            "latencyP95Ms": null
+          },
+          "consecutiveFailures": 0,
+          "consecutiveAuthFailures": 0,
+          "consecutiveMalformed": 0,
+          "lastObservedAt": "2026-10-10T15:38:02.525Z",
+          "lastSuccessAt": "2026-10-10T15:36:59.233Z",
+          "quota": {
+            "observedAt": "2026-10-10T15:38:02.525Z"
+          },
+          "state": "HEALTHY",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct"
+        },
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "conditions": [
+            {
+              "state": "HEALTHY",
+              "since": "2026-10-10T15:36:45.027Z",
+              "expiresAt": 1791648405027,
+              "confidence": 0.5,
+              "sampleSize": 1,
+              "reasonCode": "SERVED_PRODUCTION_SHAPE",
+              "source": "hydrate"
+            }
+          ],
+          "roleEvidence": [],
+          "window": {
+            "calls": 0,
+            "successes": 0,
+            "failures": 0,
+            "rateLimits": 0,
+            "capacityErrors": 0,
+            "malformedToolCalls": 0,
+            "toolCalls": 0,
+            "latencyP50Ms": null,
+            "latencyP95Ms": null
+          },
+          "consecutiveFailures": 0,
+          "consecutiveAuthFailures": 0,
+          "consecutiveMalformed": 0,
+          "lastObservedAt": "2026-10-10T15:36:45.027Z",
+          "lastSuccessAt": "2026-10-10T15:36:45.027Z",
+          "quota": {},
+          "state": "HEALTHY",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct"
+        },
+        {
+          "providerId": "kilo-free-direct",
+          "modelId": "__quota_domain__",
+          "conditions": [],
+          "roleEvidence": [],
+          "window": {
+            "calls": 0,
+            "successes": 0,
+            "failures": 0,
+            "rateLimits": 0,
+            "capacityErrors": 0,
+            "malformedToolCalls": 0,
+            "toolCalls": 0,
+            "latencyP50Ms": null,
+            "latencyP95Ms": null
+          },
+          "consecutiveFailures": 2,
+          "consecutiveAuthFailures": 0,
+          "consecutiveMalformed": 0,
+          "lastObservedAt": "2026-10-10T15:38:02.572Z",
+          "quota": {},
+          "state": "UNKNOWN",
+          "quotaDomainId": "kilo-free-direct:user:localconn:kilo-free-direct"
+        },
+        {
+          "providerId": "blockrun-free-direct",
+          "modelId": "nvidia/llama-3.2-11b-vision",
+          "conditions": [
+            {
+              "state": "HEALTHY",
+              "since": "2026-10-10T15:34:25.239Z",
+              "expiresAt": 1791648510543,
+              "confidence": 0.9,
+              "sampleSize": 4,
+              "reasonCode": "SERVED_PRODUCTION_SHAPE",
+              "source": "hydrate"
+            }
+          ],
+          "roleEvidence": [],
+          "window": {
+            "calls": 0,
+            "successes": 0,
+            "failures": 0,
+            "rateLimits": 0,
+            "capacityErrors": 0,
+            "malformedToolCalls": 0,
+            "toolCalls": 0,
+            "latencyP50Ms": null,
+            "latencyP95Ms": null
+          },
+          "consecutiveFailures": 0,
+          "consecutiveAuthFailures": 0,
+          "consecutiveMalformed": 0,
+          "lastObservedAt": "2026-10-10T15:38:30.543Z",
+          "lastSuccessAt": "2026-10-10T15:38:30.543Z",
+          "quota": {},
+          "state": "HEALTHY",
+          "quotaDomainId": "blockrun-free-direct:user:localconn:blockrun-free-direct"
+        }
+      ],
+      "capacityGovernor": {
+        "kilo": {
+          "providerId": "kilo-free-direct",
+          "tpmUsed": 0,
+          "tpmLimit": 60000,
+          "rpmUsed": 0,
+          "rpmLimit": 10,
+          "rphUsed": 0,
+          "rphLimit": 190,
+          "activeConcurrent": 0,
+          "maxConcurrent": 2,
+          "inFlightTokens": 0,
+          "queueDepth": 0,
+          "isCoolingDown": false,
+          "cooldownRemainingMs": 0
+        },
+        "blockrun": {
+          "providerId": "blockrun-free-direct",
+          "tpmUsed": 0,
+          "tpmLimit": 60000,
+          "rpmUsed": 0,
+          "rpmLimit": 28,
+          "rphUsed": 0,
+          "rphLimit": 285,
+          "activeConcurrent": 0,
+          "maxConcurrent": 2,
+          "inFlightTokens": 0,
+          "queueDepth": 0,
+          "isCoolingDown": false,
+          "cooldownRemainingMs": 0
+        },
+        "quotaDomains": []
+      },
+      "rssBytes": 258965504,
+      "reservations": {
+        "generatedAt": "2026-10-10T15:45:42.575Z",
+        "activeReservations": 0,
+        "byUser": {},
+        "byRoute": {},
+        "byPool": {},
+        "protectedFirstRunRequests": 0,
+        "protectedFirstRunTokens": 0
+      },
+      "finishedAt": "2026-10-10T15:45:42.580Z",
+      "wallTimeMs": 1619
+    }
+  ],
+  "supply": [
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "cohere/north-mini-code:free",
+      "qualificationAt": "2026-10-08T12:03:49.727Z",
+      "qualificationSource": "bundled:kilo-free-direct/cohere/north-mini-code:free",
+      "qualificationFreshness": "PRODUCTION_ROLE_QUALITY_AUTHORITY",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "HARD_FAILURE"
+      }
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "qualificationAt": "2026-10-10T10:35:30.841Z",
+      "qualificationSource": "bundled:kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free",
+      "qualificationFreshness": "PRODUCTION_ROLE_QUALITY_AUTHORITY",
+      "roles": {
+        "REVIEWER": "QUALIFIED"
+      }
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "qualificationAt": "2026-10-10T10:44:27.772Z",
+      "qualificationSource": "bundled:kilo-free-direct/nvidia/nemotron-3-super-120b-a12b:free",
+      "qualificationFreshness": "PRODUCTION_ROLE_QUALITY_AUTHORITY",
+      "roles": {
+        "PLANNER": "QUALIFIED"
+      }
+    },
+    {
+      "providerId": "blockrun-free-direct",
+      "modelId": "nvidia/llama-3.2-11b-vision",
+      "qualificationAt": "2026-10-10T10:53:20.898Z",
+      "qualificationSource": "bundled:blockrun-free-direct/nvidia/llama-3.2-11b-vision",
+      "qualificationFreshness": "PRODUCTION_ROLE_QUALITY_AUTHORITY",
+      "roles": {
+        "PLANNER": "QUALIFIED"
+      }
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "qualificationAt": "2026-10-10T15:43:30.132Z",
+      "qualificationSource": "docs/evidence/r76-free-supply-recovery-and-reliability/kilo-liquid-lfm-2-5-2-6b-free-compact-1791646997585.json",
+      "qualificationFreshness": "PRODUCTION_ROLE_QUALITY_AUTHORITY",
+      "roles": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED"
+      }
+    }
+  ],
+  "inferenceFrames": [],
+  "costState": "CATALOG_VERIFIED_EXACT_ZERO_NO_CREDENTIALS_NO_PAID_FALLBACK",
+  "sourceFilesSha256": "2c877223ad2a1387866d11cbda6ebc870d271f1028faf8f2931bef26ef4ee77f",
+  "sourceManifest": "R76-TASK-CAMPAIGN-LIQUID-source.json",
+  "priorHealthEvidence": "docs/evidence/r76-free-supply-recovery-and-reliability/R76-TASK-CAMPAIGN-1791646434067.json",
+  "qualificationMode": "INSTALLED_BUNDLED_LIVE_ROLE_EVIDENCE",
+  "policyReverification": [
+    {
+      "providerId": "kilo-free-direct",
+      "status": "VERIFIED",
+      "checkedAt": "2026-10-10T15:45:38.753Z"
+    },
+    {
+      "providerId": "blockrun-free-direct",
+      "status": "VERIFIED",
+      "checkedAt": "2026-10-10T15:45:40.090Z"
+    }
+  ],
+  "routeAdmissionSnapshot": [
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "health": "HEALTHY",
+      "toolSupport": true,
+      "qualificationState": "QUALIFIED",
+      "roleSuitability": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "PROBATION",
+        "ANALYST": "NOT_QUALIFIED"
+      },
+      "forgeAutoEligible": true,
+      "admission": {
+        "state": "FORGEAUTO_ELIGIBLE",
+        "passed": [
+          "DISCOVERED",
+          "TERMS_ALLOWED",
+          "AUTH_SUPPORTED",
+          "CONNECTED",
+          "FREE_VERIFIED",
+          "CAPABILITY_VERIFIED",
+          "CODEFORGE_QUALIFIED",
+          "HEALTHY",
+          "FORGEAUTO_ELIGIBLE"
+        ]
+      },
+      "runtimeRequalificationRoles": [],
+      "reviewerStatus": "NOT_TESTED"
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "cohere/north-mini-code:free",
+      "health": "DEGRADED",
+      "toolSupport": true,
+      "qualificationState": "QUALIFIED",
+      "roleSuitability": {
+        "CODER": "QUALIFIED",
+        "TOOL_AGENT": "QUALIFIED",
+        "ANALYST": "QUALIFIED",
+        "EXPLORER": "QUALIFIED",
+        "PLANNER": "HARD_FAILURE",
+        "REVIEWER": "HARD_FAILURE"
+      },
+      "forgeAutoEligible": true,
+      "admission": {
+        "state": "FORGEAUTO_ELIGIBLE",
+        "passed": [
+          "DISCOVERED",
+          "TERMS_ALLOWED",
+          "AUTH_SUPPORTED",
+          "CONNECTED",
+          "FREE_VERIFIED",
+          "CAPABILITY_VERIFIED",
+          "CODEFORGE_QUALIFIED",
+          "HEALTHY",
+          "FORGEAUTO_ELIGIBLE"
+        ]
+      },
+      "runtimeRequalificationRoles": [],
+      "reviewerStatus": "HARD_FAILURE"
+    },
+    {
+      "providerId": "blockrun-free-direct",
+      "modelId": "nvidia/llama-3.2-11b-vision",
+      "health": "HEALTHY",
+      "toolSupport": true,
+      "qualificationState": "QUALIFIED",
+      "roleSuitability": {
+        "PLANNER": "QUALIFIED"
+      },
+      "forgeAutoEligible": true,
+      "admission": {
+        "state": "FORGEAUTO_ELIGIBLE",
+        "passed": [
+          "DISCOVERED",
+          "TERMS_ALLOWED",
+          "AUTH_SUPPORTED",
+          "CONNECTED",
+          "FREE_VERIFIED",
+          "CAPABILITY_VERIFIED",
+          "CODEFORGE_QUALIFIED",
+          "HEALTHY",
+          "FORGEAUTO_ELIGIBLE"
+        ]
+      },
+      "runtimeRequalificationRoles": [],
+      "reviewerStatus": "NOT_TESTED"
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "health": "HEALTHY",
+      "toolSupport": true,
+      "qualificationState": "QUALIFIED",
+      "roleSuitability": {
+        "PLANNER": "QUALIFIED"
+      },
+      "forgeAutoEligible": true,
+      "admission": {
+        "state": "FORGEAUTO_ELIGIBLE",
+        "passed": [
+          "DISCOVERED",
+          "TERMS_ALLOWED",
+          "AUTH_SUPPORTED",
+          "CONNECTED",
+          "FREE_VERIFIED",
+          "CAPABILITY_VERIFIED",
+          "CODEFORGE_QUALIFIED",
+          "HEALTHY",
+          "FORGEAUTO_ELIGIBLE"
+        ]
+      },
+      "runtimeRequalificationRoles": [],
+      "reviewerStatus": "NOT_TESTED"
+    },
+    {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "health": "HEALTHY",
+      "toolSupport": true,
+      "qualificationState": "QUALIFIED",
+      "roleSuitability": {
+        "REVIEWER": "QUALIFIED"
+      },
+      "forgeAutoEligible": true,
+      "admission": {
+        "state": "FORGEAUTO_ELIGIBLE",
+        "passed": [
+          "DISCOVERED",
+          "TERMS_ALLOWED",
+          "AUTH_SUPPORTED",
+          "CONNECTED",
+          "FREE_VERIFIED",
+          "CAPABILITY_VERIFIED",
+          "CODEFORGE_QUALIFIED",
+          "HEALTHY",
+          "FORGEAUTO_ELIGIBLE"
+        ]
+      },
+      "runtimeRequalificationRoles": [],
+      "reviewerStatus": "QUALIFIED"
+    }
+  ],
+  "capacityMeasurement": "LIVE_PRODUCTION_OBSERVATIONS_ONLY_NO_REPEATED_HEADERLESS_PINGS",
+  "capacityLimits": {
+    "kilo-free-direct": {
+      "maxTokensPerMinute": 60000,
+      "maxRequestsPerMinute": 10,
+      "maxRequestsPerHour": 190,
+      "maxConcurrent": 2
+    },
+    "blockrun-free-direct": {
+      "maxTokensPerMinute": 60000,
+      "maxRequestsPerMinute": 28,
+      "maxRequestsPerHour": 285,
+      "maxConcurrent": 2
+    },
+    "openrouter": {
+      "maxTokensPerMinute": 60000,
+      "maxRequestsPerMinute": 14,
+      "maxConcurrent": 1
+    },
+    "groq": {
+      "maxTokensPerMinute": 7500,
+      "maxRequestsPerMinute": 28,
+      "maxConcurrent": 2
+    },
+    "cloudflare-workers-ai": {
+      "maxTokensPerMinute": 60000,
+      "maxRequestsPerMinute": 20,
+      "maxConcurrent": 2
+    },
+    "zai": {
+      "maxTokensPerMinute": 30000,
+      "maxRequestsPerMinute": 30,
+      "maxConcurrent": 3
+    },
+    "default": {
+      "maxTokensPerMinute": 60000,
+      "maxRequestsPerMinute": 60,
+      "maxConcurrent": 4
+    }
+  },
+  "coderRoster": {
+    "ownerUserId": "r76-public-user",
+    "entitlement": "FREE",
+    "lead": {
+      "mode": "NONE"
+    },
+    "updatedAt": "2026-10-10T15:45:40.958Z",
+    "slots": [
+      {
+        "kind": "PINNED_VERSION",
+        "modelId": "kilo-free-direct/cohere/north-mini-code:free",
+        "enabled": true,
+        "allowedRoles": [
+          "EXPLORER"
+        ]
+      },
+      {
+        "kind": "PINNED_VERSION",
+        "modelId": "kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "enabled": true,
+        "allowedRoles": [
+          "REVIEWER"
+        ]
+      },
+      {
+        "kind": "PINNED_VERSION",
+        "modelId": "kilo-free-direct/nvidia/nemotron-3-super-120b-a12b:free",
+        "enabled": true,
+        "allowedRoles": [
+          "PLANNER"
+        ]
+      },
+      {
+        "kind": "PINNED_VERSION",
+        "modelId": "blockrun-free-direct/nvidia/llama-3.2-11b-vision",
+        "enabled": true,
+        "allowedRoles": [
+          "PLANNER"
+        ]
+      },
+      {
+        "kind": "PINNED_VERSION",
+        "modelId": "kilo-free-direct/liquid/lfm-2.5-2.6b:free",
+        "enabled": true,
+        "allowedRoles": [
+          "CODER"
+        ]
+      }
+    ]
+  },
+  "declaredSequence": [
+    {
+      "id": "02-feature",
+      "taskClass": "small feature",
+      "goal": "Add normalizeTags(values) to src/tags.mjs and re-export it from src/index.mjs. Trim and lowercase strings, remove empty entries and duplicates, and sort alphabetically. Use the existing normalization helper. Do not mutate input or modify tests."
+    }
+  ],
+  "admissionTracePatched": true,
+  "finishedAt": "2026-10-10T15:45:42.582Z",
+  "inferenceRequestSummary": {
+    "physicalProviderRequests": 0,
+    "failedRequests": 0,
+    "byProviderModel": [],
+    "byAgentModelTurns": []
+  },
+  "capacityGovernorFinal": {
+    "kilo": {
+      "providerId": "kilo-free-direct",
+      "tpmUsed": 0,
+      "tpmLimit": 60000,
+      "rpmUsed": 0,
+      "rpmLimit": 10,
+      "rphUsed": 0,
+      "rphLimit": 190,
+      "activeConcurrent": 0,
+      "maxConcurrent": 2,
+      "inFlightTokens": 0,
+      "queueDepth": 0,
+      "isCoolingDown": false,
+      "cooldownRemainingMs": 0
+    },
+    "blockrun": {
+      "providerId": "blockrun-free-direct",
+      "tpmUsed": 0,
+      "tpmLimit": 60000,
+      "rpmUsed": 0,
+      "rpmLimit": 28,
+      "rphUsed": 0,
+      "rphLimit": 285,
+      "activeConcurrent": 0,
+      "maxConcurrent": 2,
+      "inFlightTokens": 0,
+      "queueDepth": 0,
+      "isCoolingDown": false,
+      "cooldownRemainingMs": 0
+    },
+    "quotaDomains": []
+  }
+}
