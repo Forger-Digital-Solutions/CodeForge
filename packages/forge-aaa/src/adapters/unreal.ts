@@ -3,6 +3,8 @@ import crypto from "node:crypto";
 import path from "node:path";
 import { spawn, type ChildProcess } from "node:child_process";
 import { FORGE_AAA_ERRORS, ForgeAaaError } from "../types.js";
+import { validateBuildingDefinition, type BuildingModuleDefinition } from "../building-definition.js";
+import { buildingAssemblyScript } from "../building-assembly.js";
 
 /**
  * Unreal Engine 4.27 adapter (mission §8). Detection and capability negotiation are real
@@ -523,12 +525,14 @@ export interface UnrealInteractionTestResult extends UnrealFunctionalTestResult 
  * never a pass.
  */
 export interface UnrealNativeAction {
-  op: "wait" | "moveTo" | "press" | "face" | "expectDoor" | "probe" | "save" | "slotVerify" | "writeCorruptSave" | "deleteSave" | "reloadMap" | "exit";
+  op: "wait" | "moveTo" | "press" | "face" | "expectDoor" | "expectWindow" | "screenshot" | "probe" | "save" | "slotVerify" | "writeInvalidWindowRecord" | "writeCorruptSave" | "deleteSave" | "reloadMap" | "exit";
   target?: [number, number, number];
   durationS?: number;
   timeoutS?: number;
   key?: string;
   door?: string;
+  window?: string;
+  screenshotPath?: string;
   state?: string;
   toleranceDeg?: number;
   from?: [number, number, number];
@@ -545,9 +549,12 @@ export interface UnrealNativeAction {
     maxDisp?: number;
     blockingHit?: boolean;
     minSavedDoors?: number;
+    minSavedWindows?: number;
+    restored?: boolean;
     slotExists?: boolean;
     loaded?: boolean;
     doorStates?: Record<string, number>;
+    windowStates?: Record<string, number>;
   };
 }
 
@@ -606,6 +613,23 @@ export interface UnrealAdapterDeps {
 }
 
 export class UnrealAdapter {
+  async assembleBuilding(req: {
+    projectPath: string; authorizedProjectPath: string; levelPath: string;
+    building: unknown; modules: readonly BuildingModuleDefinition[];
+    approved: boolean; scriptPath: string; logPath?: string; timeoutMs?: number; install?: UnrealInstall;
+  }): Promise<UnrealCommandletResult> {
+    if (!req.approved || await fs.realpath(req.projectPath) !== await fs.realpath(req.authorizedProjectPath)) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, "assembly project not authorized");
+    }
+    if (!/^\/Game\/ForgeAAA\/Maps\/[A-Za-z0-9_-]+$/.test(req.levelPath)) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, "assembly level must be ForgeAAA-owned");
+    }
+    const building = validateBuildingDefinition(req.building, req.modules);
+    await fs.mkdir(path.dirname(req.scriptPath), { recursive: true });
+    await fs.writeFile(req.scriptPath, buildingAssemblyScript(building, req.modules, req.levelPath), "utf8");
+    const result = await this.runPythonScript({ ...req, host: "editor" });
+    return { ...result, ok: result.ok && result.report?.ok === true && result.report?.level_saved === true };
+  }
   private readonly fileExists: (p: string) => boolean;
   private readonly listDir?: (p: string) => string[];
   private readonly readFile: (p: string) => Promise<string>;
@@ -1312,7 +1336,7 @@ export class UnrealAdapter {
     const result = await this.runCommandlet({
       projectPath: req.projectPath,
       game: { map: req.levelPath },
-      args: [`-ForgeDriverSpec=${req.specPath}`],
+      args: [`-ForgeDriverSpec=${req.specPath}`, `-ForgeSaveSlot=${spec.saveSlot}`, ...(req.actions.some(a => a.op === "screenshot") ? ["-RenderOffscreen", "-windowed", "-ResX=1280", "-ResY=720"] : [])],
       timeoutMs: req.timeoutMs,
       install: req.install,
       logPath: req.logPath,
@@ -1333,6 +1357,10 @@ export class UnrealAdapter {
     const actionMetrics = (Array.isArray(rep.actions) ? rep.actions : []) as Record<string, unknown>[];
     let state: UnrealFunctionalTestState = actionMetrics.length >= req.actions.length ? "pass" : "blocked";
     const failures: string[] = [];
+    if (!result.ok || result.exitCode !== 0) {
+      state = "fail";
+      failures.push(`native process did not exit successfully: ${result.exitCode}`);
+    }
     if (actionMetrics.length < req.actions.length) {
       failures.push(`scenario incomplete: ${actionMetrics.length}/${req.actions.length} actions measured`);
     }
@@ -1343,6 +1371,9 @@ export class UnrealAdapter {
     }
     req.actions.forEach((a, i) => {
       const m = actionMetrics[i];
+      if (m && (m.index !== i || m.op !== a.op)) { state = "fail"; failures.push(`action[${i}] measurement identity mismatch`); }
+      if ((a.op === "expectDoor" || a.op === "expectWindow") && m?.pass !== true) { state = "fail"; failures.push(`action[${i}] ${a.op} assertion unverified`); }
+      if (a.op === "screenshot" && m?.pass !== true) { state = "fail"; failures.push(`action[${i}] native capture unverified`); }
       if (a.expect === undefined || m === undefined) return;
       const e = a.expect;
       const num = (k: string) => typeof m[k] === "number" ? m[k] as number : undefined;
@@ -1358,12 +1389,20 @@ export class UnrealAdapter {
       if (e.maxDisp !== undefined && (num("displacementCm") ?? 1e9) > e.maxDisp) { state = "fail"; failures.push(`action[${i}] displacement ${m.displacementCm} > ${e.maxDisp}`); }
       if (e.blockingHit !== undefined && m.blockingHit !== e.blockingHit) { state = "fail"; failures.push(`action[${i}] blockingHit=${m.blockingHit} != ${e.blockingHit}`); }
       if (e.minSavedDoors !== undefined && (num("savedDoors") ?? 0) < e.minSavedDoors) { state = "fail"; failures.push(`action[${i}] savedDoors ${m.savedDoors} < ${e.minSavedDoors}`); }
+      if (e.minSavedWindows !== undefined && (num("savedWindows") ?? 0) < e.minSavedWindows) { state = "fail"; failures.push(`action[${i}] savedWindows ${m.savedWindows} < ${e.minSavedWindows}`); }
+      if (e.restored !== undefined && m.restored !== e.restored) { state = "fail"; failures.push(`action[${i}] restore mismatch`); }
       if (e.slotExists !== undefined && m.slotExists !== e.slotExists) { state = "fail"; failures.push(`action[${i}] slotExists=${m.slotExists} != ${e.slotExists}`); }
       if (e.loaded !== undefined && m.loaded !== e.loaded) { state = "fail"; failures.push(`action[${i}] loaded=${m.loaded} != ${e.loaded}`); }
       if (e.doorStates !== undefined) {
         const doors = (m.doors ?? {}) as Record<string, { state?: number }>;
         for (const [id, want] of Object.entries(e.doorStates)) {
           if (doors[id]?.state !== want) { state = "fail"; failures.push(`action[${i}] slot door ${id} state=${doors[id]?.state} != ${want}`); }
+        }
+      }
+      if (e.windowStates !== undefined) {
+        const windows = (m.windows ?? {}) as Record<string, { state?: number }>;
+        for (const [id, want] of Object.entries(e.windowStates)) {
+          if (windows[id]?.state !== want) { state = "fail"; failures.push(`action[${i}] slot window ${id} mismatch`); }
         }
       }
       if (a.op === "expectDoor" && m.pass === false) { state = "fail"; failures.push(`action[${i}] expectDoor failed`); }

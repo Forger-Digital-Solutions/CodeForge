@@ -1,0 +1,313 @@
+{
+	"runId": "mv3za1ed-eqbkv4",
+	"executed": true,
+	"mapPackage": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2",
+	"saveSlot": "ForgeR82InteriorTest",
+	"pythonModuleLoaded": true,
+	"engineVersion": "4.27.2-18319896+++UE4+Release-4.27",
+	"actions": [
+		{
+			"index": 0,
+			"op": "wait"
+		},
+		{
+			"index": 1,
+			"op": "expectDoor",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"door": "a836fa4dea044e03bb3f1f08d7321907",
+			"expectedState": "open",
+			"obsYawDeg": -95,
+			"hingeYawDeg": -95,
+			"cmdYawDeg": -95,
+			"state": "door.open",
+			"pass": true
+		},
+		{
+			"index": 2,
+			"op": "expectWindow",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"state": "window.open",
+			"observedSlideCm": 65,
+			"sashWorldZ": 155,
+			"commandedSlideCm": 65,
+			"restored": true,
+			"pass": true
+		},
+		{
+			"index": 3,
+			"op": "expectDoor",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"door": "629855cc94c5f499705a5d2ab7c9128c",
+			"expectedState": "closed",
+			"obsYawDeg": 0,
+			"hingeYawDeg": 0,
+			"cmdYawDeg": 0,
+			"state": "door.closed",
+			"pass": true
+		},
+		{
+			"index": 4,
+			"op": "expectWindow",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"state": "window.closed",
+			"observedSlideCm": 0,
+			"sashWorldZ": 90,
+			"commandedSlideCm": 0,
+			"restored": true,
+			"pass": true
+		},
+		{
+			"index": 5,
+			"op": "probe",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"from": [ 0, -40, 100 ],
+			"to": [ 0, 80, 100 ],
+			"blockingHit": false
+		},
+		{
+			"index": 6,
+			"op": "probe",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"from": [ 25, 480, 120 ],
+			"to": [ 25, 580, 120 ],
+			"blockingHit": false
+		},
+		{
+			"index": 7,
+			"op": "moveTo",
+			"arrived": true,
+			"end": [ 0, 110.39377593994141, 90.149993896484375 ],
+			"displacementCm": 110.39377593994141
+		},
+		{
+			"index": 8,
+			"op": "moveTo",
+			"arrived": true,
+			"end": [ 0, 432.80001831054688, 90.149993896484375 ],
+			"displacementCm": 432.80001831054688
+		},
+		{
+			"index": 9,
+			"op": "face",
+			"start": [ 0, 436.30169677734375, 90.149993896484375 ],
+			"yaw": 74.589637756347656
+		},
+		{
+			"index": 10,
+			"op": "press",
+			"start": [ 0, 441.94003295898438, 90.149993896484375 ],
+			"key": "E",
+			"inputClass": "SYNTHETIC_INPUT",
+			"dispatched": true,
+			"targetName": "forge-building_western-room-a_window",
+			"distanceCm": 70.90716552734375,
+			"resultState": "window.closing",
+			"sweepYawDeg": 74.589691162109375,
+			"sweepHits": [
+				"forge-building_western-room-a_window/FrameMesh@70.9"
+			]
+		},
+		{
+			"index": 11,
+			"op": "wait"
+		},
+		{
+			"index": 12,
+			"op": "expectWindow",
+			"start": [ 0, 448.93923950195312, 90.149993896484375 ],
+			"state": "window.closed",
+			"observedSlideCm": 0,
+			"sashWorldZ": 90,
+			"commandedSlideCm": 0,
+			"restored": true,
+			"pass": true
+		},
+		{
+			"index": 13,
+			"op": "probe",
+			"start": [ 0, 448.93923950195312, 90.149993896484375 ],
+			"from": [ 25, 480, 120 ],
+			"to": [ 25, 580, 120 ],
+			"blockingHit": true,
+			"hitActor": "forge-building_western-room-a_window",
+			"hitComponent": "SashMesh"
+		},
+		{
+			"index": 14,
+			"op": "face",
+			"start": [ 0, 448.93923950195312, 90.149993896484375 ],
+			"yaw": 72.241592407226562
+		},
+		{
+			"index": 15,
+			"op": "press",
+			"start": [ 0, 448.93923950195312, 90.149993896484375 ],
+			"key": "E",
+			"inputClass": "SYNTHETIC_INPUT",
+			"dispatched": true,
+			"targetName": "forge-building_western-room-a_window",
+			"distanceCm": 66.2576904296875,
+			"resultState": "window.opening",
+			"sweepYawDeg": 72.241630554199219,
+			"sweepHits": [
+				"forge-building_western-room-a_window/FrameMesh@66.3"
+			]
+		},
+		{
+			"index": 16,
+			"op": "wait"
+		},
+		{
+			"index": 17,
+			"op": "expectWindow",
+			"start": [ 0, 448.93923950195312, 90.149993896484375 ],
+			"state": "window.open",
+			"observedSlideCm": 65,
+			"sashWorldZ": 155,
+			"commandedSlideCm": 65,
+			"restored": true,
+			"pass": true
+		},
+		{
+			"index": 18,
+			"op": "moveTo",
+			"arrived": true,
+			"end": [ -4.6148631582809685e-09, 131.81971740722656, 90.149993896484375 ],
+			"displacementCm": 131.81971740722656
+		},
+		{
+			"index": 19,
+			"op": "moveTo",
+			"arrived": true,
+			"end": [ 0.53980332612991333, -128.66801452636719, 90.149993896484375 ],
+			"displacementCm": 128.66914367675781
+		},
+		{
+			"index": 20,
+			"op": "face",
+			"start": [ 0.44898989796638489, -131.36160278320312, 90.149993896484375 ],
+			"yaw": 126.31491851806641
+		},
+		{
+			"index": 21,
+			"op": "press",
+			"start": [ 0.29049399495124817, -136.06269836425781, 90.149993896484375 ],
+			"key": "E",
+			"inputClass": "SYNTHETIC_INPUT",
+			"dispatched": true,
+			"targetName": "forge-building_western-room-a_door",
+			"distanceCm": 21.823104858398438,
+			"resultState": "door.closing",
+			"sweepYawDeg": 126.31494140625,
+			"sweepHits": [
+				"forge-building_western-room-a_door/LeafMesh@21.8"
+			]
+		},
+		{
+			"index": 22,
+			"op": "wait"
+		},
+		{
+			"index": 23,
+			"op": "expectDoor",
+			"start": [ -0.15455654263496399, -149.26319885253906, 90.149993896484375 ],
+			"door": "a836fa4dea044e03bb3f1f08d7321907",
+			"expectedState": "closed",
+			"obsYawDeg": 0,
+			"hingeYawDeg": 0,
+			"cmdYawDeg": 0,
+			"state": "door.closed",
+			"pass": true
+		},
+		{
+			"index": 24,
+			"op": "probe",
+			"start": [ -0.15455654263496399, -149.26319885253906, 90.149993896484375 ],
+			"from": [ 0, -100, 100 ],
+			"to": [ 0, 80, 100 ],
+			"blockingHit": true,
+			"hitActor": "forge-building_western-room-a_door",
+			"hitComponent": "LeafMesh"
+		},
+		{
+			"index": 25,
+			"op": "moveTo",
+			"arrived": true,
+			"end": [ 35.030433654785156, -88.571968078613281, 90.149993896484375 ],
+			"displacementCm": 95.247703552246094
+		},
+		{
+			"index": 26,
+			"op": "face",
+			"start": [ 36.643268585205078, -85.789970397949219, 90.149993896484375 ],
+			"yaw": 115.80295562744141
+		},
+		{
+			"index": 27,
+			"op": "press",
+			"start": [ 39.116661071777344, -81.523582458496094, 90.149993896484375 ],
+			"key": "E",
+			"inputClass": "SYNTHETIC_INPUT",
+			"dispatched": true,
+			"targetName": "forge-building_western-room-a_door",
+			"distanceCm": 32.457752227783203,
+			"resultState": "door.opening",
+			"sweepYawDeg": 115.80300903320312,
+			"sweepHits": [
+				"forge-building_western-room-a_door/LeafMesh@32.5"
+			]
+		},
+		{
+			"index": 28,
+			"op": "wait"
+		},
+		{
+			"index": 29,
+			"op": "expectDoor",
+			"start": [ 43.6224365234375, -73.751510620117188, 90.149993896484375 ],
+			"door": "a836fa4dea044e03bb3f1f08d7321907",
+			"expectedState": "open",
+			"obsYawDeg": -95,
+			"hingeYawDeg": -95,
+			"cmdYawDeg": -95,
+			"state": "door.open",
+			"pass": true
+		},
+		{
+			"index": 30,
+			"op": "save",
+			"start": [ 43.6224365234375, -73.751510620117188, 90.149993896484375 ],
+			"slot": "ForgeR82InteriorTest",
+			"savedDoors": 2,
+			"savedWindows": 2
+		},
+		{
+			"index": 31,
+			"op": "writeInvalidWindowRecord",
+			"start": [ 43.6224365234375, -73.751510620117188, 90.149993896484375 ],
+			"ok": true
+		},
+		{
+			"index": 32,
+			"op": "exit",
+			"start": [ 43.6224365234375, -73.751510620117188, 90.149993896484375 ]
+		}
+	],
+	"errors": [],
+	"doors": [
+		{
+			"instanceId": "a836fa4dea044e03bb3f1f08d7321907",
+			"actor": "forge-building_western-room-a_door",
+			"state": "door.open",
+			"obsYawDeg": -95,
+			"cmdYawDeg": -95
+		},
+		{
+			"instanceId": "629855cc94c5f499705a5d2ab7c9128c",
+			"actor": "forge-building_western-room-b_door",
+			"state": "door.closed",
+			"obsYawDeg": 0,
+			"cmdYawDeg": 0
+		}
+	]
+}

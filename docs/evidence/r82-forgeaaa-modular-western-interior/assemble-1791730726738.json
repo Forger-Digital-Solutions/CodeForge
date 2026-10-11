@@ -1,0 +1,36 @@
+{
+  "startedAt": "2026-10-11T14:58:46.736Z",
+  "kind": "R82_INTERIOR_ENGINE_CAMPAIGN",
+  "phase": "assemble",
+  "project": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\pilot\\DeadTrailsWest.uproject",
+  "room": {
+    "widthCm": 560,
+    "depthCm": 520,
+    "heightCm": 260,
+    "wallThicknessCm": 20,
+    "floorThicknessCm": 10,
+    "doorWidthCm": 110,
+    "doorHeightCm": 215,
+    "windowWidthCm": 120,
+    "windowHeightCm": 140,
+    "sillCm": 90,
+    "sashTravelCm": 65,
+    "playerRadiusCm": 34,
+    "playerHalfHeightCm": 88,
+    "attachmentToleranceCm": 0.5
+  },
+  "engine": {
+    "root": "C:\\Program Files\\Epic Games\\UE_4.27",
+    "version": {
+      "major": 4,
+      "minor": 27,
+      "patch": 2,
+      "changelist": 18319896,
+      "branch": "++UE4+Release-4.27"
+    },
+    "editorCmdPath": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Binaries\\Win64\\UE4Editor-Cmd.exe",
+    "editorPath": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Binaries\\Win64\\UE4Editor.exe"
+  },
+  "error": "Error: EPERM: operation not permitted, realpath 'G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\pilot\\DeadTrailsWest.uproject'",
+  "finishedAt": "2026-10-11T14:58:46.742Z"
+}

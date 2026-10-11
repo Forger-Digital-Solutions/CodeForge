@@ -1,0 +1,127 @@
+{
+  "actions": [
+    {
+      "op": "probe",
+      "from": [
+        25,
+        480,
+        120
+      ],
+      "to": [
+        25,
+        580,
+        120
+      ],
+      "expect": {
+        "blockingHit": true
+      }
+    },
+    {
+      "op": "face",
+      "target": [
+        25,
+        527,
+        185
+      ]
+    },
+    {
+      "op": "press",
+      "key": "E",
+      "expect": {
+        "dispatched": true,
+        "resultState": "window.opening"
+      }
+    },
+    {
+      "op": "wait",
+      "durationS": 1.2
+    },
+    {
+      "op": "expectWindow",
+      "window": "WINDOW_ID",
+      "state": "open"
+    },
+    {
+      "op": "probe",
+      "from": [
+        25,
+        480,
+        120
+      ],
+      "to": [
+        25,
+        580,
+        120
+      ],
+      "expect": {
+        "blockingHit": false
+      }
+    },
+    {
+      "op": "face",
+      "target": [
+        25,
+        527,
+        185
+      ]
+    },
+    {
+      "op": "press",
+      "key": "E",
+      "expect": {
+        "dispatched": true,
+        "resultState": "window.closing"
+      }
+    },
+    {
+      "op": "wait",
+      "durationS": 1.2
+    },
+    {
+      "op": "expectWindow",
+      "window": "WINDOW_ID",
+      "state": "closed"
+    },
+    {
+      "op": "probe",
+      "from": [
+        25,
+        480,
+        120
+      ],
+      "to": [
+        25,
+        580,
+        120
+      ],
+      "expect": {
+        "blockingHit": true
+      }
+    },
+    {
+      "op": "face",
+      "target": [
+        25,
+        527,
+        185
+      ]
+    },
+    {
+      "op": "press",
+      "key": "E",
+      "expect": {
+        "dispatched": true,
+        "resultState": "window.opening"
+      }
+    },
+    {
+      "op": "wait",
+      "durationS": 1.2
+    },
+    {
+      "op": "expectWindow",
+      "window": "WINDOW_ID",
+      "state": "open"
+    }
+  ]
+}

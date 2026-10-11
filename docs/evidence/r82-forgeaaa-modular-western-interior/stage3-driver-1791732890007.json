@@ -1,0 +1,114 @@
+{
+	"runId": "mv3zhse7-jkg82s",
+	"executed": true,
+	"mapPackage": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2",
+	"saveSlot": "ForgeR82InteriorTest",
+	"pythonModuleLoaded": true,
+	"engineVersion": "4.27.2-18319896+++UE4+Release-4.27",
+	"actions": [
+		{
+			"index": 0,
+			"op": "wait"
+		},
+		{
+			"index": 1,
+			"op": "slotVerify",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"slot": "ForgeR82InteriorTest",
+			"slotExists": true,
+			"loaded": true,
+			"schemaVersion": 1,
+			"doors":
+			{
+				"a836fa4dea044e03bb3f1f08d7321907":
+				{
+					"state": 2,
+					"leafYawDeg": -95
+				},
+				"629855cc94c5f499705a5d2ab7c9128c":
+				{
+					"state": 0,
+					"leafYawDeg": 0
+				}
+			},
+			"windows":
+			{
+				"75c84e620f55e7cf42b23d97b7cf4773":
+				{
+					"state": 2,
+					"slideCm": 999,
+					"schemaVersion": 99
+				},
+				"1fba8a3fbc727d7e95a9286ed87ae37c":
+				{
+					"state": 0,
+					"slideCm": 0,
+					"schemaVersion": 1
+				}
+			}
+		},
+		{
+			"index": 2,
+			"op": "expectDoor",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"door": "a836fa4dea044e03bb3f1f08d7321907",
+			"expectedState": "open",
+			"obsYawDeg": -95,
+			"hingeYawDeg": -95,
+			"cmdYawDeg": -95,
+			"state": "door.open",
+			"pass": true
+		},
+		{
+			"index": 3,
+			"op": "expectWindow",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"state": "window.closed",
+			"observedSlideCm": 0,
+			"sashWorldZ": 90,
+			"commandedSlideCm": 0,
+			"restored": false,
+			"pass": true
+		},
+		{
+			"index": 4,
+			"op": "expectWindow",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"state": "window.closed",
+			"observedSlideCm": 0,
+			"sashWorldZ": 90,
+			"commandedSlideCm": 0,
+			"restored": true,
+			"pass": true
+		},
+		{
+			"index": 5,
+			"op": "writeCorruptSave",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"ok": true,
+			"path": "G:/CodeForge/worktrees/r82-forgeaaa-modular-western-interior/.scratch/pilot/Saved/SaveGames/ForgeR82InteriorTest.sav"
+		},
+		{
+			"index": 6,
+			"op": "exit",
+			"start": [ 0, -200, 90.149993896484375 ]
+		}
+	],
+	"errors": [],
+	"doors": [
+		{
+			"instanceId": "a836fa4dea044e03bb3f1f08d7321907",
+			"actor": "forge-building_western-room-a_door",
+			"state": "door.open",
+			"obsYawDeg": -95,
+			"cmdYawDeg": -95
+		},
+		{
+			"instanceId": "629855cc94c5f499705a5d2ab7c9128c",
+			"actor": "forge-building_western-room-b_door",
+			"state": "door.closed",
+			"obsYawDeg": 0,
+			"cmdYawDeg": 0
+		}
+	]
+}

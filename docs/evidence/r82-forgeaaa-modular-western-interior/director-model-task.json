@@ -1,0 +1,81 @@
+{
+  "id": "aaa-770f54c0-9327-4c2e-8860-3a3cd91dbcc4",
+  "goal": "Create a native regression test for the functional modular Western room window",
+  "engineTarget": "ue-4.27",
+  "leadPolicy": "auto",
+  "status": "done",
+  "tasks": [
+    {
+      "id": "window-regression",
+      "title": "Author native sash regression",
+      "objective": "Design a failing-capable native window gameplay regression used in the engine campaign",
+      "specialty": "forge-gameplay",
+      "dependencies": [],
+      "status": "failed",
+      "attempts": 1,
+      "artifacts": [],
+      "evidence": [
+        {
+          "kind": "route",
+          "ref": "kilo-free-direct/nvidia/nemotron-3-super-120b-a12b:free",
+          "detail": "ROUTE_SELECTED"
+        }
+      ],
+      "lastFailureSignature": "kilo-free-direct stream timed out",
+      "detail": "kilo-free-direct stream timed out"
+    }
+  ],
+  "routeDecisions": [
+    {
+      "taskId": "window-regression",
+      "specialty": "forge-gameplay",
+      "role": "CODER",
+      "outcome": "selected",
+      "selected": {
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "providerId": "kilo-free-direct",
+        "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "domain": "managed_free",
+        "lifecycle": "QUALIFIED",
+        "available": true,
+        "qualifiedRoles": [
+          "CODER"
+        ],
+        "costClass": "free",
+        "privateCodeAllowed": false
+      },
+      "ordered": [
+        {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "providerId": "kilo-free-direct",
+          "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "domain": "managed_free",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": false
+        }
+      ],
+      "reasonCodes": [
+        "ROUTE_SELECTED"
+      ],
+      "decidedAt": "2026-10-11T15:15:18.152Z"
+    }
+  ],
+  "verificationReports": [],
+  "manifests": [],
+  "counters": {
+    "taskAttempts": 1,
+    "retries": 0,
+    "modelCalls": 0,
+    "adapterOps": 0
+  },
+  "blockers": [],
+  "createdAt": "2026-10-11T15:15:18.149Z",
+  "updatedAt": "2026-10-11T15:16:18.167Z",
+  "finalStatus": "FORGEAAA_FAILED",
+  "completedAt": "2026-10-11T15:16:18.167Z"
+}

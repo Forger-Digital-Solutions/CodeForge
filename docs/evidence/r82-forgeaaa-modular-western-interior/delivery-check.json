@@ -1,0 +1,155 @@
+{
+  "checkedAt": "2026-10-11T15:46:51.870Z",
+  "runtimeReconciliation": {
+    "initial": {
+      "passed": 852,
+      "failed": 16,
+      "skipped": 1
+    },
+    "standalone": {
+      "passed": 76,
+      "failed": 0,
+      "skipped": 0
+    },
+    "uniqueFinal": {
+      "passed": 868,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "assetHashes": [
+    {
+      "moduleId": "forge/building/SM_FrontWall/v1",
+      "matches": true
+    },
+    {
+      "moduleId": "forge/building/SM_DoorLintel/v1",
+      "matches": true
+    },
+    {
+      "moduleId": "forge/building/SM_SideWall/v1",
+      "matches": true
+    },
+    {
+      "moduleId": "forge/building/SM_BackWall/v1",
+      "matches": true
+    },
+    {
+      "moduleId": "forge/building/SM_WindowSillWall/v1",
+      "matches": true
+    },
+    {
+      "moduleId": "forge/building/SM_WindowHeader/v1",
+      "matches": true
+    },
+    {
+      "moduleId": "forge/building/SM_Ceiling/v1",
+      "matches": true
+    },
+    {
+      "moduleId": "forge/building/SM_ExteriorFloor/v1",
+      "matches": true
+    },
+    {
+      "moduleId": "forge/building/SM_PlankFloor/v1",
+      "matches": true
+    },
+    {
+      "moduleId": "forge/building/SM_WindowFrame/v1",
+      "matches": true
+    },
+    {
+      "moduleId": "dtw/building/door-western/v1",
+      "matches": true
+    }
+  ],
+  "nativeFixture": [
+    {
+      "name": "Config/DefaultInput.ini",
+      "sha256": "645ec0cdf373e96b78927e9b1b97daa1b49a35fc3fd58797bc087e06cf94d8a0",
+      "matches": true
+    },
+    {
+      "name": "ForgeGameplay.uplugin",
+      "sha256": "dbd00aa11274697153e54c5f7769bd4a082e17fb6f809930f7b7e87438aa4898",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/ForgeGameplay.Build.cs",
+      "sha256": "c515025850279df8692ac9edd81ac5948c2715676a42633462c73c4a19aab069",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Private/ForgeDoorTestDriver.cpp",
+      "sha256": "5db5b9c7877a9b7f5c83f51ade587ed8dbf79987f0c20ff4f528e9ec9247dc18",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Private/ForgeGameplayMode.cpp",
+      "sha256": "66968a57454b3599c140c63a870651ed7d367af1a91ad477870b7c3886d6bdc2",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Private/ForgeGameplayModule.cpp",
+      "sha256": "417a91bae91845de8d30000c07d0be2a6e3157bebafc424a970dab252d958219",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Private/ForgeInteractableDoor.cpp",
+      "sha256": "4379106f27f9082e52c94b9bea4773e3cd32755195c68d300793c9fd4350c59e",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Private/ForgeInteractableWindow.cpp",
+      "sha256": "7e715b5e94a0369ad1499b54e4ea95d4846988f527aab666399322671c86ccd9",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Private/ForgeInteractCharacter.cpp",
+      "sha256": "17373cea7f73023439c42ea80e1c29de566dd01c042c54bd85bd86b03563b2fc",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Public/ForgeDoorSaveGame.h",
+      "sha256": "e96a5632716fcbc61b521d78a1212382fe50820db65b5d8c9602ebd7b7b25c0c",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Public/ForgeDoorTestDriver.h",
+      "sha256": "c7924ac26706b0b9f648e2239193db61647597f72ff3c2978ffd0cb90c125c49",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Public/ForgeGameplayMode.h",
+      "sha256": "b31348b16cbc7a3b90a0e53443b849206fbba77b4828dcba371a9396890abc9a",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Public/ForgeInteractable.h",
+      "sha256": "9ecddbb953d41da21668108035980d386fa2a571ea150cc16849a410fd43ba22",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Public/ForgeInteractableDoor.h",
+      "sha256": "5ac3d52642d1423551721d117fd1d4facbaa88cd0196a72cd96c867e6072a65d",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Public/ForgeInteractableWindow.h",
+      "sha256": "f77c83aca0bff4d84d53d97be85389125068c5b946d8ebd8ba360e0ea3c61488",
+      "matches": true
+    },
+    {
+      "name": "Source/ForgeGameplay/Public/ForgeInteractCharacter.h",
+      "sha256": "1b39306947a055ee08907d0061531c9ad70ff6ca3248e71e903fe60390e5c062",
+      "matches": true
+    }
+  ],
+  "nativeBinarySha256": "9bd705f03c516b0b949677f7b86fb9faf4d17882b303ee80e145d75243f5ac03",
+  "noRuntimePythonStartup": true,
+  "evidenceSecretScan": {
+    "files": 83,
+    "findings": []
+  },
+  "ok": true
+}

@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "buildingInstanceId": "western-room-a",
+  "attachmentToleranceCm": 0.5,
+  "instances": [
+    {
+      "instanceId": "floor",
+      "moduleId": "forge/building/SM_PlankFloor/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        0,
+        260,
+        -5
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "front-left",
+      "moduleId": "forge/building/SM_FrontWall/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        -167.5,
+        -10,
+        130
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "front-right",
+      "moduleId": "forge/building/SM_FrontWall/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        167.5,
+        -10,
+        130
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "door-lintel",
+      "moduleId": "forge/building/SM_DoorLintel/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        0,
+        -10,
+        237.5
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "wall-left",
+      "moduleId": "forge/building/SM_SideWall/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        -290,
+        260,
+        130
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "wall-right",
+      "moduleId": "forge/building/SM_SideWall/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        290,
+        260,
+        130
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "back-left",
+      "moduleId": "forge/building/SM_BackWall/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        -170,
+        530,
+        130
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "back-right",
+      "moduleId": "forge/building/SM_BackWall/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        170,
+        530,
+        130
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "sill",
+      "moduleId": "forge/building/SM_WindowSillWall/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        0,
+        530,
+        45
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "window-header",
+      "moduleId": "forge/building/SM_WindowHeader/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        0,
+        530,
+        245
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "ceiling",
+      "moduleId": "forge/building/SM_Ceiling/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        0,
+        260,
+        265
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "entrance-floor",
+      "moduleId": "forge/building/SM_ExteriorFloor/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        0,
+        -120,
+        -5
+      ],
+      "yawDeg": 0
+    },
+    {
+      "instanceId": "door",
+      "moduleId": "dtw/building/door-western/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        0,
+        -10,
+        0
+      ],
+      "yawDeg": 0,
+      "attachment": {
+        "instanceId": "floor",
+        "socketId": "door"
+      }
+    },
+    {
+      "instanceId": "window",
+      "moduleId": "forge/building/SM_WindowFrame/v1",
+      "moduleVersion": 1,
+      "positionCm": [
+        0,
+        530,
+        90
+      ],
+      "yawDeg": 0,
+      "attachment": {
+        "instanceId": "floor",
+        "socketId": "window"
+      }
+    }
+  ]
+}

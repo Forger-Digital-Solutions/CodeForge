@@ -1,0 +1,47 @@
+{
+  "rawReceipt": "model-window-test-1791731627812.json",
+  "correctedArtifact": "benchmarks/r82/model-window-actions.json",
+  "edits": [
+    {
+      "index": 5,
+      "before": {
+        "op": "probe",
+        "from": [
+          25,
+          527,
+          120
+        ],
+        "to": [
+          25,
+          527,
+          200
+        ],
+        "expect": {
+          "blockingHit": false
+        }
+      },
+      "reason": "restore original horizontal aperture assertion; vertical probe hits raised sash"
+    },
+    {
+      "index": 10,
+      "before": {
+        "op": "probe",
+        "from": [
+          25,
+          527,
+          120
+        ],
+        "to": [
+          25,
+          527,
+          200
+        ],
+        "expect": {
+          "blockingHit": true
+        }
+      },
+      "reason": "restore original horizontal aperture assertion; vertical probe hits raised sash"
+    }
+  ],
+  "classification": "agent post-processing; final bounded model correction timed out; no inferred upstream success"
+}

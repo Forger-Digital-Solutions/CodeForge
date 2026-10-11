@@ -1,0 +1,659 @@
+{
+  "startedAt": "2026-10-11T14:47:31.434Z",
+  "kind": "R82_INTERIOR_ENGINE_CAMPAIGN",
+  "phase": "assets",
+  "project": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\pilot\\DeadTrailsWest.uproject",
+  "room": {
+    "widthCm": 560,
+    "depthCm": 520,
+    "heightCm": 260,
+    "wallThicknessCm": 20,
+    "floorThicknessCm": 10,
+    "doorWidthCm": 110,
+    "doorHeightCm": 215,
+    "windowWidthCm": 120,
+    "windowHeightCm": 140,
+    "sillCm": 90,
+    "sashTravelCm": 65,
+    "playerRadiusCm": 34,
+    "playerHalfHeightCm": 88,
+    "attachmentToleranceCm": 0.5
+  },
+  "engine": {
+    "root": "C:\\Program Files\\Epic Games\\UE_4.27",
+    "version": {
+      "major": 4,
+      "minor": 27,
+      "patch": 2,
+      "changelist": 18319896,
+      "branch": "++UE4+Release-4.27"
+    },
+    "editorCmdPath": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Binaries\\Win64\\UE4Editor-Cmd.exe",
+    "editorPath": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Binaries\\Win64\\UE4Editor.exe"
+  },
+  "blender": {
+    "ok": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "stdoutTail": "Extensions: writing cache failed ([Errno 13] Permission denied: 'C:\\\\Users\\\\Daddy_FDS\\\\AppData\\\\Roaming\\\\Blender Foundation\\\\Blender\\\\4.5\\\\extensions\\\\.cache\\\\compat.dat').\r\nWarning: No mesh data to join\r\nInfo: Saved as \"SM_FrontWall.blend\"\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_FrontWall.fbx'\r\nexport finished in 0.0078 sec.\r\nWarning: No mesh data to join\r\nInfo: Saved as \"SM_DoorLintel.blend\"\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_DoorLintel.fbx'\r\nexport finished in 0.0056 sec.\r\nWarning: No mesh data to join\r\nInfo: Saved as \"SM_SideWall.blend\"\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_SideWall.fbx'\r\nexport finished in 0.0053 sec.\r\nWarning: No mesh data to join\r\nInfo: Saved as \"SM_BackWall.blend\"\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_BackWall.fbx'\r\nexport finished in 0.0038 sec.\r\nWarning: No mesh data to join\r\nInfo: Saved as \"SM_WindowSillWall.blend\"\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_WindowSillWall.fbx'\r\nexport finished in 0.0053 sec.\r\nWarning: No mesh data to join\r\nInfo: Saved as \"SM_WindowHeader.blend\"\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_WindowHeader.fbx'\r\nexport finished in 0.0073 sec.\r\nWarning: No mesh data to join\r\nInfo: Saved as \"SM_Ceiling.blend\"\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_Ceiling.fbx'\r\nexport finished in 0.0056 sec.\r\nWarning: No mesh data to join\r\nInfo: Saved as \"SM_ExteriorFloor.blend\"\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_ExteriorFloor.fbx'\r\nexport finished in 0.0052 sec.\r\nInfo: Saved as \"SM_PlankFloor.blend\"\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_PlankFloor.fbx'\r\nexport finished in 0.0112 sec.\r\nInfo: Saved as \"SM_WindowFrame.blend\"\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_WindowFrame.fbx'\r\nexport finished in 0.0120 sec.\r\nInfo: Saved as \"SM_WindowSash.blend\"\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_WindowSash.fbx'\r\nexport finished in 0.0183 sec.\r\nFORGEAAA_REPORT:{\"ok\": true, \"engine\": \"Blender 4.5.14 LTS\", \"assets\": [{\"name\": \"SM_FrontWall\", \"boundsMinCm\": [-112.5, -10.0, -130.0], \"boundsMaxCm\": [112.5, 10.0, 130.0], \"dimensionsCm\": [225.0, 20.0, 260.0], \"pivotCm\": [0.0, 0.0, 0.0], \"scale\": [1.0, 1.0, 1.0], \"materialSlots\": [\"Forge_plaster\"], \"collisionCount\": 1, \"checks\": [{\"name\": \"SM_FrontWall\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 1.1699999745190137}, {\"name\": \"UCX_SM_FrontWall_0\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 1.1699999745190137}], \"fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_FrontWall.fbx\", \"blend\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_FrontWall.blend\"}, {\"name\": \"SM_DoorLintel\", \"boundsMinCm\": [-55.0, -10.0, -22.5], \"boundsMaxCm\": [55.0, 10.0, 22.5], \"dimensionsCm\": [110.0, 20.0, 45.0], \"pivotCm\": [0.0, 0.0, 0.0], \"scale\": [1.0, 1.0, 1.0], \"materialSlots\": [\"Forge_plaster\"], \"collisionCount\": 1, \"checks\": [{\"name\": \"SM_DoorLintel\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.09900000099837772}, {\"name\": \"UCX_SM_DoorLintel_0\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.09900000099837772}], \"fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_DoorLintel.fbx\", \"blend\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_DoorLintel.blend\"}, {\"name\": \"SM_SideWall\", \"boundsMinCm\": [-10.0, -280.0, -130.0], \"boundsMaxCm\": [10.0, 280.0, 130.0], \"dimensionsCm\": [20.0, 560.0, 260.0], \"pivotCm\": [0.0, 0.0, 0.0], \"scale\": [1.0, 1.0, 1.0], \"materialSlots\": [\"Forge_plaster\"], \"collisionCount\": 1, \"checks\": [{\"name\": \"SM_SideWall\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 2.911999886989593}, {\"name\": \"UCX_SM_SideWall_0\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 2.911999886989593}], \"fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_SideWall.fbx\", \"blend\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_SideWall.blend\"}, {\"name\": \"SM_BackWall\", \"boundsMinCm\": [-110.0, -10.0, -130.0], \"boundsMaxCm\": [110.0, 10.0, 130.0], \"dimensionsCm\": [220.0, 20.0, 260.0], \"pivotCm\": [0.0, 0.0, 0.0], \"scale\": [1.0, 1.0, 1.0], \"materialSlots\": [\"Forge_plaster\"], \"collisionCount\": 1, \"checks\": [{\"name\": \"SM_BackWall\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 1.1439999998807895}, {\"name\": \"UCX_SM_BackWall_0\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 1.1439999998807895}], \"fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_BackWall.fbx\", \"blend\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_BackWall.blend\"}, {\"name\": \"SM_WindowSillWall\", \"boundsMinCm\": [-60.000003814697266, -10.0, -45.0], \"boundsMaxCm\": [60.000003814697266, 10.0, 45.0], \"dimensionsCm\": [120.00000762939453, 20.0, 90.0], \"pivotCm\": [0.0, 0.0, 0.0], \"scale\": [1.0, 1.0, 1.0], \"materialSlots\": [\"Forge_plaster\"], \"collisionCount\": 1, \"checks\": [{\"name\": \"SM_WindowSillWall\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.2160000060796736}, {\"name\": \"UCX_SM_WindowSillWall_0\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.2160000060796736}], \"fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_WindowSillWall.fbx\", \"blend\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_WindowSillWall.blend\"}, {\"name\": \"SM_WindowHeader\", \"boundsMinCm\": [-60.000003814697266, -10.0, -15.000000953674316], \"boundsMaxCm\": [60.000003814697266, 10.0, 15.000000953674316], \"dimensionsCm\": [120.00000762939453, 20.0, 30.000001907348633], \"pivotCm\": [0.0, 0.0, 0.0], \"scale\": [1.0, 1.0, 1.0], \"materialSlots\": [\"Forge_plaster\"], \"collisionCount\": 1, \"checks\": [{\"name\": \"SM_WindowHeader\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.0720000067949297}, {\"name\": \"UCX_SM_WindowHeader_0\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.0720000067949297}], \"fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_WindowHeader.fbx\", \"blend\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_WindowHeader.blend\"}, {\"name\": \"SM_Ceiling\", \"boundsMinCm\": [-300.0, -280.0, -5.0], \"boundsMaxCm\": [300.0, 280.0, 5.0], \"dimensionsCm\": [600.0, 560.0, 10.0], \"pivotCm\": [0.0, 0.0, 0.0], \"scale\": [1.0, 1.0, 1.0], \"materialSlots\": [\"Forge_wood\"], \"collisionCount\": 1, \"checks\": [{\"name\": \"SM_Ceiling\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 3.3599999928474418}, {\"name\": \"UCX_SM_Ceiling_0\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 3.3599999928474418}], \"fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_Ceiling.fbx\", \"blend\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_Ceiling.blend\"}, {\"name\": \"SM_ExteriorFloor\", \"boundsMinCm\": [-300.0, -120.00000762939453, -5.0], \"boundsMaxCm\": [300.0, 120.00000762939453, 5.0], \"dimensionsCm\": [600.0, 240.00001525878906, 10.0], \"pivotCm\": [0.0, 0.0, 0.0], \"scale\": [1.0, 1.0, 1.0], \"materialSlots\": [\"Forge_wood\"], \"collisionCount\": 1, \"checks\": [{\"name\": \"SM_ExteriorFloor\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 1.440000078678132}, {\"name\": \"UCX_SM_ExteriorFloor_0\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 1.440000078678132}], \"fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_ExteriorFloor.fbx\", \"blend\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_ExteriorFloor.blend\"}, {\"name\": \"SM_PlankFloor\", \"boundsMinCm\": [-279.95001220703125, -260.0, -5.0], \"boundsMaxCm\": [279.95001220703125, 260.0, 5.0], \"dimensionsCm\": [559.9000244140625, 520.0, 10.0], \"pivotCm\": [0.0, 0.0, 0.0], \"scale\": [1.0, 1.0, 1.0], \"materialSlots\": [\"Forge_wood\"], \"collisionCount\": 1, \"checks\": [{\"name\": \"SM_PlankFloor\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 2.8974404466938757}, {\"name\": \"UCX_SM_PlankFloor_0\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 2.911999886989593}], \"fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_PlankFloor.fbx\", \"blend\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_PlankFloor.blend\"}, {\"name\": \"SM_WindowFrame\", \"boundsMinCm\": [-59.999996185302734, -8.0, 0.0], \"boundsMaxCm\": [59.999996185302734, 8.0, 140.0], \"dimensionsCm\": [119.99999237060547, 16.0, 140.0], \"pivotCm\": [0.0, 0.0, 0.0], \"scale\": [1.0, 1.0, 1.0], \"materialSlots\": [\"Forge_wood\", \"Forge_glass\"], \"collisionCount\": 7, \"checks\": [{\"name\": \"SM_WindowFrame\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.04951995839573541}, {\"name\": \"UCX_SM_WindowFrame_0\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.011199999725818631}, {\"name\": \"UCX_SM_WindowFrame_1\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.011199999725818631}, {\"name\": \"UCX_SM_WindowFrame_2\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.00880000012516975}, {\"name\": \"UCX_SM_WindowFrame_3\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.00880000012516975}, {\"name\": \"UCX_SM_WindowFrame_4\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.0022000000312924375}, {\"name\": \"UCX_SM_WindowFrame_5\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.0009599999952316269}, {\"name\": \"UCX_SM_WindowFrame_6\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.006359999767243852}], \"fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_WindowFrame.fbx\", \"blend\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_WindowFrame.blend\"}, {\"name\": \"SM_WindowSash\", \"boundsMinCm\": [-52.999996185302734, -4.999999523162842, 5.000000476837158], \"boundsMaxCm\": [52.999996185302734, -1.0, 70.0], \"dimensionsCm\": [105.99999237060547, 3.999999523162842, 64.99999952316284], \"pivotCm\": [0.0, 0.0, 0.0], \"scale\": [1.0, 1.0, 1.0], \"materialSlots\": [\"Forge_wood\", \"Forge_glass\"], \"collisionCount\": 1, \"checks\": [{\"name\": \"SM_WindowSash\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.012379997476525906}, {\"name\": \"UCX_SM_WindowSash_0\", \"nonmanifoldEdges\": 0, \"degenerateFaces\": 0, \"signedVolumeM3\": 0.027559996885359397}], \"fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_WindowSash.fbx\", \"blend\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\architecture\\\\SM_WindowSash.blend\"}], \"errors\": []}\r\nBlender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)\n\nBlender quit\n",
+    "stderrTail": "",
+    "durationMs": 2183,
+    "report": {
+      "ok": true,
+      "engine": "Blender 4.5.14 LTS",
+      "assets": [
+        {
+          "name": "SM_FrontWall",
+          "boundsMinCm": [
+            -112.5,
+            -10,
+            -130
+          ],
+          "boundsMaxCm": [
+            112.5,
+            10,
+            130
+          ],
+          "dimensionsCm": [
+            225,
+            20,
+            260
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_FrontWall",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 1.1699999745190137
+            },
+            {
+              "name": "UCX_SM_FrontWall_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 1.1699999745190137
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_FrontWall.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_FrontWall.blend"
+        },
+        {
+          "name": "SM_DoorLintel",
+          "boundsMinCm": [
+            -55,
+            -10,
+            -22.5
+          ],
+          "boundsMaxCm": [
+            55,
+            10,
+            22.5
+          ],
+          "dimensionsCm": [
+            110,
+            20,
+            45
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_DoorLintel",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.09900000099837772
+            },
+            {
+              "name": "UCX_SM_DoorLintel_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.09900000099837772
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_DoorLintel.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_DoorLintel.blend"
+        },
+        {
+          "name": "SM_SideWall",
+          "boundsMinCm": [
+            -10,
+            -280,
+            -130
+          ],
+          "boundsMaxCm": [
+            10,
+            280,
+            130
+          ],
+          "dimensionsCm": [
+            20,
+            560,
+            260
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_SideWall",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 2.911999886989593
+            },
+            {
+              "name": "UCX_SM_SideWall_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 2.911999886989593
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_SideWall.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_SideWall.blend"
+        },
+        {
+          "name": "SM_BackWall",
+          "boundsMinCm": [
+            -110,
+            -10,
+            -130
+          ],
+          "boundsMaxCm": [
+            110,
+            10,
+            130
+          ],
+          "dimensionsCm": [
+            220,
+            20,
+            260
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_BackWall",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 1.1439999998807895
+            },
+            {
+              "name": "UCX_SM_BackWall_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 1.1439999998807895
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_BackWall.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_BackWall.blend"
+        },
+        {
+          "name": "SM_WindowSillWall",
+          "boundsMinCm": [
+            -60.000003814697266,
+            -10,
+            -45
+          ],
+          "boundsMaxCm": [
+            60.000003814697266,
+            10,
+            45
+          ],
+          "dimensionsCm": [
+            120.00000762939453,
+            20,
+            90
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_WindowSillWall",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.2160000060796736
+            },
+            {
+              "name": "UCX_SM_WindowSillWall_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.2160000060796736
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowSillWall.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowSillWall.blend"
+        },
+        {
+          "name": "SM_WindowHeader",
+          "boundsMinCm": [
+            -60.000003814697266,
+            -10,
+            -15.000000953674316
+          ],
+          "boundsMaxCm": [
+            60.000003814697266,
+            10,
+            15.000000953674316
+          ],
+          "dimensionsCm": [
+            120.00000762939453,
+            20,
+            30.000001907348633
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_WindowHeader",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.0720000067949297
+            },
+            {
+              "name": "UCX_SM_WindowHeader_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.0720000067949297
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowHeader.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowHeader.blend"
+        },
+        {
+          "name": "SM_Ceiling",
+          "boundsMinCm": [
+            -300,
+            -280,
+            -5
+          ],
+          "boundsMaxCm": [
+            300,
+            280,
+            5
+          ],
+          "dimensionsCm": [
+            600,
+            560,
+            10
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_wood"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_Ceiling",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 3.3599999928474418
+            },
+            {
+              "name": "UCX_SM_Ceiling_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 3.3599999928474418
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_Ceiling.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_Ceiling.blend"
+        },
+        {
+          "name": "SM_ExteriorFloor",
+          "boundsMinCm": [
+            -300,
+            -120.00000762939453,
+            -5
+          ],
+          "boundsMaxCm": [
+            300,
+            120.00000762939453,
+            5
+          ],
+          "dimensionsCm": [
+            600,
+            240.00001525878906,
+            10
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_wood"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_ExteriorFloor",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 1.440000078678132
+            },
+            {
+              "name": "UCX_SM_ExteriorFloor_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 1.440000078678132
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_ExteriorFloor.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_ExteriorFloor.blend"
+        },
+        {
+          "name": "SM_PlankFloor",
+          "boundsMinCm": [
+            -279.95001220703125,
+            -260,
+            -5
+          ],
+          "boundsMaxCm": [
+            279.95001220703125,
+            260,
+            5
+          ],
+          "dimensionsCm": [
+            559.9000244140625,
+            520,
+            10
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_wood"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_PlankFloor",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 2.8974404466938757
+            },
+            {
+              "name": "UCX_SM_PlankFloor_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 2.911999886989593
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_PlankFloor.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_PlankFloor.blend"
+        },
+        {
+          "name": "SM_WindowFrame",
+          "boundsMinCm": [
+            -59.999996185302734,
+            -8,
+            0
+          ],
+          "boundsMaxCm": [
+            59.999996185302734,
+            8,
+            140
+          ],
+          "dimensionsCm": [
+            119.99999237060547,
+            16,
+            140
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_wood",
+            "Forge_glass"
+          ],
+          "collisionCount": 7,
+          "checks": [
+            {
+              "name": "SM_WindowFrame",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.04951995839573541
+            },
+            {
+              "name": "UCX_SM_WindowFrame_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.011199999725818631
+            },
+            {
+              "name": "UCX_SM_WindowFrame_1",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.011199999725818631
+            },
+            {
+              "name": "UCX_SM_WindowFrame_2",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.00880000012516975
+            },
+            {
+              "name": "UCX_SM_WindowFrame_3",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.00880000012516975
+            },
+            {
+              "name": "UCX_SM_WindowFrame_4",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.0022000000312924375
+            },
+            {
+              "name": "UCX_SM_WindowFrame_5",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.0009599999952316269
+            },
+            {
+              "name": "UCX_SM_WindowFrame_6",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.006359999767243852
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowFrame.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowFrame.blend"
+        },
+        {
+          "name": "SM_WindowSash",
+          "boundsMinCm": [
+            -52.999996185302734,
+            -4.999999523162842,
+            5.000000476837158
+          ],
+          "boundsMaxCm": [
+            52.999996185302734,
+            -1,
+            70
+          ],
+          "dimensionsCm": [
+            105.99999237060547,
+            3.999999523162842,
+            64.99999952316284
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_wood",
+            "Forge_glass"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_WindowSash",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.012379997476525906
+            },
+            {
+              "name": "UCX_SM_WindowSash_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.027559996885359397
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowSash.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowSash.blend"
+        }
+      ],
+      "errors": []
+    }
+  },
+  "door": {
+    "ok": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "stdoutTail": "Extensions: writing cache failed ([Errno 13] Permission denied: 'C:\\\\Users\\\\Daddy_FDS\\\\AppData\\\\Roaming\\\\Blender Foundation\\\\Blender\\\\4.5\\\\extensions\\\\.cache\\\\compat.dat').\r\nINFO Draco mesh compression is available, use library at C:\\Program Files\\Blender Foundation\\Blender 4.5\\4.5\\scripts\\addons_core\\io_scene_gltf2\\extern_draco.dll\r\n10:47:35 | INFO: Starting glTF 2.0 export\r\n10:47:35 | INFO: Extracting primitive: Cube\r\n10:47:35 | INFO: Primitives created: 1\r\n10:47:35 | INFO: Extracting primitive: Cube.003\r\n10:47:35 | INFO: Primitives created: 1\r\n10:47:35 | INFO: Extracting primitive: Cube.004\r\n10:47:35 | INFO: Primitives created: 1\r\n10:47:35 | INFO: Extracting primitive: Cube.005\r\n10:47:35 | INFO: Primitives created: 1\r\n10:47:35 | INFO: Extracting primitive: Cube.006\r\n10:47:35 | INFO: Primitives created: 1\r\n10:47:35 | INFO: Extracting primitive: Cube.010\r\n10:47:35 | INFO: Primitives created: 1\r\n10:47:35 | INFO: Finished glTF 2.0 export in 0.015171051025390625 s\r\n\r\n\r\nFBX export starting... 'G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\door.fbx'\r\nexport finished in 0.0103 sec.\r\nFORGEAAA_REPORT:{\"ok\": true, \"moduleId\": \"dtw/building/door-western/v1\", \"meshes\": 6, \"vertices\": 88, \"faces\": 66, \"nonmanifold_objects\": [], \"degenerate_faces\": 0, \"validate_errors\": 0, \"bounds_cm\": [110.0, 10.5, 215.0], \"errors\": [], \"leaf_origin_is_hinge\": true, \"leaf_origin_cm\": [-48.0, 0.0, 0.0], \"hinge_world_x_cm\": -48.0, \"sockets\": [\"SOCKET_FrameAttachL\", \"SOCKET_FrameAttachR\", \"SOCKET_Handle\", \"SOCKET_HingeBottom\", \"SOCKET_HingeTop\"], \"ucx_collision_count\": 4, \"objects\": 11, \"exported_glb\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\door.glb\", \"exported_fbx\": \"G:\\\\CodeForge\\\\worktrees\\\\r82-forgeaaa-modular-western-interior\\\\.scratch\\\\door.fbx\"}\r\nBlender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)\n\nBlender quit\n",
+    "stderrTail": "",
+    "durationMs": 2011,
+    "report": {
+      "ok": true,
+      "moduleId": "dtw/building/door-western/v1",
+      "meshes": 6,
+      "vertices": 88,
+      "faces": 66,
+      "nonmanifold_objects": [],
+      "degenerate_faces": 0,
+      "validate_errors": 0,
+      "bounds_cm": [
+        110,
+        10.5,
+        215
+      ],
+      "errors": [],
+      "leaf_origin_is_hinge": true,
+      "leaf_origin_cm": [
+        -48,
+        0,
+        0
+      ],
+      "hinge_world_x_cm": -48,
+      "sockets": [
+        "SOCKET_FrameAttachL",
+        "SOCKET_FrameAttachR",
+        "SOCKET_Handle",
+        "SOCKET_HingeBottom",
+        "SOCKET_HingeTop"
+      ],
+      "ucx_collision_count": 4,
+      "objects": 11,
+      "exported_glb": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\door.glb",
+      "exported_fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\door.fbx"
+    }
+  },
+  "error": "Error: import-architecture: \"exit 3\"",
+  "finishedAt": "2026-10-11T14:47:45.894Z"
+}

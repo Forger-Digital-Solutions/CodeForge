@@ -1,0 +1,20 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import path from 'node:path';
+import {UnrealAdapter} from '../../packages/forge-aaa/dist/index.js';
+
+const root=path.resolve('.scratch'), project=path.join(root,'pilot/DeadTrailsWest.uproject');
+const modules=JSON.parse(await readFile('benchmarks/r82/module-registry.json','utf8')), building=JSON.parse(await readFile('benchmarks/r82/building.json','utf8'));
+const adapter=new UnrealAdapter(),install=(await adapter.detect()).installs.find(i=>i.version.major===4&&i.version.minor===27);
+const req={projectPath:project,authorizedProjectPath:project,approved:true,building,modules,install,levelPath:'/Game/ForgeAAA/Maps/FAAA_R82InteriorV2',timeoutMs:180000};
+const map=path.join(root,'pilot/Content/ForgeAAA/Maps/FAAA_R82InteriorV2.umap'), hash=async()=>createHash('sha256').update(await readFile(map)).digest('hex');
+const report={before:await hash(),defect:'unresolved structural asset; fail before loading or mutating level'};
+const file=`docs/evidence/r82-forgeaaa-modular-western-interior/assembly-recovery-${Date.now()}.json`;
+await writeFile(file,JSON.stringify(report,null,2));
+const broken=structuredClone(modules);broken.find(m=>m.moduleId===building.instances[0].moduleId).engineAsset='/Game/ForgeAAA/R82/MissingMesh';
+report.rejected=await adapter.assembleBuilding({...req,modules:broken,scriptPath:path.join(root,'assembly-invalid.py'),logPath:path.join(root,'assembly-invalid.log')});
+report.afterRejection=await hash();
+await writeFile(file,JSON.stringify(report,null,2));
+report.repaired=await adapter.assembleBuilding({...req,scriptPath:path.join(root,'assembly-repaired.py'),logPath:path.join(root,'assembly-repaired.log')});
+report.ok=!report.rejected.ok&&report.before===report.afterRejection&&report.repaired.ok&&report.repaired.report.placed.every(p=>p.action==='reused');
+await writeFile(file,JSON.stringify(report,null,2));console.log(JSON.stringify({file,ok:report.ok}));if(!report.ok) process.exitCode=1;

@@ -1,0 +1,76 @@
+{
+  "option": "C: separate preserved staircase validation area; six steps, 108cm rise; not a second story",
+  "classification": "legacy Python traversal driver; actual CharacterMovement; separate from native R82 gameplay",
+  "runs": {
+    "ascend": {
+      "state": "pass",
+      "metrics": {
+        "samples": 50,
+        "simSeconds": 4.96,
+        "start": [
+          -160,
+          0,
+          90.15
+        ],
+        "final": [
+          117.88,
+          0,
+          197.72
+        ],
+        "zGain": 107.57,
+        "displacementCm": 277.88,
+        "maxZ": 197.72,
+        "minZ": 90.15,
+        "errors": []
+      },
+      "configRestored": true
+    },
+    "descend": {
+      "state": "pass",
+      "metrics": {
+        "samples": 50,
+        "simSeconds": 4.97,
+        "start": [
+          250,
+          0,
+          198.15
+        ],
+        "final": [
+          -89.41,
+          0,
+          90.15
+        ],
+        "zGain": -108,
+        "displacementCm": 339.40999999999997,
+        "maxZ": 198.15,
+        "minZ": 90.15,
+        "errors": []
+      },
+      "configRestored": true
+    },
+    "side": {
+      "state": "pass",
+      "metrics": {
+        "samples": 30,
+        "simSeconds": 2.96,
+        "start": [
+          78,
+          0,
+          175.88
+        ],
+        "final": [
+          78,
+          -1.87,
+          175.88
+        ],
+        "zGain": 0,
+        "displacementCm": 1.87,
+        "maxZ": 175.88,
+        "minZ": 175.88,
+        "errors": []
+      },
+      "configRestored": true
+    }
+  },
+  "ok": true
+}

@@ -1,0 +1,80 @@
+{
+	"runId": "mv3yw4oo-0ehllm",
+	"executed": true,
+	"mapPackage": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2",
+	"saveSlot": "ForgeR82InteriorTest",
+	"pythonModuleLoaded": true,
+	"engineVersion": "4.27.2-18319896+++UE4+Release-4.27",
+	"actions": [
+		{
+			"index": 0,
+			"op": "wait"
+		},
+		{
+			"index": 1,
+			"op": "slotVerify",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"slot": "ForgeR82InteriorTest",
+			"slotExists": true,
+			"loaded": false
+		},
+		{
+			"index": 2,
+			"op": "expectDoor",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"door": "a836fa4dea044e03bb3f1f08d7321907",
+			"expectedState": "closed",
+			"obsYawDeg": 0,
+			"hingeYawDeg": 0,
+			"cmdYawDeg": 0,
+			"state": "door.closed",
+			"pass": true
+		},
+		{
+			"index": 3,
+			"op": "expectWindow",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"state": "window.closed",
+			"observedSlideCm": 0,
+			"sashWorldZ": 90,
+			"commandedSlideCm": 0,
+			"restored": false,
+			"pass": true
+		},
+		{
+			"index": 4,
+			"op": "deleteSave",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"ok": true
+		},
+		{
+			"index": 5,
+			"op": "slotVerify",
+			"start": [ 0, -200, 90.149993896484375 ],
+			"slot": "ForgeR82InteriorTest",
+			"slotExists": false
+		},
+		{
+			"index": 6,
+			"op": "exit",
+			"start": [ 0, -200, 90.149993896484375 ]
+		}
+	],
+	"errors": [],
+	"doors": [
+		{
+			"instanceId": "a836fa4dea044e03bb3f1f08d7321907",
+			"actor": "forge-building_western-room-a_door",
+			"state": "door.closed",
+			"obsYawDeg": 0,
+			"cmdYawDeg": 0
+		},
+		{
+			"instanceId": "629855cc94c5f499705a5d2ab7c9128c",
+			"actor": "forge-building_western-room-b_door",
+			"state": "door.closed",
+			"obsYawDeg": 0,
+			"cmdYawDeg": 0
+		}
+	]
+}

@@ -1,0 +1,22 @@
+{
+  "scope": "schema and deterministic geometry validation only; alternate room not imported or engine-tested",
+  "spec": {
+    "widthCm": 600,
+    "depthCm": 600,
+    "heightCm": 280,
+    "wallThicknessCm": 20,
+    "floorThicknessCm": 10,
+    "doorWidthCm": 110,
+    "doorHeightCm": 215,
+    "windowWidthCm": 120,
+    "windowHeightCm": 140,
+    "sillCm": 90,
+    "sashTravelCm": 65,
+    "playerRadiusCm": 34,
+    "playerHalfHeightCm": 88,
+    "attachmentToleranceCm": 0.5
+  },
+  "meshCount": 11,
+  "instances": 14,
+  "passed": true
+}

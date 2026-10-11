@@ -1,0 +1,367 @@
+{
+  "startedAt": "2026-10-11T15:22:26.755Z",
+  "stages": {
+    "legacy-writer": {
+      "state": "pass",
+      "actions": [
+        {
+          "index": 0,
+          "op": "wait"
+        },
+        {
+          "index": 1,
+          "op": "expectDoor",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "door": "door-western-a",
+          "expectedState": "closed",
+          "obsYawDeg": 0,
+          "hingeYawDeg": 0,
+          "cmdYawDeg": 0,
+          "state": "door.closed",
+          "pass": true
+        },
+        {
+          "index": 2,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            35.18497848510742,
+            -79.63035583496094,
+            90.14999389648438
+          ],
+          "displacementCm": 87.05731964111328
+        },
+        {
+          "index": 3,
+          "op": "face",
+          "start": [
+            35.889122009277344,
+            -78.22206115722656,
+            90.14999389648438
+          ],
+          "yaw": 114.6460952758789
+        },
+        {
+          "index": 4,
+          "op": "press",
+          "start": [
+            37.078338623046875,
+            -75.84361267089844,
+            90.14999389648438
+          ],
+          "key": "E",
+          "inputClass": "SYNTHETIC_INPUT",
+          "dispatched": true,
+          "targetName": "FAAA_door-western-a",
+          "distanceCm": 36.68566131591797,
+          "resultState": "door.opening",
+          "sweepYawDeg": 114.6461410522461,
+          "sweepHits": [
+            "FAAA_door-western-a/LeafMesh@36.7"
+          ]
+        },
+        {
+          "index": 5,
+          "op": "wait"
+        },
+        {
+          "index": 6,
+          "op": "expectDoor",
+          "start": [
+            44.1861457824707,
+            -61.62796401977539,
+            90.14999389648438
+          ],
+          "door": "door-western-a",
+          "expectedState": "open",
+          "obsYawDeg": -95,
+          "hingeYawDeg": -95,
+          "cmdYawDeg": -95,
+          "state": "door.open",
+          "pass": true
+        },
+        {
+          "index": 7,
+          "op": "save",
+          "start": [
+            44.1861457824707,
+            -61.62796401977539,
+            90.14999389648438
+          ],
+          "slot": "ForgeR81DoorTest",
+          "savedDoors": 2
+        },
+        {
+          "index": 8,
+          "op": "slotVerify",
+          "start": [
+            44.1861457824707,
+            -61.62796401977539,
+            90.14999389648438
+          ],
+          "slot": "ForgeR81DoorTest",
+          "slotExists": true,
+          "loaded": true,
+          "schemaVersion": 1,
+          "doors": {
+            "door-western-a": {
+              "state": 2,
+              "leafYawDeg": -95
+            },
+            "door-western-b": {
+              "state": 0,
+              "leafYawDeg": 0
+            }
+          }
+        },
+        {
+          "index": 9,
+          "op": "exit",
+          "start": [
+            44.1861457824707,
+            -61.62796401977539,
+            90.14999389648438
+          ]
+        }
+      ],
+      "metrics": {
+        "failures": [],
+        "errors": [],
+        "doors": [
+          {
+            "instanceId": "door-western-a",
+            "actor": "FAAA_door-western-a",
+            "state": "door.open",
+            "obsYawDeg": -95,
+            "cmdYawDeg": -95
+          },
+          {
+            "instanceId": "door-western-b",
+            "actor": "FAAA_door-western-b",
+            "state": "door.closed",
+            "obsYawDeg": 0,
+            "cmdYawDeg": 0
+          }
+        ],
+        "pythonModuleLoaded": true,
+        "engineVersion": "4.27.2-18319896+++UE4+Release-4.27",
+        "saveSlot": "ForgeR81DoorTest"
+      }
+    },
+    "r82-reader": {
+      "state": "pass",
+      "actions": [
+        {
+          "index": 0,
+          "op": "wait"
+        },
+        {
+          "index": 1,
+          "op": "expectDoor",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "door": "door-western-a",
+          "expectedState": "open",
+          "obsYawDeg": -95,
+          "hingeYawDeg": -95,
+          "cmdYawDeg": -95,
+          "state": "door.open",
+          "pass": true
+        },
+        {
+          "index": 2,
+          "op": "expectDoor",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "door": "door-western-b",
+          "expectedState": "closed",
+          "obsYawDeg": 0,
+          "hingeYawDeg": 0,
+          "cmdYawDeg": 0,
+          "state": "door.closed",
+          "pass": true
+        },
+        {
+          "index": 3,
+          "op": "slotVerify",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "slot": "ForgeR82LegacyCompatibility",
+          "slotExists": true,
+          "loaded": true,
+          "schemaVersion": 1,
+          "doors": {
+            "door-western-a": {
+              "state": 2,
+              "leafYawDeg": -95
+            },
+            "door-western-b": {
+              "state": 0,
+              "leafYawDeg": 0
+            }
+          },
+          "windows": {}
+        },
+        {
+          "index": 4,
+          "op": "probe",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "from": [
+            0,
+            -40,
+            100
+          ],
+          "to": [
+            0,
+            80,
+            100
+          ],
+          "blockingHit": false
+        },
+        {
+          "index": 5,
+          "op": "exit",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ]
+        }
+      ],
+      "metrics": {
+        "failures": [],
+        "errors": [],
+        "doors": [
+          {
+            "instanceId": "door-western-a",
+            "actor": "FAAA_door-western-a",
+            "state": "door.open",
+            "obsYawDeg": -95,
+            "cmdYawDeg": -95
+          },
+          {
+            "instanceId": "door-western-b",
+            "actor": "FAAA_door-western-b",
+            "state": "door.closed",
+            "obsYawDeg": 0,
+            "cmdYawDeg": 0
+          }
+        ],
+        "pythonModuleLoaded": true,
+        "engineVersion": "4.27.2-18319896+++UE4+Release-4.27",
+        "saveSlot": "ForgeR82LegacyCompatibility"
+      }
+    },
+    "missing-window-record": {
+      "state": "pass",
+      "actions": [
+        {
+          "index": 0,
+          "op": "wait"
+        },
+        {
+          "index": 1,
+          "op": "expectWindow",
+          "start": [
+            0,
+            -200,
+            90.14999389648438
+          ],
+          "state": "window.closed",
+          "observedSlideCm": 0,
+          "sashWorldZ": 90,
+          "commandedSlideCm": 0,
+          "restored": false,
+          "pass": true
+        },
+        {
+          "index": 2,
+          "op": "slotVerify",
+          "start": [
+            0,
+            -200,
+            90.14999389648438
+          ],
+          "slot": "ForgeR82LegacyCompatibility",
+          "slotExists": true,
+          "loaded": true,
+          "schemaVersion": 1,
+          "doors": {
+            "door-western-a": {
+              "state": 2,
+              "leafYawDeg": -95
+            },
+            "door-western-b": {
+              "state": 0,
+              "leafYawDeg": 0
+            }
+          },
+          "windows": {}
+        },
+        {
+          "index": 3,
+          "op": "deleteSave",
+          "start": [
+            0,
+            -200,
+            90.14999389648438
+          ],
+          "ok": true
+        },
+        {
+          "index": 4,
+          "op": "exit",
+          "start": [
+            0,
+            -200,
+            90.14999389648438
+          ]
+        }
+      ],
+      "metrics": {
+        "failures": [],
+        "errors": [],
+        "doors": [
+          {
+            "instanceId": "a836fa4dea044e03bb3f1f08d7321907",
+            "actor": "forge-building_western-room-a_door",
+            "state": "door.closed",
+            "obsYawDeg": 0,
+            "cmdYawDeg": 0
+          },
+          {
+            "instanceId": "629855cc94c5f499705a5d2ab7c9128c",
+            "actor": "forge-building_western-room-b_door",
+            "state": "door.closed",
+            "obsYawDeg": 0,
+            "cmdYawDeg": 0
+          }
+        ],
+        "pythonModuleLoaded": true,
+        "engineVersion": "4.27.2-18319896+++UE4+Release-4.27",
+        "saveSlot": "ForgeR82LegacyCompatibility"
+      }
+    }
+  },
+  "classification": "actual R81 binary writes original schema; R82 binary reads it",
+  "legacySaveSha256": "ead7ddff17cf5c628e33f86d4dde5806243a0cbde2b1bcb5e17a28d02b1d3aa4",
+  "ok": true,
+  "finishedAt": "2026-10-11T15:23:01.957Z"
+}

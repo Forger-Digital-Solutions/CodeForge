@@ -1,0 +1,17 @@
+{
+  "scope": "Observed harness repairs, with exact engine/model failures retained in the corresponding timestamped reports; this file is an engineering summary, not an invented raw receipt",
+  "repairs": [
+    {"failure":"initial fresh workspace build could not find dependent package declarations","repair":"build TypeScript project references before running the full workspace build"},
+    {"failure":"UE local derived-data cache default path exceeded the launcher build's path limit","repair":"configure both ordinary and InstalledDerivedDataBackendGraph caches inside the isolated workspace"},
+    {"failure":"shared PCH debug records embedded a transient sandbox path; subsequent compiler/linker temporary paths were stale","repair":"use NoPCHs for the small fixture plugin, stable TEMP/TMP, and NoUBTMakefiles; native build logs retained"},
+    {"failure":"Unreal StaticMesh sockets property is protected in Python","repair":"verify AssemblyOrigin via find_socket instead"},
+    {"failure":"stored FBX reimport settings retained false unit/absolute-transform flags, producing a 100-fold import scale error","repair":"set and save the existing asset import data explicitly; real actor bounds then matched the centimeter contracts"},
+    {"failure":"Unreal Python array += returned None during material asset enumeration","repair":"convert the returned asset array to a Python list before concatenation"},
+    {"failure":"the model test aimed low and the actual native sphere sweep hit the solid sill before reaching the window","repair":"qualified model changed the aim to the reachable frame; keep structural collision and all positive/negative assertions"},
+    {"failure":"model repair changed a horizontal collision probe to a vertical one; a follow-up free-model repair timed out","repair":"restore the original horizontal probes deterministically; raw output and the two corrections are separate"},
+    {"failure":"hidden-window screenshot requests produced no files","repair":"use actual native SceneCapture2D render targets; require a measured capture pass"},
+    {"failure":"native render-target export omitted the PNG extension; first captures were overbright","repair":"export the clean requested filename and reduce the pilot's point-light intensity; original extensionless PNG bytes retained"},
+    {"failure":"assembly-recovery reporting accessed result.placed instead of result.report.placed and threw TypeError after the engine checks","repair":"fix the reporting path, persist intermediate evidence, and rerun the preservation/recovery checks"},
+    {"failure":"reviewer returned no events before the bounded stream timeout","repair":"no fabricated approval or unchanged-route retry; retain the blocked receipt and report FORGEAAA_R82_PARTIAL"}
+  ]
+}

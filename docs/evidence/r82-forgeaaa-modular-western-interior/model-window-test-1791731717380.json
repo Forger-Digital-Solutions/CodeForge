@@ -1,0 +1,354 @@
+{
+  "startedAt": "2026-10-11T15:15:17.380Z",
+  "model": "nvidia/nemotron-3-super-120b-a12b:free",
+  "provider": "kilo-free-direct",
+  "costUSD": 0,
+  "evidenceClass": "MODEL_AUTHORED_NATIVE_WINDOW_REGRESSION",
+  "qualification": {
+    "suiteVersion": "R1_FREE_CLOUD_COMPACT_V1",
+    "providerId": "kilo-free-direct",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "modelDisplayName": "CodeForge Free Model",
+    "accessClass": "FREE_NATIVE",
+    "freeStatus": "verified_free",
+    "roleResults": {
+      "CODER": {
+        "role": "CODER",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3733,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5070,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 53
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 400
+                }
+              ]
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T06:12:56.066Z",
+        "completedAt": "2026-10-11T06:13:05.660Z"
+      },
+      "TOOL_AGENT": {
+        "role": "TOOL_AGENT",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.tool_call",
+            "category": "tool_call",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 3733,
+            "retries": 0,
+            "details": {
+              "toolCalls": [
+                "read_file"
+              ],
+              "path": "src/calc.ts"
+            }
+          },
+          {
+            "caseId": "compact.edit",
+            "category": "edit",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 5070,
+            "retries": 0,
+            "details": {
+              "calls": 2,
+              "path": "src/calc.ts",
+              "oldTextMatches": true,
+              "oldTextHasBug": true,
+              "newTextOk": true,
+              "turns": [
+                {
+                  "toolCalls": [
+                    "read_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 53
+                },
+                {
+                  "toolCalls": [
+                    "edit_file"
+                  ],
+                  "finishReason": "tool_calls",
+                  "textLength": 0,
+                  "outputTokens": 400
+                }
+              ]
+            }
+          },
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 789,
+            "retries": 0,
+            "details": {
+              "textLength": 64,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T06:12:56.066Z",
+        "completedAt": "2026-10-11T06:13:05.660Z"
+      },
+      "ANALYST": {
+        "role": "ANALYST",
+        "status": "QUALIFIED",
+        "testCases": [
+          {
+            "caseId": "compact.structured",
+            "category": "structured_output",
+            "passed": true,
+            "hardFailure": false,
+            "latencyMs": 789,
+            "retries": 0,
+            "details": {
+              "textLength": 64,
+              "parsed": true
+            }
+          }
+        ],
+        "hardFailures": [],
+        "overallScore": 1,
+        "startedAt": "2026-10-11T06:12:56.066Z",
+        "completedAt": "2026-10-11T06:13:05.660Z"
+      }
+    },
+    "startedAt": "2026-10-11T06:12:56.066Z",
+    "completedAt": "2026-10-11T06:13:05.660Z",
+    "totalLatencyMs": 9594,
+    "qualificationState": "QUALIFIED",
+    "hardFailureRoles": [],
+    "metadata": {
+      "compact": true,
+      "requests": 3,
+      "transient": false,
+      "quotaExhausted": false
+    }
+  },
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T15:15:17.383Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T15:15:17.383Z",
+      "recheckAt": "2026-10-18T15:15:17.383Z",
+      "qualificationAt": "2026-10-11T15:15:17.382Z",
+      "termsVerifiedAt": "2026-10-11T15:15:17.383Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T15:15:17.383Z",
+      "privacyVerifiedAt": "2026-10-11T15:15:17.383Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T15:15:17.383Z",
+      "priceVerifiedAt": "2026-10-11T15:15:17.383Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T15:15:17.383Z",
+      "nextReverifyAt": "2026-10-11T21:15:17.383Z"
+    }
+  },
+  "catalog": [
+    {
+      "modelId": "kilo-auto/free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "isFree": true
+    },
+    {
+      "modelId": "dots-studio/dots-3-note-preview:free",
+      "isFree": true
+    },
+    {
+      "modelId": "poolside/laguna-s-2.1:free",
+      "isFree": true
+    },
+    {
+      "modelId": "liquid/lfm-2.5-2.6b:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-lightning:free",
+      "isFree": true
+    },
+    {
+      "modelId": "thinkingmachines/inkling-small:free",
+      "isFree": true
+    },
+    {
+      "modelId": "poolside/laguna-xs-2.1:free",
+      "isFree": true
+    },
+    {
+      "modelId": "cohere/north-mini-code:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3.5-content-safety:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "isFree": true
+    },
+    {
+      "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+      "isFree": true
+    }
+  ],
+  "admission": {
+    "ok": true,
+    "costProfile": {
+      "inputCostPerMillion": 0,
+      "outputCostPerMillion": 0,
+      "isFree": true,
+      "freeTierVerifiedAt": "2026-10-11T15:15:18.148Z",
+      "paidFallbackPossible": false,
+      "paidFallbackDisabled": true,
+      "source": "kilo-free-direct-live"
+    },
+    "privacyClass": "permissive"
+  },
+  "frames": [
+    {
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "startedAt": "2026-10-11T15:15:18.152Z",
+      "events": 0,
+      "raw": "",
+      "finishedAt": "2026-10-11T15:16:18.163Z"
+    }
+  ],
+  "director": {
+    "id": "aaa-770f54c0-9327-4c2e-8860-3a3cd91dbcc4",
+    "goal": "Create a native regression test for the functional modular Western room window",
+    "engineTarget": "ue-4.27",
+    "leadPolicy": "auto",
+    "status": "done",
+    "tasks": [
+      {
+        "id": "window-regression",
+        "title": "Author native sash regression",
+        "objective": "Design a failing-capable native window gameplay regression used in the engine campaign",
+        "specialty": "forge-gameplay",
+        "dependencies": [],
+        "status": "failed",
+        "attempts": 1,
+        "artifacts": [],
+        "evidence": [
+          {
+            "kind": "route",
+            "ref": "kilo-free-direct/nvidia/nemotron-3-super-120b-a12b:free",
+            "detail": "ROUTE_SELECTED"
+          }
+        ],
+        "lastFailureSignature": "kilo-free-direct stream timed out",
+        "detail": "kilo-free-direct stream timed out"
+      }
+    ],
+    "routeDecisions": [
+      {
+        "taskId": "window-regression",
+        "specialty": "forge-gameplay",
+        "role": "CODER",
+        "outcome": "selected",
+        "selected": {
+          "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "providerId": "kilo-free-direct",
+          "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+          "domain": "managed_free",
+          "lifecycle": "QUALIFIED",
+          "available": true,
+          "qualifiedRoles": [
+            "CODER"
+          ],
+          "costClass": "free",
+          "privateCodeAllowed": false
+        },
+        "ordered": [
+          {
+            "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "providerId": "kilo-free-direct",
+            "providerModelId": "nvidia/nemotron-3-super-120b-a12b:free",
+            "domain": "managed_free",
+            "lifecycle": "QUALIFIED",
+            "available": true,
+            "qualifiedRoles": [
+              "CODER"
+            ],
+            "costClass": "free",
+            "privateCodeAllowed": false
+          }
+        ],
+        "reasonCodes": [
+          "ROUTE_SELECTED"
+        ],
+        "decidedAt": "2026-10-11T15:15:18.152Z"
+      }
+    ],
+    "verificationReports": [],
+    "manifests": [],
+    "counters": {
+      "taskAttempts": 1,
+      "retries": 0,
+      "modelCalls": 0,
+      "adapterOps": 0
+    },
+    "blockers": [],
+    "createdAt": "2026-10-11T15:15:18.149Z",
+    "updatedAt": "2026-10-11T15:16:18.167Z",
+    "finalStatus": "FORGEAAA_FAILED",
+    "completedAt": "2026-10-11T15:16:18.167Z"
+  },
+  "status": "BLOCKED",
+  "finishedAt": "2026-10-11T15:16:18.168Z"
+}

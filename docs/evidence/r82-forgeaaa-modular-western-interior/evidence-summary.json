@@ -1,0 +1,1521 @@
+{
+  "scope": "R82 modular playable interior engineering gates A-I,K,L; independent reviewer gate J requested here; publication gate M evaluated after commit/push",
+  "gameplay": {
+    "file": "gameplay-1791733016493.json",
+    "identities": {
+      "door": "a836fa4dea044e03bb3f1f08d7321907",
+      "window": "75c84e620f55e7cf42b23d97b7cf4773",
+      "doorB": "629855cc94c5f499705a5d2ab7c9128c",
+      "windowB": "1fba8a3fbc727d7e95a9286ed87ae37c"
+    },
+    "stages": {
+      "stage1": {
+        "state": "pass",
+        "actions": 54,
+        "durationMs": 28625,
+        "failures": []
+      },
+      "stage2": {
+        "state": "pass",
+        "actions": 33,
+        "durationMs": 18662,
+        "failures": []
+      },
+      "stage3": {
+        "state": "pass",
+        "actions": 7,
+        "durationMs": 10249,
+        "failures": []
+      },
+      "stage4": {
+        "state": "pass",
+        "actions": 7,
+        "durationMs": 17836,
+        "failures": []
+      }
+    }
+  },
+  "assembly": {
+    "file": "assemble-1791732398763.json",
+    "first": true,
+    "repeated": true,
+    "distinct": true,
+    "configure": {
+      "ok": true,
+      "errors": [],
+      "materials": [
+        "/Game/ForgeAAA/R82/M_wood",
+        "/Game/ForgeAAA/R82/M_plaster",
+        "/Game/ForgeAAA/R82/M_glass"
+      ],
+      "actors": [
+        {
+          "role": "start",
+          "path": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.R82_start"
+        },
+        {
+          "role": "driver",
+          "path": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.R82_driver"
+        },
+        {
+          "role": "sun",
+          "path": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.R82_sun"
+        },
+        {
+          "role": "interior-light-0",
+          "path": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.R82_interior-light-0"
+        },
+        {
+          "role": "interior-light-1000",
+          "path": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.R82_interior-light-1000"
+        },
+        {
+          "role": "exterior-light",
+          "path": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.R82_exterior-light"
+        }
+      ],
+      "actorCount": 34,
+      "level_saved": true
+    }
+  },
+  "geometry": {
+    "file": "assets-1791731041730.json",
+    "blender": {
+      "ok": true,
+      "engine": "Blender 4.5.14 LTS",
+      "assets": [
+        {
+          "name": "SM_FrontWall",
+          "boundsMinCm": [
+            -112.5,
+            -10,
+            -130
+          ],
+          "boundsMaxCm": [
+            112.5,
+            10,
+            130
+          ],
+          "dimensionsCm": [
+            225,
+            20,
+            260
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_FrontWall",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 1.1699999745190137
+            },
+            {
+              "name": "UCX_SM_FrontWall_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 1.1699999745190137
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_FrontWall.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_FrontWall.blend"
+        },
+        {
+          "name": "SM_DoorLintel",
+          "boundsMinCm": [
+            -55,
+            -10,
+            -22.5
+          ],
+          "boundsMaxCm": [
+            55,
+            10,
+            22.5
+          ],
+          "dimensionsCm": [
+            110,
+            20,
+            45
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_DoorLintel",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.09900000099837772
+            },
+            {
+              "name": "UCX_SM_DoorLintel_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.09900000099837772
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_DoorLintel.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_DoorLintel.blend"
+        },
+        {
+          "name": "SM_SideWall",
+          "boundsMinCm": [
+            -10,
+            -280,
+            -130
+          ],
+          "boundsMaxCm": [
+            10,
+            280,
+            130
+          ],
+          "dimensionsCm": [
+            20,
+            560,
+            260
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_SideWall",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 2.911999886989593
+            },
+            {
+              "name": "UCX_SM_SideWall_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 2.911999886989593
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_SideWall.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_SideWall.blend"
+        },
+        {
+          "name": "SM_BackWall",
+          "boundsMinCm": [
+            -110,
+            -10,
+            -130
+          ],
+          "boundsMaxCm": [
+            110,
+            10,
+            130
+          ],
+          "dimensionsCm": [
+            220,
+            20,
+            260
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_BackWall",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 1.1439999998807895
+            },
+            {
+              "name": "UCX_SM_BackWall_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 1.1439999998807895
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_BackWall.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_BackWall.blend"
+        },
+        {
+          "name": "SM_WindowSillWall",
+          "boundsMinCm": [
+            -60.000003814697266,
+            -10,
+            -45
+          ],
+          "boundsMaxCm": [
+            60.000003814697266,
+            10,
+            45
+          ],
+          "dimensionsCm": [
+            120.00000762939453,
+            20,
+            90
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_WindowSillWall",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.2160000060796736
+            },
+            {
+              "name": "UCX_SM_WindowSillWall_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.2160000060796736
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowSillWall.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowSillWall.blend"
+        },
+        {
+          "name": "SM_WindowHeader",
+          "boundsMinCm": [
+            -60.000003814697266,
+            -10,
+            -15.000000953674316
+          ],
+          "boundsMaxCm": [
+            60.000003814697266,
+            10,
+            15.000000953674316
+          ],
+          "dimensionsCm": [
+            120.00000762939453,
+            20,
+            30.000001907348633
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_plaster"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_WindowHeader",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.0720000067949297
+            },
+            {
+              "name": "UCX_SM_WindowHeader_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.0720000067949297
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowHeader.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowHeader.blend"
+        },
+        {
+          "name": "SM_Ceiling",
+          "boundsMinCm": [
+            -300,
+            -280,
+            -5
+          ],
+          "boundsMaxCm": [
+            300,
+            280,
+            5
+          ],
+          "dimensionsCm": [
+            600,
+            560,
+            10
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_wood"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_Ceiling",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 3.3599999928474418
+            },
+            {
+              "name": "UCX_SM_Ceiling_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 3.3599999928474418
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_Ceiling.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_Ceiling.blend"
+        },
+        {
+          "name": "SM_ExteriorFloor",
+          "boundsMinCm": [
+            -300,
+            -120.00000762939453,
+            -5
+          ],
+          "boundsMaxCm": [
+            300,
+            120.00000762939453,
+            5
+          ],
+          "dimensionsCm": [
+            600,
+            240.00001525878906,
+            10
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_wood"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_ExteriorFloor",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 1.440000078678132
+            },
+            {
+              "name": "UCX_SM_ExteriorFloor_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 1.440000078678132
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_ExteriorFloor.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_ExteriorFloor.blend"
+        },
+        {
+          "name": "SM_PlankFloor",
+          "boundsMinCm": [
+            -279.95001220703125,
+            -260,
+            -5
+          ],
+          "boundsMaxCm": [
+            279.95001220703125,
+            260,
+            5
+          ],
+          "dimensionsCm": [
+            559.9000244140625,
+            520,
+            10
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_wood"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_PlankFloor",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 2.8974404466938757
+            },
+            {
+              "name": "UCX_SM_PlankFloor_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 2.911999886989593
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_PlankFloor.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_PlankFloor.blend"
+        },
+        {
+          "name": "SM_WindowFrame",
+          "boundsMinCm": [
+            -59.999996185302734,
+            -8,
+            0
+          ],
+          "boundsMaxCm": [
+            59.999996185302734,
+            8,
+            140
+          ],
+          "dimensionsCm": [
+            119.99999237060547,
+            16,
+            140
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_wood",
+            "Forge_glass"
+          ],
+          "collisionCount": 7,
+          "checks": [
+            {
+              "name": "SM_WindowFrame",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.04951995839573541
+            },
+            {
+              "name": "UCX_SM_WindowFrame_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.011199999725818631
+            },
+            {
+              "name": "UCX_SM_WindowFrame_1",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.011199999725818631
+            },
+            {
+              "name": "UCX_SM_WindowFrame_2",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.00880000012516975
+            },
+            {
+              "name": "UCX_SM_WindowFrame_3",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.00880000012516975
+            },
+            {
+              "name": "UCX_SM_WindowFrame_4",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.0022000000312924375
+            },
+            {
+              "name": "UCX_SM_WindowFrame_5",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.0009599999952316269
+            },
+            {
+              "name": "UCX_SM_WindowFrame_6",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.006359999767243852
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowFrame.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowFrame.blend"
+        },
+        {
+          "name": "SM_WindowSash",
+          "boundsMinCm": [
+            -52.999996185302734,
+            -4.999999523162842,
+            5.000000476837158
+          ],
+          "boundsMaxCm": [
+            52.999996185302734,
+            -1,
+            70
+          ],
+          "dimensionsCm": [
+            105.99999237060547,
+            3.999999523162842,
+            64.99999952316284
+          ],
+          "pivotCm": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "materialSlots": [
+            "Forge_wood",
+            "Forge_glass"
+          ],
+          "collisionCount": 1,
+          "checks": [
+            {
+              "name": "SM_WindowSash",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.012379997476525906
+            },
+            {
+              "name": "UCX_SM_WindowSash_0",
+              "nonmanifoldEdges": 0,
+              "degenerateFaces": 0,
+              "signedVolumeM3": 0.027559996885359397
+            }
+          ],
+          "fbx": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowSash.fbx",
+          "blend": "G:\\CodeForge\\worktrees\\r82-forgeaaa-modular-western-interior\\.scratch\\architecture\\SM_WindowSash.blend"
+        }
+      ],
+      "errors": []
+    },
+    "import": {
+      "ok": true,
+      "assets": [
+        {
+          "path": "/Game/ForgeAAA/R82/SM_BackWall.SM_BackWall",
+          "class": "StaticMesh",
+          "collisionConvex": 1,
+          "collisionBoxes": 0,
+          "materials": 1,
+          "assemblySocket": true
+        },
+        {
+          "path": "/Game/ForgeAAA/R82/SM_Ceiling.SM_Ceiling",
+          "class": "StaticMesh",
+          "collisionConvex": 1,
+          "collisionBoxes": 0,
+          "materials": 1,
+          "assemblySocket": true
+        },
+        {
+          "path": "/Game/ForgeAAA/R82/SM_DoorLintel.SM_DoorLintel",
+          "class": "StaticMesh",
+          "collisionConvex": 1,
+          "collisionBoxes": 0,
+          "materials": 1,
+          "assemblySocket": true
+        },
+        {
+          "path": "/Game/ForgeAAA/R82/SM_ExteriorFloor.SM_ExteriorFloor",
+          "class": "StaticMesh",
+          "collisionConvex": 1,
+          "collisionBoxes": 0,
+          "materials": 1,
+          "assemblySocket": true
+        },
+        {
+          "path": "/Game/ForgeAAA/R82/SM_FrontWall.SM_FrontWall",
+          "class": "StaticMesh",
+          "collisionConvex": 1,
+          "collisionBoxes": 0,
+          "materials": 1,
+          "assemblySocket": true
+        },
+        {
+          "path": "/Game/ForgeAAA/R82/SM_PlankFloor.SM_PlankFloor",
+          "class": "StaticMesh",
+          "collisionConvex": 1,
+          "collisionBoxes": 0,
+          "materials": 1,
+          "assemblySocket": true
+        },
+        {
+          "path": "/Game/ForgeAAA/R82/SM_SideWall.SM_SideWall",
+          "class": "StaticMesh",
+          "collisionConvex": 1,
+          "collisionBoxes": 0,
+          "materials": 1,
+          "assemblySocket": true
+        },
+        {
+          "path": "/Game/ForgeAAA/R82/SM_WindowFrame.SM_WindowFrame",
+          "class": "StaticMesh",
+          "collisionConvex": 7,
+          "collisionBoxes": 0,
+          "materials": 2,
+          "assemblySocket": true
+        },
+        {
+          "path": "/Game/ForgeAAA/R82/SM_WindowHeader.SM_WindowHeader",
+          "class": "StaticMesh",
+          "collisionConvex": 1,
+          "collisionBoxes": 0,
+          "materials": 1,
+          "assemblySocket": true
+        },
+        {
+          "path": "/Game/ForgeAAA/R82/SM_WindowSash.SM_WindowSash",
+          "class": "StaticMesh",
+          "collisionConvex": 1,
+          "collisionBoxes": 0,
+          "materials": 2,
+          "assemblySocket": true
+        },
+        {
+          "path": "/Game/ForgeAAA/R82/SM_WindowSillWall.SM_WindowSillWall",
+          "class": "StaticMesh",
+          "collisionConvex": 1,
+          "collisionBoxes": 0,
+          "materials": 1,
+          "assemblySocket": true
+        }
+      ],
+      "errors": []
+    }
+  },
+  "legacy": {
+    "file": "legacy-compatibility-1791732146755.json",
+    "data": {
+      "startedAt": "2026-10-11T15:22:26.755Z",
+      "stages": {
+        "legacy-writer": {
+          "state": "pass",
+          "actions": [
+            {
+              "index": 0,
+              "op": "wait"
+            },
+            {
+              "index": 1,
+              "op": "expectDoor",
+              "start": [
+                0,
+                -150,
+                90.14999389648438
+              ],
+              "door": "door-western-a",
+              "expectedState": "closed",
+              "obsYawDeg": 0,
+              "hingeYawDeg": 0,
+              "cmdYawDeg": 0,
+              "state": "door.closed",
+              "pass": true
+            },
+            {
+              "index": 2,
+              "op": "moveTo",
+              "arrived": true,
+              "end": [
+                35.18497848510742,
+                -79.63035583496094,
+                90.14999389648438
+              ],
+              "displacementCm": 87.05731964111328
+            },
+            {
+              "index": 3,
+              "op": "face",
+              "start": [
+                35.889122009277344,
+                -78.22206115722656,
+                90.14999389648438
+              ],
+              "yaw": 114.6460952758789
+            },
+            {
+              "index": 4,
+              "op": "press",
+              "start": [
+                37.078338623046875,
+                -75.84361267089844,
+                90.14999389648438
+              ],
+              "key": "E",
+              "inputClass": "SYNTHETIC_INPUT",
+              "dispatched": true,
+              "targetName": "FAAA_door-western-a",
+              "distanceCm": 36.68566131591797,
+              "resultState": "door.opening",
+              "sweepYawDeg": 114.6461410522461,
+              "sweepHits": [
+                "FAAA_door-western-a/LeafMesh@36.7"
+              ]
+            },
+            {
+              "index": 5,
+              "op": "wait"
+            },
+            {
+              "index": 6,
+              "op": "expectDoor",
+              "start": [
+                44.1861457824707,
+                -61.62796401977539,
+                90.14999389648438
+              ],
+              "door": "door-western-a",
+              "expectedState": "open",
+              "obsYawDeg": -95,
+              "hingeYawDeg": -95,
+              "cmdYawDeg": -95,
+              "state": "door.open",
+              "pass": true
+            },
+            {
+              "index": 7,
+              "op": "save",
+              "start": [
+                44.1861457824707,
+                -61.62796401977539,
+                90.14999389648438
+              ],
+              "slot": "ForgeR81DoorTest",
+              "savedDoors": 2
+            },
+            {
+              "index": 8,
+              "op": "slotVerify",
+              "start": [
+                44.1861457824707,
+                -61.62796401977539,
+                90.14999389648438
+              ],
+              "slot": "ForgeR81DoorTest",
+              "slotExists": true,
+              "loaded": true,
+              "schemaVersion": 1,
+              "doors": {
+                "door-western-a": {
+                  "state": 2,
+                  "leafYawDeg": -95
+                },
+                "door-western-b": {
+                  "state": 0,
+                  "leafYawDeg": 0
+                }
+              }
+            },
+            {
+              "index": 9,
+              "op": "exit",
+              "start": [
+                44.1861457824707,
+                -61.62796401977539,
+                90.14999389648438
+              ]
+            }
+          ],
+          "metrics": {
+            "failures": [],
+            "errors": [],
+            "doors": [
+              {
+                "instanceId": "door-western-a",
+                "actor": "FAAA_door-western-a",
+                "state": "door.open",
+                "obsYawDeg": -95,
+                "cmdYawDeg": -95
+              },
+              {
+                "instanceId": "door-western-b",
+                "actor": "FAAA_door-western-b",
+                "state": "door.closed",
+                "obsYawDeg": 0,
+                "cmdYawDeg": 0
+              }
+            ],
+            "pythonModuleLoaded": true,
+            "engineVersion": "4.27.2-18319896+++UE4+Release-4.27",
+            "saveSlot": "ForgeR81DoorTest"
+          }
+        },
+        "r82-reader": {
+          "state": "pass",
+          "actions": [
+            {
+              "index": 0,
+              "op": "wait"
+            },
+            {
+              "index": 1,
+              "op": "expectDoor",
+              "start": [
+                0,
+                -150,
+                90.14999389648438
+              ],
+              "door": "door-western-a",
+              "expectedState": "open",
+              "obsYawDeg": -95,
+              "hingeYawDeg": -95,
+              "cmdYawDeg": -95,
+              "state": "door.open",
+              "pass": true
+            },
+            {
+              "index": 2,
+              "op": "expectDoor",
+              "start": [
+                0,
+                -150,
+                90.14999389648438
+              ],
+              "door": "door-western-b",
+              "expectedState": "closed",
+              "obsYawDeg": 0,
+              "hingeYawDeg": 0,
+              "cmdYawDeg": 0,
+              "state": "door.closed",
+              "pass": true
+            },
+            {
+              "index": 3,
+              "op": "slotVerify",
+              "start": [
+                0,
+                -150,
+                90.14999389648438
+              ],
+              "slot": "ForgeR82LegacyCompatibility",
+              "slotExists": true,
+              "loaded": true,
+              "schemaVersion": 1,
+              "doors": {
+                "door-western-a": {
+                  "state": 2,
+                  "leafYawDeg": -95
+                },
+                "door-western-b": {
+                  "state": 0,
+                  "leafYawDeg": 0
+                }
+              },
+              "windows": {}
+            },
+            {
+              "index": 4,
+              "op": "probe",
+              "start": [
+                0,
+                -150,
+                90.14999389648438
+              ],
+              "from": [
+                0,
+                -40,
+                100
+              ],
+              "to": [
+                0,
+                80,
+                100
+              ],
+              "blockingHit": false
+            },
+            {
+              "index": 5,
+              "op": "exit",
+              "start": [
+                0,
+                -150,
+                90.14999389648438
+              ]
+            }
+          ],
+          "metrics": {
+            "failures": [],
+            "errors": [],
+            "doors": [
+              {
+                "instanceId": "door-western-a",
+                "actor": "FAAA_door-western-a",
+                "state": "door.open",
+                "obsYawDeg": -95,
+                "cmdYawDeg": -95
+              },
+              {
+                "instanceId": "door-western-b",
+                "actor": "FAAA_door-western-b",
+                "state": "door.closed",
+                "obsYawDeg": 0,
+                "cmdYawDeg": 0
+              }
+            ],
+            "pythonModuleLoaded": true,
+            "engineVersion": "4.27.2-18319896+++UE4+Release-4.27",
+            "saveSlot": "ForgeR82LegacyCompatibility"
+          }
+        },
+        "missing-window-record": {
+          "state": "pass",
+          "actions": [
+            {
+              "index": 0,
+              "op": "wait"
+            },
+            {
+              "index": 1,
+              "op": "expectWindow",
+              "start": [
+                0,
+                -200,
+                90.14999389648438
+              ],
+              "state": "window.closed",
+              "observedSlideCm": 0,
+              "sashWorldZ": 90,
+              "commandedSlideCm": 0,
+              "restored": false,
+              "pass": true
+            },
+            {
+              "index": 2,
+              "op": "slotVerify",
+              "start": [
+                0,
+                -200,
+                90.14999389648438
+              ],
+              "slot": "ForgeR82LegacyCompatibility",
+              "slotExists": true,
+              "loaded": true,
+              "schemaVersion": 1,
+              "doors": {
+                "door-western-a": {
+                  "state": 2,
+                  "leafYawDeg": -95
+                },
+                "door-western-b": {
+                  "state": 0,
+                  "leafYawDeg": 0
+                }
+              },
+              "windows": {}
+            },
+            {
+              "index": 3,
+              "op": "deleteSave",
+              "start": [
+                0,
+                -200,
+                90.14999389648438
+              ],
+              "ok": true
+            },
+            {
+              "index": 4,
+              "op": "exit",
+              "start": [
+                0,
+                -200,
+                90.14999389648438
+              ]
+            }
+          ],
+          "metrics": {
+            "failures": [],
+            "errors": [],
+            "doors": [
+              {
+                "instanceId": "a836fa4dea044e03bb3f1f08d7321907",
+                "actor": "forge-building_western-room-a_door",
+                "state": "door.closed",
+                "obsYawDeg": 0,
+                "cmdYawDeg": 0
+              },
+              {
+                "instanceId": "629855cc94c5f499705a5d2ab7c9128c",
+                "actor": "forge-building_western-room-b_door",
+                "state": "door.closed",
+                "obsYawDeg": 0,
+                "cmdYawDeg": 0
+              }
+            ],
+            "pythonModuleLoaded": true,
+            "engineVersion": "4.27.2-18319896+++UE4+Release-4.27",
+            "saveSlot": "ForgeR82LegacyCompatibility"
+          }
+        }
+      },
+      "classification": "actual R81 binary writes original schema; R82 binary reads it",
+      "legacySaveSha256": "ead7ddff17cf5c628e33f86d4dde5806243a0cbde2b1bcb5e17a28d02b1d3aa4",
+      "ok": true,
+      "finishedAt": "2026-10-11T15:23:01.957Z"
+    }
+  },
+  "stairs": {
+    "file": "stair-regression-1791732563293.json",
+    "data": {
+      "option": "C: separate preserved staircase validation area; six steps, 108cm rise; not a second story",
+      "classification": "legacy Python traversal driver; actual CharacterMovement; separate from native R82 gameplay",
+      "runs": {
+        "ascend": {
+          "state": "pass",
+          "metrics": {
+            "samples": 50,
+            "simSeconds": 4.96,
+            "start": [
+              -160,
+              0,
+              90.15
+            ],
+            "final": [
+              117.88,
+              0,
+              197.72
+            ],
+            "zGain": 107.57,
+            "displacementCm": 277.88,
+            "maxZ": 197.72,
+            "minZ": 90.15,
+            "errors": []
+          },
+          "configRestored": true
+        },
+        "descend": {
+          "state": "pass",
+          "metrics": {
+            "samples": 50,
+            "simSeconds": 4.97,
+            "start": [
+              250,
+              0,
+              198.15
+            ],
+            "final": [
+              -89.41,
+              0,
+              90.15
+            ],
+            "zGain": -108,
+            "displacementCm": 339.40999999999997,
+            "maxZ": 198.15,
+            "minZ": 90.15,
+            "errors": []
+          },
+          "configRestored": true
+        },
+        "side": {
+          "state": "pass",
+          "metrics": {
+            "samples": 30,
+            "simSeconds": 2.96,
+            "start": [
+              78,
+              0,
+              175.88
+            ],
+            "final": [
+              78,
+              -1.87,
+              175.88
+            ],
+            "zGain": 0,
+            "displacementCm": 1.87,
+            "maxZ": 175.88,
+            "minZ": 175.88,
+            "errors": []
+          },
+          "configRestored": true
+        }
+      },
+      "ok": true
+    }
+  },
+  "recovery": {
+    "file": "assembly-recovery-1791732691314.json",
+    "ok": true,
+    "before": "41f95c6b418602e4f48a1deb5c7f80e3d7ada07950e1b8a16216470d256cbda7",
+    "afterRejection": "41f95c6b418602e4f48a1deb5c7f80e3d7ada07950e1b8a16216470d256cbda7",
+    "rejection": {
+      "ok": false,
+      "placed": [],
+      "errors": [
+        "unresolved module: forge/building/SM_PlankFloor/v1"
+      ],
+      "level_saved": false,
+      "fingerprint": "e9b52852c16beb6eeaf6b341b5638cc10b2581ab45058c9656c470a029de30d7",
+      "rolledBackActors": 0
+    },
+    "repaired": {
+      "ok": true,
+      "placed": [
+        {
+          "instanceId": "floor",
+          "persistentId": "1a03937b26674f1b414c1a9796802d4e",
+          "identity": "forge-building:western-room-a:floor",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_floor",
+          "action": "reused",
+          "boundsCm": [
+            0,
+            260,
+            -5,
+            279.95001220703125,
+            260,
+            5
+          ]
+        },
+        {
+          "instanceId": "front-left",
+          "persistentId": "4b5693683252959779120b195a75e579",
+          "identity": "forge-building:western-room-a:front-left",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_front-left",
+          "action": "reused",
+          "boundsCm": [
+            -167.5,
+            -10,
+            130,
+            112.5,
+            10.000009536743164,
+            130
+          ]
+        },
+        {
+          "instanceId": "front-right",
+          "persistentId": "0386e7439d1b432e3097e50cfa63de4e",
+          "identity": "forge-building:western-room-a:front-right",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_front-right",
+          "action": "reused",
+          "boundsCm": [
+            167.5,
+            -10,
+            130,
+            112.5,
+            10.000009536743164,
+            130
+          ]
+        },
+        {
+          "instanceId": "door-lintel",
+          "persistentId": "fa96bc0fe42f96b3751969811b18127e",
+          "identity": "forge-building:western-room-a:door-lintel",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_door-lintel",
+          "action": "reused",
+          "boundsCm": [
+            0,
+            -10,
+            237.5,
+            55.000003814697266,
+            10.000003814697266,
+            22.5
+          ]
+        },
+        {
+          "instanceId": "wall-left",
+          "persistentId": "1d660aff082aed499573c8c2202acb69",
+          "identity": "forge-building:western-room-a:wall-left",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_wall-left",
+          "action": "reused",
+          "boundsCm": [
+            -290,
+            260,
+            130,
+            10.000030517578125,
+            280,
+            130
+          ]
+        },
+        {
+          "instanceId": "wall-right",
+          "persistentId": "649445bc91f976d0aa8a5eba10d51cdb",
+          "identity": "forge-building:western-room-a:wall-right",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_wall-right",
+          "action": "reused",
+          "boundsCm": [
+            290,
+            260,
+            130,
+            10.000030517578125,
+            280,
+            130
+          ]
+        },
+        {
+          "instanceId": "back-left",
+          "persistentId": "94bbc71c0e87611a90c803b1fe3b062c",
+          "identity": "forge-building:western-room-a:back-left",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_back-left",
+          "action": "reused",
+          "boundsCm": [
+            -170,
+            530,
+            130,
+            110,
+            10,
+            130
+          ]
+        },
+        {
+          "instanceId": "back-right",
+          "persistentId": "8cbc02b033f83172e7be284c1f06a406",
+          "identity": "forge-building:western-room-a:back-right",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_back-right",
+          "action": "reused",
+          "boundsCm": [
+            170,
+            530,
+            130,
+            110,
+            10,
+            130
+          ]
+        },
+        {
+          "instanceId": "sill",
+          "persistentId": "6fe9423a480914c13accee513396620b",
+          "identity": "forge-building:western-room-a:sill",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_sill",
+          "action": "reused",
+          "boundsCm": [
+            0,
+            530,
+            45,
+            60.000003814697266,
+            10,
+            45
+          ]
+        },
+        {
+          "instanceId": "window-header",
+          "persistentId": "555c7aa5da11e918467f1d87b1932ed6",
+          "identity": "forge-building:western-room-a:window-header",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_window-header",
+          "action": "reused",
+          "boundsCm": [
+            0,
+            530,
+            245,
+            60.000003814697266,
+            10,
+            15
+          ]
+        },
+        {
+          "instanceId": "ceiling",
+          "persistentId": "1fe9596b6fee494a4fbb1e01ae30f3c2",
+          "identity": "forge-building:western-room-a:ceiling",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_ceiling",
+          "action": "reused",
+          "boundsCm": [
+            0,
+            259.9999694824219,
+            265,
+            300.0000305175781,
+            280,
+            5
+          ]
+        },
+        {
+          "instanceId": "entrance-floor",
+          "persistentId": "f4b381084f549f3af0466bd540ba3358",
+          "identity": "forge-building:western-room-a:entrance-floor",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_entrance-floor",
+          "action": "reused",
+          "boundsCm": [
+            0,
+            -120,
+            -5,
+            300,
+            120.00003051757812,
+            5
+          ]
+        },
+        {
+          "instanceId": "door",
+          "persistentId": "a836fa4dea044e03bb3f1f08d7321907",
+          "identity": "forge-building:western-room-a:door",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_door",
+          "action": "reused",
+          "boundsCm": [
+            0.000003814697265625,
+            -9.75001049041748,
+            107.50000762939453,
+            55.000003814697266,
+            5.250006675720215,
+            107.50000762939453
+          ]
+        },
+        {
+          "instanceId": "window",
+          "persistentId": "75c84e620f55e7cf42b23d97b7cf4773",
+          "identity": "forge-building:western-room-a:window",
+          "actor": "/Game/ForgeAAA/Maps/FAAA_R82InteriorV2.FAAA_R82InteriorV2:PersistentLevel.forge-building_western-room-a_window",
+          "action": "reused",
+          "boundsCm": [
+            0,
+            530,
+            160,
+            59.999996185302734,
+            8,
+            70
+          ]
+        }
+      ],
+      "errors": [],
+      "level_saved": true,
+      "fingerprint": "28d3e8ef18bcac9ccb6a94eb902fb8016ac83d3a631401f2f62e6324709963b2",
+      "actorCount": 34
+    }
+  },
+  "tests": {
+    "passed": 711,
+    "failed": 0,
+    "skipped": 7
+  },
+  "visual": {
+    "scope": "engineering-agent inspection of actual native render targets; no independent visual-model claim",
+    "files": [
+      {
+        "name": "interior.png",
+        "sha256": "1636daf4bdae539437e03e2d4376eba556f034b60baa7271fc7d7967b31728d8"
+      },
+      {
+        "name": "window.png",
+        "sha256": "76fafeb422b533126a6467e03c985b75707a800218d75a5c6418066a40b53dad"
+      },
+      {
+        "name": "exterior.png",
+        "sha256": "a4c807236dadbcff750ab6349741c5b79a97808128af264f4fbadea69d0ab9db"
+      }
+    ]
+  },
+  "autonomy": {
+    "model": "nvidia/nemotron-3-super-120b-a12b:free",
+    "route": "qualified CODER via ForgeZero current free-policy/catalog verification and ForgeAAA Director",
+    "contribution": "15-action native gameplay QA design and targeting repair; used in passing engine campaign",
+    "rawReceipt": "model-window-test-1791731627812.json",
+    "corrections": {
+      "rawReceipt": "model-window-test-1791731627812.json",
+      "correctedArtifact": "benchmarks/r82/model-window-actions.json",
+      "edits": [
+        {
+          "index": 5,
+          "before": {
+            "op": "probe",
+            "from": [
+              25,
+              527,
+              120
+            ],
+            "to": [
+              25,
+              527,
+              200
+            ],
+            "expect": {
+              "blockingHit": false
+            }
+          },
+          "reason": "restore original horizontal aperture assertion; vertical probe hits raised sash"
+        },
+        {
+          "index": 10,
+          "before": {
+            "op": "probe",
+            "from": [
+              25,
+              527,
+              120
+            ],
+            "to": [
+              25,
+              527,
+              200
+            ],
+            "expect": {
+              "blockingHit": true
+            }
+          },
+          "reason": "restore original horizontal aperture assertion; vertical probe hits raised sash"
+        }
+      ],
+      "classification": "agent post-processing; final bounded model correction timed out; no inferred upstream success"
+    },
+    "directorStatus": "partial or failed generation runs; native implementation/build/import/assembly/integration manually orchestrated"
+  },
+  "free": "CODEFORGE_R76_PARTIAL; one shared Kilo anonymous coder quota domain; current Kilo and BlockRun catalogs unchanged; authorized paid inference $0",
+  "limits": [
+    "UE4.27 only; UE5 refused by adapter",
+    "fixed certified door/window sizes; configurable structural footprint/height; alternate footprint schema-checked, not engine-tested",
+    "no authored farmhouse edits; isolated pilot only",
+    "no adult window traversal claim",
+    "staircase separately validated, six-step 108cm rise, not a second story",
+    "no FPS/endurance certification",
+    "no claim of fully autonomous building development"
+  ]
+}

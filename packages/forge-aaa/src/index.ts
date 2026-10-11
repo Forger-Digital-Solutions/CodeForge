@@ -14,6 +14,8 @@ export * from "./orchestrator.js";
 export * from "./model-review.js";
 export * from "./door-spec.js";
 export * from "./module-contract.js";
+export * from "./building-definition.js";
+export * from "./architectural-template.js";
 export * from "./door-template.js";
 export * from "./project-discovery.js";
 export * from "./service.js";
