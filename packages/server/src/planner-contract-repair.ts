@@ -80,8 +80,43 @@ export function repairPlannerContract(
     usedIds.add(task.id);
   }
 
-  const tasks: PlannerTask[] = plan.tasks.map((task) => ({ ...task, dependencies: [...task.dependencies] }));
+  let tasks: PlannerTask[] = plan.tasks.map((task) => ({ ...task, dependencies: [...task.dependencies] }));
   const repairs: string[] = [];
+
+  // A coder that transitively depends on a reviewer violates the lifecycle — review is a
+  // terminal stage and the runtime owns post-review verification. Demoting (not deleting)
+  // preserves the planner's intent as verification obligations instead of producing the
+  // dependency cycle the naive reviewer-linking repair would create.
+  const demotedObjectives: string[] = [];
+  {
+    const reviewerIds = new Set(tasks.filter((t) => t.assignedRole === "reviewer").map((t) => t.id));
+    if (reviewerIds.size > 0) {
+      const depsById = new Map(tasks.map((t) => [t.id, t.dependencies]));
+      const reachesReviewer = (task: PlannerTask): boolean => {
+        const seen = new Set<string>();
+        const stack = [...task.dependencies];
+        while (stack.length > 0) {
+          const id = stack.pop()!;
+          if (reviewerIds.has(id)) return true;
+          if (seen.has(id)) continue;
+          seen.add(id);
+          for (const dep of depsById.get(id) ?? []) stack.push(dep);
+        }
+        return false;
+      };
+      const demotedIds = new Set(tasks.filter((t) => t.assignedRole === "coder" && reachesReviewer(t)).map((t) => t.id));
+      if (demotedIds.size > 0) {
+        for (const task of tasks) {
+          if (demotedIds.has(task.id)) demotedObjectives.push(task.objective);
+          else task.dependencies = task.dependencies.filter((dep) => !demotedIds.has(dep));
+        }
+        tasks = tasks.filter((task) => !demotedIds.has(task.id));
+        repairs.push("demoted post-review coder task(s) to runtime verification obligations");
+        if (!tasks.some((t) => t.assignedRole === "coder")) return undefined;
+      }
+    }
+  }
+
   let coderTasks = tasks.filter((task) => task.assignedRole === "coder");
   if (coderTasks.length === 0) {
     const id = uniqueId("runtime-coder", usedIds);
@@ -121,7 +156,7 @@ export function repairPlannerContract(
   }
 
   const constraints = mergeUnique(plan.planningIntent?.constraints, explicitConstraints);
-  const verification = mergeUnique(plan.planningIntent?.verification, input.verificationCommands);
+  const verification = mergeUnique(plan.planningIntent?.verification, [...input.verificationCommands, ...demotedObjectives]);
   if (constraints.length > (plan.planningIntent?.constraints?.length ?? 0)) {
     repairs.push("retained explicit user constraints from the original request");
   }

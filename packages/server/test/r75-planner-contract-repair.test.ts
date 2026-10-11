@@ -95,7 +95,7 @@ describe("repairPlannerContract", () => {
     expect(repairPlannerContract({ plan, goal: "Implement a change.", verificationCommands: ["npm test"] })).toBeUndefined();
   });
 
-  it("refuses a cycle introduced by completing a later Reviewer's implementation dependencies", () => {
+  it("demotes a post-review coder to runtime verification instead of creating a cycle", () => {
     const plan: PlannerResult = {
       protocol: "task_graph_v1", summary: "Implement and review in two rounds.",
       tasks: [
@@ -105,7 +105,42 @@ describe("repairPlannerContract", () => {
         { id: "second-code", title: "Implement", objective: "Implement", dependencies: ["second-review"], assignedRole: "coder" },
       ],
     };
-    expect(repairPlannerContract({ plan, goal: "Implement a change.", verificationCommands: ["node --test"] })).toBeUndefined();
+    const repaired = repairPlannerContract({ plan, goal: "Implement a change.", verificationCommands: ["node --test"] });
+    expect(repaired).toBeDefined();
+    expect(repaired!.repairs).toContain("demoted post-review coder task(s) to runtime verification obligations");
+    expect(repaired!.plan.tasks.map((t) => t.id)).toEqual(["first-code", "first-review", "second-review"]);
+    for (const reviewTask of repaired!.plan.tasks.filter((t) => t.assignedRole === "reviewer")) {
+      expect(reviewTask.dependencies).toContain("first-code");
+      expect(reviewTask.dependencies).not.toContain("second-code");
+    }
+    expect(repaired!.plan.planningIntent?.verification).toContain("Implement");
     expect(plan.tasks[2]?.dependencies).toEqual(["first-code"]);
+  });
+
+  it("repairs the corrected-graph shape that blocked the R76 campaign", () => {
+    // Live failure shape: 4 implementation coders + reviewer + a post-review "verify" coder
+    // depending on the reviewer. Naive reviewer-linking creates a cycle; the repair must
+    // demote the post-review coder and still authorize a valid graph.
+    const plan: PlannerResult = {
+      protocol: "task_graph_v1",
+      summary: "Corrected task graph for retry queue repair.",
+      tasks: [
+        { id: "I1", title: "Investigate retry queue", objective: "Identify the attempt-boundary bug", dependencies: [], assignedRole: "coder" },
+        { id: "P1", title: "Plan repair", objective: "Plan the repair", dependencies: ["I1"], assignedRole: "coder" },
+        { id: "I2", title: "Preserve tests and public API", objective: "Preserve tests and API", dependencies: ["P1"], assignedRole: "coder" },
+        { id: "I3", title: "Verify retry sequence", objective: "Verify the retry sequence is correct", dependencies: ["I2"], assignedRole: "coder" },
+        { id: "I4", title: "Verify exhaustion and zero-budget", objective: "Verify edge cases", dependencies: ["I3"], assignedRole: "coder" },
+        { id: "R1", title: "Review implementation", objective: "Review the implementation", dependencies: ["I1", "I2", "I3", "I4"], assignedRole: "reviewer" },
+        { id: "V1", title: "Verify implementation", objective: "Verify the implementation using node --test", dependencies: ["R1"], assignedRole: "coder" },
+      ],
+    };
+    const repaired = repairPlannerContract({ plan, goal: "Inspect the retry queue and repair its attempt-boundary bug. Do not break tests.", verificationCommands: ["node --test test/retry.test.mjs"] });
+    expect(repaired).toBeDefined();
+    expect(repaired!.plan.tasks.some((t) => t.id === "V1")).toBe(false);
+    expect(repaired!.plan.tasks.filter((t) => t.assignedRole === "coder")).toHaveLength(5);
+    expect(repaired!.plan.planningIntent?.verification).toContain("Verify the implementation using node --test");
+    expect(repaired!.plan.planningIntent?.verification).toContain("node --test test/retry.test.mjs");
+    const reviewer = repaired!.plan.tasks.find((t) => t.assignedRole === "reviewer");
+    expect(reviewer?.dependencies).toEqual(expect.arrayContaining(["I1", "P1", "I2", "I3", "I4"]));
   });
 });

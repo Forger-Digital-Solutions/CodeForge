@@ -1,0 +1,99 @@
+{
+  "providerId": "kilo-free-direct",
+  "modelId": "poolside/laguna-s-2.1:free",
+  "requestBudget": 6,
+  "inferenceRequests": 1,
+  "publicSyntheticCodeOnly": true,
+  "observations": [
+    {
+      "requestedAt": "2026-10-11T02:47:04.132Z",
+      "url": "https://api.kilo.ai/api/gateway/models",
+      "method": "GET",
+      "status": 200,
+      "headers": []
+    },
+    {
+      "requestedAt": "2026-10-11T02:47:04.484Z",
+      "url": "https://api.kilo.ai/api/gateway/chat/completions",
+      "method": "POST",
+      "status": 429,
+      "headers": []
+    }
+  ],
+  "frames": [
+    {
+      "requestedAt": "2026-10-11T02:47:04.484Z",
+      "request": {
+        "model": "poolside/laguna-s-2.1:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are CodeForge, an autonomous coding agent. Use the provided tools to act. Do not explain; call a tool."
+          },
+          {
+            "role": "user",
+            "content": "Open src/calc.ts and report what it exports. Use the read_file tool."
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "read_file",
+              "description": "Read a file from the repository. Returns its full contents.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Repository-relative path"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "edit_file",
+              "description": "Replace an exact text span in a file. oldText must match the file exactly.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "oldText": {
+                    "type": "string"
+                  },
+                  "newText": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "oldText",
+                  "newText"
+                ]
+              }
+            }
+          }
+        ],
+        "toolChoice": "auto",
+        "temperature": 0,
+        "maxTokens": 200
+      },
+      "events": [],
+      "error": {
+        "message": "ProviderError: kilo-free-direct error (429): {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"{\\\"error\\\":\\\"Rate limit exceeded\\\"}\\n\",\"provider_name\":\"Poolside\",\"is_byok\":true,\"limit_source\":\"upstream_provider_account\",",
+        "code": "RATE_LIMITED",
+        "status": 429,
+        "retryable": true,
+        "rateLimitScope": "provider"
+      }
+    }
+  ]
+}
