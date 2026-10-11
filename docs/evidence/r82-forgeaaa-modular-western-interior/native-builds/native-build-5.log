@@ -1,0 +1,16 @@
+Invalidating makefile for DeadTrailsWestEditor (ForgeGameplay.Build.cs modified)
+Parsing headers for DeadTrailsWestEditor
+  Running UnrealHeaderTool "G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\DeadTrailsWest.uproject" "G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Intermediate\Build\Win64\DeadTrailsWestEditor\Development\DeadTrailsWestEditor.uhtmanifest" -LogCmds="loginit warning, logexit warning, logdatabase error" -Unattended -WarningsAsErrors -abslog="C:\Users\Daddy_FDS\AppData\Local\Packages\sandbox.{4c019fbe-aeb9-4a68-a185-34a7f3eca7f7}\AC\UnrealBuildTool\Log_UHT.txt" -installed
+LogInit: Display: Loading text-based GConfig....
+Reflection code generated for DeadTrailsWestEditor in 5.6575286 seconds
+Building DeadTrailsWestEditor...
+Using Visual Studio 2022 14.51.36260 toolchain (C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231) and Windows 10.0.26100.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+Building 5 actions with 2 processes...
+  [1/5] Module.ForgeGameplay.gen.cpp
+  Detected compiler newer than Visual Studio 2019, please update min version checking in WindowsPlatformCompilerSetup.h
+  [2/5] Module.ForgeGameplay.cpp
+  Detected compiler newer than Visual Studio 2019, please update min version checking in WindowsPlatformCompilerSetup.h
+  [3/5] UE4Editor-ForgeGameplay.lib
+     Creating library G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Plugins\ForgeGameplay\Intermediate\Build\Win64\UE4Editor\Development\ForgeGameplay\UE4Editor-ForgeGameplay.lib and object G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Plugins\ForgeGameplay\Intermediate\Build\Win64\UE4Editor\Development\ForgeGameplay\UE4Editor-ForgeGameplay.exp
+  [4/5] UE4Editor-ForgeGameplay.dll
+  LINK : fatal error LNK1104: cannot open file 'G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Plugins\ForgeGameplay\Binaries\Win64\UE4Editor-ForgeGameplay.dll'

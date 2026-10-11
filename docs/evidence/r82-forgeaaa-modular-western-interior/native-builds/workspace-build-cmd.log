@@ -1,0 +1,4 @@
+
+> codeforge@0.4.0 build
+> npm run build --workspaces --if-present
+

@@ -1,0 +1,8 @@
+Building DeadTrailsWestEditor...
+Using Visual Studio 2022 14.51.36260 toolchain (C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231) and Windows 10.0.26100.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+Building 2 actions with 2 processes...
+  [1/2] UE4Editor-ForgeGameplay.dll
+     Creating library G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Plugins\ForgeGameplay\Intermediate\Build\Win64\UE4Editor\Development\ForgeGameplay\UE4Editor-ForgeGameplay.suppressed.lib and object G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Plugins\ForgeGameplay\Intermediate\Build\Win64\UE4Editor\Development\ForgeGameplay\UE4Editor-ForgeGameplay.suppressed.exp
+  [2/2] DeadTrailsWestEditor.target
+Total time in Parallel executor: 1.71 seconds
+Total execution time: 4.84 seconds

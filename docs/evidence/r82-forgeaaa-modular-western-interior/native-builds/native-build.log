@@ -1,0 +1,26 @@
+Creating makefile for DeadTrailsWestEditor (no existing makefile)
+Parsing headers for DeadTrailsWestEditor
+  Running UnrealHeaderTool "G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\DeadTrailsWest.uproject" "G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Intermediate\Build\Win64\DeadTrailsWestEditor\Development\DeadTrailsWestEditor.uhtmanifest" -LogCmds="loginit warning, logexit warning, logdatabase error" -Unattended -WarningsAsErrors -abslog="C:\Users\Daddy_FDS\AppData\Local\Packages\sandbox.{ffecd4c0-9a31-477d-8ca5-0b525b9fc972}\AC\UnrealBuildTool\Log_UHT.txt" -installed
+LogInit: Display: Loading text-based GConfig....
+Reflection code generated for DeadTrailsWestEditor in 7.8073517 seconds
+Building DeadTrailsWestEditor...
+Using Visual Studio 2022 14.51.36260 toolchain (C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231) and Windows 10.0.26100.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+Building 11 actions with 2 processes...
+  [1/11] Default.rc2
+  [2/11] Default.rc2
+  [3/11] SharedPCH.Engine.ShadowErrors.cpp
+  Detected compiler newer than Visual Studio 2019, please update min version checking in WindowsPlatformCompilerSetup.h
+  [4/11] DeadTrailsWestModule.cpp
+  [5/11] UE4Editor-DeadTrailsWest.lib
+     Creating library G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Intermediate\Build\Win64\UE4Editor\Development\DeadTrailsWest\UE4Editor-DeadTrailsWest.lib and object G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Intermediate\Build\Win64\UE4Editor\Development\DeadTrailsWest\UE4Editor-DeadTrailsWest.exp
+  [6/11] Module.ForgeGameplay.gen.cpp
+  [7/11] UE4Editor-DeadTrailsWest.dll
+     Creating library G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Intermediate\Build\Win64\UE4Editor\Development\DeadTrailsWest\UE4Editor-DeadTrailsWest.suppressed.lib and object G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Intermediate\Build\Win64\UE4Editor\Development\DeadTrailsWest\UE4Editor-DeadTrailsWest.suppressed.exp
+  [8/11] Module.ForgeGameplay.cpp
+  [9/11] UE4Editor-ForgeGameplay.lib
+     Creating library G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Plugins\ForgeGameplay\Intermediate\Build\Win64\UE4Editor\Development\ForgeGameplay\UE4Editor-ForgeGameplay.lib and object G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Plugins\ForgeGameplay\Intermediate\Build\Win64\UE4Editor\Development\ForgeGameplay\UE4Editor-ForgeGameplay.exp
+  [10/11] UE4Editor-ForgeGameplay.dll
+     Creating library G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Plugins\ForgeGameplay\Intermediate\Build\Win64\UE4Editor\Development\ForgeGameplay\UE4Editor-ForgeGameplay.suppressed.lib and object G:\CodeForge\worktrees\r82-forgeaaa-modular-western-interior\.scratch\pilot\Plugins\ForgeGameplay\Intermediate\Build\Win64\UE4Editor\Development\ForgeGameplay\UE4Editor-ForgeGameplay.suppressed.exp
+  [11/11] DeadTrailsWestEditor.target
+Total time in Parallel executor: 68.81 seconds
+Total execution time: 92.51 seconds
