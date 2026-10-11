@@ -58,6 +58,16 @@ export interface UnrealCommandletRequest {
    * nothing to stdout; the real log (including LogPython print output) lands here.
    */
   logPath?: string;
+  /**
+   * `cmd` (default) uses UE4Editor-Cmd; `editor` uses UE4Editor — required for PIE
+   * tests because Slate tick callbacks do not exist in a -Cmd process.
+   */
+  host?: "cmd" | "editor";
+  /**
+   * `-game` mode: launches UE4Editor in game mode on this map (real game world —
+   * no editor subsystems). Map is inserted as the second positional argument.
+   */
+  game?: { map: string };
 }
 
 export interface UnrealCommandletResult {
@@ -152,6 +162,181 @@ print("FORGEAAA_REPORT:" + json.dumps(report))
 sys.exit(0 if report["ok"] else 2)
 `;
 
+/**
+ * PIE traversal test for UE4.27: runs in the GUI editor (Slate post-tick drives a
+ * phase machine), spawns a real `Character`, applies movement input through its
+ * CharacterMovement every tick — actual capsule collision + step-up physics — and
+ * samples the trajectory. Raw metrics are emitted as FORGEAAA_REPORT; the adapter
+ * evaluates the declared success gates. Never saves the level.
+ */
+/**
+ * -game-mode traversal test for UE4.27: runs inside the real game world (no editor
+ * subsystems). A Character is created via the `summon` console command, teleported
+ * once to the spec spawn, then driven by CharacterMovement input every Slate tick —
+ * real capsule collision + step-up physics. The report FILE is authoritative
+ * evidence: print() inside deferred callbacks does not reach LogPython reliably.
+ */
+const TRAVERSAL_SCRIPT = `import unreal, json, math
+spec = json.loads("__FORGEAAA_SPEC__")
+report = {"kind": "traversal", "level": spec["level"], "runId": spec["runId"], "executed": False, "samples": [], "errors": [], "trace": []}
+state = {"phase": "boot", "world": None, "pc": None, "t": 0.0, "last_sample_t": -1.0,
+         "handle": None, "ticks": 0, "wait": 0}
+
+def write_report():
+    try:
+        with open(spec["reportPath"], "w") as f:
+            json.dump(report, f)
+    except Exception as e:
+        report["errors"].append("report write: " + str(e))
+
+def finish():
+    write_report()
+    try:
+        unreal.unregister_slate_post_tick_callback(state["handle"])
+    except Exception:
+        pass
+    print("FORGEAAA_REPORT:" + json.dumps(report))
+    try:
+        unreal.SystemLibrary.execute_console_command(state.get("world"), "quit", state.get("pc"))
+    except Exception:
+        pass
+
+def prep_char(c):
+    # No controller possesses this pawn: bRunPhysicsWithNoController lets the movement
+    # component simulate anyway. CheatManager-summoned characters can also come up with
+    # MOVE_None — force walking so PhysWalking actually runs.
+    try:
+        cm = c.character_movement
+        cm.run_physics_with_no_controller = True
+        cm.set_movement_mode(unreal.MovementMode.MOVE_WALKING)
+    except Exception as e:
+        report["trace"].append("prep_warn:" + str(e))
+
+def resolve_context():
+    map_name = spec["level"].rsplit("/", 1)[-1]
+    for name in (spec["level"] + "." + map_name, "PersistentLevel", map_name):
+        try:
+            obj = unreal.find_object(None, name)
+            if obj is not None:
+                return obj
+        except Exception:
+            pass
+    return None
+
+def tick(dt):
+    state["ticks"] += 1
+    if state["ticks"] > 15000:
+        report["errors"].append("tick watchdog")
+        finish()
+        return
+    try:
+        if state["phase"] == "boot":
+            ctx = resolve_context()
+            if ctx is not None:
+                state["world"] = ctx
+                state["pc"] = unreal.GameplayStatics.get_player_controller(ctx, 0)
+                report["trace"].append("world_ready:" + ctx.get_name())
+                # GameMode auto-spawns a DefaultPawn at the PlayerStart — its collision
+                # overlaps our test character's spawn and depenetrates it sideways.
+                for p in unreal.GameplayStatics.get_all_actors_of_class(ctx, unreal.Pawn):
+                    p.destroy_actor()
+                unreal.SystemLibrary.execute_console_command(ctx, "summon Engine.Character", state["pc"])
+                state["phase"] = "spawn_wait"
+        elif state["phase"] == "spawn_wait":
+            chars = unreal.GameplayStatics.get_all_actors_of_class(state["world"], unreal.Character)
+            if len(chars):
+                c = chars[0]
+                sp = spec["spawn"]
+                c.set_actor_location(unreal.Vector(sp[0], sp[1], sp[2]), False, False)
+                d = spec["input"]
+                yaw = math.degrees(math.atan2(d[1], d[0]))
+                c.set_actor_rotation(unreal.Rotator(0, 0, yaw), False)
+                # summon fabricates the pawn mid-fall at the camera position — velocity
+                # survives the teleport and corrupts the run unless cleared.
+                try:
+                    c.character_movement.stop_movement_immediately()
+                    c.character_movement.velocity = unreal.Vector(0, 0, 0)
+                except Exception:
+                    pass
+                prep_char(c)
+                state["char"] = c
+                state["phase"] = "settle"
+                state["settle"] = 0.0
+        elif state["phase"] == "settle":
+            # Let the capsule land on the floor before applying input — sampled input
+            # during the initial fall corrupts the trajectory.
+            c = state.get("char")
+            if c is None:
+                report["errors"].append("character lost during settle")
+                finish()
+                return
+            state["settle"] += dt
+            if state["settle"] >= 0.5:
+                state["phase"] = "run"
+                report["trace"].append("char_spawned")
+                report["executed"] = True
+            else:
+                state["wait"] += 1
+                if state["wait"] > 600:
+                    report["errors"].append("spawn produced no Character")
+                    finish()
+        elif state["phase"] == "run":
+            c = state.get("char")
+            if c is None or not unreal.SystemLibrary.is_valid(c):
+                chars = unreal.GameplayStatics.get_all_actors_of_class(state["world"], unreal.Character)
+                c = chars[0] if len(chars) else None
+                if c is None:
+                    report["errors"].append("character lost mid-run")
+                    finish()
+                    return
+                state["char"] = c
+            if not state.get("diag"):
+                state["diag"] = True
+                try:
+                    cm = c.character_movement
+                    report["trace"].append("diag:rpnwc=%s mode=%s moveIgnored=%s role=%s" % (
+                        cm.run_physics_with_no_controller, cm.movement_mode,
+                        c.is_move_input_ignored(), c.get_local_role()))
+                except Exception as e:
+                    report["trace"].append("diag_err:" + str(e))
+            if not state.get("stopped"):
+                d = spec["input"]
+                # bForce=True: AddMovementInput is dropped without a local controller otherwise.
+                c.add_movement_input(unreal.Vector(d[0], d[1], d[2]), 1.0, True)
+            state["t"] += dt
+            if state["t"] - state["last_sample_t"] >= spec["samplePeriod"]:
+                state["last_sample_t"] = state["t"]
+                p = c.get_actor_location()
+                v = c.get_velocity()
+                wt = unreal.GameplayStatics.get_time_seconds(state["world"])
+                report["samples"].append({"t": round(state["t"], 2), "wt": round(wt, 2),
+                    "x": round(p.x, 2), "y": round(p.y, 2), "z": round(p.z, 2),
+                    "v": round(math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z), 2)})
+                st = spec.get("stop")
+                if st and not state.get("stopped"):
+                    declared = (st.get("minZ") is not None) or (st.get("maxZ") is not None) or (st.get("minDisplacementCm") is not None)
+                    met = declared
+                    if st.get("minZ") is not None and p.z < st["minZ"]: met = False
+                    if st.get("maxZ") is not None and p.z > st["maxZ"]: met = False
+                    if st.get("minDisplacementCm") is not None:
+                        p0 = report["samples"][0]
+                        if math.hypot(p.x - p0["x"], p.y - p0["y"]) < st["minDisplacementCm"]: met = False
+                    if met:
+                        state["stopped"] = True
+                        c.character_movement.stop_movement_immediately()
+                        c.character_movement.velocity = unreal.Vector(0, 0, 0)
+                        report["trace"].append("target_reached:t=" + str(round(state["t"], 2)))
+            if state["t"] >= spec["durationS"]:
+                state["phase"] = "done"
+                finish()
+    except Exception as e:
+        report["errors"].append("tick: " + str(e))
+        state["phase"] = "done"
+        finish()
+
+state["handle"] = unreal.register_slate_post_tick_callback(tick)
+`;
+
 export interface UnrealImportRequest {
   projectPath: string;
   files: string[];
@@ -197,6 +382,53 @@ export interface UnrealPlaceResult extends UnrealCommandletResult {
   placed: { name: string; actor: string; action: "spawned" | "updated" }[];
 }
 
+export type UnrealFunctionalTestState = "pass" | "fail" | "blocked" | "unsupported" | "timeout" | "not_executed";
+
+export interface UnrealTraversalSpec {
+  /** World-space character spawn point (capsule center). */
+  spawn: [number, number, number];
+  /** Unit world direction applied as movement input every tick during the run phase. */
+  inputDirection: [number, number, number];
+  /** Simulated-seconds budget for the movement phase. */
+  durationS: number;
+  /** Sampling period in simulated seconds; default 0.1. Lower for step-resolution profiling. */
+  samplePeriodS?: number;
+  /** Success gates — all declared gates must hold. Pure assertions; never stop input. */
+  expect?: {
+    minZ?: number;
+    maxZ?: number;
+    minDisplacementCm?: number;
+    maxDisplacementCm?: number;
+  };
+  /** Early-stop conditions — input halts once all declared thresholds are met.
+   *  Omit to drive for the full duration (e.g. blocked-movement tests). */
+  stopWhen?: {
+    minZ?: number;
+    maxZ?: number;
+    minDisplacementCm?: number;
+  };
+}
+
+export interface UnrealFunctionalTestRequest {
+  projectPath: string;
+  /** Level under test — loaded but never mutated. */
+  levelPath: string;
+  /** ForgeAAA-owned script destination. */
+  scriptPath: string;
+  /** `-abslog=` destination for the engine run log. */
+  logPath?: string;
+  traversal: UnrealTraversalSpec;
+  timeoutMs?: number;
+  install?: UnrealInstall;
+}
+
+export interface UnrealFunctionalTestResult extends UnrealCommandletResult {
+  state: UnrealFunctionalTestState;
+  scriptPath: string;
+  /** Engine-reported metrics: samples, z-gain, displacement, stuck detection. */
+  metrics?: Record<string, unknown>;
+}
+
 export interface UnrealPythonScriptRequest {
   projectPath: string;
   /** Absolute path to a ForgeAAA-owned script file (never user content). */
@@ -206,6 +438,8 @@ export interface UnrealPythonScriptRequest {
   install?: UnrealInstall;
   /** `-abslog=` destination — required to observe LogPython output on launcher builds. */
   logPath?: string;
+  /** `editor` runs on UE4Editor.exe (needed for PIE/Slate ticks); default is -Cmd. */
+  host?: "cmd" | "editor";
 }
 
 export interface UnrealAdapterDeps {
@@ -213,6 +447,7 @@ export interface UnrealAdapterDeps {
   listDir?: (p: string) => string[];
   readFile?: (p: string) => Promise<string>;
   writeFile?: (p: string, content: string) => Promise<void>;
+  deleteFile?: (p: string) => Promise<void>;
   spawnProcess?: typeof spawn;
   platform?: NodeJS.Platform;
   extraRoots?: string[];
@@ -223,6 +458,7 @@ export class UnrealAdapter {
   private readonly listDir?: (p: string) => string[];
   private readonly readFile: (p: string) => Promise<string>;
   private readonly writeFile: (p: string, content: string) => Promise<void>;
+  private readonly deleteFile: (p: string) => Promise<void>;
   private readonly spawnProcess: typeof spawn;
   private readonly platform: NodeJS.Platform;
   private readonly extraRoots: string[];
@@ -232,6 +468,7 @@ export class UnrealAdapter {
     this.listDir = deps.listDir;
     this.readFile = deps.readFile ?? ((p) => fs.readFile(p, "utf8"));
     this.writeFile = deps.writeFile ?? ((p, content) => fs.writeFile(p, content, "utf8"));
+    this.deleteFile = deps.deleteFile ?? ((p) => fs.rm(p, { force: true }));
     this.spawnProcess = deps.spawnProcess ?? spawn;
     this.platform = deps.platform ?? process.platform;
     this.extraRoots = deps.extraRoots ?? [];
@@ -364,11 +601,15 @@ export class UnrealAdapter {
     if (!install) throw new ForgeAaaError(FORGE_AAA_ERRORS.ENGINE_NOT_FOUND, "no UE 4.27 install detected");
     const caps = this.negotiate(install);
     if (!caps.supported) throw new ForgeAaaError(FORGE_AAA_ERRORS.ENGINE_VERSION_UNSUPPORTED, `engine ${caps.version} unsupported by the UE 4.27 adapter`);
-    if (!install.editorCmdPath) throw new ForgeAaaError(FORGE_AAA_ERRORS.ENGINE_NOT_FOUND, "UE4Editor-Cmd binary not found under Engine/Binaries/Win64");
+    const exePath = req.host === "editor" ? install.editorPath : install.editorCmdPath;
+    if (!exePath) throw new ForgeAaaError(FORGE_AAA_ERRORS.ENGINE_NOT_FOUND, req.host === "editor" ? "UE4Editor binary not found under Engine/Binaries/Win64" : "UE4Editor-Cmd binary not found under Engine/Binaries/Win64");
     if (req.commandlet !== undefined && !/^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(req.commandlet)) {
       throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `commandlet name "${req.commandlet}" is not a safe token`);
     }
-    const args = [req.projectPath, ...(req.commandlet ? [`-run=${req.commandlet}`] : []), "-unattended", "-nop4", "-nosplash", ...(req.logPath ? [`-abslog=${req.logPath}`] : []), ...(req.args ?? [])];
+    if (req.game && !/^\/Game(\/|$)/.test(req.game.map)) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `game map must be under /Game — got "${req.game.map}"`);
+    }
+    const args = [req.projectPath, ...(req.game ? [req.game.map, "-game"] : []), ...(req.commandlet ? [`-run=${req.commandlet}`] : []), "-unattended", "-nop4", "-nosplash", ...(req.logPath ? [`-abslog=${req.logPath}`] : []), ...(req.args ?? [])];
     const started = Date.now();
     const tailFromLogFile = async (): Promise<string | undefined> => {
       if (!req.logPath) return undefined;
@@ -383,7 +624,7 @@ export class UnrealAdapter {
     return new Promise((resolve) => {
       let child: ChildProcess;
       try {
-        child = this.spawnProcess(install.editorCmdPath!, args, { windowsHide: true });
+        child = this.spawnProcess(exePath, args, { windowsHide: true });
       } catch (err) {
         resolve({ ok: false, exitCode: null, timedOut: false, durationMs: 0, logTail: "", error: err instanceof Error ? err.message : String(err) });
         return;
@@ -490,6 +731,7 @@ export class UnrealAdapter {
       timeoutMs: req.timeoutMs,
       install: req.install,
       logPath: req.logPath,
+      host: req.host,
     });
   }
 
@@ -504,8 +746,8 @@ export class UnrealAdapter {
       throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `levelPath must be under /Game — got "${req.levelPath}"`);
     }
     for (const p of req.placements) {
-      if (!/^\/Game(\/|$)/.test(p.assetPath)) {
-        throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `assetPath must be under /Game — got "${p.assetPath}"`);
+      if (!/^\/(Game|Engine)(\/|$)/.test(p.assetPath)) {
+        throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `assetPath must be under /Game or /Engine — got "${p.assetPath}"`);
       }
       if (!/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(p.name)) {
         throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `invalid placement name "${p.name}"`);
@@ -529,5 +771,120 @@ export class UnrealAdapter {
     });
     const placed = (result.report as { placed?: UnrealPlaceResult["placed"] } | undefined)?.placed ?? [];
     return { ...result, scriptPath: req.scriptPath, placed };
+  }
+
+  /**
+   * Temporarily point PythonScriptPlugin's StartupScripts at our file by appending the
+   * setting section to the project's DefaultEngine.ini. Returns a
+   * restore() that puts back the exact prior bytes (or deletes a file we created).
+   */
+  private async injectStartupScript(iniPath: string, scriptPath: string): Promise<() => Promise<void>> {
+    let original: string | undefined;
+    try {
+      original = await this.readFile(iniPath);
+    } catch {
+      original = undefined;
+    }
+    const section = `\n[/Script/PythonScriptPlugin.PythonScriptPluginSettings]\n+StartupScripts="${scriptPath}"\n`;
+    await fs.mkdir(path.dirname(iniPath), { recursive: true });
+    await this.writeFile(iniPath, (original ?? "") + section);
+    const restoreBytes = original;
+    return async () => {
+      try {
+        if (restoreBytes === undefined) await fs.rm(iniPath, { force: true });
+        else await this.writeFile(iniPath, restoreBytes);
+      } catch { /* best effort restore */ }
+    };
+  }
+
+  /**
+   * Bounded traversal test in `-game` mode (UE4Editor game world — PIE/SIE cannot run
+   * under `-unattended`; verified on this install). A Character is summoned, teleported
+   * once to spec.spawn, then driven by real CharacterMovement input per Slate tick.
+   * Success gates are evaluated here from engine-reported trajectory samples.
+   */
+  async runFunctionalTest(req: UnrealFunctionalTestRequest): Promise<UnrealFunctionalTestResult> {
+    if (!/^\/Game(\/|$)/.test(req.levelPath)) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `levelPath must be under /Game — got "${req.levelPath}"`);
+    }
+    const dir = req.traversal.inputDirection;
+    const mag = Math.hypot(dir[0], dir[1], dir[2]);
+    if (mag < 0.5 || mag > 1.5) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, "inputDirection must be a unit vector");
+    }
+    if (req.traversal.durationS <= 0 || req.traversal.durationS > 300) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, "durationS must be in (0, 300]");
+    }
+    const reportPath = req.scriptPath.replace(/\.py$/i, ".report.json");
+    const runId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const spec = JSON.stringify({
+      level: req.levelPath,
+      spawn: req.traversal.spawn,
+      input: req.traversal.inputDirection,
+      durationS: req.traversal.durationS,
+      samplePeriod: req.traversal.samplePeriodS ?? 0.1,
+      reportPath,
+      runId,
+      // Stop conditions are explicit (stopWhen), defaulting to the expect gates —
+      // except maxDisplacementCm which can never be a "reached" condition.
+      stop: req.traversal.stopWhen ?? req.traversal.expect ?? null,
+    });
+    // The report file is authoritative — delete any stale copy before launch so an old
+    // report can never be mistaken for this run's output.
+    try { await this.deleteFile(reportPath); } catch { /* absent is fine */ }
+    const script = TRAVERSAL_SCRIPT.replace("__FORGEAAA_SPEC__", spec.replace(/\\/g, "\\\\").replace(/"/g, '\\"'));
+    await this.writeFile(req.scriptPath, script);
+    // Game mode has no -ExecutePythonScript; the supported hook is the plugin's
+    // StartupScripts setting — UPythonScriptPluginSettings is config=Engine, verified
+    // against the plugin source. Injected into DefaultEngine.ini, always restored.
+    const iniPath = path.join(path.dirname(req.projectPath), "Config", "DefaultEngine.ini");
+    const restore = await this.injectStartupScript(iniPath, req.scriptPath);
+    let result: UnrealCommandletResult;
+    try {
+      result = await this.runCommandlet({
+        projectPath: req.projectPath,
+        game: { map: req.levelPath },
+        timeoutMs: req.timeoutMs,
+        install: req.install,
+        logPath: req.logPath,
+        host: "editor",
+      });
+    } finally {
+      await restore();
+    }
+    if (result.timedOut) return { ...result, state: "timeout", scriptPath: req.scriptPath };
+    // The report FILE is authoritative — print() inside slate callbacks doesn't reach
+    // LogPython, so result.report may legitimately be absent on successful runs.
+    let rep = (result.report ?? {}) as Record<string, unknown>;
+    try {
+      const onDisk = JSON.parse(await this.readFile(reportPath)) as Record<string, unknown>;
+      // Reject reports that can't be proven fresh — runId is baked into the spec.
+      if (onDisk.runId === runId) rep = onDisk;
+      else rep = { executed: false, errors: [...(rep.errors as string[] ?? []), "stale report discarded"], stale: true };
+    } catch {
+      if (!result.report) rep = { executed: false, errors: ["no report produced"], not_executed: true };
+    }
+    if (rep.executed !== true) return { ...result, state: rep.errors ? "blocked" : "not_executed", scriptPath: req.scriptPath };
+    const samples = Array.isArray(rep.samples) ? rep.samples as { t: number; x: number; y: number; z: number }[] : [];
+    if (samples.length < 3) return { ...result, state: "blocked", scriptPath: req.scriptPath, metrics: rep };
+    const first = samples[0]!;
+    const last = samples[samples.length - 1]!;
+    const disp = Math.hypot(last.x - first.x, last.y - first.y);
+    const metrics: Record<string, unknown> = {
+      samples: samples.length, simSeconds: last.t,
+      start: [first.x, first.y, first.z], final: [last.x, last.y, last.z],
+      zGain: last.z - first.z, displacementCm: disp,
+      maxZ: Math.max(...samples.map((s) => s.z)), minZ: Math.min(...samples.map((s) => s.z)),
+      errors: rep.errors ?? [],
+    };
+    const exp = req.traversal.expect;
+    let state: UnrealFunctionalTestState = "pass";
+    if (exp) {
+      if (exp.minZ !== undefined && (last.z as number) < exp.minZ) state = "fail";
+      if (exp.maxZ !== undefined && (last.z as number) > exp.maxZ) state = "fail";
+      if (exp.minDisplacementCm !== undefined && disp < exp.minDisplacementCm) state = "fail";
+      if (exp.maxDisplacementCm !== undefined && disp > exp.maxDisplacementCm) state = "fail";
+    }
+    return { ...result, state, scriptPath: req.scriptPath, metrics };
   }
 }

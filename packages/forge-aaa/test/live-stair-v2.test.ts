@@ -68,11 +68,19 @@ for i, s in enumerate(steps):
     c.location = s.location
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     c.display_type = "WIRE"
-# Modular connection sockets.
-for name, loc in (("Socket_Bottom", (-TREAD / 2.0, 0.0, 0.0)), ("Socket_Top", (STEPS * TREAD + TREAD / 2.0, 0.0, STEPS * RISE))):
+# Modular connection sockets — UE4 FBX convention: a null named SOCKET_<name> PARENTED
+# to a mesh becomes a real socket on that mesh at import. Top-level empties (the v2 bug)
+# are dropped silently; parenting is what makes them land.
+for name, loc, host in (
+    ("SOCKET_Bottom", (-TREAD / 2.0, 0.0, 0.0), steps[0]),
+    ("SOCKET_Top", (STEPS * TREAD + TREAD / 2.0, 0.0, STEPS * RISE), steps[-1]),
+    ("SOCKET_RailStart", (x0, WIDTH / 2.0 - 0.05, z0), rail),
+    ("SOCKET_RailEnd", (x1, WIDTH / 2.0 - 0.05, z1), rail),
+):
     bpy.ops.object.empty_add(type="PLAIN_AXES", location=loc)
     e = move(bpy.context.object, name)
     e.empty_display_size = 0.15
+    e.parent = host
 report = {"ok": True, "meshes": 0, "vertices": 0, "faces": 0, "nonmanifold_objects": [],
           "degenerate_faces": 0, "validate_errors": 0, "bounds_cm": None, "errors": []}
 mins = [float("inf")] * 3; maxs = [float("-inf")] * 3
@@ -99,10 +107,10 @@ report["rise_cm"] = RISE * 100; report["tread_cm"] = TREAD * 100; report["width_
 report["rail_height_cm"] = RAIL_H * 100
 report["objects"] = len(col.objects)
 report["ucx_collision_count"] = sum(1 for o in col.objects if o.name.startswith("UCX_"))
-report["sockets"] = [o.name for o in col.objects if o.name.startswith("Socket_")]
+report["sockets"] = [o.name for o in col.objects if o.name.startswith("SOCKET_")]
 report["ok"] = (len(report["nonmanifold_objects"]) == 0 and report["degenerate_faces"] == 0
                 and report["validate_errors"] == 0 and report["ucx_collision_count"] == STEPS
-                and len(report["sockets"]) == 2)
+                and len(report["sockets"]) == 4)
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 if len(argv) >= 2:
     bpy.ops.export_scene.gltf(filepath=argv[0], export_format="GLB", export_apply=True, export_yup=True)
@@ -136,7 +144,7 @@ describe.runIf(LIVE)("ForgeAAA stair v2 + Unreal import (directive §11-12)", ()
     expect(r.nonmanifold_objects).toEqual([]);
     expect(r.degenerate_faces).toBe(0);
     expect(r.ucx_collision_count).toBe(6);
-    expect(r.sockets).toEqual(["Socket_Bottom", "Socket_Top"]);
+    expect(r.sockets).toEqual(["SOCKET_Bottom", "SOCKET_Top", "SOCKET_RailStart", "SOCKET_RailEnd"]);
     expect(existsSync(glb)).toBe(true);
     expect(existsSync(fbx)).toBe(true);
 
