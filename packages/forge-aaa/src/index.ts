@@ -13,6 +13,7 @@ export * from "./verification.js";
 export * from "./orchestrator.js";
 export * from "./model-review.js";
 export * from "./door-spec.js";
+export * from "./module-contract.js";
 export * from "./door-template.js";
 export * from "./project-discovery.js";
 export * from "./service.js";

@@ -1,0 +1,1075 @@
+{
+  "startedAt": "2026-10-11T13:45:13.376Z",
+  "phases": {
+    "mapBuild": {
+      "ok": true,
+      "report": {
+        "ok": true,
+        "level": "/Game/ForgeAAA/Maps/FAAA_NativeDoorTest",
+        "actors": [
+          "FAAA_Floor",
+          "FAAA_WallL_0",
+          "FAAA_WallR_0",
+          "FAAA_Lintel_0",
+          "FAAA_WallL_800",
+          "FAAA_WallR_800",
+          "FAAA_Lintel_800",
+          "door-western-a",
+          "door-western-b",
+          "playerstart",
+          "driver"
+        ],
+        "errors": [],
+        "level_action": "loaded",
+        "game_mode_bound": true,
+        "level_saved": true,
+        "actor_count": 11
+      }
+    },
+    "stage1": {
+      "state": "fail",
+      "actionMetrics": [
+        {
+          "index": 0,
+          "op": "expectDoor",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "door": "door-western-a",
+          "expectedState": "closed",
+          "obsYawDeg": 0,
+          "hingeYawDeg": 0,
+          "cmdYawDeg": 0,
+          "state": "door.closed",
+          "pass": true
+        },
+        {
+          "index": 1,
+          "op": "face",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "yaw": 89.99998474121094
+        },
+        {
+          "index": 2,
+          "op": "press",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "key": "E",
+          "inputClass": "SYNTHETIC_INPUT",
+          "dispatched": false,
+          "targetName": "None",
+          "distanceCm": 0,
+          "resultState": "None",
+          "sweepYawDeg": 90,
+          "sweepHits": []
+        },
+        {
+          "index": 3,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            35.40291976928711,
+            -79.19425201416016,
+            90.14999389648438
+          ],
+          "displacementCm": 86.747314453125
+        },
+        {
+          "index": 4,
+          "op": "face",
+          "start": [
+            36.744834899902344,
+            -76.51042175292969,
+            90.14999389648438
+          ],
+          "yaw": 115.65299224853516
+        },
+        {
+          "index": 5,
+          "op": "press",
+          "start": [
+            39.1673469543457,
+            -71.66539764404297,
+            90.14999389648438
+          ],
+          "key": "E",
+          "inputClass": "SYNTHETIC_INPUT",
+          "dispatched": true,
+          "targetName": "FAAA_door-western-a_1",
+          "distanceCm": 32.354515075683594,
+          "resultState": "door.opening",
+          "sweepYawDeg": 115.65304565429688,
+          "sweepHits": [
+            "FAAA_door-western-a_1/LeafMesh@32.4"
+          ]
+        },
+        {
+          "index": 6,
+          "op": "wait"
+        },
+        {
+          "index": 7,
+          "op": "expectDoor",
+          "start": [
+            43.755592346191406,
+            -62.488895416259766,
+            90.14999389648438
+          ],
+          "door": "door-western-a",
+          "expectedState": "open",
+          "obsYawDeg": -95,
+          "hingeYawDeg": -95,
+          "cmdYawDeg": -95,
+          "state": "door.open",
+          "pass": true
+        },
+        {
+          "index": 8,
+          "op": "probe",
+          "start": [
+            43.755592346191406,
+            -62.488895416259766,
+            90.14999389648438
+          ],
+          "from": [
+            0,
+            -40,
+            100
+          ],
+          "to": [
+            0,
+            80,
+            100
+          ],
+          "blockingHit": false
+        },
+        {
+          "index": 9,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            8.763260841369629,
+            -36.50663375854492,
+            90.14999389648438
+          ],
+          "displacementCm": 37.54369354248047
+        },
+        {
+          "index": 10,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            -0.5492531061172485,
+            108.32962799072266,
+            90.15000915527344
+          ],
+          "displacementCm": 108.33102416992188
+        },
+        {
+          "index": 11,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            0.5795860290527344,
+            41.42615509033203,
+            90.15000915527344
+          ],
+          "displacementCm": 41.43021011352539
+        },
+        {
+          "index": 12,
+          "op": "face",
+          "start": [
+            0.5050815343856812,
+            39.20439147949219,
+            90.15000915527344
+          ],
+          "yaw": -141.05303955078125
+        },
+        {
+          "index": 13,
+          "op": "press",
+          "start": [
+            0.3582923710346222,
+            34.82706069946289,
+            90.15000915527344
+          ],
+          "key": "E",
+          "inputClass": "SYNTHETIC_INPUT",
+          "dispatched": false,
+          "targetName": "None",
+          "distanceCm": 0,
+          "resultState": "None",
+          "sweepYawDeg": -141.0530242919922,
+          "sweepHits": [
+            "FAAA_WallL_3/StaticMeshComponent0@15.1"
+          ]
+        },
+        {
+          "index": 14,
+          "op": "wait"
+        },
+        {
+          "index": 15,
+          "op": "expectDoor",
+          "start": [
+            -0.1326269656419754,
+            20.18758773803711,
+            90.15000915527344
+          ],
+          "door": "door-western-a",
+          "expectedState": "closed",
+          "obsYawDeg": -95,
+          "hingeYawDeg": -95,
+          "cmdYawDeg": -95,
+          "state": "door.open",
+          "pass": false
+        },
+        {
+          "index": 16,
+          "op": "probe",
+          "start": [
+            -0.1326269656419754,
+            20.18758773803711,
+            90.15000915527344
+          ],
+          "from": [
+            0,
+            80,
+            100
+          ],
+          "to": [
+            0,
+            -80,
+            100
+          ],
+          "blockingHit": false
+        },
+        {
+          "index": 17,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            -0.007587450090795755,
+            -130.83560180664062,
+            90.15000915527344
+          ],
+          "displacementCm": 130.83560180664062
+        },
+        {
+          "index": 18,
+          "op": "face",
+          "start": [
+            -0.00522751547396183,
+            -133.68597412109375,
+            90.15000915527344
+          ],
+          "yaw": 89.99774169921875
+        },
+        {
+          "index": 19,
+          "op": "press",
+          "start": [
+            -0.0018735098419710994,
+            -137.7370147705078,
+            90.15000915527344
+          ],
+          "key": "E",
+          "inputClass": "SYNTHETIC_INPUT",
+          "dispatched": false,
+          "targetName": "None",
+          "distanceCm": 0,
+          "resultState": "None",
+          "sweepYawDeg": 89.99775695800781,
+          "sweepHits": []
+        },
+        {
+          "index": 20,
+          "op": "wait"
+        },
+        {
+          "index": 21,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            0.009891394525766373,
+            -151.94696044921875,
+            90.15000915527344
+          ],
+          "displacementCm": 151.94696044921875
+        },
+        {
+          "index": 22,
+          "op": "face",
+          "start": [
+            0.009855085052549839,
+            -151.90310668945312,
+            90.15000915527344
+          ],
+          "yaw": 119.50641632080078
+        },
+        {
+          "index": 23,
+          "op": "press",
+          "start": [
+            0.009855085052549839,
+            -151.90310668945312,
+            90.15000915527344
+          ],
+          "key": "E",
+          "inputClass": "SYNTHETIC_INPUT",
+          "dispatched": true,
+          "targetName": "FAAA_door-western-a_1",
+          "distanceCm": 36.49920654296875,
+          "resultState": "door.closing",
+          "sweepYawDeg": 119.50640869140625,
+          "sweepHits": [
+            "FAAA_door-western-a_1/LeafMesh@36.5"
+          ]
+        },
+        {
+          "index": 24,
+          "op": "wait"
+        },
+        {
+          "index": 25,
+          "op": "expectDoor",
+          "start": [
+            0.009855085052549839,
+            -151.90310668945312,
+            90.15000915527344
+          ],
+          "door": "door-western-a",
+          "expectedState": "closed",
+          "obsYawDeg": 0,
+          "hingeYawDeg": 0,
+          "cmdYawDeg": 0,
+          "state": "door.closed",
+          "pass": true
+        },
+        {
+          "index": 26,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            35.477630615234375,
+            -79.26226806640625,
+            90.15000915527344
+          ],
+          "displacementCm": 86.83990478515625
+        },
+        {
+          "index": 27,
+          "op": "face",
+          "start": [
+            37.020477294921875,
+            -76.10237121582031,
+            90.15000915527344
+          ],
+          "yaw": 115.94080352783203
+        },
+        {
+          "index": 28,
+          "op": "press",
+          "start": [
+            38.70237731933594,
+            -72.65768432617188,
+            90.15000915527344
+          ],
+          "key": "E",
+          "inputClass": "SYNTHETIC_INPUT",
+          "dispatched": true,
+          "targetName": "FAAA_door-western-a_1",
+          "distanceCm": 33.53664016723633,
+          "resultState": "door.opening",
+          "sweepYawDeg": 115.94087219238281,
+          "sweepHits": [
+            "FAAA_door-western-a_1/LeafMesh@33.5"
+          ]
+        },
+        {
+          "index": 29,
+          "op": "wait"
+        },
+        {
+          "index": 30,
+          "op": "expectDoor",
+          "start": [
+            44.12013626098633,
+            -61.56159210205078,
+            90.15000915527344
+          ],
+          "door": "door-western-a",
+          "expectedState": "open",
+          "obsYawDeg": -95,
+          "hingeYawDeg": -95,
+          "cmdYawDeg": -95,
+          "state": "door.open",
+          "pass": true
+        },
+        {
+          "index": 31,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            8.37205982208252,
+            -35.98896026611328,
+            90.15000915527344
+          ],
+          "displacementCm": 36.949920654296875
+        },
+        {
+          "index": 32,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            -0.07428271323442459,
+            689.0604248046875,
+            90.15000915527344
+          ],
+          "displacementCm": 689.0604248046875
+        },
+        {
+          "index": 33,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            51.27553176879883,
+            726.6328735351562,
+            90.15000915527344
+          ],
+          "displacementCm": 728.4397583007812
+        },
+        {
+          "index": 34,
+          "op": "face",
+          "start": [
+            50.57182693481445,
+            726.2892456054688,
+            90.15000915527344
+          ],
+          "yaw": 124.4534683227539
+        },
+        {
+          "index": 35,
+          "op": "press",
+          "start": [
+            49.3533821105957,
+            725.6942749023438,
+            90.15000915527344
+          ],
+          "key": "E",
+          "inputClass": "SYNTHETIC_INPUT",
+          "dispatched": true,
+          "targetName": "FAAA_door-western-b_3",
+          "distanceCm": 38.571754455566406,
+          "resultState": "door.opening",
+          "sweepYawDeg": 124.45344543457031,
+          "sweepHits": [
+            "FAAA_door-western-b_3/LeafMesh@38.6"
+          ]
+        },
+        {
+          "index": 36,
+          "op": "wait"
+        },
+        {
+          "index": 37,
+          "op": "expectDoor",
+          "start": [
+            47.41974639892578,
+            724.7500610351562,
+            90.15000915527344
+          ],
+          "door": "door-western-b",
+          "expectedState": "open",
+          "obsYawDeg": -95,
+          "hingeYawDeg": -95,
+          "cmdYawDeg": -95,
+          "state": "door.open",
+          "pass": true
+        },
+        {
+          "index": 38,
+          "op": "face",
+          "start": [
+            47.41974639892578,
+            724.7500610351562,
+            90.15000915527344
+          ],
+          "yaw": 160.4776611328125
+        },
+        {
+          "index": 39,
+          "op": "press",
+          "start": [
+            47.41974639892578,
+            724.7500610351562,
+            90.15000915527344
+          ],
+          "key": "E",
+          "inputClass": "SYNTHETIC_INPUT",
+          "dispatched": true,
+          "targetName": "FAAA_door-western-b_3",
+          "distanceCm": 57.9671630859375,
+          "resultState": "door.closing",
+          "sweepYawDeg": 160.47769165039062,
+          "sweepHits": [
+            "FAAA_door-western-b_3/LeafMesh@58.0"
+          ]
+        },
+        {
+          "index": 40,
+          "op": "wait"
+        },
+        {
+          "index": 41,
+          "op": "expectDoor",
+          "start": [
+            47.41974639892578,
+            724.7500610351562,
+            90.15000915527344
+          ],
+          "door": "door-western-b",
+          "expectedState": "closed",
+          "obsYawDeg": 0,
+          "hingeYawDeg": 0,
+          "cmdYawDeg": 0,
+          "state": "door.closed",
+          "pass": true
+        },
+        {
+          "index": 42,
+          "op": "save",
+          "start": [
+            47.41974639892578,
+            724.7500610351562,
+            90.15000915527344
+          ],
+          "slot": "ForgeR81DoorTest",
+          "savedDoors": 2
+        },
+        {
+          "index": 43,
+          "op": "slotVerify",
+          "start": [
+            47.41974639892578,
+            724.7500610351562,
+            90.15000915527344
+          ],
+          "slot": "ForgeR81DoorTest",
+          "slotExists": true,
+          "loaded": true,
+          "schemaVersion": 1,
+          "doors": {
+            "door-western-a": {
+              "state": 2,
+              "leafYawDeg": -95
+            },
+            "door-western-b": {
+              "state": 0,
+              "leafYawDeg": 0
+            }
+          }
+        },
+        {
+          "index": 44,
+          "op": "reloadMap",
+          "start": [
+            47.41974639892578,
+            724.7500610351562,
+            90.15000915527344
+          ]
+        },
+        {
+          "index": 45,
+          "op": "expectDoor",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "door": "door-western-a",
+          "expectedState": "open",
+          "obsYawDeg": -95,
+          "hingeYawDeg": -95,
+          "cmdYawDeg": -95,
+          "state": "door.open",
+          "pass": true
+        },
+        {
+          "index": 46,
+          "op": "expectDoor",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "door": "door-western-b",
+          "expectedState": "closed",
+          "obsYawDeg": 0,
+          "hingeYawDeg": 0,
+          "cmdYawDeg": 0,
+          "state": "door.closed",
+          "pass": true
+        },
+        {
+          "index": 47,
+          "op": "probe",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "from": [
+            0,
+            760,
+            100
+          ],
+          "to": [
+            0,
+            880,
+            100
+          ],
+          "blockingHit": true,
+          "hitActor": "FAAA_door-western-b_3",
+          "hitComponent": "LeafMesh"
+        },
+        {
+          "index": 48,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            0,
+            49.20195770263672,
+            90.14999389648438
+          ],
+          "displacementCm": 49.20195770263672
+        },
+        {
+          "index": 49,
+          "op": "exit",
+          "start": [
+            0,
+            52.07590103149414,
+            90.14999389648438
+          ]
+        }
+      ],
+      "metrics": {
+        "failures": [
+          "driver: expectDoor door-western-a: state=door.open obsYaw=-95.00",
+          "action[13] dispatched=false != true",
+          "action[16] blockingHit=false != true",
+          "action[17] arrived=true != false",
+          "action[17] stalled=undefined != true",
+          "action[17] endY -130.83560180664062 < 20",
+          "action[19] dispatched=false != true"
+        ],
+        "errors": [
+          "expectDoor door-western-a: state=door.open obsYaw=-95.00"
+        ],
+        "doors": [
+          {
+            "instanceId": "door-western-a",
+            "actor": "FAAA_door-western-a_1",
+            "state": "door.open",
+            "obsYawDeg": -95,
+            "cmdYawDeg": -95
+          },
+          {
+            "instanceId": "door-western-b",
+            "actor": "FAAA_door-western-b_3",
+            "state": "door.closed",
+            "obsYawDeg": 0,
+            "cmdYawDeg": 0
+          }
+        ],
+        "pythonModuleLoaded": true,
+        "engineVersion": "4.27.2-18319896+++UE4+Release-4.27",
+        "saveSlot": "ForgeR81DoorTest"
+      },
+      "pythonModuleLoaded": true
+    },
+    "stage2": {
+      "state": "fail",
+      "actionMetrics": [
+        {
+          "index": 0,
+          "op": "expectDoor",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "door": "door-western-a",
+          "expectedState": "open",
+          "obsYawDeg": -95,
+          "hingeYawDeg": -95,
+          "cmdYawDeg": -95,
+          "state": "door.open",
+          "pass": true
+        },
+        {
+          "index": 1,
+          "op": "expectDoor",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "door": "door-western-b",
+          "expectedState": "closed",
+          "obsYawDeg": 0,
+          "hingeYawDeg": 0,
+          "cmdYawDeg": 0,
+          "state": "door.closed",
+          "pass": true
+        },
+        {
+          "index": 2,
+          "op": "probe",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "from": [
+            0,
+            -40,
+            100
+          ],
+          "to": [
+            0,
+            80,
+            100
+          ],
+          "blockingHit": false
+        },
+        {
+          "index": 3,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            0,
+            18.45425796508789,
+            90.14999389648438
+          ],
+          "displacementCm": 18.45425796508789
+        },
+        {
+          "index": 4,
+          "op": "face",
+          "start": [
+            0,
+            20.911895751953125,
+            90.14999389648438
+          ],
+          "yaw": -156.458984375
+        },
+        {
+          "index": 5,
+          "op": "press",
+          "start": [
+            0,
+            24.456872940063477,
+            90.14999389648438
+          ],
+          "key": "E",
+          "inputClass": "SYNTHETIC_INPUT",
+          "dispatched": true,
+          "targetName": "FAAA_door-western-a_1",
+          "distanceCm": 9.375980377197266,
+          "resultState": "door.closing",
+          "sweepYawDeg": -156.45896911621094,
+          "sweepHits": [
+            "FAAA_door-western-a_1/LeafMesh@9.4"
+          ]
+        },
+        {
+          "index": 6,
+          "op": "wait"
+        },
+        {
+          "index": 7,
+          "op": "expectDoor",
+          "start": [
+            0,
+            40.035400390625,
+            90.14999389648438
+          ],
+          "door": "door-western-a",
+          "expectedState": "closed",
+          "obsYawDeg": 0,
+          "hingeYawDeg": 0,
+          "cmdYawDeg": 0,
+          "state": "door.closed",
+          "pass": true
+        },
+        {
+          "index": 8,
+          "op": "moveTo",
+          "arrived": true,
+          "end": [
+            39.34697723388672,
+            718.736083984375,
+            90.14999389648438
+          ],
+          "displacementCm": 719.8123168945312
+        },
+        {
+          "index": 9,
+          "op": "face",
+          "start": [
+            39.486793518066406,
+            721.1478881835938,
+            90.14999389648438
+          ],
+          "yaw": 116.60029602050781
+        },
+        {
+          "index": 10,
+          "op": "press",
+          "start": [
+            39.73239517211914,
+            725.3844604492188,
+            90.14999389648438
+          ],
+          "key": "E",
+          "inputClass": "SYNTHETIC_INPUT",
+          "dispatched": true,
+          "targetName": "FAAA_door-western-b_3",
+          "distanceCm": 35.9173698425293,
+          "resultState": "door.opening",
+          "sweepYawDeg": 116.60032653808594,
+          "sweepHits": [
+            "FAAA_door-western-b_3/LeafMesh@35.9"
+          ]
+        },
+        {
+          "index": 11,
+          "op": "wait"
+        },
+        {
+          "index": 12,
+          "op": "expectDoor",
+          "start": [
+            40.579444885253906,
+            739.9966430664062,
+            90.14999389648438
+          ],
+          "door": "door-western-b",
+          "expectedState": "open",
+          "obsYawDeg": -95,
+          "hingeYawDeg": -95,
+          "cmdYawDeg": -95,
+          "state": "door.open",
+          "pass": true
+        },
+        {
+          "index": 13,
+          "op": "expectDoor",
+          "start": [
+            40.579444885253906,
+            739.9966430664062,
+            90.14999389648438
+          ],
+          "door": "door-western-a",
+          "expectedState": "closed",
+          "obsYawDeg": 0,
+          "hingeYawDeg": 0,
+          "cmdYawDeg": 0,
+          "state": "door.closed",
+          "pass": true
+        },
+        {
+          "index": 14,
+          "op": "save",
+          "start": [
+            40.579444885253906,
+            739.9966430664062,
+            90.14999389648438
+          ],
+          "slot": "ForgeR81DoorTest",
+          "savedDoors": 2
+        },
+        {
+          "index": 15,
+          "op": "slotVerify",
+          "start": [
+            40.579444885253906,
+            739.9966430664062,
+            90.14999389648438
+          ],
+          "slot": "ForgeR81DoorTest",
+          "slotExists": true,
+          "loaded": true,
+          "schemaVersion": 1,
+          "doors": {
+            "door-western-a": {
+              "state": 0,
+              "leafYawDeg": 0
+            },
+            "door-western-b": {
+              "state": 2,
+              "leafYawDeg": -95
+            }
+          }
+        },
+        {
+          "index": 16,
+          "op": "writeCorruptSave",
+          "start": [
+            40.579444885253906,
+            739.9966430664062,
+            90.14999389648438
+          ],
+          "ok": true,
+          "path": "../../../../../../Users/Daddy_FDS/Documents/ChatGPT/Dead Trails West/Saved/SaveGames/ForgeR81DoorTest.sav"
+        },
+        {
+          "index": 17,
+          "op": "exit",
+          "start": [
+            40.579444885253906,
+            739.9966430664062,
+            90.14999389648438
+          ]
+        }
+      ],
+      "metrics": {
+        "failures": [
+          "action[3] endY 18.45425796508789 < 20"
+        ],
+        "errors": [],
+        "doors": [
+          {
+            "instanceId": "door-western-a",
+            "actor": "FAAA_door-western-a_1",
+            "state": "door.closed",
+            "obsYawDeg": 0,
+            "cmdYawDeg": 0
+          },
+          {
+            "instanceId": "door-western-b",
+            "actor": "FAAA_door-western-b_3",
+            "state": "door.open",
+            "obsYawDeg": -95,
+            "cmdYawDeg": -95
+          }
+        ],
+        "pythonModuleLoaded": true,
+        "engineVersion": "4.27.2-18319896+++UE4+Release-4.27",
+        "saveSlot": "ForgeR81DoorTest"
+      },
+      "pythonModuleLoaded": true
+    },
+    "stage3": {
+      "state": "pass",
+      "actionMetrics": [
+        {
+          "index": 0,
+          "op": "slotVerify",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "slot": "ForgeR81DoorTest",
+          "slotExists": true,
+          "loaded": false
+        },
+        {
+          "index": 1,
+          "op": "expectDoor",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "door": "door-western-a",
+          "expectedState": "closed",
+          "obsYawDeg": 0,
+          "hingeYawDeg": 0,
+          "cmdYawDeg": 0,
+          "state": "door.closed",
+          "pass": true
+        },
+        {
+          "index": 2,
+          "op": "deleteSave",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "ok": true
+        },
+        {
+          "index": 3,
+          "op": "slotVerify",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ],
+          "slot": "ForgeR81DoorTest",
+          "slotExists": false
+        },
+        {
+          "index": 4,
+          "op": "exit",
+          "start": [
+            0,
+            -150,
+            90.14999389648438
+          ]
+        }
+      ],
+      "metrics": {
+        "failures": [],
+        "errors": [],
+        "doors": [
+          {
+            "instanceId": "door-western-a",
+            "actor": "FAAA_door-western-a_1",
+            "state": "door.closed",
+            "obsYawDeg": 0,
+            "cmdYawDeg": 0
+          },
+          {
+            "instanceId": "door-western-b",
+            "actor": "FAAA_door-western-b_3",
+            "state": "door.closed",
+            "obsYawDeg": 0,
+            "cmdYawDeg": 0
+          }
+        ],
+        "pythonModuleLoaded": true,
+        "engineVersion": "4.27.2-18319896+++UE4+Release-4.27",
+        "saveSlot": "ForgeR81DoorTest"
+      },
+      "pythonModuleLoaded": true
+    }
+  },
+  "engine": {
+    "root": "C:\\Program Files\\Epic Games\\UE_4.27",
+    "version": {
+      "major": 4,
+      "minor": 27,
+      "patch": 2,
+      "changelist": 18319896,
+      "branch": "++UE4+Release-4.27"
+    }
+  },
+  "finishedAt": "2026-10-11T13:46:31.632Z"
+}

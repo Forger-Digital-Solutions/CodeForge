@@ -1,0 +1,187 @@
+{
+  "startedAt": "2026-10-11T14:00:37.066Z",
+  "evidenceClass": "MODEL_DIRECTED_MODULE_CONTRACT",
+  "model": "nvidia/nemotron-3-super-120b-a12b:free",
+  "frames": [
+    {
+      "at": "2026-10-11T14:00:40.919Z",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "events": 71,
+      "chars": 767,
+      "attempt": 1,
+      "finishedAt": "2026-10-11T14:00:56.346Z"
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "raw": "{\n  \"contractVersion\": 1,\n  \"moduleId\": \"dtw/building/door-western/v1\",\n  \"moduleType\": \"door\",\n  \"displayName\": \"Western Farmhouse Door\",\n  \"dimensions\": {\"widthCm\": 104, \"depthCm\": 24, \"heightCm\": 214},\n  \"pivot\": {\"kind\": \"hinge-left\"},\n  \"sockets\": [{\"id\": \"frame\", \"localPosCm\": [0,0,0], \"accepts\": [\"wall\"]}],\n  \"collision\": {\"profile\": \"custom\", \"blocksWhenClosed\": true, \"passesWhenOpen\": true},\n  \"interaction\": {\"interface\": \"IForgeInteractable\", \"states\": [\"closed\",\"opening\",\"open\",\"closing\"], \"initialState\": \"closed\"},\n  \"persistence\": {\"identityFrom\": \"actorName\", \"stateFields\": [\"state\",\"yawAngle\"], \"schemaVersion\": 1},\n  \"provenance\": {\"authoredBy\": \"model\", \"modelId\": \"nemotron-3-8b-instruct\"},\n  \"engines\": {\"unreal\": [4.27], \"blender\": [4.5]}\n}",
+      "parsed": "valid"
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T14:00:37.067Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T14:00:37.067Z",
+      "recheckAt": "2026-10-18T14:00:37.067Z",
+      "qualificationAt": "2026-10-11T14:00:37.066Z",
+      "termsVerifiedAt": "2026-10-11T14:00:37.067Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T14:00:37.067Z",
+      "privacyVerifiedAt": "2026-10-11T14:00:37.067Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T14:00:37.067Z",
+      "priceVerifiedAt": "2026-10-11T14:00:37.067Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T14:00:37.067Z",
+      "nextReverifyAt": "2026-10-11T20:00:37.067Z"
+    }
+  },
+  "catalogEntry": {
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "displayName": "NVIDIA: Nemotron 3 Super (free)",
+    "contextWindow": 262144,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": true,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "contract": {
+    "contractVersion": 1,
+    "moduleId": "dtw/building/door-western/v1",
+    "moduleType": "door",
+    "displayName": "Western Farmhouse Door",
+    "dimensions": {
+      "widthCm": 104,
+      "depthCm": 24,
+      "heightCm": 214
+    },
+    "pivot": {
+      "kind": "hinge-left"
+    },
+    "sockets": [
+      {
+        "id": "frame",
+        "localPosCm": [
+          0,
+          0,
+          0
+        ],
+        "accepts": [
+          "wall"
+        ]
+      }
+    ],
+    "collision": {
+      "profile": "custom",
+      "blocksWhenClosed": true,
+      "passesWhenOpen": true
+    },
+    "provenance": {
+      "authoredBy": "model",
+      "modelId": "nemotron-3-8b-instruct"
+    },
+    "engines": {
+      "unreal": [],
+      "blender": []
+    },
+    "interaction": {
+      "interface": "IForgeInteractable",
+      "states": [
+        "closed",
+        "opening",
+        "open",
+        "closing"
+      ],
+      "initialState": "closed"
+    },
+    "persistence": {
+      "identityFrom": "actorName",
+      "stateFields": [
+        "state",
+        "yawAngle"
+      ],
+      "schemaVersion": 1
+    }
+  },
+  "status": "MODEL_CONTRACT_VALID",
+  "contractFile": "benchmarks/r81/module-contracts/door-western.module.json",
+  "finishedAt": "2026-10-11T14:00:56.361Z",
+  "postProcessed": {
+    "note": "provenance.modelId corrected to true catalog identity (model self-reported nemotron-3-8b-instruct); engines filled from prompt request (model emitted empty arrays); raw output preserved in attempts[]",
+    "correctedContract": {
+      "contractVersion": 1,
+      "moduleId": "dtw/building/door-western/v1",
+      "moduleType": "door",
+      "displayName": "Western Farmhouse Door",
+      "dimensions": {
+        "widthCm": 104,
+        "depthCm": 24,
+        "heightCm": 214
+      },
+      "pivot": {
+        "kind": "hinge-left"
+      },
+      "sockets": [
+        {
+          "id": "frame",
+          "localPosCm": [
+            0,
+            0,
+            0
+          ],
+          "accepts": [
+            "wall"
+          ]
+        }
+      ],
+      "collision": {
+        "profile": "custom",
+        "blocksWhenClosed": true,
+        "passesWhenOpen": true
+      },
+      "provenance": {
+        "authoredBy": "model",
+        "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+        "modelClaimedId": "nemotron-3-8b-instruct"
+      },
+      "engines": {
+        "unreal": [
+          "4.27"
+        ],
+        "blender": [
+          "4.5"
+        ]
+      },
+      "interaction": {
+        "interface": "IForgeInteractable",
+        "states": [
+          "closed",
+          "opening",
+          "open",
+          "closing"
+        ],
+        "initialState": "closed"
+      },
+      "persistence": {
+        "identityFrom": "actorName",
+        "stateFields": [
+          "state",
+          "yawAngle"
+        ],
+        "schemaVersion": 1
+      }
+    }
+  }
+}

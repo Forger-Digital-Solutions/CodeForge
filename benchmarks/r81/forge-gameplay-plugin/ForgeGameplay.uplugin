@@ -1,0 +1,20 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "ForgeGameplay",
+	"Description": "ForgeAAA native gameplay foundation: interactable actors, door, SaveGame persistence, native test driver.",
+	"Category": "ForgeAAA",
+	"CreatedBy": "ForgeAAA R81",
+	"EnabledByDefault": true,
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "ForgeGameplay",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

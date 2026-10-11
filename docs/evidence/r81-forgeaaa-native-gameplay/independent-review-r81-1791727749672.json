@@ -1,0 +1,75 @@
+{
+  "startedAt": "2026-10-11T14:09:09.672Z",
+  "evidenceClass": "LIVE_INDEPENDENT_REVIEW_R81_NATIVE_GAMEPLAY",
+  "reviewerModel": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "frames": [
+    {
+      "at": "2026-10-11T14:09:10.351Z",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "events": 89,
+      "chars": 1377,
+      "finishedAt": "2026-10-11T14:10:00.762Z"
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T14:09:09.672Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T14:09:09.672Z",
+      "recheckAt": "2026-10-18T14:09:09.672Z",
+      "qualificationAt": "2026-10-11T14:09:09.672Z",
+      "termsVerifiedAt": "2026-10-11T14:09:09.672Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T14:09:09.672Z",
+      "privacyVerifiedAt": "2026-10-11T14:09:09.672Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T14:09:09.672Z",
+      "priceVerifiedAt": "2026-10-11T14:09:09.672Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T14:09:09.672Z",
+      "nextReverifyAt": "2026-10-11T20:09:09.672Z"
+    }
+  },
+  "catalogCount": 12,
+  "catalogEntry": {
+    "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "displayName": "NVIDIA: Nemotron 3 Ultra (free)",
+    "contextWindow": 1000000,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "reviewerQualification": {
+    "providerId": "kilo-free-direct",
+    "suiteVersion": "R73_ROLE_QUALIFICATION_V7",
+    "protocolVersion": "REVIEWER_PROTOCOL_V4",
+    "status": "QUALIFIED",
+    "score": 0.875,
+    "completedAt": "2026-10-10T10:35:30.841Z"
+  },
+  "review": {
+    "approved": false,
+    "findings": [
+      "reviewer: kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free (QUALIFIED, suite R73_ROLE_QUALIFICATION_V7, protocol REVIEWER_PROTOCOL_V4, qualified 2026-10-10T10:35:30.841Z) — malformed review: reviewer response is not valid JSON"
+    ],
+    "independent": false,
+    "reviewer": {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free"
+    },
+    "rawResponse": "{\"verdict\":\"pass\",\"findings\":[{\"id\":\"R81-01\",\"severity\":\"advisory\",\"category\":\"test-infrastructure\",\"message\":\"Test driver uses synthetic input injection (PlayerInput::InputKey) rather than physical keyboard input; however this exercises the real ActionMapping→binding→handler dispatch path honestly.\",\"evidence\":\"Executor final report: 'Presses use SYNTHETIC_INPUT (PlayerInput::InputKey injected by the test driver) — the real input dispatch path (ActionMapping→binding→handler), not a human keyboard; inputClass is recorded honestly in every press record'\"},{\"id\":\"R81-02\",\"severity\":\"advisory\",\"category\":\"test-infrastructure\",\"message\":\"Test driver moveTo uses scripted AddMovementInput rather than NavMesh pathing; this is a test harness limitation, not a gameplay defect.\",\"evidence\":\"Executor final report: 'moveTo uses AddMovementInput (real CharacterMovementComponent physics) — pathing is scripted, not NavMesh'\"},{\"id\":\"R81-03\",\"severity\":\"advisory\",\"category\":\"deployment\",\"message\":\"Live Unreal project resides outside git worktree; plugin source committed as fixture under benchmarks/r81/forge-gameplay-plugin/ and must be mirrored before live runs. This is a workflow consideration, not a functional defect.\",\"evidence\":\"Executor final report: 'The live Unreal project is outside the git worktree; plugin source is committed as a repo fixture under benchmarks/r"
+  },
+  "status": "REVIEW_NOT_INDEPENDENT",
+  "finishedAt": "2026-10-11T14:10:00.770Z"
+}

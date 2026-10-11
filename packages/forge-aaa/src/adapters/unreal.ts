@@ -514,6 +514,73 @@ export interface UnrealInteractionTestResult extends UnrealFunctionalTestResult 
   }[];
 }
 
+/**
+ * Native gameplay scenario driven by the ForgeGameplay plugin's in-world test
+ * driver (R81). Actions execute inside the -game world through real gameplay
+ * APIs — movement input, PlayerInput key injection, SaveGame, OpenLevel — with
+ * no Python startup scripts anywhere in the loop. Expects are evaluated here
+ * from the driver's measured report; a missing action record is unmeasured,
+ * never a pass.
+ */
+export interface UnrealNativeAction {
+  op: "wait" | "moveTo" | "press" | "face" | "expectDoor" | "probe" | "save" | "slotVerify" | "writeCorruptSave" | "deleteSave" | "reloadMap" | "exit";
+  target?: [number, number, number];
+  durationS?: number;
+  timeoutS?: number;
+  key?: string;
+  door?: string;
+  state?: string;
+  toleranceDeg?: number;
+  from?: [number, number, number];
+  to?: [number, number, number];
+  expect?: {
+    arrived?: boolean;
+    stalled?: boolean;
+    dispatched?: boolean;
+    targetName?: string;
+    resultState?: string;
+    minEndY?: number;
+    maxEndY?: number;
+    minDisp?: number;
+    maxDisp?: number;
+    blockingHit?: boolean;
+    minSavedDoors?: number;
+    slotExists?: boolean;
+    loaded?: boolean;
+    doorStates?: Record<string, number>;
+  };
+}
+
+export interface UnrealNativeGameplayRequest {
+  projectPath: string;
+  /** Level object path under /Game — launched directly in -game mode. */
+  levelPath: string;
+  /** Where the driver spec JSON is written (ForgeAAA-owned). */
+  specPath: string;
+  /** Where the native driver writes its JSON report. */
+  reportPath: string;
+  /** Resume file for reloadMap-driven restarts within one run. */
+  checkpointPath?: string;
+  saveSlot?: string;
+  actions: UnrealNativeAction[];
+  timeoutMs?: number;
+  install?: UnrealInstall;
+  logPath?: string;
+}
+
+export interface UnrealNativeGameplayResult extends UnrealCommandletResult {
+  state: UnrealFunctionalTestState;
+  specPath: string;
+  reportPath: string;
+  /** Engine/driver-reported metrics: failures, doors, slot contents. */
+  metrics?: Record<string, unknown>;
+  /** Per-action driver measurements in spec order. */
+  actionMetrics?: Record<string, unknown>[];
+  /** Whether the Python plugin module was even loaded — proves gameplay never
+   *  touched the scripting layer (false = fully native run). */
+  pythonModuleLoaded?: boolean;
+}
+
 export interface UnrealPythonScriptRequest {
   projectPath: string;
   /** Absolute path to a ForgeAAA-owned script file (never user content). */
@@ -1210,6 +1277,109 @@ export class UnrealAdapter {
       errors: rep.errors ?? [],
     };
     return { ...result, state, scriptPath: req.scriptPath, metrics, actionMetrics };
+  }
+
+  /**
+   * Native gameplay scenario in `-game` mode (R81): writes a driver spec, launches the
+   * map with `-ForgeDriverSpec=`, and gates on the ForgeGameplay plugin's own measured
+   * JSON report. Unlike runInteractionTest this run performs NO config injection —
+   * the whole point is proving the feature works without Python startup scripts.
+   */
+  async runNativeGameplayTest(req: UnrealNativeGameplayRequest): Promise<UnrealNativeGameplayResult> {
+    if (!/^\/Game(\/|$)/.test(req.levelPath)) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `levelPath must be under /Game — got "${req.levelPath}"`);
+    }
+    if (req.actions.length === 0 || req.actions.length > 96) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, "actions must contain 1..96 entries");
+    }
+    if (req.saveSlot !== undefined && !/^[A-Za-z0-9_-]{1,64}$/.test(req.saveSlot)) {
+      throw new ForgeAaaError(FORGE_AAA_ERRORS.OPERATION_DENIED, `saveSlot "${req.saveSlot}" is not a safe slot name`);
+    }
+    const runId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const spec = {
+      runId,
+      reportPath: req.reportPath,
+      checkpointPath: req.checkpointPath ?? "",
+      mapPackage: req.levelPath,
+      saveSlot: req.saveSlot ?? "ForgeR81DoorTest",
+      actions: req.actions,
+    };
+    await this.writeFile(req.specPath, JSON.stringify(spec, null, 2));
+    try { await this.deleteFile(req.reportPath); } catch { /* absent is fine */ }
+    if (req.checkpointPath) {
+      try { await this.deleteFile(req.checkpointPath); } catch { /* absent is fine */ }
+    }
+    const result = await this.runCommandlet({
+      projectPath: req.projectPath,
+      game: { map: req.levelPath },
+      args: [`-ForgeDriverSpec=${req.specPath}`],
+      timeoutMs: req.timeoutMs,
+      install: req.install,
+      logPath: req.logPath,
+      host: "editor",
+    });
+    if (result.timedOut) return { ...result, state: "timeout", specPath: req.specPath, reportPath: req.reportPath };
+    let rep = (result.report ?? {}) as Record<string, unknown>;
+    try {
+      const onDisk = JSON.parse(await this.readFile(req.reportPath)) as Record<string, unknown>;
+      if (onDisk.runId === runId) rep = onDisk;
+      else rep = { executed: false, errors: [...(rep.errors as string[] ?? []), "stale report discarded"], stale: true };
+    } catch {
+      if (!result.report) rep = { executed: false, errors: ["no report produced"], not_executed: true };
+    }
+    if (rep.executed !== true) {
+      return { ...result, state: rep.errors ? "blocked" : "not_executed", specPath: req.specPath, reportPath: req.reportPath, metrics: rep };
+    }
+    const actionMetrics = (Array.isArray(rep.actions) ? rep.actions : []) as Record<string, unknown>[];
+    let state: UnrealFunctionalTestState = actionMetrics.length >= req.actions.length ? "pass" : "blocked";
+    const failures: string[] = [];
+    if (actionMetrics.length < req.actions.length) {
+      failures.push(`scenario incomplete: ${actionMetrics.length}/${req.actions.length} actions measured`);
+    }
+    const errors = Array.isArray(rep.errors) ? (rep.errors as string[]) : [];
+    if (errors.length > 0) {
+      state = "fail";
+      failures.push(...errors.map((e) => `driver: ${e}`));
+    }
+    req.actions.forEach((a, i) => {
+      const m = actionMetrics[i];
+      if (a.expect === undefined || m === undefined) return;
+      const e = a.expect;
+      const num = (k: string) => typeof m[k] === "number" ? m[k] as number : undefined;
+      const end = Array.isArray(m.end) ? m.end as number[] : undefined;
+      if (e.arrived !== undefined && m.arrived !== e.arrived) { state = "fail"; failures.push(`action[${i}] arrived=${m.arrived} != ${e.arrived}`); }
+      if (e.stalled !== undefined && m.stalled !== e.stalled) { state = "fail"; failures.push(`action[${i}] stalled=${m.stalled} != ${e.stalled}`); }
+      if (e.dispatched !== undefined && m.dispatched !== e.dispatched) { state = "fail"; failures.push(`action[${i}] dispatched=${m.dispatched} != ${e.dispatched}`); }
+      if (e.targetName !== undefined && m.targetName !== e.targetName) { state = "fail"; failures.push(`action[${i}] targetName=${m.targetName} != ${e.targetName}`); }
+      if (e.resultState !== undefined && m.resultState !== e.resultState) { state = "fail"; failures.push(`action[${i}] resultState=${m.resultState} != ${e.resultState}`); }
+      if (e.minEndY !== undefined && (end === undefined || end[1]! < e.minEndY)) { state = "fail"; failures.push(`action[${i}] endY ${end?.[1]} < ${e.minEndY}`); }
+      if (e.maxEndY !== undefined && (end === undefined || end[1]! > e.maxEndY)) { state = "fail"; failures.push(`action[${i}] endY ${end?.[1]} > ${e.maxEndY}`); }
+      if (e.minDisp !== undefined && (num("displacementCm") ?? -1) < e.minDisp) { state = "fail"; failures.push(`action[${i}] displacement ${m.displacementCm} < ${e.minDisp}`); }
+      if (e.maxDisp !== undefined && (num("displacementCm") ?? 1e9) > e.maxDisp) { state = "fail"; failures.push(`action[${i}] displacement ${m.displacementCm} > ${e.maxDisp}`); }
+      if (e.blockingHit !== undefined && m.blockingHit !== e.blockingHit) { state = "fail"; failures.push(`action[${i}] blockingHit=${m.blockingHit} != ${e.blockingHit}`); }
+      if (e.minSavedDoors !== undefined && (num("savedDoors") ?? 0) < e.minSavedDoors) { state = "fail"; failures.push(`action[${i}] savedDoors ${m.savedDoors} < ${e.minSavedDoors}`); }
+      if (e.slotExists !== undefined && m.slotExists !== e.slotExists) { state = "fail"; failures.push(`action[${i}] slotExists=${m.slotExists} != ${e.slotExists}`); }
+      if (e.loaded !== undefined && m.loaded !== e.loaded) { state = "fail"; failures.push(`action[${i}] loaded=${m.loaded} != ${e.loaded}`); }
+      if (e.doorStates !== undefined) {
+        const doors = (m.doors ?? {}) as Record<string, { state?: number }>;
+        for (const [id, want] of Object.entries(e.doorStates)) {
+          if (doors[id]?.state !== want) { state = "fail"; failures.push(`action[${i}] slot door ${id} state=${doors[id]?.state} != ${want}`); }
+        }
+      }
+      if (a.op === "expectDoor" && m.pass === false) { state = "fail"; failures.push(`action[${i}] expectDoor failed`); }
+    });
+    const metrics: Record<string, unknown> = {
+      failures,
+      errors,
+      doors: rep.doors ?? [],
+      pythonModuleLoaded: rep.pythonModuleLoaded,
+      engineVersion: rep.engineVersion,
+      saveSlot: rep.saveSlot,
+    };
+    return {
+      ...result, state, specPath: req.specPath, reportPath: req.reportPath, metrics, actionMetrics,
+      pythonModuleLoaded: rep.pythonModuleLoaded === true,
+    };
   }
 }
 

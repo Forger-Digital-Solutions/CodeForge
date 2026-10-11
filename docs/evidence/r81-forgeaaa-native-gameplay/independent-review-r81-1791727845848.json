@@ -1,0 +1,79 @@
+{
+  "startedAt": "2026-10-11T14:10:45.848Z",
+  "evidenceClass": "LIVE_INDEPENDENT_REVIEW_R81_NATIVE_GAMEPLAY",
+  "reviewerModel": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "frames": [
+    {
+      "at": "2026-10-11T14:10:48.607Z",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "events": 137,
+      "chars": 1912,
+      "finishedAt": "2026-10-11T14:11:48.551Z"
+    }
+  ],
+  "policy": {
+    "status": "VERIFIED",
+    "checkedAt": "2026-10-11T14:10:45.848Z",
+    "receipt": {
+      "sourceDocumentation": "https://kilo.ai/docs/gateway/models-and-providers",
+      "termsEvidence": "https://kilo.ai/terms",
+      "privacyEvidence": "https://kilo.ai/docs/getting-started/using-kilo-for-free",
+      "priceEvidence": "https://kilo.ai/docs/gateway/usage-and-billing",
+      "verifiedAt": "2026-10-11T14:10:45.848Z",
+      "recheckAt": "2026-10-18T14:10:45.848Z",
+      "qualificationAt": "2026-10-11T14:10:45.848Z",
+      "termsVerifiedAt": "2026-10-11T14:10:45.848Z",
+      "termsEvidenceHash": "d581d1115facb8db7cc21674470ca0a2f4fdc6139ea192b36987af6388bc3e70",
+      "termsExpiresAt": "2026-10-18T14:10:45.848Z",
+      "privacyVerifiedAt": "2026-10-11T14:10:45.848Z",
+      "privacyEvidenceHash": "fbe91c42b8d4757c17fd861fe72d868da4cf893f2a99f7fef264b5594e93771b",
+      "privacyExpiresAt": "2026-10-18T14:10:45.848Z",
+      "priceVerifiedAt": "2026-10-11T14:10:45.848Z",
+      "priceEvidenceHash": "920ef26f7ed28ed8142c76c35a0b3377ef745e1b803037d33cebe33b7e33ca2e",
+      "priceExpiresAt": "2026-10-18T14:10:45.848Z",
+      "nextReverifyAt": "2026-10-11T20:10:45.848Z"
+    }
+  },
+  "catalogCount": 12,
+  "catalogEntry": {
+    "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "displayName": "NVIDIA: Nemotron 3 Ultra (free)",
+    "contextWindow": 1000000,
+    "capabilities": {
+      "text": true,
+      "coding": true,
+      "toolCalling": true,
+      "vision": false,
+      "structuredOutput": false,
+      "longContext": true
+    },
+    "isFree": true,
+    "freeStatus": "verified_free"
+  },
+  "reviewerQualification": {
+    "providerId": "kilo-free-direct",
+    "suiteVersion": "R73_ROLE_QUALIFICATION_V7",
+    "protocolVersion": "REVIEWER_PROTOCOL_V4",
+    "status": "QUALIFIED",
+    "score": 0.875,
+    "completedAt": "2026-10-10T10:35:30.841Z"
+  },
+  "review": {
+    "approved": true,
+    "findings": [
+      "reviewer: kilo-free-direct/nvidia/nemotron-3-ultra-550b-a55b:free (QUALIFIED, suite R73_ROLE_QUALIFICATION_V7, protocol REVIEWER_PROTOCOL_V4, qualified 2026-10-10T10:35:30.841Z)",
+      "[advisory] test-scope: Only two door instances tested; requirement says 'multiple' which is satisfied but broader multi-instance stress not demonstrated. (Live evidence shows door A and door B independent operation and persistence across three engine processes.)",
+      "[advisory] input-fidelity: Interaction uses synthetic input injection (PlayerInput::InputKey) rather than physical keyboard; however the real ActionMapping→binding→handler dispatch path is exercised and inputClass is honestly recorded. (Executor final report known limitations; live press records show inputClass field.)",
+      "[advisory] navigation: moveTo uses scripted AddMovementInput not NavMesh pathfinding; acceptable for functional verification but not a full navigation test. (Executor final report known limitations.)"
+    ],
+    "independent": true,
+    "reviewer": {
+      "providerId": "kilo-free-direct",
+      "modelId": "nvidia/nemotron-3-ultra-550b-a55b:free"
+    },
+    "verdict": "pass",
+    "rawResponse": "{\"verdict\":\"pass\",\"findings\":[{\"id\":\"R81-01\",\"severity\":\"advisory\",\"category\":\"test-scope\",\"message\":\"Only two door instances tested; requirement says 'multiple' which is satisfied but broader multi-instance stress not demonstrated.\",\"evidence\":\"Live evidence shows door A and door B independent operation and persistence across three engine processes.\"},{\"id\":\"R81-02\",\"severity\":\"advisory\",\"category\":\"input-fidelity\",\"message\":\"Interaction uses synthetic input injection (PlayerInput::InputKey) rather than physical keyboard; however the real ActionMapping→binding→handler dispatch path is exercised and inputClass is honestly recorded.\",\"evidence\":\"Executor final report known limitations; live press records show inputClass field.\"},{\"id\":\"R81-03\",\"severity\":\"advisory\",\"category\":\"navigation\",\"message\":\"moveTo uses scripted AddMovementInput not NavMesh pathfinding; acceptable for functional verification but not a full navigation test.\",\"evidence\":\"Executor final report known limitations.\"}],\"summary\":\"All nine declared requirements are backed by concrete evidence from three separate engine processes: native IForgeInteractable contract implemented by AForgeInteractableDoor; native input path (ForgeInteract=E) with range/LOS gating demonstrated (out-of-range rejected, in-range dispatched); hinge-pivot rotation with commanded==observed yaw (-95°) recorded; per-instance ForgeInstanceId identity and independent state for two doors; USaveGame slot ForgeR81DoorTest persists schema-versioned records across in-process reload (OpenLevel) and separate-process launches; multiple doors keep independent records; corrupt save detected and rejected with fail-safe default to closed (no crash); no Python during gameplay (Python module present but only used for map authoring); BuildingModuleContract schema-validated for door module. No blocking defects or false-positive paths invalidate the milestone.\"}"
+  },
+  "status": "INDEPENDENT_REVIEW_COMPLETED",
+  "finishedAt": "2026-10-11T14:11:48.553Z"
+}

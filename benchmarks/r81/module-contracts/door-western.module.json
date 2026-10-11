@@ -1,0 +1,63 @@
+{
+  "contractVersion": 1,
+  "moduleId": "dtw/building/door-western/v1",
+  "moduleType": "door",
+  "displayName": "Western Farmhouse Door",
+  "dimensions": {
+    "widthCm": 104,
+    "depthCm": 24,
+    "heightCm": 214
+  },
+  "pivot": {
+    "kind": "hinge-left"
+  },
+  "sockets": [
+    {
+      "id": "frame",
+      "localPosCm": [
+        0,
+        0,
+        0
+      ],
+      "accepts": [
+        "wall"
+      ]
+    }
+  ],
+  "collision": {
+    "profile": "custom",
+    "blocksWhenClosed": true,
+    "passesWhenOpen": true
+  },
+  "provenance": {
+    "authoredBy": "model",
+    "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
+    "modelClaimedId": "nemotron-3-8b-instruct"
+  },
+  "engines": {
+    "unreal": [
+      "4.27"
+    ],
+    "blender": [
+      "4.5"
+    ]
+  },
+  "interaction": {
+    "interface": "IForgeInteractable",
+    "states": [
+      "closed",
+      "opening",
+      "open",
+      "closing"
+    ],
+    "initialState": "closed"
+  },
+  "persistence": {
+    "identityFrom": "actorName",
+    "stateFields": [
+      "state",
+      "yawAngle"
+    ],
+    "schemaVersion": 1
+  }
+}
